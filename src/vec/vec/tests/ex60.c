@@ -6,7 +6,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       n=5,bs;
-  PetscBool      iscuda,iskokkos;
+  PetscBool      iscuda,iskokkos,iship;
   Vec            x,x1,x2,x3;
   PetscScalar    *px;
 
@@ -20,6 +20,7 @@ int main(int argc,char **argv)
   /* create two vectors of length n without array */
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUDA,&iscuda);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQKOKKOS,&iskokkos);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQHIP,&iship);CHKERRQ(ierr);
   ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
   if (iscuda) {
 #if defined(PETSC_HAVE_CUDA)
@@ -32,6 +33,12 @@ int main(int argc,char **argv)
     ierr = VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
     ierr = VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2);CHKERRQ(ierr);
     ierr = VecCreateSeqKokkosWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3);CHKERRQ(ierr);
+#endif
+  } else if (iship) {
+#if defined(PETSC_HAVE_HIP)
+    ierr = VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
+    ierr = VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x2);CHKERRQ(ierr);
+    ierr = VecCreateSeqHIPWithArray(PETSC_COMM_SELF,bs,n,NULL,&x3);CHKERRQ(ierr);
 #endif
   } else {
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n,NULL,&x1);CHKERRQ(ierr);
@@ -82,5 +89,10 @@ int main(int argc,char **argv)
          args: -vec_type kokkos
          filter: sed -e 's/seqkokkos/seq/'
          requires: kokkos_kernels
+       test:
+         suffix: 1_hip
+         args: -vec_type hip
+         filter: sed -e 's/seqhip/seq/'
+         requires: hip
 
 TEST*/

@@ -19,13 +19,12 @@
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECSEQHIP, VECMPIHIP, VECSTANDARD, VecType, VecCreateMPI(), VecSetPinnedMemoryMin()
 M*/
 
-PETSC_INTERN
 PetscErrorCode VecDestroy_MPIHIP(Vec v)
 {
   Vec_MPI        *vecmpi = (Vec_MPI*)v->data;
   Vec_HIP        *vechip;
   PetscErrorCode ierr;
-  hipError_t    err;
+  hipError_t     err;
 
   PetscFunctionBegin;
   if (v->spptr) {
@@ -49,7 +48,6 @@ PetscErrorCode VecDestroy_MPIHIP(Vec v)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
 PetscErrorCode VecNorm_MPIHIP(Vec xin,NormType type,PetscReal *z)
 {
   PetscReal      sum,work = 0.0;
@@ -82,7 +80,6 @@ PetscErrorCode VecNorm_MPIHIP(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
 PetscErrorCode VecDot_MPIHIP(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -95,7 +92,6 @@ PetscErrorCode VecDot_MPIHIP(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
 PetscErrorCode VecTDot_MPIHIP(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -108,7 +104,6 @@ PetscErrorCode VecTDot_MPIHIP(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
 PetscErrorCode VecMDot_MPIHIP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
   PetscScalar    awork[128],*work = awork;
@@ -137,7 +132,6 @@ PetscErrorCode VecMDot_MPIHIP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI(), VecSetPinnedMemoryMin()
 M*/
 
-PETSC_INTERN
 PetscErrorCode VecDuplicate_MPIHIP(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
@@ -180,7 +174,6 @@ PetscErrorCode VecDuplicate_MPIHIP(Vec win,Vec *v)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
 PetscErrorCode VecDotNorm2_MPIHIP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 {
   PetscErrorCode ierr;
@@ -194,7 +187,6 @@ PetscErrorCode VecDotNorm2_MPIHIP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
 PetscErrorCode VecCreate_MPIHIP(Vec vv)
 {
   PetscErrorCode ierr;
@@ -211,7 +203,6 @@ PetscErrorCode VecCreate_MPIHIP(Vec vv)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
 PetscErrorCode VecCreate_HIP(Vec v)
 {
   PetscErrorCode ierr;
@@ -260,7 +251,6 @@ PetscErrorCode VecCreate_HIP(Vec v)
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/
-PETSC_EXTERN
 PetscErrorCode  VecCreateMPIHIPWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
@@ -268,7 +258,6 @@ PetscErrorCode  VecCreateMPIHIPWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Pe
   PetscFunctionBegin;
   if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
   ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
@@ -311,7 +300,6 @@ PetscErrorCode  VecCreateMPIHIPWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Pe
           VecCreateMPI(), VecCreateGhostWithArray(), VecHIPPlaceArray(), VecPlaceArray(),
           VecHIPAllocateCheckHost()
 @*/
-PETSC_EXTERN
 PetscErrorCode  VecCreateMPIHIPWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar cpuarray[],const PetscScalar gpuarray[],Vec *vv)
 {
   PetscErrorCode ierr;
@@ -336,7 +324,51 @@ PetscErrorCode  VecCreateMPIHIPWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,P
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
+PetscErrorCode VecMax_MPIHIP(Vec xin,PetscInt *idx,PetscReal *z)
+{
+  PetscErrorCode ierr;
+  PetscReal      work;
+
+  PetscFunctionBegin;
+  ierr = VecMax_SeqHIP(xin,idx,&work);CHKERRQ(ierr);
+  if (!idx) {
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+  } else {
+    PetscReal work2[2],z2[2];
+    PetscInt  rstart;
+    rstart   = xin->map->rstart;
+    work2[0] = work;
+    work2[1] = *idx + rstart;
+    ierr     = MPIU_Allreduce(work2,z2,2,MPIU_REAL,MPIU_MAXINDEX_OP,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    *z       = z2[0];
+    *idx     = (PetscInt)z2[1];
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecMin_MPIHIP(Vec xin,PetscInt *idx,PetscReal *z)
+{
+  PetscErrorCode ierr;
+  PetscReal      work;
+
+  PetscFunctionBegin;
+  ierr = VecMin_SeqHIP(xin,idx,&work);CHKERRQ(ierr);
+  if (!idx) {
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+  } else {
+    PetscReal work2[2],z2[2];
+    PetscInt  rstart;
+
+    ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
+    work2[0] = work;
+    work2[1] = *idx + rstart;
+    ierr = MPIU_Allreduce(work2,z2,2,MPIU_REAL,MPIU_MININDEX_OP,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    *z   = z2[0];
+    *idx = (PetscInt)z2[1];
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecBindToCPU_MPIHIP(Vec V,PetscBool pin)
 {
   PetscErrorCode ierr;
@@ -376,6 +408,9 @@ PetscErrorCode VecBindToCPU_MPIHIP(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = NULL;
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
+    V->ops->max                    = VecMax_MPI;
+    V->ops->min                    = VecMin_MPI;
+    V->ops->reciprocal             = VecReciprocal_Default;
   } else {
     V->ops->dotnorm2               = VecDotNorm2_MPIHIP;
     V->ops->waxpy                  = VecWAXPY_SeqHIP;
@@ -411,13 +446,15 @@ PetscErrorCode VecBindToCPU_MPIHIP(Vec V,PetscBool pin)
     V->ops->getarraywrite          = VecGetArrayWrite_SeqHIP;
     V->ops->getarray               = VecGetArray_SeqHIP;
     V->ops->restorearray           = VecRestoreArray_SeqHIP;
-    V->ops->getarrayandmemtype        = VecGetArrayAndMemType_SeqHIP;
-    V->ops->restorearrayandmemtype    = VecRestoreArrayAndMemType_SeqHIP;
+    V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqHIP;
+    V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqHIP;
+    V->ops->max                    = VecMax_MPIHIP;
+    V->ops->min                    = VecMin_MPIHIP;
+    V->ops->reciprocal             = VecReciprocal_SeqHIP;
   }
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN
 PetscErrorCode VecCreate_MPIHIP_Private(Vec vv,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
 {
   PetscErrorCode ierr;
@@ -443,11 +480,8 @@ PetscErrorCode VecCreate_MPIHIP_Private(Vec vv,PetscBool alloc,PetscInt nghost,c
       PetscReal pinned_memory_min;
       PetscBool flag;
       /* Cannot use PetscNew() here because spptr is void* */
-      ierr = PetscMalloc(sizeof(Vec_HIP),&vv->spptr);CHKERRQ(ierr);
+      ierr = PetscCalloc(sizeof(Vec_HIP),&vv->spptr);CHKERRQ(ierr);
       vechip = (Vec_HIP*)vv->spptr;
-      vechip->stream = 0; /* using default stream */
-      vechip->GPUarray_allocated = 0;
-      vv->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
       vv->minimum_bytes_pinned_memory = 0;
 
       /* Need to parse command line for minimum size to use for pinned memory allocations on host here.
@@ -460,6 +494,7 @@ PetscErrorCode VecCreate_MPIHIP_Private(Vec vv,PetscBool alloc,PetscInt nghost,c
     }
     vechip = (Vec_HIP*)vv->spptr;
     vechip->GPUarray = (PetscScalar*)array;
+    vv->offloadmask = PETSC_OFFLOAD_GPU;
   }
   PetscFunctionReturn(0);
 }

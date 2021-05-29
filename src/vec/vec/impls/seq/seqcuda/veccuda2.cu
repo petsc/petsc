@@ -66,12 +66,12 @@ PetscErrorCode VecCUDACopyToGPU(Vec v)
   PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
   if (v->offloadmask == PETSC_OFFLOAD_CPU) {
-    ierr               = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
-    veccuda            = (Vec_CUDA*)v->spptr;
-    varray             = veccuda->GPUarray;
-    err                = cudaMemcpy(varray,((Vec_Seq*)v->data)->array,v->map->n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(err);
-    ierr               = PetscLogCpuToGpu((v->map->n)*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr               = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
+    ierr           = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
+    veccuda        = (Vec_CUDA*)v->spptr;
+    varray         = veccuda->GPUarray;
+    err            = cudaMemcpy(varray,((Vec_Seq*)v->data)->array,v->map->n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(err);
+    ierr           = PetscLogCpuToGpu((v->map->n)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr           = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->offloadmask = PETSC_OFFLOAD_BOTH;
   }
   PetscFunctionReturn(0);
@@ -91,13 +91,13 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
   PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->offloadmask == PETSC_OFFLOAD_GPU) {
-    ierr               = PetscLogEventBegin(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
-    veccuda            = (Vec_CUDA*)v->spptr;
-    varray             = veccuda->GPUarray;
-    err                = cudaMemcpy(((Vec_Seq*)v->data)->array,varray,v->map->n*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
-    ierr               = PetscLogGpuToCpu((v->map->n)*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr               = PetscLogEventEnd(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
-    v->offloadmask     = PETSC_OFFLOAD_BOTH;
+    ierr           = PetscLogEventBegin(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
+    veccuda        = (Vec_CUDA*)v->spptr;
+    varray         = veccuda->GPUarray;
+    err            = cudaMemcpy(((Vec_Seq*)v->data)->array,varray,v->map->n*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(err);
+    ierr           = PetscLogGpuToCpu((v->map->n)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr           = PetscLogEventEnd(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
+    v->offloadmask = PETSC_OFFLOAD_BOTH;
   }
   PetscFunctionReturn(0);
 }
@@ -550,7 +550,6 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
         cberr = cublasXdot(cublasv2handle,bn,y3ptr,one,xptr,one,&z[current_y_index+3]);CHKERRCUBLAS(cberr);
 #else
         VecMDot_SeqCUDA_kernel4<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,y3ptr,n,group_results_gpu+current_y_index*MDOT_WORKGROUP_NUM);
-
 #endif
         ierr = VecCUDARestoreArrayRead(yin[current_y_index  ],&y0ptr);CHKERRQ(ierr);
         ierr = VecCUDARestoreArrayRead(yin[current_y_index+1],&y1ptr);CHKERRQ(ierr);
@@ -687,7 +686,7 @@ PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
 struct PetscScalarReciprocal
 {
   __host__ __device__
-  PetscScalar operator()(PetscScalar s)
+  PetscScalar operator()(const PetscScalar& s)
   {
     return (s != (PetscScalar)0.0) ? (PetscScalar)1.0/s : 0.0;
   }
@@ -695,7 +694,6 @@ struct PetscScalarReciprocal
 
 PetscErrorCode VecReciprocal_SeqCUDA(Vec v)
 {
-  cudaError_t    cerr;
   PetscErrorCode ierr;
   PetscInt       n;
   PetscScalar    *x;
@@ -710,7 +708,6 @@ PetscErrorCode VecReciprocal_SeqCUDA(Vec v)
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1044,7 +1041,7 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
 struct conjugate
 {
   __host__ __device__
-    PetscScalar operator()(PetscScalar x)
+    PetscScalar operator()(const PetscScalar& x)
     {
       return PetscConj(x);
     }
@@ -1058,7 +1055,6 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
   PetscErrorCode                  ierr;
   PetscInt                        n = xin->map->n;
   thrust::device_ptr<PetscScalar> xptr;
-  cudaError_t                     err;
 
   PetscFunctionBegin;
   ierr = VecCUDAGetArray(xin,&xarray);CHKERRQ(ierr);
@@ -1164,7 +1160,7 @@ PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
 struct petscrealpart : public thrust::unary_function<PetscScalar,PetscReal>
 {
   __host__ __device__
-  PetscReal operator()(PetscScalar x) {
+  PetscReal operator()(const PetscScalar& x) {
     return PetscRealPart(x);
   }
 };
@@ -1172,7 +1168,7 @@ struct petscrealpart : public thrust::unary_function<PetscScalar,PetscReal>
 struct petscrealparti : public thrust::unary_function<thrust::tuple<PetscScalar, PetscInt>,thrust::tuple<PetscReal, PetscInt>>
 {
   __host__ __device__
-  thrust::tuple<PetscReal, PetscInt> operator()(thrust::tuple<PetscScalar, PetscInt> x) {
+  thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscScalar, PetscInt>& x) {
     return thrust::make_tuple(PetscRealPart(x.get<0>()), x.get<1>());
   }
 };
@@ -1180,7 +1176,7 @@ struct petscrealparti : public thrust::unary_function<thrust::tuple<PetscScalar,
 struct petscmax : public thrust::binary_function<PetscReal,PetscReal,PetscReal>
 {
   __host__ __device__
-  PetscReal operator()(PetscReal x, PetscReal y) {
+  PetscReal operator()(const PetscReal& x, const PetscReal& y) {
     return x < y ? y : x;
   }
 };
@@ -1188,7 +1184,7 @@ struct petscmax : public thrust::binary_function<PetscReal,PetscReal,PetscReal>
 struct petscmaxi : public thrust::binary_function<thrust::tuple<PetscReal, PetscInt>,thrust::tuple<PetscReal, PetscInt>,thrust::tuple<PetscReal, PetscInt>>
 {
   __host__ __device__
-  thrust::tuple<PetscReal, PetscInt> operator()(thrust::tuple<PetscReal, PetscInt> x, thrust::tuple<PetscReal, PetscInt> y) {
+  thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscReal, PetscInt>& x, const thrust::tuple<PetscReal, PetscInt>& y) {
     return x.get<0>() < y.get<0>() ? thrust::make_tuple(y.get<0>(), y.get<1>()) :
            (x.get<0>() != y.get<0>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) :
            (x.get<1>() < y.get<1>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) : thrust::make_tuple(y.get<0>(), y.get<1>())));
@@ -1198,7 +1194,7 @@ struct petscmaxi : public thrust::binary_function<thrust::tuple<PetscReal, Petsc
 struct petscmin : public thrust::binary_function<PetscReal,PetscReal,PetscReal>
 {
   __host__ __device__
-  PetscReal operator()(PetscReal x, PetscReal y) {
+  PetscReal operator()(const PetscReal& x, const PetscReal& y) {
     return x < y ? x : y;
   }
 };
@@ -1206,7 +1202,7 @@ struct petscmin : public thrust::binary_function<PetscReal,PetscReal,PetscReal>
 struct petscmini : public thrust::binary_function<thrust::tuple<PetscReal, PetscInt>,thrust::tuple<PetscReal, PetscInt>,thrust::tuple<PetscReal, PetscInt>>
 {
   __host__ __device__
-  thrust::tuple<PetscReal, PetscInt> operator()(thrust::tuple<PetscReal, PetscInt> x, thrust::tuple<PetscReal, PetscInt> y) {
+  thrust::tuple<PetscReal, PetscInt> operator()(const thrust::tuple<PetscReal, PetscInt>& x, const thrust::tuple<PetscReal, PetscInt>& y) {
     return x.get<0>() > y.get<0>() ? thrust::make_tuple(y.get<0>(), y.get<1>()) :
            (x.get<0>() != y.get<0>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) :
            (x.get<1>() < y.get<1>() ? thrust::make_tuple(x.get<0>(), x.get<1>()) : thrust::make_tuple(y.get<0>(), y.get<1>())));

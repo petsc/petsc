@@ -345,6 +345,7 @@ prepend-path PATH "%s"
     if hasattr(self.compilers, 'HIPC'):
       self.setCompilers.pushLanguage('HIP')
       self.addMakeMacro('HIPC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('HIPPP_FLAGS',self.setCompilers.HIPPPFLAGS)
       self.setCompilers.popLanguage()
 
     if hasattr(self.compilers, 'SYCLCXX'):

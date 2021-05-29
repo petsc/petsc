@@ -2,6 +2,9 @@
 #include <hip/hip_runtime.h>
 #include <petschipblas.h> /* For CHKERRHIP */
 
+/* compilation issues on SPOCK */
+#undef PETSC_HAVE_COMPLEX
+
 /* Map a thread id to an index in root/leaf space through a series of 3D subdomains. See PetscSFPackOpt. */
 __device__ static inline PetscInt MapTidToIndex(const PetscInt *opt,PetscInt tid)
 {
@@ -20,6 +23,7 @@ __device__ static inline PetscInt MapTidToIndex(const PetscInt *opt,PetscInt tid
   k = m/(dx[r]*dy[r]);
   j = (m - k*dx[r]*dy[r])/dx[r];
   i = m - k*dx[r]*dy[r] - j*dx[r];
+
   return (start[r] + k*X[r]*Y[r] + j*X[r] + i);
 }
 
@@ -283,9 +287,9 @@ __device__ static llint atomicMult(llint* address,llint val)
   ullint old = *address_as_ull, assumed;
   do {
     assumed = old;
-    old     = atomicCAS(address_as_ull, assumed, (ullint)(val*(PetscInt)assumed));
+    old     = atomicCAS(address_as_ull, assumed, (ullint)(val*(llint)assumed));
   } while (assumed != old);
-  return (PetscInt)old;
+  return (llint)old;
 }
 
 template<typename Type> struct AtomicMult {__device__ Type operator() (Type& x,Type y) const {return atomicMult(&x,y);}};
@@ -479,7 +483,7 @@ static PetscErrorCode Pack(PetscSFLink link,PetscInt count,PetscInt start,PetscS
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,const void *buf)
 {
-  hipError_t        cerr;
+  hipError_t         cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   const PetscInt     *iarray=opt ? opt->array : NULL;
@@ -495,15 +499,15 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link,PetscInt count,PetscInt start
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,PetscSFPackOpt opt,const PetscInt *idx,void *data,void *buf)
 {
-  hipError_t        cerr;
+  hipError_t         cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
-/*  const PetscInt     *iarray=opt ? opt->array : NULL; */
+  const PetscInt     *iarray=opt ? opt->array : NULL;
 
   PetscFunctionBegin;
   if (!count) PetscFunctionReturn(0);
   nblocks = PetscMin(nblocks,link->maxResidentThreadsPerGPU/nthreads);
-/*  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_FetchAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(Type*)data,(Type*)buf); */
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_FetchAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,start,iarray,idx,(Type*)data,(Type*)buf);
   cerr = hipGetLastError();CHKERRHIP(cerr);
   PetscFunctionReturn(0);
 }
@@ -511,7 +515,7 @@ static PetscErrorCode FetchAndOp(PetscSFLink link,PetscInt count,PetscInt start,
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcStart,PetscSFPackOpt srcOpt,const PetscInt *srcIdx,const void *src,PetscInt dstStart,PetscSFPackOpt dstOpt,const PetscInt *dstIdx,void *dst)
 {
-  hipError_t        cerr;
+  hipError_t         cerr;
   PetscInt           nthreads=256;
   PetscInt           nblocks=(count+nthreads-1)/nthreads;
   PetscInt           srcx=0,srcy=0,srcX=0,srcY=0,dstx=0,dsty=0,dstX=0,dstY=0;
@@ -527,7 +531,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link,PetscInt count,PetscInt srcS
   if (dstOpt)       {dstx = dstOpt->dx[0]; dsty = dstOpt->dy[0]; dstX = dstOpt->X[0]; dstY = dstOpt->Y[0]; dstStart = dstOpt->start[0]; dstIdx = NULL;}
   else if (!dstIdx) {dstx = dstX = count; dsty = dstY = 1;}
 
-/*  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_ScatterAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,srcx,srcy,srcX,srcY,srcStart,srcIdx,(const Type*)src,dstx,dsty,dstX,dstY,dstStart,dstIdx,(Type*)dst); */
+  hipLaunchKernelGGL(HIP_KERNEL_NAME(d_ScatterAndOp<Type,Op,BS,EQ>), dim3(nblocks), dim3(nthreads), 0, link->stream, link->bs,count,srcx,srcy,srcX,srcY,srcStart,srcIdx,(const Type*)src,dstx,dsty,dstX,dstY,dstStart,dstIdx,(Type*)dst);
   cerr = hipGetLastError();CHKERRHIP(cerr);
   PetscFunctionReturn(0);
 }
@@ -553,7 +557,7 @@ static PetscErrorCode ScatterAndInsert(PetscSFLink link,PetscInt count,PetscInt 
 template<typename Type,class Op,PetscInt BS,PetscInt EQ>
 static PetscErrorCode FetchAndOpLocal(PetscSFLink link,PetscInt count,PetscInt rootstart,PetscSFPackOpt rootopt,const PetscInt *rootidx,void *rootdata,PetscInt leafstart,PetscSFPackOpt leafopt,const PetscInt *leafidx,const void *leafdata,void *leafupdate)
 {
-  hipError_t       cerr;
+  hipError_t        cerr;
   PetscInt          nthreads=256;
   PetscInt          nblocks=(count+nthreads-1)/nthreads;
   const PetscInt    *rarray = rootopt ? rootopt->array : NULL;
@@ -763,19 +767,18 @@ static PetscErrorCode PetscSFLinkMemcpy_HIP(PetscSFLink link,PetscMemType dstmty
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,void** ptr)
+PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,void** ptr)
 {
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
   else if (PetscMemTypeDevice(mtype)) {
     if (!PetscHIPInitialized) { PetscErrorCode ierr = PetscHIPInitializeCheck();CHKERRQ(ierr); }
     hipError_t err = hipMalloc(ptr,size);CHKERRHIP(err);
-  }
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType mtype,void* ptr)
+PetscErrorCode PetscSFFree_HIP(PetscMemType mtype,void* ptr)
 {
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
@@ -802,7 +805,7 @@ static PetscErrorCode PetscSFLinkDestroy_MPI_HIP(PetscSF sf,PetscSFLink link)
 /*====================================================================================*/
 
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
-PETSC_INTERN PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
+PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
   hipError_t     cerr;

@@ -177,5 +177,9 @@ int main(int argc,char **argv)
         requires: kokkos_kernels
         args: -vec_type kokkos
         suffix: kokkos
+      test:
+        requires: hip
+        args: -vec_type hip
+        suffix: hip
 
 TEST*/

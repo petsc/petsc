@@ -83,4 +83,8 @@ int main(int argc, char **argv)
          args: -vec_type kokkos
          requires: kokkos_kernels
 
+      test:
+         suffix: hip
+         args: -vec_type hip
+         requires: hip
 TEST*/
