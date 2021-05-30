@@ -1944,8 +1944,9 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
             ierr = PetscSectionGetFieldDof(s[i], p, fi, &fdof);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldConstraintDof(s[i], p, fi, &cfdof);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldConstraintIndices(s[i], p, fi, &oldIndices);CHKERRQ(ierr);
-            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc] + fOff;
+            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc];
             ierr = PetscSectionSetFieldConstraintIndices(*supers, p, f, &indices[numConst]);CHKERRQ(ierr);
+            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] += fOff;
             numConst += cfdof;
           }
           ierr = PetscSectionGetDof(s[i], p, &dof);CHKERRQ(ierr);
