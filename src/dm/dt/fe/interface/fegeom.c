@@ -31,6 +31,7 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   g->numPoints = Nq;
   g->dim       = dim;
   g->dimEmbed  = dimEmbed;
+  g->isHybrid  = PETSC_FALSE;
   N = numCells * Nq;
   ierr = PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ);CHKERRQ(ierr);
   if (faceData) {
@@ -210,7 +211,7 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
 @*/
 PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom)
 {
-  const PetscBool bd  = geom->dimEmbed > geom->dim ? PETSC_TRUE : PETSC_FALSE;
+  const PetscBool bd  = geom->dimEmbed > geom->dim && !geom->isHybrid ? PETSC_TRUE : PETSC_FALSE;
   const PetscInt  dim = bd ? geom->dimEmbed : geom->dim;
   const PetscInt  dE  = geom->dimEmbed;
   const PetscInt  Np  = geom->numPoints;
