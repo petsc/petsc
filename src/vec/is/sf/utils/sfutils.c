@@ -121,6 +121,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
       if ((c < cdof) && (cind[c] == d)) {++c; continue;}
       local[l+d-c] = off+d;
     }
+    if (d-c != gsize) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Point %D: Global dof %D != %D size - number of constraints", p, gsize, d-c);
     if (gdof < 0) {
       for (d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;

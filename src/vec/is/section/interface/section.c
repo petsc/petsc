@@ -2413,6 +2413,13 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (s->bc) {
+    const PetscInt dof  = s->atlasDof[point];
+    const PetscInt cdof = s->bc->atlasDof[point];
+    PetscInt       d;
+
+    for (d = 0; d < cdof; ++d) {
+      if (indices[d] >= dof) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D dof %D, invalid constraint index[%D]: %D", point, dof, d, indices[d]);
+    }
     ierr = VecIntSetValuesSection(s->bcIndices, s->bc, point, indices, INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -3187,6 +3187,16 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
   PetscValidLogicalCollectiveInt(ds, Nv, 5);
   PetscValidLogicalCollectiveInt(ds, field, 7);
   PetscValidLogicalCollectiveInt(ds, Nc, 8);
+  if (Nc > 0) {
+    PetscInt *fcomps;
+    PetscInt  c;
+
+    ierr = PetscDSGetComponents(ds, &fcomps);CHKERRQ(ierr);
+    if (Nc > fcomps[field]) SETERRQ3(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Number of constrained components %D > %D components for field %D", Nc, fcomps[field], field);
+    for (c = 0; c < Nc; ++c) {
+      if (comps[c] < 0 || comps[c] >= fcomps[field]) SETERRQ4(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_OUTOFRANGE, "Constrained component[%D] %D not in [0, %D) components for field %D", c, comps[c], fcomps[field], field);
+    }
+  }
   ierr = PetscNew(&b);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
   ierr = PetscWeakFormCreate(PETSC_COMM_SELF, &b->wf);CHKERRQ(ierr);
