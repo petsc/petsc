@@ -586,13 +586,13 @@ simplehtml: chk_c2html
 html: chk_c2html
 	-@sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > /tmp/$$USER.htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> /tmp/$$USER.htmlmap
-	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+        -@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
           for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB}  foo ; do\
-	    if [ -f $$i ]; then \
-	      idir=`dirname $$i`;\
-	      if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
+            if [ -f $$i ]; then \
+              idir=`dirname $$i`;\
+              if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
               iroot=`echo $$i | sed -e "s?[a-z.]*/??g"`;\
               IROOT=`echo $${i} | sed -e s?[.][.]??g` ;\
               if [ "$${IROOT}" != "$${i}" ] ; then \
@@ -606,38 +606,38 @@ html: chk_c2html
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
-	    fi; \
-         done
+            fi; \
+          done
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
           cat ${PETSC_DIR}/src/docs/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
           echo "<p>" >> $${loc}/index.html
 	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
-            if [ "${EXAMPLESC}" != "" ] ; then \
-               for file in ${EXAMPLESC} foo ; do \
-		if [ -f $$file ]; then \
-                   cmess=`grep "static\( const\)\? char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
-                   echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
-                   ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/latexinexamples.py $${loc}/$${file}.html;\
-		fi; \
-               done ;\
-            else \
-               for file in ${DIRS} foo; do \
-		 if [ -d $$file ]; then \
-                   echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
-		 fi; \
-               done; \
-               echo " " >> $${loc}/index.html; \
-               for file in ${SOURCEALL} foo ; do \
-		 if [ -f $$file ]; then \
-                   echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
-		 fi; \
-               done; \
-            fi ;\
+          if [ "${EXAMPLESC}" != "" ] ; then \
+            for file in ${EXAMPLESC} foo ; do \
+              if [ -f $$file ]; then \
+                cmess=`grep "static\( const\)\? char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
+                echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
+                ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/latexinexamples.py $${loc}/$${file}.html;\
+              fi; \
+            done ;\
+          else \
+            for file in ${DIRS} foo; do \
+              if [ -d $$file ]; then \
+                echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
+              fi; \
+            done; \
             echo " " >> $${loc}/index.html; \
-            echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
+            for file in ${SOURCEALL} foo ; do \
+              if [ -f $$file ]; then \
+                echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
+              fi; \
+            done; \
+          fi ;\
+          echo " " >> $${loc}/index.html; \
+          echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
 	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
-	   cat makefile | ${C2HTML}  | ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
+          cat makefile | ${C2HTML}  | ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
 	-@${RM} /tmp/$$USER.htmlmap
 
 cleanhtml:
