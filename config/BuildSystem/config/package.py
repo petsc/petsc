@@ -598,7 +598,7 @@ class Package(config.base.Configure):
     1) load the appropriate module on your system and use --with-'+self.name+' or \n\
     2) locate its installation on your machine or install it yourself and use --with-'+self.name+'-dir=path\n')
 
-    if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse' and not hasattr(self,'postProcess') and not self.builtafterpetsc: # package already built in prefix hash location so reuse it
+    if self.argDB['download-'+self.package] and 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse' and not hasattr(self,'postProcess') and not self.builtafterpetsc: # package already built in prefix hash location so reuse it
       self.installDir = self.defaultInstallDir
       return self.defaultInstallDir
     if self.argDB['download-'+self.package]:
