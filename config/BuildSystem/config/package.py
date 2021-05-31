@@ -902,6 +902,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     foundHeader  = 0
 
     for location, directory, lib, incl in self.generateGuesses():
+      #  directory is not used in the search, it is used only in logging messages about where the
+      #  searching is taking place. It has to already be embedded inside the lib argument
       if self.builtafterpetsc:
         self.found = 1
         return
