@@ -1633,15 +1633,18 @@ class GNUPackage(Package):
         raise RuntimeError('libtoolize required for ' + self.PACKAGE+' not found! Use your package manager to install libtool')
       try:
         self.logPrintBox('Running libtoolize on ' +self.PACKAGE+'; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand(self.programs.libtoolize, cwd=self.packageDir, timeout=100, log=self.log)
+        output,err,ret  = config.base.Configure.executeShellCommand([self.programs.libtoolize, '--install'], cwd=self.packageDir, timeout=100, log=self.log)
         if ret:
-          raise RuntimeError('Error in libtoolize: ' + str(e))
+          raise RuntimeError('Error in libtoolize: ' + output+err)
+      except RuntimeError as e:
+        raise RuntimeError('Error running libtoolize on ' + self.PACKAGE+': '+str(e))
+      try:
         self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand([self.programs.autoreconf, '--force', '--install'], cwd=self.packageDir, timeout=200, log = self.log)
         if ret:
-          raise RuntimeError('Error in autoreconf: ' + str(e))
+          raise RuntimeError('Error in autoreconf: ' + output+err)
       except RuntimeError as e:
-        raise RuntimeError('Error running libtoolize or autoreconf on ' + self.PACKAGE+': '+str(e))
+        raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
 
 
   def Install(self):
