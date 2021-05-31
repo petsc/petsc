@@ -20,6 +20,8 @@ Changes: Development
 .. rubric:: Sys:
 -  Add GPU event timers to capture kernel execution time accurately.
 -  Remove ``WaitForCUDA()`` and ``WaitForHIP()`` before ``PetscLogGpuTimeEnd()``
+-  Add MPIU_REAL_INT and MPIU_SCALAR_INT datatypes to be used for reduction operations
+-  Add MPIU_MAXLOC and MPIU_MINLOC operations
 
 .. rubric:: PetscViewer:
 

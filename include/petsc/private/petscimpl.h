@@ -873,17 +873,19 @@ typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 typedef enum {PETSC_SR_REDUCE_SUM=0,PETSC_SR_REDUCE_MAX=1,PETSC_SR_REDUCE_MIN=2} PetscSRReductionType;
 
 typedef struct {
-  MPI_Comm    comm;
-  MPI_Request request;
-  PetscBool   async;
-  PetscScalar *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
-  PetscScalar *gvalues;     /* values after call to MPI_Allreduce() */
-  void        **invecs;     /* for debugging only, vector/memory used with each op */
-  PetscInt    *reducetype;  /* is particular value to be summed or maxed? */
-  SRState     state;        /* are we calling xxxBegin() or xxxEnd()? */
-  PetscInt    maxops;       /* total amount of space we have for requests */
-  PetscInt    numopsbegin;  /* number of requests that have been queued in */
-  PetscInt    numopsend;    /* number of requests that have been gotten by user */
+  MPI_Comm       comm;
+  MPI_Request    request;
+  PetscBool      mix;
+  PetscBool      async;
+  PetscScalar    *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
+  PetscScalar    *gvalues;     /* values after call to MPI_Allreduce() */
+  void           **invecs;     /* for debugging only, vector/memory used with each op */
+  PetscInt       *reducetype;  /* is particular value to be summed or maxed? */
+  struct { PetscScalar v; PetscInt i; } *lvalues_mix,*gvalues_mix; /* used when mixing reduce operations */
+  SRState        state;        /* are we calling xxxBegin() or xxxEnd()? */
+  PetscInt       maxops;       /* total amount of space we have for requests */
+  PetscInt       numopsbegin;  /* number of requests that have been queued in */
+  PetscInt       numopsend;    /* number of requests that have been gotten by user */
 } PetscSplitReduction;
 
 PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction**);

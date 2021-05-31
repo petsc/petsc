@@ -180,7 +180,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  index - the location where the maximum occurred  (pass NULL if not required)
++  idex - the location where the maximum occurred  (pass NULL if not required)
 -  nrm - the maximum value in the subvector
 
    Notes:
@@ -204,7 +204,6 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   PetscInt          i,n,bs,id;
   const PetscScalar *x;
   PetscReal         max,tmp;
-  MPI_Comm          comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
@@ -212,7 +211,6 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
@@ -231,17 +229,17 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr = MPIU_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
+    ierr = MPIU_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
   } else {
-    PetscReal in[2],out[2];
-    PetscInt  rstart;
+    struct { PetscReal v; PetscInt i; } in,out;
+    PetscInt rstart;
 
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
-    in[0] = max;
-    in[1] = rstart+id+start;
-    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,MPIU_MAXINDEX_OP,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
-    *nrm  = out[0];
-    *idex = (PetscInt)out[1];
+    in.v  = max;
+    in.i  = rstart+id+start;
+    ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MAXLOC,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
+    *nrm  = out.v;
+    *idex = out.i;
   }
   PetscFunctionReturn(0);
 }
@@ -310,15 +308,15 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   if (!idex) {
     ierr = MPIU_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
   } else {
-    PetscReal in[2],out[2];
-    PetscInt  rstart;
+    struct { PetscReal v; PetscInt i; } in,out;
+    PetscInt rstart;
 
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
-    in[0] = min;
-    in[1] = rstart+id;
-    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,MPIU_MININDEX_OP,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
-    *nrm  = out[0];
-    *idex = (PetscInt)out[1];
+    in.v  = min;
+    in.i  = rstart+id+start;
+    ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MINLOC,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
+    *nrm  = out.v;
+    *idex = out.i;
   }
   PetscFunctionReturn(0);
 }
