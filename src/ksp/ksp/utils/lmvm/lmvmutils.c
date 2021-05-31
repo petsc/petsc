@@ -675,10 +675,7 @@ PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
       ierr = VecDestroy(&X);CHKERRQ(ierr);
       ierr = VecDestroy(&F);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "QN history size must be a positive integer.");
-  }
-
+  } else if (hist_size < 0) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "QN history size must be a non-negative integer.");
   PetscFunctionReturn(0);
 }
 
