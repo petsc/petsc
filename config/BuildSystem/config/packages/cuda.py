@@ -175,9 +175,11 @@ class Configure(config.package.Package):
                     #include <cuda_runtime.h>\n\
                     #include <cuda_runtime_api.h>\n\
                     #include <cuda_device_runtime_api.h>'
-        body = 'cudaDeviceProp dp;\
-                cudaGetDeviceProperties(&dp, 0);\
-                printf("%d\\n",10*dp.major+dp.minor);\
+        body = 'int cerr;\
+                cudaDeviceProp dp;\
+                cerr = cudaGetDeviceProperties(&dp, 0);\
+                if (cerr) printf("Error calling cudaGetDeviceProperties\\n");\
+                else printf("%d\\n",10*dp.major+dp.minor);\
                 return(0);'
         self.pushLanguage('CUDA')
         try:
