@@ -366,7 +366,7 @@ Hessenberg Index-2 DAE
           0 &= h(t, u)
   \end{aligned}
 
-Notice that the constraint equation :math:`h` is not a function of the constraint variable :math:'z'. This means that we cannot naively invert as we did in the index-1 case. Our strategy will be to convert this into an index-1 DAE using a time derivative, which loosely corresponds to the idea of index being the number of derivatives necessary to get back to an ODE. If we differentiate the constraint equation with respect to time, we can use the ODE to simplify it,
+Notice that the constraint equation :math:`h` is not a function of the constraint variable :math:`z`. This means that we cannot naively invert as we did in the index-1 case. Our strategy will be to convert this into an index-1 DAE using a time derivative, which loosely corresponds to the idea of an index being the number of derivatives necessary to get back to an ODE. If we differentiate the constraint equation with respect to time, we can use the ODE to simplify it,
 
 .. math::
 
