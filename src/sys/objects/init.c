@@ -95,6 +95,8 @@ MPI_Datatype MPIU___FLOAT128 = 0;
 MPI_Datatype MPIU___FP16 = 0;
 #endif
 MPI_Datatype MPIU_2SCALAR = 0;
+MPI_Datatype MPIU_REAL_INT = 0;
+MPI_Datatype MPIU_SCALAR_INT = 0;
 #if defined(PETSC_USE_64BIT_INDICES)
 MPI_Datatype MPIU_2INT = 0;
 #endif

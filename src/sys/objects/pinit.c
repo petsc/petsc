@@ -231,7 +231,7 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
 #if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 MPI_Op MPIU_SUM = 0;
 
-PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN void MPIAPI PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt i,count = *cnt;
 
@@ -258,7 +258,7 @@ PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 MPI_Op MPIU_MAX = 0;
 MPI_Op MPIU_MIN = 0;
 
-PETSC_EXTERN void PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN void MPIAPI PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt i,count = *cnt;
 
@@ -282,7 +282,7 @@ PETSC_EXTERN void PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
   PetscFunctionReturnVoid();
 }
 
-PETSC_EXTERN void PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN void MPIAPI PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt    i,count = *cnt;
 
@@ -1008,6 +1008,32 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);CHKERRMPI(ierr);
   ierr = MPI_Type_commit(&MPIU_2SCALAR);CHKERRMPI(ierr);
 
+  /* create datatypes used by MPIU_MAXLOC, MPIU_MINLOC and PetscSplitReduction_Op */
+#if !defined(PETSC_HAVE_MPIUNI)
+  {
+    struct PetscRealInt { PetscReal v; PetscInt i; };
+    PetscMPIInt  blockSizes[2] = {1,1};
+    MPI_Aint     blockOffsets[2] = {offsetof(struct PetscRealInt,v),offsetof(struct PetscRealInt,i)};
+    MPI_Datatype blockTypes[2] = {MPIU_REAL,MPIU_INT}, tmpStruct;
+
+    ierr = MPI_Type_create_struct(2,blockSizes,blockOffsets,blockTypes,&tmpStruct);CHKERRMPI(ierr);
+    ierr = MPI_Type_create_resized(tmpStruct,0,sizeof(struct PetscRealInt),&MPIU_REAL_INT);CHKERRMPI(ierr);
+    ierr = MPI_Type_free(&tmpStruct);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&MPIU_REAL_INT);CHKERRMPI(ierr);
+  }
+  {
+    struct PetscScalarInt { PetscScalar v; PetscInt i; };
+    PetscMPIInt  blockSizes[2] = {1,1};
+    MPI_Aint     blockOffsets[2] = {offsetof(struct PetscScalarInt,v),offsetof(struct PetscScalarInt,i)};
+    MPI_Datatype blockTypes[2] = {MPIU_SCALAR,MPIU_INT}, tmpStruct;
+
+    ierr = MPI_Type_create_struct(2,blockSizes,blockOffsets,blockTypes,&tmpStruct);CHKERRMPI(ierr);
+    ierr = MPI_Type_create_resized(tmpStruct,0,sizeof(struct PetscScalarInt),&MPIU_SCALAR_INT);CHKERRMPI(ierr);
+    ierr = MPI_Type_free(&tmpStruct);CHKERRMPI(ierr);
+    ierr = MPI_Type_commit(&MPIU_SCALAR_INT);CHKERRMPI(ierr);
+  }
+#endif
+
 #if defined(PETSC_USE_64BIT_INDICES)
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRMPI(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRMPI(ierr);
@@ -1172,6 +1198,8 @@ PetscErrorCode  PetscFreeMPIResources(void)
 #endif
 
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRMPI(ierr);
+  ierr = MPI_Type_free(&MPIU_REAL_INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_free(&MPIU_SCALAR_INT);CHKERRMPI(ierr);
 #if defined(PETSC_USE_64BIT_INDICES)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRMPI(ierr);
 #endif
