@@ -2163,12 +2163,13 @@ PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, 
 PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, PetscInt r, PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscInt e, PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
 {
   PetscFEGeom      pgeom;
-  const PetscInt   dE       = T->cdim; /* fegeom->dimEmbed */
+  const PetscInt   dEt      = T->cdim;
+  const PetscInt   dE       = fegeom->dimEmbed;
   const PetscInt   Nq       = T->Np;
   const PetscInt   Nb       = T->Nb;
   const PetscInt   Nc       = T->Nc;
   const PetscReal *basis    = &T->T[0][r*Nq*Nb*Nc];
-  const PetscReal *basisDer = &T->T[1][r*Nq*Nb*Nc*dE];
+  const PetscReal *basisDer = &T->T[1][r*Nq*Nb*Nc*dEt];
   PetscInt         q, b, c, d;
   PetscErrorCode   ierr;
 
@@ -2179,7 +2180,7 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
         const PetscInt bcidx = b*Nc+c;
 
         tmpBasis[bcidx] = basis[q*Nb*Nc+bcidx];
-        for (d = 0; d < dE; ++d) tmpBasisDer[bcidx*dE+d] = basisDer[q*Nb*Nc*dE+bcidx*dE+d];
+        for (d = 0; d < dEt; ++d) tmpBasisDer[bcidx*dE+d] = basisDer[q*Nb*Nc*dEt+bcidx*dEt+d];
       }
     }
     ierr = PetscFEGeomGetCellPoint(fegeom, e, q, &pgeom);CHKERRQ(ierr);

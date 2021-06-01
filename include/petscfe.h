@@ -24,6 +24,7 @@ typedef struct _n_PetscFEGeom {
   PetscInt  numCells;     /* Nc:  Number of mesh points represented in the arrays */
   PetscInt  numPoints;    /* Np:  Number of evaluation points represented in the arrays */
   PetscBool isAffine;     /* Flag for affine transforms */
+  PetscBool isHybrid;     /* Flag for hybrid integration */
 } PetscFEGeom;
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);

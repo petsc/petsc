@@ -1944,8 +1944,9 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
             ierr = PetscSectionGetFieldDof(s[i], p, fi, &fdof);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldConstraintDof(s[i], p, fi, &cfdof);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldConstraintIndices(s[i], p, fi, &oldIndices);CHKERRQ(ierr);
-            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc] + fOff;
+            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc];
             ierr = PetscSectionSetFieldConstraintIndices(*supers, p, f, &indices[numConst]);CHKERRQ(ierr);
+            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] += fOff;
             numConst += cfdof;
           }
           ierr = PetscSectionGetDof(s[i], p, &dof);CHKERRQ(ierr);
@@ -2413,6 +2414,13 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (s->bc) {
+    const PetscInt dof  = s->atlasDof[point];
+    const PetscInt cdof = s->bc->atlasDof[point];
+    PetscInt       d;
+
+    for (d = 0; d < cdof; ++d) {
+      if (indices[d] >= dof) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D dof %D, invalid constraint index[%D]: %D", point, dof, d, indices[d]);
+    }
     ierr = VecIntSetValuesSection(s->bcIndices, s->bc, point, indices, INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
