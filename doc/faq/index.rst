@@ -1981,7 +1981,7 @@ correct number of processors. For example if you pass in a local size of 2 and a
 size of 100 and run on two processors, this cannot work since the sum of the local sizes
 is 4, not 100.
 
-What Does Corrupt Argument Or Caught Signal Or SEGV Or Segmentation Violation Or Bus Error Mean? Can I Use Valgrind To Debug Memory Corruption Issues?
+What Does Corrupt Argument Or Caught Signal Or SEGV Or Segmentation Violation Or Bus Error Mean? Can I Use Valgrind Or CUDA-Memcheck To Debug Memory Corruption Issues?
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Sometimes it can mean an argument to a function is invalid. In Fortran this may be caused
@@ -1993,6 +1993,9 @@ option ``-malloc_debug``. Occasionally the code may crash only with the optimize
 in that case run the optimized version with ``-malloc_debug``. If you determine the
 problem is from memory corruption you can put the macro CHKMEMQ in the code near the crash
 to determine exactly what line is causing the problem.
+
+
+If ``-malloc_debug`` does not help: on NVIDIA CUDA systems you can use https://docs.nvidia.com/cuda/cuda-memcheck/index.html
 
 If ``-malloc_debug`` does not help: on GNU/Linux and (supported) macOS machines - you can
 use `valgrind <http://valgrind.org>`__. Follow the below instructions:
