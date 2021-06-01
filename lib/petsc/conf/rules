@@ -57,6 +57,7 @@ clean-legacy:
 	@-${RM} ${CLEANFILES} ${TESTS} *.o *.lo *~ \
                ex[0-9] ex[0-9][0-9] ex[0-9][0-9][0-9] \
                ex[0-9]f ex[0-9][0-9]f ex[0-9][0-9][0-9]f \
+               ex[0-9]k ex[0-9][0-9]k ex[0-9][0-9][0-9]k \
                ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9][0-9][0-9]f90 \
                ex[0-9]cu ex[0-9][0-9]cu ex[0-9][0-9][0-9]cu \
                ex[0-9].exe ex[0-9][0-9].exe ex[0-9][0-9][0-9].exe \
@@ -125,7 +126,7 @@ tree: ${ACTION}
             ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} PRINT_PROGRESS=${PRINT_PROGRESS});\
 	  done
 
-printdot: 
+printdot:
 	-@if [ ${PRINT_PROGRESS}foo = dotfoo ] ; then printf "."; fi;
 
 # Performs the specified action throughout the directory tree
@@ -565,7 +566,7 @@ getexlist:
 	-@${RM} -f logfile.txt
 #
 #   Rules for generating html code from C and Fortran
-#	
+#
 checkmakefilelist:
 	-@ls makefile ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
 	ls makefile *.{c,cxx,cu,F,F90,h,h90,m} 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
@@ -829,7 +830,7 @@ checkbadURLS:
         done
 
 checkbadSpelling:
-	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ; 
+	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ;
 
 sourcelist:
 	-@for i in ${SOURCEALL}; do \
