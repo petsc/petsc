@@ -1,6 +1,4 @@
-#include <petsc/private/viewerimpl.h>
-#include <petsc/private/viewerhdf5impl.h>
-#include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
+#include <petsc/private/viewerhdf5impl.h> /*I "petscviewerhdf5.h" I*/
 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer, const char[], PetscBool, PetscBool*, H5O_type_t*);
 static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool*);

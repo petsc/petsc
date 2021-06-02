@@ -5,11 +5,13 @@
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
+#include <petsc/private/viewerhdf5impl.h>
 #include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
 {
+  PetscViewer_HDF5    *hdf5;
   hid_t               scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   PetscLayout         vmap;
   PetscViewerFormat   format;
@@ -30,6 +32,9 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
     default:
       SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"PetscViewerFormat %s not supported for HDF5 input.",PetscViewerFormats[format]);
   }
+  hdf5 = (PetscViewer_HDF5*) viewer->data;
+  /* we store dense matrix columns as blocks, like MATLAB save(filename,variables,'-v7.3') does */
+  hdf5->horizontal = PETSC_TRUE;
 
   if (!((PetscObject)mat)->name) SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat name must be set with PetscObjectSetName() before MatLoad()");
 #if defined(PETSC_USE_REAL_SINGLE)

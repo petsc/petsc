@@ -5,7 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>      /*I  "petscdmda.h"   I*/
 #include <petsc/private/glvisvecimpl.h>
-#include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
 #include <petscdraw.h>
 

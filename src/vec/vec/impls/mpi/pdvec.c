@@ -3,7 +3,6 @@
      Code for some of the parallel vector primatives.
 */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
-#include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
 #include <petsc/private/glvisviewerimpl.h>
 #include <petsc/private/glvisvecimpl.h>
