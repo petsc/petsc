@@ -14,7 +14,7 @@ class Configure(config.package.Package):
     #self.gitcommit        = 'v'+self.version
     #version               = '2.5.4'
     #self.gitcommit        = 'v'+version
-    self.gitcommit        = 'origin/master'
+    self.gitcommit        = '7847870ac700d13e00740c01651cf85e7db15fe1' # master on Jun 2, 2021
     self.download         = ['git://https://bitbucket.org/icl/magma']
     # This is broken with HIP because they do not provide any configuration specific include file
     # and they always default to CUDA when including the magma header.
