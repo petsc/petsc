@@ -36,7 +36,6 @@
       Tao        tao     ! Tao context
       PetscInt         nhist
       PetscMPIInt  size,rank    ! number of processes running
-      PetscReal      zero
       PetscReal      hist(100) ! objective value history
       PetscReal      resid(100)! residual history
       PetscReal      cnorm(100)! cnorm history
@@ -48,8 +47,6 @@
 !  MUST be declared as external.
 
       external FormFunction
-
-      zero = 0.0
 
 !  Initialize TAO and PETSc
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

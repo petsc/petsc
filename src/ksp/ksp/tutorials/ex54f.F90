@@ -28,8 +28,8 @@
       KSP              ksp
       PetscErrorCode   ierr
       PetscViewer viewer
-      PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
-      PetscInt ki,kj,lint,nel,ll,j1,i1,ndf,f4
+      PetscInt qj,qi,ne,M,Istart,Iend,geq
+      PetscInt ki,kj,nel,ll,j1,i1,ndf,f4
       PetscInt f2,f9,f6,one
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
@@ -115,8 +115,6 @@
       nel = 4                   ! nodes per element (quad)
       ndf = 1
       call int2d(f2,sg)
-      lint = 4
-      ix = 0
       do geq=Istart,Iend-1,1
          qj = geq/(ne+1); qi = mod(geq,(ne+1))
          x = h*qi - 1.0; y = h*qj - 1.0 ! lower left corner (-1,-1)
@@ -127,7 +125,7 @@
             coord(1,4) = x;   coord(2,4) = y+h
 ! form stiff
             ss = 0.0
-            do ll = 1,lint
+            do ll = 1,4
                call shp2dquad(sg(1,ll),sg(2,ll),coord,shp,xsj,f2)
                xsj = xsj*sg(3,ll)*thk
                call thfx2d(ev,coord,shp,dd,f2,f2,f4,ex54_psi)
@@ -401,18 +399,13 @@
 !     l       - Number of points/direction
 
 !     Outputs:
-!     lint    - Total number of points
 !     sg(3,*) - Array of points and weights
 !-----[--.----+----.----+----.-----------------------------------------]
       implicit  none
-      PetscInt   l,i,lint,lr(9),lz(9)
+      PetscInt   l,i,lr(9),lz(9)
       PetscReal    g,third,sg(3,*)
       data      lr/-1,1,1,-1,0,1,0,-1,0/,lz/-1,-1,1,1,-1,0,1,0,0/
       data      third / 0.3333333333333333 /
-
-!     Set number of total points
-
-      lint = l*l
 
 !     2x2 integration
       g = sqrt(third)

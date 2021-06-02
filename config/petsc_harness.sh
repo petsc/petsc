@@ -161,7 +161,7 @@ function printcmd() {
   # Print command that can be run from PETSC_DIR
   cmd="$1"
   basedir=`dirname ${PWD} | sed "s#${petsc_dir}/##"`
-  modcmd=`echo ${cmd} | sed -e "s#\.\.#${basedir}#" | sed s#\>.*##`
+  modcmd=`echo ${cmd} | sed -e "s#\.\.#${basedir}#" | sed s#\>.*## | sed s#\%#\%\%#`
   if $mpiexec_function; then
      # Have to expand valgrind/cudamemchk
      modcmd=`eval "$modcmd"`

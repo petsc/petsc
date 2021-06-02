@@ -1485,7 +1485,7 @@ static PetscErrorCode BCApplyZero_NORTH(DM da,PetscInt d_idx,Mat A,Vec b)
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   }
   if (A) {
-    ierr = MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,0,0);CHKERRQ(ierr);
+    ierr = MatZeroRowsColumns(A,nbcs,bc_global_ids,1.0,NULL,NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(bc_vals);CHKERRQ(ierr);
