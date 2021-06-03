@@ -513,6 +513,7 @@ PETSC_INTERN PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory,TS);
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set;
 PETSC_EXTERN PetscLogEvent TSTrajectory_Get;
 PETSC_EXTERN PetscLogEvent TSTrajectory_GetVecs;
+PETSC_EXTERN PetscLogEvent TSTrajectory_SetUp;
 PETSC_EXTERN PetscLogEvent TSTrajectory_DiskWrite;
 PETSC_EXTERN PetscLogEvent TSTrajectory_DiskRead;
 
