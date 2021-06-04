@@ -1118,7 +1118,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
     IFunction   = IFunction_Hull1972C2;
     IJacobian   = IJacobian_Hull1972C2;
   } else if ((!strcmp(p,"hull1972c3"))
-           ||(!strcmp(p,"hull1972c4"))){
+           ||(!strcmp(p,"hull1972c4"))) {
     y[0] = 1.0;
     RHSFunction = RHSFunction_Hull1972C34;
     IFunction   = IFunction_Hull1972C34;

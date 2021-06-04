@@ -20,7 +20,8 @@ class MyIMatrix : public htool::IMatrix<PetscScalar> {
   public:
   MyIMatrix(PetscInt M,PetscInt N,PetscInt spacedim,PetscReal* gcoords) : htool::IMatrix<PetscScalar>(M,N),coords(gcoords),sdim(spacedim) { }
 
-  PetscScalar get_coef(const PetscInt &i, const PetscInt &j) const override {
+  PetscScalar get_coef(const PetscInt &i, const PetscInt &j) const override
+  {
     PetscReal diff = 0.0;
 
     PetscFunctionBeginUser;
@@ -28,7 +29,8 @@ class MyIMatrix : public htool::IMatrix<PetscScalar> {
     PetscFunctionReturn(1.0/(1.0e-2 + PetscSqrtReal(diff)));
   }
 
-  void copy_submatrix(PetscInt M, PetscInt N, const PetscInt *const rows, const PetscInt *const cols, PetscScalar *ptr) const override {
+  void copy_submatrix(PetscInt M, PetscInt N, const PetscInt *const rows, const PetscInt *const cols, PetscScalar *ptr) const override
+  {
     PetscFunctionBeginUser;
     for (PetscInt j = 0; j < M; j++) /* could be optimized by the user how they see fit, e.g., vectorization */
       for (PetscInt k = 0; k < N; k++) ptr[j+k*M] = this->get_coef(rows[j],cols[k]);

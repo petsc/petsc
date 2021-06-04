@@ -22,7 +22,7 @@ static PetscErrorCode LandauGPUMapsDestroy(void *ptr)
       ierr = LandauKokkosDestroyMatMaps(maps);CHKERRQ(ierr); // imples Kokkos does
     } // else could be CUDA
 #elif defined(PETSC_HAVE_CUDA)
-    if (maps->deviceType == LANDAU_CUDA){
+    if (maps->deviceType == LANDAU_CUDA) {
       ierr = LandauCUDADestroyMatMaps(maps);CHKERRQ(ierr);
     } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "maps->deviceType %D ?????",maps->deviceType);
 #endif
@@ -477,7 +477,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       if (ej==-1) {
         PetscErrorCode    ierr2;
         ierr2 = PetscPrintf(ctx->comm,"CPU Element matrix\n");CHKERRQ(ierr2);
-        for (d = 0; d < totDim; ++d){
+        for (d = 0; d < totDim; ++d) {
           for (f = 0; f < totDim; ++f) {ierr2 = PetscPrintf(ctx->comm," %12.5e",  PetscRealPart(elemMat[d*totDim + f]));CHKERRQ(ierr2);}
           ierr2 = PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr2);
         }
@@ -557,7 +557,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   int       d,f;
                   PetscReal tmp = 0;
                   PetscPrintf(PETSC_COMM_SELF,"\t\t%D.%D.%D) ERROR total I = %22.16e (LANDAU_MAX_Q_FACE=%d, #face=%D)\n",eidx,q,fieldA,sum,LANDAU_MAX_Q_FACE,maps->num_face);
-                  for (d = 0, tmp = 0; d < numindices; ++d){
+                  for (d = 0, tmp = 0; d < numindices; ++d) {
                     if (tmp!=0 && PetscAbs(tmp-1.0) > 10*PETSC_MACHINE_EPSILON) ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D) %3D: ",d,indices[d]);CHKERRQ(ierr);
                     for (f = 0; f < numindices; ++f) {
                       tmp += PetscRealPart(elMat[d*numindices + f]);
@@ -591,7 +591,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     } // else could be CUDA
 #endif
 #if defined(PETSC_HAVE_CUDA)
-    if (ctx->deviceType == LANDAU_CUDA){
+    if (ctx->deviceType == LANDAU_CUDA) {
       ierr = LandauCUDACreateMatMaps(maps, pointMaps,Nf,Nq);CHKERRQ(ierr);
     }
 #endif
@@ -912,7 +912,7 @@ static PetscErrorCode SetupDS(DM dm, PetscInt dim, LandauCtx *ctx)
     PetscInt        ii;
     PetscSection    section;
     ierr = DMGetSection(dm, &section);CHKERRQ(ierr);
-    for (ii=0;ii<ctx->num_species;ii++){
+    for (ii=0;ii<ctx->num_species;ii++) {
       char buf[256];
       if (ii==0) ierr = PetscSNPrintf(buf, 256, "se");
       else ierr = PetscSNPrintf(buf, 256, "si%D", ii);

@@ -1403,7 +1403,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     */
     PetscInt numCS;
     ierr = DMGetLabelSize(dm,"Cell Sets",&numCS);CHKERRQ(ierr);
-    if (!numCS){
+    if (!numCS) {
       PetscInt cStart, cEnd, c;
       ierr = DMCreateLabel(dm, "Cell Sets");CHKERRQ(ierr);
       ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -2922,7 +2922,7 @@ PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm
   ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);
   ierr = DMCreateSectionSuperDM(dms, len, is, superdm);CHKERRQ(ierr);
   (*superdm)->useNatural = PETSC_FALSE;
-  for (i = 0; i < len; i++){
+  for (i = 0; i < len; i++) {
     if (dms[i]->useNatural && dms[i]->sfMigration) {
       PetscSF        sfMigrationInv,sfNatural;
       PetscSection   section, sectionSeq;

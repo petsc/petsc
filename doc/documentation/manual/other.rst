@@ -569,7 +569,8 @@ usage is given below.
 
 ::
 
-   PetscErrorCode MyRoutine1() {
+   PetscErrorCode MyRoutine1()
+   {
        /* Declarations Here */
        PetscFunctionBeginUser;
        /* code here */

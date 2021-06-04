@@ -161,45 +161,45 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
   ierr = VecGetArray(G, &g);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the mesh */
-  for (j=0; j<my; j++){
-    for (i=0; i< mx; i++){
+  for (j=0; j<my; j++) {
+    for (i=0; i< mx; i++) {
       row= j*mx + i;
 
       xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
 
-      if (i==0){ /* left side */
+      if (i==0) { /* left side */
         xl= user->left[j+1];
         xlt = user->left[j+2];
       } else {
         xl = x[row-1];
       }
 
-      if (j==0){ /* bottom side */
+      if (j==0) { /* bottom side */
         xb=user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
         xb = x[row-mx];
       }
 
-      if (i+1 == mx){ /* right side */
+      if (i+1 == mx) { /* right side */
         xr=user->right[j+1];
         xrb = user->right[j];
       } else {
         xr = x[row+1];
       }
 
-      if (j+1==0+my){ /* top side */
+      if (j+1==0+my) { /* top side */
         xt=user->top[i+1];
         xlt = user->top[i];
       }else {
         xt = x[row+mx];
       }
 
-      if (i>0 && j+1<my){
+      if (i>0 && j+1<my) {
         xlt = x[row-1+mx];
       }
-      if (j>0 && i+1<mx){
+      if (j>0 && i+1<mx) {
         xrb = x[row+1-mx];
       }
 
@@ -283,52 +283,52 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
   /* Set various matrix options */
   ierr = MatSetOption(H,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(H);CHKERRQ(ierr);}
+  if (assembled) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
 
   /* Get pointers to vector data */
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
 
   /* Compute Jacobian over the locally owned part of the mesh */
-  for (i=0; i< mx; i++){
-    for (j=0; j<my; j++){
+  for (i=0; i< mx; i++) {
+    for (j=0; j<my; j++) {
       row= j*mx + i;
 
       xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left side */
-      if (i==0){
+      if (i==0) {
         xl  = user->left[j+1];
         xlt = user->left[j+2];
       } else {
         xl = x[row-1];
       }
 
-      if (j==0){
+      if (j==0) {
         xb  = user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
         xb = x[row-mx];
       }
 
-      if (i+1 == mx){
+      if (i+1 == mx) {
         xr  = user->right[j+1];
         xrb = user->right[j];
       } else {
         xr = x[row+1];
       }
 
-      if (j+1==my){
+      if (j+1==my) {
         xt  = user->top[i+1];
         xlt = user->top[i];
       }else {
         xt = x[row+mx];
       }
 
-      if (i>0 && j+1<my){
+      if (i>0 && j+1<my) {
         xlt = x[row-1+mx];
       }
-      if (j>0 && i+1<mx){
+      if (j>0 && i+1<mx) {
         xrb = x[row+1-mx];
       }
 
@@ -362,29 +362,29 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
       hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
       k=0;
-      if (j>0){
+      if (j>0) {
         v[k]=hb; col[k]=row - mx; k++;
       }
 
-      if (j>0 && i < mx -1){
+      if (j>0 && i < mx -1) {
         v[k]=hbr; col[k]=row - mx+1; k++;
       }
 
-      if (i>0){
+      if (i>0) {
         v[k]= hl; col[k]=row - 1; k++;
       }
 
       v[k]= hc; col[k]=row; k++;
 
-      if (i < mx-1){
+      if (i < mx-1) {
         v[k]= hr; col[k]=row+1; k++;
       }
 
-      if (i>0 && j < my-1){
+      if (i>0 && j < my-1) {
         v[k]= htl; col[k] = row+mx-1; k++;
       }
 
-      if (j < my-1){
+      if (j < my-1) {
         v[k]= ht; col[k] = row+mx; k++;
       }
 
@@ -439,18 +439,18 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 
-  for (j=0; j<4; j++){
-    if (j==0){
+  for (j=0; j<4; j++) {
+    if (j==0) {
       yt=b;
       xt=l;
       limit=bsize;
       boundary=user->bottom;
-    } else if (j==1){
+    } else if (j==1) {
       yt=t;
       xt=l;
       limit=tsize;
       boundary=user->top;
-    } else if (j==2){
+    } else if (j==2) {
       yt=b;
       xt=l;
       limit=lsize;
@@ -462,10 +462,10 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       boundary=user->right;
     }
 
-    for (i=0; i<limit; i++){
+    for (i=0; i<limit; i++) {
       u1=xt;
       u2=-yt;
-      for (k=0; k<maxits; k++){
+      for (k=0; k<maxits; k++) {
         nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
         nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
         fnorm=PetscSqrtScalar(nf1*nf1+nf2*nf2);
@@ -511,7 +511,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg);CHKERRQ(ierr);
 
-  if (flg && start==0){ /* The zero vector is reasonable */
+  if (flg && start==0) { /* The zero vector is reasonable */
     ierr = VecSet(X, zero);CHKERRQ(ierr);
   } else { /* Take an average of the boundary conditions */
     PetscInt    row;
@@ -522,8 +522,8 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
     /* Perform local computations */
-    for (j=0; j<my; j++){
-      for (i=0; i< mx; i++){
+    for (j=0; j<my; j++) {
+      for (i=0; i< mx; i++) {
         row=(j)*mx + (i);
         x[row] = (((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+ ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }

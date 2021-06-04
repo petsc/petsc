@@ -83,7 +83,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao,Vec x)
   if (pdipm->Nxfixed) {
     offset = pdipm->ng;
     ierr = ISGetIndices(pdipm->isxfixed,&fxptr);CHKERRQ(ierr); /* global indices in x */
-    for (k=0;k < pdipm->nxfixed;k++){
+    for (k=0;k < pdipm->nxfixed;k++) {
       i = fxptr[k]-xstart;
       carr[offset + k] = xarr[i] - xuarr[i];
     }
@@ -104,7 +104,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao,Vec x)
   offset = pdipm->nh;
   if (pdipm->Nxub) {
     ierr = ISGetIndices(pdipm->isxub,&ubptr);CHKERRQ(ierr);
-    for (k=0; k<pdipm->nxub; k++){
+    for (k=0; k<pdipm->nxub; k++) {
       i = ubptr[k]-xstart;
       carr[offset + k] = xuarr[i] - xarr[i];
     }
@@ -114,7 +114,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao,Vec x)
     /* (2.c) Update xlb */
     offset += pdipm->nxub;
     ierr = ISGetIndices(pdipm->isxlb,&lbptr);CHKERRQ(ierr); /* global indices in x */
-    for (k=0; k<pdipm->nxlb; k++){
+    for (k=0; k<pdipm->nxlb; k++) {
       i = lbptr[k]-xstart;
       carr[offset + k] = xarr[i] - xlarr[i];
     }
@@ -125,7 +125,7 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao,Vec x)
     offset += pdipm->nxlb;
     offset1 = offset + pdipm->nxbox;
     ierr = ISGetIndices(pdipm->isxbox,&bxptr);CHKERRQ(ierr); /* global indices in x */
-    for (k=0; k<pdipm->nxbox; k++){
+    for (k=0; k<pdipm->nxbox; k++) {
       i = bxptr[k]-xstart; /* local indices in x */
       carr[offset+k]  = xuarr[i] - xarr[i];
       carr[offset1+k] = xarr[i]  - xlarr[i];
@@ -342,7 +342,7 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, vo
   /* (2) insert 2nd row block of Jpre: [ grad g, 0, 0, 0] */
   if (pdipm->Ng) {
     ierr = MatGetOwnershipRange(tao->jacobian_equality,&rjstart,NULL);CHKERRQ(ierr);
-    for (i=0; i<pdipm->ng; i++){
+    for (i=0; i<pdipm->ng; i++) {
       row = Jrstart + pdipm->off_lambdae + i;
 
       ierr = MatGetRow(tao->jacobian_equality,i+rjstart,&nc,&aj,&aa);CHKERRQ(ierr);
@@ -363,7 +363,7 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, vo
   /* (3) insert 3nd row block of Jpre: [ -grad h, 0, deltac, I] */
   if (pdipm->Nh) {
     ierr = MatGetOwnershipRange(tao->jacobian_inequality,&rjstart,NULL);CHKERRQ(ierr);
-    for (i=0; i < pdipm->nh; i++){
+    for (i=0; i < pdipm->nh; i++) {
       row = Jrstart + pdipm->off_lambdai + i;
       ierr = MatGetRow(tao->jacobian_inequality,i+rjstart,&nc,&aj,&aa);CHKERRQ(ierr);
       proc = 0;
@@ -1179,7 +1179,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
   /* Insert tao->hessian */
   ierr = MatGetOwnershipRange(tao->hessian,&rjstart,NULL);CHKERRQ(ierr);
-  for (i=0; i<pdipm->nx; i++){
+  for (i=0; i<pdipm->nx; i++) {
     row = rstart + i;
 
     ierr = MatGetRow(tao->hessian,i+rjstart,&nc,&aj,NULL);CHKERRQ(ierr);
@@ -1253,7 +1253,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* 2nd Row block of KKT matrix: [grad Ce, deltac*I, 0, 0] */
   if (pdipm->Ng) {
     ierr = MatGetOwnershipRange(tao->jacobian_equality,&rjstart,NULL);CHKERRQ(ierr);
-    for (i=0; i < pdipm->ng; i++){
+    for (i=0; i < pdipm->ng; i++) {
       row = rstart + pdipm->off_lambdae + i;
 
       ierr = MatGetRow(tao->jacobian_equality,i+rjstart,&nc,&aj,NULL);CHKERRQ(ierr);
@@ -1269,7 +1269,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* Jce_xfixed */
   if (pdipm->Nxfixed) {
     ierr = MatGetOwnershipRange(pdipm->Jce_xfixed,&Jcrstart,NULL);CHKERRQ(ierr);
-    for (i=0; i < (pdipm->nce - pdipm->ng); i++){
+    for (i=0; i < (pdipm->nce - pdipm->ng); i++) {
       row = rstart + pdipm->off_lambdae + pdipm->ng + i;
 
       ierr = MatGetRow(pdipm->Jce_xfixed,i+Jcrstart,&nc,&cols,NULL);CHKERRQ(ierr);
@@ -1287,7 +1287,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* 3rd Row block of KKT matrix: [ gradCi, 0, deltac*I, -I] */
   if (pdipm->Nh) {
     ierr = MatGetOwnershipRange(tao->jacobian_inequality,&rjstart,NULL);CHKERRQ(ierr);
-    for (i=0; i < pdipm->nh; i++){
+    for (i=0; i < pdipm->nh; i++) {
       row = rstart + pdipm->off_lambdai + i;
 
       ierr = MatGetRow(tao->jacobian_inequality,i+rjstart,&nc,&aj,NULL);CHKERRQ(ierr);
@@ -1300,7 +1300,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
       ierr = MatRestoreRow(tao->jacobian_inequality,i+rjstart,&nc,&aj,NULL);CHKERRQ(ierr);
     }
     /* I */
-    for (i=0; i < pdipm->nh; i++){
+    for (i=0; i < pdipm->nh; i++) {
       row = rstart + pdipm->off_lambdai + i;
       col = rstart + pdipm->off_z + i;
       ierr = MatPreallocateSet(row,1,&col,dnz,onz);CHKERRQ(ierr);
@@ -1309,7 +1309,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
   /* Jci_xb */
   ierr = MatGetOwnershipRange(pdipm->Jci_xb,&Jcrstart,NULL);CHKERRQ(ierr);
-  for (i=0; i < (pdipm->nci - pdipm->nh); i++){
+  for (i=0; i < (pdipm->nci - pdipm->nh); i++) {
     row = rstart + pdipm->off_lambdai + pdipm->nh + i;
 
     ierr = MatGetRow(pdipm->Jci_xb,i+Jcrstart,&nc,&cols,NULL);CHKERRQ(ierr);
@@ -1364,12 +1364,12 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* (9) Insert constant entries to  K */
   /* Set 0.0 to diagonal of K, so that the solver does not complain *about missing diagonal value */
   ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++){
+  for (i=rstart; i<rend; i++) {
     ierr = MatSetValue(J,i,i,0.0,INSERT_VALUES);CHKERRQ(ierr);
   }
   /* In case Wxx has no diagonal entries preset set diagonal to deltaw given */
-  if (pdipm->kkt_pd){
-      for (i=0; i<pdipm->nh; i++){
+  if (pdipm->kkt_pd) {
+      for (i=0; i<pdipm->nh; i++) {
         row  = rstart + i;
         ierr = MatSetValue(J,row,row,pdipm->deltaw,INSERT_VALUES);CHKERRQ(ierr);
       }
@@ -1378,7 +1378,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* Row block of K: [ grad Ce, 0, 0, 0] */
   if (pdipm->Nxfixed) {
     ierr = MatGetOwnershipRange(pdipm->Jce_xfixed,&Jcrstart,NULL);CHKERRQ(ierr);
-    for (i=0; i < (pdipm->nce - pdipm->ng); i++){
+    for (i=0; i < (pdipm->nce - pdipm->ng); i++) {
       row = rstart + pdipm->off_lambdae + pdipm->ng + i;
 
       ierr = MatGetRow(pdipm->Jce_xfixed,i+Jcrstart,&nc,&cols,&aa);CHKERRQ(ierr);
@@ -1395,7 +1395,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
   /* Row block of K: [ -grad Ci, 0, 0, I] */
   ierr = MatGetOwnershipRange(pdipm->Jci_xb,&Jcrstart,NULL);CHKERRQ(ierr);
-  for (i=0; i < pdipm->nci - pdipm->nh; i++){
+  for (i=0; i < pdipm->nci - pdipm->nh; i++) {
     row = rstart + pdipm->off_lambdai + pdipm->nh + i;
 
     ierr = MatGetRow(pdipm->Jci_xb,i+Jcrstart,&nc,&cols,&aa);CHKERRQ(ierr);
@@ -1412,14 +1412,14 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
     ierr = MatSetValue(J,row,col,1,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  for (i=0; i < pdipm->nh; i++){
+  for (i=0; i < pdipm->nh; i++) {
     row = rstart + pdipm->off_lambdai + i;
     col = rstart + pdipm->off_z + i;
     ierr = MatSetValue(J,row,col,1,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* Row block of K: [ 0, 0, I, ...] */
-  for (i=0; i < pdipm->nci; i++){
+  for (i=0; i < pdipm->nci; i++) {
     row = rstart + pdipm->off_z + i;
     col = rstart + pdipm->off_lambdai + i;
     ierr = MatSetValue(J,row,col,1,INSERT_VALUES);CHKERRQ(ierr);

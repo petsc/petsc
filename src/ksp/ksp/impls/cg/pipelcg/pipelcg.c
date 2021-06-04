@@ -303,12 +303,12 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         }
         Q[3*j] = temp;
 
-        if (j < l-2){
+        if (j < l-2) {
           ierr = VecCopy(Q[3*(j+1)],Q[3*j]);CHKERRQ(ierr);
         } else {
           ierr = VecCopy(Z[1],Q[3*j]);CHKERRQ(ierr);
         }
-        if (it == l){
+        if (it == l) {
           ierr = VecAXPY(Q[3*j],sigma(j+1)-gamma(it-l),Q[3*j+1]);CHKERRQ(ierr);
         } else {
           alpha(0) = sigma(j+1)-gamma(it-l);

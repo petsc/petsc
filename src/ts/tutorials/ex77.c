@@ -401,7 +401,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  switch(user->solType){
+  switch(user->solType) {
   case SOL_TRIG_TRIG:
     ierr = PetscDSSetResidual(prob, 0, f0_trig_trig_v, f1_v);CHKERRQ(ierr);
     ierr = PetscDSSetResidual(prob, 2, f0_trig_trig_w, f1_w);CHKERRQ(ierr);
@@ -993,7 +993,7 @@ int main(int argc, char **argv)
   ierr = DMSwarmCreateGlobalVectorFromField(sdm, DMSwarmPICField_coor, &xtmp);CHKERRQ(ierr);
   ierr = VecCopy(xtmp, adv.x0);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(sdm, DMSwarmPICField_coor, &xtmp);CHKERRQ(ierr);
-  switch(user.solType){
+  switch(user.solType) {
     case SOL_TRIG_TRIG: adv.exact = trig_trig_x;break;
     default: SETERRQ2(PetscObjectComm((PetscObject) sdm), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user.solType, NUM_SOL_TYPES)], user.solType);
   }

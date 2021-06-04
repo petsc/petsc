@@ -1368,7 +1368,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
       selfPerfInfo.numReductions = selftimes[nstEvent].numReductions;
 
       ierr = PetscLogNestedTreePrintLine(viewer, selfPerfInfo, dum_count, dum_parentcount, dum_depth, name, totalTime, &wasPrinted);CHKERRQ(ierr);
-      if (wasPrinted){
+      if (wasPrinted) {
         ierr = PetscViewerXMLEndSection(viewer, "event");CHKERRQ(ierr);
       }
     }

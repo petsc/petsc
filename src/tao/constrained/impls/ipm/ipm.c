@@ -798,7 +798,7 @@ PetscErrorCode IPMUpdateAi(Tao tao)
     ierr = VecScatterBegin(ipmP->ci_scat,tao->constraints_inequality,ipmP->ci,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(ipmP->ci_scat,tao->constraints_inequality,ipmP->ci,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-  if (!ipmP->work){
+  if (!ipmP->work) {
     VecDuplicate(tao->solution,&ipmP->work);
   }
   ierr = VecCopy(tao->solution,ipmP->work);CHKERRQ(ierr);

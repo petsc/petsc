@@ -574,7 +574,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PetscOptionItems *PetscOptio
   if (flag) PetscStackCallStandard(HYPRE_EuclidSetLevel,(jac->hsolver,jac->eu_level));
 
   ierr = PetscOptionsReal("-pc_hypre_euclid_droptolerance","Drop tolerance for ILU(k) in Euclid","None",jac->eu_droptolerance,&jac->eu_droptolerance,&flag);CHKERRQ(ierr);
-  if (flag){
+  if (flag) {
     PetscMPIInt size;
 
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);

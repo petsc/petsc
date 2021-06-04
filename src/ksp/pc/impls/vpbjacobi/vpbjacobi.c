@@ -81,9 +81,9 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc,Vec x,Vec y)
       yy[ncnt+6] = diag[6]*x0 + diag[13]*x1 + diag[20]*x2  + diag[27]*x3 + diag[34]*x4 + diag[41]*x5 + diag[48]*x6;
       break;
     default:
-      for (ib=0; ib<bs; ib++){
+      for (ib=0; ib<bs; ib++) {
         PetscScalar rowsum = 0;
-        for (jb=0; jb<bs; jb++){
+        for (jb=0; jb<bs; jb++) {
           rowsum += diag[ib+jb*bs] * xx[ncnt+jb];
         }
         yy[ncnt+ib] = rowsum;

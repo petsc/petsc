@@ -1371,8 +1371,8 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
         ierr = PetscMalloc1(nrhs*M,&idx);CHKERRQ(ierr);
         ierr = MatGetOwnershipRanges(B,&rstart);CHKERRQ(ierr);
         k = 0;
-        for (proc=0; proc<mumps->petsc_size; proc++){
-          for (j=0; j<nrhs; j++){
+        for (proc=0; proc<mumps->petsc_size; proc++) {
+          for (j=0; j<nrhs; j++) {
             for (i=rstart[proc]; i<rstart[proc+1]; i++) idx[k++] = j*M + i;
           }
         }
@@ -1439,7 +1439,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   for (i=0; i<lsol_loc; i++) {
     isol_loc[i] -= 1; /* change Fortran style to C style. isol_loc[i+j*lsol_loc] contains x[isol_loc[i]] in j-th vector */
 
-    for (proc=0; proc<mumps->petsc_size; proc++){
+    for (proc=0; proc<mumps->petsc_size; proc++) {
       if (isol_loc[i] >= rstart[proc] && isol_loc[i] < rstart[proc+1]) {
         myrstart = rstart[proc];
         k        = isol_loc[i] - myrstart;        /* local index on 1st column of petsc vector X */
@@ -2218,9 +2218,9 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d\n",mumps->myid,mumps->id.INFO(23));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
-      if (mumps->ninfo && mumps->ninfo <= 80){
+      if (mumps->ninfo && mumps->ninfo <= 80) {
         PetscInt i;
-        for (i=0; i<mumps->ninfo; i++){
+        for (i=0; i<mumps->ninfo; i++) {
           ierr = PetscViewerASCIIPrintf(viewer, "  INFO(%d): \n",mumps->info[i]);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d\n",mumps->myid,mumps->id.INFO(mumps->info[i]));CHKERRQ(ierr);
           ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

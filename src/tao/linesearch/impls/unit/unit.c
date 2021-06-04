@@ -44,7 +44,7 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *
   ierr = TaoLineSearchComputeObjectiveAndGradient(ls,x,&ftry,g);CHKERRQ(ierr);
   ierr = TaoLineSearchMonitor(ls, 1, *f, 1.0);CHKERRQ(ierr);
   ierr = PetscInfo1(ls,"Tao Apply Unit Step: %4.4e\n",1.0);CHKERRQ(ierr);
-  if (startf < ftry){
+  if (startf < ftry) {
     ierr = PetscInfo2(ls,"Tao Apply Unit Step, FINCREASE: F old:= %12.10e, F new: %12.10e\n",(double)startf,(double)ftry);CHKERRQ(ierr);
   }
   *f = ftry;

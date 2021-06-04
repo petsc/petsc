@@ -75,11 +75,11 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetVariableBounds(tao,user.xl,user.xu);CHKERRQ(ierr); /* sets lower upper bounds from given solution */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
 
-  if (!user.noeqflag){
+  if (!user.noeqflag) {
     ierr = TaoSetEqualityConstraintsRoutine(tao,user.ce,FormEqualityConstraints,(void*)&user);CHKERRQ(ierr);
   }
   ierr = TaoSetInequalityConstraintsRoutine(tao,user.ci,FormInequalityConstraints,(void*)&user);CHKERRQ(ierr);
-  if (!user.noeqflag){
+  if (!user.noeqflag) {
     ierr = TaoSetJacobianEqualityRoutine(tao,user.Ae,user.Ae,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr); /* equality jacobian */
   }
   ierr = TaoSetJacobianInequalityRoutine(tao,user.Ai,user.Ai,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr); /* inequality jacobian */
@@ -154,7 +154,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
     neloc = (rank==0)?user->ne:0;
     niloc = (rank==0)?user->ni:0;
 
-  if (!user->noeqflag){
+  if (!user->noeqflag) {
     ierr = VecCreate(PETSC_COMM_WORLD,&user->ce);CHKERRQ(ierr); /* a 1x1 vec for equality constraints */
     ierr = VecSetSizes(user->ce,neloc,user->ne);CHKERRQ(ierr);
     ierr = VecSetFromOptions(user->ce);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = VecSetUp(user->ci);CHKERRQ(ierr);
 
   /* nexn & nixn matricies for equaly and inequalty constriants */
-  if (!user->noeqflag){
+  if (!user->noeqflag) {
     ierr = MatCreate(PETSC_COMM_WORLD,&user->Ae);CHKERRQ(ierr);
     ierr = MatSetSizes(user->Ae,neloc,nloc,user->ne,user->n);CHKERRQ(ierr);
     ierr = MatSetFromOptions(user->Ae);CHKERRQ(ierr);
@@ -191,14 +191,14 @@ PetscErrorCode DestroyProblem(AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!user->noeqflag){
+  if (!user->noeqflag) {
    ierr = MatDestroy(&user->Ae);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&user->Ai);CHKERRQ(ierr);
   ierr = MatDestroy(&user->H);CHKERRQ(ierr);
 
   ierr = VecDestroy(&user->x);CHKERRQ(ierr);
-  if (!user->noeqflag){
+  if (!user->noeqflag) {
     ierr = VecDestroy(&user->ce);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&user->ci);CHKERRQ(ierr);
@@ -274,7 +274,7 @@ PetscErrorCode FormHessian(Tao tao, Vec x,Mat H, Mat Hpre, void *ctx)
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
-  if (!user->noeqflag){
+  if (!user->noeqflag) {
    ierr = VecScatterCreateToZero(DE,&Descat,&Deseq);CHKERRQ(ierr);
    ierr = VecScatterBegin(Descat,DE,Deseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
    ierr = VecScatterEnd(Descat,DE,Deseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -282,13 +282,13 @@ PetscErrorCode FormHessian(Tao tao, Vec x,Mat H, Mat Hpre, void *ctx)
   ierr = VecScatterBegin(Discat,DI,Diseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(Discat,DI,Diseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  if (!rank){
-    if (!user->noeqflag){
+  if (!rank) {
+    if (!user->noeqflag) {
       ierr = VecGetArrayRead(Deseq,&de);CHKERRQ(ierr);  /* places equality constraint dual into array */
     }
     ierr = VecGetArrayRead(Diseq,&di);CHKERRQ(ierr);  /* places inequality constraint dual into array */
 
-    if (!user->noeqflag){
+    if (!user->noeqflag) {
       val = 2.0 * (1 + de[0] - di[0] + di[1]);
       ierr = VecRestoreArrayRead(Deseq,&de);CHKERRQ(ierr);
       ierr = VecRestoreArrayRead(Diseq,&di);CHKERRQ(ierr);
@@ -301,7 +301,7 @@ PetscErrorCode FormHessian(Tao tao, Vec x,Mat H, Mat Hpre, void *ctx)
   }
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (!user->noeqflag){
+  if (!user->noeqflag) {
     ierr = VecScatterDestroy(&Descat);CHKERRQ(ierr);
     ierr = VecDestroy(&Deseq);CHKERRQ(ierr);
   }
@@ -402,7 +402,7 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre,  void *
 
   cols[0] = 0; cols[1] = 1;
   for (i=min;i<max;i++) {
-    if (i==0){
+    if (i==0) {
       vals[0] = 2*x[0]; vals[1] = -1.0;
       ierr = MatSetValues(JI,1,&i,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
     }

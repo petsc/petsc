@@ -206,9 +206,9 @@ static PetscErrorCode PCApply_PBJacobi_N(PC pc,Vec x,Vec y)
   ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    for (ib=0; ib<bs; ib++){
+    for (ib=0; ib<bs; ib++) {
       PetscScalar rowsum = 0;
-      for (jb=0; jb<bs; jb++){
+      for (jb=0; jb<bs; jb++) {
         rowsum += diag[ib+jb*bs] * xx[bs*i+jb];
       }
       yy[bs*i+ib] = rowsum;

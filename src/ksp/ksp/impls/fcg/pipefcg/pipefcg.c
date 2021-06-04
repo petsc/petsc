@@ -35,7 +35,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
   pipefcg = (KSP_PIPEFCG*)ksp->data;
 
   /* Allocate enough new vectors to add chunksize new vectors, reach nvecsneedtotal, or to reach mmax+1, whichever is smallest */
-  if (pipefcg->nvecs < PetscMin(pipefcg->mmax+1,nvecsneeded)){
+  if (pipefcg->nvecs < PetscMin(pipefcg->mmax+1,nvecsneeded)) {
     nvecsprev = pipefcg->nvecs;
     nnewvecs = PetscMin(PetscMax(nvecsneeded-pipefcg->nvecs,chunksize),pipefcg->mmax+1-pipefcg->nvecs);
     ierr = KSPCreateVecs(ksp,nnewvecs,&pipefcg->pQvecs[pipefcg->nchunks],0,NULL);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
     ierr = KSPCreateVecs(ksp,nnewvecs,&pipefcg->pSvecs[pipefcg->nchunks],0,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents((PetscObject)ksp,nnewvecs,pipefcg->pSvecs[pipefcg->nchunks]);CHKERRQ(ierr);
     pipefcg->nvecs += nnewvecs;
-    for (i=0;i<nnewvecs;++i){
+    for (i=0;i<nnewvecs;++i) {
       pipefcg->Qvecs[nvecsprev + i]    = pipefcg->pQvecs[pipefcg->nchunks][i];
       pipefcg->ZETAvecs[nvecsprev + i] = pipefcg->pZETAvecs[pipefcg->nchunks][i];
       pipefcg->Pvecs[nvecsprev + i]    = pipefcg->pPvecs[pipefcg->nchunks][i];
@@ -81,7 +81,7 @@ static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp)
   ierr = PetscMalloc3(pipefcg->mmax+2,&(pipefcg->dots),pipefcg->mmax+1,&(pipefcg->etas),pipefcg->mmax+2,&(pipefcg->redux));CHKERRQ(ierr);
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
-  if (pipefcg->nprealloc > pipefcg->mmax+1){
+  if (pipefcg->nprealloc > pipefcg->mmax+1) {
     ierr = PetscInfo2(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",pipefcg->nprealloc, pipefcg->mmax+1);CHKERRQ(ierr);
   }
 
@@ -208,7 +208,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     eta      = pipefcg->etas+idx;
 
     /* number of old directions to orthogonalize against */
-    switch(pipefcg->truncstrat){
+    switch(pipefcg->truncstrat) {
       case KSP_FCD_TRUNC_TYPE_STANDARD:
         mi = pipefcg->mmax;
         break;
@@ -221,7 +221,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
 
     /* Pick old p,s,q,zeta in a way suitable for VecMDot */
     ierr = VecCopy(Z,Pcurr);CHKERRQ(ierr);
-    for (k=PetscMax(0,i-mi),j=0;k<i;++j,++k){
+    for (k=PetscMax(0,i-mi),j=0;k<i;++j,++k) {
       kdx = k % (pipefcg->mmax+1);
       pipefcg->Pold[j]    = pipefcg->Pvecs[kdx];
       pipefcg->Sold[j]    = pipefcg->Svecs[kdx];
@@ -243,7 +243,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     delta = PetscRealPart(betas[j+1]);
 
     *eta = 0.;
-    for (k=PetscMax(0,i-mi),j=0;k<i;++j,++k){
+    for (k=PetscMax(0,i-mi),j=0;k<i;++j,++k) {
       kdx = k % (pipefcg->mmax+1);
       betas[j] /= -etas[kdx];                               /* betak  /= etak */
       *eta -= ((PetscReal)(PetscAbsScalar(betas[j])*PetscAbsScalar(betas[j]))) * etas[kdx];
@@ -358,8 +358,8 @@ static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
   VecDestroyVecs(ksp->nwork,&ksp->work);
 
   /* Destroy vectors of old directions and the arrays that manage pointers to them */
-  if (pipefcg->nvecs){
-    for (i=0;i<pipefcg->nchunks;++i){
+  if (pipefcg->nvecs) {
+    for (i=0;i<pipefcg->nchunks;++i) {
       ierr = VecDestroyVecs(pipefcg->chunksizes[i],&pipefcg->pPvecs[i]);CHKERRQ(ierr);
       ierr = VecDestroyVecs(pipefcg->chunksizes[i],&pipefcg->pSvecs[i]);CHKERRQ(ierr);
       ierr = VecDestroyVecs(pipefcg->chunksizes[i],&pipefcg->pQvecs[i]);CHKERRQ(ierr);
@@ -386,9 +386,9 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
 
-  if (pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD){
+  if (pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD) {
     truncstr = "Using standard truncation strategy";
-  } else if (pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY){
+  } else if (pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY) {
     truncstr = "Using Notay's truncation strategy";
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCD truncation strategy");

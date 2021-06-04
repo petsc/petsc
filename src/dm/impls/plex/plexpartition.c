@@ -1820,7 +1820,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
         ierr = MatRestoreRow(As, i, &temp, &cols, NULL);CHKERRQ(ierr);
       }
       ierr = PetscMalloc1(2*numRows, &vtxwgt_g);CHKERRQ(ierr);
-      for (i=0; i<size; i++){
+      for (i=0; i<size; i++) {
         vtxwgt_g[ncon*cumSumVertices[i]] = numExclusivelyOwnedAll[i];
         if (ncon>1) vtxwgt_g[ncon*cumSumVertices[i]+1] = 1;
         for (j=cumSumVertices[i]+1; j<cumSumVertices[i+1]; j++) {

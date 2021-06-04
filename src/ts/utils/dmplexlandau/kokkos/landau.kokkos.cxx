@@ -24,37 +24,39 @@ namespace landau_inner_red {  // namespace helps with name resolution in reducti
 
     KOKKOS_INLINE_FUNCTION   // Default constructor - Initialize to 0's
     array_type() {
-      for (int j = 0; j < LANDAU_DIM; j++){
+      for (int j = 0; j < LANDAU_DIM; j++) {
         gg2[j] = 0;
-        for (int k = 0; k < LANDAU_DIM; k++){
+        for (int k = 0; k < LANDAU_DIM; k++) {
           gg3[j][k] = 0;
         }
       }
     }
     KOKKOS_INLINE_FUNCTION   // Copy Constructor
     array_type(const array_type & rhs) {
-      for (int j = 0; j < LANDAU_DIM; j++){
+      for (int j = 0; j < LANDAU_DIM; j++) {
         gg2[j] = rhs.gg2[j];
-        for (int k = 0; k < LANDAU_DIM; k++){
+        for (int k = 0; k < LANDAU_DIM; k++) {
           gg3[j][k] = rhs.gg3[j][k];
         }
       }
     }
     KOKKOS_INLINE_FUNCTION   // add operator
-    array_type& operator += (const array_type& src) {
-      for (int j = 0; j < LANDAU_DIM; j++){
+    array_type& operator += (const array_type& src)
+    {
+      for (int j = 0; j < LANDAU_DIM; j++) {
         gg2[j] += src.gg2[j];
-        for (int k = 0; k < LANDAU_DIM; k++){
+        for (int k = 0; k < LANDAU_DIM; k++) {
           gg3[j][k] += src.gg3[j][k];
         }
       }
       return *this;
     }
     KOKKOS_INLINE_FUNCTION   // volatile add operator
-    void operator += (const volatile array_type& src) volatile {
-      for (int j = 0; j < LANDAU_DIM; j++){
+    void operator += (const volatile array_type& src) volatile
+    {
+      for (int j = 0; j < LANDAU_DIM; j++) {
         gg2[j] += src.gg2[j];
-        for (int k = 0; k < LANDAU_DIM; k++){
+        for (int k = 0; k < LANDAU_DIM; k++) {
           gg3[j][k] += src.gg3[j][k];
         }
       }
@@ -585,7 +587,7 @@ extern "C"  {
           if (ej==-1) {
             int d,f;
             PetscPrintf(PETSC_COMM_SELF,"Kokkos Element matrix %d/%d\n",1,(int)numCells);
-            for (d = 0; d < totDim; ++d){
+            for (d = 0; d < totDim; ++d) {
               for (f = 0; f < totDim; ++f) PetscPrintf(PETSC_COMM_SELF," %12.5e",  PetscRealPart(elMat[d*totDim + f]));
               PetscPrintf(PETSC_COMM_SELF,"\n");
             }

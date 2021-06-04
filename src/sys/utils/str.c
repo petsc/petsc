@@ -316,7 +316,7 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n,char ***list)
 
   PetscFunctionBegin;
   if (!*list) PetscFunctionReturn(0);
-  for (i=0; i<n; i++){
+  for (i=0; i<n; i++) {
     ierr = PetscFree((*list)[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(*list);CHKERRQ(ierr);

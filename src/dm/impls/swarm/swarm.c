@@ -406,7 +406,8 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
 }
 
 /* Returns empty matrix for use with SNES FD */
-static PetscErrorCode DMCreateMatrix_Swarm(DM sw, Mat* m){
+static PetscErrorCode DMCreateMatrix_Swarm(DM sw, Mat* m)
+{
   Vec            field;
   PetscInt       size;
   PetscErrorCode ierr;
@@ -1740,7 +1741,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM c
   ierr = DMSwarmSortGetPointsPerCell(sw, cellID, &particles, &pids);CHKERRQ(ierr);
   ierr = DMSwarmSortRestoreAccess(sw);CHKERRQ(ierr);
   /* Pointwise copy of each particle based on pid. The parent swarm may not be altered during this process. */
-  for (p=0; p<particles; ++p){
+  for (p=0; p<particles; ++p) {
     ierr = DMSwarmDataBucketCopyPoint(((DM_Swarm*)cellswarm->data)->db,pids[p],((DM_Swarm*)sw->data)->db,pids[p]);CHKERRQ(ierr);
   }
   /* Free memory, destroy cell dm */

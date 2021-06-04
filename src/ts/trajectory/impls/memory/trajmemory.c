@@ -1493,7 +1493,7 @@ static PetscErrorCode SetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   ierr = PetscRevolveIntCast(tjsch->total_steps,&rtotal_steps);CHKERRQ(ierr);
   ierr = PetscRevolveIntCast(stepnum,&rstepnum);CHKERRQ(ierr);
   ierr = ApplyRevolve(tj->monitor,tjsch->stype,tjsch->rctx,rtotal_steps,rstepnum,rstepnum,PETSC_FALSE,&store);CHKERRQ(ierr);
-  if (store == 1){
+  if (store == 1) {
     if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     ierr = ElementCreate(ts,stack,&e);CHKERRQ(ierr);
     ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);

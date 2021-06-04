@@ -105,7 +105,7 @@ __global__
 void print_mat_aij_band(const PetscInt n, const int bi_csr[], const PetscScalar ba_csr[])
 {
   // debug
-  if (threadIdx.x + threadIdx.y + blockIdx.x + blockIdx.y == 0){
+  if (threadIdx.x + threadIdx.y + blockIdx.x + blockIdx.y == 0) {
     printf("B (AIJ) n=%d:\n",(int)n);
     for (int rowb=0;rowb<n;rowb++) {
       const PetscInt    nz = bi_csr[rowb+1] - bi_csr[rowb];

@@ -754,7 +754,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     /* force |diag| > zeropivot*rs */
     if (!sctx->nshift) sctx->shift_amount = info->shiftamount;
     else sctx->shift_amount *= 2.0;
@@ -772,7 +772,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo 
   PetscReal _zero = info->zeropivot*_rs;
 
   PetscFunctionBegin;
-  if (PetscRealPart(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
+  if (PetscRealPart(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     /* force matfactor to be diagonally dominant */
     if (sctx->nshift == sctx->nshift_max) {
       sctx->shift_fraction = sctx->shift_hi;
@@ -794,7 +794,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
   PetscReal _zero = info->zeropivot;
 
   PetscFunctionBegin;
-  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)){
+  if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     sctx->pv          += info->shiftamount;
     sctx->shift_amount = 0.0;
     sctx->nshift++;
@@ -826,11 +826,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO){
+  if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO) {
     ierr = MatPivotCheck_nz(mat,info,sctx,row);CHKERRQ(ierr);
-  } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE){
+  } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) {
     ierr = MatPivotCheck_pd(mat,info,sctx,row);CHKERRQ(ierr);
-  } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS){
+  } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS) {
     ierr = MatPivotCheck_inblocks(mat,info,sctx,row);CHKERRQ(ierr);
   } else {
     ierr = MatPivotCheck_none(fact,mat,info,sctx,row);CHKERRQ(ierr);
@@ -873,9 +873,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscInt _k,_entry,_location,_lnkdata;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  for (_k=0; _k<nidx; _k++) {\
     _entry = indices[_k];\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       /* start from the beginning if _entry < previous _entry */\
       if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
@@ -911,9 +911,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscInt _k,_entry,_location,_lnkdata;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  for (_k=0; _k<nidx; _k++) {\
     _entry = perm[indices[_k]];\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       /* start from the beginning if _entry < previous _entry */\
       if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
@@ -948,9 +948,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscInt _k,_entry,_location,_lnkdata;\
   nlnk      = 0;\
   _lnkdata  = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  for (_k=0; _k<nidx; _k++) {\
     _entry = indices[_k];\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       do {\
         _location = _lnkdata;\
@@ -968,9 +968,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
 #define PetscLLAddSorted_new(nidx,indices,idx_start,lnk_empty,nlnk,lnk,bt) 0; \
 {\
   PetscInt _k,_entry,_location,_lnkdata;\
-  if (lnk_empty){\
+  if (lnk_empty) {\
     _lnkdata  = idx_start;                      \
-    for (_k=0; _k<nidx; _k++){                  \
+    for (_k=0; _k<nidx; _k++) {                  \
       _entry = indices[_k];                             \
       PetscBTSet(bt,_entry);  /* mark the new entry */          \
           _location = _lnkdata;                                 \
@@ -984,7 +984,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
     lnk[indices[nidx-1]] = lnk[idx_start];\
     lnk[idx_start]       = indices[0];\
     PetscBTSet(bt,indices[0]);  \
-    for (_k=1; _k<nidx; _k++){                  \
+    for (_k=1; _k<nidx; _k++) {                  \
       PetscBTSet(bt,indices[_k]);                                          \
       lnk[indices[_k-1]] = indices[_k];                                  \
     }                                                           \
@@ -994,9 +994,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   } else {\
     nlnk      = 0;                              \
     _lnkdata  = idx_start;                      \
-    for (_k=0; _k<nidx; _k++){                  \
+    for (_k=0; _k<nidx; _k++) {                  \
       _entry = indices[_k];                             \
-      if (!PetscBTLookupSet(bt,_entry)){  /* new entry */       \
+      if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */       \
         /* search for insertion location */                     \
         do {                                                    \
           _location = _lnkdata;                                 \
@@ -1037,11 +1037,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   nlnk     = 0;\
   _lnkdata = idx_start;\
   _nidx = im[idx_start] - nzbd; /* num of entries with idx_start < index <= diag */\
-  for (_k=0; _k<_nidx; _k++){\
+  for (_k=0; _k<_nidx; _k++) {\
     _entry = indices[_k];\
     nzbd++;\
     if (_entry== diag) im[idx_start] = nzbd;\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       do {\
         _location = _lnkdata;\
@@ -1072,7 +1072,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
 #define PetscLLClean(idx_start,lnk_max,nlnk,lnk,indices,bt) 0;\
 {\
   PetscInt _j,_idx=idx_start;\
-  for (_j=0; _j<nlnk; _j++){\
+  for (_j=0; _j<nlnk; _j++) {\
     _idx = lnk[_idx];\
     indices[_j] = _idx;\
     ierr = PetscBTClear(bt,_idx);CHKERRQ(ierr);\
@@ -1120,9 +1120,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscInt _k,_entry,_location,_lnkdata;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  for (_k=0; _k<nidx; _k++) {\
     _entry = perm[idx[_k]];\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
       do {\
@@ -1165,11 +1165,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscInt _k,_entry,_location,_lnkdata,_incrlev,_lnklvl_prow=lnklvl[prow];\
   nlnk     = 0;\
   _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  for (_k=0; _k<nidx; _k++) {\
     _incrlev = idxlvl[_k] + _lnklvl_prow + 1;\
     if (_incrlev > level) continue;\
     _entry = idx[_k];\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       do {\
         _location = _lnkdata;\
@@ -1209,11 +1209,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  for (_k=0; _k<nidx; _k++) {\
     _incrlev = idxlvl[_k] + 1;\
     if (_incrlev > level) continue;\
     _entry = idx[_k];\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
       do {\
@@ -1254,11 +1254,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
   nlnk = 0;\
   _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  for (_k=0; _k<nidx; _k++) {\
     _incrlev = idxlvl[_k] + 1;\
     if (_incrlev > level) continue;\
     _entry = idx[_k];\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       do {\
         _location = _lnkdata;\
@@ -1301,11 +1301,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
   nlnk = 0;\
   _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  for (_k=0; _k<nidx; _k++) {\
     _incrlev = idxlvl[_k] + idxlvl_prow + 1;\
     if (_incrlev > level) continue;\
     _entry = idx[_k];\
-    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+    if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */\
       /* search for insertion location */\
       do {\
         _location = _lnkdata;\
@@ -1341,7 +1341,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
 #define PetscIncompleteLLClean(idx_start,lnk_max,nlnk,lnk,lnklvl,indices,indiceslvl,bt) 0;\
 do {\
   PetscInt _j,_idx=idx_start;\
-  for (_j=0; _j<nlnk; _j++){\
+  for (_j=0; _j<nlnk; _j++) {\
     _idx = lnk[_idx];\
     *(indices+_j) = _idx;\
     *(indiceslvl+_j) = lnklvl[_idx];\
@@ -1445,9 +1445,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted(PetscInt nidx,const
   PetscFunctionBegin;
   _nlnk     = lnk[0]; /* num of entries on the input lnk */
   _location = 2; /* head */
-    for (_k=0; _k<nidx; _k++){
+    for (_k=0; _k<nidx; _k++) {
       _entry = indices[_k];
-      if (!PetscBTLookupSet(bt,_entry)){  /* new entry */
+      if (!PetscBTLookupSet(bt,_entry)) {  /* new entry */
         /* search for insertion location */
         do {
           _next     = _location + 1; /* link from previous node to next node */
@@ -1475,7 +1475,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscI
   PetscFunctionBegin;
   _next = lnk[3];       /* head node */
   _nlnk = lnk[0];       /* num of entries on the list */
-  for (_k=0; _k<_nlnk; _k++){
+  for (_k=0; _k<_nlnk; _k++) {
     indices[_k] = lnk[_next];
     _next       = lnk[_next + 1];
     ierr = PetscBTClear(bt,indices[_k]);CHKERRQ(ierr);
@@ -1493,7 +1493,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF,"LLCondensed of size %D, (val,  next)\n",lnk[0]);CHKERRQ(ierr);
-  for (k=2; k< lnk[0]+2; k++){
+  for (k=2; k< lnk[0]+2; k++) {
     ierr = PetscPrintf(PETSC_COMM_SELF," %D: (%D, %D)\n",2*k,lnk[2*k],lnk[2*k+1]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1551,7 +1551,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt n
   PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;
   _nlnk     = lnk[0]; /* num of entries on the input lnk */
   _location = 2; /* head */ \
-    for (_k=0; _k<nidx; _k++){
+    for (_k=0; _k<nidx; _k++) {
       _entry = indices[_k];
       /* search for insertion location */
       do {
@@ -1578,7 +1578,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,
   PetscInt _k,_next,_nlnk;
   _next = lnk[3];       /* head node */
   _nlnk = lnk[0];
-  for (_k=0; _k<_nlnk; _k++){
+  for (_k=0; _k<_nlnk; _k++) {
     indices[_k] = lnk[_next];
     _next       = lnk[_next + 1];
   }
@@ -1638,7 +1638,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
   PetscInt k,entry,prev,next;
   prev      = 3;      /* first value */
   next      = lnk[prev+2];
-  for (k=0; k<nidx; k++){
+  for (k=0; k<nidx; k++) {
     entry = indices[k];
     /* search for insertion location */
     while (entry >= lnk[next]) {
@@ -1684,7 +1684,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_fast(PetscInt nidx,Pets
   _next = lnk[5];       /* first node */
   _nlnk = lnk[0];
   cnt   = 0;
-  for (_k=0; _k<_nlnk; _k++){
+  for (_k=0; _k<_nlnk; _k++) {
     for (j=0; j<lnk[_next+1]; j++) {
       indices[cnt++] = lnk[_next] + j;
     }
@@ -1706,7 +1706,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView_fast(PetscInt *lnk)
   PetscInt k,next,nlnk;
   next = lnk[5];       /* first node */
   nlnk = lnk[0];
-  for (k=0; k<nlnk; k++){
+  for (k=0; k<nlnk; k++) {
 #if 0                           /* Debugging code */
     printf("%d value %d len %d next %d\n",next,lnk[next],lnk[next+1],lnk[next+2]);
 #endif

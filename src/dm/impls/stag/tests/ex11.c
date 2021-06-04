@@ -143,7 +143,7 @@ PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)
         arrIn[ey][-1][idxP] = arrIn[ey][0][idxP];
       }
   }
-  if (isLastx){
+  if (isLastx) {
       for (ey=starty; ey<starty+ny+nExtray; ++ey) {
         arrIn[ey][startx + nx][idxP] = arrIn[ey][startx + nx - 1][idxP];
       }

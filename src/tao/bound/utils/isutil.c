@@ -236,7 +236,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
 
   ierr = VecGetOwnershipRange(X, &low, &high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
-  if (n>0){
+  if (n>0) {
     ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XL, &xl);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XU, &xu);CHKERRQ(ierr);
@@ -432,13 +432,13 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
 
   ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  if (n>0){
+  if (n>0) {
     ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XL, &xl);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XU, &xu);CHKERRQ(ierr);
     ierr = VecGetArray(Xout, &xout);CHKERRQ(ierr);
 
-    for (i=0;i<n;++i){
+    for (i=0;i<n;++i) {
       if ((xl[i] > PETSC_NINFINITY) && (x[i] <= xl[i] + bound_tol)) {
         xout[i] = xl[i]; ++nDiff_loc;
       } else if ((xu[i] < PETSC_INFINITY) && (x[i] >= xu[i] - bound_tol)) {

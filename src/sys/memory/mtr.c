@@ -122,7 +122,7 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at  %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write before beginning of or past end of array\n");
-      if (lasthead){
+      if (lasthead) {
         a    = (char*)(((TrSPACE*)head) + 1);
         (*PetscErrorPrintf)("Last intact block [id=%d(%.0f)] at address %p allocated in %s() line %d in %s\n",lasthead->id,(PetscLogDouble)lasthead->size,a,lasthead->functionname,lasthead->lineno,lasthead->filename);
       }

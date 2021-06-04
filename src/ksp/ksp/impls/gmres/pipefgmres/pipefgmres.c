@@ -180,7 +180,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
        coefficients we use in the orthogonalization process,because of the shift */
 
     /* Do some local twiddling to allow for a single reduction */
-    for (i=0;i<loc_it+1;i++){
+    for (i=0;i<loc_it+1;i++) {
       redux[i] = VEC_VV(i);
     }
     redux[loc_it+1] = ZVEC(loc_it);

@@ -340,33 +340,40 @@ PETSC_EXTERN void  matgetlocalsize01_(Mat *mat,PetscInt *m,PetscInt *n, int *ier
   matgetlocalsize_(mat,m,n,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblocked_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblocked_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   *ierr = MatSetValuesBlocked(*mat,*m,idxm,*n,idxn,v,*addv);
 }
 
-PETSC_EXTERN void  matsetvaluesblocked2_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], F90Array2d *y,InsertMode *addv, int *ierr PETSC_F90_2PTR_PROTO(ptrd)){
+PETSC_EXTERN void  matsetvaluesblocked2_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], F90Array2d *y,InsertMode *addv, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
   PetscScalar *fa;
   *ierr = F90Array2dAccess(y,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   matsetvaluesblocked_(mat,m,idxm,n,idxn,fa,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblocked0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblocked0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblocked11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblocked11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblocked111_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblocked111_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblocked1n_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblocked1n_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblockedn1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblockedn1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
@@ -375,23 +382,28 @@ PETSC_EXTERN void  matsetvaluesblockedlocal_(Mat *mat,PetscInt *nrow, PetscInt i
   *ierr = MatSetValuesBlockedLocal(*mat,*nrow,irow,*ncol,icol,y,*addv);
 }
 
-PETSC_EXTERN void  matsetvaluesblockedlocal0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblockedlocal0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblockedlocal11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblockedlocal11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblockedlocal111_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblockedlocal111_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblockedlocal1n_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblockedlocal1n_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
-PETSC_EXTERN void  matsetvaluesblockedlocaln1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr){
+PETSC_EXTERN void  matsetvaluesblockedlocaln1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr)
+{
   matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 

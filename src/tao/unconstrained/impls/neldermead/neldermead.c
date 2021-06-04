@@ -148,7 +148,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
   ierr = VecCopy(tao->solution,nm->simplex[0]);CHKERRQ(ierr);
   ierr = TaoComputeObjective(tao,nm->simplex[0],&nm->f_values[0]);CHKERRQ(ierr);
   nm->indices[0]=0;
-  for (i=1;i<nm->N+1;i++){
+  for (i=1;i<nm->N+1;i++) {
     ierr = VecCopy(tao->solution,nm->simplex[i]);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(nm->simplex[i],&low,&high);CHKERRQ(ierr);
     if (i-1 >= low && i-1 < high) {

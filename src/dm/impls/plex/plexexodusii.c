@@ -270,7 +270,7 @@ PetscErrorCode EXOGetVarIndex_Internal(int exoid, ex_entity_type obj_type, const
   PetscStackCallStandard(ex_get_variable_param,(exoid, obj_type, &num_vars));
   for (i = 0; i < num_vars; ++i) {
     PetscStackCallStandard(ex_get_variable_name,(exoid, obj_type, i+1, var_name));
-    for (j = 0; j < num_suffix; ++j){
+    for (j = 0; j < num_suffix; ++j) {
       ierr = PetscStrncpy(ext_name, name, MAX_STR_LENGTH);CHKERRQ(ierr);
       ierr = PetscStrlcat(ext_name, suffix[j], MAX_STR_LENGTH);CHKERRQ(ierr);
       ierr = PetscStrcasecmp(ext_name, var_name, &flg);
@@ -521,10 +521,10 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
             connect[i+off] = closure[(i-verticesInClosure+facesInClosure+1)*2] + 1;
             if (nodes[cs][2] == 0) connect[i+off] -= numFaces;
             connect[i+off] -= cellsNotInConnectivity;
-          } else if (i < nodes[cs][0]+nodes[cs][1]+nodes[cs][3]){ /* Cells */
+          } else if (i < nodes[cs][0]+nodes[cs][1]+nodes[cs][3]) { /* Cells */
             connect[i+off] = closure[0] + 1;
             connect[i+off] -= skipCells;
-          } else if (i < nodes[cs][0]+nodes[cs][1]+nodes[cs][3]+nodes[cs][2]){ /* Faces */
+          } else if (i < nodes[cs][0]+nodes[cs][1]+nodes[cs][3]+nodes[cs][2]) { /* Faces */
             connect[i+off] = closure[(i-edgesInClosure-verticesInClosure)*2] + 1;
             connect[i+off] -= cellsNotInConnectivity;
           } else {

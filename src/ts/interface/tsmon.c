@@ -191,7 +191,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscV
   ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
-    if (step == -1){ /* this indicates it is an interpolated solution */
+    if (step == -1) { /* this indicates it is an interpolated solution */
       ierr = PetscViewerASCIIPrintf(viewer,"Interpolated solution at time %g between steps %D and %D\n",(double)ptime,ts->steps-1,ts->steps);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"%D TS dt %g time %g%s",step,(double)ts->time_step,(double)ptime,ts->steprollback ? " (r)\n" : "\n");CHKERRQ(ierr);
@@ -1189,7 +1189,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
   ierr = VecGetArrayRead(u,&yy);CHKERRQ(ierr);
   ierr = PetscMalloc2(Np, &x, Np, &y);CHKERRQ(ierr);
   /* get points from solution vector */
-  for (p=0; p<Np; ++p){
+  for (p=0; p<Np; ++p) {
     x[p] = PetscRealPart(yy[2*dim*p]);
     y[p] = PetscRealPart(yy[2*dim*p+1]);
   }

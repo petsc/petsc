@@ -392,7 +392,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
         reject =1;
       }
     }
-    if (reject){
+    if (reject) {
       point--;
       continue;
     }
@@ -450,7 +450,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
       for (i=0;i<mfqP->npmax* mfqP->npmax;i++) {
         mfqP->Q[i] = mfqP->Q_tmp[i];
       }
-      for (i=0;i<mfqP->npmax;i++){
+      for (i=0;i<mfqP->npmax;i++) {
         mfqP->tau[i] = mfqP->tau_tmp[i];
       }
       mfqP->nmodelpoints++;

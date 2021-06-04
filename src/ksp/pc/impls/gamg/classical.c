@@ -264,7 +264,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
     Amax_pos[i-fs] = 0.;
     Amax_neg[i-fs] = 0.;
     ierr = MatGetRow(A,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
-    for (j=0;j<ncols;j++){
+    for (j=0;j<ncols;j++) {
       if ((PetscRealPart(-rval[j]) > Amax_neg[i-fs]) && i != rcol[j]) Amax_neg[i-fs] = PetscAbsScalar(rval[j]);
       if ((PetscRealPart(rval[j])  > Amax_pos[i-fs]) && i != rcol[j]) Amax_pos[i-fs] = PetscAbsScalar(rval[j]);
     }

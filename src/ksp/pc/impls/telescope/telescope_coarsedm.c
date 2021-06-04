@@ -311,7 +311,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,Ma
       /* attach any user nullspace removal methods and contexts */
       if (PCTelescope_isActiveRank(sred)) {
         void *context = NULL;
-        if (nullspace->remove && !nullspace->rmctx){
+        if (nullspace->remove && !nullspace->rmctx) {
           ierr = MatNullSpaceSetFunction(sub_nullspace,nullspace->remove,context);CHKERRQ(ierr);
         } else if (nullspace->remove && nullspace->rmctx) {
           char           dmcoarse_method[PETSC_MAX_PATH_LEN];
@@ -340,7 +340,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_CoarseDM(PC pc,PC_Telescope sred,Ma
       /* attach any user nullspace removal methods and contexts */
       if (PCTelescope_isActiveRank(sred)) {
         void *context = NULL;
-        if (nearnullspace->remove && !nearnullspace->rmctx){
+        if (nearnullspace->remove && !nearnullspace->rmctx) {
           ierr = MatNullSpaceSetFunction(sub_nearnullspace,nearnullspace->remove,context);CHKERRQ(ierr);
         } else if (nearnullspace->remove && nearnullspace->rmctx) {
           char           dmcoarse_method[PETSC_MAX_PATH_LEN];

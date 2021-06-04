@@ -186,7 +186,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
     } while (k<upper->k-oz);
   }
 
-  if (!offproc){
+  if (!offproc) {
     ierr = DMDAGetCorners(da, &ms, &ns, &ps, &mw, &nw, &pw);CHKERRQ(ierr);
     me = ms + mw;
     if (N>1) ne = ns + nw;

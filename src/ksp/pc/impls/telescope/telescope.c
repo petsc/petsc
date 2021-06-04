@@ -586,7 +586,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
   /* common - no construction */
   if (PCTelescope_isActiveRank(sred)) {
     ierr = KSPSetOperators(sred->ksp,sred->Bred,sred->Bred);CHKERRQ(ierr);
-    if (pc->setfromoptionscalled && !pc->setupcalled){
+    if (pc->setfromoptionscalled && !pc->setupcalled) {
       ierr = KSPSetFromOptions(sred->ksp);CHKERRQ(ierr);
     }
   }

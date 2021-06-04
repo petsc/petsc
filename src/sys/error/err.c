@@ -318,7 +318,8 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
  */
 #include <sstream>
 #include <stdexcept>
-static void PetscCxxErrorThrow() {
+static void PetscCxxErrorThrow()
+{
   const char *str;
   if (eh && eh->ctx) {
     std::ostringstream *msg;

@@ -807,7 +807,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
-    if (mg->view){
+    if (mg->view) {
       ierr = (*mg->view)(pc,viewer);CHKERRQ(ierr);
     }
     for (i=0; i<levels; i++) {
@@ -1020,13 +1020,13 @@ PetscErrorCode PCSetUp_MG(PC pc)
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
       ierr = DMHasCreateRestriction(dms[i],&dmhasrestrict);CHKERRQ(ierr);
-      if (dmhasrestrict && !mglevels[i+1]->restrct){
+      if (dmhasrestrict && !mglevels[i+1]->restrct) {
         ierr = DMCreateRestriction(dms[i],dms[i+1],&p);CHKERRQ(ierr);
         ierr = PCMGSetRestriction(pc,i+1,p);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
       ierr = DMHasCreateInjection(dms[i],&dmhasinject);CHKERRQ(ierr);
-      if (dmhasinject && !mglevels[i+1]->inject){
+      if (dmhasinject && !mglevels[i+1]->inject) {
         ierr = DMCreateInjection(dms[i],dms[i+1],&p);CHKERRQ(ierr);
         ierr = PCMGSetInjection(pc,i+1,p);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
@@ -1191,7 +1191,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   for (i=1; i<n; i++) {
-    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1){
+    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1) {
       /* if doing only down then initial guess is zero */
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
     }

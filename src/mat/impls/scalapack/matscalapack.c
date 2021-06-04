@@ -881,7 +881,7 @@ static PetscErrorCode MatNorm_ScaLAPACK(Mat A,NormType type,PetscReal *nrm)
   PetscScalar    *work=NULL,dummy;
 
   PetscFunctionBegin;
-  switch (type){
+  switch (type) {
     case NORM_1:
       ntype = "1";
       lwork = PetscMax(a->locr,a->locc);

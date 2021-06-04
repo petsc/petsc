@@ -621,7 +621,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     /* This version replaces both the user-provided Jacobian and the user-
      provided preconditioner Jacobian with the default matrix free version. */
     if ((snes->npcside== PC_LEFT) && snes->npc) {
-      if (!snes->jacobian){ierr = SNESSetJacobian(snes,J,NULL,NULL,NULL);CHKERRQ(ierr);}
+      if (!snes->jacobian) {ierr = SNESSetJacobian(snes,J,NULL,NULL,NULL);CHKERRQ(ierr);}
     } else {
       KSP       ksp;
       PC        pc;
@@ -2205,7 +2205,7 @@ PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->ops->computepjacobian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard Jacobian.");
   /*  A(x)*x - b(x) */
-  if (sdm->ops->computepfunction){
+  if (sdm->ops->computepfunction) {
     PetscStackPush("SNES Picard user function");
     ierr = (*sdm->ops->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
     PetscStackPop;
@@ -3283,7 +3283,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   if (snes->npc && (snes->npcside== PC_LEFT)) {
     if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-      if (snes->linesearch){
+      if (snes->linesearch) {
         ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
         ierr = SNESLineSearchSetFunction(linesearch,SNESComputeFunctionDefaultNPC);CHKERRQ(ierr);
       }

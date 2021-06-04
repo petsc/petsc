@@ -440,7 +440,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
   /* view */
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   if (time/rectx->plotDt >= (PetscReal)rectx->plotIdx || reason) {
-    if ((reason || stepi==0 || rectx->plotIdx%10==0) && ctx->verbose > 0){
+    if ((reason || stepi==0 || rectx->plotIdx%10==0) && ctx->verbose > 0) {
       /* print norms */
       ierr = LandauPrintNorms(X, stepi);CHKERRQ(ierr);
     }

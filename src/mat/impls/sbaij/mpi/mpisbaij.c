@@ -1386,8 +1386,8 @@ PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
 
   nmatch=0;
   k     = 0;
-  for (i=0; i<sz1; i++){
-    for (j=k; j<sz2; j++){
+  for (i=0; i<sz1; i++) {
+    for (j=k; j<sz2; j++) {
       if (a1[i] == a2[j]) {
         k = j; nmatch++;
         break;

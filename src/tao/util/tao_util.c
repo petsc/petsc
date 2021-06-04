@@ -518,9 +518,9 @@ PetscErrorCode TaoSoftThreshold(Vec in, PetscReal lb, PetscReal ub, Vec out)
   if (lb == ub) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound and upper bound need to be different.");
   if (lb > ub) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound needs to be lower than upper bound.");
 
-  if (ub >= 0 && lb < 0){
+  if (ub >= 0 && lb < 0) {
     for (i=0; i<nlocal; i++) outarray[i] = ST_InternalPN(inarray[i], lb, ub);
-  } else if (ub < 0 && lb < 0){
+  } else if (ub < 0 && lb < 0) {
     for (i=0; i<nlocal; i++) outarray[i] = ST_InternalNN(inarray[i], lb, ub);
   } else {
     for (i=0; i<nlocal; i++) outarray[i] = ST_InternalPP(inarray[i], lb, ub);

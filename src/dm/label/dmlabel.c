@@ -120,7 +120,7 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (v = 0; v < label->numStrata; v++){
+  for (v = 0; v < label->numStrata; v++) {
     ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
