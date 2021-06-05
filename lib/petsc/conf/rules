@@ -665,7 +665,7 @@ GITSRCEXCL = \
 ':!include/*/khash.h' \
 ':!src/sys/yaml/*'
 checkbadSource:
-	@git --no-pager grep -n -P 'self\.gitcommit' config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
+	-@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
 	-@${RM} -f checkbadSource.out
 	-@echo "Double blank lines in file ---------------------------" > checkbadSource.out
 	-@git --no-pager grep -n -P '^$$' -- ${GITSRC} > doublelinecheck.out
