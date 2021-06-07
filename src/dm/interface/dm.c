@@ -6867,7 +6867,7 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm,PetscBool *areLocalized)
 {
   DM             cdm;
   PetscSection   coordSection;
-  PetscInt       cStart, cEnd, sStart, sEnd, c, dof;
+  PetscInt       depth, cStart, cEnd, sStart, sEnd, c, dof;
   PetscBool      isPlex, alreadyLocalized;
   PetscErrorCode ierr;
 
@@ -6880,6 +6880,8 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm,PetscBool *areLocalized)
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) cdm, DMPLEX, &isPlex);CHKERRQ(ierr);
   if (!isPlex) PetscFunctionReturn(0);
+  ierr = DMPlexGetDepth(cdm, &depth);CHKERRQ(ierr);
+  if (!depth) PetscFunctionReturn(0);
 
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
