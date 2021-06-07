@@ -209,13 +209,12 @@ MACOS_FIREWALL := 1
 endif
 
 ifeq ($(MACOS_FIREWALL),1)
-MACOS_FIREWALL_MPIEXEC := $(shell $(PYTHON) -c "import os; print(os.path.realpath('$(MPIEXEC)'))")
 FW := /usr/libexec/ApplicationFirewall/socketfilterfw
 ifeq ($(MACOS_FIREWALL_REFRESH),1)
 define macos-firewall-register
   @APP=$(call abspath, $(1)); \
     echo "MACOS_FIREWALL_REFRESH set => refresh firewall rule"; \
-    if ! sudo -n true 2>/dev/null; then echo "Asking for sudo password to add new firewall rule for\n  $$APP:"; fi; \
+    if ! sudo -n true 2>/dev/null; then printf "Asking for sudo password to add new firewall rule for\n  $$APP\n"; fi; \
     sudo $(FW) --remove $$APP && \
     sudo $(FW) --add $$APP && \
     sudo $(FW) --blockapp $$APP
@@ -225,7 +224,7 @@ define macos-firewall-register
   @APP=$(call abspath, $(1)); \
     ANS=`$(FW) --getappblocked $$APP`; \
     if ! echo $$ANS | grep "$$APP" &> /dev/null; then \
-      if ! sudo -n true 2>/dev/null; then echo "Asking for sudo password to add new firewall rule for\n  $$APP:"; fi; \
+      if ! sudo -n true 2>/dev/null; then printf "Asking for sudo password to add new firewall rule for\n  $$APP\n"; fi; \
       sudo $(FW) --add $$APP && \
       sudo $(FW) --blockapp $$APP; \
     else \
@@ -234,7 +233,7 @@ define macos-firewall-register
 endef
 endif
 define macos-firewall-fix
-  $(call macos-firewall-register, $(MACOS_FIREWALL_MPIEXEC))
+  $(call macos-firewall-register, $(MPIEXECEXECUTABLE))
   $(call macos-firewall-register, $(1))
 endef
 endif
