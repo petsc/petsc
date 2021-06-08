@@ -1468,10 +1468,10 @@ PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
   Level: intermediate
 
   Options Database Keys:
-. -viewer_hdf5_filename <name>
+. -viewer_hdf5_filename <name> - name of the HDF5 file
 
   Environmental variables:
-. PETSC_VIEWER_HDF5_FILENAME
+. PETSC_VIEWER_HDF5_FILENAME - name of the HDF5 file
 
   Notes:
   Unlike almost all other PETSc routines, PETSC_VIEWER_HDF5_ does not return

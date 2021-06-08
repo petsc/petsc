@@ -29,7 +29,7 @@
 .   access_token - token that can be passed to PetscGoogleDriveUpload()
 
    Options Database:
-.  -google_refresh_token XXX   where XXX was obtained from PetscGoogleDriveAuthorize()
+.  -google_refresh_token XXX - where XXX was obtained from PetscGoogleDriveAuthorize()
 
    Level: intermediate
 

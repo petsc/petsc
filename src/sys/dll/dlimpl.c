@@ -47,10 +47,11 @@ typedef void* dlsymbol_t;
 -    mode - options on how to open library
 
    Output Parameter:
-.    handle
+.    handle - opague pointer to be used with PetscDLSym()
 
    Level: developer
 
+.seealso: PetscDLClose(), PetscDLSym(), PetscDLAddr()
 @*/
 PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *handle)
 {
@@ -122,7 +123,6 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
 #endif
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from dlopen() %s\n",name,errmsg);
   }
-
   /*
      --- unimplemented ---
   */
@@ -143,6 +143,8 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
 .   handle - the handle for the library obtained with PetscDLOpen()
 
   Level: developer
+
+.seealso: PetscDLOpen(), PetscDLSym(), PetscDLAddr()
 @*/
 PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 {
@@ -216,6 +218,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
    In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
    systems this requires platform-specific linker flags.
 
+.seealso: PetscDLClose(), PetscDLOpen(), PetscDLAddr()
 @*/
 PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
 {
@@ -330,6 +333,8 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 
   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
   systems this requires platform-specific linker flags.
+
+.seealso: PetscDLClose(), PetscDLSym(), PetscDLOpen()
 @*/
 PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
 {

@@ -51,19 +51,16 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
 .  dir - directory name
 
    Options Database Keys:
-+    -shared_tmp
-.    -not_shared_tmp
--    -tmp tmpdir
++    -shared_tmp  - indicates the directory is shared among the MPI ranks
+.    -not_shared_tmp - indicates the directory is not shared among the MPI ranks
+-    -tmp tmpdir - name of the directory you wish to use as /tmp
 
    Environmental Variables:
-+     PETSC_SHARED_TMP
-.     PETSC_NOT_SHARED_TMP
--     PETSC_TMP
++     PETSC_SHARED_TMP - indicates the directory is shared among the MPI ranks
+.     PETSC_NOT_SHARED_TMP - indicates the directory is not shared among the MPI ranks
+-     PETSC_TMP - name of the directory you wish to use as /tmp
 
    Level: developer
-
-   If the environmental variable PETSC_TMP is set it will use this directory
-  as the "/tmp" directory.
 
 @*/
 PetscErrorCode  PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
@@ -92,14 +89,14 @@ PetscErrorCode  PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
 .  shared - PETSC_TRUE or PETSC_FALSE
 
    Options Database Keys:
-+    -shared_tmp
-.    -not_shared_tmp
--    -tmp tmpdir
++    -shared_tmp  - indicates the directory is shared among the MPI ranks
+.    -not_shared_tmp - indicates the directory is not shared among the MPI ranks
+-    -tmp tmpdir - name of the directory you wish to use as /tmp
 
    Environmental Variables:
-+     PETSC_SHARED_TMP
-.     PETSC_NOT_SHARED_TMP
--     PETSC_TMP
++     PETSC_SHARED_TMP  - indicates the directory is shared among the MPI ranks
+.     PETSC_NOT_SHARED_TMP - indicates the directory is not shared among the MPI ranks
+-     PETSC_TMP - name of the directory you wish to use as /tmp
 
    Level: developer
 
@@ -218,12 +215,12 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 .  shared - PETSC_TRUE or PETSC_FALSE
 
    Options Database Keys:
-+    -shared_working_directory
--    -not_shared_working_directory
++    -shared_working_directory - indicates the directory is shared among the MPI ranks
+-    -not_shared_working_directory - indicates the directory is shared among the MPI ranks
 
    Environmental Variables:
-+     PETSC_SHARED_WORKING_DIRECTORY
-.     PETSC_NOT_SHARED_WORKING_DIRECTORY
++     PETSC_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
+.     PETSC_NOT_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
 
    Level: developer
 

@@ -242,10 +242,10 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
    Options Database Keys:
-.    -viewer_matlab_filename <name>
+.    -viewer_matlab_filename <name> - name of the Matlab file
 
    Environmental variables:
-.   PETSC_VIEWER_MATLAB_FILENAME
+.   PETSC_VIEWER_MATLAB_FILENAME - name of the Matlab file
 
      Notes:
      Unlike almost all other PETSc routines, PETSC_VIEWER_MATLAB_ does not return

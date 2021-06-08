@@ -383,9 +383,7 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
 -  PETSC_VIEWER_DRAW_LG    - displays using a line graph
 
    Options Database Keys:
-   PetscViewerDrawOpen() calls PetscDrawCreate(), so see the manual page for
-   PetscDrawCreate() for runtime options, including
-+  -draw_type x or null
++  -draw_type - use x or null
 .  -nox - Disables all x-windows output
 .  -display <name> - Specifies name of machine for the X display
 .  -geometry <x,y,w,h> - allows setting the window location and size
@@ -394,6 +392,9 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
      (0 is default, -1 implies until user input).
 
    Level: beginner
+
+   Notes:
+     PetscViewerDrawOpen() calls PetscDrawCreate(), so see the manual pages for PetscDrawCreate()
 
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
@@ -810,7 +811,7 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
 -   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 
     Options Database:
-.   -draw_bounds  minF0,maxF0,minF1,maxF1
+.   -draw_bounds  minF0,maxF0,minF1,maxF1 - the lower left and upper right bounds
 
     Level: intermediate
 

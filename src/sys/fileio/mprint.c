@@ -315,7 +315,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 +   str - the string to print to
 .   len - the length of str
 .   format - the usual printf() format string
--   any arguments
+-   ... - any arguments that are to be printed, each much have an appropriate symbol in the format argument
 
    Level: intermediate
 
@@ -343,7 +343,7 @@ PetscErrorCode PetscSNPrintf(char *str,size_t len,const char format[],...)
 +   str - the string to print to
 .   len - the length of str
 .   format - the usual printf() format string
--   any arguments
+-   ... - any arguments that are to be printed, each much have an appropriate symbol in the format argument
 
     Output Parameter:
 .   countused - number of characters used

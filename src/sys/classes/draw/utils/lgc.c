@@ -357,7 +357,6 @@ PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_
    Level: intermediate
 
 .seealso: PetscDrawLGCreate()
-
 @*/
 PetscErrorCode  PetscDrawLGReset(PetscDrawLG lg)
 {
@@ -417,12 +416,11 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
 -  flg - should mark each data point
 
    Options Database:
-.  -lg_use_markers  <true,false>
+.  -lg_use_markers  <true,false> - true means the graphPetscDrawLG draws a marker for each point
 
    Level: intermediate
 
 .seealso: PetscDrawLGCreate()
-
 @*/
 PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
 {
@@ -444,7 +442,6 @@ PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
    Level: intermediate
 
 .seealso: PetscDrawSPDraw(), PetscDrawLGSPDraw(), PetscDrawLGReset()
-
 @*/
 PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 {

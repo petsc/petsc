@@ -214,7 +214,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
 -   filename - file to upload
 
   Options Database:
-.  -globus_access_token   XXX
+.  -globus_access_token XXX - the Globus token
 
    Level: intermediate
 
