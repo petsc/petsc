@@ -799,8 +799,8 @@ static PetscErrorCode PCPatchCompleteCellPatch(PC pc, PetscHSetI ht, PetscHSetI 
         /* Facet integrals couple dofs across facets, so in that case for each of
          * the facets we need to add all dofs on the other side of the facet to
          * the seen dofs. */
-        if (patch->usercomputeopintfacet){
-          if (fBegin <= seenpoint && seenpoint < fEnd){
+        if (patch->usercomputeopintfacet) {
+          if (fBegin <= seenpoint && seenpoint < fEnd) {
             ierr = DMPlexGetTransitiveClosure(dm, seenpoint, PETSC_FALSE, &fStarSize, &fStar);CHKERRQ(ierr);
             for (fsi = 0; fsi < fStarSize*2; fsi += 2) {
               ierr = DMPlexGetTransitiveClosure(dm, fStar[fsi], PETSC_TRUE, &fClosureSize, &fClosure);CHKERRQ(ierr);

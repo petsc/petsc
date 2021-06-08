@@ -166,7 +166,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
     if (!stag->l[i]) {
       const PetscInt Ni = stag->N[i], nRanksi = stag->nRanks[i];
       ierr = PetscMalloc1(stag->nRanks[i],&stag->l[i]);CHKERRQ(ierr);
-      for (j=0; j<stag->nRanks[i]; ++j){
+      for (j=0; j<stag->nRanks[i]; ++j) {
         stag->l[i][j] = Ni/nRanksi + ((Ni % nRanksi) > j);
       }
     }
@@ -186,7 +186,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
   /* Compute starting elements */
   for (i=0; i<dim; ++i) {
     stag->start[i] = 0;
-    for (j=0;j<stag->rank[i];++j){
+    for (j=0;j<stag->rank[i];++j) {
       stag->start[i] += stag->l[i][j];
     }
   }
@@ -988,7 +988,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
       ++j;
       /* Additional top dummy layers */
       for (; j<stag->n[1]+ghostOffsetEnd[1]; ++j) {
-        for (ighost=0; ighost<stag->nGhost[0]; ++ighost){
+        for (ighost=0; ighost<stag->nGhost[0]; ++ighost) {
           for (d=0; d<stag->entriesPerElement; ++d, ++countAll) {
             idxGlobalAll[countAll] = -1;
           }
@@ -1118,7 +1118,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_2d(DM dm)
 
   /* Then, compute the rank of each in the linear ordering */
   ierr = PetscMalloc1(9,&stag->neighbors);CHKERRQ(ierr);
-  for (i=0; i<9; ++i){
+  for (i=0; i<9; ++i) {
     if  (neighborRank[i][0] >= 0 && neighborRank[i][1] >=0) {
       stag->neighbors[i] = neighborRank[i][0] + n[0]*neighborRank[i][1];
     } else {

@@ -66,7 +66,7 @@ static PetscErrorCode VecMergedDot2_Private(Vec N,Vec M,Vec W,PetscScalar *wm,Pe
   ierr = VecGetLocalSize(N,&n);CHKERRQ(ierr);
 
   PetscPragmaSIMD
-  for (j=0; j<n; j++){
+  for (j=0; j<n; j++) {
     sumwm += PW[j] * PetscConj(PM[j]);
     sumnm += PN[j] * PetscConj(PM[j]);
   }

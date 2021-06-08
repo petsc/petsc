@@ -401,7 +401,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
   VecCheckMatCompatible(B, X, 2, Y, 3);
   if (lmvm->user_pc || lmvm->user_ksp || lmvm->J0) {
     /* User may have defined a PC or KSP for J0^{-1} so let's try to use its operators. */
-    if (lmvm->user_pc){
+    if (lmvm->user_pc) {
       ierr = PCGetOperators(lmvm->J0pc, &Amat, &Pmat);CHKERRQ(ierr);
     } else if (lmvm->user_ksp) {
       ierr = KSPGetOperators(lmvm->J0ksp, &Amat, &Pmat);CHKERRQ(ierr);

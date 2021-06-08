@@ -578,7 +578,7 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);
-  if (fgmres->nwork_alloc>0){
+  if (fgmres->nwork_alloc>0) {
     i=0;
     /* In the first allocation we allocated VEC_OFFSET fewer vectors in prevecs */
     ierr = VecDestroyVecs(fgmres->mwork_alloc[i]-VEC_OFFSET,&fgmres->prevecs_user_work[i]);CHKERRQ(ierr);

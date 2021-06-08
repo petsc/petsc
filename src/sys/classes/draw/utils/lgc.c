@@ -555,7 +555,7 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
   if (nopts < 1)                  PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
-  if (!viewer){
+  if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg),&viewer);CHKERRQ(ierr);
   }
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)lg,viewer);CHKERRQ(ierr);

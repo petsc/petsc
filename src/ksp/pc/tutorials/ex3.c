@@ -46,7 +46,7 @@ int main(int argc,char **args)
     nloc = (rank+1)*n;
     if (rank == size-1) { /* proc[size-1] stores all remaining rows */
       nloc = m*n;
-      for (i=0; i<size-1; i++){
+      for (i=0; i<size-1; i++) {
         nloc -= (i+1)*n;
       }
     }

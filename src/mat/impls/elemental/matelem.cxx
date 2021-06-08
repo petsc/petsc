@@ -41,7 +41,7 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
       El::Print( *a->emat, "Elemental matrix (cyclic ordering)");
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
-      if (A->factortype == MAT_FACTOR_NONE){
+      if (A->factortype == MAT_FACTOR_NONE) {
         Mat Adense;
         ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
         ierr = MatView(Adense,viewer);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         P2RO(A,1,cols[j],&crank,&cidx);
         RO2E(A,1,crank,cidx,&ecol);
         if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
-        if (!a->emat->IsLocal(erow,ecol)){ /* off-proc entry */
+        if (!a->emat->IsLocal(erow,ecol)) { /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
           if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
@@ -174,7 +174,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
         P2RO(A,0,rows[i],&rrank,&ridx);
         RO2E(A,0,rrank,ridx,&erow);
         if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
-        if (!a->emat->IsLocal(erow,ecol)){ /* off-proc entry */
+        if (!a->emat->IsLocal(erow,ecol)) { /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
           if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
@@ -596,7 +596,7 @@ static PetscErrorCode MatHermitianTranspose_Elemental(Mat A,MatReuse reuse,Mat *
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* Only out-of-place supported */
-  if (reuse == MAT_INITIAL_MATRIX){
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(comm,&Be);CHKERRQ(ierr);
     ierr = MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(Be,MATELEMENTAL);CHKERRQ(ierr);
@@ -815,7 +815,7 @@ static PetscErrorCode MatNorm_Elemental(Mat A,NormType type,PetscReal *nrm)
   Mat_Elemental *a=(Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  switch (type){
+  switch (type) {
   case NORM_1:
     *nrm = El::OneNorm(*a->emat);
     break;

@@ -98,7 +98,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDAGetCorners(da3D, &ixs, &iys, &izs, &ixm, &iym, &izm);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da3D, vec_full, &vecdata3d);CHKERRQ(ierr);
-  for (k=izs; k<izs+izm; k++){
+  for (k=izs; k<izs+izm; k++) {
     for (j=iys; j<iys+iym; j++) {
       for (i=ixs; i<ixs+ixm; i++) {
         vecdata3d[k][j][i] = ((i-Mx/2.0)*(j+Mx/2.0))+k*100;

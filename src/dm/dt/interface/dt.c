@@ -2454,7 +2454,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n,PetscR
 
   PetscFunctionBegin;
   ierr = PetscGaussLobattoLegendreElementGradientCreate(n,nodes,weights,&D,NULL);CHKERRQ(ierr);
-  for (i=0; i<glln; i++){
+  for (i=0; i<glln; i++) {
     for (j=0; j<glln; j++) {
       D[i][j] = gllweights[i]*D[i][j];
     }

@@ -8,15 +8,21 @@
 typedef struct PetscSectionClosurePermKey {
   PetscInt    depth, size;
 } PetscSectionClosurePermKey;
+
 typedef struct {
   PetscInt *perm, *invPerm;
 } PetscSectionClosurePermVal;
-PETSC_STATIC_INLINE PetscHash_t PetscSectionClosurePermHash(PetscSectionClosurePermKey k) {
+
+PETSC_STATIC_INLINE PetscHash_t PetscSectionClosurePermHash(PetscSectionClosurePermKey k)
+{
   return PetscHashCombine(PetscHashInt(k.depth), PetscHashInt(k.size));
 }
-PETSC_STATIC_INLINE int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, PetscSectionClosurePermKey k2) {
+
+PETSC_STATIC_INLINE int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, PetscSectionClosurePermKey k2)
+{
   return k1.depth == k2.depth && k1.size == k2.size;
 }
+
 static PetscSectionClosurePermVal PetscSectionClosurePermVal_Empty = {NULL, NULL};
 PETSC_HASH_MAP(ClPerm, PetscSectionClosurePermKey, PetscSectionClosurePermVal, PetscSectionClosurePermHash, PetscSectionClosurePermEqual, PetscSectionClosurePermVal_Empty)
 

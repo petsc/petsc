@@ -67,7 +67,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
    * can optimize communication
    *  */
   ierr = PetscMalloc2(nidx,(PetscInt ***)&indices,nidx,&length);CHKERRQ(ierr);
-  for (i=0,tlength=0; i<nidx; i++){
+  for (i=0,tlength=0; i<nidx; i++) {
     ierr = ISGetLocalSize(is[i],&length[i]);CHKERRQ(ierr);
     tlength += length[i];
     ierr = ISGetIndices(is[i],&indices[i]);CHKERRQ(ierr);
@@ -199,13 +199,13 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat,PetscIn
   PetscFunctionBegin;
   max_lsize = 0;
   ierr = PetscMalloc1(nidx,&isz);CHKERRQ(ierr);
-  for (i=0; i<nidx; i++){
+  for (i=0; i<nidx; i++) {
     ierr = ISGetLocalSize(is[i],&lsize);CHKERRQ(ierr);
     max_lsize = lsize>max_lsize ? lsize:max_lsize;
     isz[i]    = lsize;
   }
   ierr = PetscMalloc2((max_lsize+nrecvs)*nidx,&indices_temp,nidx,&iscomms);CHKERRQ(ierr);
-  for (i=0; i<nidx; i++){
+  for (i=0; i<nidx; i++) {
     ierr = PetscCommDuplicate(PetscObjectComm((PetscObject)is[i]),&iscomms[i],NULL);CHKERRQ(ierr);
     ierr = ISGetIndices(is[i],&indices_i_temp);CHKERRQ(ierr);
     ierr = PetscArraycpy(indices_temp+i*(max_lsize+nrecvs),indices_i_temp, isz[i]);CHKERRQ(ierr);
@@ -213,19 +213,19 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat,PetscIn
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
   }
   /* retrieve information to get row id and its overlap */
-  for (i=0; i<nrecvs;){
+  for (i=0; i<nrecvs;) {
     is_id     = recvdata[i++];
     data_size = recvdata[i++];
     indices_i = indices_temp+(max_lsize+nrecvs)*is_id;
     isz_i     = isz[is_id];
-    for (j=0; j< data_size; j++){
+    for (j=0; j< data_size; j++) {
       col = recvdata[i++];
       indices_i[isz_i++] = col;
     }
     isz[is_id] = isz_i;
   }
   /* remove duplicate entities */
-  for (i=0; i<nidx; i++){
+  for (i=0; i<nidx; i++) {
     indices_i = indices_temp+(max_lsize+nrecvs)*i;
     isz_i     = isz[i];
     ierr = PetscSortRemoveDupsInt(&isz_i,indices_i);CHKERRQ(ierr);
@@ -272,23 +272,23 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   for (i=0; i<nidx; i++) rows_data[i] = rows_data_ptr+max_fszs*i;
   rows_pos  = 0;
   totalrows = 0;
-  for (i=0; i<nfrom; i++){
+  for (i=0; i<nfrom; i++) {
     ierr = PetscArrayzero(rows_pos_i,nidx);CHKERRQ(ierr);
     /* group data together */
-    for (j=0; j<fromsizes[2*i]; j+=2){
+    for (j=0; j<fromsizes[2*i]; j+=2) {
       is_id                       = fromrows[rows_pos++];/* no of is */
       rows_i                      = rows_data[is_id];
       rows_i[rows_pos_i[is_id]++] = fromrows[rows_pos++];/* row */
     }
     /* estimate a space to avoid multiple allocations  */
-    for (j=0; j<nidx; j++){
+    for (j=0; j<nidx; j++) {
       indvc_ij = 0;
       rows_i   = rows_data[j];
-      for (l=0; l<rows_pos_i[j]; l++){
+      for (l=0; l<rows_pos_i[j]; l++) {
         row    = rows_i[l]-rstart;
         start  = ai[row];
         end    = ai[row+1];
-        for (k=start; k<end; k++){ /* Amat */
+        for (k=start; k<end; k++) { /* Amat */
           col = aj[k] + cstart;
           indices_tmp[indvc_ij++] = col;/* do not count the rows from the original rank */
         }
@@ -309,26 +309,26 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   totalrows = 0;
   rows_pos  = 0;
   /* use this code again */
-  for (i=0;i<nfrom;i++){
+  for (i=0;i<nfrom;i++) {
     ierr = PetscArrayzero(rows_pos_i,nidx);CHKERRQ(ierr);
-    for (j=0; j<fromsizes[2*i]; j+=2){
+    for (j=0; j<fromsizes[2*i]; j+=2) {
       is_id                       = fromrows[rows_pos++];
       rows_i                      = rows_data[is_id];
       rows_i[rows_pos_i[is_id]++] = fromrows[rows_pos++];
     }
     /* add data  */
-    for (j=0; j<nidx; j++){
+    for (j=0; j<nidx; j++) {
       if (!indv_counts[i*nidx+j]) continue;
       indvc_ij = 0;
       sbdata[totalrows++] = j;
       sbdata[totalrows++] = indv_counts[i*nidx+j];
       sbsizes[2*i]       += 2;
       rows_i              = rows_data[j];
-      for (l=0; l<rows_pos_i[j]; l++){
+      for (l=0; l<rows_pos_i[j]; l++) {
         row   = rows_i[l]-rstart;
         start = ai[row];
         end   = ai[row+1];
-        for (k=start; k<end; k++){ /* Amat */
+        for (k=start; k<end; k++) { /* Amat */
           col = aj[k] + cstart;
           indices_tmp[indvc_ij++] = col;
         }
@@ -347,7 +347,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   }
   ierr = PetscMalloc1(nfrom+1,&offsets);CHKERRQ(ierr);
   offsets[0] = 0;
-  for (i=0; i<nfrom; i++){
+  for (i=0; i<nfrom; i++) {
     offsets[i+1]   = offsets[i] + sbsizes[2*i];
     sbsizes[2*i+1] = offsets[i];
   }
@@ -2163,7 +2163,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
       cmap[i]       = smat_i->cmap;
     }
 
-    if (!ismax){ /* Get dummy submatrices and retrieve struct submatis1 */
+    if (!ismax) { /* Get dummy submatrices and retrieve struct submatis1 */
       if (!submats[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"submats are null, cannot reuse");
       smat_i = (Mat_SubSppt*)submats[0]->data;
 

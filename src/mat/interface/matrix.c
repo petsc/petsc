@@ -1238,7 +1238,7 @@ static PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (redund){
+  if (redund) {
     if (redund->matseq) { /* via MatCreateSubMatrices()  */
       ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
       ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
@@ -4082,7 +4082,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
   if (mat->factorerrortype) {
     ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr);
-  } else if (mat->ops->solvetransposeadd){
+  } else if (mat->ops->solvetransposeadd) {
     ierr = (*mat->ops->solvetransposeadd)(mat,b,y,x);CHKERRQ(ierr);
   } else {
     /* do the solve then the add manually */
@@ -7364,7 +7364,7 @@ PetscErrorCode MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov)
   MatCheckPreallocated(mat,1);
   if (!ov) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
-  for (i=0; i<n; i++){
+  for (i=0; i<n; i++) {
         ierr =  MatIncreaseOverlapSplit_Single(mat,&is[i],ov);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);

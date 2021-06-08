@@ -950,7 +950,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_12_ver1(Mat A,Vec xx,Vec yy,Vec zz)
     n    = ii[i+1] - ii[i];
     idx  = ij + ii[i];
 
-    if (usecprow){
+    if (usecprow) {
       y = yarray + 12*ridx[i];
       z = zarray + 12*ridx[i];
     }

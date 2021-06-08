@@ -246,7 +246,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   ierr = PetscMalloc1(dual_size,&aux_local_numbering_2);CHKERRQ(ierr);
 
   ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-  for (i=0;i<pcis->n;i++){
+  for (i=0;i<pcis->n;i++) {
     j = mat_graph->count[i]; /* RECALL: mat_graph->count[i] does not count myself */
     if (j > 0) n_boundary_dofs++;
     skip_node = PETSC_FALSE;

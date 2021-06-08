@@ -18,7 +18,8 @@ PETSC_EXTERN void petscgetarchtype_(char* str,PetscErrorCode *ierr,PETSC_FORTRAN
   FIXRETURNCHAR(PETSC_TRUE,str,len);
 }
 
-PETSC_EXTERN void  petscbarrier_(PetscObject *obj, int *ierr){
+PETSC_EXTERN void  petscbarrier_(PetscObject *obj, int *ierr)
+{
   *ierr = PetscBarrier(*obj);
 }
 

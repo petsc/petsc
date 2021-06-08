@@ -360,7 +360,8 @@ PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct) {
+PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
+{
   switch (ct) {
     case DM_POLYTOPE_POINT:
       return 0;

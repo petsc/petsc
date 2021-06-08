@@ -168,7 +168,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   ierr = TaoMonitor(tao,tao->niter,f,gpcg->gnorm,0.0,tao->step);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
 
-  while (tao->reason == TAO_CONTINUE_ITERATING){
+  while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
@@ -182,7 +182,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
 
     ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
 
-    if (gpcg->n_free > 0){
+    if (gpcg->n_free > 0) {
       /* Create a reduced linear system */
       ierr = VecDestroy(&gpcg->R);CHKERRQ(ierr);
       ierr = VecDestroy(&gpcg->DXFree);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
      The free, active, and binding variables should be already identified
   */
   PetscFunctionBegin;
-  for (i=0;i<gpcg->maxgpits;i++){
+  for (i=0;i<gpcg->maxgpits;i++) {
     if (-actred <= (gpcg->pg_ftol)*actred_max) break;
     ierr = VecBoundGradientProjection(G,X,XL,XU,DX);CHKERRQ(ierr);
     ierr = VecScale(DX,-1.0);CHKERRQ(ierr);

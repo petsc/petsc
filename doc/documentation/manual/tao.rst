@@ -3549,8 +3549,8 @@ gradient method.
 
 ::
 
-   PetscErrorCode TaoSolve_CG(Tao tao){
-
+   PetscErrorCode TaoSolve_CG(Tao tao)
+   {
      TAO_CG  *cg = (TAO_CG *) tao->data;
      Vec x = tao->solution;
      Vec g = tao->gradient;

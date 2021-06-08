@@ -270,21 +270,25 @@ struct MDotFunctor {
     yv[6] = yv6; yv[7] = yv7;
   }
 
-  KOKKOS_INLINE_FUNCTION void operator() (TransposeDotTag,const size_type i,value_type sum) const {
+  KOKKOS_INLINE_FUNCTION void operator() (TransposeDotTag,const size_type i,value_type sum) const
+  {
     PetscScalar xval = xv(i);
     for (size_type j = 0; j<value_count; ++j) sum[j] += yv[j](i)*xval;
   }
 
-  KOKKOS_INLINE_FUNCTION void operator() (ConjugateDotTag,const size_type i,value_type sum) const {
+  KOKKOS_INLINE_FUNCTION void operator() (ConjugateDotTag,const size_type i,value_type sum) const
+  {
     PetscScalar xval = xv(i);
     for (size_type j = 0; j<value_count; ++j) sum[j] += PetscConj(yv[j](i))*xval;
   }
 
-  KOKKOS_INLINE_FUNCTION void join (volatile value_type dst,const volatile value_type src) const {
+  KOKKOS_INLINE_FUNCTION void join (volatile value_type dst,const volatile value_type src) const
+  {
     for (size_type j = 0; j<value_count; j++) dst[j] += src[j];
   }
 
-  KOKKOS_INLINE_FUNCTION void init (value_type sum) const {
+  KOKKOS_INLINE_FUNCTION void init (value_type sum) const
+  {
     for (size_type j = 0; j<value_count; j++) sum[j] = 0.0;
   }
 };
@@ -504,7 +508,8 @@ struct MAXPYFunctor {
     xv[6] = xv6; xv[7] = xv7;
   }
 
-  KOKKOS_INLINE_FUNCTION void operator() (const size_type i) const {
+  KOKKOS_INLINE_FUNCTION void operator() (const size_type i) const
+  {
     for (PetscInt j = 0; j<nx; ++j) yv(i) += a[j]*xv[j](i);
   }
 };
@@ -687,17 +692,20 @@ struct DotNorm2 {
   DotNorm2(ConstPetscScalarKokkosView& xv,ConstPetscScalarKokkosView& yv) :
     value_count(2), xv_(xv), yv_(yv) {}
 
-  KOKKOS_INLINE_FUNCTION void operator() (const size_type i, value_type result) const {
+  KOKKOS_INLINE_FUNCTION void operator() (const size_type i, value_type result) const
+  {
     result[0] += PetscConj(yv_(i))*xv_(i);
     result[1] += PetscConj(yv_(i))*xv_(i);
   }
 
-  KOKKOS_INLINE_FUNCTION void join (volatile value_type dst, const volatile value_type src) const {
+  KOKKOS_INLINE_FUNCTION void join (volatile value_type dst, const volatile value_type src) const
+  {
     dst[0] += src[0];
     dst[1] += src[1];
   }
 
-  KOKKOS_INLINE_FUNCTION void init (value_type result) const {
+  KOKKOS_INLINE_FUNCTION void init (value_type result) const
+  {
     result[0] = 0.0;
     result[1] = 0.0;
   }

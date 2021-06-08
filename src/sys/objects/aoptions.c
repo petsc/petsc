@@ -622,7 +622,7 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
     ierr   = PetscFree(PetscOptionsObject->next->man);CHKERRQ(ierr);
     ierr   = PetscFree(PetscOptionsObject->next->edata);CHKERRQ(ierr);
 
-    if ((PetscOptionsObject->next->type == OPTION_STRING) || (PetscOptionsObject->next->type == OPTION_FLIST) || (PetscOptionsObject->next->type == OPTION_ELIST)){
+    if ((PetscOptionsObject->next->type == OPTION_STRING) || (PetscOptionsObject->next->type == OPTION_FLIST) || (PetscOptionsObject->next->type == OPTION_ELIST)) {
       free(PetscOptionsObject->next->data);
     } else {
       ierr   = PetscFree(PetscOptionsObject->next->data);CHKERRQ(ierr);

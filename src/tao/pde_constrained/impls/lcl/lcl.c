@@ -389,12 +389,12 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     ierr = TaoLogConvergenceHistory(tao,f,mnorm,cnorm,tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao,tao->niter,f,mnorm,cnorm,step);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
-    if (tao->reason != TAO_CONTINUE_ITERATING){
+    if (tao->reason != TAO_CONTINUE_ITERATING) {
       break;
     }
 
     /* TODO: use a heuristic to choose how many iterations should be performed within phase 2 */
-    for (phase2_iter=0; phase2_iter<lclP->phase2_niter; phase2_iter++){
+    for (phase2_iter=0; phase2_iter<lclP->phase2_niter; phase2_iter++) {
       /* We now minimize the objective function starting from the fraction of
          the Newton point accepted by applying one step of a reduced-space
          method.  The optimization problem is:
@@ -482,7 +482,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = TaoLineSearchSetType(tao->linesearch,TAOLINESEARCHMT);CHKERRQ(ierr);
       ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection,&step,&ls_reason);CHKERRQ(ierr);
-      if (lclP->verbose){
+      if (lclP->verbose) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space steplength =  %g\n",(double)step);CHKERRQ(ierr);
       }
 
@@ -499,7 +499,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
       /* p2 */
       /* Compute multipliers, using lamda-rho*con as an initial guess in PCG */
-      if (phase2_iter==0){
+      if (phase2_iter==0) {
         ierr = VecWAXPY(lclP->lamda,-lclP->rho,lclP->con1,lclP->lamda0);CHKERRQ(ierr);
       } else {
         ierr = VecAXPY(lclP->lamda,-lclP->rho,tao->constraints);CHKERRQ(ierr);

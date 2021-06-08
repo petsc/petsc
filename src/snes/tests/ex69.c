@@ -221,7 +221,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   static PetscInt fail = 0;
 
   PetscFunctionBeginUser;
-  if ((fail++ > 7 && user->errorindomainmf) || (fail++ > 36 && user->errorindomain)){
+  if ((fail++ > 7 && user->errorindomainmf) || (fail++ > 36 && user->errorindomain)) {
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)user->snes),&rank);CHKERRMPI(ierr);
     if (!rank) {

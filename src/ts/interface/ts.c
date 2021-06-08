@@ -741,7 +741,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
       PetscBool flg;
       ierr = SNESGetUseMatrixFree(ts->snes,NULL,&flg);CHKERRQ(ierr);
       /* Handle case where user provided only RHSJacobian and used -snes_mf_operator */
-      if (flg && !ijacobian && ts->Arhs == ts->Brhs){
+      if (flg && !ijacobian && ts->Arhs == ts->Brhs) {
         ierr = PetscObjectDereference((PetscObject)ts->Arhs);CHKERRQ(ierr);
         ts->Arhs = A;
         ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
@@ -5046,17 +5046,17 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = PetscRealPart(atol[i]);
-      if (tola>0.){
+      if (tola>0.) {
         suma  += PetscSqr(diff/tola);
         na_loc++;
       }
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if (tolr>0.){
+      if (tolr>0.) {
         sumr  += PetscSqr(diff/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if (tol>0.){
+      if (tol>0.) {
         sum  += PetscSqr(diff/tol);
         n_loc++;
       }
@@ -5070,17 +5070,17 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = PetscRealPart(atol[i]);
-      if (tola>0.){
+      if (tola>0.) {
         suma  += PetscSqr(diff/tola);
         na_loc++;
       }
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if (tolr>0.){
+      if (tolr>0.) {
         sumr  += PetscSqr(diff/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if (tol>0.){
+      if (tol>0.) {
         sum  += PetscSqr(diff/tol);
         n_loc++;
       }
@@ -5093,17 +5093,17 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = ts->atol;
-      if (tola>0.){
+      if (tola>0.) {
         suma  += PetscSqr(diff/tola);
         na_loc++;
       }
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if (tolr>0.){
+      if (tolr>0.) {
         sumr  += PetscSqr(diff/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if (tol>0.){
+      if (tol>0.) {
         sum  += PetscSqr(diff/tol);
         n_loc++;
       }
@@ -5114,17 +5114,17 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       diff = PetscAbsScalar(y[i] - u[i]);
       tola = ts->atol;
-      if (tola>0.){
+      if (tola>0.) {
         suma  += PetscSqr(diff/tola);
         na_loc++;
       }
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if (tolr>0.){
+      if (tolr>0.) {
         sumr  += PetscSqr(diff/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if (tol>0.){
+      if (tol>0.) {
         sum  += PetscSqr(diff/tol);
         n_loc++;
       }
@@ -5150,11 +5150,11 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
   nr_glb = err_glb[5];
 
   *norm  = 0.;
-  if (n_glb>0.){*norm  = PetscSqrtReal(gsum  / n_glb);}
+  if (n_glb>0.) {*norm  = PetscSqrtReal(gsum  / n_glb);}
   *norma = 0.;
-  if (na_glb>0.){*norma = PetscSqrtReal(gsuma / na_glb);}
+  if (na_glb>0.) {*norma = PetscSqrtReal(gsuma / na_glb);}
   *normr = 0.;
-  if (nr_glb>0.){*normr = PetscSqrtReal(gsumr / nr_glb);}
+  if (nr_glb>0.) {*normr = PetscSqrtReal(gsumr / nr_glb);}
 
   if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
@@ -5223,13 +5223,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
       tola = PetscRealPart(atol[i]);
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if (tola>0.){
+      if (tola>0.) {
         maxa = PetscMax(maxa,diff / tola);
       }
-      if (tolr>0.){
+      if (tolr>0.) {
         maxr = PetscMax(maxr,diff / tolr);
       }
-      if (tol>0.){
+      if (tol>0.) {
         max = PetscMax(max,diff / tol);
       }
     }
@@ -5244,13 +5244,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
       tola = PetscRealPart(atol[i]);
       tolr = ts->rtol  * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if (tola>0.){
+      if (tola>0.) {
         maxa = PetscMax(maxa,diff / tola);
       }
-      if (tolr>0.){
+      if (tolr>0.) {
         maxr = PetscMax(maxr,diff / tolr);
       }
-      if (tol>0.){
+      if (tol>0.) {
         max = PetscMax(max,diff / tol);
       }
     }
@@ -5265,13 +5265,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
       tola = ts->atol;
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if (tola>0.){
+      if (tola>0.) {
         maxa = PetscMax(maxa,diff / tola);
       }
-      if (tolr>0.){
+      if (tolr>0.) {
         maxr = PetscMax(maxr,diff / tolr);
       }
-      if (tol>0.){
+      if (tol>0.) {
         max = PetscMax(max,diff / tol);
       }
     }
@@ -5284,13 +5284,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
       tola = ts->atol;
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if (tola>0.){
+      if (tola>0.) {
         maxa = PetscMax(maxa,diff / tola);
       }
-      if (tolr>0.){
+      if (tolr>0.) {
         maxr = PetscMax(maxr,diff / tolr);
       }
-      if (tol>0.){
+      if (tol>0.) {
         max = PetscMax(max,diff / tol);
       }
     }
@@ -5412,17 +5412,17 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = PetscRealPart(atol[i]);
-      if (tola>0.){
+      if (tola>0.) {
         suma  += PetscSqr(err/tola);
         na_loc++;
       }
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if (tolr>0.){
+      if (tolr>0.) {
         sumr  += PetscSqr(err/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if (tol>0.){
+      if (tol>0.) {
         sum  += PetscSqr(err/tol);
         n_loc++;
       }
@@ -5436,17 +5436,17 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = PetscRealPart(atol[i]);
-      if (tola>0.){
+      if (tola>0.) {
         suma  += PetscSqr(err/tola);
         na_loc++;
       }
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if (tolr>0.){
+      if (tolr>0.) {
         sumr  += PetscSqr(err/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if (tol>0.){
+      if (tol>0.) {
         sum  += PetscSqr(err/tol);
         n_loc++;
       }
@@ -5459,17 +5459,17 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = ts->atol;
-      if (tola>0.){
+      if (tola>0.) {
         suma  += PetscSqr(err/tola);
         na_loc++;
       }
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if (tolr>0.){
+      if (tolr>0.) {
         sumr  += PetscSqr(err/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if (tol>0.){
+      if (tol>0.) {
         sum  += PetscSqr(err/tol);
         n_loc++;
       }
@@ -5480,17 +5480,17 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
       SkipSmallValue(y[i],u[i],ts->adapt->ignore_max);
       err = PetscAbsScalar(e[i]);
       tola = ts->atol;
-      if (tola>0.){
+      if (tola>0.) {
         suma  += PetscSqr(err/tola);
         na_loc++;
       }
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      if (tolr>0.){
+      if (tolr>0.) {
         sumr  += PetscSqr(err/tolr);
         nr_loc++;
       }
       tol=tola+tolr;
-      if (tol>0.){
+      if (tol>0.) {
         sum  += PetscSqr(err/tol);
         n_loc++;
       }
@@ -5517,11 +5517,11 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
   nr_glb = err_glb[5];
 
   *norm  = 0.;
-  if (n_glb>0.){*norm  = PetscSqrtReal(gsum  / n_glb);}
+  if (n_glb>0.) {*norm  = PetscSqrtReal(gsum  / n_glb);}
   *norma = 0.;
-  if (na_glb>0.){*norma = PetscSqrtReal(gsuma / na_glb);}
+  if (na_glb>0.) {*norma = PetscSqrtReal(gsuma / na_glb);}
   *normr = 0.;
-  if (nr_glb>0.){*normr = PetscSqrtReal(gsumr / nr_glb);}
+  if (nr_glb>0.) {*normr = PetscSqrtReal(gsumr / nr_glb);}
 
   if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
@@ -5593,13 +5593,13 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
       tola = PetscRealPart(atol[i]);
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if (tola>0.){
+      if (tola>0.) {
         maxa = PetscMax(maxa,err / tola);
       }
-      if (tolr>0.){
+      if (tolr>0.) {
         maxr = PetscMax(maxr,err / tolr);
       }
-      if (tol>0.){
+      if (tol>0.) {
         max = PetscMax(max,err / tol);
       }
     }
@@ -5614,13 +5614,13 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
       tola = PetscRealPart(atol[i]);
       tolr = ts->rtol  * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if (tola>0.){
+      if (tola>0.) {
         maxa = PetscMax(maxa,err / tola);
       }
-      if (tolr>0.){
+      if (tolr>0.) {
         maxr = PetscMax(maxr,err / tolr);
       }
-      if (tol>0.){
+      if (tol>0.) {
         max = PetscMax(max,err / tol);
       }
     }
@@ -5635,13 +5635,13 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
       tola = ts->atol;
       tolr = PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if (tola>0.){
+      if (tola>0.) {
         maxa = PetscMax(maxa,err / tola);
       }
-      if (tolr>0.){
+      if (tolr>0.) {
         maxr = PetscMax(maxr,err / tolr);
       }
-      if (tol>0.){
+      if (tol>0.) {
         max = PetscMax(max,err / tol);
       }
     }
@@ -5654,13 +5654,13 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
       tola = ts->atol;
       tolr = ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       tol  = tola+tolr;
-      if (tola>0.){
+      if (tola>0.) {
         maxa = PetscMax(maxa,err / tola);
       }
-      if (tolr>0.){
+      if (tolr>0.) {
         maxr = PetscMax(maxr,err / tolr);
       }
-      if (tol>0.){
+      if (tol>0.) {
         max = PetscMax(max,err / tol);
       }
     }

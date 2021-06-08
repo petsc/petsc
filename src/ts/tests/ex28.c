@@ -89,7 +89,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
   for (c = cStart; c < cEnd; ++c) {
     if (Np == 1) {
       ierr = DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d){
+      for (d = 0; d < dim; ++d) {
         coords[c*dim+d] = centroid[d];
         if ((coords[c*dim+d] >= -1) && (coords[c*dim+d] <= 1)) {
           vals[c] = 1.0;
@@ -379,7 +379,7 @@ static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
     Np  /= dim;
     ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
     /* get points from solution vector */
-    for (p = 0; p < Np; ++p){ierr = PetscDrawHGAddValue(user->drawhg,u[p]);CHKERRQ(ierr);}
+    for (p = 0; p < Np; ++p) {ierr = PetscDrawHGAddValue(user->drawhg,u[p]);CHKERRQ(ierr);}
     ierr = PetscDrawHGDraw(user->drawhg);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   }

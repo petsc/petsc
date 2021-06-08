@@ -409,7 +409,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  switch(user->solType){
+  switch(user->solType) {
   case SOL_QUADRATIC:
     ierr = PetscDSSetResidual(prob, 0, f0_quadratic_v, f1_v);CHKERRQ(ierr);
     ierr = PetscDSSetResidual(prob, 2, f0_quadratic_w, f1_w);CHKERRQ(ierr);

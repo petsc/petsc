@@ -52,7 +52,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
     ierr = VecDotBegin(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Xprev, lmvm->Fprev, &curvature);CHKERRQ(ierr);
     ierr = VecDotEnd(lmvm->Xprev, lmvm->Xprev, &ststmp);CHKERRQ(ierr);
-    if (PetscRealPart(ststmp) < lmvm->eps){
+    if (PetscRealPart(ststmp) < lmvm->eps) {
       curvtol = 0.0;
     } else {
       curvtol = lmvm->eps * PetscRealPart(ststmp);
@@ -168,7 +168,7 @@ static PetscErrorCode MatUpdate_DiagBrdn(Mat B, Vec X, Vec F)
         /*  Ensure positive definite */
         ierr = VecAbs(ldb->invDnew);CHKERRQ(ierr);
       }
-      if (ldb->sigma_hist > 0){
+      if (ldb->sigma_hist > 0) {
         /*  Start with re-scaling on the newly computed diagonal */
         if (0.5 == ldb->beta) {
           if (1 == PetscMin(lmvm->nupdates, ldb->sigma_hist)) {

@@ -482,7 +482,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   ierr = PetscMalloc1(Bm+1,&disp);CHKERRQ(ierr);
   for (i=0; i<nsends; i++) {
     nrows_to = sstarts[i+1]-sstarts[i];
-    for (j=0; j<nrows_to; j++){
+    for (j=0; j<nrows_to; j++) {
       disp[j] = sindices[sstarts[i]+j]; /* rowB to be sent */
     }
     ierr = MPI_Type_create_indexed_block(nrows_to,1,(const PetscMPIInt *)disp,MPIU_SCALAR,&type1);CHKERRMPI(ierr);

@@ -197,7 +197,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
     if (!stag->l[i]) {
       const PetscInt Ni = stag->N[i], nRanksi = stag->nRanks[i];
       ierr = PetscMalloc1(stag->nRanks[i],&stag->l[i]);CHKERRQ(ierr);
-      for (j=0; j<stag->nRanks[i]; ++j){
+      for (j=0; j<stag->nRanks[i]; ++j) {
         stag->l[i][j] = Ni/nRanksi + ((Ni % nRanksi) > j);
       }
     }
@@ -217,7 +217,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
   /* Compute starting elements */
   for (i=0; i<dim; ++i) {
     stag->start[i] = 0;
-    for (j=0;j<stag->rank[i];++j){
+    for (j=0;j<stag->rank[i];++j) {
       stag->start[i] += stag->l[i][j];
     }
   }
@@ -597,7 +597,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
 
   /* Then, compute the rank of each in the linear ordering */
   ierr = PetscMalloc1(27,&stag->neighbors);CHKERRQ(ierr);
-  for (i=0; i<27; ++i){
+  for (i=0; i<27; ++i) {
     if  (neighborRank[i][0] >= 0 && neighborRank[i][1] >=0 && neighborRank[i][2] >=0) {
       stag->neighbors[i] = neighborRank[i][0] + n[0]*neighborRank[i][1] + n[0]*n[1]*neighborRank[i][2];
     } else {
@@ -626,7 +626,7 @@ static PetscErrorCode DMStagSetUpBuildGlobalOffsets_3d(DM dm,PetscInt **pGlobalO
   globalOffsets = *pGlobalOffsets;
   globalOffsets[0] = 0;
   count = 1; /* note the count is offset by 1 here. We add the size of the previous rank */
-  for (k=0; k<stag->nRanks[2]-1; ++k){
+  for (k=0; k<stag->nRanks[2]-1; ++k) {
     const PetscInt nnk = stag->l[2][k];
     for (j=0; j<stag->nRanks[1]-1; ++j) {
       const PetscInt nnj = stag->l[1][j];

@@ -564,7 +564,7 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
 
   PetscFunctionBegin;
   /* Extract subvectors associated with the inactive set */
-  if (bnk->active_idx){
+  if (bnk->active_idx) {
     ierr = VecGetSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
     ierr = VecGetSubVector(bnk->Xwork, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
     ierr = VecGetSubVector(bnk->Gwork, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);
@@ -578,7 +578,7 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
   ierr = VecAYPX(bnk->inactive_work, -0.5, bnk->G_inactive);CHKERRQ(ierr);
   ierr = VecDot(bnk->inactive_work, bnk->X_inactive, prered);CHKERRQ(ierr);
   /* Restore the sub vectors */
-  if (bnk->active_idx){
+  if (bnk->active_idx) {
     ierr = VecRestoreSubVector(tao->stepdirection, bnk->inactive_idx, &bnk->X_inactive);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(bnk->Xwork, bnk->inactive_idx, &bnk->inactive_work);CHKERRQ(ierr);
     ierr = VecRestoreSubVector(bnk->Gwork, bnk->inactive_idx, &bnk->G_inactive);CHKERRQ(ierr);

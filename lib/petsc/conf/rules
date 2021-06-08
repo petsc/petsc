@@ -665,11 +665,12 @@ GITSRCEXCL = \
 ':!include/*/khash.h' \
 ':!src/sys/yaml/*'
 checkbadSource:
-	@git --no-pager grep -n -P 'self\.gitcommit' config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
+	-@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
 	-@${RM} -f checkbadSource.out
 	-@echo "Double blank lines in file ---------------------------" > checkbadSource.out
 	-@git --no-pager grep -n -P '^$$' -- ${GITSRC} > doublelinecheck.out
 	-@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/doublelinecheck.py doublelinecheck.out >> checkbadSource.out
+	-@${RM} -f doublelinecheck.out
 	-@echo "Tabs in file -----------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '\t' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "White space at end of line ---------------------------" >> checkbadSource.out
@@ -696,17 +697,21 @@ checkbadSource:
 	-@echo "{ before SETERRQ -------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "{ on the same line as a function definition ----------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e 'PetscErrorCode[ ]+[a-zA-Z0-9_-]+(.*) {$$' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|PETSC_STATIC_INLINE)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "wrong usage of PetscDefined() ------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscDefined.PETSC' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "SETERRQ() without defined error code -----------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ\(' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
+	-@echo "No spaces before { after if|for|while|switch----------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '(for|while|if|switch)(.*)\){$$' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 15` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 16` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
+         else \
+	   ${RM} -f checkbadSource.out;\
          fi;\
          test ! $$l -gt 0
 	-@git --no-pager grep -P -n "[\x00-\x08\x0E-\x1F\x80-\xFF]" -- ${GITSRC} > badSourceChar.out;true
@@ -714,6 +719,8 @@ checkbadSource:
          if [ $$w -gt 0 ] ; then \
            echo "Source files with non-ASCII characters ----------------" ;\
            cat badSourceChar.out ;\
+         else \
+	   ${RM} -f badSourceChar.out;\
          fi
 	@test ! -s badSourceChar.out
 

@@ -205,8 +205,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
-
+PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr)
+{
   AppCtx         *user = (AppCtx *)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,k,ind;
@@ -351,28 +351,28 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
   ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
-  for (j=ys; j<ys+ym; j++){
+  for (j=ys; j<ys+ym; j++) {
 
-    for (i=xs; i< xs+xm; i++){
+    for (i=xs; i< xs+xm; i++) {
 
       row=(j-gys)*gxm + (i-gxs);
 
       k=0;
-      if (j>gys){
+      if (j>gys) {
         v[k]=-2*hyhy; col[k]=row - gxm; k++;
       }
 
-      if (i>gxs){
+      if (i>gxs) {
         v[k]= -2*hxhx; col[k]=row - 1; k++;
       }
 
       v[k]= 4.0*(hxhx+hyhy); col[k]=row; k++;
 
-      if (i+1 < gxs+gxm){
+      if (i+1 < gxs+gxm) {
         v[k]= -2.0*hxhx; col[k]=row+1; k++;
       }
 
-      if (j+1 <gys+gym){
+      if (j+1 <gys+gym) {
         v[k]= -2*hyhy; col[k] = row+gxm; k++;
       }
 

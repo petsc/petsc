@@ -114,7 +114,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
     if (ls->hasobjective) {
       ierr = TaoLineSearchComputeObjective(ls,neP->W2,f);CHKERRQ(ierr);
       g_computed=PETSC_FALSE;
-    } else if (ls->usegts){
+    } else if (ls->usegts) {
       ierr = TaoLineSearchComputeObjectiveAndGTS(ls,neP->W2,f,&gdx);CHKERRQ(ierr);
       g_computed=PETSC_FALSE;
     } else {
@@ -144,7 +144,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
     if (actred > 0) {
       ierr = PetscInfo(ls,"Step resulted in ascent, rejecting.\n");CHKERRQ(ierr);
       ls->step = (ls->step)/2;
-    } else if (rho > ls->ftol){
+    } else if (rho > ls->ftol) {
       break;
     } else{
       ls->step = (ls->step)/2;
@@ -173,7 +173,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
       ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
       break;
     }
-    if ((neP->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)){
+    if ((neP->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)) {
       ierr = PetscInfo1(ls,"Relative width of interval of uncertainty is at most rtol (%g)\n",(double)ls->rtol);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_RTOL;
       break;

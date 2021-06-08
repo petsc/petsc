@@ -230,7 +230,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       ls->reason = TAOLINESEARCH_HALTED_LOWERBOUND;
       break;
     }
-    if ((mt->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)){
+    if ((mt->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)) {
       ierr = PetscInfo1(ls,"Relative width of interval of uncertainty is at most rtol (%g)\n",(double)ls->rtol);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_RTOL;
       break;

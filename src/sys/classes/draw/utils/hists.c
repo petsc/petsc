@@ -440,7 +440,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
   if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
-  if (!viewer){
+  if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist),&viewer);CHKERRQ(ierr);
   }
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)hist,viewer);CHKERRQ(ierr);

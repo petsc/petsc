@@ -201,7 +201,7 @@ int main(int argc, char **argv)
     user.c[i] = (user.delta - user.rate)*sval;
     user.d[i] = -0.5*user.sigma*user.sigma*PetscPowReal(sval, user.alpha);
   }
-  if (gxs+gxm==user.ms){
+  if (gxs+gxm==user.ms) {
     user.Vt1[gxm-1] = 0;
   }
   ierr = VecDuplicate(x, &c);CHKERRQ(ierr);
@@ -286,18 +286,18 @@ PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void*ctx)
   ierr = DMDAGetCorners(user->dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   ierr = VecGetArray(xl,&xl_array);CHKERRQ(ierr);
-  for (i = 0; i < xm; i++){
+  for (i = 0; i < xm; i++) {
     sval = (xs+i)*user->ds;
     xl_array[i] = PetscMax(user->strike - sval, 0);
   }
   ierr = VecRestoreArray(xl,&xl_array);CHKERRQ(ierr);
 
-  if (xs==0){
+  if (xs==0) {
     ierr = VecGetArray(xu,&xl_array);CHKERRQ(ierr);
     xl_array[0] = PetscMax(user->strike, 0);
     ierr = VecRestoreArray(xu,&xl_array);CHKERRQ(ierr);
   }
-  if (xs+xm==ms){
+  if (xs+xm==ms) {
     ierr = VecGetArray(xu,&xl_array);CHKERRQ(ierr);
     xl_array[xm-1] = 0;
     ierr = VecRestoreArray(xu,&xl_array);CHKERRQ(ierr);
@@ -348,21 +348,21 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
   ierr = VecGetArray(localF, &f);CHKERRQ(ierr);
 
   /* Left Boundary */
-  if (gxs==0){
+  if (gxs==0) {
     f[0] = x[0]-user->strike;
   } else {
     f[0] = 0;
   }
 
   /* All points in the interior */
-  /*  for (i=gxs+1;i<gxm-1;i++){ */
-  for (i=1;i<gxm-1;i++){
+  /*  for (i=gxs+1;i<gxm-1;i++) { */
+  for (i=1;i<gxm-1;i++) {
     f[i] = (1.0/dt + rate)*x[i] - Vt1[i]/dt + (c[i]/(4*ds))*(x[i+1] - x[i-1] + Vt1[i+1] - Vt1[i-1]) +
            (d[i]/(2*ds*ds))*(x[i+1] -2*x[i] + x[i-1] + Vt1[i+1] - 2*Vt1[i] + Vt1[i-1]);
   }
 
   /* Right boundary */
-  if (gxs+gxm==ms){
+  if (gxs+gxm==ms) {
     f[xm-1]=x[gxm-1];
   } else {
     f[xm-1]=0;
@@ -411,11 +411,11 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
   /* Set various matrix options */
   ierr = MatSetOption(J,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(J);CHKERRQ(ierr);}
+  if (assembled) {ierr = MatZeroEntries(J);CHKERRQ(ierr);}
 
   ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
 
-  if (gxs==0){
+  if (gxs==0) {
     i = 0;
     col[0] = 0;
     val[0]=1.0;
@@ -430,7 +430,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
     val[2] =  c[i]/(4*ds) + d[i]/(2*ds*ds);
     ierr = MatSetValues(J,1,&col[1],3,col,val,INSERT_VALUES);CHKERRQ(ierr);
   }
-  if (gxs+gxm==ms){
+  if (gxs+gxm==ms) {
     i = ms-1;
     col[0] = i;
     val[0]=1.0;

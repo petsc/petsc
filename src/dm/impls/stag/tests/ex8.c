@@ -151,7 +151,7 @@ PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)
       }
     }
   }
-  if (isLastx){
+  if (isLastx) {
     for (ez=startz; ez<startz+nz+nExtraz; ++ez) {
       for (ey=starty; ey<starty+ny+nExtray; ++ey) {
         arrIn[ez][ey][startx + nx][idxP] = arrIn[ez][ey][startx + nx - 1][idxP];

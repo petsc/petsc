@@ -22,7 +22,7 @@ int main(int argc,char **args)
     ierr = MatCreateSeqAIJViennaCL(PETSC_COMM_SELF,m,n,nz,NULL,&A_vcl);CHKERRQ(ierr);
 
     /* Add nz arbitrary entries per row in arbitrary columns */
-    for (i=0;i<m;++i){
+    for (i=0;i<m;++i) {
       for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % n;
         ierr = MatSetValue(A_vcl,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
@@ -54,8 +54,8 @@ int main(int argc,char **args)
     ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,nz,NULL,&A);CHKERRQ(ierr);
 
     /* Add nz arbitrary entries per row in arbitrary columns */
-    for (i=0;i<m;++i){
-      for (cnt = 0; cnt<nz; ++cnt){
+    for (i=0;i<m;++i) {
+      for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % n;
         ierr = MatSetValue(A,i,j,(PetscScalar) (0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
       }
@@ -108,7 +108,7 @@ int main(int argc,char **args)
 
     /* Add nz arbitrary entries per row in arbitrary columns */
     for (i=0;i<m;++i) {
-      for (cnt = 0; cnt<nz; ++cnt){
+      for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % n;
         ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
       }
@@ -160,7 +160,7 @@ int main(int argc,char **args)
 
     /* Add nz arbitrary entries per row in arbitrary columns */
     ierr = MatGetOwnershipRange(A,&rlow,&rhigh);CHKERRQ(ierr);
-    for (i=rlow;i<rhigh;++i){
+    for (i=rlow;i<rhigh;++i) {
       for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % N;
         ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);
@@ -212,7 +212,7 @@ int main(int argc,char **args)
 
     /* Add nz arbitrary entries per row in arbitrary columns */
     ierr = MatGetOwnershipRange(A,&rlow,&rhigh);CHKERRQ(ierr);
-    for (i=rlow;i<rhigh;++i){
+    for (i=rlow;i<rhigh;++i) {
       for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % N;
         ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);

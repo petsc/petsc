@@ -186,12 +186,12 @@ PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fu
     ierr = PetscStrlen(str,&leng);CHKERRQ(ierr);
     if (leng > 4) {
       for (cnt=0; cnt<leng-4; cnt++) {
-        if (str[cnt] == '[' && str[cnt+1] == '|'){
+        if (str[cnt] == '[' && str[cnt+1] == '|') {
           flen -= 4;
           cnt++; cnt++;
           foundedot = PETSC_FALSE;
           for (; cnt<leng-1; cnt++) {
-            if (str[cnt] == '|' && str[cnt+1] == ']'){
+            if (str[cnt] == '|' && str[cnt+1] == ']') {
               cnt++;
               if (!foundedot) str[ncnt++] = '.';
               ncnt--;

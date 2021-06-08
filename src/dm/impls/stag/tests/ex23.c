@@ -24,36 +24,36 @@ int main(int argc,char **argv)
     ierr = DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_LEFT,&iPrev);CHKERRQ(ierr);
     ierr = DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_RIGHT,&iNext);CHKERRQ(ierr);
     ierr = DMStagGetProductCoordinateLocationSlot(dm,DMSTAG_ELEMENT,&iCenter);CHKERRQ(ierr);
-    if (round == 1){
+    if (round == 1) {
       /* On first round, do a stretching operation */
-      for (ex=start[0]; ex<start[0]+n[0]; ++ex){
+      for (ex=start[0]; ex<start[0]+n[0]; ++ex) {
         cArrX[ex][iPrev] *= 1.1;
         cArrX[ex][iNext] = cArrX[ex][iPrev] + 0.1;
         cArrX[ex][iCenter] = 0.5 * (cArrX[ex][iPrev] + cArrX[ex][iNext]);
       }
-      for (ey=start[1]; ey<start[1]+n[1]; ++ey){
+      for (ey=start[1]; ey<start[1]+n[1]; ++ey) {
         cArrY[ey][iPrev] *= 1.1;
         cArrY[ey][iNext] = cArrY[ey][iPrev] + 0.1;
         cArrY[ey][iCenter] = 0.5 * (cArrY[ey][iPrev] + cArrY[ey][iNext]);
       }
-      for (ez=start[2]; ez<start[2]+n[2]; ++ez){
+      for (ez=start[2]; ez<start[2]+n[2]; ++ez) {
         cArrZ[ez][iPrev] *= 1.1;
         cArrZ[ez][iNext] = cArrZ[ez][iPrev] + 0.1;
         cArrZ[ez][iCenter] = 0.5 * (cArrZ[ez][iPrev] + cArrZ[ez][iNext]);
       }
     } else {
       /* On second round, set everything to 2.0 */
-      for (ex=start[0]; ex<start[0]+n[0]; ++ex){
+      for (ex=start[0]; ex<start[0]+n[0]; ++ex) {
         cArrX[ex][iPrev]   = 2.0;
         cArrX[ex][iNext]   = 2.0;
         cArrX[ex][iCenter] = 2.0;
       }
-      for (ey=start[1]; ey<start[1]+n[1]; ++ey){
+      for (ey=start[1]; ey<start[1]+n[1]; ++ey) {
         cArrY[ey][iPrev]   = 2.0;
         cArrY[ey][iNext]   = 2.0;
         cArrY[ey][iCenter] = 2.0;
       }
-      for (ez=start[2]; ez<start[2]+n[2]; ++ez){
+      for (ez=start[2]; ez<start[2]+n[2]; ++ez) {
         cArrZ[ez][iPrev]   = 2.0;
         cArrZ[ez][iNext]   = 2.0;
         cArrZ[ez][iCenter] = 2.0;

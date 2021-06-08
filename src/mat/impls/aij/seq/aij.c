@@ -513,7 +513,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       /* shift up all the later entries in this row */
       ierr  = PetscArraymove(rp+i+1,rp+i,N-i+1);CHKERRQ(ierr);
       rp[i] = col;
-      if (!A->structure_only){
+      if (!A->structure_only) {
         ierr  = PetscArraymove(ap+i+1,ap+i,N-i+1);CHKERRQ(ierr);
         ap[i] = value;
       }

@@ -1052,7 +1052,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 
   if (ts->quadraturets) { /* if there is integral in the cost function */
     ierr = VecDuplicate(ts->vecs_sensi[0],&ts->vec_drdu_col);CHKERRQ(ierr);
-    if (ts->vecs_sensip){
+    if (ts->vecs_sensip) {
       ierr = VecDuplicate(ts->vecs_sensip[0],&ts->vec_drdp_col);CHKERRQ(ierr);
     }
   }
@@ -1087,7 +1087,7 @@ PetscErrorCode TSAdjointReset(TS ts)
   }
   if (ts->quadraturets) { /* if there is integral in the cost function */
     ierr = VecDestroy(&ts->vec_drdu_col);CHKERRQ(ierr);
-    if (ts->vecs_sensip){
+    if (ts->vecs_sensip) {
       ierr = VecDestroy(&ts->vec_drdp_col);CHKERRQ(ierr);
     }
   }
