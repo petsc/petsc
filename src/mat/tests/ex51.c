@@ -78,7 +78,7 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; ++i) {
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%D, flg =%d\n",i,(int)flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%D, flg =%d\n",i,(int)flg);
   }
 
   for (i=0; i<nd; ++i) {

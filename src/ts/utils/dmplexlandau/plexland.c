@@ -84,8 +84,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   ierr = DMGetDS(ctx->plex, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetTabulation(prob, &Tf);CHKERRQ(ierr); // Bf, &Df
   ierr = PetscDSGetDimensions(prob, &Nbf);CHKERRQ(ierr); Nb = Nbf[0]; /* number of vertices*S */
-  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);         if (Nf!=ctx->num_species) SETERRQ1(ctx->comm, PETSC_ERR_PLIB, "Nf %D != S",Nf);
-  ierr = PetscDSGetComponents(prob, &Ncf);CHKERRQ(ierr); Ncx = Ncf[0]; if (Ncx!=1) SETERRQ1(ctx->comm, PETSC_ERR_PLIB, "Nc %D != 1",Ncx);
+  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+  if (Nf!=ctx->num_species) SETERRQ1(ctx->comm, PETSC_ERR_PLIB, "Nf %D != S",Nf);
+  ierr = PetscDSGetComponents(prob, &Ncf);CHKERRQ(ierr);
+  Ncx = Ncf[0];
+  if (Ncx!=1) SETERRQ1(ctx->comm, PETSC_ERR_PLIB, "Nc %D != 1",Ncx);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   ierr = PetscFEGetQuadrature(ctx->fe[0], &quad);CHKERRQ(ierr);

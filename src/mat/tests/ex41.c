@@ -74,7 +74,7 @@ int main(int argc,char **args)
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
     ierr = ISGetSize(is1[i],&sz1);CHKERRQ(ierr);
     ierr = ISGetSize(is2[i],&sz2);CHKERRQ(ierr);
-    if (!flg) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%D, flg =%d  sz1 = %D sz2 = %D\n",rank,i,(int)flg,sz1,sz2);CHKERRQ(ierr);
+    if (!flg) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%D, flg =%d  sz1 = %D sz2 = %D\n",rank,i,(int)flg,sz1,sz2);
   }
 
   /* Free Allocated Memory */

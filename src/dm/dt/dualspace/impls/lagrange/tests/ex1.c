@@ -206,8 +206,8 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   ierr = PetscDualSpaceSetUp(sp);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(sp, &spdim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetInteriorDimension(sp, &spintdim);CHKERRQ(ierr);
-  if (spdim != exspdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space dimension %D, got %D\n", exspdim, spdim);CHKERRQ(ierr);
-  if (spintdim != exspintdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space interior dimension %D, got %D\n", exspintdim, spintdim);CHKERRQ(ierr);
+  if (spdim != exspdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space dimension %D, got %D\n", exspdim, spdim);
+  if (spintdim != exspintdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space interior dimension %D, got %D\n", exspintdim, spintdim);
   key.dim = dim;
   key.formDegree = formDegree;
   ierr = PetscDualSpaceGetOrder(sp, &key.order);CHKERRQ(ierr);
@@ -240,8 +240,8 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
       PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
 
       ierr = PetscLagNodeIndicesGetData_Internal(lag->allNodeIndices, &nodeIdxDim, &nodeVecDim, &nNodes, &nodeIdx, &nodeVec);CHKERRQ(ierr);
-      if (nodeVecDim != Nk) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nodeVecDim");CHKERRQ(ierr);
-      if (nNodes != spdim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nNodes");CHKERRQ(ierr);
+      if (nodeVecDim != Nk) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nodeVecDim");
+      if (nNodes != spdim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nNodes");
 
       ierr = PetscDualSpaceGetAllData(sp, &allNodes, &allMat);CHKERRQ(ierr);
 
@@ -281,7 +281,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
         ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior matrix: %D nonzeros\n", (PetscInt) info.nz_used);CHKERRQ(ierr);
         ierr = PetscLagNodeIndicesGetData_Internal(lag->intNodeIndices, &intNodeIdxDim, &intNodeVecDim, &intNnodes, &intNodeIdx, &intNodeVec);CHKERRQ(ierr);
         if (intNodeIdxDim != nodeIdxDim || intNodeVecDim != nodeVecDim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same shale as all node indices");
-        if (intNnodes != spintdim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");CHKERRQ(ierr);
+        if (intNnodes != spintdim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");
         ierr = PetscArraycmp(intNodeIdx, nodeIdx, nodeIdxDim * intNnodes, &same);CHKERRQ(ierr);
         if (!same) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same as start of all node indices");
         ierr = PetscArraycmp(intNodeVec, nodeVec, nodeVecDim * intNnodes, &same);CHKERRQ(ierr);
