@@ -298,7 +298,7 @@ cdef class Vec(Object):
         row-major order (e.g. PyTorch tensors), the resulting vector will look
         like an unrolled tensor using row-major order.
 
-        :arg dltensor: A DLPack tensor object
+        :arg dltensor: An object with a __dlpack__ method or a DLPack tensor object (for backward compatibility)
         :arg size: A :class:`int` denoting the size of the Vec.
         :arg bsize: A :class:`int` denoting the block size.
         """
@@ -311,6 +311,9 @@ cdef class Vec(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs = 0,n = 0,N = 0
         cdef DLContext* ctx = NULL
+
+        if not PyCapsule_CheckExact(dltensor):
+            dltensor = dltensor.__dlpack__()
 
         if PyCapsule_IsValid(dltensor, 'dltensor'):
             ptr = <DLManagedTensor*>PyCapsule_GetPointer(dltensor, 'dltensor')
@@ -354,6 +357,8 @@ cdef class Vec(Object):
             shape_arr[i] = shape[i]
             strides_arr[i] = strides[i]
         self.set_attr('__dltensor_ctx__', (ptr.dl_tensor.ctx.device_type, ptr.dl_tensor.ctx.device_id, ndim, s1, s2))
+        if ptr.manager_deleter != NULL:
+            ptr.manager_deleter(ptr) # free the manager
         return self
 
     def attachDLPackInfo(self, Vec vec=None, object dltensor=None):
