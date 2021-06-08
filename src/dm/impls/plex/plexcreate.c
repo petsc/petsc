@@ -2914,6 +2914,24 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
   /* Handle automatic creation */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim < 0) {ierr = DMPlexCreateFromOptions_Internal(PetscOptionsObject, &coordSpace, dm);CHKERRQ(ierr);created = PETSC_TRUE;}
+  /* Handle interpolation before distribution */
+  ierr = PetscOptionsBool("-dm_plex_interpolate_pre", "Flag to interpolate mesh before distribution", "", interpolate, &interpolate, &flg);CHKERRQ(ierr);
+  if (flg) {
+    DMPlexInterpolatedFlag interpolated;
+
+    ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
+    if (interpolated == DMPLEX_INTERPOLATED_FULL && !interpolate) {
+      DM udm;
+
+      ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
+      ierr = DMPlexReplace_Static(dm, &udm);CHKERRQ(ierr);
+    } else if (interpolated != DMPLEX_INTERPOLATED_FULL && interpolate) {
+      DM idm;
+
+      ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
+      ierr = DMPlexReplace_Static(dm, &idm);CHKERRQ(ierr);
+    }
+  }
   /* Handle DMPlex refinement before distribution */
   ierr = PetscOptionsBool("-dm_refine_ignore_model", "Flag to ignore the geometry model when refining", "DMCreate", ignoreModel, &ignoreModel, &flg);CHKERRQ(ierr);
   if (flg) {((DM_Plex *) dm->data)->ignoreModel = ignoreModel;}
