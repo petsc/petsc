@@ -583,6 +583,7 @@ cdef extern from "Python.h":
     void* PyCapsule_GetPointer(object, const char*) except? NULL
     int PyCapsule_SetName(object, const char*) except -1
     object PyCapsule_New(void*, const char*, PyCapsule_Destructor)
+    int PyCapsule_CheckExact(object)
 
 cdef extern from "stdlib.h" nogil:
    ctypedef signed long int64_t
