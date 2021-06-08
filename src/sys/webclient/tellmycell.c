@@ -15,9 +15,9 @@
 .   flg - PETSC_TRUE if the text was sent
 
    Options Database:
-+   -tellmycell <number[,message]>
-.   -tellmycell_user <Username> set when registering at tellmycell.com
--   -tellmycell_password <Password> set when registering at tellmycell.com
++   -tellmycell <number[,message]> - send a message to the give number when the program ends
+.   -tellmycell_user <Username> - this value is created when registering at tellmycell.com
+-   -tellmycell_password <Password> - this value is created when registering at tellmycell.com
 
    Level: intermediate
 
