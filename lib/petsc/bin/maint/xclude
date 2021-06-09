@@ -24,6 +24,7 @@ petsc-dist/lib/petsc/conf/petscvariables
 petsc-dist/config/BuildSystem/.hg
 petsc-dist/config/BuildSystem/.hgignore
 petsc-dist/config/BuildSystem/.hgtags
+petsc-dist/doc
 petsc-dist/docs/exampleconcepts
 petsc-dist/src/tops
 petsc-dist/src/java
@@ -37,6 +38,7 @@ petsc-dist/ChangeSet
 petsc-dist/arch-build
 petsc-dist/arch-pydoc
 petsc-dist/arch-fvpf
+petsc-dist/arch-classic-docs
 petsc-dist/make.log
 petsc-dist/configure.log
 petsc-dist/configure.log.bkp

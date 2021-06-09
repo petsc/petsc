@@ -105,14 +105,16 @@ if [ ${version}foo = foo ]; then
 fi
 echo "Building ~/petsc$version.tar.gz and ~/petsc-with-docs$version.tar.gz"
 
-# create fortran stubdocs and cleanup
-cd $PETSC_DIR
-# we should have an option of running configure - without compilers/mpi/blas etc..
-python3 ./config/configure.py --with-mpi=0 --download-c2html=1 --download-sowing=1
-make allfortranstubs
-make sphinx-docs-check-python
-make alldoc LOC=${PETSC_DIR} DOCSETDATE_PRUNE_LIST="" GONULL=""
+# build docs (and fortranstubs)
+VENV=$PETSC_DIR/arch-classic-docs/venv-petsc-docs
+python3 -m venv $VENV
+source $VENV/bin/activate
+cd $PETSC_DIR/doc
+python3 -m pip install -r requirements.txt
+sphinx-build -T -E -b html -D language=en -j auto . ../docs
+
 # petsc4py docs and tarball
+cd $PETSC_DIR
 export PETSC_ARCH=arch-pydoc
 python2 ./config/configure.py --with-mpi=0 --with-cxx=0 --with-fc=0
 make all
