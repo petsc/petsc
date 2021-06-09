@@ -683,6 +683,14 @@ procedure:
 #. Copy $PETSC_DIR/share/petsc/Makefile.user to your working directory,
    for example, ``cp $PETSC_DIR/share/petsc/Makefile.user Makefile``
 
+   Note: Makefile.user relies on the ``pkg-config`` tool, and
+   ``PETSC_DIR`` and ``PETSC_ARCH`` variables.  If pkg-config is not
+   available - use ``$PETSC_DIR/src/snes/tutorials/makefile``, it is
+   useful for simple usages. Makefile.user provides a better template
+   that helps in adapting to more complex usages (for example - an
+   application project might already have a complex makefile - and is
+   now adding in PETSc library usage to it)
+
 #. Compile and run the example program, for example,
    ``make ex19; ./ex19``
 
