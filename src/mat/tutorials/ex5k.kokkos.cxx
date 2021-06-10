@@ -10,7 +10,6 @@ static char help[] = "Test of Kokkos matrix assemble with 1D Laplacian. Kokkos v
 #include <Kokkos_Core.hpp>
 #include <Kokkos_OffsetView.hpp>
 
-#define PETSC_DEVICE_FUNC_DECL KOKKOS_INLINE_FUNCTION
 #define atomicAdd(e, f) Kokkos::atomic_fetch_add(e, f)
 #include <petscaijdevice.h>
 
@@ -31,7 +30,7 @@ int main(int argc,char **argv)
   PetscErrorCode               ierr;
   Mat                          A;
   PetscInt                     N=11, nz=3, Istart, Iend, num_threads = 128;
-  PetscSplitCSRDataStructure   *d_mat;
+  PetscSplitCSRDataStructure   d_mat;
   PetscLogEvent                event;
   Vec                          x,y;
   PetscMPIInt                  rank;
@@ -77,11 +76,9 @@ int main(int argc,char **argv)
   ierr = MatKokkosGetDeviceMatWrite(A,&d_mat);CHKERRQ(ierr);
   ierr = MatZeroEntries(A);CHKERRQ(ierr); // needed?
   Kokkos:: parallel_for (Kokkos::RangePolicy<> (Istart,Iend), KOKKOS_LAMBDA ( int i) {
-      PetscErrorCode               ierr2;
       PetscScalar                  values[] = {1,-1,-1,1.1};
       PetscInt js[] = {i-1, i};
-      MatSetValuesDevice(d_mat,2,js,2,js,values,ADD_VALUES,&ierr2);
-      if (ierr2) printf("MatSetValuesDevice Error %d",ierr2);
+      MatSetValuesDevice(d_mat,2,js,2,js,values,ADD_VALUES);
     });
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -109,7 +106,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-     requires: kokkos_kernels !define(PETSC_USE_CTABLE)
+     requires: kokkos_kernels
 
    test:
      suffix: 0
