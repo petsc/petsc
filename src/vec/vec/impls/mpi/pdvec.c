@@ -559,11 +559,10 @@ PetscErrorCode VecView_MPI_ADIOS(Vec xin, PetscViewer viewer)
   sprintf(nlocalname,"%d",(int)n);
   sprintf(nglobalname,"%d",(int)N);
   sprintf(coffset,"%d",(int)rstart);
-  id   = adios_define_var(Petsc_adios_group,vecname,"",adios_double,nlocalname,nglobalname,coffset);CHKERRQ(ierr);
+  id   = adios_define_var(Petsc_adios_group,vecname,"",adios_double,nlocalname,nglobalname,coffset);
   ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
   ierr = adios_write_byid(adios->adios_handle,id,array);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 #endif

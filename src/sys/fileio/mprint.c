@@ -298,7 +298,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"C89 does not support va_copy() hence cannot print long strings with PETSc printing routines");
 #endif
   }
-  fprintf(fd,"%s",buff);CHKERRQ(ierr);
+  fprintf(fd,"%s",buff);
   fflush(fd);
   if (buff != str) {
     ierr = PetscFree(buff);CHKERRQ(ierr);

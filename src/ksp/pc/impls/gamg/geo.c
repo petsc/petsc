@@ -115,7 +115,6 @@ PetscErrorCode PCSetFromOptions_GEO(PetscOptionItems *PetscOptionsObject,PC pc)
     /*                        pc_gamg_sa->smooths, */
     /*                        &pc_gamg_sa->smooths, */
     /*                        &flag);  */
-    /* CHKERRQ(ierr); */
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

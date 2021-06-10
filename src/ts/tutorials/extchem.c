@@ -108,7 +108,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
   ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
-  TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
+  TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);
   ierr = PetscMalloc1((user.Nspec+2),&snames);CHKERRQ(ierr);
   for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
   snames[user.Nspec+1] = NULL;
@@ -311,7 +311,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     ierr = PetscFree(names[i]);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  /* PrintSpecies((User)ctx,X);CHKERRQ(ierr); */
+  /* ierr = PrintSpecies((User)ctx,X);CHKERRQ(ierr); */
   ierr = MoleFractionToMassFraction((User)ctx,X,&y);CHKERRQ(ierr);
   ierr = VecCopy(y,X);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);

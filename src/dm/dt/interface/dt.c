@@ -1017,7 +1017,7 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
   initscale = 1.;
   if (dim > 1) {
     ierr = PetscDTBinomial(dim,2,&scaleexp);CHKERRQ(ierr);
-    initscale = PetscPowReal(2.,scaleexp*0.5);CHKERRQ(ierr);
+    initscale = PetscPowReal(2.,scaleexp*0.5);
   }
   for (degidx = 0; degidx < Ndeg; degidx++) {
     PetscInt e, i;

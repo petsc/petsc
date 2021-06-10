@@ -128,7 +128,7 @@ int main(int argc,char **argv)
   ierr = PetscHSetIUpdate(ht,hd);CHKERRQ(ierr);
   ierr = PetscHSetIDestroy(&hd);CHKERRQ(ierr);
   ierr = PetscHSetIGetSize(ht,&size);CHKERRQ(ierr);
-  PetscAssert(size==(2*n));CHKERRQ(ierr);
+  PetscAssert(size==(2*n));
   ierr = PetscMalloc1(n*2,&marray);CHKERRQ(ierr);
   off = 0;
   ierr = PetscHSetIGetElems(ht,&off,marray);CHKERRQ(ierr);

@@ -68,15 +68,15 @@ static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscI
       PetscInt rpowk, rp1pownmk;
 
       ierr = PetscDTBinomialInt(dim, formDegree, &nchoosek);CHKERRQ(ierr);
-      rpowk = PetscPowInt(order, formDegree);CHKERRQ(ierr);
-      rp1pownmk = PetscPowInt(order + 1, dim - formDegree);CHKERRQ(ierr);
+      rpowk = PetscPowInt(order, formDegree);
+      rp1pownmk = PetscPowInt(order + 1, dim - formDegree);
       *nDofs = nchoosek * rpowk * rp1pownmk * nCopies;
     } else {
       PetscInt nchoosek;
       PetscInt rp1pown;
 
       ierr = PetscDTBinomialInt(dim, formDegree, &nchoosek);CHKERRQ(ierr);
-      rp1pown = PetscPowInt(order + 1, dim);CHKERRQ(ierr);
+      rp1pown = PetscPowInt(order + 1, dim);
       *nDofs = nchoosek * rp1pown * nCopies;
     }
   } else { /* prism */

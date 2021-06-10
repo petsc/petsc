@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   ierr = PetscHMapIGetSize(ht,&n);CHKERRQ(ierr);
   PetscAssert(n == 2);
 
-  koff = 0; keys[0] = keys[1] = 0;CHKERRQ(ierr);
+  koff = 0; keys[0] = keys[1] = 0;
   ierr = PetscHMapIGetKeys(ht,&koff,keys);CHKERRQ(ierr);
   ierr = PetscSortInt(koff,keys);CHKERRQ(ierr);
   PetscAssert(koff == 2);

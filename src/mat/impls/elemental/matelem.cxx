@@ -1162,7 +1162,7 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   ierr = PetscSplitOwnership(comm,&n,&A->cmap->N);CHKERRQ(ierr);
   if (n != A->cmap->n) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D of ELEMENTAL matrix must be equally distributed",A->cmap->n);
 
-  a->emat->Resize(A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  a->emat->Resize(A->rmap->N,A->cmap->N);
   El::Zero(*a->emat);
 
   ierr = MPI_Comm_size(A->rmap->comm,&rsize);CHKERRMPI(ierr);

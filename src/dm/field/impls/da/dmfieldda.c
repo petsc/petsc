@@ -36,7 +36,7 @@ static PetscErrorCode DMFieldView_DA(DMField field,PetscViewer viewer)
     PetscInt nc;
     DM       dm = field->dm;
 
-    PetscViewerASCIIPrintf(viewer, "Field corner values:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Field corner values:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
     nc = field->numComponents;
