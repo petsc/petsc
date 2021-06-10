@@ -38,7 +38,7 @@ class Configure(config.package.Package):
 
     logfile = os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','mpi4py.log')
     self.framework.pushLanguage('C')
-    self.logPrintBox('Building mpi4py')
+    self.logPrintBox('Building mpi4py, this may take several minutes')
     cleancmd = 'MPICC='+self.framework.getCompiler()+'  '+archflags+self.python.pyexe+' setup.py clean --all  > '+logfile+' 2>&1'
     output,err,ret  = config.base.Configure.executeShellCommand(cleancmd, cwd=self.packageDir, timeout=100, log=self.log)
     if ret: raise RuntimeError('Error cleaning mpi4py. Check '+logfile)
@@ -54,10 +54,10 @@ class Configure(config.package.Package):
     self.framework.popLanguage()
 
     if 'PYTHONPATH' in os.environ:
-      self.logPrintBox('To use mpi4py, do\nexport PYTHONPATH=${PYTHONPATH}'+os.pathsep+installLibPath)
+      self.logPrintBox('To use mpi4py, do\nexport PYTHONPATH=${PYTHONPATH}'+os.pathsep+installLibPath,rmDir = 0)
       os.environ['PYTHONPATH'] = os.environ['PYTHONPATH']+os.pathsep+installLibPath
     else:
-      self.logPrintBox('To use mpi4py, do\nexport PYTHONPATH='+installLibPath)
+      self.logPrintBox('To use mpi4py, do\nexport PYTHONPATH='+installLibPath,rmDir = 0)
       os.environ['PYTHONPATH'] = installLibPath
     self.addMakeMacro('MPI4PY',"yes")
     self.addMakeMacro('PETSC_MPI4PY_PYTHONPATH',installLibPath)
