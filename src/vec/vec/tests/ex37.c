@@ -162,8 +162,8 @@ PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_va
   PetscScalar    vx;
   PetscErrorCode ierr;
 
-  MPI_Comm_size(comm, &size);
-
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = VecCreate(comm, &v);CHKERRQ(ierr);
   ierr = VecSetSizes(v, PETSC_DECIDE, length);CHKERRQ(ierr);
   if (size == 1) { ierr = VecSetType(v, VECSEQ);CHKERRQ(ierr); }

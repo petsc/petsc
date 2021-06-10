@@ -72,6 +72,7 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
   PetscBool      internal_node;
 
   /* first count dimension of adjncy */
+  PetscFunctionBeginUser;
   count_adj=0;
   for (k=0; k<dd.zm_l; k++) {
     internal_node = PETSC_TRUE;

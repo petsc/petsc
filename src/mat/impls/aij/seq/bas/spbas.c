@@ -552,6 +552,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
   PetscScalar    *vhlp2=NULL;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr  = PetscMalloc1(nnz,&ialloc);CHKERRQ(ierr);
   ihlp1 = ialloc;
   ihlp2 = icol;

@@ -333,6 +333,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   const PetscScalar *x;
   PetscReal         v[7];
 
+  PetscFunctionBeginUser;
   /* Get pointers to vector data */
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 

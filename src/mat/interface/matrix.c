@@ -279,12 +279,13 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
 PetscErrorCode MatFindZeroRows(Mat mat,IS *zerorows)
 {
   PetscErrorCode ierr;
-  IS keptrows;
-  PetscInt m, n;
+  IS             keptrows;
+  PetscInt       m, n;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-
+  PetscValidPointer(zerorows,2);
   ierr = MatFindNonzeroRows(mat, &keptrows);CHKERRQ(ierr);
   /* MatFindNonzeroRows sets keptrows to NULL if there are no zero rows.
      In keeping with this convention, we set zerorows to NULL if there are no zero

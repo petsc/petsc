@@ -104,6 +104,7 @@ extern "C"  {
   }
   PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *maps)
   {
+    PetscFunctionBegin;
     Kokkos::View<pointInterpolationP4est*[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight>  *a = (Kokkos::View<pointInterpolationP4est*[LANDAU_MAX_Q_FACE], Kokkos::LayoutRight>*)maps->vp1;
     Kokkos::View<LandauIdx*[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ], Kokkos::LayoutRight>*b = (Kokkos::View<LandauIdx*[LANDAU_MAX_SPECIES][LANDAU_MAX_NQ], Kokkos::LayoutRight>*)maps->vp2;
     Kokkos::View<P4estVertexMaps*>                                                  *c = (Kokkos::View<P4estVertexMaps*>*)maps->vp3;

@@ -63,6 +63,7 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
   Node              *node;
   PetscInt          *edgelist;
 
+  PetscFunctionBeginUser;
   nnode   = 4;
   nbranch = 6;
 

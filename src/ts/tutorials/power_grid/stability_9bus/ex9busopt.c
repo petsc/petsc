@@ -322,6 +322,7 @@ PetscErrorCode DICDPFiniteDifference(Vec X,Vec *DICDP, Userctx *user)
   PetscErrorCode ierr;
   PetscInt       i,j;
 
+  PetscFunctionBegin;
   eps = 1.e-7;
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
 

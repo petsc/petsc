@@ -794,6 +794,7 @@ static PetscErrorCode SetUpBC_Euler(DM dm, PetscDS prob,Physics phys)
   Physics_Euler   *eu = (Physics_Euler *) phys->data;
   DMLabel         label;
 
+  PetscFunctionBeginUser;
   ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (eu->type == EULER_LINEAR_WAVE) {
     const PetscInt wallids[] = {100,101};

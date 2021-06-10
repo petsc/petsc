@@ -192,6 +192,7 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
   MatScalar           *aa;
   Mat_SeqAIJMKL       *aijmkl;
 
+  PetscFunctionBegin;
   if (csrA) {
     /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
     stat = mkl_sparse_x_export_csr(csrA,&indexing,&m,&n,&ai,&dummy,&aj,&aa);
@@ -257,6 +258,7 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
   sparse_status_t     stat;
   sparse_index_base_t indexing;
 
+  PetscFunctionBegin;
   /* Exit immediately in case of the MKL matrix handle being NULL; this will be the case for empty matrices (zero rows or columns). */
   if (!aijmkl->csrA) PetscFunctionReturn(0);
 
@@ -296,6 +298,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A,PetscViewer viewe
   sparse_status_t     stat;
   sparse_index_base_t indexing;
 
+  PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"Contents of MKL sparse matrix handle for MATSEQAIJMKL object:\n");CHKERRQ(ierr);
 
   /* Exit immediately in case of the MKL matrix handle being NULL; this will be the case for empty matrices (zero rows or columns). */

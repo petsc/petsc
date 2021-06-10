@@ -19,7 +19,7 @@ static inline PetscErrorCode DMatrix_Invert_2x2_Internal(const PetscReal *inmat,
     outmat[3] = inmat[0] / det;
   }
   if (determinant) *determinant = det;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 static inline PetscReal DMatrix_Determinant_3x3_Internal(const PetscReal inmat[3 * 3])
@@ -44,7 +44,7 @@ static inline PetscErrorCode DMatrix_Invert_3x3_Internal (const PetscReal *inmat
     outmat[8] = (inmat[4] * inmat[0] - inmat[3] * inmat[1]) / det;
   }
   if (determinant) *determinant = det;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 inline PetscReal DMatrix_Determinant_4x4_Internal(PetscReal inmat[4 * 4])
@@ -90,7 +90,7 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal (PetscReal *inmat, PetscReal *
     outmat[15] = (inmat[0] * inmat[5] * inmat[10] + inmat[1] * inmat[6] * inmat[8] + inmat[2] * inmat[4] * inmat[9] - inmat[0] * inmat[6] * inmat[9] - inmat[1] * inmat[4] * inmat[10] - inmat[2] * inmat[5] * inmat[8]) / det;
   }
   if (determinant) *determinant = det;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 /*@C

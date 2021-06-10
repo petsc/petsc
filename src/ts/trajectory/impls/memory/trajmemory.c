@@ -13,7 +13,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscRevolveIntCast(PetscInt a,PetscRevolveIn
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)
   *b = 0;
-  if ((a) > PETSC_REVOLVE_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Parameter is too large for Revolve, which is restricted to 32 bit integers");
+  if (a > PETSC_REVOLVE_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Parameter is too large for Revolve, which is restricted to 32 bit integers");
 #endif
   *b = (PetscRevolveInt)(a);
   PetscFunctionReturn(0);
@@ -1888,6 +1888,8 @@ static PetscErrorCode TSTrajectoryReset_Memory(TSTrajectory tj)
     ierr = PetscFree(tjsch->rctx);CHKERRQ(ierr);
     ierr = PetscFree(tjsch->rctx2);CHKERRQ(ierr);
   }
+#else
+  PetscFunctionBegin;
 #endif
   PetscFunctionReturn(0);
 }

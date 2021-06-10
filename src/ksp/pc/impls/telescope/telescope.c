@@ -708,6 +708,7 @@ static PetscErrorCode PCReset_Telescope(PC pc)
   PC_Telescope   sred = (PC_Telescope)pc->data;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = ISDestroy(&sred->isin);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&sred->scatter);CHKERRQ(ierr);
   ierr = VecDestroy(&sred->xred);CHKERRQ(ierr);

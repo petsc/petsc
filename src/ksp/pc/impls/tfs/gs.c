@@ -189,7 +189,6 @@ PCTFS_gs_id *PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level)
   MPI_Comm       PCTFS_gs_comm;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
   /* ensure that communication package has been initialized */
   PCTFS_comm_init();
 

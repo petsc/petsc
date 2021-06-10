@@ -137,7 +137,7 @@ int main(int argc,char **argv)
       suffix: yaml
       requires: !complex
       args: -options_file bag.yml -options_view
-      filter: egrep -v "(options_left|options_view|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi)"
+      filter: egrep -v "(options_left|options_view|malloc_dump|malloc_test|saws_port_auto_select|display|check_pointer_intensity|error_output_stdout|nox|vecscatter_mpi1|use_gpu_aware_mpi|checkstack)"
       localrunfiles: bag.yml
 
 TEST*/

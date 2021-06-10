@@ -166,6 +166,7 @@ PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   if (!*options) return 0;
   if ((*options)->previous) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You are destroying an option that has been used with PetscOptionsPush() but does not have a corresponding PetscOptionsPop()");
   ierr = PetscOptionsClear(*options);if (ierr) return ierr;
@@ -407,8 +408,8 @@ static PetscErrorCode PetscOptionsFilename(MPI_Comm comm,const char file[],char 
   char           fname[PETSC_MAX_PATH_LEN+8],path[PETSC_MAX_PATH_LEN+8],*tail;
   PetscErrorCode ierr;
 
-  *yaml = PETSC_FALSE;
   PetscFunctionBegin;
+  *yaml = PETSC_FALSE;
   ierr = PetscStrreplace(comm,file,fname,sizeof(fname));CHKERRQ(ierr);
   ierr = PetscFixFilename(fname,path);CHKERRQ(ierr);
   ierr = PetscStrendswith(path,":yaml",yaml);CHKERRQ(ierr);
@@ -456,7 +457,6 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
   PetscBool      isdir,alias=PETSC_FALSE,valid;
 
   PetscFunctionBegin;
-
   ierr = PetscMemzero(tokens,sizeof(tokens));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (!rank) {

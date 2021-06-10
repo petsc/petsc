@@ -373,7 +373,6 @@ $  PetscErrorCode func(TSAdapt adapt,TS ts,PetscBool *accept)
 @*/
 PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt,TS,PetscReal,Vec,PetscBool*))
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   adapt->checkstage = func;

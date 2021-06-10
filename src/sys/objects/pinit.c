@@ -800,8 +800,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
 
-  PetscFunctionBegin;
-  if (PetscInitializeCalled) PetscFunctionReturn(0);
+  if (PetscInitializeCalled) return 0;
   /*
       The checking over compatible runtime libraries is complicated by the MPI ABI initiative
       https://wiki.mpich.org/mpich/index.php/ABI_Compatibility_Initiative which started with
@@ -1125,8 +1124,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
       Setup building of stack frames for all function calls
   */
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg,NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
-  ierr = PetscStackCreate();CHKERRQ(ierr);
+  ierr = PetscStackCreate(flg);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -1162,7 +1163,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #if defined(PETSC_USE_LOG)

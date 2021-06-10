@@ -281,6 +281,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
   PetscBool         assembled;
 
   /* Set various matrix options */
+  PetscFunctionBegin;
   ierr = MatSetOption(H,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
   if (assembled) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
