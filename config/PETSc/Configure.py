@@ -10,7 +10,8 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.installed = 0 # 1 indicates that Configure itself has already compiled and installed PETSc
+    self.installed    = 0 # 1 indicates that Configure itself has already compiled and installed PETSc
+    self.found        = 1
     return
 
   def __str2__(self):
