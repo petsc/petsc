@@ -505,7 +505,7 @@
      &        ierr)
          CHKERRQ(ierr)
       enddo
-      ierr=0
+      ierr = 0
       return
       end
 

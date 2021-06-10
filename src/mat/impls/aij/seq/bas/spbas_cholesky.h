@@ -413,8 +413,8 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
     for (j=0; j<r_nnz; j++) lvec[r_icol[j]] = 0;
   }
 
-  ierr=PetscFree(lvec);CHKERRQ(ierr);
-  ierr=PetscFree(val);CHKERRQ(ierr);
+  ierr = PetscFree(lvec);CHKERRQ(ierr);
+  ierr = PetscFree(val);CHKERRQ(ierr);
 
   ierr = spbas_cholesky_garbage_collect(&retval, nrows, &n_row_alloc_ok, &n_alloc_used, max_row_nnz);CHKERRQ(ierr);
   ierr = PetscFree(max_row_nnz);CHKERRQ(ierr);

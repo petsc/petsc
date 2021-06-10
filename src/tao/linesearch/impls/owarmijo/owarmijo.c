@@ -17,9 +17,9 @@ static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx)
   PetscInt        low,high,low1,high1,low2,high2,i;
 
   PetscFunctionBegin;
-  ierr=VecGetOwnershipRange(w,&low,&high);CHKERRQ(ierr);
-  ierr=VecGetOwnershipRange(x,&low1,&high1);CHKERRQ(ierr);
-  ierr=VecGetOwnershipRange(gv,&low2,&high2);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(w,&low,&high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(x,&low1,&high1);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(gv,&low2,&high2);CHKERRQ(ierr);
 
   *gdx=0.0;
   ierr = VecGetArray(w,&wptr);CHKERRQ(ierr);
@@ -79,13 +79,13 @@ static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer p
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr=PetscViewerASCIIPrintf(pv,"  OWArmijo linesearch",armP->alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"  OWArmijo linesearch",armP->alpha);CHKERRQ(ierr);
     if (armP->nondescending) {
       ierr = PetscViewerASCIIPrintf(pv, " (nondescending)");CHKERRQ(ierr);
     }
-    ierr=PetscViewerASCIIPrintf(pv,": alpha=%g beta=%g ",(double)armP->alpha,(double)armP->beta);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(pv,"sigma=%g ",(double)armP->sigma);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(pv,"memsize=%D\n",armP->memorySize);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,": alpha=%g beta=%g ",(double)armP->alpha,(double)armP->beta);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"sigma=%g ",(double)armP->sigma);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"memsize=%D\n",armP->memorySize);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

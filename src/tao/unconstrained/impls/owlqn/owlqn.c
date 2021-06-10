@@ -13,8 +13,8 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
   PetscInt        low,high,low1,high1,i;
 
   PetscFunctionBegin;
-  ierr=VecGetOwnershipRange(d,&low,&high);CHKERRQ(ierr);
-  ierr=VecGetOwnershipRange(g,&low1,&high1);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(d,&low,&high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(g,&low1,&high1);CHKERRQ(ierr);
 
   ierr = VecGetArrayRead(g,&gptr);CHKERRQ(ierr);
   ierr = VecGetArray(d,&dptr);CHKERRQ(ierr);
@@ -36,8 +36,8 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
   PetscInt        low,high,low1,high1,i;
 
   PetscFunctionBegin;
-  ierr=VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
-  ierr=VecGetOwnershipRange(gv,&low1,&high1);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(gv,&low1,&high1);CHKERRQ(ierr);
 
   ierr = VecGetArrayRead(x,&xptr);CHKERRQ(ierr);
   ierr = VecGetArray(gv,&gptr);CHKERRQ(ierr);

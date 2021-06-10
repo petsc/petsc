@@ -128,7 +128,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
       /* ak = aa[k]; aa[k] = aa[j]; aa[j] = ak; */
     }
   }
-  ierr= ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
 
   a->inew = ai;
   a->jnew = aj;
