@@ -11,9 +11,7 @@
 #include <KokkosSparse_sptrsv.hpp>
 
 #include <../src/mat/impls/aij/seq/aij.h>
-
 #include <../src/mat/impls/aij/seq/kokkos/aijkokkosimpl.hpp>
-#include <petscmat.h>
 
 static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat); /* Forward declaration */
 
@@ -106,14 +104,12 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJKokkos(Mat A,PetscScalar *array[])
 }
 
 // MatSeqAIJKokkosSetDeviceMat takes a PetscSplitCSRDataStructure with device data and copies it to the device. Note, "deep_copy" here is really a shallow copy
-PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosSetDeviceMat(Mat A, PetscSplitCSRDataStructure *h_mat)
+PetscErrorCode MatSeqAIJKokkosSetDeviceMat(Mat A, PetscSplitCSRDataStructure h_mat)
 {
-  Mat_SeqAIJKokkos *aijkok;
-  Kokkos::View<PetscSplitCSRDataStructure, Kokkos::HostSpace> h_mat_k(h_mat);
+  Mat_SeqAIJKokkos                             *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  Kokkos::View<SplitCSRMat, Kokkos::HostSpace> h_mat_k(h_mat);
 
   PetscFunctionBegin;
-  // ierr    = MatSeqAIJKokkosSyncDevice(A);CHKERRQ(ierr);
-  aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
   if (!aijkok) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"no Mat_SeqAIJKokkos");
   aijkok->device_mat_d = create_mirror(DefaultMemorySpace(),h_mat_k);
   Kokkos::deep_copy (aijkok->device_mat_d, h_mat_k);
@@ -121,12 +117,11 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosSetDeviceMat(Mat A, PetscSplitCSRData
 }
 
 // MatSeqAIJKokkosGetDeviceMat gets the device if it is here, otherwise it creates a place for it and returns NULL
-PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat A, PetscSplitCSRDataStructure **d_mat)
+PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat A, PetscSplitCSRDataStructure *d_mat)
 {
-  Mat_SeqAIJKokkos *aijkok;
+  Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
 
   PetscFunctionBegin;
-  aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
   if (aijkok && aijkok->device_mat_d.data()) {
     *d_mat = aijkok->device_mat_d.data();
   } else {
@@ -574,24 +569,21 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C)
   std::string myalg("SPGEMM_KK_MEMORY");
   kh->create_spgemm_handle(KokkosSparse::StringToSPGEMMAlgorithm(myalg));
 
-  /////////////////////////////////////
   // TODO JZ
   ckok = NULL; //new Mat_SeqAIJKokkos();
   C->spptr = ckok;
   KokkosCsrMatrix_t ccsr; // here only to have the code compile
   KokkosSparse::spgemm_symbolic(*kh, akok->csr, tA, bkok->csr, tB, ccsr);
-  //cerr = WaitForKOKKOS();CHKERRCUDA(cerr);
-  //c->nz = get_nnz_from_ccsr
-  //////////////////////////////////////
+
   c->singlemalloc = PETSC_FALSE;
   c->free_a       = PETSC_TRUE;
   c->free_ij      = PETSC_TRUE;
   ierr = PetscMalloc1(m+1,&c->i);CHKERRQ(ierr);
   ierr = PetscMalloc1(c->nz,&c->j);CHKERRQ(ierr);
   ierr = PetscMalloc1(c->nz,&c->a);CHKERRQ(ierr);
-  ////////////////////////////////////
+
   // TODO JZ copy from device to c->i and c->j
-  ////////////////////////////////////
+
   ierr = PetscMalloc1(m,&c->ilen);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&c->imax);CHKERRQ(ierr);
   c->maxnz = c->nz;
@@ -911,7 +903,6 @@ PetscErrorCode  MatCreateSeqAIJKokkos(MPI_Comm comm,PetscInt m,PetscInt n,PetscI
   PetscFunctionReturn(0);
 }
 
-// factorizations
 typedef Kokkos::TeamPolicy<>::member_type team_member;
 //
 // This factorization exploits block diagonal matrices with "Nf" attached to the matrix in a container.
@@ -970,7 +961,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
     Kokkos::deep_copy (d_ic_k, h_ic_k);
     // Fill A --> fact
     Kokkos::parallel_for(Kokkos::TeamPolicy<>(Nf*Ni, team_size, nVec), KOKKOS_LAMBDA (const team_member team) {
-        const PetscInt  field = team.league_rank()/Ni, field_block = team.league_rank()%Ni; // use grid.x/y in Cuda
+        const PetscInt  field = team.league_rank()/Ni, field_block = team.league_rank()%Ni; // use grid.x/y in CUDA
         const PetscInt  nloc_i =  (nloc/Ni + !!(nloc%Ni)), start_i = field*nloc + field_block*nloc_i, end_i = (start_i + nloc_i) > (field+1)*nloc ? (field+1)*nloc : (start_i + nloc_i);
         const PetscInt  *ic = d_ic_k.data(), *r = d_r_k.data();
         // zero rows of B
@@ -1015,7 +1006,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
         sizet_scr_t     colkIdx(team.thread_scratch(KOKKOS_SHARED_LEVEL));
         scalar_scr_t    L_ki(team.thread_scratch(KOKKOS_SHARED_LEVEL));
         sizet_scr_t     flops(team.team_scratch(KOKKOS_SHARED_LEVEL));
-        const PetscInt  field = team.league_rank()/Ni, field_block_idx = team.league_rank()%Ni; // use grid.x/y in Cuda
+        const PetscInt  field = team.league_rank()/Ni, field_block_idx = team.league_rank()%Ni; // use grid.x/y in CUDA
         const PetscInt  start = field*nloc, end = start + nloc;
         Kokkos::single(Kokkos::PerTeam(team), [=]() { flops() = 0; });
         // A22 panel update for each row A(1,:) and col A(:,1)
@@ -1376,7 +1367,6 @@ static PetscErrorCode MatFactorGetSolverType_SeqAIJKokkos(Mat A,MatSolverType *t
   PetscFunctionReturn(0);
 }
 
-// use -pc_factor_mat_solver_type kokkosdevice
 static PetscErrorCode MatFactorGetSolverType_seqaij_kokkos_device(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;

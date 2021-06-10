@@ -58,9 +58,11 @@ clean-legacy:
                ex[0-9] ex[0-9][0-9] ex[0-9][0-9][0-9] \
                ex[0-9]f ex[0-9][0-9]f ex[0-9][0-9][0-9]f \
                ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9][0-9][0-9]f90 \
+               ex[0-9]cu ex[0-9][0-9]cu ex[0-9][0-9][0-9]cu \
                ex[0-9].exe ex[0-9][0-9].exe ex[0-9][0-9][0-9].exe \
                ex[0-9]f.exe ex[0-9][0-9]f.exe ex[0-9][0-9][0-9]f.exe \
                ex[0-9]f90.exe ex[0-9][0-9]f90.exe ex[0-9][0-9][0-9]f90.exe \
+               ex[0-9]cu.exe ex[0-9][0-9]cu.exe ex[0-9][0-9][0-9]cu.exe \
               PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
               trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
               output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \

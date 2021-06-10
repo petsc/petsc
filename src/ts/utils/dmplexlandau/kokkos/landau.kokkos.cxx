@@ -10,11 +10,8 @@
 #include <Kokkos_Core.hpp>
 #include <cstdio>
 typedef Kokkos::TeamPolicy<>::member_type team_member;
-#define PETSC_DEVICE_FUNC_DECL KOKKOS_INLINE_FUNCTION
 #include "../land_tensors.h"
-#define atomicAdd(e, f) Kokkos::atomic_fetch_add(e, f)
 #include <petscaijdevice.h>
-#undef atomicAdd
 
 namespace landau_inner_red {  // namespace helps with name resolution in reduction identity
   template< class ScalarType >
@@ -242,7 +239,7 @@ extern "C"  {
     PetscReal         *d_Eq_m=NULL;
     PetscScalar       *d_IPf=NULL;
     P4estVertexMaps   *d_maps=NULL;
-    PetscSplitCSRDataStructure *d_mat=NULL;
+    PetscSplitCSRDataStructure d_mat=NULL;
     const int         conc = Kokkos::DefaultExecutionSpace().concurrency(), openmp = !!(conc < 1000), team_size = (openmp==0) ? Nq : 1;
     int               scr_bytes;
     auto              d_alpha_k = static_cast<Kokkos::View<PetscReal*, Kokkos::LayoutLeft>*>(SData_d->alpha); //static data
@@ -524,7 +521,6 @@ extern "C"  {
                     }
                     if (global_elem_mat_sz) d_elem_mats(elem,fOff) = t; // can set this because local element matrix[fOff]
                     else {
-                      PetscErrorCode         ierr = 0;
                       PetscScalar            vals[LANDAU_MAX_Q_FACE*LANDAU_MAX_Q_FACE],row_scale[LANDAU_MAX_Q_FACE],col_scale[LANDAU_MAX_Q_FACE];
                       PetscInt               q,idx,nr,nc,rows0[LANDAU_MAX_Q_FACE],cols0[LANDAU_MAX_Q_FACE],rows[LANDAU_MAX_Q_FACE],cols[LANDAU_MAX_Q_FACE];
                       const LandauIdx *const Idxs = &d_maps->gIdx[elem][fieldA][0];
@@ -561,8 +557,7 @@ extern "C"  {
                           vals[q*nc + d] = row_scale[q]*col_scale[d]*t;
                         }
                       }
-                      MatSetValuesDevice(d_mat,nr,rows,nc,cols,vals,ADD_VALUES,&ierr);
-                      if (ierr) return;
+                      MatSetValuesDevice(d_mat,nr,rows,nc,cols,vals,ADD_VALUES);
                     }
                   }
                 });

@@ -9,11 +9,6 @@
 #include <petscmat.h>
 #include <petsccublas.h>
 
-// hack to avoid configure problems in CI. Delete when resolved
-#if !defined (PETSC_HAVE_CUDA_ATOMIC)
-#define atomicAdd(e, f) (*e) += f
-#endif
-#define PETSC_DEVICE_FUNC_DECL __device__
 #include "../land_tensors.h"
 #include <petscaijdevice.h>
 
@@ -239,7 +234,7 @@ landau_inner_integral_v2(const PetscInt myQi, const PetscInt jpidx, PetscInt nip
                          const PetscReal invJj[], const PetscReal nu_alpha[],
                          const PetscReal nu_beta[], const PetscReal invMass[], const PetscReal Eq_m[],
                          const PetscReal * const BB, const PetscReal * const DD,
-                         PetscScalar *elemMat, P4estVertexMaps *d_maps, PetscSplitCSRDataStructure *d_mat, // output
+                         PetscScalar *elemMat, P4estVertexMaps *d_maps, PetscSplitCSRDataStructure d_mat, // output
                          PetscScalar fieldMats[][LANDAU_MAX_NQ], // all these arrays are in shared memory
                          PetscReal g2[][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES],
                          PetscReal g3[][LANDAU_DIM][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES],
@@ -471,8 +466,7 @@ landau_inner_integral_v2(const PetscInt myQi, const PetscInt jpidx, PetscInt nip
                 vals[q*nc + d] = row_scale[q]*col_scale[d]*fieldMats[f][g];
               }
             }
-            MatSetValuesDevice(d_mat,nr,rows,nc,cols,vals,ADD_VALUES,ierr);
-            if (*ierr) return;
+            MatSetValuesDevice(d_mat,nr,rows,nc,cols,vals,ADD_VALUES);
           }
         }
       }
@@ -487,7 +481,7 @@ __global__
 void __launch_bounds__(256,1) landau_kernel_v2(const PetscInt nip, const PetscInt dim, const PetscInt totDim, const PetscInt Nf, const PetscInt Nb, const PetscReal invJj[],
                                                const PetscReal nu_alpha[], const PetscReal nu_beta[], const PetscReal invMass[], const PetscReal Eq_m[],
                                                const PetscReal * const BB, const PetscReal * const DD, const PetscReal xx[], const PetscReal yy[], const PetscReal ww[],
-                                               PetscScalar elemMats_out[], P4estVertexMaps *d_maps, PetscSplitCSRDataStructure *d_mat, PetscReal d_f[], PetscReal d_dfdx[], PetscReal d_dfdy[],
+                                               PetscScalar elemMats_out[], P4estVertexMaps *d_maps, PetscSplitCSRDataStructure d_mat, PetscReal d_f[], PetscReal d_dfdx[], PetscReal d_dfdy[],
 #if LANDAU_DIM==3
                                                const PetscReal zz[], PetscReal d_dfdz[],
 #endif
@@ -561,7 +555,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
   PetscDS           prob;
   PetscSection      section, globalSection;
   LandauCtx         *ctx;
-  PetscSplitCSRDataStructure *d_mat=NULL;
+  PetscSplitCSRDataStructure d_mat=NULL;
   P4estVertexMaps   *h_maps, *d_maps=NULL;
   int               nnn = 256/Nq; // machine dependent
 

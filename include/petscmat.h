@@ -1919,12 +1919,13 @@ PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatBindToCPU(Mat,PetscBool);
 PETSC_DEPRECATED_FUNCTION("Use MatBindToCPU (since v3.13)") PETSC_STATIC_INLINE PetscErrorCode MatPinToCPU(Mat A,PetscBool flg) {return MatBindToCPU(A,flg);}
 
-typedef struct _p_SplitCSRMat PetscSplitCSRDataStructure;
+typedef struct _n_SplitCSRMat *PetscSplitCSRDataStructure;
+PETSC_EXTERN PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat,PetscSplitCSRDataStructure*);
 
 #ifdef PETSC_HAVE_KOKKOS_KERNELS
-PETSC_EXTERN PetscErrorCode MatKokkosGetDeviceMatWrite(Mat,PetscSplitCSRDataStructure**);
-PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosSetDeviceMat(Mat, PetscSplitCSRDataStructure *);
-PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat, PetscSplitCSRDataStructure **);
+PETSC_EXTERN PetscErrorCode MatKokkosGetDeviceMatWrite(Mat,PetscSplitCSRDataStructure*);
+PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosSetDeviceMat(Mat,PetscSplitCSRDataStructure);
+PETSC_EXTERN PetscErrorCode MatSeqAIJKokkosGetDeviceMat(Mat,PetscSplitCSRDataStructure*);
 #endif
 
 #ifdef PETSC_HAVE_CUDA
@@ -1972,8 +1973,6 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,Pets
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat);
 typedef struct Mat_SeqAIJCUSPARSETriFactors* Mat_SeqAIJCUSPARSETriFactors_p;
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);
-
-PETSC_EXTERN PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat,PetscSplitCSRDataStructure**);
 
 PETSC_EXTERN PetscErrorCode MatCreateDenseCUDA(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqDenseCUDA(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);

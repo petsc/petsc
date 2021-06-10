@@ -1,9 +1,16 @@
-#if !defined(__SEQAIJKOKKOSIMPL_HPP)
-#define __SEQAIJKOKKOSIMPL_HPP
+#if !defined(SEQAIJKOKKOSIMPL_HPP)
+#define SEQAIJKOKKOSIMPL_HPP
 
+#include <petscaijdevice.h>
 #include <petsc/private/vecimpl_kokkos.hpp>
 #include <KokkosSparse_CrsMatrix.hpp>
 #include <KokkosSparse_spiluk.hpp>
+
+/*
+   Kokkos::View<struct _n_SplitCSRMat,DefaultMemorySpace> is not handled correctly so we define SplitCSRMat
+   for the singular purpose of working around this.
+*/
+typedef struct _n_SplitCSRMat SplitCSRMat;
 
 using MatRowOffsetType    = PetscInt;
 using MatColumnIndexType  = PetscInt;
@@ -80,7 +87,7 @@ struct Mat_SeqAIJKokkos {
 
   Kokkos::View<PetscInt*>        *i_uncompressed_d;
   Kokkos::View<PetscInt*>        *colmap_d; // ugh, this is a parallel construct
-  Kokkos::View<PetscSplitCSRDataStructure,DefaultMemorySpace> device_mat_d;
+  Kokkos::View<SplitCSRMat,DefaultMemorySpace> device_mat_d;
   Kokkos::View<PetscInt*>        *diag_d; // factorizations
 
    /* Construct a nrows by ncols matrix of nnz nonzeros with (i,j,a) for the CSR */

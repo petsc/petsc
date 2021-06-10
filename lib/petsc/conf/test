@@ -11,7 +11,7 @@ LINK.F = $(FLINKER) $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(LDFLAGS)
 LINK.cc = $(CXXLINKER) $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
-  LINK.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CUDA_CXX) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDACPPFLAGS) $(CXX_LINKER_FLAGS) $(LDFLAGS)
+  LINK.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER=$(CUDA_CXX) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDACPPFLAGS) $(CXX_LINKER_FLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
   LINK.kokkos.cxx = MPICH_CXX="$(HIPC)" OMPI_CXX="$(HIPC)" $(CXXLINKER) $(HIPC_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
 else

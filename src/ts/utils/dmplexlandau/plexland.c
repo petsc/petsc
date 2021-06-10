@@ -5,7 +5,6 @@
 
 /* Landau collision operator */
 #define PETSC_THREAD_SYNC
-#define PETSC_DEVICE_FUNC_DECL static
 #include "land_tensors.h"
 
 /* vector padding not supported */

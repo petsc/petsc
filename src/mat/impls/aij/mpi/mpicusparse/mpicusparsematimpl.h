@@ -10,7 +10,7 @@ typedef struct {
   MatCUSPARSEStorageFormat   offdiagGPUMatFormat;
   cudaStream_t               stream;
   cusparseHandle_t           handle;
-  PetscSplitCSRDataStructure *deviceMat;
+  PetscSplitCSRDataStructure deviceMat;
   PetscInt                   coo_nd,coo_no;
   THRUSTINTARRAY             *coo_p;
   THRUSTARRAY                *coo_pw;
