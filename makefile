@@ -291,7 +291,7 @@ distclean: chk_petscdir
 
 
 #
-reconfigure:
+reconfigure: allclean
 	@unset MAKEFLAGS && ${PYTHON} ${PETSC_ARCH}/lib/petsc/conf/reconfigure-${PETSC_ARCH}.py
 #
 install:
