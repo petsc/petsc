@@ -725,6 +725,18 @@ cdef class Mat(Object):
         CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
         return out
 
+    def hermitianTranspose(self, Mat out=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        if out is None: out = self
+        if out.mat == self.mat:
+            reuse = MAT_INPLACE_MATRIX
+        elif out.mat == NULL:
+            reuse = MAT_INITIAL_MATRIX
+        else:
+            reuse = MAT_REUSE_MATRIX
+        CHKERR( MatHermitianTranspose(self.mat, reuse, &out.mat) )
+        return out
+
     def realPart(self, Mat out=None):
         if out is None:
             out = self
@@ -1036,7 +1048,7 @@ cdef class Mat(Object):
         cdef PetscInt nrows = asInt(len(rows))
         cdef PetscMatStencil st
         cdef _Mat_Stencil r
-        cdef PetscMatStencil *crows = NULL 
+        cdef PetscMatStencil *crows = NULL
         CHKERR( PetscMalloc(<size_t>(nrows+1)*sizeof(st), &crows) )
         for i in range(nrows):
             r = rows[i]
