@@ -348,17 +348,14 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   }
 
   if (BRGN_REGULARIZATION_L1DICT == gn->reg_type) {
-    if (gn->D) {
-      ierr = MatGetSize(gn->D,&K,&N);CHKERRQ(ierr); /* Shell matrices still must have sizes defined. K = N for identity matrix, K=N-1 or N for gradient matrix */
-    } else {
-      ierr = VecGetSize(tao->solution,&K);CHKERRQ(ierr); /* If user does not setup dict matrix, use identiy matrix, K=N */
-    }
     if (!gn->y) {
-      ierr = VecCreate(PETSC_COMM_SELF,&gn->y);CHKERRQ(ierr);
-      ierr = VecSetSizes(gn->y,PETSC_DECIDE,K);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(gn->y);CHKERRQ(ierr);
+      if (gn->D) {
+        ierr = MatGetSize(gn->D,&K,&N);CHKERRQ(ierr); /* Shell matrices still must have sizes defined. K = N for identity matrix, K=N-1 or N for gradient matrix */
+        ierr = MatCreateVecs(gn->D,NULL,&gn->y);CHKERRQ(ierr);
+      } else {
+        ierr = VecDuplicate(tao->solution,&gn->y);CHKERRQ(ierr); /* If user does not setup dict matrix, use identiy matrix, K=N */
+      }
       ierr = VecSet(gn->y,0.0);CHKERRQ(ierr);
-
     }
     if (!gn->y_work) {
       ierr = VecDuplicate(gn->y,&gn->y_work);CHKERRQ(ierr);
