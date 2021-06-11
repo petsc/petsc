@@ -30,7 +30,7 @@ testex100: ex100.PETSc
         elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/ksp/ksp/tutorials/ex100 manually"; \
 	elif [ -f ex100 ]; then \
-           ${MPIEXEC} -n 1 ./ex100 -test  > ex100_1.tmp 2>&1; \
+           OMPI_MCA_mpi_warn_on_fork=0 ${MPIEXEC} -n 1 ./ex100 -test  > ex100_1.tmp 2>&1; \
 	   if (${DIFF} output/ex100_1.testout ex100_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ Python example src/ksp/ksp/tutorials/ex100 run successfully with 1 MPI process"; \
 	   else echo "Possible error running C/C++ Python src/ksp/ksp/tutorials/ex100 with 1 MPI process"; \
