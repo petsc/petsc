@@ -2,14 +2,20 @@
 
 static char help[] = "Solves a linear system using PCHPDDM and MATHTOOL.\n\n";
 
-static PetscScalar GenEntry(PetscInt sdim,PetscInt i,PetscInt j,void *ctx)
+static PetscErrorCode GenEntries(PetscInt sdim,PetscInt M,PetscInt N,const PetscInt *J,const PetscInt *K,PetscScalar *ptr,void *ctx)
 {
-  PetscInt  d;
+  PetscInt  d,j,k;
   PetscReal diff = 0.0,*coords = (PetscReal*)(ctx);
 
   PetscFunctionBeginUser;
-  for (d = 0; d < sdim; d++) { diff += (coords[i*sdim+d] - coords[j*sdim+d]) * (coords[i*sdim+d] - coords[j*sdim+d]); }
-  PetscFunctionReturn(1.0/(1.0e-2 + PetscSqrtReal(diff)));
+  for (j = 0; j < M; j++) {
+    for (k = 0; k < N; k++) {
+      diff = 0.0;
+      for (d = 0; d < sdim; d++) diff += (coords[J[j]*sdim+d] - coords[K[k]*sdim+d]) * (coords[J[j]*sdim+d] - coords[K[k]*sdim+d]);
+      ptr[j+M*k] = 1.0/(1.0e-2 + PetscSqrtReal(diff));
+    }
+  }
+  PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
@@ -21,7 +27,7 @@ int main(int argc,char **argv)
   PetscInt       m = 100,dim = 3,M,begin = 0,n = 0,overlap = 1;
   PetscMPIInt    size;
   PetscReal      *coords,*gcoords;
-  MatHtoolKernel kernel = GenEntry;
+  MatHtoolKernel kernel = GenEntries;
   PetscBool      flg,sym = PETSC_FALSE;
   PetscRandom    rdm;
   PetscErrorCode ierr;

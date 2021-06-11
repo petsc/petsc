@@ -4,9 +4,9 @@
 #include <petscmat.h>
 
 namespace htool {
-  template<class> class HMatrixVirtual; /* forward definition of a single needed Htool class */
+  template<class> class VirtualHMatrix; /* forward definition of a single needed Htool class */
 }
 
-PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat,const htool::HMatrixVirtual<PetscScalar>**);
+PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat,const htool::VirtualHMatrix<PetscScalar>**);
 
 #endif /* PETSCMATHTOOL_H */

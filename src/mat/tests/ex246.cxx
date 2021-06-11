@@ -3,16 +3,21 @@ static char help[] = "Tests MATHTOOL with a derived htool::IMatrix<PetscScalar> 
 #include <petscmat.h>
 #include <htool/misc/petsc.hpp>
 
-static PetscScalar GenEntry(PetscInt sdim,PetscInt i,PetscInt j,void *ctx)
+static PetscErrorCode GenEntries(PetscInt sdim,PetscInt M,PetscInt N,const PetscInt *J,const PetscInt *K,PetscScalar *ptr,void *ctx)
 {
-  PetscInt  d;
+  PetscInt  d,j,k;
   PetscReal diff = 0.0,*coords = (PetscReal*)(ctx);
 
   PetscFunctionBeginUser;
-  for (d = 0; d < sdim; d++) { diff += (coords[i*sdim+d] - coords[j*sdim+d]) * (coords[i*sdim+d] - coords[j*sdim+d]); }
-  PetscFunctionReturn(1.0/(1.0e-2 + PetscSqrtReal(diff)));
+  for (j = 0; j < M; j++) {
+    for (k = 0; k < N; k++) {
+      diff = 0.0;
+      for (d = 0; d < sdim; d++) diff += (coords[J[j]*sdim+d] - coords[K[k]*sdim+d]) * (coords[J[j]*sdim+d] - coords[K[k]*sdim+d]);
+      ptr[j+M*k] = 1.0/(1.0e-2 + PetscSqrtReal(diff));
+    }
+  }
+  PetscFunctionReturn(0);
 }
-
 class MyIMatrix : public htool::IMatrix<PetscScalar> {
   private:
   PetscReal *coords;
@@ -20,20 +25,17 @@ class MyIMatrix : public htool::IMatrix<PetscScalar> {
   public:
   MyIMatrix(PetscInt M,PetscInt N,PetscInt spacedim,PetscReal* gcoords) : htool::IMatrix<PetscScalar>(M,N),coords(gcoords),sdim(spacedim) { }
 
-  PetscScalar get_coef(const PetscInt &i, const PetscInt &j) const override
+  void copy_submatrix(PetscInt M,PetscInt N,const PetscInt *J,const PetscInt *K,PetscScalar *ptr) const override
   {
     PetscReal diff = 0.0;
 
     PetscFunctionBeginUser;
-    for (PetscInt d = 0; d < sdim; d++) { diff += (coords[i*sdim+d] - coords[j*sdim+d]) * (coords[i*sdim+d] - coords[j*sdim+d]); }
-    PetscFunctionReturn(1.0/(1.0e-2 + PetscSqrtReal(diff)));
-  }
-
-  void copy_submatrix(PetscInt M, PetscInt N, const PetscInt *const rows, const PetscInt *const cols, PetscScalar *ptr) const override
-  {
-    PetscFunctionBeginUser;
     for (PetscInt j = 0; j < M; j++) /* could be optimized by the user how they see fit, e.g., vectorization */
-      for (PetscInt k = 0; k < N; k++) ptr[j+k*M] = this->get_coef(rows[j],cols[k]);
+      for (PetscInt k = 0; k < N; k++) {
+        diff = 0.0;
+        for (PetscInt d = 0; d < sdim; d++) diff += (coords[J[j]*sdim+d] - coords[K[k]*sdim+d]) * (coords[J[j]*sdim+d] - coords[K[k]*sdim+d]);
+        ptr[j+M*k] = 1.0/(1.0e-2 + PetscSqrtReal(diff));
+      }
     PetscFunctionReturnVoid();
   }
 };
@@ -46,7 +48,7 @@ int main(int argc,char **argv)
   PetscReal      *coords,*gcoords,norm,epsilon,relative;
   PetscBool      sym = PETSC_FALSE;
   PetscRandom    rdm;
-  MatHtoolKernel kernel = GenEntry;
+  MatHtoolKernel kernel = GenEntries;
   MyIMatrix      *imatrix;
   PetscErrorCode ierr;
 
@@ -72,7 +74,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatViewFromOptions(A,NULL,"-A_view");CHKERRQ(ierr);
-  ierr = MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,kernel,gcoords,&B);CHKERRQ(ierr); /* entry-wise assembly using GenEntry() */
+  ierr = MatCreateHtoolFromKernel(PETSC_COMM_WORLD,m,m,M,M,dim,coords,coords,kernel,gcoords,&B);CHKERRQ(ierr); /* entry-wise assembly using GenEntries() */
   ierr = MatSetOption(B,MAT_SYMMETRIC,sym);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

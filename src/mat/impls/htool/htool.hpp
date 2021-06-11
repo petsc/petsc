@@ -8,7 +8,13 @@ class WrapperHtool : public htool::IMatrix<PetscScalar> {
 
   public:
   WrapperHtool(PetscInt M,PetscInt N,PetscInt sdim,MatHtoolKernel& g,void* kernelctx) : IMatrix(M,N), dim(sdim), kernel(g), ctx(kernelctx) { }
-  PetscScalar get_coef(const PetscInt& i,const PetscInt& j) const { return kernel(dim,i,j,ctx); }
+  void copy_submatrix(PetscInt M, PetscInt N, const PetscInt *rows, const PetscInt *cols, PetscScalar *ptr) const {
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    ierr = kernel(dim,M,N,rows,cols,ptr,ctx);CHKERRABORT(PETSC_COMM_SELF,ierr);
+    PetscFunctionReturnVoid();
+  }
 };
 
 struct Mat_Htool {
@@ -23,10 +29,11 @@ struct Mat_Htool {
   PetscReal              eta;
   PetscInt               depth[2];
   MatHtoolCompressorType compressor;
+  MatHtoolClusteringType clustering;
   MatHtoolKernel         kernel;
   void*                  kernelctx;
   WrapperHtool           *wrapper;
-  htool::HMatrixVirtual<PetscScalar> *hmatrix;
+  htool::VirtualHMatrix<PetscScalar> *hmatrix;
 };
 
 struct MatHtoolKernelTranspose {

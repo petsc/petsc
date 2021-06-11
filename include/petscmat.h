@@ -1827,9 +1827,12 @@ PETSC_EXTERN PetscErrorCode MatHaraSetSamplingMat(Mat,Mat,PetscInt,PetscReal);
 #endif
 
 #ifdef PETSC_HAVE_HTOOL
-PETSC_EXTERN_TYPEDEF typedef PetscScalar (*MatHtoolKernel)(PetscInt,PetscInt,PetscInt,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*MatHtoolKernel)(PetscInt,PetscInt,PetscInt,const PetscInt*,const PetscInt*,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscReal[],const PetscReal[],MatHtoolKernel,void*,Mat*);
 PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat,MatHtoolKernel,void*);
+PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat,PetscBool);
 /*E
      MatHtoolCompressorType - Indicates the type of compressor used by a MATHTOOL
 
@@ -1840,9 +1843,25 @@ PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat,MatHtoolKernel,void*);
 .   MAT_HTOOL_COMPRESSOR_FULL_ACA - full adaptive cross approximation
 -   MAT_HTOOL_COMPRESSOR_SVD - singular value decomposition
 
-.seealso: MatCreateHtoolFromKernel(), MATHTOOL
+.seealso: MatCreateHtoolFromKernel(), MATHTOOL, MatHtoolClusteringType
 E*/
 typedef enum { MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA, MAT_HTOOL_COMPRESSOR_FULL_ACA, MAT_HTOOL_COMPRESSOR_SVD } MatHtoolCompressorType;
+/*E
+     MatHtoolClusteringType - Indicates the type of clustering used by a MATHTOOL
+
+   Level: beginner
+
+    Values:
++   MAT_HTOOL_CLUSTERING_PCA_REGULAR (default) - axis computed via principle component analysis, split uniformly
+.   MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC - axis computed via principle component analysis, split barycentrically
+.   MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR - axis along the largest extent of the bounding box, split uniformly
+-   MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC - axis along the largest extent of the bounding box, split barycentrically
+
+    Notes: higher-dimensional clustering is not yet supported in Htool, but once it is, one should add BOUNDING_BOX_{2,3} types
+
+.seealso: MatCreateHtoolFromKernel(), MATHTOOL, MatHtoolCompressorType
+E*/
+typedef enum { MAT_HTOOL_CLUSTERING_PCA_REGULAR, MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC, MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR, MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC } MatHtoolClusteringType;
 #endif
 
 /*
