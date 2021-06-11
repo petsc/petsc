@@ -37,6 +37,7 @@ Main Topics
    :maxdepth: 1
 
    Overview <overview/index>
+   Download <download/index>
    Installing <install/index>
    FAQ <faq/index>
    Documentation <documentation/index>
