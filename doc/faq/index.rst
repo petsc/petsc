@@ -1982,7 +1982,7 @@ size of 100 and run on two processors, this cannot work since the sum of the loc
 is 4, not 100.
 
 What Does Corrupt Argument Or Caught Signal Or SEGV Or Segmentation Violation Or Bus Error Mean? Can I Use Valgrind Or CUDA-Memcheck To Debug Memory Corruption Issues?
-------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Sometimes it can mean an argument to a function is invalid. In Fortran this may be caused
 by forgetting to list an argument in the call, especially the final ``PetscErrorCode``.

@@ -47,7 +47,7 @@ typedef void* dlsymbol_t;
 -    mode - options on how to open library
 
    Output Parameter:
-.    handle - opague pointer to be used with PetscDLSym()
+.    handle - opaque pointer to be used with PetscDLSym()
 
    Level: developer
 
