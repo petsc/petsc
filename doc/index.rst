@@ -38,7 +38,7 @@ Main Topics
 
    Overview <overview/index>
    Download <download/index>
-   Installing <install/index>
+   Installation <install/index>
    FAQ <faq/index>
    Documentation <documentation/index>
    Tutorials <tutorials/guide_to_examples>

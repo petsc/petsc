@@ -1,5 +1,5 @@
 ============================================
-Configuring, and Building PETSc
+Installation: Configuring, and Building PETSc
 ============================================
 
 Information and tutorials on setting up a PETSc installation.
