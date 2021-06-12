@@ -1,0 +1,15 @@
+Trig Exact Solution
+  0 SNES Function norm 6.913130206094e+00 
+    0 KSP Residual norm 1.130568468050e+01 
+    1 KSP Residual norm 4.982390451480e-01 
+    2 KSP Residual norm 5.302303468315e-02 
+    3 KSP Residual norm 8.291697070505e-03 
+    4 KSP Residual norm 8.385292521575e-04 
+    5 KSP Residual norm 1.062112717066e-04 
+    6 KSP Residual norm 2.081367282241e-05 
+    7 KSP Residual norm 3.086505894116e-06 
+    8 KSP Residual norm 3.833718083816e-07 
+    9 KSP Residual norm 3.146205457088e-08 
+   10 KSP Residual norm 3.971006865717e-09 
+   11 KSP Residual norm 6.858691489232e-10 
+  1 SNES Function norm 2.081286016406e-09 
