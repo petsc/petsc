@@ -161,6 +161,7 @@ cdef extern from * nogil:
     int PCASMSetLocalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[])
     int PCASMSetTotalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[])
     int PCASMGetSubKSP(PetscPC,PetscInt*,PetscInt*,PetscKSP*[])
+    int PCASMSetSortIndices(PetscPC,PetscBool)
 
     int PCGASMSetType(PetscPC,PetscPCGASMType)
     int PCGASMSetOverlap(PetscPC,PetscInt)
