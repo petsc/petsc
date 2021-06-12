@@ -49,6 +49,12 @@ class Configure(config.package.Package):
     self.openmp           = framework.require('config.packages.openmp',self)
     return
 
+  def configureLibrary(self):
+    for arg in ['with-64-bit-blas-indices','known-64-bit-blas-indices']:
+      if self.argDB.get(arg):
+        raise RuntimeError('MUMPS cannot be used with %s' % arg)
+    config.package.Package.configureLibrary(self)
+
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
     if self.argDB['with-'+self.package] or self.argDB['download-'+self.package]:

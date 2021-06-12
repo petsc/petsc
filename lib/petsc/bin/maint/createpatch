@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script updates VERSION_SUBMINOR in petscversion.h and download/index.html
+# This script updates VERSION_SUBMINOR in petscversion.h and doc/download/index.rst
 #
 # Usage: createpatch petscrepo
 # example usage: createpatch /sandbox/petsc/petsc-dist
@@ -24,8 +24,8 @@ if [ ! -f include/petscversion.h ]; then
   exit
 fi
 
-if [ ! -f src/docs/website/download/index.html ]; then
-  echo "Error: dir $petscrepo/src/docs/website/download/index.html does not exist"
+if [ ! -f doc/download/index.rst ]; then
+  echo "Error: dir $petscrepo/doc/download/index.rst does not exist"
   exit
 fi
 
@@ -77,14 +77,13 @@ cat src/binding/petsc4py/src/__init__.py.bak | \
 /bin/rm -f src/binding/petsc4py/src/__init__.py.bak
 
 # Update patchlevel in download/index.html
-/bin/mv src/docs/website/download/index.html src/docs/website/download/index.html.bak
-cat src/docs/website/download/index.html.bak | \
-  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" | \
-  sed -e "s/git checkout v[0-9.]*/git checkout v${newver}/g" > src/docs/website/download/index.html
-/bin/rm -f src/docs/website/download/index.html.bak
+/bin/mv doc/download/index.rst doc/download/index.rst.bak
+cat doc/download/index.rst.bak | \
+  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" > doc/download/index.rst
+/bin/rm -f doc/download/index.rst.bak
 
 # now create a changeset
-git commit -m"Increase patchlevel to ${newver}" include/petscversion.h src/docs/website/download/index.html src/binding/petsc4py/src/__init__.py
+git commit -m"Increase patchlevel to ${newver}" include/petscversion.h doc/download/index.rst src/binding/petsc4py/src/__init__.py
 echo "#########################################################"
 echo "# Created patch for the following change                #"
 echo "#########################################################"

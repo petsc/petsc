@@ -19,7 +19,7 @@ important. We use several conventions
 
 #. All enum elements and macro variables are named with all capital
    letters. When they consist of several complete words, there is an
-   underscore between each word. For example, ``MATFINALASSEMBLY``.
+   underscore between each word. For example, ``mat,MAT_FINAL_ASSEMBLY``.
 
 #. Functions that are private to PETSc (not callable by the application
    code) either

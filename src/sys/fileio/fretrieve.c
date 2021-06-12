@@ -220,7 +220,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 
    Environmental Variables:
 +     PETSC_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
-.     PETSC_NOT_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
+-     PETSC_NOT_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
 
    Level: developer
 

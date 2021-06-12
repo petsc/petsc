@@ -8,7 +8,7 @@ QQTW (Quickest Quick-start in The West)
 =======================================
 
 On systems where MPI and `BLAS/LAPACK <https://www.netlib.org/lapack/lug/node11.html>`__
-are installed:
+are installed, :ref:`download <doc_download>` PETSc and build with:
 
 .. code-block:: console
 

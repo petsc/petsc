@@ -175,11 +175,7 @@ def builder_init_handler(app):
     genDirName = "generated"
     cwdPath = os.path.dirname(os.path.realpath(__file__))
     genDirPath = os.path.join(cwdPath, genDirName)
-    if "PETSC_GITLAB_PRIVATE_TOKEN" in os.environ:
-        token = os.environ["PETSC_GITLAB_PRIVATE_TOKEN"]
-    else:
-        token = None
-    genteamtable.main(genDirPath, token, app.builder.name)
+    genteamtable.main(genDirPath, builderName = app.builder.name)
     return None
 
 # Supposedly the safer way to add additional css files. Setting html_css_files will

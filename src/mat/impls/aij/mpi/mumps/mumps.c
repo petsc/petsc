@@ -2940,8 +2940,19 @@ $          MatMumpsGetInfo(mat,....);
 $          MatMumpsGetInfog(mat,....); etc.
            Or you can run with -ksp_error_if_not_converged and the program will be stopped and the information printed in the error message.
 
-   Two modes to run MUMPS/PETSc with OpenMP
+  Using MUMPS with 64-bit integers
+    MUMPS provides 64-bit integer support in two build modes:
+      full 64-bit: here MUMPS is built with C preprocessing flag -DINTSIZE64 and Fortran compiler option -i8, -fdefault-integer-8 or equivalent, and
+      requires all dependent libraries MPI, ScaLAPACK, LAPACK and BLAS built the same way with 64-bit integers (for example ILP64 Intel MKL and MPI).
 
+      selective 64-bit: with the default MUMPS build, 64-bit integers have been introduced where needed. In compressed sparse row (CSR) storage of matrices,
+      MUMPS stores column indices in 32-bit, but row offsets in 64-bit, so you can have a huge number of non-zeros, but must have less than 2^31 rows and
+      columns. This can lead to significant memory and performance gains with respect to a full 64-bit integer MUMPS version. This requires a regular (32-bit
+      integer) build of all dependent libraries MPI, ScaLAPACK, LAPACK and BLAS.
+
+    With --download-mumps=1, PETSc always build MUMPS in selective 64-bit mode, which can be used by both --with-64-bit-indices=0/1 variants of PETSc.
+
+  Two modes to run MUMPS/PETSc with OpenMP
 $     Set OMP_NUM_THREADS and run with fewer MPI ranks than cores. For example, if you want to have 16 OpenMP
 $     threads per rank, then you may use "export OMP_NUM_THREADS=16 && mpirun -n 4 ./test".
 

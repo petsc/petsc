@@ -1711,7 +1711,7 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use the MatConvert() interface (since ve
 
 /*S
      MatNullSpace - Object that removes a null space from a vector, i.e.
-         orthogonalizes the vector to a subsapce
+         orthogonalizes the vector to a subspace
 
    Level: advanced
 
