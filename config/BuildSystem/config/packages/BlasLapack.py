@@ -226,6 +226,7 @@ class Configure(config.package.Package):
         yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'],'unknown','unknown')
         self.logWrite('Did not detect default BLAS and LAPACK locations so using the value of MKLROOT to search as --with-blas-lapack-dir='+mkl)
         self.argDB['with-blaslapack-dir'] = mkl
+        self.checkingMKLROOTautomatically = 1
 
     if self.argDB['with-64-bit-blas-indices']:
       ILP64 = '_ilp64'
@@ -387,7 +388,10 @@ class Configure(config.package.Package):
       for lib in ['lib64','lib','']:
         if os.path.exists(os.path.join(dir,libdir)):
           yield ('User specified installation root BLAS/LAPACK',os.path.join(dir,lib,'libblas.a'),os.path.join(dir,lib,'liblapack.a'),'unknown','unknown')
-      raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
+      if hasattr(self,'checkingMKROOTautomatically'):
+        raise RuntimeError('Unable to locate working BLAS/LAPACK libraries, even tried libraries in MKLROOT '+self.argDB['with-blaslapack-dir']+'\n')
+      else:
+        raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-f2cblaslapack\n')
 
