@@ -55,6 +55,7 @@ class Configure(config.package.Package):
     # support MPI-3 non-blocking collectives
     self.support_mpi3_nbc = 0
     self.mpi_pkg_version  = ''
+    self.mpi_pkg          = '' # mpich,mpich2,mpich3,openmpi,intel,intel2,intel3
     self.mpiexec          = None
     self.mpiexecExecutable = None
     return
@@ -80,6 +81,7 @@ class Configure(config.package.Package):
   def __str__(self):
     output  = config.package.Package.__str__(self)
     if self.mpiexec: output  += '  mpiexec: '+self.mpiexec.replace(' -n 1','')+'\n'
+    if self.mpi_pkg: output  += '  Implementation: '+self.mpi_pkg+'\n'
     if hasattr(self,'includepaths'):
       output  += '  MPI C++ include paths: '+ self.includepaths+'\n'
       output += '  MPI C++ libraries: '+ self.libpaths + ' ' + self.mpilibs+'\n'
@@ -589,6 +591,7 @@ Unable to run hostname to check the network')
     if MPI_VER:
       self.compilers.CPPFLAGS = oldFlags
       self.mpi_pkg_version = MPI_VER+'\n'
+      self.mpi_pkg = 'mpich'+mpich_numversion[0]
       return
 
     # IBM Spectrum MPI is derived from OpenMPI, we do not yet have specific tests for it
@@ -613,6 +616,7 @@ Unable to run hostname to check the network')
     if MPI_VER:
       self.compilers.CPPFLAGS = oldFlags
       self.mpi_pkg_version = MPI_VER+'\n'
+      self.mpi_pkg = 'openmpi'
       return
 
     msmpi_test = '#include <mpi.h>\n#define xstr(s) str(s)\n#define str(s) #s\n#if defined(MSMPI_VER)\nchar msmpi_hex[] = xstr(MSMPI_VER);\n#else\n#error not MSMPI\n#endif\n'
