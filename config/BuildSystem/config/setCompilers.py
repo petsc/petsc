@@ -224,6 +224,18 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isNVCC(compiler, log):
+    '''Returns true if the compiler is a NVCC compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output + error
+      if 'Cuda compiler driver' in output:
+        if log: log.write('Detected NVCC compiler\n')
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
   def isGcc110plus(compiler, log):
     '''returns true if the compiler is gcc-11.0.x or later'''
     try:
