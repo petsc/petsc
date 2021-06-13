@@ -1509,8 +1509,9 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(row,IS_CLASSID,2);
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
-
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(x, &array);CHKERRQ(ierr);
