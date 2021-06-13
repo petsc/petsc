@@ -10,7 +10,6 @@ static char help[] = "Test of Kokkos matrix assemble with 1D Laplacian. Kokkos v
 #include <Kokkos_Core.hpp>
 #include <Kokkos_OffsetView.hpp>
 
-#define atomicAdd(e, f) Kokkos::atomic_fetch_add(e, f)
 #include <petscaijdevice.h>
 
 void assemble_mat(Mat A, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank)

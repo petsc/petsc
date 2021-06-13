@@ -72,7 +72,6 @@ typedef struct {
   void  *dfdy; // nip*Nf - dynamic (IP)
   void  *dfdz; // nip*Nf - dynamic (IP)
   void  *IPf;  // Ncells*Nb*Nf - dynamic (vertex in cells)
-  void  *ierr;
   int   dim_,ns_,nip_,nq_,nb_;
 } LandauGeomData;
 
