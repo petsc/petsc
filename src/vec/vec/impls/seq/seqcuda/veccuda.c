@@ -493,8 +493,8 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->conjugate              = VecConjugate_SeqCUDA;
     V->ops->getlocalvector         = VecGetLocalVector_SeqCUDA;
     V->ops->restorelocalvector     = VecRestoreLocalVector_SeqCUDA;
-    V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUDA;
-    V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
+    V->ops->getlocalvectorread     = VecGetLocalVectorRead_SeqCUDA;
+    V->ops->restorelocalvectorread = VecRestoreLocalVectorRead_SeqCUDA;
     V->ops->getarraywrite          = VecGetArrayWrite_SeqCUDA;
     V->ops->getarray               = VecGetArray_SeqCUDA;
     V->ops->restorearray           = VecRestoreArray_SeqCUDA;

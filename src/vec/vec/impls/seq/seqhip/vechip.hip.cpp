@@ -480,8 +480,8 @@ PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool pin)
     V->ops->conjugate              = VecConjugate_SeqHIP;
     V->ops->getlocalvector         = VecGetLocalVector_SeqHIP;
     V->ops->restorelocalvector     = VecRestoreLocalVector_SeqHIP;
-    V->ops->getlocalvectorread     = VecGetLocalVector_SeqHIP;
-    V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqHIP;
+    V->ops->getlocalvectorread     = VecGetLocalVectorRead_SeqHIP;
+    V->ops->restorelocalvectorread = VecRestoreLocalVectorRead_SeqHIP;
     V->ops->getarraywrite          = VecGetArrayWrite_SeqHIP;
     V->ops->getarray               = VecGetArray_SeqHIP;
     V->ops->restorearray           = VecRestoreArray_SeqHIP;
