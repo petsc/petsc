@@ -79,6 +79,7 @@ Changes: Development
 .. rubric:: Vec:
 
 -  Add ``VecMean()`` to calculate arithmetic mean of elements of a vector
+-  Add ``VecBoundToCPU()`` to query information set with ``VecBindToCPU()``
 
 .. rubric:: PetscSection:
 
@@ -113,6 +114,7 @@ Changes: Development
 -  Add ``MatGetColumnReductions()`` developer routine to calculate reductions over columns of a matrix
 -  Add ``MatGetColumnSums()``, ``MatGetColumnSumsRealPart()``, ``MatGetColumnSumsImaginaryPart()`` to compute sums over matrix columns
 -  Add ``MatGetColumnMeans()``, ``MatGetColumnMeansRealPart()``, ``MatGetColumnMeansImaginaryPart()`` to compute arithmetic means over matrix columns
+-  Add ``MatBoundToCPU()`` to query information set with ``MatBindToCPU()``
 
 .. rubric:: PC:
 

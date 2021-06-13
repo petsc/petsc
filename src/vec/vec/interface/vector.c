@@ -1854,6 +1854,8 @@ PetscErrorCode VecSetInf(Vec xin)
 /*@
      VecBindToCPU - marks a vector to temporarily stay on the CPU and perform computations on the CPU
 
+  Logically collective on Vec
+
    Input Parameters:
 +   v - the vector
 -   flg - bind to the CPU if value of PETSC_TRUE
@@ -1862,19 +1864,46 @@ PetscErrorCode VecSetInf(Vec xin)
 @*/
 PetscErrorCode VecBindToCPU(Vec v,PetscBool flg)
 {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveBool(v,flg,2);
+#if defined(PETSC_HAVE_DEVICE)
   if (v->boundtocpu == flg) PetscFunctionReturn(0);
   v->boundtocpu = flg;
   if (v->ops->bindtocpu) {
+    PetscErrorCode ierr;
     ierr = (*v->ops->bindtocpu)(v,flg);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-#else
-  return 0;
 #endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+     VecBoundToCPU - query if a vector is bound to the CPU
+
+  Not collective
+
+   Input Parameter:
+.   v - the vector
+
+   Output Parameter:
+.   flg - the logical flag
+
+   Level: intermediate
+
+.seealso: VecBindToCPU()
+@*/
+PetscErrorCode VecBoundToCPU(Vec v,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidPointer(flg,2);
+#if defined(PETSC_HAVE_DEVICE)
+  *flg = v->boundtocpu;
+#else
+  *flg = PETSC_TRUE;
+#endif
+  PetscFunctionReturn(0);
 }
 
 /*@C
