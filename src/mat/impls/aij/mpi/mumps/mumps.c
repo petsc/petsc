@@ -2986,7 +2986,7 @@ $     if a compute node has 32 cores and you run on two nodes, you may use "mpir
 +   1. - Heroux, Michael A., R. Brightwell, and Michael M. Wolf. "Bi-modal MPI and MPI+ threads computing on scalable multicore systems." IJHPCA (Submitted) (2011).
 -   2. - Gutierrez, Samuel K., et al. "Accommodating Thread-Level Heterogeneity in Coupled Parallel Applications." Parallel and Distributed Processing Symposium (IPDPS), 2017 IEEE International. IEEE, 2017.
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType, MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(),  PCFactorGetMatrix()
+.seealso: PCFactorSetMatSolverType(), MatSolverType, MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(), PCFactorGetMatrix()
 
 M*/
 
