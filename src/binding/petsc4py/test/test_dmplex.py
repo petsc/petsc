@@ -338,6 +338,10 @@ class BaseTestPlexHDF5(object):
                 mycolor = (grank > self.NTIMES - i)
             else:
                 mycolor = 0
+            try:
+                import mpi4py
+            except ImportError:
+                self.skipTest('mpi4py') # throws special exception to signal test skip
             mpicomm = PETSc.COMM_WORLD.tompi4py()
             comm = PETSc.Comm(comm=mpicomm.Split(color=mycolor, key=grank))
             if mycolor == 0:
