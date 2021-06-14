@@ -11,6 +11,7 @@ typedef struct {
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
   PetscViewerFormat format;               /* Format to write and read */
   PetscBool second_write_read;            /* Write and read for the 2nd time */
+  PetscBool use_low_level_functions;      /* Use low level functions for viewing and loading */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -24,19 +25,21 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->filename[0] = '\0';
   options->format = PETSC_VIEWER_DEFAULT;
   options->second_write_read = PETSC_FALSE;
+  options->use_low_level_functions = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex5.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex5.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex5.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex5.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-format", "Format to write and read", "ex5.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum*)&options->format, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-second_write_read", "Write and read for the 2nd time", "ex5.c", options->second_write_read, &options->second_write_read, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex55.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex55.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex55.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "The mesh file", "ex55.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-format", "Format to write and read", "ex55.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum*)&options->format, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-second_write_read", "Write and read for the 2nd time", "ex55.c", options->second_write_read, &options->second_write_read, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", "ex55.c", options->use_low_level_functions, &options->use_low_level_functions, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
 
-static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], PetscViewerFormat format, const char prefix[], DM *dm_new)
+static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const char prefix[], AppCtx user, DM *dm_new)
 {
   DM             dmnew;
   PetscViewer    v;
@@ -44,14 +47,26 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], Petsc
 
   PetscFunctionBeginUser;
   ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), filename, FILE_MODE_WRITE, &v);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(v, format);CHKERRQ(ierr);
-  ierr = DMView(dm, v);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(v, user.format);CHKERRQ(ierr);
+  if (user.use_low_level_functions) {
+    ierr = DMPlexTopologyView(dm, v);CHKERRQ(ierr);
+    ierr = DMPlexCoordinatesView(dm, v);CHKERRQ(ierr);
+    ierr = DMPlexLabelsView(dm, v);CHKERRQ(ierr);
+  } else {
+    ierr = DMView(dm, v);CHKERRQ(ierr);
+  }
 
   ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = DMCreate(PETSC_COMM_WORLD, &dmnew);CHKERRQ(ierr);
   ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dmnew, prefix);CHKERRQ(ierr);
-  ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
+  if (user.use_low_level_functions) {
+    ierr = DMPlexTopologyLoad(dmnew, v, NULL);CHKERRQ(ierr);
+    ierr = DMPlexCoordinatesLoad(dmnew, v);CHKERRQ(ierr);
+    ierr = DMPlexLabelsLoad(dmnew, v);CHKERRQ(ierr);
+  } else {
+    ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
+  }
   ierr = PetscObjectSetName((PetscObject)dmnew,"Mesh_new");CHKERRQ(ierr);
 
   ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
@@ -90,12 +105,12 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
-  ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, "new_", &dmnew);CHKERRQ(ierr);
+  ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", "new_", user, &dmnew);CHKERRQ(ierr);
 
   if (user.second_write_read) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm = dmnew;
-    ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", user.format, "new_", &dmnew);CHKERRQ(ierr);
+    ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", "new_", user, &dmnew);CHKERRQ(ierr);
   }
 
   ierr = DMViewFromOptions(dmnew, NULL, "-dm_view");CHKERRQ(ierr);
@@ -159,6 +174,18 @@ int main(int argc, char **argv)
     nsize: {{1 2 3 4 8}}
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5
     args: -dm_plex_create_from_hdf5_xdmf -distribute 0 -format hdf5_xdmf -second_write_read -compare
+
+  # Use low level functions, DMPlexTopologyView()/Load(), DMPlexCoordinatesView()/Load(), and DMPlexLabelsView()/Load()
+  # Output must be the same as ex55_2_nsize-2_format-hdf5_petsc_interpolate-0.out
+  test:
+    suffix: 5
+    requires: exodusii
+    nsize: 2
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    args: -petscpartitioner_type simple
+    args: -dm_view ascii::ascii_info_detail
+    args: -new_dm_view ascii::ascii_info_detail
+    args: -format hdf5_petsc -use_low_level_functions
 
   testset:
     # the same data and settings as dm_impls_plex_tests-ex18_9%
