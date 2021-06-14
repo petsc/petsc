@@ -3,8 +3,11 @@
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 #include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
-#include <petscvalgrind.h>
 #include <petscviewer.h>
+
+#if !defined(PETSC_HAVE_WINDOWS_COMPILERS)
+#include <petsc/private/valgrind/valgrind.h>
+#endif
 
 #if defined(PETSC_HAVE_CUDA)
 #include <petsccublas.h>
@@ -71,6 +74,8 @@ PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
 
 PetscInt PetscHotRegionDepth;
+
+PetscBool PETSC_RUNNING_ON_VALGRIND = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_THREADSAFETY)
 PetscSpinlock PetscViewerASCIISpinLockOpen;
@@ -1153,6 +1158,15 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = adios_declare_group(&Petsc_adios_group,"PETSc","",adios_stat_default);CHKERRQ(ierr);
   ierr = adios_select_method(Petsc_adios_group,"MPI","","");CHKERRQ(ierr);
   ierr = adios_read_init_method(ADIOS_READ_METHOD_BP,PETSC_COMM_WORLD,"");CHKERRQ(ierr);
+#endif
+
+#if defined(__VALGRIND_H)
+  PETSC_RUNNING_ON_VALGRIND = RUNNING_ON_VALGRIND? PETSC_TRUE: PETSC_FALSE;
+#if defined(PETSC_USING_DARWIN) && defined(PETSC_BLASLAPACK_SDOT_RETURNS_DOUBLE)
+  if (PETSC_RUNNING_ON_VALGRIND) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING: Running valgrind with the MacOS native BLAS and LAPACK can fail. If it fails suggest configuring with --download-fblaslapack or --download-f2cblaslapack");CHKERRQ(ierr);
+    }
+#endif
 #endif
 
   /*

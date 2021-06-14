@@ -1,5 +1,4 @@
 #include <petsc/private/petscimpl.h>
-#include <petscvalgrind.h>
 
 #if defined(PETSC_HAVE_CUDA)
   #include <cuda_runtime.h>

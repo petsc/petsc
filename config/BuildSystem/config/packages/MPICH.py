@@ -15,7 +15,6 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags',self)
     self.cuda            = framework.require('config.packages.cuda',self)
-    self.valgrind        = framework.require('config.packages.valgrind',self)
     self.hwloc           = framework.require('config.packages.hwloc',self)
     self.odeps           = [self.hwloc]
     return
@@ -65,7 +64,7 @@ class Configure(config.package.GNUPackage):
     args.append('--enable-g=meminit')
     if not self.setCompilers.isDarwin(self.log) and config.setCompilers.Configure.isClang(self.setCompilers.CC, self.log):
       args.append('pac_cv_have_float16=no')
-    if (not self.sharedLibraries.useShared or self.valgrind.found) and config.setCompilers.Configure.isDarwin(self.log):
+    if config.setCompilers.Configure.isDarwin(self.log):
       args.append('--disable-opencl')
 
     # MPICH configure errors out on certain standard configure arguments
