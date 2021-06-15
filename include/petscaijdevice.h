@@ -22,6 +22,21 @@ struct _n_SplitCSRMat {
   PetscMPIInt           rank;
 };
 
+/* 64-bit floating-point version of atomicAdd() is only natively supported by
+   CUDA devices of compute capability 6.x and higher. See also sfcuda.cu
+*/
+#if defined(PETSC_USE_REAL_DOUBLE) && defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 600)
+  #define atomicAdd(x,y) do { \
+    double *address = x, val = y; \
+    unsigned long long *address_as_ull = (unsigned long long*)address; \
+    unsigned long long old = *address_as_ull, assumed; \
+    do { \
+      assumed = old; \
+      old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed))); \
+    } while (assumed != old); \
+  } while (0)
+#endif
+
 #if defined(KOKKOS_INLINE_FUNCTION)
   #define PetscAtomicAdd(a,b) Kokkos::atomic_fetch_add(a, b)
 #elif defined(__CUDA_ARCH__)
@@ -36,6 +51,7 @@ struct _n_SplitCSRMat {
     #define PetscAtomicAdd(a,b) atomicAdd(a,b)
   #endif
 #else
+  /* TODO: support devices other than CUDA */
   #define PetscAtomicAdd(a,b) *(a) += b
 #endif
 
