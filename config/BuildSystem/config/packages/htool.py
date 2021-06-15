@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.minversion             = '0.5.0'
     self.versionname            = 'HTOOL_VERSION'
     self.versioninclude         = 'htool/misc/define.hpp'
-    self.requirescxx11          = 1
+    self.minCxxVersion          = 'c++11'
     self.cxx                    = 1
     self.functions              = []
     self.includes               = ['htool/htool.hpp']

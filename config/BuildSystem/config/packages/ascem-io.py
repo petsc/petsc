@@ -9,7 +9,6 @@ class Configure(config.package.Package):
     self.includes         = ['ascemio_util.h']
     self.liblist          = [['libparallelio.a']]
     self.functions        = []
-    self.requirescxx11    = 0
     self.downloadonWindows= 0
     self.hastests         = 1
     self.useddirectly     = 0

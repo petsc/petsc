@@ -1339,7 +1339,6 @@ class Configure(config.base.Configure):
       # outside this ctx manager then the flags and languages are still reset
       if lang:
         oldLang = self.popLanguage()
-        assert oldLang == lang, "Popped language '%s' is not the same as pushed language '%s'" % (oldLang,lang)
       setattr(self,flagsArg,oldCompilerFlags)
 
   def checkPragma(self):

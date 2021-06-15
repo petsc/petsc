@@ -71,8 +71,8 @@ class Package(config.base.Configure):
     self.license                = None # optional license text
     self.excludedDirs           = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
     self.downloadonWindows      = 0  # 1 means the --download-package works on Microsoft Windows
-    self.requirescxx14          = 0
-    self.requirescxx11          = 0
+    self.minCxxVersion          = self.framework.compilers.cxxDialectRange[0] # minimum c++ standard version required by the package, e.g. 'c++11'
+    self.maxCxxVersion          = self.framework.compilers.cxxDialectRange[1] # maximum c++ standard version allowed by the package, e.g. 'c++14', must be greater than self.minCxxVersion
     self.publicInstall          = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
                                      # during the configuration/installation process such as sowing, make etc should be marked as 0
     self.parallelMake           = 1  # 1 indicates the package supports make -j np option
@@ -264,6 +264,35 @@ class Package(config.base.Configure):
         outflags.append(flag)
     return outflags
 
+  def removeStdCxxFlag(self,flags):
+    '''Remove the -std=[CXX_VERSION] flag from the list of flags, but only for CMake packages'''
+    if issubclass(type(self),config.package.CMakePackage):
+      # only cmake packages get their std flags removed since they use
+      # -DCMAKE_CXX_STANDARD to set the std flag
+      cmakeLists = os.path.join(self.packageDir,self.cmakelistsdir,'CMakeLists.txt')
+      with open(cmakeLists,'r') as fd:
+        refcxxstd = re.compile('^\s*(?!#)(set\()(CMAKE_CXX_STANDARD\s[A-z0-9\s]*)')
+        for line in fd:
+          match = refcxxstd.search(line)
+          if match:
+            # from set(CMAKE_CXX_STANDARD <val> [CACHE <type> <docstring> [FORCE]]) extract
+            # <val> CACHE <type> <docstring> [FORCE]
+            cmakeSetCmd = match.groups()[1].split()[1:]
+            if (len(cmakeSetCmd) == 1) or 'CACHE' not in cmakeSetList:
+              # The worst behaved, we have a pure "set". we shouldn't rely on
+              # CMAKE_CXX_STANDARD, since the package overrides it unconditionally. Thus
+              # we leave the std flag in the compiler flags.
+              self.logPrint('removeStdCxxFlag: Cmake Package {pkg} had an overriding \'set\' command in their CmakeLists.txt:\n\t{cmd}\nLeaving std flags in'.format(pkg=self.name,cmd=line.strip()),indent=1)
+              return flags
+            self.logPrint('removeStdCxxFlag: Cmake Package {pkg} did NOT have an overriding \'set\' command in their CmakeLists.txt:\n\t{cmd}\nRemoving std flags'.format(pkg=self.name,cmd=line.strip()),indent=1)
+            # CACHE was found in the set command, meaning we can override it from the
+            # command line. So we continue on to remove the std flags.
+            break
+      stdFlags = ('-std=c++','-std=gnu++')
+      return [f for f in flags if not f.startswith(stdFlags)]
+    return flags
+
+
   def updatePackageCFlags(self,flags):
     '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
     outflags = self.removeWarningFlags(flags.split())
@@ -283,6 +312,7 @@ class Package(config.base.Configure):
 
   def updatePackageCxxFlags(self,flags):
     outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeStdCxxFlag(outflags)
     return ' '.join(outflags)
 
   def getDefaultLanguage(self):
@@ -970,6 +1000,11 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
 
   def consistencyChecks(self):
     '''Checks run on the system and currently installed packages that need to be correct for the package now being configured'''
+    def inVersionRange(myRange,reqRange):
+      # my minimum needs to be less than the maximum and my maximum must be greater than
+      # the minimum
+      return (myRange[0].lower() <= reqRange[1].lower()) and (myRange[1].lower() >= reqRange[0].lower())
+
     self.printTest(self.consistencyChecks)
     if 'with-'+self.package+'-dir' in self.argDB and ('with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB):
       raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
@@ -980,13 +1015,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         if pkg.has64bitindices and self.requires32bitintblas:
           blaslapackconflict = 1
 
+    cxxVersionRange = (self.minCxxVersion,self.maxCxxVersion)
+    cxxVersionConflict = not inVersionRange(cxxVersionRange,self.compilers.cxxDialectRange)
     # if user did not request option, then turn it off if conflicts with configuration
     if self.lookforbydefault and 'with-'+self.package not in self.framework.clArgDB:
       if (self.cxx and not hasattr(self.compilers, 'CXX')) or \
          (self.fc and not hasattr(self.compilers, 'FC')) or \
          (self.noMPIUni and self.mpi.usingMPIUni) or \
-         (self.requirescxx14 and self.compilers.cxxdialect not in ['C++14']) or \
-         (self.requirescxx11 and self.compilers.cxxdialect not in ['C++11','C++14']) or \
+         cxxVersionConflict or \
          (not self.defaultPrecision.lower() in self.precisions) or \
          (not self.complex and self.defaultScalarType.lower() == 'complex') or \
          (self.defaultIndexSize == 64 and self.requires32bitint) or \
@@ -1002,10 +1038,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if self.requirescxx14 and self.compilers.cxxdialect not in ['C++14']:
-        raise RuntimeError('Cannot use '+self.name+' without enabling C++14, see --with-cxx-dialect=C++14')
-      if self.requirescxx11 and self.compilers.cxxdialect not in ['C++11','C++14']:
-        raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
+      if cxxVersionConflict:
+        raise RuntimeError('Cannot use '+self.name+' as it requires -std=['+','.join(map(str,cxxVersionRange))+'], while your compiler seemingly only supports -std=['+','.join(map(str,self.compilers.cxxDialectRange))+']')
       if self.download and self.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
       if not self.defaultPrecision.lower() in self.precisions:
@@ -1201,7 +1235,10 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         pass
     # redo compiler detection
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
+    # copy the package cxx dialect restrictions though
+    oldPackageRanges = self.compilers.cxxDialectPackageRanges
     self.compilers.__init__(self.framework)
+    self.compilers.cxxDialectPackageRanges = oldPackageRanges
     self.compilers.headerPrefix = self.headerPrefix
     self.compilers.setup()
     self.compilerFlags.saveLog()
@@ -1751,9 +1788,12 @@ class CMakePackage(Package):
       self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
-      args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="'+self.updatePackageCxxFlags(self.framework.getCompilerFlags())+'"')
+      cxxFlags = self.updatePackageCxxFlags(self.framework.getCompilerFlags())
+      args.append('-DCMAKE_CXX_FLAGS:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
+      args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
+      args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
+      args.append('-DCMAKE_CXX_STANDARD={stdver}'.format(stdver=self.compilers.cxxdialect[-2:]))
+      args.append('-DCMAKE_CXX_STANDARD_REQUIRED=ON')
       self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):

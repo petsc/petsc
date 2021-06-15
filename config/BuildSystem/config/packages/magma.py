@@ -24,7 +24,7 @@ class Configure(config.package.Package):
     self.requirec99flag   = 1 #From CMakeLists.txt -> some code may not compile
     self.precisions       = ['single','double']
     self.cxx              = 1
-    self.requirescxx11    = 1 #From CMakeLists.txt -> some code may not compile
+    self.minCxxVersion    = 'c++11' #From CMakeLists.txt -> some code may not compile
     self.makerulename     = 'lib sparse-lib'
     return
 
