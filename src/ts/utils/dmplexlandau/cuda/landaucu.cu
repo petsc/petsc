@@ -713,7 +713,11 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
 #endif
 );
     CHECK_LAUNCH_ERROR();
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
     ierr = PetscLogGpuFlops(nip*(PetscLogDouble)(2*Nb*(1+dim)));CHKERRQ(ierr);
+#else
+    ierr = PetscLogFlops(nip*(PetscLogDouble)(2*Nb*(1+dim)));CHKERRQ(ierr);
+#endif
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogEventEnd(events[8],0,0,0,0);CHKERRQ(ierr);
   } else {

@@ -309,7 +309,7 @@ extern "C"  {
     }
     ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
     ierr = PetscLogEventEnd(events[3],0,0,0,0);CHKERRQ(ierr);
-    ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+
     Kokkos::View<PetscScalar**, Kokkos::LayoutRight> d_elem_mats("element matrices", global_elem_mat_sz, totDim*totDim);
     if (a_IPf || a_xarray) { // Jacobian
       const int num_face = nfaces;
@@ -335,6 +335,7 @@ extern "C"  {
 #define KOKKOS_SHARED_LEVEL 1
       // get f and df
       ierr = PetscLogEventBegin(events[8],0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       Kokkos::parallel_for("f, df", Kokkos::TeamPolicy<>(numCells, team_size, /* Kokkos::AUTO */ 16), KOKKOS_LAMBDA (const team_member team) {
           const PetscInt    elem = team.league_rank();
           const PetscScalar *coef;
@@ -384,14 +385,16 @@ extern "C"  {
                 }); // Nf
             }); // Nq
         }); // elems
-      Kokkos::fence();
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
       ierr = PetscLogGpuFlops(nip*(PetscLogDouble)(2*Nb*(1+dim)));CHKERRQ(ierr);
 #else
       ierr = PetscLogFlops(nip*(PetscLogDouble)(2*Nb*(1+dim)));CHKERRQ(ierr);
 #endif
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = PetscLogEventEnd(events[8],0,0,0,0);CHKERRQ(ierr);
+      // Jacobian
       ierr = PetscLogEventBegin(events[4],0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
       ierr = PetscLogGpuFlops(nip*(PetscLogDouble)((nip*(11*Nf+ 4*dim*dim) + 6*Nf*dim*dim*dim + 10*Nf*dim*dim + 4*Nf*dim + Nb*Nf*Nb*Nq*dim*dim*5)));CHKERRQ(ierr);
       if (ctx->deviceType == LANDAU_CPU) PetscInfo(plex, "Warning: Landau selected CPU but no support for Kokkos using CPU\n");
@@ -560,10 +563,12 @@ extern "C"  {
             }
           }
         });
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = PetscLogEventEnd(events[4],0,0,0,0);CHKERRQ(ierr);
     } else { // mass
       int scr_bytes = fieldMats_scr_t::shmem_size(Nq,Nq) + idx_scr_t::shmem_size(Nb,nfaces) + scale_scr_t::shmem_size(Nb,nfaces);
       ierr = PetscLogEventBegin(events[4],0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
       ierr = PetscLogGpuFlops(nip*(PetscLogDouble)(Nb*Nf*Nb*Nq*4));CHKERRQ(ierr);
       if (ctx->deviceType == LANDAU_CPU) PetscInfo(plex, "Warning: Landau selected CPU but no support for Kokkos using CPU\n");
@@ -635,9 +640,9 @@ extern "C"  {
             }
           }
         });
+      ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = PetscLogEventEnd(events[4],0,0,0,0);CHKERRQ(ierr);
     }
-    ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     Kokkos::fence();
 
     if (global_elem_mat_sz) {
