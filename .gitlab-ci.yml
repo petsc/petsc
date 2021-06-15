@@ -768,7 +768,7 @@ linux-opt-misc:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-opt-misc
     LOAD_MODULES: gcc/6.5.0-57usejd
