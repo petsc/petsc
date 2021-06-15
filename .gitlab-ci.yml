@@ -977,11 +977,11 @@ pages:  # this job name has special meaning to GitLab
   extends: .docs
   interruptible: true
   script:
+    - mkdir -p ../public/ && cp public/* ../public/
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
     - git checkout origin/main && make website-deploy BUILDDIR="../public/main"
     - make clean BUILDDIR="../public/release"
     - git checkout origin/release && make website-deploy BUILDDIR="../public/release"
-    - printf "/ /release/ 302\n/index.html /release/ 302\n" > ../public/_redirects
   only:
     variables:
       - $PETSC_CI_SCHEDULED == "yes"
