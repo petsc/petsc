@@ -295,8 +295,8 @@ foreach $name (sort {uc($a) cmp uc($b)} keys(%Concepts)) {
 	$concept_file = $name;
 	$concept_file =~ s/ /_/g;
 	$concept_file .= ".html";
-	$concept_file = $destdir . $concept_file;
 	$concept_file = lc($concept_file);
+	$concept_file = $destdir . $concept_file;
 	open($OUTFILE, ">$concept_file") || 
 	    die "Could not open $concept_file\n";
 	print $OUTFILE "<html>\n<title>$name</title><body bgcolor=\"FFFFFF\">\n";
