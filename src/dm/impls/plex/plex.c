@@ -1437,6 +1437,122 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTopologyView - Saves a DMPlex topology into a file
+
+  Collective on DM
+
+  Input Parameters:
++ dm     - The DM whose topology is to be saved
+- viewer - The PetscViewer for saving
+
+  Level: advanced
+
+.seealso: DMView(), DMPlexCoordinatesView(), DMPlexLabelsView(), DMPlexTopologyLoad()
+@*/
+PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer)
+{
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    PetscViewerFormat format;
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
+      IS globalPointNumbering;
+
+      ierr = DMPlexCreatePointNumbering(dm, &globalPointNumbering);CHKERRQ(ierr);
+      ierr = DMPlexTopologyView_HDF5_Internal(dm, globalPointNumbering, viewer);CHKERRQ(ierr);
+      ierr = ISDestroy(&globalPointNumbering);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexCoordinatesView - Saves DMPlex coordinates into a file
+
+  Collective on DM
+
+  Input Parameters:
++ dm     - The DM whose coordinates are to be saved
+- viewer - The PetscViewer for saving
+
+  Level: advanced
+
+.seealso: DMView(), DMPlexTopologyView(), DMPlexLabelsView(), DMPlexCoordinatesLoad()
+@*/
+PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer)
+{
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    PetscViewerFormat format;
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
+      ierr = DMPlexCoordinatesView_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexLabelsView - Saves DMPlex labels into a file
+
+  Collective on DM
+
+  Input Parameters:
++ dm     - The DM whose labels are to be saved
+- viewer - The PetscViewer for saving
+
+  Level: advanced
+
+.seealso: DMView(), DMPlexTopologyView(), DMPlexCoordinatesView(), DMPlexLabelsLoad()
+@*/
+PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
+{
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    IS                globalPointNumbering;
+    PetscViewerFormat format;
+
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
+      ierr = DMPlexCreatePointNumbering(dm, &globalPointNumbering);CHKERRQ(ierr);
+      ierr = DMPlexLabelsView_HDF5_Internal(dm, globalPointNumbering, viewer);CHKERRQ(ierr);
+      ierr = ISDestroy(&globalPointNumbering);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 {
   PetscBool      ishdf5;
@@ -1486,7 +1602,7 @@ PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscValidPointer(sf, 3);
+  if (sf) PetscValidPointer(sf, 3);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
