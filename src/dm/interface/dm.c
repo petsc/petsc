@@ -5807,6 +5807,7 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
   PetscDS        dsNew;
   DSBoundary     b;
   PetscInt       cdim, Nf, f;
+  PetscBool      isHybrid;
   void          *ctx;
   PetscErrorCode ierr;
 
@@ -5831,6 +5832,8 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
     /* Do not check if label exists here, since p4est calls this for the reference tree which does not have the labels */
     //if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s missing in new DM", name);
   }
+  ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
+  ierr = PetscDSSetHybrid(dsNew, isHybrid);CHKERRQ(ierr);
 
   ierr = DMSetRegionDS(dm, label, fields, dsNew);CHKERRQ(ierr);
   ierr = PetscDSDestroy(&dsNew);CHKERRQ(ierr);
