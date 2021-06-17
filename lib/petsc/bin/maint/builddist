@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This script builds the PETSc tar file distribution
 #
@@ -119,7 +119,7 @@ export PETSC_ARCH=arch-pydoc
 python2 ./config/configure.py --with-mpi=0 --with-cxx=0 --with-fc=0
 make all
 cd $PETSC_DIR/src/binding/petsc4py
-  make sdist PYTHON=python2 PYTHON2=python2
+  make sdist PYTHON=python2 PYTHON2=python2 SHELL=/bin/bash
   cp dist/*.gz ~/
   make srcclean
 cd $PETSC_DIR

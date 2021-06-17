@@ -166,6 +166,8 @@ highlight_language = 'c'
 autosummary_generate = True
 numfig = True
 
+# -- Setup and Event Callbacks ------------------------------------------------
+
 # We must check what kind of builder the app uses to adjust
 def builder_init_handler(app):
     import genteamtable
@@ -178,11 +180,20 @@ def builder_init_handler(app):
     genteamtable.main(genDirPath, builderName = app.builder.name)
     return None
 
+def build_finished_handler(app, exception):
+    if exception is None and app.builder.name.endswith('html'):
+        from make_links_relative import make_links_relative
+        print("============================================")
+        print("    Fixing relative links from conf.py      ")
+        print("============================================")
+        make_links_relative(app.outdir)
+
 # Supposedly the safer way to add additional css files. Setting html_css_files will
 # overwrite previous versions of the variable that some extension may have set. This will
 # add our css files in addition to it.
 def setup(app):
     # Register the builder_init_handler to be called __after__ app.builder has been initialized
     app.connect('builder-inited', builder_init_handler)
+    app.connect('build-finished', build_finished_handler)
     app.add_css_file('css/pop-up.css')
     app.add_css_file('css/petsc-team-container.css')

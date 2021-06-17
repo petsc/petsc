@@ -73,6 +73,8 @@ def summarize_results(directory,make,ntime,etime,show_results):
     if etime:
       print("# Wall clock time for tests: %s sec"% etime)
     print("# Approximate CPU time (not incl. build time): %s sec"% summary['cputime'])
+  else:
+    if failstr.strip(): print("\n\n# FAILED " + failstr)
 
   if failstr.strip():
       fail_targets=(
@@ -96,9 +98,8 @@ def summarize_results(directory,make,ntime,etime,show_results):
       #Make the message nice
       makefile="gmakefile.test" if inInstallDir() else "gmakefile"
 
-      if show_results:
-        print("#\n# To rerun failed tests: ")
-        print("#     "+make+" -f "+makefile+" test test-fail=1")
+      print("#\n# To rerun failed tests: ")
+      print("#     "+make+" -f "+makefile+" test test-fail=1")
 
   if ntime>0 and show_results:
       print("#\n# Timing summary (actual test time / total CPU time): ")
