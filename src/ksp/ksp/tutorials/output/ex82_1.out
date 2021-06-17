@@ -35,6 +35,7 @@ PC Object: 4 MPI processes
         minimum target depth: 0
         minimum source depth: 0
         compressor: sympartialACA
+        clustering: PCARegular
         compression: 0.080675
         (minimum, mean, maximum) dense block sizes: (144, 290.308, 2500)
         (minimum, mean, maximum) low rank block sizes: (144, 164.423, 625)
@@ -81,6 +82,7 @@ PC Object: 4 MPI processes
         minimum target depth: 0
         minimum source depth: 0
         compressor: sympartialACA
+        clustering: PCARegular
         compression: 0.080675
         (minimum, mean, maximum) dense block sizes: (144, 290.308, 2500)
         (minimum, mean, maximum) low rank block sizes: (144, 164.423, 625)
@@ -123,6 +125,7 @@ PC Object: 4 MPI processes
       minimum target depth: 0
       minimum source depth: 0
       compressor: sympartialACA
+      clustering: PCARegular
       compression: 0.080675
       (minimum, mean, maximum) dense block sizes: (144, 290.308, 2500)
       (minimum, mean, maximum) low rank block sizes: (144, 164.423, 625)
