@@ -25,13 +25,12 @@ simulations by scientists and engineers.
 
 Upcoming Meetings
 =================
-
-- `Cologne, Germany; June 3-5, 2020
-  <https://www.mcs.anl.gov/petsc/meetings/2020/index.html>`__
+- Stay tuned: The next PETSc user meeting will take place during 2022
 
 Previous Meetings
 =================
-
+- `Cologne, Germany; June 3-5, 2020 (Cancelled due to pandemic)
+  <https://www.mcs.anl.gov/petsc/meetings/2020/index.html>`__
 - `Atlanta, USA; June 5-7, 2019
   <https://www.mcs.anl.gov/petsc/meetings/2019/index.html>`__
 - `London, UK; June 4-6, 2018 <https://www.mcs.anl.gov/petsc/meetings/2018/index.html>`__
