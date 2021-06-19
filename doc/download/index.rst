@@ -41,7 +41,7 @@ To extract the sources use:
 
 .. code-block:: console
 
-   > gunzip -c petsc-<version number>.tar.gz | tar -xof -
+   > tar xf petsc-<version number>.tar.gz
 
 Use mirror if GitLab and our primary download server are unavailable:
 

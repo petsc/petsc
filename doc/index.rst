@@ -1,12 +1,14 @@
-=============================
-PETSc |version| Documentation
-=============================
+===============
+PETSc |version|
+===============
 
+News
+====
 .. admonition:: News: New Book on PETSc
 
   **PETSc for Partial Differential Equations: Numerical Solutions in C and Python**, by Ed Bueler, is available.
 
-    - `Physical book from SIAM Press <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
+    - `Book from SIAM Press <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
     - `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__
 
 .. admonition:: News: New paper on PETSc communication System
@@ -29,7 +31,6 @@ also contains the TAO optimization software library.
 
 PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
 
-===========
 Main Topics
 ===========
 
@@ -46,7 +47,6 @@ Main Topics
    Developers <developers/index>
    Misc. <miscellaneous/index>
 
-==========================================
 Related toolkits/libraries that use PETSc
 ==========================================
 
@@ -114,7 +114,6 @@ Related toolkits/libraries that use PETSc
 
 .. _doc_index_citing_petsc:
 
-============
 Citing PETSc
 ============
 

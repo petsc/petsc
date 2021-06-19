@@ -103,7 +103,7 @@ html_context = {
     "github_url": "https://gitlab.com",
     "github_user": "petsc",
     "github_repo": "petsc",
-    "github_version": "main",
+    "github_version": "release",
     "doc_path": "doc",
 }
 
