@@ -27,7 +27,6 @@ with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
     major_version      = re.search(' PETSC_VERSION_MAJOR[ ]*([0-9]*)',buf).group(1)
     minor_version      = re.search(' PETSC_VERSION_MINOR[ ]*([0-9]*)',buf).group(1)
     subminor_version   = re.search(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)',buf).group(1)
-    patch_version      = re.search(' PETSC_VERSION_PATCH[ ]*([0-9]*)',buf).group(1)
 
     git_describe_version = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')
     if petsc_release_flag == '0':
