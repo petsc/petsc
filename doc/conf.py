@@ -149,7 +149,6 @@ def builder_init_handler(app):
     cwdPath = os.path.dirname(os.path.realpath(__file__))
     genDirPath = os.path.join(cwdPath, genDirName)
     genteamtable.main(genDirPath, builderName = app.builder.name)
-    return None
 
 def build_finished_handler(app, exception):
     if exception is None and app.builder.name.endswith('html'):
