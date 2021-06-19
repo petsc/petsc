@@ -100,7 +100,7 @@ class PETScHTMLTranslatorMixin:
         return self._manpage_pattern
 
     def _get_manpage_prefix_base(self) -> str:
-        return 'PETSC_DOC_ROOT_PLACEHOLDER'
+        return 'PETSC_DOC_OUT_ROOT_PLACEHOLDER'
 
     def _add_manpage_links(self, string: str) -> str:
         """ Add plain HTML link tags to a string """

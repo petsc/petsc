@@ -1,10 +1,9 @@
-#!/usr/bin/env python
 """ Helper to make links in HTML pages relative to a root """
 
 import os
 import fileinput
 
-def make_links_relative(root, placeholder="PETSC_DOC_ROOT_PLACEHOLDER"):
+def make_links_relative(root, placeholder="PETSC_DOC_OUT_ROOT_PLACEHOLDER"):
     """ For .html files in root, replace placeholder with a relative path back up to root """
     excludes = ["_static", "_sources", "_images", "docs", "src", "include"]
     root_level = root.count(os.path.sep)
