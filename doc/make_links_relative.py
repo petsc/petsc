@@ -10,7 +10,7 @@ def make_links_relative(root, placeholder="PETSC_DOC_OUT_ROOT_PLACEHOLDER"):
     for dirpath, dirnames, filenames in os.walk(root, topdown=True):
         dirnames[:] = [dirname for dirname in dirnames if dirname not in excludes]
         level = dirpath.count(os.path.sep) - root_level
-        relpath = (".." + os.path.sep) * level
+        relpath = os.path.sep.join([".."] * level)
         for filename in filenames:
             if filename.endswith(".html"):
                 filename_from_root = os.path.join(dirpath, filename)
