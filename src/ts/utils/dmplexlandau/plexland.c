@@ -500,7 +500,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   /* assemble matrix or vector */
   ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#define MAP_BF_SIZE (128*LANDAU_DIM*LANDAU_MAX_Q_FACE*LANDAU_MAX_SPECIES)
+#define MAP_BF_SIZE (64*LANDAU_DIM*LANDAU_DIM*LANDAU_MAX_Q_FACE*LANDAU_MAX_SPECIES)
   if (ctx->gpu_assembly && !container) {
     PetscScalar             elemMatrix[LANDAU_MAX_NQ*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_MAX_SPECIES], *elMat;
     pointInterpolationP4est pointMaps[MAP_BF_SIZE][LANDAU_MAX_Q_FACE];

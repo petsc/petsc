@@ -507,11 +507,12 @@ void __launch_bounds__(256,4) landau_kernel_v2(const PetscInt nip, const PetscIn
   PetscInt (*s_idx)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE];
   if (d_maps) {
     // reuse the space for fieldMats
-    s_fieldMats = (PetscScalar (*)[LANDAU_MAX_NQ][LANDAU_MAX_NQ]) s_gg2;
-    s_scale =
-      (PetscReal (*)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE])((PetscScalar*)s_fieldMats + LANDAU_MAX_NQ*LANDAU_MAX_NQ);
-    s_idx =
-      (PetscInt (*)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE])((PetscReal*)s_scale + LANDAU_MAX_NQ*LANDAU_MAX_Q_FACE);
+    s_fieldMats = (PetscScalar (*)[LANDAU_MAX_NQ][LANDAU_MAX_NQ]) &smem[size];
+    size += LANDAU_MAX_NQ*LANDAU_MAX_NQ;
+    s_scale =  (PetscReal (*)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE]) &smem[size];
+    size += LANDAU_MAX_NQ*LANDAU_MAX_Q_FACE;
+    s_idx = (PetscInt (*)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE]) &smem[size];
+    size += LANDAU_MAX_NQ*LANDAU_MAX_Q_FACE; // this is too big, idx is an integer
   } else {
     s_fieldMats = NULL;
   }
@@ -730,7 +731,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex, const PetscInt Nq, PetscReal a_Eq_m[]
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(nip*(PetscLogDouble)(a_IPf ? (nip*(11*Nf+ 4*dim*dim) + 6*Nf*dim*dim*dim + 10*Nf*dim*dim + 4*Nf*dim + Nb*Nf*Nb*Nq*dim*dim*5) : Nb*Nf*Nb*Nq*4));CHKERRQ(ierr);
     if (!d_mass_w) {
-      ii = 2*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_DIM*(1+LANDAU_DIM) + 3*LANDAU_MAX_SPECIES + (1+LANDAU_DIM)*dimBlock.x*LANDAU_MAX_SPECIES;
+      ii = 2*LANDAU_MAX_NQ*LANDAU_MAX_SPECIES*LANDAU_DIM*(1+LANDAU_DIM) + 3*LANDAU_MAX_SPECIES + (1+LANDAU_DIM)*dimBlock.x*LANDAU_MAX_SPECIES + LANDAU_MAX_NQ*LANDAU_MAX_NQ + 2*LANDAU_MAX_NQ*LANDAU_MAX_Q_FACE;
       if (ii*szf >= 49152) {
         cerr = cudaFuncSetAttribute(landau_kernel_v2,
                                     cudaFuncAttributeMaxDynamicSharedMemorySize,
