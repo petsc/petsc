@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 
 /*TEST
   build:
-    requires: !define(PETSC_USE_64BIT_INDICES) double !complex !define(PETSC_HAVE_VALGRIND)
+    requires: !define(PETSC_USE_64BIT_INDICES) double !complex !define(PETSCTEST_VALGRIND)
 
   # Mempry checks cannot be included in tests because the allocated memory differs among environments
   testset:

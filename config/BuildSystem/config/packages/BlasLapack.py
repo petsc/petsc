@@ -756,7 +756,6 @@ this warning message *****')
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
         self.has64bitindices = 1
         self.log.write('Checking for 64 bit blas indices: program did not return therefore assuming 64 bit blas indices\n')
-    if not self.defaultPrecision == 'single': return
     self.log.write('Checking if sdot() returns a float or a double\n')
     if 'known-sdot-returns-double' in self.argDB:
       if self.argDB['known-sdot-returns-double']:

@@ -2,7 +2,6 @@ static char help[] = "Tests checking pointers.\n\n";
 
 #include <petscsys.h>
 #include <petsc/private/petscimpl.h>
-#include <petscvalgrind.h>
 
 int main(int argc, char *args[])
 {

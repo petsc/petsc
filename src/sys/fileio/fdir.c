@@ -46,7 +46,7 @@ PetscErrorCode PetscMkdir(const char dir[])
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_VALGRIND_DARWIN)
+#if defined(PETSC_USING_DARWIN)
 #include "apple_fdir.c"
 #endif
 

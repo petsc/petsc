@@ -406,6 +406,7 @@ M*/
 
 PETSC_EXTERN const char *const PetscBools[];
 
+PETSC_EXTERN PetscBool PETSC_RUNNING_ON_VALGRIND;
 /*
     Defines elementary mathematics functions and constants.
 */

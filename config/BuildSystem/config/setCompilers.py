@@ -1744,6 +1744,7 @@ class Configure(config.base.Configure):
 
   def checkLinkerMac(self):
     '''Tests some Apple Mac specific linker flags'''
+    self.addDefine('PETSC_USING_DARWIN', 1)
     langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
     languages = ['C']
     if hasattr(self, 'CXX'):

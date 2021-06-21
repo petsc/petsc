@@ -99,6 +99,10 @@ class generateExamples(Petsc):
     # Set locations to handle movement
     self.inInstallDir=self.getInInstallDir(thisscriptdir)
 
+    # Special configuration for CI testing
+    if self.petsc_arch.find('valgrind') >= 0:
+      self.conf['PETSCTEST_VALGRIND']=1
+
     if self.inInstallDir:
       # Case 2 discussed above
       # set PETSC_ARCH to install directory to allow script to work in both

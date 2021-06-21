@@ -5,7 +5,7 @@
 
 #define kh_inline   PETSC_INLINE
 #define klib_unused PETSC_UNUSED
-#include <petsc/private/kernels/khash.h>
+#include <petsc/private/khash/khash.h>
 
 /* Required for khash <= 0.2.5 */
 #if !defined(kcalloc)
