@@ -2088,8 +2088,8 @@ A good choice for the ``dampingfactor`` is 1.e-10.
 Using External Linear Solvers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PETSc interfaces to several external linear solvers (also see :any:`chapter_acknowledgements`)
-at the beginning of this manual). To use these solvers, one may:
+PETSc interfaces to several external linear solvers (also see :any:`chapter_acknowledgements`).
+To use these solvers, one may:
 
 #. Run ``configure`` with the additional options
    ``--download-packagename`` e.g. ``--download-superlu_dist``
