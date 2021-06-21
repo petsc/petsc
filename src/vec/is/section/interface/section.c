@@ -1305,7 +1305,8 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscSection    gs;
   const PetscInt *pind = NULL;
   PetscInt       *recv = NULL, *neg = NULL;
-  PetscInt        pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots, nlocal, maxleaf;
+  PetscInt        pStart, pEnd, p, dof, cdof, off, foff, globalOff = 0, nroots, nlocal, maxleaf;
+  PetscInt        numFields, f, numComponents;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1314,7 +1315,10 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscValidLogicalCollectiveBool(s, includeConstraints, 3);
   PetscValidLogicalCollectiveBool(s, localOffsets, 4);
   PetscValidPointer(gsection, 5);
+  if (!s->pointMajor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "No support for field major ordering");
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), &gs);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);
+  if (numFields > 0) {ierr = PetscSectionSetNumFields(gs, numFields);CHKERRQ(ierr);}
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(gs, pStart, pEnd);CHKERRQ(ierr);
   gs->includesConstraints = includeConstraints;
@@ -1337,7 +1341,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     if (neg) neg[p] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(gs);CHKERRQ(ierr);
-  if (gs->bcIndices) {ierr = PetscArraycpy(gs->bcIndices, s->bcIndices,gs->bc->atlasOff[gs->bc->pEnd-gs->bc->pStart-1] + gs->bc->atlasDof[gs->bc->pEnd-gs->bc->pStart-1]);CHKERRQ(ierr);}
+  if (gs->bcIndices) {ierr = PetscArraycpy(gs->bcIndices, s->bcIndices, gs->bc->atlasOff[gs->bc->pEnd-gs->bc->pStart-1] + gs->bc->atlasDof[gs->bc->pEnd-gs->bc->pStart-1]);CHKERRQ(ierr);}
   if (nroots >= 0) {
     ierr = PetscArrayzero(recv,nlocal);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv,MPI_REPLACE);CHKERRQ(ierr);
@@ -1378,6 +1382,31 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     }
   }
   ierr = PetscFree2(neg,recv);CHKERRQ(ierr);
+  /* Set field dofs/offsets/constraints */
+  for (f = 0; f < numFields; ++f) {
+    gs->field[f]->includesConstraints = includeConstraints;
+    ierr = PetscSectionGetFieldComponents(s, f, &numComponents);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(gs, f, numComponents);CHKERRQ(ierr);
+  }
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionGetOffset(gs, p, &off);CHKERRQ(ierr);
+    for (f = 0, foff = off; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cdof);CHKERRQ(ierr);
+      if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetFieldConstraintDof(gs, p, f, cdof);CHKERRQ(ierr);}
+      ierr = PetscSectionGetFieldDof(s, p, f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(gs, p, f, off < 0 ? -(dof + 1) : dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldOffset(gs, p, f, foff);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldConstraintDof(gs, p, f, &cdof);CHKERRQ(ierr);
+      foff = off < 0 ? foff - (dof - cdof) : foff + (dof - cdof);
+    }
+  }
+  for (f = 0; f < numFields; ++f) {
+    PetscSection gfs = gs->field[f];
+
+    ierr = PetscSectionSetUpBC(gfs);CHKERRQ(ierr);
+    if (gfs->bcIndices) {ierr = PetscArraycpy(gfs->bcIndices, s->field[f]->bcIndices, gfs->bc->atlasOff[gfs->bc->pEnd-gfs->bc->pStart-1] + gfs->bc->atlasDof[gfs->bc->pEnd-gfs->bc->pStart-1]);CHKERRQ(ierr);}
+  }
+  gs->setup = PETSC_TRUE;
   ierr = PetscSectionViewFromOptions(gs, NULL, "-global_section_view");CHKERRQ(ierr);
   *gsection = gs;
   PetscFunctionReturn(0);
