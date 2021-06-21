@@ -65,6 +65,7 @@ static PetscErrorCode VecCopy_Nest(Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeName(y,VECNEST);
   VecNestCheckCompatible2(x,1,y,2);
   for (i=0; i<bx->nb; i++) {
     ierr = VecCopy(bx->v[i],by->v[i]);CHKERRQ(ierr);
@@ -242,7 +243,7 @@ static PetscErrorCode VecPointwiseMult_Nest(Vec w,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  VecNestCheckCompatible3(w,1,x,3,y,4);
+  VecNestCheckCompatible3(w,1,x,2,y,3);
   nr = bx->nb;
   for (i=0; i<nr; i++) {
     ierr = VecPointwiseMult(bw->v[i],bx->v[i],by->v[i]);CHKERRQ(ierr);
@@ -707,7 +708,7 @@ static PetscErrorCode VecRestoreArrayRead_Nest(Vec X,const PetscScalar **x)
 static PetscErrorCode VecConcatenate_Nest(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
 {
   PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)(*X)), PETSC_ERR_SUP, "VecConcatenate() is not supported for VecNest");
+  if (nx > 0) SETERRQ(PetscObjectComm((PetscObject)(*X)), PETSC_ERR_SUP, "VecConcatenate() is not supported for VecNest");
   PetscFunctionReturn(0);
 }
 
@@ -1175,7 +1176,6 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
 
   ierr = VecNestSetOps_Private(V->ops);CHKERRQ(ierr);
   V->petscnative = PETSC_FALSE;
-
 
   /* expose block api's */
   ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVec_C",VecNestGetSubVec_Nest);CHKERRQ(ierr);

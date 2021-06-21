@@ -1,9 +1,11 @@
 
-
 #if !defined(_DMIMPL_H)
 #define _DMIMPL_H
 
 #include <petscdm.h>
+#ifdef PETSC_HAVE_LIBCEED
+#include <petscdmceed.h>
+#endif
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscdsimpl.h>
 #include <petsc/private/sectionimpl.h>     /* for inline access to atlasOff */
@@ -11,6 +13,18 @@
 PETSC_EXTERN PetscBool DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace);
+
+typedef struct _PetscHashAuxKey
+{
+  DMLabel  label;
+  PetscInt value;
+} PetscHashAuxKey;
+
+#define PetscHashAuxKeyHash(key) PetscHashCombine(PetscHashPointer((key).label),PetscHashInt((key).value))
+
+#define PetscHashAuxKeyEqual(k1,k2) (((k1).label == (k2).label) ? ((k1).value == (k2).value) : 0)
+
+PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxKeyEqual, NULL)
 
 typedef struct _DMOps *DMOps;
 struct _DMOps {
@@ -219,6 +233,8 @@ struct _p_DM {
   DMLocalToGlobalHookLink ltoghook;
   /* Topology */
   PetscInt                dim;                  /* The topological dimension */
+  /* Auxiliary data */
+  PetscHMapAux            auxData;              /* Auxiliary DM and Vec for region denoted by the key */
   /* Flexible communication */
   PetscSF                 sfMigration;          /* SF for point distribution created during distribution */
   PetscSF                 sf;                   /* SF for parallel point overlap */
@@ -268,6 +284,10 @@ struct _p_DM {
   PetscInt                numbermonitors;
 
   PetscObject             dmksp,dmsnes,dmts;
+#ifdef PETSC_HAVE_LIBCEED
+  Ceed                    ceed;                 /* LibCEED context */
+  CeedElemRestriction     ceedERestrict;        /* Map from the local vector (Lvector) to the cells (Evector) */
+#endif
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert;
@@ -316,7 +336,6 @@ PETSC_EXTERN PetscErrorCode DMView_GLVis(DM,PetscViewer,PetscErrorCode(*)(DM,Pet
        DMCompositeAddDM(dm,(DM)dm_velocities);
        DMCompositeAddDM(dm,(DM)dm_p);
 
-
     Access parts of composite vectors (Composite only)
     ---------------------------------
       DMCompositeGetAccess  - access the global vector as subvectors and array (for redundant arrays)
@@ -349,8 +368,7 @@ PETSC_EXTERN PetscErrorCode DMView_GLVis(DM,PetscViewer,PetscErrorCode(*)(DM,Pet
       DMGetGlobal/Local
       DMCompositeGetLocalVectors   - gives individual local work vectors and arrays
 
-
-?????   individual global vectors   ????
+    ?????   individual global vectors   ????
 
 */
 

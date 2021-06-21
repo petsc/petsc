@@ -434,12 +434,12 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 
     SNESQNScaleTypes:
 +   SNES_QN_SCALE_NONE - don't scale the problem
-.   SNES_QN_SCALE_SCALAR - use shanno scaling
+.   SNES_QN_SCALE_SCALAR - use Shanno scaling
 .   SNES_QN_SCALE_DIAGONAL - scale with a diagonalized BFGS formula (see Gilbert and Lemarechal 1989), available
 -   SNES_QN_SCALE_JACOBIAN - scale by solving a linear system coming from the Jacobian you provided with SNESSetJacobian() computed at the first iteration
                              of QN and at ever restart.
 
-.seealso: SNES, SNESQN, SNESLineSearch, SNESQNScaleType, SNESetJacobian()
+.seealso: SNES, SNESQN, SNESLineSearch, SNESQNScaleType, SNESSetJacobian()
 @*/
 
 PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
@@ -458,6 +458,7 @@ PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
 
   PetscFunctionBegin;
   qn->scale_type = stype;
+  if (stype == SNES_QN_SCALE_JACOBIAN) snes->usesksp = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

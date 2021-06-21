@@ -167,7 +167,6 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists)
 {
   PetscErrorCode   ierr;
@@ -265,7 +264,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
     Amax_pos[i-fs] = 0.;
     Amax_neg[i-fs] = 0.;
     ierr = MatGetRow(A,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
-    for (j=0;j<ncols;j++){
+    for (j=0;j<ncols;j++) {
       if ((PetscRealPart(-rval[j]) > Amax_neg[i-fs]) && i != rcol[j]) Amax_neg[i-fs] = PetscAbsScalar(rval[j]);
       if ((PetscRealPart(rval[j])  > Amax_pos[i-fs]) && i != rcol[j]) Amax_pos[i-fs] = PetscAbsScalar(rval[j]);
     }
@@ -939,7 +938,6 @@ PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
   pc_gamg->data_sz        = 0;
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode PCGAMGClassicalFinalizePackage(void)
 {

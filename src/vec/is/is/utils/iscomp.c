@@ -27,7 +27,6 @@ $    is1 = {0, 1} {2, 3}
 $    is2 = {2, 3} {0, 1}
    will return false.
 
-
 .seealso: ISEqualUnsorted()
 @*/
 PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
@@ -84,7 +83,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
       ierr = PetscFree(a2);CHKERRQ(ierr);
     }
     ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -107,7 +106,6 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
    Note:
    This routine does NOT sort the contents of the index sets before
    the comparision is made.
-
 
 .seealso: ISEqual()
 @*/
@@ -154,9 +152,8 @@ PetscErrorCode  ISEqualUnsorted(IS is1,IS is2,PetscBool  *flg)
       ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);
     }
     ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_MIN,comm);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
-
 

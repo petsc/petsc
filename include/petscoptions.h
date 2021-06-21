@@ -71,7 +71,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetOptions(PetscObject,PetscOptions*);
 
 PETSC_EXTERN PetscBool PetscOptionsPublish;
 
-
 /*
     See manual page for PetscOptionsBegin()
 
@@ -107,7 +106,6 @@ typedef struct _p_PetscOptionItems {
   PetscObject      object;
   PetscOptions     options;
 } PetscOptionItems;
-
 
 /*MC
     PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
@@ -283,7 +281,6 @@ M*/
 #define PetscOptionsEnumArray(a,b,c,d,e,f,g) PetscOptionsEnumArray_Private(PetscOptionsObject,a,b,c,d,e,f,g)
 #define PetscOptionsDeprecated(a,b,c,d) PetscOptionsDeprecated_Private(PetscOptionsObject,a,b,c,d)
 #define PetscOptionsDeprecatedNoObject(a,b,c,d) PetscOptionsDeprecated_Private(NULL,a,b,c,d)
-
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems*,const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsInt_Private(PetscOptionItems*,const char[],const char[],const char[],PetscInt,PetscInt*,PetscBool*,PetscInt,PetscInt);

@@ -39,7 +39,6 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F,MatSTRUMPACKReordering reordering)
 {
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
@@ -470,19 +469,14 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   STRUMPACK_INTERFACE           iface;
   STRUMPACK_REORDERING_STRATEGY ndcurrent,ndvalue;
   STRUMPACK_KRYLOV_SOLVER       itcurrent,itsolver;
-  const STRUMPACK_PRECISION table[2][2][2] =
+  const STRUMPACK_PRECISION     table[2][2][2] =
     {{{STRUMPACK_FLOATCOMPLEX_64, STRUMPACK_DOUBLECOMPLEX_64},
       {STRUMPACK_FLOAT_64,        STRUMPACK_DOUBLE_64}},
      {{STRUMPACK_FLOATCOMPLEX,    STRUMPACK_DOUBLECOMPLEX},
       {STRUMPACK_FLOAT,           STRUMPACK_DOUBLE}}};
-  const STRUMPACK_PRECISION prec =
-    table[(sizeof(PetscInt)==8)?0:1]
-    [(PETSC_SCALAR==PETSC_COMPLEX)?0:1]
-    [(PETSC_REAL==PETSC_FLOAT)?0:1];
-  const char *const STRUMPACKNDTypes[] =
-    {"NATURAL","METIS","PARMETIS","SCOTCH","PTSCOTCH","RCM","STRUMPACKNDTypes","",0};
-  const char *const SolverTypes[] =
-    {"AUTO","NONE","REFINE","PREC_GMRES","GMRES","PREC_BICGSTAB","BICGSTAB","SolverTypes","",0};
+  const STRUMPACK_PRECISION     prec = table[(sizeof(PetscInt)==8)?0:1][(PETSC_SCALAR==PETSC_COMPLEX)?0:1][(PETSC_REAL==PETSC_FLOAT)?0:1];
+  const char *const             STRUMPACKNDTypes[] = {"NATURAL","METIS","PARMETIS","SCOTCH","PTSCOTCH","RCM","STRUMPACKNDTypes","",0};
+  const char *const             SolverTypes[] = {"AUTO","NONE","REFINE","PREC_GMRES","GMRES","PREC_BICGSTAB","BICGSTAB","SolverTypes","",0};
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -491,6 +485,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
+  B->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_STRUMPACK;

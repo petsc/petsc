@@ -71,8 +71,10 @@ PETSC_INTERN PetscErrorCode MatDuplicate_SeqDense(Mat,MatDuplicateOption,Mat*);
 PETSC_INTERN PetscErrorCode MatSeqDenseSetPreallocation_SeqDense(Mat,PetscScalar*);
 PETSC_INTERN PetscErrorCode MatCholeskyFactor_SeqDense(Mat,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactor_SeqDense(Mat,IS,IS,const MatFactorInfo*);
+PETSC_INTERN PetscErrorCode MatQRFactor_SeqDense(Mat,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat,Mat,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat,Mat,IS,IS,const MatFactorInfo*);
+PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SeqDense(Mat,Mat,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatSeqDenseSymmetrize_Private(Mat,PetscBool);
 PETSC_INTERN PetscErrorCode MatGetColumnVector_SeqDense(Mat,Vec,PetscInt);
 PETSC_INTERN PetscErrorCode MatScale_SeqDense(Mat,PetscScalar);
@@ -86,6 +88,7 @@ PETSC_INTERN PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat,PetscInt,PetscInt,
 PETSC_INTERN PetscErrorCode MatDenseRestoreSubMatrix_SeqDense(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatDenseSetLDA_SeqDense(Mat,PetscInt);
 PETSC_INTERN PetscErrorCode MatCopy_SeqDense(Mat,Mat,MatStructure);
+PETSC_INTERN PetscErrorCode MatZeroEntries_SeqDense(Mat);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);

@@ -158,7 +158,6 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
 {
   PetscFunctionBegin;
@@ -193,7 +192,7 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(C,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(C,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,C,3);
 
@@ -273,7 +272,7 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(DL,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(DU,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(DU,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,DL,2);
   PetscCheckSameComm(tao,1,DU,3);
   if (tao->ops->computedual) {
@@ -356,7 +355,6 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode 
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   TaoSetInequalityConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
 
@@ -399,7 +397,6 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    TaoComputeEqualityConstraints - Compute the variable bounds using the
    routine set by TaoSetEqualityConstraintsRoutine().
@@ -421,7 +418,7 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(CE,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(CE,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,CE,3);
 
@@ -435,7 +432,6 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
   tao->nconstraints++;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    TaoComputeInequalityConstraints - Compute the variable bounds using the
@@ -458,7 +454,7 @@ PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(CI,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(CI,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,CI,3);
 

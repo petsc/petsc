@@ -4,8 +4,6 @@ static char help[] = "Test for function and field projection\n\n";
 #include <petscds.h>
 
 typedef struct {
-  PetscInt  dim;         /* The topological mesh dimension */
-  PetscBool cellSimplex; /* Flag for simplices */
   PetscBool multifield;  /* Different numbers of input and output fields */
   PetscBool subdomain;   /* Try with a volumetric submesh */
   PetscBool submesh;     /* Try with a boundary submesh */
@@ -64,16 +62,12 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->dim         = 2;
-  options->cellSimplex = PETSC_TRUE;
   options->multifield  = PETSC_FALSE;
   options->subdomain   = PETSC_FALSE;
   options->submesh     = PETSC_FALSE;
   options->auxfield    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex23.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-cellSimplex", "Flag for simplices", "ex23.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-multifield", "Flag for trying different numbers of input/output fields", "ex23.c", options->multifield, &options->multifield, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-subdomain", "Flag for trying volumetric submesh", "ex23.c", options->subdomain, &options->subdomain, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-submesh", "Flag for trying boundary submesh", "ex23.c", options->submesh, &options->submesh, NULL);CHKERRQ(ierr);
@@ -84,22 +78,11 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim      = user->dim;
-  PetscBool      simplex  = user->cellSimplex;
-  PetscInt       cells[3] = {1, 1, 1};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexCreateBoxMesh(comm, dim, simplex, cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  {
-    DM ddm = NULL;
-
-    ierr = DMPlexDistribute(*dm, 0, NULL, &ddm);CHKERRQ(ierr);
-    if (ddm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = ddm;
-    }
-  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -144,16 +127,18 @@ static PetscErrorCode SetupOutputDiscretization(DM dm, PetscInt dim, PetscBool s
 static PetscErrorCode CreateSubdomainMesh(DM dm, DMLabel *domLabel, DM *subdm, AppCtx *user)
 {
   DMLabel        label;
+  PetscBool      simplex;
   PetscInt       dim, cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF, "subdomain", &label);CHKERRQ(ierr);
   for (c = cStart + (cEnd-cStart)/2; c < cEnd; ++c) {ierr = DMLabelSetValue(label, c, 1);CHKERRQ(ierr);}
   ierr = DMPlexFilter(dm, label, 1, subdm);CHKERRQ(ierr);
   ierr = DMGetDimension(*subdm, &dim);CHKERRQ(ierr);
-  ierr = SetupDiscretization(*subdm, dim, user->cellSimplex, user);CHKERRQ(ierr);
+  ierr = SetupDiscretization(*subdm, dim, simplex, user);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *subdm, "subdomain");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*subdm, NULL, "-sub_dm_view");CHKERRQ(ierr);
   if (domLabel) *domLabel = label;
@@ -164,16 +149,18 @@ static PetscErrorCode CreateSubdomainMesh(DM dm, DMLabel *domLabel, DM *subdm, A
 static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, AppCtx *user)
 {
   DMLabel        label;
+  PetscBool      simplex;
   PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF, "sub", &label);CHKERRQ(ierr);
   ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
   ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   ierr = DMPlexCreateSubmesh(dm, label, 1, PETSC_TRUE, subdm);CHKERRQ(ierr);
   ierr = DMGetDimension(*subdm, &dim);CHKERRQ(ierr);
-  ierr = SetupDiscretization(*subdm, dim, user->cellSimplex, user);CHKERRQ(ierr);
+  ierr = SetupDiscretization(*subdm, dim, simplex, user);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *subdm, "boundary");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*subdm, NULL, "-sub_dm_view");CHKERRQ(ierr);
   if (bdLabel) *bdLabel = label;
@@ -181,19 +168,21 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, App
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateAuxiliaryData(DM dm, DM *auxdm, Vec *la, AppCtx *user)
+static PetscErrorCode CreateAuxiliaryVec(DM dm, DM *auxdm, Vec *la, AppCtx *user)
 {
   PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
+  PetscBool         simplex;
   PetscInt          dim, Nf, f;
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nf, &afuncs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
   ierr = DMClone(dm, auxdm);CHKERRQ(ierr);
-  ierr = SetupDiscretization(*auxdm, dim, user->cellSimplex, user);CHKERRQ(ierr);
+  ierr = SetupDiscretization(*auxdm, dim, simplex, user);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(*auxdm, la);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, *la);CHKERRQ(ierr);
   ierr = VecViewFromOptions(*la, NULL, "-local_aux_view");CHKERRQ(ierr);
@@ -211,10 +200,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) la);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nf, &funcs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) funcs[f] = linear;
@@ -235,10 +221,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   ierr = VecViewFromOptions(lx, NULL, "-local_func_view");CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = PetscFree(funcs);CHKERRQ(ierr);
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -256,10 +239,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) la);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &funcs, Nf, &afuncs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
@@ -282,10 +262,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lu);CHKERRQ(ierr);
   ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -303,10 +280,7 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) la);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetNumFields(dmIn, &NfIn);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &funcs, NfIn, &afuncs);CHKERRQ(ierr);
@@ -330,10 +304,7 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmIn, &lu);CHKERRQ(ierr);
   ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
-  if (dmAux) {
-    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
-  }
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -341,13 +312,17 @@ int main(int argc, char **argv)
 {
   DM             dm, subdm, auxdm;
   Vec            la;
+  PetscInt       dim;
+  PetscBool      simplex;
   AppCtx         user;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(&user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = SetupDiscretization(dm, user.dim, user.cellSimplex, &user);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+  ierr = SetupDiscretization(dm, dim, simplex, &user);CHKERRQ(ierr);
   /* Volumetric Mesh Projection */
   if (!user.multifield) {
     ierr = TestFunctionProjection(dm, NULL, NULL, NULL, "Volumetric Primary", &user);CHKERRQ(ierr);
@@ -356,13 +331,13 @@ int main(int argc, char **argv)
     DM dmOut;
 
     ierr = DMClone(dm, &dmOut);CHKERRQ(ierr);
-    ierr = SetupOutputDiscretization(dmOut, user.dim, user.cellSimplex, &user);CHKERRQ(ierr);
+    ierr = SetupOutputDiscretization(dmOut, dim, simplex, &user);CHKERRQ(ierr);
     ierr = TestFieldProjectionMultiple(dmOut, dm, NULL, NULL, NULL, "Volumetric Primary", &user);CHKERRQ(ierr);
     ierr = DMDestroy(&dmOut);CHKERRQ(ierr);
   }
   if (user.auxfield) {
     /* Volumetric Mesh Projection with Volumetric Data */
-    ierr = CreateAuxiliaryData(dm, &auxdm, &la, &user);CHKERRQ(ierr);
+    ierr = CreateAuxiliaryVec(dm, &auxdm, &la, &user);CHKERRQ(ierr);
     ierr = TestFunctionProjection(dm, auxdm, NULL, la, "Volumetric Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
     ierr = TestFieldProjection(dm, auxdm, NULL, la, "Volumetric Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
     ierr = VecDestroy(&la);CHKERRQ(ierr);
@@ -382,19 +357,19 @@ int main(int argc, char **argv)
     ierr = TestFieldProjection(subdm, NULL, NULL, NULL, "Subdomain Primary", &user);CHKERRQ(ierr);
     if (user.auxfield) {
       /* Subdomain Mesh Projection with Subdomain Data */
-      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
       ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
       /* Subdomain Mesh Projection with Volumetric Data */
-      ierr = CreateAuxiliaryData(dm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(dm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
       ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
       /* Volumetric Mesh Projection with Subdomain Data */
-      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(subdm, auxdm, domLabel, la, "Volumetric Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(subdm, auxdm, domLabel, la, "Volumetric Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
@@ -412,13 +387,13 @@ int main(int argc, char **argv)
     ierr = TestFieldProjection(subdm, NULL, NULL, NULL, "Boundary Primary", &user);CHKERRQ(ierr);
     if (user.auxfield) {
       /* Boundary Mesh Projection with Boundary Data */
-      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Boundary Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Boundary Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
       ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
       /* Volumetric Mesh Projection with Boundary Data */
-      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
       ierr = TestFunctionProjection(dm, auxdm, bdLabel, la, "Volumetric Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
       ierr = TestFieldProjection(dm, auxdm, bdLabel, la, "Volumetric Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
       ierr = VecDestroy(&la);CHKERRQ(ierr);
@@ -437,22 +412,22 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -dim 2 -func_view -local_func_view -local_input_view -local_field_view
+    args: -dm_plex_box_faces 1,1 -func_view -local_func_view -local_input_view -local_field_view
   test:
     suffix: mf_0
     requires: triangle
-    args: -dim 2 -velocity_petscspace_degree 1 -velocity_petscfe_default_quadrature_order 2 \
+    args: -dm_plex_box_faces 1,1 -velocity_petscspace_degree 1 -velocity_petscfe_default_quadrature_order 2 \
          -pressure_petscspace_degree 2 -pressure_petscfe_default_quadrature_order 2 \
          -multifield -output_petscspace_degree 1 -output_petscfe_default_quadrature_order 2 \
          -local_input_view -local_field_view
   test:
     suffix: 1
     requires: triangle
-    args: -dim 2 -velocity_petscspace_degree 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_degree 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -submesh -auxfield
+    args: -dm_plex_box_faces 1,1 -velocity_petscspace_degree 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_degree 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -submesh -auxfield
   test:
     suffix: 2
     requires: triangle
-    args: -dim 2 -velocity_petscspace_degree 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_degree 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -subdomain -auxfield
+    args: -dm_plex_box_faces 1,1 -velocity_petscspace_degree 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_degree 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -subdomain -auxfield
 
 TEST*/
 

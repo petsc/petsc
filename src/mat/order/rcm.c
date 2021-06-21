@@ -51,7 +51,6 @@ PetscErrorCode SPARSEPACKrcm(const PetscInt *root,const PetscInt *xadj,const Pet
 /*       COMPONENT SPECIFIED BY MASK AND ROOT.                 */
 /*       -------------------------------------                 */
 
-
   PetscFunctionBegin;
   /* Parameter adjustments */
   --deg;
@@ -59,7 +58,6 @@ PetscErrorCode SPARSEPACKrcm(const PetscInt *root,const PetscInt *xadj,const Pet
   --mask;
   --adjncy;
   --xadj;
-
 
   SPARSEPACKdegree(root, &xadj[1], &adjncy[1], &mask[1], &deg[1], ccsize, &perm[1]);
   mask[*root] = 0;

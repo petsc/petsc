@@ -164,10 +164,9 @@ def FixDir(petscdir,dir,verbose):
       if txt:
         if not os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces')): os.mkdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces'))
         if not os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir')): os.mkdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir'))
-        fname =  os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir',parentdir.replace('/','_')+'.h90')
-        fd =open(fname,'a')
-        fd.write(txt)
-        fd.close()
+        fname =  os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir',os.path.relpath(parentdir,petscdir).replace('/','_')+'.h90')
+        with open(fname,'a') as fd:
+          fd.write(txt)
       os.remove(modfile)
 
 def PrepFtnDir(dir):
@@ -230,7 +229,7 @@ def checkHandWrittenF90Interfaces(badSrc, path):
       with open(os.path.join(path,file),'r') as fdr:
         lineno = 1
         raw = fdr.read()
-        for ibuf in re.split('\n\s*interface',raw,flags=re.IGNORECASE):
+        for ibuf in re.split('(?i)\n\s*interface',raw):
           res = re.search('(.*)(\s+end\s+interface)',ibuf,flags=re.DOTALL|re.IGNORECASE)
           try:
             lines = res.group(0).split('\n')

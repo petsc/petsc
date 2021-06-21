@@ -272,7 +272,6 @@ PetscErrorCode PetscDrawSaveMovie(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 /*

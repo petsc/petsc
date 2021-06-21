@@ -145,9 +145,7 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
-
 
    test:
       suffix: 11_A
@@ -193,7 +191,6 @@ int main(int argc,char **args)
       filter: grep -v type
       output_file: output/ex5_21.out
       requires: cuda
-
 
    test:
       nsize: 3
@@ -249,6 +246,14 @@ int main(int argc,char **args)
       filter: grep -v type
       output_file: output/ex5_33.out
       requires: cuda
+
+   test:
+      suffix: 3_kokkos
+      nsize: 3
+      args: -mat_type mpiaijkokkos -vec_type kokkos -test_diagonalscale
+      filter: grep -v type
+      output_file: output/ex5_33.out
+      requires: kokkos_kernels
 
    test:
       suffix: aijcusparse_1

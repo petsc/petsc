@@ -84,6 +84,4 @@ typedef struct {
   PetscInt       *nce_all;
 } TAO_PDIPM;
 
-PETSC_INTERN PetscErrorCode TaoSNESFunction_PDIPM(SNES,Vec,Vec,void*);
-
 #endif /* ifndef __TAO_PDIPM_H */

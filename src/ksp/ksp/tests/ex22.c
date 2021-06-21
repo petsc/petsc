@@ -123,7 +123,6 @@ PetscErrorCode test_solve(void)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode test_solve_matgetvecs(void)
 {
   Mat            A11, A12,A21, A;

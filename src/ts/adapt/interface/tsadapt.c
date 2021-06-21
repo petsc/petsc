@@ -515,7 +515,6 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt,PetscReal *max_ignore)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    TSAdaptSetClip - Sets the admissible decrease/increase factor in step size
 
@@ -725,7 +724,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   PetscInt       two;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,2);
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TS, but currently this
    * function can only be called from inside TSSetFromOptions()  */
   ierr = PetscOptionsHead(PetscOptionsObject,"TS Adaptivity options");CHKERRQ(ierr);
@@ -907,7 +906,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   PetscValidHeaderSpecific(ts,TS_CLASSID,2);
   if (next_sc) PetscValidIntPointer(next_sc,4);
   PetscValidPointer(next_h,5);
-  PetscValidIntPointer(accept,6);
+  PetscValidBoolPointer(accept,6);
   if (next_sc) *next_sc = 0;
 
   /* Do not mess with adaptivity while handling events*/
@@ -1001,7 +1000,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidHeaderSpecific(ts,TS_CLASSID,2);
-  PetscValidIntPointer(accept,3);
+  PetscValidBoolPointer(accept,5);
 
   if (ts->snes) {ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);}
   if (snesreason < 0) {
@@ -1070,7 +1069,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   TSAdapt        adapt;
 
   PetscFunctionBegin;
-  PetscValidPointer(inadapt,1);
+  PetscValidPointer(inadapt,2);
   *inadapt = NULL;
   ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
 

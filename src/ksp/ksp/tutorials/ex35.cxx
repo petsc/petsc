@@ -4,8 +4,6 @@
    Processors: n
 T*/
 
-
-
 /*
 Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
 
@@ -86,7 +84,6 @@ static char help[] = "\
                       Usage: ./ex35 -problem 1 -error -n 4 -levels 3 -mg\n  \
                       Usage: ./ex35 -problem 2 -n 80 -nu 0.01 -rho 0.005 -io -ksp_monitor -pc_type gamg\n  \
                       Usage: ./ex35 -problem 3 -file input/square_with_hole.h5m -mg\n";
-
 
 /* PETSc includes */
 #include <petscksp.h>
@@ -275,7 +272,6 @@ PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext* user)
             (1.0 / user->bounds[1] / user->bounds[1] + 1.0 / user->bounds[3] / user->bounds[3]) * sin(PETSC_PI * coords[0] / user->bounds[1]) * sin(PETSC_PI * coords[1] / user->bounds[3]);
   }
 }
-
 
 #define BCHECKEPS 1e-10
 #define BCHECK(coordxyz,truetrace) ((coordxyz < truetrace+BCHECKEPS && coordxyz > truetrace-BCHECKEPS))
@@ -517,7 +513,6 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
 {
   DM                dm;
@@ -637,7 +632,6 @@ PetscErrorCode InitializeOptions(UserContext* user)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

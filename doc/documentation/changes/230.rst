@@ -1,0 +1,150 @@
+==============
+Changes: 2.3.0
+==============
+
+
+.. rubric:: General:
+
+-  The equivalent of building BOPT=g, BOPT=O versions for
+   PETSC_ARCH=linux-gnu is now: config/configure.py [options]
+   -PETSC_ARCH=linux-gnu config/configure.py [options]
+   --with-debugging=0 -PETSC_ARCH=linux-gnu-opt
+-  Python bindings added to PETSc. To use, configure with:
+   --with-python=1 ---with-shared=1 To build, use: 'make python'
+   after building PETSc libraries. Example in
+   src/snes/examples/tutorials/ex1.py
+-  Options database keys -trmalloc[_xxx] are changed to -malloc[_xxx]
+-  -get_resident_set_size and -trinfo are changed to -memory_info
+-  PetscTrValid() -> PetscMallocValidate(), PetscTrDebug() ->
+   PetscMallocDebug()
+-  -trdebug -> -malloc_debug
+-  PetscGetResidentSetSize() -> PetscMemoryGetCurrentUsage(), added
+   PetscMemoryGetMaximumUsage() and PetscMemorySetGetMaximumUsage()
+-  PetscTrSpace() -> PetscMallocGetCurrentUsage() and
+   PetscMallocGetMaximumUsage()
+-  added PetscOptionsEnum() and PetscOptionsGetEnum()
+-  added PetscBag object for managing user created structs including
+   initializing them and serializing them.
+-  removed PetscSetCommWorld(). Now you can directly assign to
+   PETSC_COMM_WORLD before PetscInitialize().
+
+.. rubric:: Vec:
+
+-  Faster generation of VecScatter for many processes when indices
+   are mostly sorted
+-  Changed BLAS-type interfaces to PETSc-style:
+
+   -  VecShift
+   -  VecScale
+   -  VecSet
+   -  VecSetRandom
+   -  VecAXPY
+   -  VecAXPBY
+   -  VecAYPX
+   -  VecMAXPY
+   -  VecWAXPY
+
+-  Changed order of arguments in pointwise routines:
+
+   -  VecPointwiseMult
+   -  VecPointwiseMax
+   -  VecPointwiseMin
+   -  VecPointwiseMaxAbs
+   -  VecPointwiseDivide
+
+.. rubric:: Mat:
+
+-  Changed MatConvert to require a reuse parameter to denote inplace
+   converstion
+-  Added Cholesky and ICC support to SeqBAIJ
+-  Added the argument MatFactorInfo to MatLUFactorNumeric() and
+   MatCholeskyFactorNumeric()
+-  Faster MatSetValues()
+-  Faster parallel-matrix vector products
+-  Changed MatCreate() to take only a communicator
+-  Added MatSetSize() to specify matrix sizes
+-  Changed BLAS-type interfaces to PETSc-style:
+
+   -  MatAXPY
+   -  MatAYPX
+   -  MatScale
+   -  MatShift
+
+-  Change MatZeroRows() and MatZeroRowsLocal() to use arrays, and
+   added IS versions
+
+.. rubric:: PC:
+
+-  Added PCILUReorderForNonzeroDiagonal() and
+   PCLUReorderForNonzeroDiagonal()
+-  Replace PCLUSetDamping(), PCILUSetDamping(),
+   PCCholeskySetDamping() and PCICCSetDamping() by
+   PCFactorSetShiftNonzero(). Change the option database keys
+   -pc_lu_damping, -pc_ilu_damping, -pc_cholesky_damping and
+   -pc_icc_damping to -pc_factor_shift_nonzero
+-  Replace PCLUSetShift(), PCILUSetShift(), PCCholeskySetShift() and
+   PCICCSetShift() by PCFactorSetShiftPd(). Change the option
+   database keys -pc_lu_shift, -pc_ilu_shift, -pc_cholesky_shift and
+   -pc_icc_shift to -pc_factor_shfit_positive_definite
+-  PCMG: will automatically using the outer pmat operator to define
+   the finest level operator if not user supplied
+-  PCMG: added MGUseGalerkin(), -pc_mg_galerkin option to have
+   coarser grid matrices computed from the finest grid matrix
+-  PCMG: now does referencing counting on set vectors and
+   restriction/interpolation matrices so user need not keep reference
+   to free later
+-  PCMG: if user does not provide restriction the interpolation is
+   used and vis versa
+-  PCMG: if user does not provide Vecs for each level, will
+   automatically provide them
+-  All routines that began with MG now begin with PCMG
+-  Added PCShellSet/GetContext() and removed the context passed into
+   PCSetApply() and PCSetApplyRichardson()
+
+.. rubric:: KSP:
+
+-  -ksp_cg_Hermitian and -ksp_cg_symmetric have been changed to
+   -ksp_cg_type Hermitian or symmetric
+-  Changed options for -ksp_gmres_cgs_refinement_type from never or
+   ifneeded or always to REFINE_NEVER or REFINE_IFNEEDED or
+   REFINE_ALWAYS
+
+.. rubric:: config/configure.py:
+
+.. rubric:: SNES:
+
+-  Changed the name and calling sequence for SNESSetLineSearchCheck()
+   to SNESLineSearchSetPostCheck() and added a
+   SNESLineSearchSetPreCheck()
+-  Changed the names of all SNESxxxxLineSearchyyyy() to
+   SNESLineSearchxxxxyyyy() per PETSc naming standard.
+-  Now allow a constant vector to be specified in SNESSolve()
+-  Removed the Vec argument from SNESSetUp()
+-  Corrected the order of function and context arguments in:
+
+   -  SNESGetFunction()
+   -  SNESGetJacobian()
+
+.. rubric:: TS:
+
+.. rubric:: DA:
+
+-  Added DAVecGet/RestoreArrayDOF() allowing indexing in the
+   dimension of degrees of freedom at each point on the lattice.
+-  Faster DAGlobalToLocal() etc for dof > 1.
+
+.. rubric:: DMMG:
+
+-  Consolidated DMMG functionality into the new header file
+   "petscdmmg.h".
+
+.. rubric:: SYS:
+
+-  PetscSetCommWorld() removed. [one can directly do PETSC_COMM_WORLD
+   = comm - before PetscInitialize()]
+
+.. rubric:: Fortran:
+
+.. rubric:: ExternalPackages:
+
+-  ML support added.

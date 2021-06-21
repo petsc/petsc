@@ -105,7 +105,6 @@ int main(int argc,char **args)
   ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
   ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
 
-
   for (i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
     size = (int)(PetscRealPart(rval)*m);
@@ -133,7 +132,7 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; ++i) {
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ1(PETSC_COMM_SELF,1,"i=%d, is1 != is2",i);
+    if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%d, is1 != is2",i);
   }
 
   ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
@@ -207,7 +206,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

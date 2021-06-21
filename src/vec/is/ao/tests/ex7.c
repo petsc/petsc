@@ -24,7 +24,6 @@ int main(int argc,char **argv)
   /* create the application ordering */
   ierr = AOCreateBasicIS(isapp,ispetsc,&ao);CHKERRQ(ierr);
 
-
   ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -32,7 +31,6 @@ int main(int argc,char **argv)
   ierr = AOPetscToApplicationIS(ao,ispetsc);CHKERRQ(ierr);
   ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
 
   ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
   ierr = ISDestroy(&isapp);CHKERRQ(ierr);

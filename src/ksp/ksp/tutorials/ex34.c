@@ -4,8 +4,6 @@
    Processors: n
 T*/
 
-
-
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -148,7 +146,6 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
 {
   PetscErrorCode ierr;
@@ -280,8 +277,6 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
   ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 /*TEST
 

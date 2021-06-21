@@ -99,9 +99,3 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win,PetscMPIInt rank,M
 
 #endif
 
-
-
-
-
-
-

@@ -31,10 +31,6 @@
       Call PetscFinalize(ierr)
       end
 
-
-
-
-
 !
 !/*TEST
 !

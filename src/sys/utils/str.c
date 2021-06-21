@@ -316,7 +316,7 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n,char ***list)
 
   PetscFunctionBegin;
   if (!*list) PetscFunctionReturn(0);
-  for (i=0; i<n; i++){
+  for (i=0; i<n; i++) {
     ierr = PetscFree((*list)[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(*list);CHKERRQ(ierr);
@@ -601,8 +601,6 @@ PetscErrorCode  PetscStrcasecmp(const char a[],const char b[],PetscBool  *t)
   PetscFunctionReturn(0);
 }
 
-
-
 /*@C
    PetscStrncmp - Compares two strings, up to a certain length
 
@@ -804,7 +802,6 @@ PetscErrorCode  PetscStrbeginswith(const char a[],const char b[],PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PetscStrendswithwhich - Determines if a string ends with one of several possible strings
 
@@ -923,7 +920,6 @@ struct _p_PetscToken {char token;char *array;char *current;};
     Not for use in Fortran
 
    Level: intermediate
-
 
 .seealso: PetscTokenCreate(), PetscTokenDestroy()
 @*/

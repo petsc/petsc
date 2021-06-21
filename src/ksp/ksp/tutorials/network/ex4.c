@@ -39,7 +39,7 @@ int main(int argc,char ** argv)
       edgelist[i][2] = 1; edgelist[i][3] = 2;
       edgelist[i][4] = 2; edgelist[i][5] = 3;
 
-    } else if (i>1 && (size == 1 || (rank == i && size >1))){
+    } else if (i>1 && (size == 1 || (rank == i && size >1))) {
       numVertices[i] = 4; numEdges[i] = 3;
       ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
       for (j=0; j< numEdges[i]; j++) {

@@ -658,7 +658,7 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
     am->constraint = NULL;
   } else {
     ierr = VecGetSize(am->constraint,&M);CHKERRQ(ierr);
-    if (M != N) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Solution vector and constraint vector must be of same size!");CHKERRQ(ierr);
+    if (M != N) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Solution vector and constraint vector must be of same size!");
   }
 
   /* Save changed tao tolerance for adaptive tolerance */
@@ -850,7 +850,6 @@ PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b)
 
 /*@
   TaoADMMSetRegHessianChangeStatus - Set boolean that determines whether Hessian matrix of regularization subsolver changes with respect to input vector.
-
 
   Collective on Tao
 

@@ -68,11 +68,9 @@ typedef struct {
    DM            dm;             /* distributed array data structure */
 } AppCtx;
 
-
 PetscErrorCode FormInitialGuess(AppCtx*, Vec);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
-
 
 int main(int argc, char **argv)
 {
@@ -129,7 +127,6 @@ int main(int argc, char **argv)
 
     ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void*)&user);CHKERRQ(ierr);
 
-
     /* Check for any TAO command line options */
     ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
@@ -155,7 +152,6 @@ int main(int argc, char **argv)
     PetscFinalize();
     return 0;
 }
-
 
 /* ------------------------------------------------------------------- */
 /*
@@ -196,7 +192,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------------ */
 /*
    FormFunctionGradient - Evaluates the function and corresponding gradient.
@@ -210,8 +205,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
-
+PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr)
+{
   AppCtx         *user = (AppCtx *)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,k,ind;
@@ -316,7 +311,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
     }
   }
 
-
   /* Restore vector */
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
 
@@ -336,8 +330,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
 
   PetscFunctionReturn(0);
 }
-
-
 
 PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
 {
@@ -359,28 +351,28 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
   ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
-  for (j=ys; j<ys+ym; j++){
+  for (j=ys; j<ys+ym; j++) {
 
-    for (i=xs; i< xs+xm; i++){
+    for (i=xs; i< xs+xm; i++) {
 
       row=(j-gys)*gxm + (i-gxs);
 
       k=0;
-      if (j>gys){
+      if (j>gys) {
         v[k]=-2*hyhy; col[k]=row - gxm; k++;
       }
 
-      if (i>gxs){
+      if (i>gxs) {
         v[k]= -2*hxhx; col[k]=row - 1; k++;
       }
 
       v[k]= 4.0*(hxhx+hyhy); col[k]=row; k++;
 
-      if (i+1 < gxs+gxm){
+      if (i+1 < gxs+gxm) {
         v[k]= -2.0*hxhx; col[k]=row+1; k++;
       }
 
-      if (j+1 <gys+gym){
+      if (j+1 <gys+gym) {
         v[k]= -2*hyhy; col[k] = row+gxm; k++;
       }
 
@@ -406,7 +398,6 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
   ierr = PetscLogFlops(9*xm*ym+49*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

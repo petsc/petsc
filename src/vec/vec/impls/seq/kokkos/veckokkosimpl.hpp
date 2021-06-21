@@ -35,6 +35,7 @@ PETSC_INTERN PetscErrorCode VecDotNorm2_SeqKokkos(Vec,Vec,PetscScalar*, PetscSca
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqKokkos(Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode VecWAXPY_SeqKokkos(Vec,PetscScalar,Vec,Vec);
 PETSC_INTERN PetscErrorCode VecMDot_SeqKokkos(Vec,PetscInt,const Vec[],PetscScalar*);
+PETSC_INTERN PetscErrorCode VecMTDot_SeqKokkos(Vec,PetscInt,const Vec[],PetscScalar*);
 PETSC_EXTERN PetscErrorCode VecSet_SeqKokkos(Vec,PetscScalar);
 PETSC_INTERN PetscErrorCode VecMAXPY_SeqKokkos(Vec,PetscInt,const PetscScalar*,Vec*);
 PETSC_INTERN PetscErrorCode VecAXPBYPCZ_SeqKokkos(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);

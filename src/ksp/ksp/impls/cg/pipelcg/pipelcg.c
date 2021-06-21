@@ -27,12 +27,12 @@ struct KSP_CG_PIPE_L_s {
   PetscBool   show_rstrt; /* flag to show restart information in output (default: not shown) */
 };
 
-/**
- * KSPSetUp_PIPELCG - Sets up the workspace needed by the PIPELCG method.
- *
- * This is called once, usually automatically by KSPSolve() or KSPSetUp()
- * but can be called directly by KSPSetUp()
- */
+/*
+  KSPSetUp_PIPELCG - Sets up the workspace needed by the PIPELCG method.
+
+  This is called once, usually automatically by KSPSolve() or KSPSetUp()
+  but can be called directly by KSPSetUp()
+*/
 static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -112,7 +112,7 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
 #if defined(PETSC_HAVE_MPI_IALLREDUCE)
   ierr = MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRMPI(ierr);
 #else
-  ierr = MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm);CHKERRMPI(ierr);
   *request = MPI_REQUEST_NULL;
 #endif
   PetscFunctionReturn(0);
@@ -303,12 +303,12 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
         }
         Q[3*j] = temp;
 
-        if (j < l-2){
+        if (j < l-2) {
           ierr = VecCopy(Q[3*(j+1)],Q[3*j]);CHKERRQ(ierr);
         } else {
           ierr = VecCopy(Z[1],Q[3*j]);CHKERRQ(ierr);
         }
-        if (it == l){
+        if (it == l) {
           ierr = VecAXPY(Q[3*j],sigma(j+1)-gamma(it-l),Q[3*j+1]);CHKERRQ(ierr);
         } else {
           alpha(0) = sigma(j+1)-gamma(it-l);
@@ -423,9 +423,9 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/**
- * KSPSolve_PIPELCG - This routine actually applies the pipelined(l) conjugate gradient method
- */
+/*
+  KSPSolve_PIPELCG - This routine actually applies the pipelined(l) conjugate gradient method
+*/
 static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 {
   PetscErrorCode ierr=0;

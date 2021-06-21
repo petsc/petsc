@@ -1,6 +1,6 @@
-DM Object: Mesh 1 MPI processes
+DM Object: box 1 MPI processes
   type: plex
-Mesh in 2 dimensions:
+box in 2 dimensions:
 Supports:
 [0] Max support size: 3
 [0]: 3 ----> 9
@@ -77,6 +77,7 @@ Process 0:
   (   6) dim  2 offset  14 0. 1.
   (   7) dim  2 offset  16 0.333333 1.
   (   8) dim  2 offset  18 0.666667 1.
+Labels:
 Label 'marker':
 [0]: 3 (1)
 [0]: 4 (1)
@@ -90,6 +91,13 @@ Label 'marker':
 [0]: 12 (1)
 [0]: 13 (1)
 [0]: 14 (1)
+Label 'Face Sets':
+[0]: 9 (1)
+[0]: 10 (1)
+[0]: 11 (1)
+[0]: 12 (3)
+[0]: 13 (3)
+[0]: 14 (3)
 Label 'celltype':
 [0]: 0 (4)
 [0]: 1 (4)

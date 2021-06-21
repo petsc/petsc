@@ -336,6 +336,10 @@ cdef class PC(Object):
         CHKERR( PCASMGetSubKSP(self.pc, &n, NULL, &p) )
         return [ref_KSP(p[i]) for i from 0 <= i <n]
 
+    def setASMSortIndices(self, dosort):
+        cdef PetscBool cdosort = asBool(dosort)
+        CHKERR( PCASMSetSortIndices(self.pc, cdosort) )
+
     # --- GASM ---
 
     def setGASMType(self, gasmtype):

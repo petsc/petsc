@@ -335,7 +335,6 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   t160 = exp(-t20 - Rp - B);
   num4 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t21 + ((0.2e1 * t23 * (t7 - t8 + 0.5e1 * t3 - t9) * AA - 0.8e1 * B * BB * t30 * Rp) * t36 + (-0.2e1 * Rp * (-t38 - t9 * B + 0.2e1 * t40 + 0.3e1 * t42 - B * t8 + 0.2e1 * t7 * Rp) * AA + 0.8e1 * t51 * t52) * t56 - 0.2e1 * t14 * (t4 + t9 - t8 + t7) * AA + 0.8e1 * t51 * t30) * t67 + ((t12 - 0.2e1 * t2 * t71 * BB) * t77 + (t12 + 0.2e1 * t2 * t79 * BB) * t85 + (-0.2e1 * t2 * t71 * AA - t91) * t93 + (-0.2e1 * t2 * t79 * AA + t91) * t99) * t104 + ((-t121 * AA + 0.2e1 * t136 * BB) * t77 + (-t141 * AA - 0.2e1 * t143 * BB) * t85 + (0.2e1 * t136 * AA + t121 * BB) * t93 + (0.2e1 * t143 * AA - t141 * BB) * t99) * t160;
 
-
   t1 = Rm * Rm;
   t2 = Rp * Rp;
   t3 = t1 * t2;

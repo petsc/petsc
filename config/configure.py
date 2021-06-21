@@ -387,9 +387,9 @@ def petsc_configure(configure_options):
         petscnagupgrade.currentversion(petscdir)
     except:
       pass
-  print('===============================================================================')
-  print('             Configuring PETSc to compile on your system                       ')
-  print('===============================================================================')
+  print('=============================================================================================')
+  print('                      Configuring PETSc to compile on your system                            ')
+  print('=============================================================================================')
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])

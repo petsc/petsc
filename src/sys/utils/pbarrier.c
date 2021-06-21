@@ -4,33 +4,6 @@
 /* Logging support */
 PetscLogEvent PETSC_Barrier;
 
-static int hash(const char *str)
-{
-  unsigned int c,hash = 5381;
-
-  while ((c = *str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-  return hash;
-}
-
-/*
-   This is used by MPIU_Allreduce() to insure that all callers originated from the same place in the PETSc code
-*/
-PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm comm,PetscMPIInt ctn,int line,const char *func,const char *file)
-{
-  PetscMPIInt err;
-  PetscMPIInt b1[6],b2[6];
-
-  b1[0] = -(PetscMPIInt)line;       b1[1] = -b1[0];
-  b1[2] = -(PetscMPIInt)hash(func); b1[3] = -b1[2];
-  b1[4] = -(PetscMPIInt)ctn;        b1[5] = -b1[4];
-  err = MPI_Allreduce(b1,b2,6,MPI_INT,MPI_MAX,comm);
-  if (err) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_LIB,PETSC_ERROR_INITIAL,"MPI_Allreduce() failed with error code %d",err);
-  if (-b2[0] != b2[1]) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"MPI_Allreduce() called in different locations (code lines) on different processors");
-  if (-b2[2] != b2[3]) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"MPI_Allreduce() called in different locations (functions) on different processors");
-  if (-b2[4] != b2[5]) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"MPI_Allreduce() called with different counts %d on different processors",ctn);
-  return 0;
-}
-
 /*@C
     PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object obj.

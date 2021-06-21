@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/random/randomimpl.h>
+#include <petsc/private/randomimpl.h>
 
 static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 /*@C
@@ -60,6 +60,4 @@ PetscErrorCode  PetscRandomInitializePackage(void)
   ierr = PetscRegisterFinalize(PetscRandomFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 

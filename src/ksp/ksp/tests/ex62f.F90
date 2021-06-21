@@ -9,7 +9,6 @@
 !   Processors: n
 !T*/
 
-
 !
 !  -------------------------------------------------------------------------
       module mymoduleex21f
@@ -186,7 +185,6 @@
 !     Note: if you use PCShellSetSetUp, this will be done for your
       call SampleShellPCSetUp(pc,x,ierr)
 
-
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
 !  These options will override those specified above as long as
@@ -221,7 +219,6 @@
   100 format('Norm of error ',1pe11.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 
-
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
@@ -235,7 +232,6 @@
       call PCDestroy(sor,ierr)
       call PCDestroy(jacobi,ierr)
       call VecDestroy(work,ierr)
-
 
 !  Always call PetscFinalize() before exiting a program.
 

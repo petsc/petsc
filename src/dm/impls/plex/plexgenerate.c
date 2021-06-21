@@ -69,7 +69,6 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMPlexTriangleSetOptions - Set the options used for the Triangle mesh generator
 
@@ -159,7 +158,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(boundary, DM_CLASSID, 1);
-  PetscValidLogicalCollectiveBool(boundary, interpolate, 2);
+  PetscValidLogicalCollectiveBool(boundary, interpolate, 3);
   ierr = DMGetDimension(boundary, &dim);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_plex_generator", genname, sizeof(genname), &flg);CHKERRQ(ierr);
   if (flg) name = genname;

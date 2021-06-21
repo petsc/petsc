@@ -16,5 +16,3 @@ PETSC_EXTERN void fortransolvebaij4unroll_(const PetscInt*,void*,const PetscInt*
 #endif
 #endif
 
-
-

@@ -112,7 +112,7 @@ int main(int argc,char ** argv)
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
 
-  if (reason < 0) SETERRQ(PETSC_COMM_SELF,0,"No solution found for the water network");
+  if (reason < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"No solution found for the water network");
   /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);

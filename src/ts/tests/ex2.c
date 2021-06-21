@@ -280,7 +280,6 @@ PetscReal solz(PetscReal t)
          PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
 }
 
-
 /*TEST
 
     test:

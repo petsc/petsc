@@ -1,0 +1,372 @@
+===============
+Changes: 2.0.24
+===============
+
+Changes
+-------
+(See `Features`_ below)
+
+.. rubric:: General:
+
+-  Changed PETSC_ARCH on Windows platforms from nt to win32, and from
+   nt_gnu to win32_gnu.
+-  Moved all the compiler/optimization information for each
+   PETSC_ARCH from the various ``base.g``, ``base.O_c++`` etc. files
+   all into the single file ``base_variables``. Now configuration for
+   your system should require only editing the files
+   ${PETSC_ARCH}/base and ${PETSC_ARCH}/``base.site``
+-  The PETSC_ARCH ``rs6000`` is now intended for IBM rs6000
+   workstations running MPICH or LAM, while ``rs6000_sp`` is for IBM
+   SPs.
+-  Removed the gvec directory from the distribution. If you are using
+   this please let us and know and we can provide it or provide
+   alternative code to do what you need.
+-  Routines with the suffix "``withcoloring``" have been changed to
+   the suffix "``color``" to get around the 31 character limit in
+   names.
+-  The source code directory structure has changed slightly: pc and
+   ksp are now subdirectories of sles, and ao and da are
+   subdirectories of a new directory called dm (data management).
+-  The PETSc libraries are now: -lpetscts -lpetscsnes -lpetscsles
+   -lpetscdm -lpetscmat -lpetscvec -lpetsc. Each library is now only
+   dependent on libraries to the right of it in the list above. For
+   example, if you are only using the linear solvers, you only need
+   to list "-lpetscsles -lpetscdm -lpetscmat -lpetscvec -lpetsc" and
+   if you are only using the vectors you only need to list
+   "-lpetscvec -lpetsc".
+-  For users who previously could not use the PETSc makefiles because
+   the PETSc rules for making .o files conflicted with the user's
+   rules, we have introduce a new file that may be included by the
+   user, ``${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables``, which
+   defines all the useful PETSc makefile variables, but not the
+   rules. This should make it easier for people who previously had
+   trouble using the PETSc makefiles. We highly recommend using the
+   PETSc makefiles when possible because they are immediately
+   portable across all systems that support PETSc.
+
+.. rubric:: AO (Application Orderings):
+
+.. rubric:: TS (Timestepping Solvers):
+
+-  Removed ``TSSetRHSJacobianDefault``\ () - you can now call
+   ``TSSetRHSJacobian``\ (... ``TSDefaultJacobianColor``,....)
+   directly from Fortran
+-  Changed ``TSDefaultJacobianSlow()`` to ``TSDefaultJacobian()``
+
+.. rubric:: SNES (Nonlinear Solvers):
+
+-  S\ ``NESSetConvergenceHistory()`` takes an additional argument;
+   see the manual page for details.
+-  Changed the interface for matrix-free methods in SNES so that is
+   more flexible, in particular:
+
+   -  Changed\ ``SNESDefaultMatrixFreeMatCreate()`` to
+      ``MatSNESFDMFCreate()``.
+   -  Added routines
+
+      -  MatSNESFDMFSetHHistory(Mat,Scalar \*,int);
+      -  MatSNESFDMFResetHHistory(Mat,Scalar \*,int);
+      -  MatSNESFDMFSetParameters(Mat,double,double);
+      -  MatSNESFDMFGetH(Mat,Scalar \*);
+      -  MatSNESFDMFKSPMonitor(KSP,int,double,void \*); and the
+         corresponding option ``-snes_mf_ksp_monitor``
+
+   -  Added support for an alternative way to compute the
+      differencing parameter in matrix-free methods using the
+      Walker-Pernice srategy, accessible via the option
+      ``-snes_mf_type`` wp
+
+-  Changed the calling sequence of ``SNESSetLineSearch()`` so that it
+   accepts an optional user-defined context variable. Likewise,
+   changed the calling sequences of the various line search routines,
+   e.g.,
+   ``SNESCubicLineSearch(),           SNESQuadraticLineSearch()``,
+   etc.
+
+.. rubric:: SLES (Linear Solvers):
+
+-  See PC and KSP
+
+.. rubric:: KSP (Krylov Subspace Methods):
+
+-  Changed the calling sequence of
+   ``KSPComputeEigenvalues(KSP,int,double*,double*,int             *neig);``
+   to return as the final value the number of eigenvalues computed;
+   see the manual page for more details.
+-  Changed GMRES to use the Gram-Schmidt method with one optional
+   step of iterative refinement as the default orthogonalization
+   procedure, instead of the modified Gram-Schmidt method. This
+   change was urged by Rich Lehoucq. It could cause very minor
+   differences in convergence rates for codes run before and after
+   this change.
+-  The option ``-ksp_bsmonitor`` is not longer needed; use
+   -``ksp_truemonitor`` for the same affect.
+-  Added an additional argument to ``KSPSetResidualHistory()``; see
+   the manual page for details. This change was suggested by Maria
+   Murillo.
+
+.. rubric:: PC (Preconditioners):
+
+-  Removed support for block Gauss-Seidel from the distribution;
+   ``-pc_type bgs`` is no longer supported.
+-  The Eisenstat preconditioner (SSOR variant) now uses diagonal
+   scaling by default, and the options
+   ``PCEisenstatUseDiagonalScaling()`` and
+   ``-pc_eisenstat_diagonal_scaling`` have been replaced with
+   ``PCEisenstatNoDiagonalScaling()`` and
+   ``-pc_eisenstat_no_diagonal_scaling``
+
+.. rubric:: MAT (Matrices):
+
+-  Replaced\ ``MatGetSubMatrixCall``\ () with ``MatReuse().``
+-  Changed the calling sequence of ``MatILUFactor()`` and
+   ``MatILUFactorSymbolic()`` to increase flexibility of adding new
+   ILU options.
+-  Added an additional argument to ``MatCopy()``;
+   ``SAME_NONZERO_PATTERN`` or ``DIFFERENT_NONZERO_PATTERN.``
+-  Added an additional argument to ``MatDuplicate()``,
+   ``MAT_COPY_VALUES`` or ``MAT_DO_NOT_COPY_VALUES.``
+-  Changed the flag ``MAT_NEW_NONZERO_LOCATION_ERROR`` to
+   ``MAT_NEW_NONZERO_LOCATION_ERR``; also changed
+   ``MAT_NEW_ALLOCATION_ERROR`` to ``MAT_NEW_ALLOCATION_ERR``
+-  Changed ``MatOrder``\ xxx to ``MatOrdering``\ xxx; changed
+   ``MatOrderingType`` to char\* from enum
+-  Changed ``Mat``\ xxx\ ``Reordering``\ xxx to
+   ``Mat``\ xxx\ ``Ordering``\ xxx changed command line option
+   ``-mat_order`` to -``mat_ordering_type;`` changed
+   ``MatColoringType``\ to char\* from enum
+-  Changed ``Partitioning``\ xxx to ``MatPartitioning``\ xxx
+
+.. rubric:: DA (Distributed Arrays):
+
+-  ``DAGetInfo()`` has a new final argument, the stencil type. See
+   the manual change your current code to work, you only need add an
+   extra ``PETSC_NULL`` as a final argument.
+
+.. rubric:: VEC (Vectors):
+
+-  After a call to ``VecCreate()`` you MUST either call
+   ``VecSetType()`` or ``VecSetFromOptions()`` on the vector before
+   using it for any purpose. The ``VecCreate``\ xxx() routines (e.g.,
+   ``VecCreateSeq(), VecCreateMPI()``) do not need to have calls to
+   VecSetType() or VecSetFromOptions() after them.
+-  All ``VecGetArray()`` calls MUST now be matched with a
+   ``VecRestoreArray()`` call; previous PETSc versions did not force
+   compliance with this rule.
+-  The command line names for changing the vector type in
+   ``VecCreate(``) are now ``-vec_type mpi`` or ``-vec_type shared``
+   rather than ``-vec_mpi`` or ``-vec_shared``
+-  Changed the ``VecType`` variable type from an enum type to a
+   string.
+-  Changed the calling sequence for ``VecGetType()``; see the manual
+   page for details.
+-  Changed ``VecGhostGetLocalRepresentation()`` and
+   ``VecGhostRestoreLocalRepresentation()``, to
+   ``VecGhostGetLocalForm()`` and ``VecGhostRestoreLocalForm()``,
+   respectively; the previous names had too many characters for some
+   machines.
+
+.. rubric:: IS (Index Sets):
+
+.. rubric:: Draw (Graphics):
+
+-  Replaced\ ``VIEWER_DRAWX_``.... with ``VIEWER_DRAW_``....
+-  The arguments of ``ViewerDrawGetDraw``\ () have been changed; see
+   the manual page for details.
+-  ``DrawTensorContour()`` has changed; its final argument is now an
+   array can now use ``VecView()`` to create the contour plot.
+
+.. rubric:: Viewers:
+
+-  Changed the names associated with the Matlab viewer to Socket
+   viewer; this reflects our plan to support additional graphics
+   engines with PETSc.
+-  Changed ``ViewerFileOpenASCII()`` to ``ViewerASCIIOpen().``
+-  Changed ``ViewerDrawOpenX(``) to ``ViewerDrawOpen().``
+-  Changed ``ViewerFileOpenBinary()`` to ``ViewerBinaryOpen().``
+-  Changed ``ViewerType`` from an enum to a char \*.
+
+.. rubric:: System:
+
+-  Changed the calling sequence of
+   ``PetscGetHomeDirectory(char dir[],int maxlen)``.
+-  Changed the calling sequence of
+   ``PetscFixFilename(const char filein[],char fileout[]).``
+-  Changed the calling sequence of ``PetscGetDate().``
+
+.. rubric:: Error Handling:
+
+.. rubric:: Event Logging:
+
+.. rubric:: Fortran Interface:
+
+Features
+--------
+(See `Changes`_ above)
+
+.. rubric:: General:
+
+-  Add the routine ``OptionsGetAll().``
+-  Added support for Sun Solaris running on Intel processors;
+   PETSC_ARCH solaris_x86.
+-  Added option -``optionsleft_off`` so BOPT=g version of code will
+   not print warnings about unused options.
+-  The environment variable PETSC_ARCH is now required to use the NT
+   distribution.
+-  Added the routine ``OptionsGetLogical().``
+-  We now include PETSC_ARCH of solaris_gnu, rs6000_gnu for those
+   systems when using the gnu compilers.
+-  Thanks to the generosity of the FreeBSD organization, we are now
+   supporting freebsd again.
+-  Added optional filename to ``-log_info`` <filename> option. PETSc
+   will open a separate file, called filename.rank for each processor
+   and print the output there.
+-  Added ``PetscTypeCompare()``; see the manual page.
+
+.. rubric:: AO (Application Orderings):
+
+-  ``AOPetscToApplicationIS()`` and ``AOApplicationToPetscIS()``,
+   when passed a stride index set, now handle them correctly.
+
+.. rubric:: TS (Timestepping Solvers):
+
+-  Added ``TSSetTypeFromOptions().``
+
+.. rubric:: SNES (Nonlinear Solvers):
+
+-  Added ``-snes_vecmonitor`` and ``SNESMonitorVec()`` to allow
+   graphically monitoring the solution.
+-  Added ``SNESSetTypeFromOptions().``
+-  Added the routine ``SNESSetLineSearchCheck()``, which sets a
+   routine to check the validity of new iterates computed by line
+   search routines; see the manual page for details.
+
+.. rubric:: SLES (Linear Solvers):
+
+-  See PC and KSP
+-  Added ``SLESSetTypesFromOptions().``
+
+.. rubric:: KSP (Krylov Subspace Methods):
+
+-  Added the function ``KSPSetAvoidNorms()`` and corresponding option
+   ``-ksp_avoid_norms``. For the methods CG, Richardson, Bi-CG-stab,
+   CR, and CGS, this eliminates the computation of the residual norm
+   at each iteration (which is an expensive, collective operation).
+   Then the convergence criterion depends only on the maximum number
+   of iterations the users sets with ``KSPSetTolerances().`` This is
+   useful when using the Krylov method as a smoother with a fixed
+   number of iterations (say, e.g., 3 iterations).
+-  Added the KSP type of ``KSPBICG`` (contributed by Victor Eijkhout)
+   and added support to some of the preconditioners to apply the
+   preconditioner transpose (required by KSPBICG).
+-  Added ``-ksp_vecmonitor`` and ``KSPMonitorVec()`` to allow
+   graphically monitoring the solution's convergence.
+-  Added ``KSPSetTypeFromOptions().``
+
+.. rubric:: PC (Preconditioners):
+
+-  Added ``PCLUSetReuseReordering()`` and ``PCLUSetReuseFill()`` so
+   that SLES can reuse the reordering and fill information for a new
+   factorization of a matrix with slightly different nonzero
+   structure than the previous factorization. The corresponding
+   command line options are -``pc_lu_reuse_reordering`` and
+   ``-pc_lu_reuse_fill``. These two options only have an effect when
+   the ``SLESSetOperators()`` option of ``DIFFERENT_NONZERO_PATTERN``
+   is used; otherwise the ordering and fill information is always
+   reused.
+-  Added ``PCGetVector()``, not expected to be used by application
+   programmers.
+-  Added the option ``-pc_ilu_diagonal_fill`` and the corresponding
+   routine ``PCILUSetAllowDiagonalFill()``; see the manual page for
+   details; helps ILU(k) on matrices with missing diagonal entries.
+   Suggested by David Hysom.
+-  Added ``PCSetTypeFromOptions().``
+
+.. rubric:: MAT (Matrices):
+
+-  Added ``MatSeqAIJSetColumnIndices()`` and
+   ``MatSeqBAIJSetColumnIndices()``.
+-  If the option ``MAT_IGNORE_OFF_PROC_ENTRIES`` is used, then the
+   routines ``MatAssemblyBegin()`` and ``MatAssemblyEnd()`` will not
+   cause any parallel communication or synchronization.
+-  If the option ``MAT_NEW_NONZERO_LOCATIONS`` is used, one less
+   collective call will be made in the ``MatAssemblyEnd()`` routines
+   for MPIAIJ and MPIBAIJ.
+-  Fixed bugs in ``MatReorderForNonzeroDiagonal()`` and made it more
+   robust.
+-  Fixed bugs in factorization for AIJ matrices with variable size
+   inodes.
+-  Indices that are negative passed into ``MatSetValues...()`` are
+   now ignored (rather than generating an error). This allows easily
+   keeping homogeneous Dirichlet boundary nodes out of the vectors
+   and matrices for unstructured grid problems; just indicate those
+   node numbers with negative numbers.
+-  Added additional optimized code for BAIJ matrices with block sizes
+   2, 3, 5, 6, and 7.
+-  Improved the performance of ``MatSetValues()`` and
+   ``MatAssemblyXXX()`` for parallel matrices a great deal.
+-  Added the option ``-matstash_initial_size`` <stashsize> and
+   ``-matstash_block_initial_size`` <stashsize> and the routine
+   ``MatSetStashInitialSize()`` to allow further optimization of
+   off-processor\ ``MatSetValues().``
+
+.. rubric:: DA (Distributed Arrays):
+
+-  Added graphics support to DA vectors in 1d and 2d, with contour
+   plotters for 2d.
+
+.. rubric:: VEC (Vectors):
+
+-  Extended ``VecCreate()`` by allowing registration of new vector
+   types with ``VecRegister()`` see the manual page for details.
+-  Indices that are negative passed into ``VecSetValues...()`` are
+   now ignored (rather than generating an error). This allows easily
+   keeping homogeneous Dirichlet boundary nodes out of the vectors
+   and matrices for unstructured grid problems; just indicate those
+   node numbers with negative numbers.
+-  Added ``VecDotBegin()``, ``VecDotEnd()``, ``VecNormBegin()``,
+   ``VecNormEnd()``, which reduce communication overhead in parallel;
+   see the manual pages for details (suggested by Victor Eijkhout).
+-  If the option ``VEC_IGNORE_OFF_PROC_ENTRIES`` is used, the
+   ``VecAssemblyBegin()`` and ``VecAssemblyEnd()`` routines will not
+   cause any parallel communication or synchronization (previously
+   ``VecAssemblyBegin()`` still used a barrier).
+-  Added ``VIEWER_FORMAT_ASCII_INDEX`` which causes the index for
+   each vector entry to be printed with the vector values.
+-  Added three new vector scatter options; ``-vecscatter_merge`` and
+   ``-vecscatter_ssend`` and ``-vecscatter_sendfirst``; these may
+   improve performance a great deal when using MPICH for MPI on
+   ethernet or fast ethernet.
+-  Added ``VecStrideNorm(), VecStrideScatter()``, and
+   ``VecStrideGather().``
+-  Improved the performance of ``VecSetValues()`` and
+   ``VecAssemblyXXX()`` for parallel vectors.
+-  Added the option ``-vecstash_initial_size`` <stashsize> and
+   ``-vecstash_block_initial_size`` <stashsize> and the routine
+   ``VecSetStashInitialSize()`` to allow further optimization of
+   off-processor ``VecSetValues()``.
+
+.. rubric:: IS (Index Sets):
+
+-  Added ``ISStrideToGeneral()``, which converts a stride type index
+   set to a general type.
+
+.. rubric:: Draw (Graphics):
+
+.. rubric:: Viewers:
+
+-  Added ``ViewerASCIIPushTab()``, ``ViewerASCIIPopTab()`` and
+   ``ViewerASCIIPrintf()``. These allow multi-level display of solver
+   information (tabing the text further for each inner solver).
+   Thanks to Victor Eijkhout and Matt Knepley for pushing this.
+
+.. rubric:: System:
+
+.. rubric:: Error Handling:
+
+.. rubric:: Event Logging:
+
+.. rubric:: Fortran Interface:
+
+-  Added Fortran 90 interface support for HP Convex and
+   Solaris.machine.

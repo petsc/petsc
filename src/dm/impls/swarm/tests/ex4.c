@@ -7,15 +7,13 @@ static char help[] = "Example of simple hamiltonian system (harmonic oscillator)
 #include <petscts.h>
 
 typedef struct {
-  PetscInt  dim;                          /* The topological mesh dimension */
-  PetscBool simplex;                      /* Flag for simplices or tensor cells */
-  char      filename[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
-  PetscReal omega;                        /* Oscillation frequency omega */
-  PetscInt  particlesPerCell;             /* The number of partices per cell */
-  PetscReal momentTol;                    /* Tolerance for checking moment conservation */
-  PetscBool monitor;                      /* Flag for using the TS monitor */
-  PetscBool error;                        /* Flag for printing the error */
-  PetscInt  ostep;                        /* print the energy at each ostep time steps */
+  PetscInt  dim;
+  PetscReal omega;            /* Oscillation frequency omega */
+  PetscInt  particlesPerCell; /* The number of partices per cell */
+  PetscReal momentTol;        /* Tolerance for checking moment conservation */
+  PetscBool monitor;          /* Flag for using the TS monitor */
+  PetscBool error;            /* Flag for printing the error */
+  PetscInt  ostep;            /* print the energy at each ostep time steps */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -23,8 +21,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim              = 2;
-  options->simplex          = PETSC_TRUE;
   options->monitor          = PETSC_FALSE;
   options->error            = PETSC_FALSE;
   options->particlesPerCell = 1;
@@ -32,15 +28,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->omega            = 64.0;
   options->ostep            = 100;
 
-  ierr = PetscStrcpy(options->filename, "");CHKERRQ(ierr);
-
   ierr = PetscOptionsBegin(comm, "", "Harmonic Oscillator Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-output_step", "Number of time steps between output", "ex4.c", options->ostep, &options->ostep, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-monitor", "Flag to use the TS monitor", "ex4.c", options->monitor, &options->monitor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-error", "Flag to print the error", "ex4.c", options->error, &options->error, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex4.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex4.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-particles_per_cell", "Number of particles per cell", "ex4.c", options->particlesPerCell, &options->particlesPerCell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-omega", "Oscillator frequency", "ex4.c", options->omega, &options->omega, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -50,30 +41,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscStrcmp(user->filename, "", &flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateFromFile(comm, user->filename, PETSC_TRUE, dm);CHKERRQ(ierr);
-    ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
-  }
-  {
-    DM distributedMesh = NULL;
-
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-  }
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -93,10 +68,10 @@ static PetscErrorCode SetInitialCoordinates(DM dmSw)
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
   ierr = DMGetApplicationContext(dmSw, (void **) &user);CHKERRQ(ierr);
-  simplex = user->simplex;
   Np   = user->particlesPerCell;
   ierr = DMSwarmGetCellDM(dmSw, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim, &centroid, dim, &xi0, dim, &v0, dim*dim, &J, dim*dim, &invJ);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) xi0[d] = -1.0;
@@ -247,7 +222,6 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
   PetscInt           dim, Np, p;
   PetscErrorCode     ierr;
 
-
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
   ierr = TSGetDM(ts, &sdm);CHKERRQ(ierr);
@@ -277,7 +251,6 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
   ierr = VecRestoreArray(E, &e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*---------------------Create particle RHS Functions--------------------------*/
 static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
@@ -381,7 +354,6 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U , Mat J, Mat P, void
   const PetscScalar *u;
   PetscScalar        vals[4] = {0., 1., -PetscSqr(user->omega), 0.};
   PetscErrorCode     ierr;
-
 
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
   //ierr = PetscPrintf(PETSC_COMM_WORLD, "# Particles (Np) = %d \n" , Np);CHKERRQ(ierr);
@@ -500,14 +472,12 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create Particle-Mesh
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);
   ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(sw, &user);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Setup timestepping solver
@@ -521,7 +491,6 @@ int main(int argc,char **argv)
   ierr = TSSetMaxSteps(ts, 100);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   if (user.monitor) {ierr = TSMonitorSet(ts, Monitor, &user, NULL);CHKERRQ(ierr);}
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Prepare to solve
@@ -567,7 +536,6 @@ int main(int argc,char **argv)
 
   ierr = TSComputeInitialCondition(ts, u);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Clean up workspace

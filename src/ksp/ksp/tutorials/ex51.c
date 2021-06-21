@@ -453,7 +453,6 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
   for (j=0; j<=n; ++j) w[j] = w[j]*scale;
 }
 
-
 /******************************************************************************/
 static void qAndLEvaluation(int n, PetscReal x, PetscReal *q, PetscReal *qp, PetscReal *Ln)
 /*******************************************************************************
@@ -489,8 +488,6 @@ for Scientists and Engineers" by David A. Kopriva.
   *q    = Lnp1 - Lnm1;
   *qp   = Lnp1p - Lnm1p;
 }
-
-
 
 /*TEST
 

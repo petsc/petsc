@@ -62,7 +62,6 @@ typedef struct {
   void *ctx;
 } Mat_Shell;
 
-
 /*
      Store and scale values on zeroed rows
      xx = [x_1, 0], 0 on zeroed columns
@@ -1775,10 +1774,8 @@ $     VecDestroy(&y);
 $     VecDestroy(&x);
 $
 
-
    MATSHELL handles MatShift(), MatDiagonalSet(), MatDiagonalScale(), MatAXPY(), MatScale(), MatZeroRows() and MatZeroRowsColumns() internally, so these
    operations cannot be overwritten unless MatShellSetManageScalingShifts() is called.
-
 
     For rectangular matrices do all the scalings and shifts make sense?
 

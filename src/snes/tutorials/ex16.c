@@ -6,8 +6,6 @@ static char help[] = "Large-deformation Elasticity Buckling Example";
    Processors: n
 T*/
 
-
-
 /*F-----------------------------------------------------------------------
 
     This example solves the 3D large deformation elasticity problem
@@ -69,8 +67,6 @@ PetscScalar grad[3*NVALS];
 
 typedef PetscScalar Field[3];
 typedef PetscScalar CoordField[3];
-
-
 
 typedef PetscScalar JacField[9];
 
@@ -202,7 +198,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
 PetscInt OnBoundary(PetscInt i,PetscInt j,PetscInt k,PetscInt mx,PetscInt my,PetscInt mz)
 {
   if ((i == 0 || i == mx-1) && j == my-1) return 1;
@@ -300,7 +295,7 @@ void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScal
   F[4] = 1.;
   F[8] = 1.;
   /* form the deformation gradient at this basis function -- loop over element unknowns */
-  for (kk=0;kk<NB;kk++){
+  for (kk=0;kk<NB;kk++) {
     for (jj=0;jj<NB;jj++) {
       for (ii=0;ii<NB;ii++) {
         PetscInt    idx = ii + jj*NB + kk*NB*NB;
@@ -427,7 +422,7 @@ void GatherElementData(PetscInt mx,PetscInt my,PetscInt mz,Field ***x,CoordField
   PetscInt m;
   PetscInt ii,jj,kk;
   /* gather the data -- loop over element unknowns */
-  for (kk=0;kk<NB;kk++){
+  for (kk=0;kk<NB;kk++) {
     for (jj=0;jj<NB;jj++) {
       for (ii=0;ii<NB;ii++) {
         PetscInt idx = ii + jj*NB + kk*NB*NB;
@@ -490,7 +485,7 @@ void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppC
         /* form the function */
         if (ef) {
           TensorTensor(F,S,FS);
-          for (kk=0;kk<NB;kk++){
+          for (kk=0;kk<NB;kk++) {
             for (jj=0;jj<NB;jj++) {
               for (ii=0;ii<NB;ii++) {
                 PetscInt idx = ii + jj*NB + kk*NB*NB;
@@ -510,7 +505,7 @@ void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppC
         /* form the jacobian */
         if (ej) {
           /* loop over trialfunctions */
-          for (k=0;k<NB;k++){
+          for (k=0;k<NB;k++) {
             for (j=0;j<NB;j++) {
               for (i=0;i<NB;i++) {
                 for (l=0;l<3;l++) {
@@ -521,7 +516,7 @@ void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppC
                   TensorTensor(F,dS,FdS);
                   for (m=0;m<9;m++) dFS[m] += FdS[m];
                   /* loop over testfunctions */
-                  for (kk=0;kk<NB;kk++){
+                  for (kk=0;kk<NB;kk++) {
                     for (jj=0;jj<NB;jj++) {
                       for (ii=0;ii<NB;ii++) {
                         PetscInt idx = ii + jj*NB + kk*NB*NB;
@@ -601,12 +596,12 @@ void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Fi
 void ApplyBCsElement(PetscInt mx,PetscInt my, PetscInt mz, PetscInt i, PetscInt j, PetscInt k,PetscScalar *jacobian)
 {
   PetscInt ii,jj,kk,ll,ei,ej,ek,el;
-  for (kk=0;kk<NB;kk++){
+  for (kk=0;kk<NB;kk++) {
     for (jj=0;jj<NB;jj++) {
       for (ii=0;ii<NB;ii++) {
         for (ll = 0;ll<3;ll++) {
           PetscInt tridx = ll + 3*(ii + jj*NB + kk*NB*NB);
-          for (ek=0;ek<NB;ek++){
+          for (ek=0;ek<NB;ek++) {
             for (ej=0;ej<NB;ej++) {
               for (ei=0;ei<NB;ei++) {
                 for (el=0;el<3;el++) {
@@ -676,7 +671,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
         FormElementJacobian(ex,ec,NULL,ej,user);
         ApplyBCsElement(mx,my,mz,i,j,k,ej);
         nrows = 0.;
-        for (kk=0;kk<NB;kk++){
+        for (kk=0;kk<NB;kk++) {
           for (jj=0;jj<NB;jj++) {
             for (ii=0;ii<NB;ii++) {
               PetscInt idx = ii + jj*2 + kk*4;
@@ -729,7 +724,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void *ptr)
 {
@@ -787,7 +781,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
         GatherElementData(mx,my,mz,x,c,i,j,k,ex,ec,user);
         FormElementJacobian(ex,ec,ef,NULL,user);
         /* put this element's additions into the residuals */
-        for (kk=0;kk<NB;kk++){
+        for (kk=0;kk<NB;kk++) {
           for (jj=0;jj<NB;jj++) {
             for (ii=0;ii<NB;ii++) {
               PetscInt idx = ii + jj*NB + kk*NB*NB;
@@ -1053,7 +1047,6 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
   ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

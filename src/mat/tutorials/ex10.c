@@ -15,7 +15,6 @@ T*/
 */
 #include <petscmat.h>
 
-
 int main(int argc,char **args)
 {
   Mat            A;                       /* matrix */
@@ -74,8 +73,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
 
 /*TEST
 

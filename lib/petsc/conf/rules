@@ -58,9 +58,11 @@ clean-legacy:
                ex[0-9] ex[0-9][0-9] ex[0-9][0-9][0-9] \
                ex[0-9]f ex[0-9][0-9]f ex[0-9][0-9][0-9]f \
                ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9][0-9][0-9]f90 \
+               ex[0-9]cu ex[0-9][0-9]cu ex[0-9][0-9][0-9]cu \
                ex[0-9].exe ex[0-9][0-9].exe ex[0-9][0-9][0-9].exe \
                ex[0-9]f.exe ex[0-9][0-9]f.exe ex[0-9][0-9][0-9]f.exe \
                ex[0-9]f90.exe ex[0-9][0-9]f90.exe ex[0-9][0-9][0-9]f90.exe \
+               ex[0-9]cu.exe ex[0-9][0-9]cu.exe ex[0-9][0-9][0-9]cu.exe \
               PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
               trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
               output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
@@ -449,11 +451,11 @@ manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
           DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
-	  ${DOCTEXT} -html \
-		-mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
-		-defn ${PETSC_DIR}/src/docs/doctext/html.def \
-		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit ${SOURCED};\
-		chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
+          ${DOCTEXT} -html \
+            -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
+            -defn ${PETSC_DIR}/src/docs/doctext/html.def \
+            -locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit -Wargdesc ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
+          chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.
@@ -530,7 +532,7 @@ exampleconcepts:
 #
 manimplementations:
 	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
-  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode\s\+[^_\s]*_[^_\s]*(" -- '*/impls/*.c' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
+  git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
   for i in ${LOC}/docs/manualpages/*/*.html foo; do \
        if [ "$$i" != "foo" ] ; then \
           printf "manimplementations in: $$i\n"; \
@@ -584,15 +586,16 @@ simplehtml: chk_c2html
          done
 
 html: chk_c2html
-	-@sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > /tmp/$$USER.htmlmap
-	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> /tmp/$$USER.htmlmap
-	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+	-@export htmlmap_tmp=$$(mktemp) ;\
+          sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > $$htmlmap_tmp ;\
+          cat ${PETSC_DIR}/src/docs/mpi.www.index >> $$htmlmap_tmp ;\
+          ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
           for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB}  foo ; do\
-	    if [ -f $$i ]; then \
-	      idir=`dirname $$i`;\
-	      if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
+            if [ -f $$i ]; then \
+              idir=`dirname $$i`;\
+              if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
               iroot=`echo $$i | sed -e "s?[a-z.]*/??g"`;\
               IROOT=`echo $${i} | sed -e s?[.][.]??g` ;\
               if [ "$${IROOT}" != "$${i}" ] ; then \
@@ -605,40 +608,40 @@ html: chk_c2html
               sed -e "s/CHKERRMPI(ierr);//g" -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g" -e "s/ierr [ ]*= //g" -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
-              ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
-	    fi; \
-         done
-	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+              ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
+            fi; \
+          done ;\
+          ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
           cat ${PETSC_DIR}/src/docs/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
-          echo "<p>" >> $${loc}/index.html
-	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
-            if [ "${EXAMPLESC}" != "" ] ; then \
-               for file in ${EXAMPLESC} foo ; do \
-		if [ -f $$file ]; then \
-                   cmess=`grep "static\( const\)\? char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
-                   echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
-                   ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/latexinexamples.py $${file}.html;\
-		fi; \
-               done ;\
-            else \
-               for file in ${DIRS} foo; do \
-		 if [ -d $$file ]; then \
-                   echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
-		 fi; \
-               done; \
-               echo " " >> $${loc}/index.html; \
-               for file in ${SOURCEALL} foo ; do \
-		 if [ -f $$file ]; then \
-                   echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
-		 fi; \
-               done; \
-            fi ;\
+          echo "<p>" >> $${loc}/index.html ;\
+          loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
+          if [ "${EXAMPLESC}" != "" ] ; then \
+            for file in ${EXAMPLESC} foo ; do \
+              if [ -f $$file ]; then \
+                cmess=`grep "static\( const\)\? char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
+                echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
+                ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/latexinexamples.py $${loc}/$${file}.html;\
+              fi; \
+            done ;\
+          else \
+            for file in ${DIRS} foo; do \
+              if [ -d $$file ]; then \
+                echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
+              fi; \
+            done; \
             echo " " >> $${loc}/index.html; \
-            echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
-	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
-	   cat makefile | ${C2HTML}  | ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
-	-@${RM} /tmp/$$USER.htmlmap
+            for file in ${SOURCEALL} foo ; do \
+              if [ -f $$file ]; then \
+                echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
+              fi; \
+            done; \
+          fi ;\
+          echo " " >> $${loc}/index.html; \
+          echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html ;\
+          loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
+          cat makefile | ${C2HTML}  | ${MAPNAMES} -map $$htmlmap_tmp -inhtml > $${loc}/makefile.html ;\
+          ${RM} $$htmlmap_tmp
 
 cleanhtml:
 	-@${RM} {makefile,index}.html *.{c,cxx,cu,F,F90,h,h90,m}.html *.{c,cxx,cu}.gcov.html
@@ -664,8 +667,13 @@ GITSRCEXCL = \
 ':!include/*/khash.h' \
 ':!src/sys/yaml/*'
 checkbadSource:
+	-@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
 	-@${RM} -f checkbadSource.out
-	-@echo "Tabs in file -----------------------------------------" > checkbadSource.out
+	-@echo "Double blank lines in file ---------------------------" > checkbadSource.out
+	-@git --no-pager grep -n -P '^$$' -- ${GITSRC} > doublelinecheck.out
+	-@${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/doublelinecheck.py doublelinecheck.out >> checkbadSource.out
+	-@${RM} -f doublelinecheck.out
+	-@echo "Tabs in file -----------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '\t' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "White space at end of line ---------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P ' $$' -- ${GITSRC} >> checkbadSource.out;true
@@ -683,7 +691,7 @@ checkbadSource:
 	-@echo "Two ;; -----------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
 	-@echo "CHKERRQ for an MPI error code ------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '= MPI_\w*\(.*CHKERRQ' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '= MPI[U]*_\w*\(.*CHKERRQ' -- ${GITSRC} | grep -v MPIU_File >> checkbadSource.out;true
 	-@echo "Missing if (ierr) return ierr; -----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" >> checkbadSource.out;true
 	-@echo "DOS file (with DOS newlines) -------------------------" >> checkbadSource.out
@@ -691,15 +699,23 @@ checkbadSource:
 	-@echo "{ before SETERRQ -------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "{ on the same line as a function definition ----------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e 'PetscErrorCode[ ]+[a-zA-Z0-9_-]+(.*) {$$' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|PETSC_STATIC_INLINE)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "wrong usage of PetscDefined() ------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscDefined.PETSC' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "CHKERRQ following SETERRQ ------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";CHKERRQ" >> checkbadSource.out;true
+	-@echo "SETERRQ() without defined error code -----------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'SETERRQ\(' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
+	-@echo "No spaces before { after if|for|while|switch----------" >> checkbadSource.out
+	-@git --no-pager grep -n -P '(for|while|if|switch)(.*)\){$$' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 13` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 17` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
+         else \
+	   ${RM} -f checkbadSource.out;\
          fi;\
          test ! $$l -gt 0
 	-@git --no-pager grep -P -n "[\x00-\x08\x0E-\x1F\x80-\xFF]" -- ${GITSRC} > badSourceChar.out;true
@@ -707,8 +723,36 @@ checkbadSource:
          if [ $$w -gt 0 ] ; then \
            echo "Source files with non-ASCII characters ----------------" ;\
            cat badSourceChar.out ;\
+         else \
+	   ${RM} -f badSourceChar.out;\
          fi
 	@test ! -s badSourceChar.out
+
+lint:
+	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --verbose=${V} $(LINTER_OPTIONS)
+
+help-lint:
+	@${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --help
+	-@echo "Basic usage:"
+	-@echo "   make lint      <options>"
+	-@echo "   make test-lint <options> <test only options>"
+	-@echo
+	-@echo "Options:"
+	-@echo "  V=[1,0]                                Enable or disable verbose output"
+	-@echo "  LINTER_OPTIONS=\"--opt1 --opt2 ...\"     See above for available options"
+	-@echo
+	-@echo "Test Only Options:"
+	-@echo "  REPLACE=[1,0]                          Enable or disable replacing test output"
+	-@echo
+
+test-lint:
+	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --src-dir ${PETSC_DIR}/src/sys/tests/linter --test -j0 --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
+
+check_petsc4py_rst:
+	@${RM} -f petsc4py_rst.log
+	@echo "Checking src/binding/petsc4py/DESCRIPTION.rst"
+	@rst2html src/binding/petsc4py/DESCRIPTION.rst > /dev/null 2> petsc4py_rst.log
+	@if test -s petsc4py_rst.log; then cat petsc4py_rst.log; exit 1; fi
 
 # TODO: checkTestCoverage: that makes sure every tutorial test has at least one test listed in the file, perhaps handled by gmakegentest.py
 # TODO: check for PetscBeginFunctionUser in non-example source

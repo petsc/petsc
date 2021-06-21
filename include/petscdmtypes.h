@@ -55,7 +55,7 @@ natural conditions (type & DM_BC_NATURAL)
 
   Level: beginner
 
-.seealso: DMAddBoundary(), DMGetBoundary()
+.seealso: DMAddBoundary(), DSAddBoundary(), DSGetBoundary()
 E*/
 typedef enum {DM_BC_ESSENTIAL = 1, DM_BC_ESSENTIAL_FIELD = 5, DM_BC_NATURAL = 2, DM_BC_NATURAL_FIELD = 6, DM_BC_ESSENTIAL_BD_FIELD = 9, DM_BC_NATURAL_RIEMANN = 10} DMBoundaryConditionType;
 

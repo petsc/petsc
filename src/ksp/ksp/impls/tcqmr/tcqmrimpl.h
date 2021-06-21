@@ -28,4 +28,3 @@
 #define vtmp       ksp->work[VEC_OFFSET+16]
 #define TCQMR_VECS 17
 
-

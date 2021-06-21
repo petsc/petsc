@@ -206,8 +206,8 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   ierr = PetscDualSpaceSetUp(sp);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(sp, &spdim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetInteriorDimension(sp, &spintdim);CHKERRQ(ierr);
-  if (spdim != exspdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space dimension %D, got %D\n", exspdim, spdim);CHKERRQ(ierr);
-  if (spintdim != exspintdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space interior dimension %D, got %D\n", exspintdim, spintdim);CHKERRQ(ierr);
+  if (spdim != exspdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space dimension %D, got %D\n", exspdim, spdim);
+  if (spintdim != exspintdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space interior dimension %D, got %D\n", exspintdim, spintdim);
   key.dim = dim;
   key.formDegree = formDegree;
   ierr = PetscDualSpaceGetOrder(sp, &key.order);CHKERRQ(ierr);
@@ -240,8 +240,8 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
       PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
 
       ierr = PetscLagNodeIndicesGetData_Internal(lag->allNodeIndices, &nodeIdxDim, &nodeVecDim, &nNodes, &nodeIdx, &nodeVec);CHKERRQ(ierr);
-      if (nodeVecDim != Nk) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nodeVecDim");CHKERRQ(ierr);
-      if (nNodes != spdim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nNodes");CHKERRQ(ierr);
+      if (nodeVecDim != Nk) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nodeVecDim");
+      if (nNodes != spdim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nNodes");
 
       ierr = PetscDualSpaceGetAllData(sp, &allNodes, &allMat);CHKERRQ(ierr);
 
@@ -281,7 +281,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
         ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior matrix: %D nonzeros\n", (PetscInt) info.nz_used);CHKERRQ(ierr);
         ierr = PetscLagNodeIndicesGetData_Internal(lag->intNodeIndices, &intNodeIdxDim, &intNodeVecDim, &intNnodes, &intNodeIdx, &intNodeVec);CHKERRQ(ierr);
         if (intNodeIdxDim != nodeIdxDim || intNodeVecDim != nodeVecDim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same shale as all node indices");
-        if (intNnodes != spintdim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");CHKERRQ(ierr);
+        if (intNnodes != spintdim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");
         ierr = PetscArraycmp(intNodeIdx, nodeIdx, nodeIdxDim * intNnodes, &same);CHKERRQ(ierr);
         if (!same) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same as start of all node indices");
         ierr = PetscArraycmp(intNodeVec, nodeVec, nodeVecDim * intNnodes, &same);CHKERRQ(ierr);
@@ -313,54 +313,6 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateReferenceWedge(MPI_Comm comm, DM *refdm)
-{
-  PetscInt       dim = 3;
-  DM             rdm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMCreate(comm, &rdm);CHKERRQ(ierr);
-  ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
-  {
-    PetscInt    numPoints[4]         = {6, 9, 5, 1};
-    PetscInt    coneSize[21]         = {5,
-                                        3, 3,
-                                        4, 4, 4,
-                                        2, 2, 2, 2, 2, 2, 2, 2, 2,
-                                        0, 0, 0, 0, 0, 0};
-    PetscInt    cones[41]            = {1, 2, 3, 4, 5,
-                                        6, 7, 8,
-                                        9, 10, 11,
-                                        8, 12, 9, 13,
-                                        7, 14, 10, 12,
-                                        6, 13, 11, 14,
-                                        15, 16,  16, 17,  17, 15,
-                                        18, 19,  19, 20,  20, 18,
-                                        17, 19,  18, 15,  16, 20};
-    PetscInt    coneOrientations[41] = {0, 0, 0, 0, 0,
-                                        0, 0, 0,
-                                        0, 0, 0,
-                                        -2,  0, -2,  0,
-                                        -2,  0, -2, -2,
-                                        -2, -2, -2, -2,
-                                        0, 0, 0, 0, 0, 0,
-                                        0, 0, 0, 0, 0, 0,
-                                        0, 0, 0, 0, 0, 0};
-    PetscScalar vertexCoords[18]    = {-1.0, -1.0, -1.0,
-                                       -1.0,  1.0, -1.0,
-                                        1.0, -1.0, -1.0,
-                                       -1.0, -1.0,  1.0,
-                                        1.0, -1.0,  1.0,
-                                       -1.0,  1.0,  1.0};
-
-    ierr = DMPlexCreateFromDAG(rdm, 3, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
-  *refdm = rdm;
-  PetscFunctionReturn(0);
-}
-
 int main (int argc, char **argv)
 {
   PetscInt        dim;
@@ -386,9 +338,9 @@ int main (int argc, char **argv)
   ierr = PetscHashLagCreate(&lagTable);CHKERRQ(ierr);
 
   if (tensorCell < 2) {
-    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, dim, (PetscBool) !tensorCell, &dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, (PetscBool) !tensorCell), &dm);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexCreateReferenceWedge(PETSC_COMM_SELF, &dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DM_POLYTOPE_TRI_PRISM, &dm);CHKERRQ(ierr);
   }
   ordermin = trimmed ? 1 : 0;
   ordermax = tensorCell == 2 ? 4 : tensorCell == 1 ? 3 : dim + 2;

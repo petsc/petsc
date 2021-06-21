@@ -1,0 +1,17 @@
+@@ -6,8 +6,8 @@
+-  PetscValidCharPointer(a,2);
+-  PetscValidIntPointer(b,3);
+-  PetscValidBoolPointer(c,4);
+-  PetscValidRealPointer(d,5);
+-  PetscValidScalarPointer(e,6);
+-  PetscValidIntPointer(f,7);
+-  PetscValidRealPointer(g,8);
+-  PetscValidScalarPointer(h,9);
++  PetscValidPointer(a,1);
++  PetscValidCharPointer(b,2);
++  PetscValidIntPointer(c,3);
++  PetscValidIntPointer(d,4);
++  PetscValidIntPointer(e,5);
++  PetscValidBoolPointer(f,6);
++  PetscValidScalarPointer(g,7);
++  PetscValidRealPointer(h,8);

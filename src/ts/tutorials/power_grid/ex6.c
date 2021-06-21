@@ -438,7 +438,6 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:

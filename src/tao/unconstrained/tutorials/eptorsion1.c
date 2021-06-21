@@ -28,7 +28,6 @@
 
 #include <petsctao.h>
 
-
 static  char help[]=
 "Demonstrates use of the TAO package to solve \n\
 unconstrained minimization problems on a single processor.  This example \n\
@@ -614,7 +613,6 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
   ierr = PetscLogFlops(18.0*nx*ny);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

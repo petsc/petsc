@@ -5,7 +5,6 @@
        Used by the sparse factorization routines in
      src/mat/impls/baij/seq
 
-
        This is a combination of the Linpack routines
     dgefa() and dgedi() specialized for a size of 3.
 
@@ -144,5 +143,4 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a,PetscRea
   }
   PetscFunctionReturn(0);
 }
-
 

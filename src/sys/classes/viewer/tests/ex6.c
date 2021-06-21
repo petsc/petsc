@@ -197,9 +197,7 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
-
 
    testset:
      nsize: {{1 2 3}separate_output}
@@ -211,6 +209,5 @@ int main(int argc,char **args)
        requires: mpiio
        suffix: mpiio
        args: -viewer_binary_mpiio 1
-
 
 TEST*/

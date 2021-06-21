@@ -121,6 +121,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
       if ((c < cdof) && (cind[c] == d)) {++c; continue;}
       local[l+d-c] = off+d;
     }
+    if (d-c != gsize) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Point %D: Global dof %D != %D size - number of constraints", p, gsize, d-c);
     if (gdof < 0) {
       for (d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
@@ -185,7 +186,19 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PETSCSF_DistSect,sf,0,0,0);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(rootSection, &numFields);CHKERRQ(ierr);
-  if (numFields) {ierr = PetscSectionSetNumFields(leafSection, numFields);CHKERRQ(ierr);}
+  if (numFields) {
+    IS perm;
+
+    /* PetscSectionSetNumFields() calls PetscSectionReset(), which destroys
+       leafSection->perm. To keep this permutation set by the user, we grab
+       the reference before calling PetscSectionSetNumFields() and set it
+       back after. */
+    ierr = PetscSectionGetPermutation(leafSection, &perm);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(leafSection, numFields);CHKERRQ(ierr);
+    ierr = PetscSectionSetPermutation(leafSection, perm);CHKERRQ(ierr);
+    ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  }
   ierr = PetscMalloc1(numFields+2, &sub);CHKERRQ(ierr);
   sub[1] = rootSection->bc ? PETSC_TRUE : PETSC_FALSE;
   for (f = 0; f < numFields; ++f) {
@@ -211,7 +224,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   rpEnd = PetscMax(rpStart,rpEnd);
   /* see if we can avoid creating the embedded SF, since it can cost more than an allreduce */
   sub[0] = (PetscBool)(nroots != rpEnd - rpStart);
-  ierr = MPIU_Allreduce(MPI_IN_PLACE, sub, 2+numFields, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE, sub, 2+numFields, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf));CHKERRMPI(ierr);
   if (sub[0]) {
     ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
     ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
@@ -648,7 +661,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   ierr = PetscLayoutGetSize(layout, &N);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(layout, &n);CHKERRQ(ierr);
   flag = (PetscBool)(leafIndices == rootIndices);
-  ierr = MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
   if (flag && numLeafIndices != numRootIndices) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%D) != numRootIndices(%D)", numLeafIndices, numRootIndices);
 #if defined(PETSC_USE_DEBUG)
   N1 = PETSC_MIN_INT;

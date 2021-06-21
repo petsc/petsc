@@ -481,7 +481,6 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 /* --------------------------------------------------------------------------*/
 PetscErrorCode  TSSundialsSetType_Sundials(TS ts,TSSundialsLmmType type)
 {
@@ -886,7 +885,6 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool ft)
 .    -ts_sundials_linear_tolerance <tol> -
 .    -ts_sundials_maxl <maxl> - Max dimension of the Krylov subspace
 -    -ts_sundials_monitor_steps - Monitor SUNDIALS internal steps
-
 
     Notes:
     This uses its own nonlinear solver and Krylov method so PETSc SNES and KSP options do not apply,

@@ -25,5 +25,3 @@ typedef struct {
 /* DENSECHARACTER simply has a flag set which tells that it should be */
 /* interpreted as a string not a numeric vector                       */
 
-
-

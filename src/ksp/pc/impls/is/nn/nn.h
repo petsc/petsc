@@ -27,8 +27,3 @@ PETSC_EXTERN PetscErrorCode PCNNBalancing(PC pc,Vec r,Vec u,Vec z,Vec vec1_B,Vec
 
 #endif /* __pcnn_h */
 
-
-
-
-
-

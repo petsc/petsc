@@ -1,4 +1,3 @@
-#include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
 #include <petsclayouthdf5.h>    /*I   "petsclayoutdf5.h"   I*/
 #include <petscis.h>    /*I   "petscis.h"   I*/
@@ -6,29 +5,44 @@
 #if defined(PETSC_HAVE_HDF5)
 
 struct _n_HDF5ReadCtx {
-  hid_t file, group, dataset, dataspace;
-  PetscInt timestep;
-  int lenInd, bsInd, rdim;
-  hsize_t *dims;
-  PetscBool complexVal, dim2, horizontal;
+  hid_t     file, group, dataset, dataspace;
+  int       lenInd, bsInd, complexInd, rdim;
+  hsize_t   *dims;
+  PetscBool complexVal, dim2;
 };
 typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
 
-static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx)
+PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, const char name[])
 {
-  HDF5ReadCtx    h=NULL;
-  PetscErrorCode ierr;
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  PetscBool        timestepping=PETSC_FALSE;
+  const char       *group;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"timestepping",PETSC_BOOL,&timestepping,&timestepping);CHKERRQ(ierr);
+  if (timestepping != hdf5->timestepping) SETERRQ4(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  HDF5ReadCtx      h=NULL;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerHDF5CheckTimestepping_Internal(viewer, name);CHKERRQ(ierr);
   ierr = PetscNew(&h);CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group);CHKERRQ(ierr);
   PetscStackCallHDF5Return(h->dataset,H5Dopen2,(h->group, name, H5P_DEFAULT));
   PetscStackCallHDF5Return(h->dataspace,H5Dget_space,(h->dataset));
-  ierr = PetscViewerHDF5GetTimestep(viewer, &h->timestep);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5HasAttribute(viewer,name,"complex",&h->complexVal);CHKERRQ(ierr);
-  if (h->complexVal) {ierr = PetscViewerHDF5ReadAttribute(viewer,name,"complex",PETSC_BOOL,&h->complexVal);CHKERRQ(ierr);}
-  /* MATLAB stores column vectors horizontally */
-  ierr = PetscViewerHDF5HasAttribute(viewer,name,"MATLAB_class",&h->horizontal);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"complex",PETSC_BOOL,&h->complexVal,&h->complexVal);CHKERRQ(ierr);
+  if (!hdf5->horizontal) {
+    /* MATLAB stores column vectors horizontally */
+    ierr = PetscViewerHDF5HasAttribute(viewer,name,"MATLAB_class",&hdf5->horizontal);CHKERRQ(ierr);
+  }
   *ctx = h;
   PetscFunctionReturn(0);
 }
@@ -50,9 +64,10 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
 
 static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscBool setup, PetscLayout *map_)
 {
-  PetscInt       bs, len, N;
-  PetscLayout    map;
-  PetscErrorCode ierr;
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  PetscInt         bs, len, N;
+  PetscLayout      map;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (!(*map_)) {
@@ -77,13 +92,25 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
 
   /* Get entries dimension index */
   ctx->lenInd = 0;
-  if (ctx->timestep >= 0) ++ctx->lenInd;
+  if (hdf5->timestepping) ++ctx->lenInd;
 
   /* Get block dimension index */
-  ctx->bsInd = ctx->rdim-1;
-  if (ctx->complexVal) --ctx->bsInd;
+  if (ctx->complexVal) {
+    ctx->bsInd = ctx->rdim-2;
+    ctx->complexInd = ctx->rdim-1;
+  } else {
+    ctx->bsInd = ctx->rdim-1;
+    ctx->complexInd = -1;
+  }
   if (ctx->lenInd > ctx->bsInd) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_PLIB, "Calculated block dimension index = %D < %D = length dimension index.",ctx->bsInd,ctx->lenInd);
   if (ctx->bsInd > ctx->rdim - 1) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Calculated block dimension index = %D > %D = total number of dimensions - 1.",ctx->bsInd,ctx->rdim-1);
+  if (ctx->complexVal && ctx->dims[ctx->complexInd] != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Complex numbers must have exactly 2 parts (%D)",ctx->dims[ctx->complexInd]);
+
+  if (hdf5->horizontal) {
+    PetscInt t;
+    /* support horizontal 1D arrays (MATLAB vectors) - swap meaning of blocks and entries */
+    t = ctx->lenInd; ctx->lenInd = ctx->bsInd; ctx->bsInd = t;
+  }
 
   /* Get block size */
   ctx->dim2 = PETSC_FALSE;
@@ -96,13 +123,6 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
 
   /* Get global size */
   len = ctx->dims[ctx->lenInd];
-  if (ctx->horizontal) {
-    PetscInt t;
-    /* support horizontal 1D arrays (MATLAB vectors) - swap meaning of blocks and entries */
-    if (ctx->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Complex and horizontal at the same time not allowed.");
-    t = len; len = bs; bs = t;
-    t = ctx->lenInd; ctx->lenInd = ctx->bsInd; ctx->bsInd = t;
-  }
   N = (PetscInt) len*bs;
 
   /* Set global size, blocksize and type if not yet set */
@@ -118,10 +138,11 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
 
 static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout map, hid_t *memspace)
 {
-  hsize_t        *count, *offset;
-  PetscInt       bs, n, low;
-  int            i;
-  PetscErrorCode ierr;
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  hsize_t          *count, *offset;
+  PetscInt         bs, n, low;
+  int              i;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   /* Compute local size and ownership range */
@@ -137,15 +158,14 @@ static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer vie
     offset[i] = 0;
     count[i] = ctx->dims[i];
   }
-  if (ctx->timestep >= 0) {
+  if (hdf5->timestepping) {
     count[0]  = 1;
-    offset[0] = ctx->timestep;
+    offset[0] = hdf5->timestep;
   }
   {
     ierr = PetscHDF5IntCast(n/bs, &count[ctx->lenInd]);CHKERRQ(ierr);
     ierr = PetscHDF5IntCast(low/bs, &offset[ctx->lenInd]);CHKERRQ(ierr);
   }
-  if (ctx->complexVal && count[ctx->bsInd+1] != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Complex numbers must have exactly 2 parts (%D)",count[ctx->bsInd+1]);
   PetscStackCallHDF5Return(*memspace,H5Screate_simple,(ctx->rdim, count, NULL));
   PetscStackCallHDF5(H5Sselect_hyperslab,(ctx->dataspace, H5S_SELECT_SET, offset, NULL, count, NULL));
   ierr = PetscFree2(count, offset);CHKERRQ(ierr);
@@ -188,6 +208,8 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 @*/
 PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
+  PetscBool       has;
+  const char      *group;
   HDF5ReadCtx     h=NULL;
   hid_t           memspace=0;
   size_t          unitsize;
@@ -195,14 +217,17 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasDataset(viewer, name, &has);CHKERRQ(ierr);
+  if (!has) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group ? group : "/");
   ierr = PetscViewerHDF5ReadInitialize_Private(viewer, name, &h);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
     H5T_class_t clazz = H5Tget_class(datatype);
-    if (clazz == H5T_FLOAT) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains real numbers but PETSc is configured for complex. The conversion is not yet implemented. Configure with --with-scalar-type=real.");
+    if (clazz == H5T_FLOAT) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as real but PETSc is configured for complex scalars. The conversion is not yet implemented. Configure with --with-scalar-type=real to read this dataset", group ? group : "",name);
   }
 #else
-  if (h->complexVal) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"File contains complex numbers but PETSc not configured for them. Configure with --with-scalar-type=complex.");
+  if (h->complexVal) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group ? group : "",name);
 #endif
 
   ierr = PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_TRUE, &map);CHKERRQ(ierr);

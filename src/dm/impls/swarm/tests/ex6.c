@@ -8,8 +8,6 @@ static char help[] = "Vlasov example of many particles orbiting around a several
 
 typedef struct {
   PetscInt  dim;                          /* The topological mesh dimension */
-  PetscBool simplex;                      /* Flag for simplices or tensor cells */
-  char      filename[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
   PetscInt  particlesPerCircle;           /* The number of partices per circle */
   PetscReal momentTol;                    /* Tolerance for checking moment conservation */
   PetscBool monitor;                      /* Flag for using the TS monitor */
@@ -24,23 +22,16 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim                = 2;
-  options->simplex            = PETSC_TRUE;
   options->monitor            = PETSC_FALSE;
   options->error              = PETSC_FALSE;
   options->particlesPerCircle = 1;
   options->momentTol          = 100.0*PETSC_MACHINE_EPSILON;
   options->ostep              = 100;
 
-  ierr = PetscStrcpy(options->filename, "");CHKERRQ(ierr);
-
   ierr = PetscOptionsBegin(comm, "", "Vlasov Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-output_step", "Number of time steps between output", "ex4.c", options->ostep, &options->ostep, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-monitor", "Flag to use the TS monitor", "ex4.c", options->monitor, &options->monitor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-error", "Flag to print the error", "ex4.c", options->error, &options->error, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex4.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex4.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-particles_per_circle", "Number of particles per circle", "ex4.c", options->particlesPerCircle, &options->particlesPerCircle, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -49,30 +40,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscStrcmp(user->filename, "", &flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateFromFile(comm, user->filename, PETSC_TRUE, dm);CHKERRQ(ierr);
-    ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
-  }
-  {
-    DM distributedMesh = NULL;
-
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-  }
-  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -216,15 +191,14 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 /* Create particle RHS Functions for gravity with G = 1 for simplification */
 static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
 {
-  DM                dm;
   const PetscScalar *v;
   PetscScalar       *xres;
   PetscInt          Np, p, dim, d;
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  /* The DM is not currently pushed down to the splits */
+  dim  = ((AppCtx *) ctx)->dim;
   ierr = VecGetLocalSize(Xres, &Np);CHKERRQ(ierr);
   Np  /= dim;
   ierr = VecGetArray(Xres, &xres);CHKERRQ(ierr);
@@ -242,16 +216,14 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
 static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *user)
 {
   AppCtx           *ctx = (AppCtx *) user;
-  DM                dm;
   const PetscScalar *x;
   PetscScalar       *vres;
   PetscInt          Np, p, dim;
   PetscErrorCode    ierr;
 
-
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  /* The DM is not currently pushed down to the splits */
+  dim  = ctx->dim;
   ierr = VecGetLocalSize(Vres, &Np);CHKERRQ(ierr);
   Np  /= dim;
   ierr = VecGetArray(Vres, &vres);CHKERRQ(ierr);
@@ -433,19 +405,18 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-
 /*TEST
 
    build:
      requires: triangle !single !complex
    test:
      suffix: bsi1
-     args: -dim 2 -dm_plex_box_faces 1,1 -dm_view -sw_view -particles_per_circle 5 -ts_basicsymplectic_type 1 -ts_max_time 0.1 -ts_dt 0.001 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -particles_per_circle 5 -ts_basicsymplectic_type 1 -ts_max_time 0.1 -ts_dt 0.001 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
    test:
      suffix: bsi2
-     args: -dim 2 -dm_plex_box_faces 1,1 -dm_view -sw_view -particles_per_circle 5 -ts_basicsymplectic_type 2 -ts_max_time 0.1 -ts_dt 0.001 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -particles_per_circle 5 -ts_basicsymplectic_type 2 -ts_max_time 0.1 -ts_dt 0.001 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
    test:
      suffix: euler
-     args: -dim 2 -dm_plex_box_faces 1,1 -dm_view -sw_view -particles_per_circle 5 -ts_type euler -ts_max_time 0.1 -ts_dt 0.001 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -particles_per_circle 5 -ts_type euler -ts_max_time 0.1 -ts_dt 0.001 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
 
 TEST*/

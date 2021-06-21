@@ -5,6 +5,7 @@ Simplicial Mesh in 3 dimensions:
   1-cells: 32976
   2-cells: 26928
   3-cells: 7109
+Periodic mesh (PERIODIC, PERIODIC, NONE) coordinates localized
 Labels:
   marker: 1 strata with value/size (1 (3150))
   Face Sets: 2 strata with value/size (1 (1365), 2 (1194))

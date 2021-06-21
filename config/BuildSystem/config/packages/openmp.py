@@ -62,6 +62,7 @@ class Configure(config.package.Package):
     if not self.found:
       raise RuntimeError('C Compiler has no support for OpenMP')
     self.setCompilers.addCompilerFlag(ompflag)
+    self.setCompilers.addLinkerFlag(ompflag)
     self.setCompilers.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
@@ -102,6 +103,7 @@ class Configure(config.package.Package):
       if not self.found:
         raise RuntimeError('CXX Compiler has no support for OpenMP')
       self.setCompilers.addCompilerFlag(ompflag)
+      self.compilers.CXXPPFLAGS += ' '+ompflag # OpenMP flag is also a preprocessor flag
       self.setCompilers.popLanguage()
 
     # register package since config.package.Package.configureLibrary(self) will not work since there is no library to find

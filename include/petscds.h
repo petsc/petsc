@@ -12,36 +12,40 @@ PETSC_EXTERN PetscClassId PETSCWEAKFORM_CLASSID;
 PETSC_EXTERN PetscErrorCode PetscWeakFormCreate(MPI_Comm, PetscWeakForm *);
 PETSC_EXTERN PetscErrorCode PetscWeakFormDestroy(PetscWeakForm *);
 PETSC_EXTERN PetscErrorCode PetscWeakFormView(PetscWeakForm, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscWeakFormCopy(PetscWeakForm, PetscWeakForm);
+PETSC_EXTERN PetscErrorCode PetscWeakFormClear(PetscWeakForm);
 PETSC_EXTERN PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscHashFormKeySort(PetscInt, PetscHashFormKey[]);
+PETSC_EXTERN PetscErrorCode PetscFormKeySort(PetscInt, PetscFormKey[]);
+PETSC_EXTERN PetscErrorCode PetscWeakFormRewriteKeys(PetscWeakForm, DMLabel, PetscInt, const PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscWeakFormClearIndex(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscWeakFormKind, PetscInt);
 
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt *,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt *,
                                                       void (***)(PetscInt, PetscInt, PetscInt,
                                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                  PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormAddObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormAddObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                       void (*)(PetscInt, PetscInt, PetscInt,
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                       void (**)(PetscInt, PetscInt, PetscInt,
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetIndexObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetIndexObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                       void (**)(PetscInt, PetscInt, PetscInt,
                                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                  PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexObjective(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                       void (*)(PetscInt, PetscInt, PetscInt,
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                      PetscInt *,
                                                      void (***)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -52,7 +56,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormGetResidual(PetscWeakForm, DMLabel, Pet
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormAddResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormAddResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                      void (*)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -61,7 +65,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormAddResidual(PetscWeakForm, DMLabel, Pet
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                      PetscInt,
                                                      void (**)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -72,7 +76,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetResidual(PetscWeakForm, DMLabel, Pet
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                      PetscInt,
                                                      void (*)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -84,7 +88,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexResidual(PetscWeakForm, DMLabel
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscWeakFormHasJacobian(PetscWeakForm, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt *,
                                                      void (***)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -105,7 +109,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormGetJacobian(PetscWeakForm, DMLabel, Pet
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormAddJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormAddJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      void (*)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -122,7 +126,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormAddJacobian(PetscWeakForm, DMLabel, Pet
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt,
                                                      void (**)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -143,7 +147,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetJacobian(PetscWeakForm, DMLabel, Pet
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt,
                                                      void (*)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -165,7 +169,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexJacobian(PetscWeakForm, DMLabel
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscWeakFormHasJacobianPreconditioner(PetscWeakForm, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt *,
                                                      void (***)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -186,7 +190,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormGetJacobianPreconditioner(PetscWeakForm
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormAddJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormAddJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      void (*)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -203,7 +207,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormAddJacobianPreconditioner(PetscWeakForm
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt,
                                                      void (**)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -224,7 +228,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetJacobianPreconditioner(PetscWeakForm
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt,
                                                      void (*)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -246,7 +250,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexJacobianPreconditioner(PetscWea
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscWeakFormHasDynamicJacobian(PetscWeakForm, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetDynamicJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetDynamicJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt *,
                                                      void (***)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -267,7 +271,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormGetDynamicJacobian(PetscWeakForm, DMLab
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormAddDynamicJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormAddDynamicJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      void (*)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -284,7 +288,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormAddDynamicJacobian(PetscWeakForm, DMLab
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetDynamicJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetDynamicJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt,
                                                      void (**)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -305,7 +309,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetDynamicJacobian(PetscWeakForm, DMLab
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexDynamicJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexDynamicJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                      PetscInt,
                                                      void (*)(PetscInt, PetscInt, PetscInt,
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -326,7 +330,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexDynamicJacobian(PetscWeakForm, 
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                               PetscReal, PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                        PetscInt *,
                                                        void (***)(PetscInt, PetscInt, PetscInt,
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -337,7 +341,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdResidual(PetscWeakForm, DMLabel, P
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                        void (*)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -346,7 +350,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdResidual(PetscWeakForm, DMLabel, P
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                        PetscInt,
                                                        void (**)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -357,7 +361,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdResidual(PetscWeakForm, DMLabel, P
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdResidual(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                        PetscInt,
                                                        void (*)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -369,7 +373,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdResidual(PetscWeakForm, DMLab
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscWeakFormHasBdJacobian(PetscWeakForm, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                        PetscInt *,
                                                        void (***)(PetscInt, PetscInt, PetscInt,
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -390,7 +394,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdJacobian(PetscWeakForm, DMLabel, P
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                        void (*)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -407,7 +411,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdJacobian(PetscWeakForm, DMLabel, P
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                        PetscInt,
                                                        void (**)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -428,7 +432,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdJacobian(PetscWeakForm, DMLabel, P
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdJacobian(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                        PetscInt,
                                                        void (*)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -450,7 +454,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdJacobian(PetscWeakForm, DMLab
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscWeakFormHasBdJacobianPreconditioner(PetscWeakForm, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                        PetscInt *,
                                                        void (***)(PetscInt, PetscInt, PetscInt,
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -471,7 +475,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormGetBdJacobianPreconditioner(PetscWeakFo
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                        void (*)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -488,7 +492,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormAddBdJacobianPreconditioner(PetscWeakFo
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                        PetscInt,
                                                        void (**)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -509,7 +513,7 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetBdJacobianPreconditioner(PetscWeakFo
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdJacobianPreconditioner(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt,
                                                        PetscInt,
                                                        void (*)(PetscInt, PetscInt, PetscInt,
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -530,16 +534,15 @@ PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexBdJacobianPreconditioner(PetscW
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                 PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]));
-PETSC_EXTERN PetscErrorCode PetscWeakFormGetRiemannSolver(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormGetRiemannSolver(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                           PetscInt *,
                                                           void (***)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetRiemannSolver(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetRiemannSolver(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                           PetscInt,
                                                           void (**)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *));
-PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm, DMLabel, PetscInt, PetscInt,
+PETSC_EXTERN PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm, DMLabel, PetscInt, PetscInt, PetscInt,
                                                           PetscInt,
                                                           void (*)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *));
-
 
 PETSC_EXTERN PetscErrorCode PetscDSInitializePackage(void);
 
@@ -867,13 +870,16 @@ PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, 
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakFormArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetWorkspace(PetscDS, PetscReal **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyConstants(PetscDS, PetscDS);
+PETSC_EXTERN PetscErrorCode PetscDSCopyExactSolutions(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSSelectDiscretizations(PetscDS, PetscInt, const PetscInt[], PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSSelectEquations(PetscDS, PetscInt, const PetscInt[], PetscDS);
-PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(void), void (*)(void), PetscInt, const PetscInt *, void *);
-PETSC_EXTERN PetscErrorCode PetscDSUpdateBoundary(PetscDS, PetscInt, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(void), void (*)(void), PetscInt, const PetscInt *, void *);
+PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, DMBoundaryConditionType, const char[], DMLabel, PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], void (*)(void), void (*)(void), void *, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSAddBoundaryByName(PetscDS, DMBoundaryConditionType, const char[], const char[], PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], void (*)(void), void (*)(void), void *, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSUpdateBoundary(PetscDS, PetscInt, DMBoundaryConditionType, const char[], DMLabel, PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], void (*)(void), void (*)(void), void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetNumBoundary(PetscDS, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, DMBoundaryConditionType *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(void), void (**)(void), PetscInt *, const PetscInt **, void **);
+PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, PetscWeakForm *, DMBoundaryConditionType *, const char *[], DMLabel *, PetscInt *, const PetscInt *[], PetscInt *, PetscInt *, const PetscInt *[], void (**)(void), void (**)(void), void **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyBoundary(PetscDS, PetscInt, const PetscInt[], PetscDS);
+PETSC_EXTERN PetscErrorCode PetscDSDestroyBoundary(PetscDS);
 
 #endif

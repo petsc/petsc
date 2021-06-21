@@ -34,7 +34,6 @@
 #define PetscPartitioner PetscFortranAddr
 #define DMField          PetscFortranAddr
 
-
 #define DMDA        'da'
 #define DMCOMPOSITE 'composite'
 #define DMSLICED    'sliced'

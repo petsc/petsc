@@ -28,7 +28,6 @@
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscFClose(), PetscSynchronizedFGets(), PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
           PetscFPrintf()
 @*/
@@ -78,7 +77,6 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
 
     Fortran Note:
     This routine is not supported in Fortran.
-
 
 .seealso: PetscFOpen()
 @*/
@@ -131,7 +129,6 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@C
       PetscPOpen - Runs a program on processor zero and sends either its input or output to
@@ -214,15 +211,14 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
      Logically Collective, but only process 0 runs the command
 
    Input Parameter:
-.   machine - machine to run command on or NULL to remove previous entry
+.   machine - machine to run command on or NULL for the current machine
 
    Options Database:
-.   -popen_machine <machine>
+.   -popen_machine <machine> - run the process on this machine
 
    Level: intermediate
 
 .seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpen()
-
 @*/
 PetscErrorCode  PetscPOpenSetMachine(const char machine[])
 {

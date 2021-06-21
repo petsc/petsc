@@ -68,7 +68,6 @@
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
 
-
 /*MC
    SETERRQ - Macro to be called when an error has been detected,
 
@@ -107,7 +106,6 @@ M*/
 */
 PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS;
 PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CODE;
-
 
 /*MC
    SETERRMPI - Macro to be called when an error has been detected within an MPI callback function
@@ -476,8 +474,13 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
+#if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #define CHKERRQ(ierr)          do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");} while (0)
 #define CHKERRV(ierr)          do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");return;}} while (0)
+#else
+#define CHKERRQ(ierr)
+#define CHKERRV(ierr)
+#endif
 
 /*MC
    CHKERRABORT - Checks error code returned from PETSc function. If non-zero it aborts immediately.
@@ -495,8 +498,13 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2(), SETERRABORT(), CHKERRMPI()
 M*/
+#if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #define CHKERRABORT(comm,ierr) do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
 #define CHKERRCONTINUE(ierr)   do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");}} while (0)
+#else
+#define CHKERRABORT(comm,ierr)
+#define CHKERRCONTINUE(ierr)
+#endif
 
 PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
 PETSC_EXTERN PetscBool petscwaitonerrorflg,petscindebugger;
@@ -533,7 +541,7 @@ M*/
       PetscInt       idx = 0;                                         \
       PetscMPIInt    errcode;                                         \
       PetscAbortFindSourceFile_Private(__FILE__,&idx);                \
-      errcode = (PetscMPIInt)(idx*10000000 + __LINE__*1000 + ierr);   \
+      errcode = (PetscMPIInt)(0*idx*10000000 + 0*__LINE__*1000 + ierr);   \
       if (petscwaitonerrorflg) PetscSleep(1000);                      \
       if (petscindebugger) abort();                                   \
       else MPI_Abort(comm,errcode);                                   \
@@ -558,6 +566,7 @@ M*/
 
 .seealso: CHKERRQ(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2(), SETERRMPI(), SETERRABORT(), CHKERRABORT()
 M*/
+#if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #define CHKERRMPI(ierr) \
 do { \
   PetscErrorCode _7_errorcode = (ierr); \
@@ -568,6 +577,9 @@ do { \
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
   } \
 } while (0)
+#else
+#define CHKERRMPI(ierr)
+#endif
 
 #ifdef PETSC_CLANGUAGE_CXX
 
@@ -597,9 +609,6 @@ M*/
 
 #endif
 
-#if defined(PETSC_HAVE_CUDA)
-#define CHKERRCUSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSOLVER error %d",err);} while (0)
-#endif
 /* TODO: SEK:  Need to figure out the hipsolver issues */
 #if defined(PETSC_HAVE_HIP)
 #define CHKERRHIPSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HIPSOLVER error %d",err);} while (0)
@@ -616,8 +625,9 @@ M*/
   Level: beginner
 
    Notes:
-    We highly recommend using valgrind https://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind for finding memory problems. This is useful
-    on systems that do not have valgrind, but much much less useful.
+    We highly recommend using valgrind https://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind or for NVIDIA CUDA systems
+    https://docs.nvidia.com/cuda/cuda-memcheck/index.html for finding memory problems. The ``CHKMEMQ`` macro is useful on systems that
+    do not have valgrind, but is not as good as valgrind or cuda-memcheck.
 
     Must run with the option -malloc_debug (-malloc_test in debug mode; or if PetscMallocSetDebug() called) to enable this option
 
@@ -630,10 +640,14 @@ M*/
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(),
           PetscMallocValidate()
 M*/
+#if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #define CHKMEMQ do {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);CHKERRQ(_7_ierr);} while (0)
 
 #define CHKMEMA PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__)
-
+#else
+#define CHKMEMQ
+#define CHKMEMA
+#endif
 /*E
   PetscErrorType - passed to the PETSc error handling routines indicating if this is the first or a later call to the error handlers
 
@@ -705,7 +719,6 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can 
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscPushErrorHandler(), PetscVFPrintf(), PetscHelpPrintf()
 M*/
 PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[],...);
@@ -752,6 +765,7 @@ PetscErrorCode  PetscStackPrint(PetscStack *,FILE*);
 #define PetscRegister__FUNCT__()
 #endif
 
+#if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #if defined(PETSC_USE_DEBUG)
 PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
 {
@@ -762,7 +776,6 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
  * handling macros.  We record the line of the call, which may or may not be the location of the definition.  But is at
  * least more useful than "unknown" because it can distinguish multiple calls from the same function.
  */
-
 #define PetscStackPushNoCheck(funct,petsc_routine,hot)                        \
   do {                                                                        \
     PetscStackSAWsTakeAccess();                                                \
@@ -892,7 +905,6 @@ M*/
     PetscRegister__FUNCT__();                                           \
   } while (0)
 
-
 #define PetscStackPush(n) \
   do {                                                                  \
     PetscStackPushNoCheck(n,PETSC_FALSE,PETSC_FALSE);                   \
@@ -939,7 +951,6 @@ M*/
   do {                                                                \
     PetscStackPopNoCheck;                                             \
     return;} while (0)
-
 #else
 
 PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
@@ -966,8 +977,6 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
 
    Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
-
-
 */
 #define PetscStackCall(name,routine) do { PetscStackPush(name);routine;PetscStackPop; } while (0)
 
@@ -991,6 +1000,21 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
     PetscStackPop;                                                                                        \
     if (__ierr) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",#func,(int)__ierr); \
   } while (0)
+
+#else /* PETSC_CLANG_STATIC_ANALYZER */
+PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
+#define PetscStackPushNoCheck(funct,petsc_routine,hot) do {} while (0)
+#define PetscStackPopNoCheck                           do {} while (0)
+#define PetscFunctionBegin
+#define PetscFunctionBeginUser
+#define PetscFunctionBeginHot
+#define PetscFunctionReturn(a)    return(a)
+#define PetscFunctionReturnVoid() return
+#define PetscStackPop
+#define PetscStackPush(f)
+#define PetscStackCall(name,routine)
+#define PetscStackCallStandard(name,routine)
+#endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscStackCreate(void);
 PETSC_EXTERN PetscErrorCode PetscStackView(FILE*);

@@ -171,7 +171,6 @@ PETSC_EXTERN void petscbagregisterstring_(PetscBag *bag,char* p,char* cs1,char* 
   FREECHAR(s2,t2);
 }
 
-
 PETSC_EXTERN void petscbaggetdata_(PetscBag *bag,void **data,PetscErrorCode *ierr)
 {
   *ierr = PetscBagGetData(*bag,data);

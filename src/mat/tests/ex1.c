@@ -281,8 +281,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
-
 /*TEST
 
    test:
@@ -290,13 +288,13 @@ int main(int argc,char **argv)
    test:
      requires: cuda
      suffix: seqdensecuda
-     args: -mat_type seqdensecuda -rhs_mat_type seqdensecuda -ldl 0 -solver_type {{petsc cuda}} -qr 0
+     args: -mat_type seqdensecuda -rhs_mat_type seqdensecuda -ldl 0 -solver_type {{petsc cuda}}
      output_file: output/ex1_1.out
 
    test:
      requires: cuda
      suffix: seqdensecuda_2
-     args: -ldl 0 -solver_type cuda -qr 0
+     args: -ldl 0 -solver_type cuda
      output_file: output/ex1_1.out
 
    test:

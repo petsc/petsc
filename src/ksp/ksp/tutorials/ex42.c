@@ -475,7 +475,6 @@ static void FormStressOperatorQ13D(PetscScalar Ke[],PetscScalar coords[],PetscSc
       B[5][3*i] = 0.0;    B[5][3*i+1] = d_dz_i;  B[5][3*i+2] = d_dy_i; /* e_yz */
     }
 
-
     tildeD[0] = 2.0*gp_weight[p]*J_p*eta[p];
     tildeD[1] = 2.0*gp_weight[p]*J_p*eta[p];
     tildeD[2] = 2.0*gp_weight[p]*J_p*eta[p];
@@ -1028,7 +1027,7 @@ static void evaluate_MS_FrankKamentski(PetscReal pos[],PetscReal v[],PetscReal *
   }
   if (p) *p = PetscPowRealInt(x,2) + PetscPowRealInt(y,2) + PetscPowRealInt(z,2);
   if (eta) {
-    /**eta = PetscExpReal(-theta*(1.0 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)));*/
+    /* eta = PetscExpReal(-theta*(1.0 - y - 0.1*PetscCosReal(MX*x)*PetscCosReal(MZ*z)*PetscSinReal(MY*y)));*/
     *eta = 1.0;
   }
   if (Fm) {
@@ -1052,9 +1051,9 @@ static void evaluate_MS_FrankKamentski(PetscReal pos[],PetscReal v[],PetscReal *
     Fm[2] = -2*z + PetscPowRealInt(z,2)*(-2.0*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + 2.0*PetscPowRealInt(PETSC_PI,3)*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)) + PetscPowRealInt(z,2)*(PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)/2 - 3*PetscPowRealInt(PETSC_PI,2)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y)/2 + PetscPowRealInt(PETSC_PI,3)*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)/2 - 3*PETSC_PI*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)/2) + 1.0*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + 0.25*PetscPowRealInt(PETSC_PI,3)*PetscPowRealInt(z,4)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) - 0.25*PETSC_PI*PetscPowRealInt(z,4)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) - 3.0*PETSC_PI*PetscPowRealInt(z,2)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) - 1.0*PETSC_PI*PetscCosReal(PETSC_PI *y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y);
   }
   if (Fc) {
-    /**Fc = -2.0*PETSC_PI*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscCosReal(2.0*PETSC_PI*z) - z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + PETSC_PI*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) + PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y) ;*/
-    /**Fc = PETSC_PI*PetscCosReal(PETSC_PI*x) + PETSC_PI*PetscCosReal(PETSC_PI*y) + PETSC_PI*PetscCosReal(PETSC_PI*z);*/
-    /**Fc = -2.0*PETSC_PI*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscCosReal(2.0*PETSC_PI*z) - z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + PETSC_PI*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) + PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y);*/
+    /* Fc = -2.0*PETSC_PI*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscCosReal(2.0*PETSC_PI*z) - z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + PETSC_PI*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) + PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y) ;*/
+    /* Fc = PETSC_PI*PetscCosReal(PETSC_PI*x) + PETSC_PI*PetscCosReal(PETSC_PI*y) + PETSC_PI*PetscCosReal(PETSC_PI*z);*/
+    /* Fc = -2.0*PETSC_PI*(PetscPowRealInt(x,3) + PetscPowRealInt(y,3))*PetscCosReal(2.0*PETSC_PI*z) - z*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y)*PetscSinReal(PETSC_PI*y) + PETSC_PI*PetscPowRealInt(z,3)*PetscCosReal(PETSC_PI*x)*PetscExpReal(y) + PETSC_PI*z*PetscCosReal(PETSC_PI*y)*PetscCosReal(2.0*PETSC_PI*x)*PetscExpReal(-y);*/
     *Fc = 0.0;
   }
 }
@@ -1275,7 +1274,6 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
   u_H1 = PetscSqrtScalar(u_H1);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e \n",PetscRealPart(h),PetscRealPart(p_L2),PetscRealPart(u_L2),PetscRealPart(u_H1));CHKERRQ(ierr);
-
 
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
 
@@ -2022,7 +2020,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

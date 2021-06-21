@@ -40,17 +40,9 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
     l[2] = 0.;
   }
   if (plex) {
-    DM               dm2;
-    PetscPartitioner part;
-
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD,3,PETSC_FALSE,cells,l,u,NULL,PETSC_FALSE,&dm);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part,PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm,0,NULL,&dm2);CHKERRQ(ierr);
-    if (dm2) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      dm   = dm2;
-    }
+    ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+    ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,cells[0]+1,cells[1]+1,cells[2]+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
   }

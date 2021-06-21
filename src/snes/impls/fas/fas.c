@@ -408,7 +408,6 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
   PetscFunctionReturn(0);
 }
 
-
 /*
 Defines the action of the upsmoother
  */
@@ -905,7 +904,6 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
-
 
   if (isFine) {
     /* propagate scale-dependent data up the hierarchy */

@@ -50,7 +50,6 @@ static const char help[] = "Integrate chemistry using TChem.\n";
         Turn off reactions
         -reactions no
 
-
     The solution for component i = 0 is the temperature.
 
     The solution, i > 0, is the mass fraction, massf[i], of species i, i.e. mass of species i/ total mass of all species
@@ -138,7 +137,6 @@ int main(int argc,char **argv)
   ierr = PetscFree(snames);CHKERRQ(ierr);
   ierr = PetscFree(names);CHKERRQ(ierr);
 
-
   ierr = DMCreateMatrix(user.dm,&J);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.dm,&X);CHKERRQ(ierr);
 
@@ -169,7 +167,6 @@ int main(int argc,char **argv)
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetStepLimits(adapt,1e-12,1e-4);CHKERRQ(ierr); /* Also available with -ts_adapt_dt_min/-ts_adapt_dt_max */
   ierr = TSSetMaxSNESFailures(ts,-1);CHKERRQ(ierr);            /* Retry step an unlimited number of times */
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine

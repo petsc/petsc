@@ -131,7 +131,6 @@ PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes,Vec V,Vec F,void *actx
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 {
   PetscErrorCode      ierr;
@@ -194,7 +193,6 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
   PetscFunctionReturn(0);
 }
 
-
 /* ----------------------------------------------------------------------------*/
 
 /*
@@ -256,7 +254,6 @@ PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts,PetscReal t,Vec UV,Vec UVdot,V
   ierr = VecScatterEnd(full->scatterV,full->VF,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 {
@@ -341,9 +338,7 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
   PetscFunctionReturn(0);
 }
 
-
 /* ----------------------------------------------------------------------------*/
-
 
 /*
    Simple example:   f(U,V) = U + V
@@ -401,6 +396,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
 

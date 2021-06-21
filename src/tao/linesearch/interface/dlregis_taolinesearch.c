@@ -1,7 +1,6 @@
 #define TAOLINESEARCH_DLL
 #include <petsc/private/taolinesearchimpl.h>
 
-
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
@@ -55,6 +54,4 @@ PetscErrorCode TaoLineSearchInitializePackage(void)
   ierr = PetscRegisterFinalize(TaoLineSearchFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 

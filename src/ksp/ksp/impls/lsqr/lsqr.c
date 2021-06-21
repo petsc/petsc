@@ -168,7 +168,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     if (beta > 0.0) {
       ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr); /* beta*U1 = Amat*V - alpha*U */
       if (!lsqr->exact_norm) {
-        lsqr->anorm = PetscSqrtScalar(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
+        lsqr->anorm = PetscSqrtReal(PetscSqr(lsqr->anorm) + PetscSqr(alpha) + PetscSqr(beta));
       }
     }
 
@@ -240,7 +240,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 {
@@ -456,7 +455,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
   ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   x[0] = (PetscReal) n;
@@ -626,8 +625,6 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
    Developer Notes:
     How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
             the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
-
-
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSolve(), KSPLSQRConvergedDefault(), KSPLSQRSetComputeStandardErrorVec(), KSPLSQRGetStandardErrorVec(), KSPLSQRSetExactMatNorm()
 

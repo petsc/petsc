@@ -196,7 +196,7 @@ PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
   ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   x = (PetscReal) n;
@@ -288,7 +288,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
   for (i = 0; i < n; ++i) pwork += (PetscAbsScalar(r[i]) > .20*rmax);
   ierr = VecRestoreArrayRead(resid, &r);CHKERRQ(ierr);
   ierr = VecDestroy(&resid);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&pwork, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) ksp));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&pwork, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) ksp));CHKERRMPI(ierr);
   *per = *per/N;
   PetscFunctionReturn(0);
 }
@@ -458,7 +458,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
   ierr = KSPBuildResidual(ksp, NULL, NULL, &r);CHKERRQ(ierr);
   ierr = VecNorm(r, NORM_2, &truenorm);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -696,7 +696,7 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
   ierr = KSPGetDM(ksp, &dm);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &sol);CHKERRQ(ierr);
@@ -883,7 +883,7 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 5);
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
   ierr = KSPBuildSolution(ksp, NULL, &u);CHKERRQ(ierr);
   ierr = VecNorm(u, NORM_2, &snorm);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
@@ -1136,7 +1136,6 @@ PetscErrorCode  KSPConvergedSkip(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverged
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    KSPConvergedDefaultCreate - Creates and initializes the space used by the KSPConvergedDefault() function context
 
@@ -1183,7 +1182,6 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
    If the convergence test is not KSPConvergedDefault() then this is ignored.
 
    If right preconditioning is being used then B does not appear in the above formula.
-
 
    Level: intermediate
 
@@ -1829,7 +1827,6 @@ PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool flg)
 .  dm - the dm
 
    Level: intermediate
-
 
 .seealso: KSPSetDM(), KSPSetDMActive()
 @*/

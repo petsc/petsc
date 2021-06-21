@@ -597,15 +597,3 @@ PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
   PetscFunctionReturn(0);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-

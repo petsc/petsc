@@ -1,37 +1,40 @@
-#include <petsc/private/viewerimpl.h>
-#include <petsc/private/viewerhdf5impl.h>
-#include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
+#include <petsc/private/viewerhdf5impl.h> /*I "petscviewerhdf5.h" I*/
 
 static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer, const char[], PetscBool, PetscBool*, H5O_type_t*);
 static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer, const char[], const char[], PetscBool*);
 
-static PetscErrorCode PetscViewerHDF5GetAbsolutePath_Internal(PetscViewer viewer, const char objname[], char **fullpath)
+static PetscErrorCode PetscViewerHDF5GetAbsolutePath_Internal(PetscViewer viewer, const char path[], char *abspath[])
 {
-  const char *group;
-  char buf[PETSC_MAX_PATH_LEN]="";
+  PetscBool      relative = PETSC_FALSE;
+  const char     *group;
+  char           buf[PETSC_MAX_PATH_LEN] = "";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
-  ierr = PetscStrcat(buf, group);CHKERRQ(ierr);
-  ierr = PetscStrcat(buf, "/");CHKERRQ(ierr);
-  ierr = PetscStrcat(buf, objname);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(buf, fullpath);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PathIsRelative(path, PETSC_TRUE, &relative);CHKERRQ(ierr);
+  if (relative) {
+    ierr = PetscStrcpy(buf, group);CHKERRQ(ierr);
+    ierr = PetscStrcat(buf, "/");CHKERRQ(ierr);
+    ierr = PetscStrcat(buf, path);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(buf, abspath);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrallocpy(path, abspath);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscViewerHDF5CheckNamedObject_Internal(PetscViewer viewer, PetscObject obj)
 {
-  PetscBool has;
-  const char *group;
+  PetscBool      has;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!obj->name) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Object must be named");
   ierr = PetscViewerHDF5HasObject(viewer, obj, &has);CHKERRQ(ierr);
   if (!has) {
+    const char *group;
     ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
-    SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) %s not stored in group %s", obj->name, group);
+    SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", obj->name, group ? group : "/");
   }
   PetscFunctionReturn(0);
 }
@@ -144,7 +147,6 @@ static PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer,
   Options Database:
 .  -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
 
-
   Notes:
     Setting this option allegedly makes code that reads the HDF5 in easier since they do not have a "special case" of a bs/dof
          of one when the dimension is lower. Others think the option is crazy.
@@ -216,7 +218,6 @@ static PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, Petsc
 
   Options Database:
 .  -viewer_hdf5_sp_output - turns on (true) or off (false) output in single precision
-
 
   Notes:
     Setting this option does not make any difference if PETSc is compiled with single precision
@@ -396,13 +397,21 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
     PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDONLY, plist_id));
     break;
   case FILE_MODE_APPEND:
-    PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDWR, plist_id));
+  case FILE_MODE_UPDATE:
+  {
+    PetscBool flg;
+    ierr = PetscTestFile(hdf5->filename, 'r', &flg);CHKERRQ(ierr);
+    if (flg) PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDWR, plist_id));
+    else     PetscStackCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_EXCL, H5P_DEFAULT, plist_id));
     break;
+  }
   case FILE_MODE_WRITE:
     PetscStackCallHDF5Return(hdf5->file_id,H5Fcreate,(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id));
     break;
+  case FILE_MODE_UNDEFINED:
+    SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   default:
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[hdf5->btype]);
   }
   if (hdf5->file_id < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
   PetscStackCallHDF5(H5Pclose,(plist_id));
@@ -432,7 +441,6 @@ static PetscErrorCode PetscViewerSetUp_HDF5(PetscViewer viewer)
 /*MC
    PETSCVIEWERHDF5 - A viewer that writes to an HDF5 file
 
-
 .seealso:  PetscViewerHDF5Open(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
            PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
@@ -455,7 +463,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   v->ops->setup          = PetscViewerSetUp_HDF5;
   v->ops->view           = PetscViewerView_HDF5;
   v->ops->flush          = NULL;
-  hdf5->btype            = (PetscFileMode) -1;
+  hdf5->btype            = FILE_MODE_UNDEFINED;
   hdf5->filename         = NULL;
   hdf5->timestep         = -1;
   hdf5->groups           = NULL;
@@ -482,9 +490,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 +  comm - MPI communicator
 .  name - name of file
 -  type - type of file
-$    FILE_MODE_WRITE - create new file for binary output
-$    FILE_MODE_READ - open existing file for binary input
-$    FILE_MODE_APPEND - open existing file for binary output
 
    Output Parameter:
 .  hdf5v - PetscViewer for HDF5 input/output to use with the specified file
@@ -495,9 +500,16 @@ $    FILE_MODE_APPEND - open existing file for binary output
 
    Level: beginner
 
-   Note:
-   This PetscViewer should be destroyed with PetscViewerDestroy().
+   Notes:
+   Reading is always available, regardless of the mode. Available modes are
++  FILE_MODE_READ - open existing HDF5 file for read only access, fail if file does not exist [H5Fopen() with H5F_ACC_RDONLY]
+.  FILE_MODE_WRITE - if file exists, fully overwrite it, else create new HDF5 file [H5FcreateH5Fcreate() with H5F_ACC_TRUNC]
+.  FILE_MODE_APPEND - if file exists, keep existing contents [H5Fopen() with H5F_ACC_RDWR], else create new HDF5 file [H5FcreateH5Fcreate() with H5F_ACC_EXCL]
+-  FILE_MODE_UPDATE - same as FILE_MODE_APPEND
 
+   In case of FILE_MODE_APPEND / FILE_MODE_UPDATE, any stored object (dataset, attribute) can be selectively ovewritten if the same fully qualified name (/group/path/to/object) is specified.
+
+   This PetscViewer should be destroyed with PetscViewerDestroy().
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PetscViewerHDF5SetBaseDimension2(),
           PetscViewerHDF5SetSPOutput(), PetscViewerHDF5GetBaseDimension2(), VecView(), MatView(), VecLoad(),
@@ -552,27 +564,59 @@ PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
 
   Level: intermediate
 
-  Note: The group name being NULL, empty string, or a sequence of all slashes (e.g. "///") is always internally stored as NULL and interpreted as "/".
+  Notes:
+  This is designed to mnemonically resemble the Unix cd command.
+  + If name begins with '/', it is interpreted as an absolute path fully replacing current group, otherwise it is taken as relative to the current group.
+  . NULL, empty string, or any sequence of all slashes (e.g. "///") is interpreted as the root group "/".
+  - "." means the current group is pushed again.
+
+  Example:
+  Suppose the current group is "/a".
+  + If name is NULL, empty string, or a sequence of all slashes (e.g. "///"), then the new group will be "/".
+  . If name is ".", then the new group will be "/a".
+  . If name is "b", then the new group will be "/a/b".
+  - If name is "/b", then the new group will be "/b".
+
+  Developer Notes:
+  The root group "/" is internally stored as NULL.
 
 .seealso: PetscViewerHDF5Open(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup(),PetscViewerHDF5OpenGroup()
 @*/
 PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char name[])
 {
-  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  PetscViewerHDF5GroupList *groupNode;
-  PetscErrorCode   ierr;
+  PetscViewer_HDF5          *hdf5 = (PetscViewer_HDF5*) viewer->data;
+  PetscViewerHDF5GroupList  *groupNode;
+  size_t                    i,len;
+  char                      buf[PETSC_MAX_PATH_LEN];
+  const char                *gname;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (name) PetscValidCharPointer(name,2);
-  if (name && name[0]) {
-     size_t i,len;
-     ierr = PetscStrlen(name, &len);CHKERRQ(ierr);
-     for (i=0; i<len; i++) if (name[i] != '/') break;
-     if (i == len) name = NULL;
-  } else name = NULL;
+  ierr = PetscStrlen(name, &len);CHKERRQ(ierr);
+  gname = NULL;
+  if (len) {
+    if (len == 1 && name[0] == '.') {
+      /* use current name */
+      gname = (hdf5->groups && hdf5->groups->name) ? hdf5->groups->name : NULL;
+    } else if (name[0] == '/') {
+      /* absolute */
+      for (i=1; i<len; i++) {
+        if (name[i] != '/') {
+          gname = name;
+          break;
+        }
+      }
+    } else {
+      /* relative */
+      const char *parent = (hdf5->groups && hdf5->groups->name) ? hdf5->groups->name : "";
+      ierr = PetscSNPrintf(buf, sizeof(buf), "%s/%s", parent, name);CHKERRQ(ierr);
+      gname = buf;
+    }
+  }
   ierr = PetscNew(&groupNode);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name, (char**) &groupNode->name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(gname, (char**) &groupNode->name);CHKERRQ(ierr);
   groupNode->next = hdf5->groups;
   hdf5->groups    = groupNode;
   PetscFunctionReturn(0);
@@ -675,7 +719,7 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 }
 
 /*@
-  PetscViewerHDF5IncrementTimestep - Increments the current timestep for the HDF5 output. Fields are stacked in time.
+  PetscViewerHDF5PushTimestepping - Activate timestepping mode for subsequent HDF5 reading and writing.
 
   Not collective
 
@@ -684,7 +728,101 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5GetTimestep()
+  Notes:
+  On first PetscViewerHDF5PushTimestepping(), the initial time step is set to 0.
+  Next timesteps can then be set using PetscViewerHDF5IncrementTimestep() or PetscViewerHDF5SetTimestep().
+  Current timestep value determines which timestep is read from or written to any dataset on the next HDF5 I/O operation [e.g. VecView()].
+  Use PetscViewerHDF5PopTimestepping() to deactivate timestepping mode; calling it by the end of the program is NOT mandatory.
+  Current timestep is remembered between PetscViewerHDF5PopTimestepping() and the next PetscViewerHDF5PushTimestepping().
+
+  If a dataset was stored with timestepping, it can be loaded only in the timestepping mode again.
+  Loading a timestepped dataset with timestepping disabled, or vice-versa results in an error.
+
+  Developer notes:
+  Timestepped HDF5 dataset has an extra dimension and attribute "timestepping" set to true.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PopTimestepping(), PetscViewerHDF5IsTimestepping(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode  PetscViewerHDF5PushTimestepping(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping is already pushed");
+  hdf5->timestepping = PETSC_TRUE;
+  if (hdf5->timestep < 0) hdf5->timestep = 0;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5PopTimestepping - Deactivate timestepping mode for subsequent HDF5 reading and writing.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Level: intermediate
+
+  Notes:
+  See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5IsTimestepping(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode  PetscViewerHDF5PopTimestepping(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
+  hdf5->timestepping = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5IsTimestepping - Ask the viewer whether it is in timestepping mode currently.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Output Parameter:
+. flg - is timestepping active?
+
+  Level: intermediate
+
+  Notes:
+  See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5PopTimestepping(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode  PetscViewerHDF5IsTimestepping(PetscViewer viewer, PetscBool *flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  *flg = hdf5->timestepping;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5IncrementTimestep - Increments current timestep for the HDF5 output. Fields are stacked in time.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Level: intermediate
+
+  Notes:
+  This can be called only if the viewer is in timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5GetTimestep()
 @*/
 PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
 {
@@ -692,23 +830,26 @@ PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   ++hdf5->timestep;
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time. A timestep
-  of -1 disables blocking with timesteps.
+  PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time.
 
-  Not collective
+  Logically collective
 
   Input Parameters:
 + viewer - the PetscViewer
-- timestep - The timestep number
+- timestep - The timestep
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
+  Notes:
+  This can be called only if the viewer is in timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
 @*/
 PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep)
 {
@@ -716,6 +857,9 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidLogicalCollectiveInt(viewer, timestep, 2);
+  if (timestep < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestep %D is negative", timestep);
+  if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   hdf5->timestep = timestep;
   PetscFunctionReturn(0);
 }
@@ -729,11 +873,14 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
 . viewer - the PetscViewer
 
   Output Parameter:
-. timestep - The timestep number
+. timestep - The timestep
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5SetTimestep()
+  Notes:
+  This can be called only if the viewer is in the timestepping mode. See PetscViewerHDF5PushTimestepping() for details.
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5SetTimestep()
 @*/
 PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep)
 {
@@ -741,7 +888,8 @@ PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timeste
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(timestep,2);
+  PetscValidIntPointer(timestep,2);
+  if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   *timestep = hdf5->timestep;
   PetscFunctionReturn(0);
 }
@@ -821,32 +969,38 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 /*@C
  PetscViewerHDF5WriteAttribute - Write an attribute
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
-. dataset - The parent dataset name, relative to the current group. NULL means a group-wise attribute.
+. parent - The parent dataset/group name
 . name   - The attribute name
 . datatype - The attribute type
 - value    - The attribute value
 
   Level: advanced
 
+  Notes:
+  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
+
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5WriteObjectAttribute(), PetscViewerHDF5ReadAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char dataset[], const char name[], PetscDataType datatype, const void *value)
+PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *value)
 {
-  char           *parent;
+  char           *parentAbsPath;
   hid_t          h5, dataspace, obj, attribute, dtype;
   PetscBool      has;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  if (dataset) PetscValidCharPointer(dataset, 2);
+  if (parent) PetscValidCharPointer(parent, 2);
   PetscValidCharPointer(name, 3);
+  PetscValidLogicalCollectiveEnum(viewer,datatype,4);
   PetscValidPointer(value, 5);
-  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, dataset, &parent);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_TRUE, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, &has);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, parent, &parentAbsPath);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, parentAbsPath, PETSC_TRUE, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parentAbsPath, name, &has);CHKERRQ(ierr);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
   if (datatype == PETSC_STRING) {
     size_t len;
@@ -855,7 +1009,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char data
   }
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   PetscStackCallHDF5Return(dataspace,H5Screate,(H5S_SCALAR));
-  PetscStackCallHDF5Return(obj,H5Oopen,(h5, parent, H5P_DEFAULT));
+  PetscStackCallHDF5Return(obj,H5Oopen,(h5, parentAbsPath, H5P_DEFAULT));
   if (has) {
     PetscStackCallHDF5Return(attribute,H5Aopen_name,(obj, name));
   } else {
@@ -866,12 +1020,14 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char data
   PetscStackCallHDF5(H5Aclose,(attribute));
   PetscStackCallHDF5(H5Oclose,(obj));
   PetscStackCallHDF5(H5Sclose,(dataspace));
-  ierr = PetscFree(parent);CHKERRQ(ierr);
+  ierr = PetscFree(parentAbsPath);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
  PetscViewerHDF5WriteObjectAttribute - Write an attribute to the dataset matching the given PetscObject by name
+
+  Collective
 
   Input Parameters:
 + viewer   - The HDF5 viewer
@@ -881,7 +1037,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char data
 - value    - The attribute value
 
   Notes:
-  This fails if current_group/object_name doesn't resolve to a dataset (the path doesn't exist or is not a dataset).
+  This fails if the path current_group/object_name doesn't resolve to a dataset (the path doesn't exist or is not a dataset).
   You might want to check first if it does using PetscViewerHDF5HasObject().
 
   Level: advanced
@@ -905,45 +1061,74 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
 /*@C
  PetscViewerHDF5ReadAttribute - Read an attribute
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
-. dataset - The parent dataset name, relative to the current group. NULL means a group-wise attribute.
+. parent - The parent dataset/group name
 . name   - The attribute name
-- datatype - The attribute type
+. datatype - The attribute type
+- defaultValue - The pointer to the default value
 
   Output Parameter:
-. value    - The attribute value
+. value    - The pointer to the read HDF5 attribute value
 
-  Notes: If the datatype is PETSC_STRING one must PetscFree() the obtained value when it is no longer needed.
+  Notes:
+  If defaultValue is NULL and the attribute is not found, an error occurs.
+  If defaultValue is not NULL and the attribute is not found, defaultValue is copied to value.
+  The pointers defaultValue and value can be the same; for instance
+$  flg = PETSC_FALSE;
+$  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"attr",PETSC_BOOL,&flg,&flg);CHKERRQ(ierr);
+  is valid, but make sure the default value is initialized.
+
+  If the datatype is PETSC_STRING, the output string is newly allocated so one must PetscFree() it when no longer needed.
+
+  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
 
   Level: advanced
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadObjectAttribute(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasObject(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char dataset[], const char name[], PetscDataType datatype, void *value)
+PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *defaultValue, void *value)
 {
-  char           *parent;
-  hid_t          h5, obj, attribute, atype, dtype;
+  char           *parentAbsPath;
+  hid_t          h5, obj, attribute, dtype;
   PetscBool      has;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  if (dataset) PetscValidCharPointer(dataset, 2);
+  if (parent) PetscValidCharPointer(parent, 2);
   PetscValidCharPointer(name, 3);
-  PetscValidPointer(value, 5);
-  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, dataset, &parent);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_FALSE, &has, NULL);CHKERRQ(ierr);
-  if (has) {ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, &has);CHKERRQ(ierr);}
-  if (!has) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Attribute %s/%s does not exist", parent, name);
+  if (defaultValue) PetscValidPointer(defaultValue, 5);
+  PetscValidPointer(value, 6);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, parent, &parentAbsPath);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, parentAbsPath, PETSC_FALSE, &has, NULL);CHKERRQ(ierr);
+  if (has) {ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parentAbsPath, name, &has);CHKERRQ(ierr);}
+  if (!has) {
+    if (defaultValue) {
+      if (defaultValue != value) {
+        if (datatype == PETSC_STRING) {
+          ierr = PetscStrallocpy(*(char**)defaultValue, (char**)value);CHKERRQ(ierr);
+        } else {
+          size_t len;
+          PetscStackCallHDF5Return(len,H5Tget_size,(dtype));
+          ierr = PetscMemcpy(value, defaultValue, len);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscFree(parentAbsPath);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    } else SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Attribute %s/%s does not exist and default value not provided", parentAbsPath, name);
+  }
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
-  PetscStackCallHDF5Return(obj,H5Oopen,(h5, parent, H5P_DEFAULT));
+  PetscStackCallHDF5Return(obj,H5Oopen,(h5, parentAbsPath, H5P_DEFAULT));
   PetscStackCallHDF5Return(attribute,H5Aopen_name,(obj, name));
   if (datatype == PETSC_STRING) {
     size_t len;
+    hid_t  atype;
     PetscStackCallHDF5Return(atype,H5Aget_type,(attribute));
-    PetscStackCall("H5Tget_size",len = H5Tget_size(atype));
+    PetscStackCallHDF5Return(len,H5Tget_size,(atype));
     ierr = PetscMalloc((len+1) * sizeof(char), value);CHKERRQ(ierr);
     PetscStackCallHDF5(H5Tset_size,(dtype, len+1));
     PetscStackCallHDF5(H5Aread,(attribute, dtype, *(char**)value));
@@ -953,12 +1138,14 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char datas
   PetscStackCallHDF5(H5Aclose,(attribute));
   /* H5Oclose can be used to close groups, datasets, or committed datatypes */
   PetscStackCallHDF5(H5Oclose,(obj));
-  ierr = PetscFree(parent);CHKERRQ(ierr);
+  ierr = PetscFree(parentAbsPath);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
  PetscViewerHDF5ReadObjectAttribute - Read an attribute from the dataset matching the given PetscObject by name
+
+  Collective
 
   Input Parameters:
 + viewer   - The HDF5 viewer
@@ -977,7 +1164,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char datas
 
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadAttribute() PetscViewerHDF5WriteObjectAttribute(), PetscViewerHDF5HasObjectAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObject obj, const char name[], PetscDataType datatype, void *value)
+PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObject obj, const char name[], PetscDataType datatype, void *defaultValue, void *value)
 {
   PetscErrorCode ierr;
 
@@ -985,9 +1172,9 @@ PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObjec
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(obj,2);
   PetscValidCharPointer(name,3);
-  PetscValidPointer(value, 5);
+  PetscValidPointer(value, 6);
   ierr = PetscViewerHDF5CheckNamedObject_Internal(viewer, obj);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadAttribute(viewer, obj->name, name, datatype, value);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer, obj->name, name, datatype, defaultValue, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1024,11 +1211,11 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   if (name) PetscValidCharPointer(name, 2);
   else name = rootGroupName;
   if (has) {
-    PetscValidIntPointer(has, 3);
+    PetscValidBoolPointer(has, 4);
     *has = PETSC_FALSE;
   }
   if (otype) {
-    PetscValidIntPointer(otype, 4);
+    PetscValidIntPointer(otype, 5);
     *otype = H5O_TYPE_UNKNOWN;
   }
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
@@ -1068,79 +1255,125 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
  PetscViewerHDF5HasGroup - Check whether the current (pushed) group exists in the HDF5 file
 
+  Collective
+
   Input Parameters:
-. viewer - The HDF5 viewer
++ viewer - The HDF5 viewer
+- path - The group path
 
   Output Parameter:
-. has    - Flag for group existence
-
-  Notes:
-  If the path exists but is not a group, this returns PETSC_FALSE as well.
+. has - Flag for group existence
 
   Level: advanced
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5OpenGroup()
+  Notes:
+  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group.
+  So NULL or empty path means the current pushed group.
+  If path exists but is not a group, PETSC_FALSE is returned.
+
+.seealso: PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasDataset(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup(), PetscViewerHDF5OpenGroup()
 @*/
-PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, PetscBool *has)
+PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], PetscBool *has)
 {
-  H5O_type_t type;
-  const char *name;
+  H5O_type_t     type;
+  char           *abspath;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidIntPointer(has,2);
-  ierr = PetscViewerHDF5GetGroup(viewer, &name);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, name, PETSC_FALSE, has, &type);CHKERRQ(ierr);
-  *has = (type == H5O_TYPE_GROUP) ? PETSC_TRUE : PETSC_FALSE;
+  if (path) PetscValidCharPointer(path,2);
+  PetscValidBoolPointer(has,3);
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, path, &abspath);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, abspath, PETSC_FALSE, NULL, &type);CHKERRQ(ierr);
+  *has = (PetscBool)(type == H5O_TYPE_GROUP);
+  ierr = PetscFree(abspath);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+ PetscViewerHDF5HasDataset - Check whether a given dataset exists in the HDF5 file
+
+  Collective
+
+  Input Parameters:
++ viewer - The HDF5 viewer
+- path - The dataset path
+
+  Output Parameter:
+. has - Flag whether dataset exists
+
+  Level: advanced
+
+  Notes:
+  If path starts with '/', it is taken as an absolute path overriding currently pushed group, else path is relative to the current pushed group.
+  If path is NULL or empty, has is set to PETSC_FALSE.
+  If path exists but is not a dataset, has is set to PETSC_FALSE as well.
+
+.seealso: PetscViewerHDF5HasObject(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5HasGroup(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup()
+@*/
+PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], PetscBool *has)
+{
+  H5O_type_t     type;
+  char           *abspath;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (path) PetscValidCharPointer(path,2);
+  PetscValidBoolPointer(has,3);
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, path, &abspath);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, abspath, PETSC_FALSE, NULL, &type);CHKERRQ(ierr);
+  *has = (PetscBool)(type == H5O_TYPE_DATASET);
+  ierr = PetscFree(abspath);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@
  PetscViewerHDF5HasObject - Check whether a dataset with the same name as given object exists in the HDF5 file under current group
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
 - obj    - The named object
 
   Output Parameter:
-. has    - Flag for dataset existence; PETSC_FALSE for unnamed object
+. has    - Flag for dataset existence
 
   Notes:
-  If the path exists but is not a dataset, this returns PETSC_FALSE as well.
+  If the object is unnamed, an error occurs.
+  If the path current_group/object_name exists but is not a dataset, has is set to PETSC_FALSE as well.
 
   Level: advanced
 
-.seealso: PetscViewerHDF5Open(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5HasDataset(), PetscViewerHDF5HasAttribute(), PetscViewerHDF5PushGroup(), PetscViewerHDF5PopGroup(), PetscViewerHDF5GetGroup()
 @*/
 PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, PetscBool *has)
 {
-  H5O_type_t type;
-  char *path;
+  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(obj,2);
-  PetscValidIntPointer(has,3);
-  *has = PETSC_FALSE;
-  if (!obj->name) PetscFunctionReturn(0);
-  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, obj->name, &path);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, path, PETSC_FALSE, has, &type);CHKERRQ(ierr);
-  *has = (type == H5O_TYPE_DATASET) ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscFree(path);CHKERRQ(ierr);
+  PetscValidBoolPointer(has,3);
+  ierr = PetscStrlen(obj->name, &len);CHKERRQ(ierr);
+  if (!len) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Object must be named");
+  ierr = PetscViewerHDF5HasDataset(viewer, obj->name, has);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
  PetscViewerHDF5HasAttribute - Check whether an attribute exists
 
+  Collective
+
   Input Parameters:
 + viewer - The HDF5 viewer
-. dataset - The parent dataset name, relative to the current group. NULL means a group-wise attribute.
+. parent - The parent dataset/group name
 - name   - The attribute name
 
   Output Parameter:
@@ -1148,27 +1381,32 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
 
   Level: advanced
 
+  Notes:
+  If parent starts with '/', it is taken as an absolute path overriding currently pushed group, else parent is relative to the current pushed group. NULL means the current pushed group.
+
 .seealso: PetscViewerHDF5Open(), PetscViewerHDF5HasObjectAttribute(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5ReadAttribute(), PetscViewerHDF5PushGroup(),PetscViewerHDF5PopGroup(),PetscViewerHDF5GetGroup()
 @*/
-PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char dataset[], const char name[], PetscBool *has)
+PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
 {
-  char           *parent;
+  char           *parentAbsPath;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  if (dataset) PetscValidCharPointer(dataset,2);
+  if (parent) PetscValidCharPointer(parent,2);
   PetscValidCharPointer(name,3);
-  PetscValidIntPointer(has,4);
-  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, dataset, &parent);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, parent, PETSC_FALSE, has, NULL);CHKERRQ(ierr);
-  if (*has) {ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parent, name, has);CHKERRQ(ierr);}
-  ierr = PetscFree(parent);CHKERRQ(ierr);
+  PetscValidBoolPointer(has,4);
+  ierr = PetscViewerHDF5GetAbsolutePath_Internal(viewer, parent, &parentAbsPath);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, parentAbsPath, PETSC_FALSE, has, NULL);CHKERRQ(ierr);
+  if (*has) {ierr = PetscViewerHDF5HasAttribute_Internal(viewer, parentAbsPath, name, has);CHKERRQ(ierr);}
+  ierr = PetscFree(parentAbsPath);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
  PetscViewerHDF5HasObjectAttribute - Check whether an attribute is attached to the dataset matching the given PetscObject by name
+
+  Collective
 
   Input Parameters:
 + viewer - The HDF5 viewer
@@ -1194,7 +1432,7 @@ PetscErrorCode PetscViewerHDF5HasObjectAttribute(PetscViewer viewer, PetscObject
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeader(obj,2);
   PetscValidCharPointer(name,3);
-  PetscValidIntPointer(has,4);
+  PetscValidBoolPointer(has,4);
   ierr = PetscViewerHDF5CheckNamedObject_Internal(viewer, obj);CHKERRQ(ierr);
   ierr = PetscViewerHDF5HasAttribute(viewer, obj->name, name, has);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1230,10 +1468,10 @@ PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
   Level: intermediate
 
   Options Database Keys:
-. -viewer_hdf5_filename <name>
+. -viewer_hdf5_filename <name> - name of the HDF5 file
 
   Environmental variables:
-. PETSC_VIEWER_HDF5_FILENAME
+. PETSC_VIEWER_HDF5_FILENAME - name of the HDF5 file
 
   Notes:
   Unlike almost all other PETSc routines, PETSC_VIEWER_HDF5_ does not return

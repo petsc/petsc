@@ -13,7 +13,6 @@ typedef struct {
   PetscInt    *i,*j;    /* offsets of nonzeros by column, non-zero indices by column */
 } PC_CP;
 
-
 static PetscErrorCode PCSetUp_CP(PC pc)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
@@ -185,5 +184,4 @@ PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
   pc->ops->applyrichardson = NULL;
   PetscFunctionReturn(0);
 }
-
 

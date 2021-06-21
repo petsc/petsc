@@ -133,7 +133,7 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
     /* update scalars */
     alpha = nu / *mu_p;
     nu_old = nu;
-    nu = nu_old - 2*alpha*(*delta_p) + (alpha*alpha)*(*gamma_p);
+    nu = nu_old - 2.*alpha*(*delta_p) + (alpha*alpha)*(*gamma_p);
     beta = nu/nu_old;
 
     /* update vectors */
@@ -175,7 +175,6 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method.
 
@@ -192,7 +191,7 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
    Tyler Chen, University of Washington, Applied Mathematics Department
 
    Reference:
-   "Predict-and-recompute conjugate gradient variants". Tyler Chen and Erin C. Carson. In preparation.
+   Tyler Chen and Erin Carson. "Predict-and-recompute conjugate gradient variants." SIAM Journal on Scientific Computing 42.5 (2020): A3084-A3108.
 
    Acknowledgments:
    This material is based upon work supported by the National Science Foundation Graduate Research Fellowship Program under Grant No. DGE-1762114. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author and do not necessarily reflect the views of the National Science Foundation.

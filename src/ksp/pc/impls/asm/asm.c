@@ -210,7 +210,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
       inwork.max   = osm->n_local_true;
       inwork.sum   = osm->n_local_true;
-      ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,MPIU_MAXSUM_OP,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,MPIU_MAXSUM_OP,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
 
@@ -1704,7 +1704,6 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
 +   n - if requested, the number of subdomains for this processor (default value = 1)
 .   is - if requested, the index sets that define the subdomains for this processor
 -   is_local - if requested, the index sets that define the local part of the subdomains for this processor (can be NULL)
-
 
     Notes:
     The IS numbering is in the parallel, global numbering of the vector.

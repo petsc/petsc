@@ -28,24 +28,24 @@ PetscErrorCode VecNorm_MPIKokkos(Vec xin,NormType type,PetscReal *z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr  = VecNorm_SeqKokkos(xin,NORM_2,&work);
     work *= work;
-    ierr  = MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
     *z    = PetscSqrtReal(sum);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_SeqKokkos(xin,NORM_1,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     ierr = VecNorm_SeqKokkos(xin,NORM_INFINITY,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
     ierr = VecNorm_SeqKokkos(xin,NORM_1,temp);CHKERRQ(ierr);
     ierr = VecNorm_SeqKokkos(xin,NORM_2,temp+1);CHKERRQ(ierr);
     temp[1] = temp[1]*temp[1];
-    ierr = MPIU_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
     z[1] = PetscSqrtReal(z[1]);
   }
   PetscFunctionReturn(0);
@@ -59,7 +59,7 @@ PetscErrorCode VecDot_MPIKokkos(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
   ierr = VecDot_SeqKokkos(xin,yin,&work);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -72,7 +72,7 @@ PetscErrorCode VecMDot_MPIKokkos(Vec xin,PetscInt nv,const Vec y[],PetscScalar *
   PetscFunctionBegin;
   if (nv > 128) {ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);}
   ierr = VecMDot_SeqKokkos(xin,nv,y,work);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   if (nv > 128) {ierr = PetscFree(work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -85,12 +85,23 @@ PetscErrorCode VecTDot_MPIKokkos(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
   ierr = VecTDot_SeqKokkos(xin,yin,&work);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   *z   = sum;
   PetscFunctionReturn(0);
 }
 
-extern MPI_Op MPIU_MAXINDEX_OP, MPIU_MININDEX_OP;
+PetscErrorCode VecMTDot_MPIKokkos(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
+{
+  PetscScalar    awork[128],*work = awork;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (nv > 128) {ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);}
+  ierr = VecMTDot_SeqKokkos(xin,nv,y,work);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+  if (nv > 128) {ierr = PetscFree(work);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
 
 PetscErrorCode VecMax_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
 {
@@ -103,16 +114,15 @@ PetscErrorCode VecMax_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
 
   /* Find the global max */
   if (!idx) { /* User does not need idx */
-    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   } else {
-    PetscReal work2[2],z2[2];
-    PetscInt  rstart;
-    rstart   = xin->map->rstart;
-    work2[0] = work;
-    work2[1] = *idx + rstart;
-    ierr     = MPIU_Allreduce(work2,z2,2,MPIU_REAL,MPIU_MAXINDEX_OP,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
-    *z       = z2[0];
-    *idx     = (PetscInt)z2[1];
+    struct { PetscReal v; PetscInt i; } in,out;
+
+    in.v  = work;
+    in.i  = *idx + xin->map->rstart;
+    ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MAXLOC,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    *z    = out.v;
+    *idx  = out.i;
   }
   PetscFunctionReturn(0);
 }
@@ -128,17 +138,15 @@ PetscErrorCode VecMin_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
 
   /* Find the global Min */
   if (!idx) {
-    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   } else {
-    PetscReal work2[2],z2[2];
-    PetscInt  rstart;
+    struct { PetscReal v; PetscInt i; } in,out;
 
-    ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
-    work2[0] = work;
-    work2[1] = *idx + rstart;
-    ierr = MPIU_Allreduce(work2,z2,2,MPIU_REAL,MPIU_MININDEX_OP,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
-    *z   = z2[0];
-    *idx = (PetscInt)z2[1];
+    in.v  = work;
+    in.i  = *idx + xin->map->rstart;
+    ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MINLOC,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
+    *z    = out.v;
+    *idx  = out.i;
   }
   PetscFunctionReturn(0);
 }
@@ -179,7 +187,7 @@ PetscErrorCode VecDotNorm2_MPIKokkos(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm
 
   PetscFunctionBegin;
   ierr = VecDotNorm2_SeqKokkos(s,t,work,work+1);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRMPI(ierr);
   *dp  = sum[0];
   *nm  = sum[1];
   PetscFunctionReturn(0);
@@ -194,9 +202,6 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->setrandom              = VecSetRandom_SeqKokkos;
   v->ops->dotnorm2               = VecDotNorm2_MPIKokkos;
   v->ops->waxpy                  = VecWAXPY_SeqKokkos;
-  v->ops->dot                    = VecDot_MPIKokkos;
-  v->ops->mdot                   = VecMDot_MPIKokkos;
-  v->ops->tdot                   = VecTDot_MPIKokkos;
   v->ops->norm                   = VecNorm_MPIKokkos;
   v->ops->min                    = VecMin_MPIKokkos;
   v->ops->max                    = VecMax_MPIKokkos;
@@ -214,10 +219,18 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->placearray             = VecPlaceArray_SeqKokkos;
   v->ops->replacearray           = VecReplaceArray_SeqKokkos;
   v->ops->resetarray             = VecResetArray_SeqKokkos;
+
+  v->ops->dot                    = VecDot_MPIKokkos;
+  v->ops->tdot                   = VecTDot_MPIKokkos;
+  v->ops->mdot                   = VecMDot_MPIKokkos;
+  v->ops->mtdot                  = VecMTDot_MPIKokkos;
+
   v->ops->dot_local              = VecDot_SeqKokkos;
   v->ops->tdot_local             = VecTDot_SeqKokkos;
-  v->ops->norm_local             = VecNorm_SeqKokkos;
   v->ops->mdot_local             = VecMDot_SeqKokkos;
+  v->ops->mtdot_local            = VecMTDot_SeqKokkos;
+
+  v->ops->norm_local             = VecNorm_SeqKokkos;
   v->ops->duplicate              = VecDuplicate_MPIKokkos;
   v->ops->destroy                = VecDestroy_MPIKokkos;
   v->ops->getlocalvector         = VecGetLocalVector_SeqKokkos;

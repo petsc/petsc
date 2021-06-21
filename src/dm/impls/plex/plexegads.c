@@ -18,7 +18,6 @@
    but again it seems that there has been a deliberate effort at obfuscation, probably to raise the bar for entrants.
 */
 
-
 /*@
   DMPlexSnapToGeomModel - Given a coordinate point 'mcoords' on the mesh point 'p', return the closest coordinate point 'gcoords' on the geometry model associated with that point.
 
@@ -102,7 +101,7 @@ PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, const PetscScalar mcoord
     double range[4]; // [umin, umax, vmin, vmax]
     int    peri;
     ierr = EG_getRange(face, range, &peri);CHKERRQ(ierr);
-    if ((paramsNew[0] < range[0]) || (paramsNew[0] > range[1]) || (paramsNew[1] < range[2]) || (paramsNew[1] > range[3])) SETERRQ();
+    if ((paramsNew[0] < range[0]) || (paramsNew[0] > range[1]) || (paramsNew[1] < range[2]) || (paramsNew[1] > range[3])) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE);
   */
   /* Put coordinates for new vertex in result[] */
   ierr = EG_evaluate(obj, params, result);CHKERRQ(ierr);
@@ -554,7 +553,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
       lid  = EG_indexBodyTopo(body, loop);CHKERRQ(ierr);
       ierr = EG_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
-      if (Nf > 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);CHKERRQ(ierr);
+      if (Nf > 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
       fid  = EG_indexBodyTopo(body, fobjs[0]);CHKERRQ(ierr);
       EG_free(fobjs);
       ierr = EG_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);

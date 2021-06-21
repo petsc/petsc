@@ -77,6 +77,7 @@ static PetscErrorCode DMFieldDSGetHeightDisc(DMField field, PetscInt height, Pet
   PetscFunctionReturn(0);
 }
 
+/* y[m,c] = A[m,n,c] . b[n] */
 #define DMFieldDSdot(y,A,b,m,n,c,cast)                                           \
   do {                                                                           \
     PetscInt _i, _j, _k;                                                         \
@@ -139,6 +140,7 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
 
       ierr = DMPlexVecGetClosure(dm,section,dsfield->vec,c,&closureSize,&elem);CHKERRQ(ierr);
       if (B) {
+        /* field[c] = T[q,b,c] . coef[b], so v[c] = T[q,b,c] . coords[b] */
         if (type == PETSC_SCALAR) {
           PetscScalar *cB = &((PetscScalar *) B)[nc * nq * i];
 
@@ -493,7 +495,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
             sB[i * Nc + j] += geom->detJ[i * Nq + k] * weights[k] * sqB[ (i * Nq + k) * Nc + j];
           }
         }
-        for (k = 0; k < Nq * Nc; k++) sB[i * Nq * Nc + k] /= vol;
+        for (k = 0; k < Nc; k++) sB[i * Nc + k] /= vol;
       }
     } else {
       PetscReal * rB  = (PetscReal *) B;
@@ -692,7 +694,6 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
   PetscClassId   id;
   PetscErrorCode ierr;
 
-
   PetscFunctionBegin;
   dm = field->dm;
   dsfield = (DMField_DS *) field->data;
@@ -767,9 +768,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscInt        numCells, offset, *cells;
     PetscFEGeom     *cellGeom;
     IS              suppIS;
-    PetscQuadrature cellQuad = NULL;
 
-    ierr = DMFieldCreateDefaultQuadrature(field,cellIS,&cellQuad);CHKERRQ(ierr);
     for (p = 0, numCells = 0; p < numFaces; p++) {
       PetscInt        point = points[p];
       PetscInt        numSupp, numChildren;
@@ -793,7 +792,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       }
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,numCells,cells,PETSC_USE_POINTER, &suppIS);CHKERRQ(ierr);
-    ierr = DMFieldCreateFEGeom(field,suppIS,cellQuad,PETSC_FALSE,&cellGeom);CHKERRQ(ierr);
+    ierr = DMFieldCreateFEGeom(field,suppIS,quad,PETSC_FALSE,&cellGeom);CHKERRQ(ierr);
     for (p = 0, offset = 0; p < numFaces; p++) {
       PetscInt        point = points[p];
       PetscInt        numSupp, s, q;
@@ -812,7 +811,6 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     ierr = PetscFEGeomDestroy(&cellGeom);CHKERRQ(ierr);
     ierr = ISDestroy(&suppIS);CHKERRQ(ierr);
     ierr = PetscFree(cells);CHKERRQ(ierr);
-    ierr = PetscQuadratureDestroy(&cellQuad);CHKERRQ(ierr);
   } else {
     PetscObject          faceDisc, cellDisc;
     PetscClassId         faceId, cellId;

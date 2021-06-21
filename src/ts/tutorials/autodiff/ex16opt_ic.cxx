@@ -348,7 +348,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,user->lambda,NULL);CHKERRQ(ierr);
 
-
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = VecCopy(user->lambda[0],G);CHKERRQ(ierr);

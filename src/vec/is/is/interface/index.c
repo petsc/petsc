@@ -59,7 +59,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
     else if (idxs[i] > lbounds[1]) lbounds[1] = idxs[i];
   }
   lbounds[0] = -lbounds[0];
-  ierr = MPIU_Allreduce(lbounds,gbounds,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)subset));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(lbounds,gbounds,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)subset));CHKERRMPI(ierr);
   gbounds[0] = -gbounds[0];
   N_n  = gbounds[1] - gbounds[0] + 1;
 
@@ -171,7 +171,6 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   ierr = PetscFree2(leaf_data,root_data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
    ISCreateSubIS - Create a sub index set from a global index set selecting some components.
@@ -403,7 +402,6 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
 .    IS_PERMUTATION - the [local part of the] index set is a permutation of the integers {0, 1, ..., N-1}, where N is the size of the [local part of the] index set
 .    IS_INTERVAL - the [local part of the] index set is equal to a contiguous range of integers {f, f + 1, ..., f + N-1}
 -    IS_IDENTITY - the [local part of the] index set is equal to the integers {0, 1, ..., N-1}
-
 
    Notes:
    If type is IS_GLOBAL, all processes that share the index set must pass the same value in flg
@@ -841,7 +839,7 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(ident,2);
+  PetscValidBoolPointer(ident,2);
   ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,ident);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -897,7 +895,7 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(start,4);
-  PetscValidIntPointer(contig,5);
+  PetscValidBoolPointer(contig,5);
   *start  = -1;
   *contig = PETSC_FALSE;
   if (is->ops->contiguous) {
@@ -934,7 +932,7 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(perm,2);
+  PetscValidBoolPointer(perm,2);
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -948,7 +946,6 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 .  is - the index set
 
    Level: intermediate
-
 
    The debug version of the libraries (./configure --with-debugging=1) checks if the
   index set is actually a permutation. The optimized version just believes you.
@@ -989,7 +986,7 @@ PetscErrorCode  ISSetPermutation(IS is)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    ISDestroy - Destroys an index set.
 
    Collective on IS
@@ -1090,7 +1087,6 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 
    Level: beginner
 
-
 @*/
 PetscErrorCode  ISGetSize(IS is,PetscInt *size)
 {
@@ -1144,7 +1140,7 @@ PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(map,2);
+  PetscValidPointer(map,2);
   *map = is->map;
   PetscFunctionReturn(0);
 }
@@ -1182,13 +1178,10 @@ $          PetscErrorCode  ierr
 $          IS       i
 $          call ISGetIndicesF90(i,array,ierr)
 
-
-
    See the Fortran chapter of the users manual and
    petsc/src/is/[tutorials,tests] for details.
 
    Level: intermediate
-
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
@@ -1220,7 +1213,6 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
    Notes:
     Empty index sets return min=PETSC_MAX_INT and max=PETSC_MIN_INT.
     In parallel, it returns the min and max of the local portion of the IS
-
 
 .seealso: ISGetIndices(), ISRestoreIndices(), ISGetIndicesF90()
 @*/
@@ -1507,7 +1499,6 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
    ISGetNonlocalIS - Gather all nonlocal indices for this IS and present
                      them as another sequential index set.
 
-
    Collective on IS
 
    Input Parameter:
@@ -1550,7 +1541,6 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    ISRestoreNonlocalIS - Restore the IS obtained with ISGetNonlocalIS().
 
@@ -1561,7 +1551,6 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 -  complement - index set of is's nonlocal indices
 
    Level: intermediate
-
 
 .seealso: ISGetNonlocalIS(), ISGetNonlocalIndices(), ISRestoreNonlocalIndices()
 @*/
@@ -1680,7 +1669,6 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 
    Level: intermediate
 
-
 .seealso: ISSortRemoveDups(), ISSorted()
 @*/
 PetscErrorCode  ISSort(IS is)
@@ -1703,7 +1691,6 @@ PetscErrorCode  ISSort(IS is)
 . is - the index set
 
   Level: intermediate
-
 
 .seealso: ISSort(), ISSorted()
 @*/
@@ -1729,7 +1716,6 @@ PetscErrorCode ISSortRemoveDups(IS is)
 .  is - the index set
 
    Level: intermediate
-
 
 .seealso: ISSorted()
 @*/
@@ -1857,8 +1843,6 @@ PetscErrorCode  ISCopy(IS is,IS isy)
    logically independent serial ISs.
 
    The input IS must have the same type on every process.
-
-.seealso: ISSplit()
 @*/
 PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
@@ -1867,7 +1851,7 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidPointer(newis,3);
+  PetscValidPointer(newis,4);
   ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)is),comm,&match);CHKERRMPI(ierr);
   if (mode != PETSC_COPY_VALUES && (match == MPI_IDENT || match == MPI_CONGRUENT)) {
     ierr   = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
@@ -1983,7 +1967,6 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 
 .seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
-
 M*/
 
 /*MC
@@ -2001,7 +1984,6 @@ M*/
 
     Output Parameter:
 .   ierr - error code
-
 
     Example of Usage:
 .vb

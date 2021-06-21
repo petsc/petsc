@@ -87,6 +87,8 @@ static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
   MatMFFD        j;
   SNES           snes;
   Vec            u,f;
+  DM             dm;
+  DMSNES         dms;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J,&j);CHKERRQ(ierr);
@@ -94,7 +96,9 @@ static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
   ierr = MatAssemblyEnd_MFFD(J,mt);CHKERRQ(ierr);
 
   ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
-  if (j->func == (PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction) {
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&dms);CHKERRQ(ierr);
+  if ((j->func == (PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction) && !dms->ops->computemffunction) {
     ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
     ierr = MatMFFDSetBase_MFFD(J,u,f);CHKERRQ(ierr);
   } else {
@@ -108,7 +112,6 @@ static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
    MatAssemblyEnd_SNESMF_UseBase - Calls MatAssemblyEnd_MFFD() and then sets the
     base from the SNES context. This version will cause the base to be used for differencing
     even if the func is not SNESComputeFunction. See: MatSNESMFUseBase()
-
 
 */
 static PetscErrorCode MatAssemblyEnd_SNESMF_UseBase(Mat J,MatAssemblyType mt)
@@ -247,7 +250,6 @@ PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
 
    Level: advanced
 
-
    Notes:
      You can call SNESSetJacobian() with MatMFFDComputeJacobian() if you are using matrix and not a different
      preconditioner matrix
@@ -266,7 +268,6 @@ PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
 
    Warning:
      Using a different function for the differencing will not work if you are using non-linear left preconditioning.
-
 
 .seealso: MatDestroy(), MatMFFDSetFunction(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
@@ -297,9 +298,13 @@ PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
   if (snes->npc && snes->npcside== PC_LEFT) {
     ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunctionDefaultNPC,snes);CHKERRQ(ierr);
   } else {
-    ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
-  }
+    DM     dm;
+    DMSNES dms;
 
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMGetDMSNES(dm,&dms);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))(dms->ops->computemffunction ? SNESComputeMFFunction : SNESComputeFunction),snes);CHKERRQ(ierr);
+  }
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
 
   ierr = PetscObjectComposeFunction((PetscObject)*J,"MatMFFDSetBase_C",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);

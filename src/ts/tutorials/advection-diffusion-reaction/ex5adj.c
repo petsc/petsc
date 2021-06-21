@@ -598,7 +598,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:

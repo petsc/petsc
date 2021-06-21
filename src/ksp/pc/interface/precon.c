@@ -84,7 +84,7 @@ PetscErrorCode  PCReset(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PCDestroy - Destroys PC context that was created with PCCreate().
 
    Collective on PC
@@ -377,7 +377,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(newpc,1);
+  PetscValidPointer(newpc,2);
   *newpc = NULL;
   ierr = PCInitializePackage();CHKERRQ(ierr);
 
@@ -474,10 +474,10 @@ PetscErrorCode  PCMatApply(PC pc,Mat X,Mat Y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidHeaderSpecific(Y, MAT_CLASSID, 2);
-  PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
-  PetscCheckSameComm(pc, 1, Y, 2);
-  PetscCheckSameComm(pc, 1, X, 3);
+  PetscValidHeaderSpecific(X, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, MAT_CLASSID, 3);
+  PetscCheckSameComm(pc, 1, X, 2);
+  PetscCheckSameComm(pc, 1, Y, 3);
   if (Y == X) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "Y and X must be different matrices");
   ierr = PCGetOperators(pc, NULL, &A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
@@ -754,7 +754,6 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
    Output Parameter:
 .  y - output vector
-
 
    Notes:
     this routine is used internally so that the same Krylov code can be used to solve A x = b and A' x = b, with a preconditioner
@@ -1306,7 +1305,6 @@ $           set size, type, etc of Amat and Pmat
     you do not need to attach a PC to it (the KSP object manages the PC object for you).
     Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
     it can be created for you?
-
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/

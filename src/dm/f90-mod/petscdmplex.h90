@@ -357,3 +357,14 @@
           PetscErrorCode, intent(out):: ierr
         End Subroutine
       End Interface
+
+      Interface
+        Subroutine PetscViewerExodusIIOpen(c,str,mode,v,ierr)
+          import tPetscViewer
+          MPI_Comm                     :: c
+          character(len=*)             :: str
+          PetscFileMode                :: mode
+          PetscViewer                  :: v
+          PetscErrorCode, intent(out)  :: ierr
+        End Subroutine
+      End Interface

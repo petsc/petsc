@@ -16,7 +16,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
-
   /* copy the b into temp work space according to permutation */
   for (i=0; i<n; i++) tmp[i] = b[i];
 

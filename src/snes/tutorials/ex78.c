@@ -7,8 +7,6 @@ static char help[] = "Newton methods to solve u''  = f in parallel with periodic
    Processors: n
 T*/
 
-
-
 /*
    Compare this example to ex3.c that handles Dirichlet boundary conditions
 
@@ -28,7 +26,6 @@ T*/
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
-
 
 PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
@@ -221,7 +218,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

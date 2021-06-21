@@ -68,24 +68,15 @@ static EH eh = NULL;
 -  ctx - error handler context
 
    Options Database Key:
-.   -on_error_emacs <machinename>
+.   -on_error_emacs <machinename> - will contact machinename to open the Emacs client there
 
    Level: developer
 
    Notes:
    You must put (server-start) in your .emacs file for the emacsclient software to work
 
-   Most users need not directly employ this routine and the other error
-   handlers, but can instead use the simplified interface SETERRQ, which has
-   the calling sequence
-$     SETERRQ(PETSC_COMM_SELF,number,p,mess)
-
-   Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.
-
    Developer Note:
    Since this is an error handler it cannot call CHKERRQ(); thus we just return if an error is detected.
-
 
 .seealso: PetscError(), PetscPushErrorHandler(), PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(), PetscTraceBackErrorHandler(), PetscReturnErrorHandler()
@@ -137,8 +128,8 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,i
 -  ctx - the error handler context
 
    Options Database Keys:
-+   -on_error_attach_debugger <noxterm,gdb or dbx>
--   -on_error_abort
++   -on_error_attach_debugger <noxterm,gdb or dbx> - starts up the debugger if an error occurs
+-   -on_error_abort - aborts the program if an error occurs
 
    Level: intermediate
 
@@ -319,7 +310,8 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
  */
 #include <sstream>
 #include <stdexcept>
-static void PetscCxxErrorThrow() {
+static void PetscCxxErrorThrow()
+{
   const char *str;
   if (eh && eh->ctx) {
     std::ostringstream *msg;
@@ -414,9 +406,9 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   PetscStrncmp(func,"main",4,&ismain);
   if (ismain) {
     PetscMPIInt errcode;
-    errcode = (PetscMPIInt)(0 + line*1000 + ierr);
+    errcode = (PetscMPIInt)(0 + 0*line*1000 + ierr);
     if (petscwaitonerrorflg) {PetscSleep(1000);}
-    MPI_Abort(comm,errcode);
+    MPI_Abort(MPI_COMM_WORLD,errcode);
   }
 
 #if defined(PETSC_CLANGUAGE_CXX)
@@ -554,7 +546,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,3);
-  PetscValidScalarPointer(idx,2);
+  PetscValidRealPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
@@ -754,6 +746,19 @@ PETSC_EXTERN const char* PetscCUBLASGetErrorName(cublasStatus_t status)
     case CUBLAS_STATUS_INTERNAL_ERROR:   return "CUBLAS_STATUS_INTERNAL_ERROR";
     case CUBLAS_STATUS_NOT_SUPPORTED:    return "CUBLAS_STATUS_NOT_SUPPORTED";
     case CUBLAS_STATUS_LICENSE_ERROR:    return "CUBLAS_STATUS_LICENSE_ERROR";
+#endif
+    default:                             return "unknown error";
+  }
+}
+PETSC_EXTERN const char* PetscCUSolverGetErrorName(cusolverStatus_t status)
+{
+  switch(status) {
+#if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
+    case CUSOLVER_STATUS_SUCCESS:          return "CUSOLVER_STATUS_SUCCESS";
+    case CUSOLVER_STATUS_NOT_INITIALIZED:  return "CUSOLVER_STATUS_NOT_INITIALIZED";
+    case CUSOLVER_STATUS_INVALID_VALUE:    return "CUSOLVER_STATUS_INVALID_VALUE";
+    case CUSOLVER_STATUS_ARCH_MISMATCH:    return "CUSOLVER_STATUS_ARCH_MISMATCH";
+    case CUSOLVER_STATUS_INTERNAL_ERROR:   return "CUSOLVER_STATUS_INTERNAL_ERROR";
 #endif
     default:                             return "unknown error";
   }

@@ -32,7 +32,6 @@ PetscErrorCode SPARSEPACKrootls(const PetscInt *root,const PetscInt *xadj,const 
 
 /*       INITIALIZATION ...*/
 
-
   PetscFunctionBegin;
   /* Parameter adjustments */
   --ls;

@@ -23,7 +23,6 @@ int main(int argc,char **args)
   MatInfo           matinfo;
   PetscInt          Dnnz,Onnz;
 
-
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 

@@ -7,12 +7,13 @@ int main(int argc,char **args)
   Mat            A;
   Vec            x,y;
   PetscErrorCode ierr;
-  PetscInt       m=50000,bs=12,i,j,k,l,row,col,M;
+  PetscInt       m=50000,bs=12,i,j,k,l,row,col,M, its = 25;
   PetscScalar    rval,*vals;
   PetscRandom    rdm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-its",&its,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,27,NULL,&A);CHKERRQ(ierr);
@@ -44,7 +45,7 @@ int main(int argc,char **args)
   ierr = PetscFree(vals);CHKERRQ(ierr);
 
   /* Time MatMult(), MatMultAdd() */
-  for (i=0; i<25; i++) {
+  for (i=0; i<its; i++) {
     ierr  = VecSetRandom(x,rdm);CHKERRQ(ierr);
     ierr  = MatMult(A,x,y);CHKERRQ(ierr);
     ierr  = VecSetRandom(x,rdm);CHKERRQ(ierr);
@@ -60,7 +61,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
 /*TEST
 
    testset:
@@ -68,27 +68,27 @@ int main(int argc,char **args)
      output_file: output/ex238_1.out
      test:
        suffix: 1
-       args: -mat_block_size 1
+       args: -mat_block_size 1 -mat_size 1000 -its 2
      test:
        suffix: 2
-       args: -mat_block_size 2
+       args: -mat_block_size 2 -mat_size 1000 -its 2
      test:
        suffix: 4
-       args: -mat_block_size 4
+       args: -mat_block_size 4 -mat_size 1000 -its 2
      test:
        suffix: 5
-       args: -mat_block_size 5
+       args: -mat_block_size 5 -mat_size 1000 -its 2
      test:
        suffix: 6
-       args: -mat_block_size 6
+       args: -mat_block_size 6 -mat_size 1000 -its 2
      test:
        suffix: 8
-       args: -mat_block_size 8
+       args: -mat_block_size 8 -mat_size 1000 -its 2
      test:
        suffix: 12
-       args: -mat_block_size 12
+       args: -mat_block_size 12 -mat_size 1000 -its 2
      test:
        suffix: 15
-       args: -mat_block_size 15
+       args: -mat_block_size 15 -mat_size 1000 -its 2
 
 TEST*/

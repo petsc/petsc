@@ -47,7 +47,6 @@ PetscErrorCode test_3d(const char filename[])
   return 0;
 }
 
-
 /*
   Write 2D DMDA vector with coordinates in VTK .vts format
 
@@ -88,7 +87,6 @@ PetscErrorCode test_2d(const char filename[])
   return 0;
 }
 
-
 /*
   Write 2D DMDA vector without coordinates in VTK .vts format
 
@@ -127,7 +125,6 @@ PetscErrorCode test_2d_nocoord(const char filename[])
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   return 0;
 }
-
 
 /*
   Write 3D DMDA vector without coordinates in VTK .vts format
@@ -184,7 +181,6 @@ int main(int argc, char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

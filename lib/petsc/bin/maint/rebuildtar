@@ -22,35 +22,17 @@ VERSION=${version_major}.${version_minor}.${version_subminor}
 #Now copy the generated tarfiles over to the website
 scp ~/petsc-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 scp ~/petsc4py-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
-scp ~/petsc-lite-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
+scp ~/petsc-with-docs-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
+ssh petsc@login.mcs.anl.gov "cd /mcs/ftp/pub/petsc/release-snapshots; ln -s petsc-${VERSION}.tar.gz petsc-lite-${VERSION}.tar.gz"
 
 # petsc.tar.gz/petsc-lite.tar.gz links are done manually
 ssh petsc@login.mcs.anl.gov " \
   cd /mcs/ftp/pub/petsc/release-snapshots; \
-  /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz petsc4py-${RELEASE}.tar.gz ; \
+  /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz petsc-with-docs-${RELEASE}.tar.gz petsc4py-${RELEASE}.tar.gz ; \
   /bin/ln -s petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
   /bin/ln -s petsc4py-${VERSION}.tar.gz petsc4py-${RELEASE}.tar.gz; \
+  /bin/ln -s petsc-with-docs-${VERSION}.tar.gz petsc-with-docs-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
-
-# Update documentation/index.html documentation/installation.html download/index.html as well
-ssh petsc@login.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/documentation/index.html \
-  /mcs/web/research/projects/petsc/documentation/installation.html /mcs/web/research/projects/petsc/download/index.html
-scp ${PETSC_DIR}/src/docs/website/documentation/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/documentation/
-scp ${PETSC_DIR}/src/docs/website/documentation/installation.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/documentation/
-scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/download/
-
-# update websnapshot. 'petsc-current' link is updated manually
-echo "*** updating snapshot ***"
-ssh petsc@login.mcs.anl.gov " \
-  cd  /mcs/web/research/projects/petsc; \
-  /bin/tar -xzf /mcs/ftp/pub/petsc/release-snapshots/petsc-${VERSION}.tar.gz; \
-  /bin/rm -f petsc-${RELEASE}; \
-  /bin/ln -s petsc-${VERSION} petsc-${RELEASE}"
-ssh petsc@login.mcs.anl.gov " \
-  cd  /mcs/web/research/projects/petsc; \
-  /bin/tar -xzf /mcs/ftp/pub/petsc/release-snapshots/petsc4py-${VERSION}.tar.gz; \
-  /bin/rm -f petsc4py-${RELEASE}; \
-  /bin/ln -s petsc4py-${VERSION} petsc4py-${RELEASE}"
 
 #######################################
 # M lib/petsc/bin/maint/update-docs.py

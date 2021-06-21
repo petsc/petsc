@@ -1,12 +1,12 @@
 static char help[] = "Solves a ODE-constrained optimization problem -- finding the optimal initial conditions for the van der Pol equation.\n";
 
-/**
+/*
   Concepts: TS^time-dependent nonlinear problems
   Concepts: TS^van der Pol equation DAE equivalent
   Concepts: TS^Optimization using adjoint sensitivity analysis
   Processors: 1
 */
-/**
+/*
   Notes:
   This code demonstrates how to solve an ODE-constrained optimization problem with TAO, TSAdjoint and TS.
   The nonlinear problem is written in an ODE equivalent form.
@@ -297,7 +297,7 @@ static PetscErrorCode MatrixFreeHessian(Tao tao,Vec U,Mat H,Mat Hpre,void *ctx)
 
 /* ------------ Routines calculating second-order derivatives -------------- */
 
-/**
+/*
   Compute the Hessian-vector product for the cost function using Second-order adjoint
 */
 PetscErrorCode Adjoint2(Vec U,PetscScalar arr[],User ctx)

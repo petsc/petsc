@@ -3,7 +3,6 @@
     This file implements GMRES (a Generalized Minimal Residual) method.
     Reference:  Saad and Schultz, 1986.
 
-
     Some comments on left vs. right preconditioning, and restarts.
     Left and right preconditioning.
     If right preconditioning is chosen, then the problem being solved
@@ -213,7 +212,6 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   }
 
   if (itcount) *itcount = it;
-
 
   /*
     Down here we have to solve for the "best" coefficients of the Krylov
@@ -769,7 +767,6 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *
   PetscFunctionReturn(0);
 }
 
-
 /*@
    KSPGMRESSetRestart - Sets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
@@ -887,7 +884,6 @@ PetscErrorCode  KSPGMRESSetBreakdownTolerance(KSP ksp,PetscReal tol)
 /*MC
      KSPGMRES - Implements the Generalized Minimal Residual method.
                 (Saad and Schultz, 1986) with restart
-
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against

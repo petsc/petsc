@@ -39,7 +39,6 @@ PETSC_EXTERN PetscErrorCode F90Array4dAccess(F90Array4d*,MPI_Datatype,void** PET
 PETSC_EXTERN PetscErrorCode F90Array4dDestroy(F90Array4d*,MPI_Datatype PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN PetscErrorCode F90Array4dGetNextRecord(F90Array4d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 
-
 /*
   F90Array1dCreate - Given a C pointer to a one dimensional
   array and its length; this fills in the appropriate Fortran 90

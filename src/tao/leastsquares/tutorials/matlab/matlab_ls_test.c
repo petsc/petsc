@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 /*TEST
 
    build:
-      requires: matlab
+      requires: matlab_engine
 
    test:
       localrunfiles: more_wild_probs TestingInitialize.m TestingFinalize.m ProblemInitialize.m ProblemFinalize.m

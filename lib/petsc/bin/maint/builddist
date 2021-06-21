@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This script builds the PETSc tar file distribution
 #
@@ -103,21 +103,23 @@ if [ ${version}foo = foo ]; then
     exit
   fi
 fi
-echo "Building ~/petsc$version.tar.gz and ~/petsc-lite$version.tar.gz"
+echo "Building ~/petsc$version.tar.gz and ~/petsc-with-docs$version.tar.gz"
 
-# create fortran stubdocs and cleanup
-cd $PETSC_DIR
-# we should have an option of running configure - without compilers/mpi/blas etc..
-python3 ./config/configure.py --with-mpi=0 --download-c2html=1 --download-sowing=1
-make allfortranstubs
-make sphinx-docs-check-python
-make alldoc LOC=${PETSC_DIR} DOCSETDATE_PRUNE_LIST="" GONULL=""
+# build docs (and fortranstubs)
+VENV=$PETSC_DIR/arch-classic-docs/venv-petsc-docs
+python3 -m venv $VENV
+source $VENV/bin/activate
+cd $PETSC_DIR/doc
+python3 -m pip install -r requirements.txt
+sphinx-build -T -E -b html -D language=en -j auto . ../docs
+
 # petsc4py docs and tarball
+cd $PETSC_DIR
 export PETSC_ARCH=arch-pydoc
 python2 ./config/configure.py --with-mpi=0 --with-cxx=0 --with-fc=0
 make all
 cd $PETSC_DIR/src/binding/petsc4py
-  make sdist PYTHON=python2 PYTHON2=python2
+  make sdist PYTHON=python2 PYTHON2=python2 SHELL=/bin/bash
   cp dist/*.gz ~/
   make srcclean
 cd $PETSC_DIR
@@ -180,7 +182,7 @@ find petsc$version -type d -name "*" -exec chmod a+x {} \;
 
 # Now create the tar files
 cd $tmpdir
-/bin/tar -czf ~/petsc$version.tar.gz petsc$version
+/bin/tar -czf ~/petsc-with-docs$version.tar.gz petsc$version
 
 # create lite version
 /bin/rm -rf $tmpdir/petsc$version/docs $tmpdir/petsc$version/zope $tmpdir/petsc$version/config/BuildSystem/docs $tmpdir/petsc$version/config/examples/old
@@ -192,7 +194,7 @@ cd $tmpdir/petsc$version; ${PETSC_DIR}/lib/petsc/bin/maint/generateetags.py
 cd $tmpdir/petsc$version && python setup.py egg_info && /bin/cp petsc.egg-info/PKG-INFO . && /bin/rm -rf petsc.egg-info config/pypi
 
 cd $tmpdir
-/bin/tar -czf ~/petsc-lite$version.tar.gz petsc$version
+/bin/tar -czf ~/petsc$version.tar.gz petsc$version
 
 #cleanup
 /bin/rm -rf $tmpdir

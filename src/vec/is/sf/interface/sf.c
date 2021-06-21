@@ -241,7 +241,7 @@ PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscSFDestroy - destroy star forest
 
    Collective
@@ -599,7 +599,7 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf,PetscLayout map,PetscSFPatt
     res[0] = n;
     res[1] = -n;
     /* Check if n are same over all ranks so that we can optimize it */
-    ierr   = MPIU_Allreduce(MPI_IN_PLACE,res,2,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr   = MPIU_Allreduce(MPI_IN_PLACE,res,2,MPIU_INT,MPI_MAX,comm);CHKERRMPI(ierr);
     if (res[0] == -res[1]) { /* same n */
       type = (pattern == PETSCSF_PATTERN_ALLGATHER) ? PETSCSFALLGATHER  : PETSCSFGATHER;
     } else {
@@ -1776,7 +1776,6 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   *degree = sf->degree;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PetscSFComputeMultiRootOriginalNumbering - Returns original numbering of multi-roots (roots of multi-SF returned by PetscSFGetMultiSF()).

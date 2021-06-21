@@ -21,6 +21,11 @@
 #define cusolverDnXgetrf(a,b,c,d,e,f,g,h)        cusolverDnCgetrf((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(g),(h))
 #define cusolverDnXgetrf_bufferSize(a,b,c,d,e,f) cusolverDnCgetrf_bufferSize((a),(b),(c),(cuComplex*)(d),(e),(f))
 #define cusolverDnXgetrs(a,b,c,d,e,f,g,h,i,j)    cusolverDnCgetrs((a),(b),(c),(d),(cuComplex*)(e),(f),(g),(cuComplex*)(h),(i),(j))
+#define cusolverDnXgeqrf_bufferSize(a,b,c,d,e,f) cusolverDnCgeqrf_bufferSize((a),(b),(c),(cuComplex*)(d),(e),(f))
+#define cusolverDnXgeqrf(a,b,c,d,e,f,g,h,i)      cusolverDnCgeqrf((a),(b),(c),(cuComplex*)(d),(e),(cuComplex*)(f),(cuComplex*)(g),(h),(i))
+#define cusolverDnXormqr_bufferSize(a,b,c,d,e,f,g,h,i,j,k,l) cusolverDnCunmqr_bufferSize((a),(b),(c),(d),(e),(f),(cuComplex*)(g),(h),(cuComplex*)(i),(cuComplex*)(j),(k),(l))
+#define cusolverDnXormqr(a,b,c,d,e,f,g,h,i,j,k,l,m,n) cusolverDnCunmqr((a),(b),(c),(d),(e),(f),(cuComplex*)(g),(h),(cuComplex*)(i),(cuComplex*)(j),(k),(cuComplex*)(l),(m),(n))
+#define cublasXtrsm(a,b,c,d,e,f,g,h,i,j,k,l)     cublasCtrsm((a),(b),(c),(d),(e),(f),(g),(cuComplex*)(h),(cuComplex*)(i),(j),(cuComplex*)(k),(l))
 #else /* complex double */
 #define cusolverDnXpotrf(a,b,c,d,e,f,g,h)        cusolverDnZpotrf((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h))
 #define cusolverDnXpotrf_bufferSize(a,b,c,d,e,f) cusolverDnZpotrf_bufferSize((a),(b),(c),(cuDoubleComplex*)(d),(e),(f))
@@ -32,6 +37,11 @@
 #define cusolverDnXgetrf(a,b,c,d,e,f,g,h)        cusolverDnZgetrf((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(g),(h))
 #define cusolverDnXgetrf_bufferSize(a,b,c,d,e,f) cusolverDnZgetrf_bufferSize((a),(b),(c),(cuDoubleComplex*)(d),(e),(f))
 #define cusolverDnXgetrs(a,b,c,d,e,f,g,h,i,j)    cusolverDnZgetrs((a),(b),(c),(d),(cuDoubleComplex*)(e),(f),(g),(cuDoubleComplex*)(h),(i),(j))
+#define cusolverDnXgeqrf_bufferSize(a,b,c,d,e,f) cusolverDnZgeqrf_bufferSize((a),(b),(c),(cuDoubleComplex*)(d),(e),(f))
+#define cusolverDnXgeqrf(a,b,c,d,e,f,g,h,i)      cusolverDnZgeqrf((a),(b),(c),(cuDoubleComplex*)(d),(e),(cuDoubleComplex*)(f),(cuDoubleComplex*)(g),(h),(i))
+#define cusolverDnXormqr_bufferSize(a,b,c,d,e,f,g,h,i,j,k,l) cusolverDnZunmqr_bufferSize((a),(b),(c),(d),(e),(f),(cuDoubleComplex*)(g),(h),(cuDoubleComplex*)(i),(cuDoubleComplex*)(j),(k),(l))
+#define cusolverDnXormqr(a,b,c,d,e,f,g,h,i,j,k,l,m,n) cusolverDnZunmqr((a),(b),(c),(d),(e),(f),(cuDoubleComplex*)(g),(h),(cuDoubleComplex*)(i),(cuDoubleComplex*)(j),(k),(cuDoubleComplex*)(l),(m),(n))
+#define cublasXtrsm(a,b,c,d,e,f,g,h,i,j,k,l)     cublasZtrsm((a),(b),(c),(d),(e),(f),(g),(cuDoubleComplex*)(h),(cuDoubleComplex*)(i),(j),(cuDoubleComplex*)(k),(l))
 #endif
 #else /* real single */
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -45,6 +55,11 @@
 #define cusolverDnXgetrf(a,b,c,d,e,f,g,h)        cusolverDnSgetrf((a),(b),(c),(d),(e),(f),(g),(h))
 #define cusolverDnXgetrf_bufferSize(a,b,c,d,e,f) cusolverDnSgetrf_bufferSize((a),(b),(c),(d),(e),(f))
 #define cusolverDnXgetrs(a,b,c,d,e,f,g,h,i,j)    cusolverDnSgetrs((a),(b),(c),(d),(e),(f),(g),(h),(i),(j))
+#define cusolverDnXgeqrf_bufferSize(a,b,c,d,e,f) cusolverDnSgeqrf_bufferSize((a),(b),(c),(float*)(d),(e),(f))
+#define cusolverDnXgeqrf(a,b,c,d,e,f,g,h,i)      cusolverDnSgeqrf((a),(b),(c),(float*)(d),(e),(float*)(f),(float*)(g),(h),(i))
+#define cusolverDnXormqr_bufferSize(a,b,c,d,e,f,g,h,i,j,k,l) cusolverDnSormqr_bufferSize((a),(b),(c),(d),(e),(f),(float*)(g),(h),(float*)(i),(float*)(j),(k),(l))
+#define cusolverDnXormqr(a,b,c,d,e,f,g,h,i,j,k,l,m,n) cusolverDnSormqr((a),(b),(c),(d),(e),(f),(float*)(g),(h),(float*)(i),(float*)(j),(k),(float*)(l),(m),(n))
+#define cublasXtrsm(a,b,c,d,e,f,g,h,i,j,k,l)     cublasStrsm((a),(b),(c),(d),(e),(f),(g),(float*)(h),(float*)(i),(j),(float*)(k),(l))
 #else /* real double */
 #define cusolverDnXpotrf(a,b,c,d,e,f,g,h)        cusolverDnDpotrf((a),(b),(c),(d),(e),(f),(g),(h))
 #define cusolverDnXpotrf_bufferSize(a,b,c,d,e,f) cusolverDnDpotrf_bufferSize((a),(b),(c),(d),(e),(f))
@@ -56,6 +71,11 @@
 #define cusolverDnXgetrf(a,b,c,d,e,f,g,h)        cusolverDnDgetrf((a),(b),(c),(d),(e),(f),(g),(h))
 #define cusolverDnXgetrf_bufferSize(a,b,c,d,e,f) cusolverDnDgetrf_bufferSize((a),(b),(c),(d),(e),(f))
 #define cusolverDnXgetrs(a,b,c,d,e,f,g,h,i,j)    cusolverDnDgetrs((a),(b),(c),(d),(e),(f),(g),(h),(i),(j))
+#define cusolverDnXgeqrf_bufferSize(a,b,c,d,e,f) cusolverDnDgeqrf_bufferSize((a),(b),(c),(double*)(d),(e),(f))
+#define cusolverDnXgeqrf(a,b,c,d,e,f,g,h,i)      cusolverDnDgeqrf((a),(b),(c),(double*)(d),(e),(double*)(f),(double*)(g),(h),(i))
+#define cusolverDnXormqr_bufferSize(a,b,c,d,e,f,g,h,i,j,k,l) cusolverDnDormqr_bufferSize((a),(b),(c),(d),(e),(f),(double*)(g),(h),(double*)(i),(double*)(j),(k),(l))
+#define cusolverDnXormqr(a,b,c,d,e,f,g,h,i,j,k,l,m,n) cusolverDnDormqr((a),(b),(c),(d),(e),(f),(double*)(g),(h),(double*)(i),(double*)(j),(k),(double*)(l),(m),(n))
+#define cublasXtrsm(a,b,c,d,e,f,g,h,i,j,k,l)     cublasDtrsm((a),(b),(c),(d),(e),(f),(g),(double*)(h),(double*)(i),(j),(double*)(k),(l))
 #endif
 #endif
 
@@ -65,10 +85,11 @@ typedef struct {
   PetscScalar *unplacedarray; /* if one called MatCUDADensePlaceArray(), this is where it stashed the original */
   PetscBool   unplaced_user_alloc;
   /* factorization support */
-  int         *d_fact_ipiv; /* device pivots */
+  PetscCuBLASInt *d_fact_ipiv; /* device pivots */
+  PetscScalar *d_fact_tau;  /* device QR tau vector */
   PetscScalar *d_fact_work; /* device workspace */
-  int         fact_lwork;
-  int         *d_fact_info; /* device info */
+  PetscCuBLASInt fact_lwork;
+  PetscCuBLASInt *d_fact_info; /* device info */
   /* workspace */
   Vec         workvec;
 } Mat_SeqDenseCUDA;
@@ -90,16 +111,19 @@ PetscErrorCode MatSeqDenseCUDASetPreallocation(Mat A, PetscScalar *d_data)
   if (cA->lda <= 0) cA->lda = A->rmap->n;
   if (!dA->user_alloc) { cerr = cudaFree(dA->d_v);CHKERRCUDA(cerr); }
   if (!d_data) { /* petsc-allocated storage */
+    size_t sz;
     ierr = PetscIntMultError(cA->lda,A->cmap->n,NULL);CHKERRQ(ierr);
-    cerr = cudaMalloc((void**)&dA->d_v,cA->lda*A->cmap->n*sizeof(PetscScalar));CHKERRCUDA(cerr);
+    sz   = cA->lda*A->cmap->n*sizeof(PetscScalar);
+    cerr = cudaMalloc((void**)&dA->d_v,sz);CHKERRCUDA(cerr);
+    cerr = cudaMemset(dA->d_v,0,sz);CHKERRCUDA(cerr);
     dA->user_alloc = PETSC_FALSE;
   } else { /* user-allocated storage */
     dA->d_v        = d_data;
     dA->user_alloc = PETSC_TRUE;
-    A->offloadmask = PETSC_OFFLOAD_GPU;
   }
+  A->offloadmask  = PETSC_OFFLOAD_GPU;
   A->preallocated = PETSC_TRUE;
-  A->assembled = PETSC_TRUE;
+  A->assembled    = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -119,11 +143,9 @@ PetscErrorCode MatSeqDenseCUDACopyFromGPU(Mat A)
     }
     ierr = PetscLogEventBegin(MAT_DenseCopyFromGPU,A,0,0,0);CHKERRQ(ierr);
     if (cA->lda > A->rmap->n) {
-      PetscInt j,m = A->rmap->n;
+      PetscInt n = A->cmap->n,m = A->rmap->n;
 
-      for (j=0; j<A->cmap->n; j++) { /* TODO: it can be done better */
-        cerr = cudaMemcpy(cA->v + j*cA->lda,dA->d_v + j*cA->lda,m*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
-      }
+      cerr = cudaMemcpy2D(cA->v,cA->lda*sizeof(PetscScalar),dA->d_v,cA->lda*sizeof(PetscScalar),m*sizeof(PetscScalar),n,cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     } else {
       cerr = cudaMemcpy(cA->v,dA->d_v,cA->lda*sizeof(PetscScalar)*A->cmap->n,cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     }
@@ -154,11 +176,9 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
     }
     ierr = PetscLogEventBegin(MAT_DenseCopyToGPU,A,0,0,0);CHKERRQ(ierr);
     if (cA->lda > A->rmap->n) {
-      PetscInt j,m = A->rmap->n;
+      PetscInt n = A->cmap->n,m = A->rmap->n;
 
-      for (j=0; j<A->cmap->n; j++) { /* TODO: it can be done better */
-        cerr = cudaMemcpy(dA->d_v + j*cA->lda,cA->v + j*cA->lda,m*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
-      }
+      cerr = cudaMemcpy2D(dA->d_v,cA->lda*sizeof(PetscScalar),cA->v,cA->lda*sizeof(PetscScalar),m*sizeof(PetscScalar),n,cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
     } else {
       cerr = cudaMemcpy(dA->d_v,cA->v,cA->lda*sizeof(PetscScalar)*A->cmap->n,cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
     }
@@ -176,7 +196,7 @@ static PetscErrorCode MatCopy_SeqDenseCUDA(Mat A,Mat B,MatStructure str)
   PetscErrorCode    ierr;
   const PetscScalar *va;
   PetscScalar       *vb;
-  PetscInt          lda1=a->lda,lda2=b->lda, m=A->rmap->n,n=A->cmap->n, j;
+  PetscInt          lda1=a->lda,lda2=b->lda,m=A->rmap->n,n=A->cmap->n;
   cudaError_t       cerr;
 
   PetscFunctionBegin;
@@ -190,16 +210,35 @@ static PetscErrorCode MatCopy_SeqDenseCUDA(Mat A,Mat B,MatStructure str)
   ierr = MatDenseCUDAGetArrayWrite(B,&vb);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   if (lda1>m || lda2>m) {
-    for (j=0; j<n; j++) {
-      cerr = cudaMemcpy(vb+j*lda2,va+j*lda1,m*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
-    }
+    cerr = cudaMemcpy2D(vb,lda2*sizeof(PetscScalar),va,lda1*sizeof(PetscScalar),m*sizeof(PetscScalar),n,cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
   } else {
     cerr = cudaMemcpy(vb,va,m*(n*sizeof(PetscScalar)),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
   }
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArrayWrite(B,&vb);CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArrayRead(A,&va);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatZeroEntries_SeqDenseCUDA(Mat A)
+{
+  Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
+  PetscErrorCode    ierr;
+  PetscScalar       *va;
+  PetscInt          lda=a->lda,m = A->rmap->n,n = A->cmap->n;
+  cudaError_t       cerr;
+
+  PetscFunctionBegin;
+  ierr = MatDenseCUDAGetArrayWrite(A,&va);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  if (lda>m) {
+    cerr = cudaMemset2D(va,lda*sizeof(PetscScalar),0,m*sizeof(PetscScalar),n);CHKERRCUDA(cerr);
+  } else {
+    cerr = cudaMemset(va,0,m*(n*sizeof(PetscScalar)));CHKERRCUDA(cerr);
+  }
   cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-  ierr = MatDenseCUDARestoreArray(B,&vb);CHKERRQ(ierr);
-  ierr = MatDenseCUDARestoreArrayRead(A,&va);CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArrayWrite(A,&va);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -319,20 +358,20 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
   cudaError_t        ccer;
   cusolverStatus_t   cerr;
   cusolverDnHandle_t handle;
-  int                n,lda;
+  PetscCuBLASInt     n,lda;
 #if defined(PETSC_USE_DEBUG)
-  int                info;
+  PetscCuBLASInt     info;
 #endif
 
   PetscFunctionBegin;
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(A->cmap->n,&n);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(a->lda,&lda);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(a->lda,&lda);CHKERRQ(ierr);
   if (A->factortype == MAT_FACTOR_LU) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDngetri not implemented");
   else if (A->factortype == MAT_FACTOR_CHOLESKY) {
     if (!dA->d_fact_ipiv) { /* spd */
-      int il;
+      PetscCuBLASInt il;
 
       ierr = MatDenseCUDAGetArray(A,&da);CHKERRQ(ierr);
       cerr = cusolverDnXpotri_bufferSize(handle,CUBLAS_FILL_MODE_LOWER,n,da,lda,&il);CHKERRCUSOLVER(cerr);
@@ -344,7 +383,6 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
       }
       ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
       cerr = cusolverDnXpotri(handle,CUBLAS_FILL_MODE_LOWER,n,da,lda,dA->d_fact_work,dA->fact_lwork,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-      ccer = WaitForCUDA();CHKERRCUDA(ccer);
       ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
       ierr = MatDenseCUDARestoreArray(A,&da);CHKERRQ(ierr);
       /* TODO (write cuda kernel) */
@@ -352,7 +390,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDnsytri not implemented");
   }
 #if defined(PETSC_USE_DEBUG)
-  ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(int), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
+  ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
   if (info > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: leading minor of order %d is zero",info);
   else if (info < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
 #endif
@@ -369,148 +407,388 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat A)
 #endif
 }
 
-static PetscErrorCode MatMatSolve_SeqDenseCUDA(Mat A,Mat B,Mat X)
+static PetscErrorCode MatSolve_SeqDenseCUDA_Internal(Mat A, Vec xx, Vec yy, PetscBool transpose,
+                                                     PetscErrorCode (*matsolve)(Mat,PetscScalar*,PetscCuBLASInt,PetscCuBLASInt,PetscCuBLASInt,PetscCuBLASInt,PetscBool))
 {
-  Mat_SeqDense       *a = (Mat_SeqDense*)A->data;
-  Mat_SeqDense       *x = (Mat_SeqDense*)X->data;
-  Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
-  const PetscScalar  *da;
-  PetscScalar        *dx;
-  cusolverDnHandle_t handle;
-  PetscBool          iscuda;
-  int                nrhs,n,lda,ldx;
-#if defined(PETSC_USE_DEBUG)
-  int                info;
-#endif
-  cudaError_t        ccer;
-  cusolverStatus_t   cerr;
-  PetscErrorCode     ierr;
+  Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  PetscScalar      *y;
+  PetscCuBLASInt   m=0, k=0;
+  PetscBool        xiscuda, yiscuda, aiscuda;
+  cudaError_t      cerr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (A->factortype == MAT_FACTOR_NONE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
-  if (!dA->d_fact_work) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
-  if (X != B) {
-    ierr = MatCopy(B,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  }
-  ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
-  /* MatMatSolve does not have a dispatching mechanism, we may end up with a MATSEQDENSE here */
-  ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSECUDA,&iscuda);CHKERRQ(ierr);
-  if (!iscuda) {
-    ierr = MatConvert(X,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&X);CHKERRQ(ierr);
-  }
-  ierr = MatDenseCUDAGetArray(X,&dx);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(A->rmap->n,&n);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(X->cmap->n,&nrhs);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(a->lda,&lda);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(x->lda,&ldx);CHKERRQ(ierr);
-  ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
-  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-  if (A->factortype == MAT_FACTOR_LU) {
-    ierr = PetscInfo2(A,"LU solve %d x %d on backend\n",n,n);CHKERRQ(ierr);
-    cerr = cusolverDnXgetrs(handle,CUBLAS_OP_N,n,nrhs,da,lda,dA->d_fact_ipiv,dx,ldx,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-  } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
-    ierr = PetscInfo2(A,"Cholesky solve %d x %d on backend\n",n,n);CHKERRQ(ierr);
-    if (!dA->d_fact_ipiv) { /* spd */
-      /* ========= Program hit cudaErrorNotReady (error 34) due to "device not ready" on CUDA API call to cudaEventQuery. */
-      cerr = cusolverDnXpotrs(handle,CUBLAS_FILL_MODE_LOWER,n,nrhs,da,lda,dx,ldx,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDnsytrs not implemented");
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown factor type %d",A->factortype);
-  ccer = WaitForCUDA();CHKERRCUDA(ccer);
-  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-  ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
-  ierr = MatDenseCUDARestoreArray(X,&dx);CHKERRQ(ierr);
-  if (!iscuda) {
-    ierr = MatConvert(X,MATSEQDENSE,MAT_INPLACE_MATRIX,&X);CHKERRQ(ierr);
-  }
-#if defined(PETSC_USE_DEBUG)
-  ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(int), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
-  if (info > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
-  else if (info < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
-#endif
-  ierr = PetscLogGpuFlops(nrhs*(2.0*n*n - n));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+  ierr = PetscCuBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)xx,VECSEQCUDA,&xiscuda);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)yy,VECSEQCUDA,&yiscuda);CHKERRQ(ierr);
+  {
+    const PetscScalar *x;
+    PetscBool xishost = PETSC_TRUE;
 
-static PetscErrorCode MatSolve_SeqDenseCUDA_Private(Mat A,Vec xx,Vec yy,PetscBool trans)
-{
-  Mat_SeqDense       *a = (Mat_SeqDense*)A->data;
-  Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
-  const PetscScalar  *da;
-  PetscScalar        *y;
-  cusolverDnHandle_t handle;
-  int                one = 1,n,lda;
-#if defined(PETSC_USE_DEBUG)
-  int                info;
-#endif
-  cudaError_t        ccer;
-  cusolverStatus_t   cerr;
-  PetscBool          iscuda;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  if (A->factortype == MAT_FACTOR_NONE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
-  if (!dA->d_fact_work) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
-  ierr = PetscMPIIntCast(A->rmap->n,&n);CHKERRQ(ierr);
-  /* MatSolve does not have a dispatching mechanism, we may end up with a VECSTANDARD here */
-  ierr = PetscObjectTypeCompareAny((PetscObject)yy,&iscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
-  if (iscuda) {
-    ierr = VecCopy(xx,yy);CHKERRQ(ierr);
-    ierr = VecCUDAGetArray(yy,&y);CHKERRQ(ierr);
-  } else {
-    if (!dA->workvec) {
-      ierr = MatCreateVecs(A,&dA->workvec,NULL);CHKERRQ(ierr);
+    /* The logic here is to try to minimize the amount of memory copying:
+       if we call VecCUDAGetArrayRead(X,&x) every time xiscuda and the
+       data is not offloaded to the GPU yet, then the data is copied to the
+       GPU.  But we are only trying to get the data in order to copy it into the y
+       array.  So the array x will be wherever the data already is so that
+       only one memcpy is performed */
+    if (xiscuda && xx->offloadmask & PETSC_OFFLOAD_GPU) {
+      ierr = VecCUDAGetArrayRead(xx, &x);CHKERRQ(ierr);
+      xishost =  PETSC_FALSE;
+    } else {
+      ierr = VecGetArrayRead(xx, &x);CHKERRQ(ierr);
     }
-    ierr = VecCopy(xx,dA->workvec);CHKERRQ(ierr);
-    ierr = VecCUDAGetArray(dA->workvec,&y);CHKERRQ(ierr);
+    if (k < m || !yiscuda) {
+      if (!dA->workvec) {
+        ierr = VecCreateSeqCUDA(PetscObjectComm((PetscObject)A), m, &(dA->workvec));CHKERRQ(ierr);
+      }
+      ierr = VecCUDAGetArrayWrite(dA->workvec, &y);CHKERRQ(ierr);
+    } else {
+      ierr = VecCUDAGetArrayWrite(yy,&y);CHKERRQ(ierr);
+    }
+    cerr = cudaMemcpy(y,x,m*sizeof(PetscScalar),xishost ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
   }
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSECUDA,&aiscuda);CHKERRQ(ierr);
+  if (!aiscuda) {
+    ierr = MatConvert(A,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  }
+  ierr = (*matsolve) (A, y, m, m, 1, k, transpose);CHKERRQ(ierr);
+  if (!aiscuda) {
+    ierr = MatConvert(A,MATSEQDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  }
+  if (k < m || !yiscuda) {
+    PetscScalar *yv;
+
+    /* The logic here is that the data is not yet in either yy's GPU array or its
+       CPU array.  There is nothing in the interface to say where the user would like
+       it to end up.  So we choose the GPU, because it is the faster option */
+    if (yiscuda) {
+      ierr = VecCUDAGetArrayWrite(yy,&yv);CHKERRQ(ierr);
+    } else {
+      ierr = VecGetArray(yy,&yv);CHKERRQ(ierr);
+    }
+    cerr = cudaMemcpy(yv,y,k*sizeof(PetscScalar),yiscuda ? cudaMemcpyDeviceToDevice: cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+    if (yiscuda) {
+      ierr = VecCUDARestoreArrayWrite(yy,&yv);CHKERRQ(ierr);
+    } else {
+      ierr = VecRestoreArray(yy,&yv);CHKERRQ(ierr);
+    }
+    ierr = VecCUDARestoreArrayWrite(dA->workvec, &y);CHKERRQ(ierr);
+  } else {
+    ierr = VecCUDARestoreArrayWrite(yy,&y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatSolve_SeqDenseCUDA_Internal(Mat A, Mat B, Mat X, PetscBool transpose,
+                                                        PetscErrorCode (*matsolve)(Mat,PetscScalar*,PetscCuBLASInt,PetscCuBLASInt,PetscCuBLASInt,PetscCuBLASInt,PetscBool))
+{
+  PetscScalar       *y;
+  PetscInt          n, _ldb, _ldx;
+  PetscBool         biscuda, xiscuda, aiscuda;
+  PetscCuBLASInt    nrhs=0,m=0,k=0,ldb=0,ldx=0,ldy=0;
+  cudaError_t       cerr;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (A->factortype == MAT_FACTOR_NONE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
+  ierr = PetscCuBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);
+  ierr = MatGetSize(B,NULL,&n);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(n,&nrhs);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(B,&_ldb);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(_ldb, &ldb);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(X,&_ldx);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(_ldx, &ldx);CHKERRQ(ierr);
+
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSECUDA,&biscuda);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSECUDA,&xiscuda);CHKERRQ(ierr);
+  {
+    /* The logic here is to try to minimize the amount of memory copying:
+       if we call MatDenseCUDAGetArrayRead(B,&b) every time biscuda and the
+       data is not offloaded to the GPU yet, then the data is copied to the
+       GPU.  But we are only trying to get the data in order to copy it into the y
+       array.  So the array b will be wherever the data already is so that
+       only one memcpy is performed */
+    const PetscScalar *b;
+
+    /* some copying from B will be involved */
+    PetscBool bishost = PETSC_TRUE;
+
+    if (biscuda && B->offloadmask & PETSC_OFFLOAD_GPU) {
+      ierr = MatDenseCUDAGetArrayRead(B,&b);CHKERRQ(ierr);
+      bishost = PETSC_FALSE;
+    } else {
+      ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
+    }
+    if (ldx < m || !xiscuda) {
+      /* X's array cannot serve as the array (too small or not on device), B's
+       * array cannot serve as the array (const), so allocate a new array  */
+      ldy = m;
+      cerr = cudaMalloc((void**)&y,nrhs*m*sizeof(PetscScalar));CHKERRCUDA(cerr);
+    } else {
+      /* X's array should serve as the array */
+      ldy = ldx;
+      ierr = MatDenseCUDAGetArrayWrite(X,&y);CHKERRQ(ierr);
+    }
+    cerr = cudaMemcpy2D(y,ldy*sizeof(PetscScalar),b,ldb*sizeof(PetscScalar),m*sizeof(PetscScalar),nrhs,bishost ? cudaMemcpyHostToDevice: cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
+    if (bishost) {
+      ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
+    } else {
+      ierr = MatDenseCUDARestoreArrayRead(B,&b);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSECUDA,&aiscuda);CHKERRQ(ierr);
+  if (!aiscuda) {
+    ierr = MatConvert(A,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  }
+  ierr = (*matsolve) (A, y, ldy, m, nrhs, k, transpose);CHKERRQ(ierr);
+  if (!aiscuda) {
+    ierr = MatConvert(A,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  }
+  if (ldx < m || !xiscuda) {
+    PetscScalar *x;
+
+    /* The logic here is that the data is not yet in either X's GPU array or its
+       CPU array.  There is nothing in the interface to say where the user would like
+       it to end up.  So we choose the GPU, because it is the faster option */
+    if (xiscuda) {
+      ierr = MatDenseCUDAGetArrayWrite(X,&x);CHKERRQ(ierr);
+    } else {
+      ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
+    }
+    cerr = cudaMemcpy2D(x,ldx*sizeof(PetscScalar),y,ldy*sizeof(PetscScalar),k*sizeof(PetscScalar),nrhs,xiscuda ? cudaMemcpyDeviceToDevice: cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+    if (xiscuda) {
+      ierr = MatDenseCUDARestoreArrayWrite(X,&x);CHKERRQ(ierr);
+    } else {
+      ierr = MatDenseRestoreArray(X,&x);CHKERRQ(ierr);
+    }
+    cerr = cudaFree(y);CHKERRCUDA(cerr);
+  } else {
+    ierr = MatDenseCUDARestoreArrayWrite(X,&y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSolve_SeqDenseCUDA_Internal_LU(Mat A, PetscScalar *x, PetscCuBLASInt ldx, PetscCuBLASInt m, PetscCuBLASInt nrhs, PetscCuBLASInt k, PetscBool T)
+{
+  Mat_SeqDense       *mat = (Mat_SeqDense*)A->data;
+  Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  const PetscScalar  *da;
+  PetscCuBLASInt     lda;
+  cusolverDnHandle_t handle;
+  cudaError_t        ccer;
+  cusolverStatus_t   cerr;
+  int                info;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCuBLASIntCast(mat->lda,&lda);CHKERRQ(ierr);
   ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(a->lda,&lda);CHKERRQ(ierr);
   ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-  if (A->factortype == MAT_FACTOR_LU) {
-    ierr = PetscInfo2(A,"LU solve %d x %d on backend\n",n,n);CHKERRQ(ierr);
-    cerr = cusolverDnXgetrs(handle,trans ? CUBLAS_OP_T : CUBLAS_OP_N,n,one,da,lda,dA->d_fact_ipiv,y,n,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-  } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
-    ierr = PetscInfo2(A,"Cholesky solve %d x %d on backend\n",n,n);CHKERRQ(ierr);
-    if (!dA->d_fact_ipiv) { /* spd */
-      /* ========= Program hit cudaErrorNotReady (error 34) due to "device not ready" on CUDA API call to cudaEventQuery. */
-      cerr = cusolverDnXpotrs(handle,CUBLAS_FILL_MODE_LOWER,n,one,da,lda,y,n,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDnsytrs not implemented");
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown factor type %d",A->factortype);
-  ccer = WaitForCUDA();CHKERRCUDA(ccer);
+  ierr = PetscInfo2(A,"LU solve %d x %d on backend\n",m,k);CHKERRQ(ierr);
+  cerr = cusolverDnXgetrs(handle,T ? CUBLAS_OP_T : CUBLAS_OP_N,m,nrhs,da,lda,dA->d_fact_ipiv,x,ldx,dA->d_fact_info);CHKERRCUSOLVER(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-  if (iscuda) {
-    ierr = VecCUDARestoreArray(yy,&y);CHKERRQ(ierr);
-  } else {
-    ierr = VecCUDARestoreArray(dA->workvec,&y);CHKERRQ(ierr);
-    ierr = VecCopy(dA->workvec,yy);CHKERRQ(ierr);
-  }
   ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(int), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
-  if (info > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
-  else if (info < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
-#endif
-  ierr = PetscLogGpuFlops(2.0*n*n - n);CHKERRQ(ierr);
+  if (PetscDefined(USE_DEBUG)) {
+    ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
+    if (info > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
+    else if (info < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+  }
+  ierr = PetscLogGpuFlops(nrhs*(2.0*m*m - m));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolve_SeqDenseCUDA(Mat A,Vec xx,Vec yy)
+static PetscErrorCode MatSolve_SeqDenseCUDA_Internal_Cholesky(Mat A, PetscScalar *x, PetscCuBLASInt ldx, PetscCuBLASInt m, PetscCuBLASInt nrhs, PetscCuBLASInt k, PetscBool T)
 {
+  Mat_SeqDense       *mat = (Mat_SeqDense*)A->data;
+  Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  const PetscScalar  *da;
+  PetscCuBLASInt     lda;
+  cusolverDnHandle_t handle;
+  cudaError_t        ccer;
+  cusolverStatus_t   cerr;
+  int                info;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolve_SeqDenseCUDA_Private(A,xx,yy,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(mat->lda,&lda);CHKERRQ(ierr);
+  ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
+  ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  ierr = PetscInfo2(A,"Cholesky solve %d x %d on backend\n",m,k);CHKERRQ(ierr);
+  if (!dA->d_fact_ipiv) { /* spd */
+    /* ========= Program hit cudaErrorNotReady (error 34) due to "device not ready" on CUDA API call to cudaEventQuery. */
+    cerr = cusolverDnXpotrs(handle,CUBLAS_FILL_MODE_LOWER,m,nrhs,da,lda,x,ldx,dA->d_fact_info);CHKERRCUSOLVER(cerr);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"cusolverDnsytrs not implemented");
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
+  if (PetscDefined(USE_DEBUG)) {
+    ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
+    if (info > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
+    else if (info < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+  }
+  ierr = PetscLogGpuFlops(nrhs*(2.0*m*m - m));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolveTranspose_SeqDenseCUDA(Mat A,Vec xx,Vec yy)
+static PetscErrorCode MatSolve_SeqDenseCUDA_Internal_QR(Mat A, PetscScalar *x, PetscCuBLASInt ldx, PetscCuBLASInt m, PetscCuBLASInt nrhs, PetscCuBLASInt k, PetscBool T)
 {
+  Mat_SeqDense       *mat = (Mat_SeqDense*)A->data;
+  Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  const PetscScalar  *da;
+  PetscCuBLASInt     lda, rank;
+  cusolverDnHandle_t handle;
+  cublasHandle_t     bhandle;
+  cudaError_t        ccer;
+  cusolverStatus_t   csrr;
+  cublasStatus_t     cbrr;
+  int                info;
+  cublasOperation_t  trans;
+  PetscScalar        one = 1.;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolve_SeqDenseCUDA_Private(A,xx,yy,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(mat->lda,&lda);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(mat->rank,&rank);CHKERRQ(ierr);
+  ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
+  ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
+  ierr = PetscCUBLASGetHandle(&bhandle);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  ierr = PetscInfo2(A,"QR solve %d x %d on backend\n",m,k);CHKERRQ(ierr);
+  if (!T) {
+    if (PetscDefined(USE_COMPLEX)) {
+      trans = CUBLAS_OP_C;
+    } else {
+      trans = CUBLAS_OP_T;
+    }
+    csrr = cusolverDnXormqr(handle, CUBLAS_SIDE_LEFT, trans, m, nrhs, rank, da, lda, dA->d_fact_tau, x, ldx, dA->d_fact_work, dA->fact_lwork, dA->d_fact_info);CHKERRCUSOLVER(csrr);
+    if (PetscDefined(USE_DEBUG)) {
+      ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
+      if (info != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+    }
+    cbrr = cublasXtrsm(bhandle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, rank, nrhs, &one, da, lda, x, ldx);CHKERRCUBLAS(cbrr);
+  } else {
+    cbrr = cublasXtrsm(bhandle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_T, CUBLAS_DIAG_NON_UNIT, rank, nrhs, &one, da, lda, x, ldx);CHKERRCUBLAS(cbrr);
+    csrr = cusolverDnXormqr(handle, CUBLAS_SIDE_LEFT, CUBLAS_OP_N, m, nrhs, rank, da, lda, dA->d_fact_tau, x, ldx, dA->d_fact_work, dA->fact_lwork, dA->d_fact_info);CHKERRCUSOLVER(csrr);
+    if (PetscDefined(USE_DEBUG)) {
+      ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
+      if (info != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+    }
+  }
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
+  ierr = PetscLogFlops(nrhs*(4.0*m*mat->rank - PetscSqr(mat->rank)));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSolve_SeqDenseCUDA_LU(Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolve_SeqDenseCUDA_Internal(A, xx, yy, PETSC_FALSE, MatSolve_SeqDenseCUDA_Internal_LU);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSolveTranspose_SeqDenseCUDA_LU(Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolve_SeqDenseCUDA_Internal(A, xx, yy, PETSC_TRUE, MatSolve_SeqDenseCUDA_Internal_LU);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSolve_SeqDenseCUDA_Cholesky(Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolve_SeqDenseCUDA_Internal(A, xx, yy, PETSC_FALSE, MatSolve_SeqDenseCUDA_Internal_Cholesky);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSolveTranspose_SeqDenseCUDA_Cholesky(Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolve_SeqDenseCUDA_Internal(A, xx, yy, PETSC_TRUE, MatSolve_SeqDenseCUDA_Internal_Cholesky);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSolve_SeqDenseCUDA_QR(Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolve_SeqDenseCUDA_Internal(A, xx, yy, PETSC_FALSE, MatSolve_SeqDenseCUDA_Internal_QR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSolveTranspose_SeqDenseCUDA_QR(Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolve_SeqDenseCUDA_Internal(A, xx, yy, PETSC_TRUE, MatSolve_SeqDenseCUDA_Internal_QR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatSolve_SeqDenseCUDA_LU(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatSolve_SeqDenseCUDA_Internal(A, B, X, PETSC_FALSE, MatSolve_SeqDenseCUDA_Internal_LU);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatSolveTranspose_SeqDenseCUDA_LU(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatSolve_SeqDenseCUDA_Internal(A, B, X, PETSC_TRUE, MatSolve_SeqDenseCUDA_Internal_LU);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatSolve_SeqDenseCUDA_Cholesky(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatSolve_SeqDenseCUDA_Internal(A, B, X, PETSC_FALSE, MatSolve_SeqDenseCUDA_Internal_Cholesky);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatSolveTranspose_SeqDenseCUDA_Cholesky(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatSolve_SeqDenseCUDA_Internal(A, B, X, PETSC_TRUE, MatSolve_SeqDenseCUDA_Internal_Cholesky);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatSolve_SeqDenseCUDA_QR(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatSolve_SeqDenseCUDA_Internal(A, B, X, PETSC_FALSE, MatSolve_SeqDenseCUDA_Internal_QR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatMatSolveTranspose_SeqDenseCUDA_QR(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatSolve_SeqDenseCUDA_Internal(A, B, X, PETSC_TRUE, MatSolve_SeqDenseCUDA_Internal_QR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -519,7 +797,7 @@ static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A,IS rperm,IS cperm,const Mat
   Mat_SeqDense       *a = (Mat_SeqDense*)A->data;
   Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
   PetscScalar        *da;
-  int                m,n,lda;
+  PetscCuBLASInt     m,n,lda;
 #if defined(PETSC_USE_DEBUG)
   int                info;
 #endif
@@ -532,9 +810,9 @@ static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A,IS rperm,IS cperm,const Mat
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
   ierr = MatDenseCUDAGetArray(A,&da);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(A->cmap->n,&n);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(A->rmap->n,&m);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(a->lda,&lda);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(a->lda,&lda);CHKERRQ(ierr);
   ierr = PetscInfo2(A,"LU factor %d x %d on backend\n",m,n);CHKERRQ(ierr);
   if (!dA->d_fact_ipiv) {
     ccer = cudaMalloc((void**)&dA->d_fact_ipiv,n*sizeof(*dA->d_fact_ipiv));CHKERRCUDA(ccer);
@@ -548,20 +826,20 @@ static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A,IS rperm,IS cperm,const Mat
   }
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   cerr = cusolverDnXgetrf(handle,m,n,da,lda,dA->d_fact_work,dA->d_fact_ipiv,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-  ccer = WaitForCUDA();CHKERRCUDA(ccer);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArray(A,&da);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-  ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(int), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
+  ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
   if (info > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
   else if (info < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
 #endif
   A->factortype = MAT_FACTOR_LU;
   ierr = PetscLogGpuFlops(2.0*n*n*m/3.0);CHKERRQ(ierr);
 
-  A->ops->solve          = MatSolve_SeqDenseCUDA;
-  A->ops->solvetranspose = MatSolveTranspose_SeqDenseCUDA;
-  A->ops->matsolve       = MatMatSolve_SeqDenseCUDA;
+  A->ops->solve             = MatSolve_SeqDenseCUDA_LU;
+  A->ops->solvetranspose    = MatSolveTranspose_SeqDenseCUDA_LU;
+  A->ops->matsolve          = MatMatSolve_SeqDenseCUDA_LU;
+  A->ops->matsolvetranspose = MatMatSolveTranspose_SeqDenseCUDA_LU;
 
   ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERCUDA,&A->solvertype);CHKERRQ(ierr);
@@ -573,7 +851,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
   Mat_SeqDense       *a = (Mat_SeqDense*)A->data;
   Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
   PetscScalar        *da;
-  int                n,lda;
+  PetscCuBLASInt     n,lda;
 #if defined(PETSC_USE_DEBUG)
   int                info;
 #endif
@@ -585,11 +863,11 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
   PetscFunctionBegin;
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(A->rmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->rmap->n,&n);CHKERRQ(ierr);
   ierr = PetscInfo2(A,"Cholesky factor %d x %d on backend\n",n,n);CHKERRQ(ierr);
   if (A->spd) {
     ierr = MatDenseCUDAGetArray(A,&da);CHKERRQ(ierr);
-    ierr = PetscMPIIntCast(a->lda,&lda);CHKERRQ(ierr);
+    ierr = PetscCuBLASIntCast(a->lda,&lda);CHKERRQ(ierr);
     if (!dA->fact_lwork) {
       cerr = cusolverDnXpotrf_bufferSize(handle,CUBLAS_FILL_MODE_LOWER,n,da,lda,&dA->fact_lwork);CHKERRCUSOLVER(cerr);
       ccer = cudaMalloc((void**)&dA->d_fact_work,dA->fact_lwork*sizeof(*dA->d_fact_work));CHKERRCUDA(ccer);
@@ -599,12 +877,11 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
     }
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     cerr = cusolverDnXpotrf(handle,CUBLAS_FILL_MODE_LOWER,n,da,lda,dA->d_fact_work,dA->fact_lwork,dA->d_fact_info);CHKERRCUSOLVER(cerr);
-    ccer = WaitForCUDA();CHKERRCUDA(ccer);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
     ierr = MatDenseCUDARestoreArray(A,&da);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-    ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(int), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
+    ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
     if (info > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
     else if (info < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
 #endif
@@ -629,9 +906,71 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A,IS perm,const MatFact
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 #endif
 
-  A->ops->solve          = MatSolve_SeqDenseCUDA;
-  A->ops->solvetranspose = MatSolveTranspose_SeqDenseCUDA;
-  A->ops->matsolve       = MatMatSolve_SeqDenseCUDA;
+  A->ops->solve             = MatSolve_SeqDenseCUDA_Cholesky;
+  A->ops->solvetranspose    = MatSolveTranspose_SeqDenseCUDA_Cholesky;
+  A->ops->matsolve          = MatMatSolve_SeqDenseCUDA_Cholesky;
+  A->ops->matsolvetranspose = MatMatSolveTranspose_SeqDenseCUDA_Cholesky;
+  ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERCUDA,&A->solvertype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatQRFactor_SeqDenseCUDA(Mat A,IS col,const MatFactorInfo *factinfo)
+{
+  Mat_SeqDense       *a = (Mat_SeqDense*)A->data;
+  Mat_SeqDenseCUDA   *dA = (Mat_SeqDenseCUDA*)A->spptr;
+  PetscScalar        *da;
+  PetscCuBLASInt     m,min,max,n,lda;
+#if defined(PETSC_USE_DEBUG)
+  int                info;
+#endif
+  cusolverStatus_t   cerr;
+  cusolverDnHandle_t handle;
+  cudaError_t        ccer;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  ierr = PetscCUSOLVERDnGetHandle(&handle);CHKERRQ(ierr);
+  ierr = MatDenseCUDAGetArray(A,&da);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(a->lda,&lda);CHKERRQ(ierr);
+  ierr = PetscInfo2(A,"QR factor %d x %d on backend\n",m,n);CHKERRQ(ierr);
+  max = PetscMax(m,n);
+  min = PetscMin(m,n);
+  if (!dA->d_fact_tau) {
+    ccer = cudaMalloc((void**)&dA->d_fact_tau,min*sizeof(*dA->d_fact_tau));CHKERRCUDA(ccer);
+  }
+  if (!dA->d_fact_ipiv) {
+    ccer = cudaMalloc((void**)&dA->d_fact_ipiv,n*sizeof(*dA->d_fact_ipiv));CHKERRCUDA(ccer);
+  }
+  if (!dA->fact_lwork) {
+    cerr = cusolverDnXgeqrf_bufferSize(handle,m,n,da,lda,&dA->fact_lwork);CHKERRCUSOLVER(cerr);
+    ccer = cudaMalloc((void**)&dA->d_fact_work,dA->fact_lwork*sizeof(*dA->d_fact_work));CHKERRCUDA(ccer);
+  }
+  if (!dA->d_fact_info) {
+    ccer = cudaMalloc((void**)&dA->d_fact_info,sizeof(*dA->d_fact_info));CHKERRCUDA(ccer);
+  }
+  if (!dA->workvec) {
+    ierr = VecCreateSeqCUDA(PetscObjectComm((PetscObject)A), m, &(dA->workvec));CHKERRQ(ierr);
+  }
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  cerr = cusolverDnXgeqrf(handle,m,n,da,lda,dA->d_fact_tau,dA->d_fact_work,dA->fact_lwork,dA->d_fact_info);CHKERRCUSOLVER(cerr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = MatDenseCUDARestoreArray(A,&da);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  ccer = cudaMemcpy(&info, dA->d_fact_info, sizeof(PetscCuBLASInt), cudaMemcpyDeviceToHost);CHKERRCUDA(ccer);
+  if (info < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong argument to cuSolver %d",-info);
+#endif
+  A->factortype = MAT_FACTOR_QR;
+  a->rank = min;
+  ierr = PetscLogGpuFlops(2.0*min*min*(max-min/3.0));CHKERRQ(ierr);
+
+  A->ops->solve             = MatSolve_SeqDenseCUDA_QR;
+  A->ops->solvetranspose    = MatSolveTranspose_SeqDenseCUDA_QR;
+  A->ops->matsolve          = MatMatSolve_SeqDenseCUDA_QR;
+  A->ops->matsolvetranspose = MatMatSolveTranspose_SeqDenseCUDA_QR;
 
   ierr = PetscFree(A->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERCUDA,&A->solvertype);CHKERRQ(ierr);
@@ -644,13 +983,12 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(
   const PetscScalar *da,*db;
   PetscScalar       *dc;
   PetscScalar       one=1.0,zero=0.0;
-  int               m,n,k;
+  PetscCuBLASInt    m,n,k;
   PetscInt          alda,blda,clda;
   PetscErrorCode    ierr;
   cublasHandle_t    cublasv2handle;
   PetscBool         Aiscuda,Biscuda;
   cublasStatus_t    berr;
-  cudaError_t       cerr;
 
   PetscFunctionBegin;
   /* we may end up with SEQDENSE as one of the arguments */
@@ -662,12 +1000,12 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(
   if (!Biscuda) {
     ierr = MatConvert(B,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
   }
-  ierr = PetscMPIIntCast(C->rmap->n,&m);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(C->cmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(C->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(C->cmap->n,&n);CHKERRQ(ierr);
   if (tA) {
-    ierr = PetscMPIIntCast(A->rmap->n,&k);CHKERRQ(ierr);
+    ierr = PetscCuBLASIntCast(A->rmap->n,&k);CHKERRQ(ierr);
   } else {
-    ierr = PetscMPIIntCast(A->cmap->n,&k);CHKERRQ(ierr);
+    ierr = PetscCuBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);
   }
   if (!m || !n || !k) PetscFunctionReturn(0);
   ierr = PetscInfo3(C,"Matrix-Matrix product %d x %d x %d on backend\n",m,k,n);CHKERRQ(ierr);
@@ -681,7 +1019,6 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   berr = cublasXgemm(cublasv2handle,tA ? CUBLAS_OP_T : CUBLAS_OP_N,tB ? CUBLAS_OP_T : CUBLAS_OP_N,
                      m,n,k,&one,da,alda,db,blda,&zero,dc,clda);CHKERRCUBLAS(berr);
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(1.0*m*n*k + 1.0*m*n*(k-1));CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
@@ -740,7 +1077,7 @@ static PetscErrorCode MatMultAdd_SeqDenseCUDA_Private(Mat A,Vec xx,Vec yy,Vec zz
   const PetscScalar *xarray,*da;
   PetscScalar       *zarray;
   PetscScalar       one=1.0,zero=0.0;
-  int               m, n, lda; /* Use PetscMPIInt as it is typedef'ed to int */
+  PetscCuBLASInt    m, n, lda;
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    berr;
   PetscErrorCode    ierr;
@@ -756,9 +1093,9 @@ static PetscErrorCode MatMultAdd_SeqDenseCUDA_Private(Mat A,Vec xx,Vec yy,Vec zz
     PetscFunctionReturn(0);
   }
   ierr = PetscInfo2(A,"Matrix-vector product %d x %d on backend\n",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(A->rmap->n,&m);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(A->cmap->n,&n);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(mat->lda,&lda);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(mat->lda,&lda);CHKERRQ(ierr);
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
   ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
@@ -851,18 +1188,17 @@ PetscErrorCode MatScale_SeqDenseCUDA(Mat Y,PetscScalar alpha)
 {
   Mat_SeqDense   *y = (Mat_SeqDense*)Y->data;
   PetscScalar    *dy;
-  int            j,N,m,lday,one = 1;
+  PetscCuBLASInt j,N,m,lday,one = 1;
   cublasHandle_t cublasv2handle;
   cublasStatus_t berr;
   PetscErrorCode ierr;
-  cudaError_t    cerr;
 
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
   ierr = MatDenseCUDAGetArray(Y,&dy);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(Y->rmap->n*Y->cmap->n,&N);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(Y->rmap->n,&m);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(y->lda,&lday);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(Y->rmap->n*Y->cmap->n,&N);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(Y->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(y->lda,&lday);CHKERRQ(ierr);
   ierr = PetscInfo2(Y,"Performing Scale %d x %d on backend\n",Y->rmap->n,Y->cmap->n);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   if (lday>m) {
@@ -872,7 +1208,6 @@ PetscErrorCode MatScale_SeqDenseCUDA(Mat Y,PetscScalar alpha)
   } else {
     berr = cublasXscal(cublasv2handle,N,&alpha,dy,one);CHKERRCUBLAS(berr);
   }
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(N);CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArray(Y,&dy);CHKERRQ(ierr);
@@ -885,11 +1220,10 @@ PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y,PetscScalar alpha,Mat X,MatStructure s
   Mat_SeqDense      *y = (Mat_SeqDense*)Y->data;
   const PetscScalar *dx;
   PetscScalar       *dy;
-  int               j,N,m,ldax,lday,one = 1;
+  PetscCuBLASInt    j,N,m,ldax,lday,one = 1;
   cublasHandle_t    cublasv2handle;
   cublasStatus_t    berr;
   PetscErrorCode    ierr;
-  cudaError_t       cerr;
 
   PetscFunctionBegin;
   if (!X->rmap->n || !X->cmap->n) PetscFunctionReturn(0);
@@ -900,10 +1234,10 @@ PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y,PetscScalar alpha,Mat X,MatStructure s
   } else {
     ierr = MatDenseCUDAGetArrayWrite(Y,&dy);CHKERRQ(ierr);
   }
-  ierr = PetscMPIIntCast(X->rmap->n*X->cmap->n,&N);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(X->rmap->n,&m);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(x->lda,&ldax);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(y->lda,&lday);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(X->rmap->n*X->cmap->n,&N);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(X->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(x->lda,&ldax);CHKERRQ(ierr);
+  ierr = PetscCuBLASIntCast(y->lda,&lday);CHKERRQ(ierr);
   ierr = PetscInfo2(Y,"Performing AXPY %d x %d on backend\n",Y->rmap->n,Y->cmap->n);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   if (ldax>m || lday>m) {
@@ -913,7 +1247,6 @@ PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y,PetscScalar alpha,Mat X,MatStructure s
   } else {
     berr = cublasXaxpy(cublasv2handle,N,&alpha,dx,one,dy,one);CHKERRCUBLAS(berr);
   }
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(PetscMax(2.*N-1,0));CHKERRQ(ierr);
   ierr = MatDenseCUDARestoreArrayRead(X,&dx);CHKERRQ(ierr);
@@ -935,6 +1268,7 @@ static PetscErrorCode MatReset_SeqDenseCUDA(Mat A)
   if (dA) {
     if (dA->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"MatDenseCUDAResetArray() must be called first");
     if (!dA->user_alloc) { cerr = cudaFree(dA->d_v);CHKERRCUDA(cerr); }
+    cerr = cudaFree(dA->d_fact_tau);CHKERRCUDA(cerr);
     cerr = cudaFree(dA->d_fact_ipiv);CHKERRCUDA(cerr);
     cerr = cudaFree(dA->d_fact_info);CHKERRCUDA(cerr);
     cerr = cudaFree(dA->d_fact_work);CHKERRCUDA(cerr);
@@ -959,35 +1293,16 @@ PetscErrorCode MatDestroy_SeqDenseCUDA(Mat A)
 
 PetscErrorCode MatDuplicate_SeqDenseCUDA(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
+  MatDuplicateOption hcpvalues = (cpvalues == MAT_COPY_VALUES && A->offloadmask != PETSC_OFFLOAD_CPU) ? MAT_DO_NOT_COPY_VALUES : cpvalues;
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatDuplicateNoCreate_SeqDense(*B,A,cpvalues);CHKERRQ(ierr);
-  if (cpvalues == MAT_COPY_VALUES && A->offloadmask != PETSC_OFFLOAD_CPU) {
-    Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
-    const PetscScalar *da;
-    PetscScalar       *db;
-    cudaError_t       cerr;
-    PetscInt          ldb;
-
-    ierr = MatDenseCUDAGetArrayRead(A,&da);CHKERRQ(ierr);
-    ierr = MatDenseCUDAGetArrayWrite(*B,&db);CHKERRQ(ierr);
-    ierr = MatDenseGetLDA(*B,&ldb);CHKERRQ(ierr);
-    if (a->lda > A->rmap->n || ldb > A->rmap->n) {
-      PetscInt j,m = A->rmap->n;
-
-      for (j=0; j<A->cmap->n; j++) { /* it can be done better */
-        cerr = cudaMemcpy(db+j*ldb,da+j*a->lda,m*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
-      }
-    } else {
-      cerr = cudaMemcpy(db,da,(sizeof(PetscScalar)*A->cmap->n)*A->rmap->n,cudaMemcpyDeviceToDevice);CHKERRCUDA(cerr);
-    }
-    ierr = MatDenseCUDARestoreArrayRead(A,&da);CHKERRQ(ierr);
-    ierr = MatDenseCUDARestoreArrayWrite(*B,&db);CHKERRQ(ierr);
-    (*B)->offloadmask = PETSC_OFFLOAD_BOTH;
+  ierr = MatDuplicateNoCreate_SeqDense(*B,A,hcpvalues);CHKERRQ(ierr);
+  if (cpvalues == MAT_COPY_VALUES && hcpvalues != MAT_COPY_VALUES) {
+    ierr = MatCopy_SeqDenseCUDA(A,*B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1035,13 +1350,20 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_cuda(Mat A,MatFactorType ftype
   ierr = MatSetType(*fact,MATSEQDENSECUDA);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     (*fact)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqDense;
-  } else {
+    (*fact)->ops->ilufactorsymbolic = MatLUFactorSymbolic_SeqDense;
+  } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense;
+  } else if (ftype == MAT_FACTOR_QR) {
+    ierr = PetscObjectComposeFunction((PetscObject)(*fact),"MatQRFactor_C",MatQRFactor_SeqDense);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)(*fact),"MatQRFactorSymbolic_C",MatQRFactorSymbolic_SeqDense);CHKERRQ(ierr);
   }
   (*fact)->factortype = ftype;
-
   ierr = PetscFree((*fact)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERCUDA,&(*fact)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_LU]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_ILU]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_CHOLESKY]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_ICC]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1239,6 +1561,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_SeqDenseCUDA);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseSetLDA_C",MatDenseSetLDA_SeqDenseCUDA);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatQRFactor_C",MatQRFactor_SeqDenseCUDA);CHKERRQ(ierr);
 
     A->ops->duplicate               = MatDuplicate_SeqDenseCUDA;
     A->ops->mult                    = MatMult_SeqDenseCUDA;
@@ -1255,6 +1578,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     A->ops->getcolumnvector         = MatGetColumnVector_SeqDenseCUDA;
     A->ops->scale                   = MatScale_SeqDenseCUDA;
     A->ops->copy                    = MatCopy_SeqDenseCUDA;
+    A->ops->zeroentries             = MatZeroEntries_SeqDenseCUDA;
   } else {
     /* make sure we have an up-to-date copy on the CPU */
     ierr = MatSeqDenseCUDACopyFromGPU(A);CHKERRQ(ierr);
@@ -1270,6 +1594,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseGetSubMatrix_C",MatDenseGetSubMatrix_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseRestoreSubMatrix_C",MatDenseRestoreSubMatrix_SeqDense);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatDenseSetLDA_C",MatDenseSetLDA_SeqDense);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatQRFactor_C",MatQRFactor_SeqDense);CHKERRQ(ierr);
 
     A->ops->duplicate               = MatDuplicate_SeqDense;
     A->ops->mult                    = MatMult_SeqDense;
@@ -1287,6 +1612,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
     A->ops->getcolumnvector         = MatGetColumnVector_SeqDense;
     A->ops->scale                   = MatScale_SeqDense;
     A->ops->copy                    = MatCopy_SeqDense;
+    A->ops->zeroentries             = MatZeroEntries_SeqDense;
   }
   if (a->cmat) {
     ierr = MatBindToCPU(a->cmat,flg);CHKERRQ(ierr);

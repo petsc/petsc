@@ -35,7 +35,7 @@ struct _n_User {
 };
 
 /*
-*  User-defined routines
+   User-defined routines
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {

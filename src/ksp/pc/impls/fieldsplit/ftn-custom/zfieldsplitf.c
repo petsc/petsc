@@ -49,7 +49,6 @@ PETSC_EXTERN void  pcfieldsplitsetis_(PC *pc, char* splitname,IS *is, PetscError
   FREECHAR(splitname,t);
 }
 
-
 PETSC_EXTERN void  pcfieldsplitgetis_(PC *pc, char* splitname,IS *is, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
@@ -57,6 +56,4 @@ PETSC_EXTERN void  pcfieldsplitgetis_(PC *pc, char* splitname,IS *is, PetscError
   *ierr = PCFieldSplitGetIS(*pc,t,is);if (*ierr) return;
   FREECHAR(splitname,t);
 }
-
-
 

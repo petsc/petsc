@@ -184,7 +184,6 @@ static PetscErrorCode IntegrandHessianProductPP(TS ts,PetscReal t,Vec U,Vec *Vl,
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,void *ctx)
 {
   Aircraft          actx = (Aircraft)ctx;
@@ -655,5 +654,4 @@ PetscErrorCode ComputeObjHessianWithSOA(Vec Dir,PetscScalar arr[],Aircraft actx)
       suffix: 3
       args:  -ts_adapt_type none -ts_type rk -ts_rk_type 3 -viewer_binary_skip_info -tao_monitor -tao_view -tao_type bntr -tao_bnk_pc_type none -exacthessian -matrixfree
 TEST*/
-
 

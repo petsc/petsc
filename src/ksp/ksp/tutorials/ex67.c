@@ -8,8 +8,6 @@ static char help[] = "Krylov methods to solve u''  = f in parallel with periodic
    Processors: n
 T*/
 
-
-
 /*
 
    This tests solving singular inconsistent systems with GMRES
@@ -24,7 +22,6 @@ T*/
 
    Note that though this example does solve the system with right preconditioning and nullspace(A) != nullspace(A') it does not produce the
    norm minimizing solution, that is the computed solution is not orthogonal to the nullspace(A).
-
 
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscksp.h" so that we can use KSP solvers.  Note that this
@@ -245,7 +242,6 @@ PetscErrorCode FormMatrix(Mat jac,void *ctx)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

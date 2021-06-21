@@ -257,7 +257,6 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    SNESLineSearchReset - Undoes the SNESLineSearchSetUp() and deletes any Vecs or Mats allocated by the line search.
 
@@ -600,7 +599,7 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   PetscValidHeaderSpecific(F,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(Y,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,5);
 
   linesearch->result = SNES_LINESEARCH_SUCCEEDED;
 

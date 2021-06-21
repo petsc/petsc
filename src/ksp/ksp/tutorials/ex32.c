@@ -64,7 +64,6 @@ int main(int argc,char **argv)
 
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
 
-
   ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DM");CHKERRQ(ierr);
   user.nu     = 0.1;
   ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, NULL);CHKERRQ(ierr);
@@ -119,7 +118,6 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
 {
@@ -197,7 +195,6 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

@@ -273,7 +273,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
 -  all - by default only tries to display objects created explicitly by the user, if all is PETSC_TRUE then lists all outstanding objects
 
    Options Database:
-.  -objects_dump <all>
+.  -objects_dump <all> - print information about all the objects that exist at the end of the programs run
 
    Level: advanced
 
@@ -464,7 +464,6 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj
 
     Level: developer
 
-
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectProcessOptionsHandlers(), PetscObjectDestroyOptionsHandlers()
 
 @*/
@@ -489,7 +488,6 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
 
     Level: developer
 
-
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectDestroyOptionsHandlers()
 
 @*/
@@ -499,7 +497,7 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptions
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  PetscValidHeader(obj,2);
   for (i=0; i<obj->noptionhandler; i++) {
     ierr = (*obj->optionhandler[i])(PetscOptionsObject,obj,obj->optionctx[i]);CHKERRQ(ierr);
   }
@@ -515,7 +513,6 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscOptionItems *PetscOptions
 .   obj - the PETSc object
 
     Level: developer
-
 
 .seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectProcessOptionsHandlers()
 
@@ -535,7 +532,6 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
   obj->noptionhandler = 0;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PetscObjectReference - Indicates to any PetscObject that it is being
@@ -714,7 +710,6 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
    PetscContainerCreate() for info on how to create an object from a
    user-provided pointer that may then be composed with PETSc objects.
 
-
 .seealso: PetscObjectQuery(), PetscContainerCreate(), PetscObjectComposeFunction(), PetscObjectQueryFunction()
 @*/
 PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
@@ -746,7 +741,6 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
    Level: advanced
 
    The reference count of neither object is increased in this call
-
 
 .seealso: PetscObjectCompose(), PetscObjectComposeFunction(), PetscObjectQueryFunction()
 @*/
@@ -848,7 +842,7 @@ struct _p_PetscContainer {
 
    Level: advanced
 
-.seealso: PetscContainerDestroy(), PetscContainterSetUserDestroy()
+.seealso: PetscContainerDestroy(), PetscContainerSetUserDestroy()
 @*/
 PetscErrorCode PetscContainerUserDestroyDefault(void* ctx)
 {
@@ -883,7 +877,6 @@ PetscErrorCode  PetscContainerGetPointer(PetscContainer obj,void **ptr)
   *ptr = obj->ptr;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    PetscContainerSetPointer - Sets the pointer value contained in the container.

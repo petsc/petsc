@@ -9,6 +9,7 @@ configure_options = [
   'COPTFLAGS=-g -O',
   #'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
+  '--download-boost=1',
   '--with-shared-libraries=1'
   ]
 

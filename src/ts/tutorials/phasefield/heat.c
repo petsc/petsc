@@ -19,7 +19,6 @@ Evolve the  Allen-Cahn equation: zoom in on part of the domain
 ---------------
 ./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_max_time 5  -zoom .25,.45  -mymonitor
 
-
 The option -square_initial indicates it should use a square wave initial condition otherwise it loads the file InitialSolution.heat as the initial solution. You should run with
 ./heat -square_initial -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_max_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
 to generate InitialSolution.heat
@@ -97,7 +96,6 @@ int main(int argc,char **argv)
   ierr = TSSetMaxTime(ts,.02);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
-
 
   if (mymonitor) {
     ctx.ports = NULL;

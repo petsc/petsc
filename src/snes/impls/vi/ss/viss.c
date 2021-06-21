@@ -196,8 +196,6 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
   PetscFunctionReturn(0);
 }
 
-
-
 /*
    SNESSolve_VINEWTONSSLS - Solves the complementarity problem with a semismooth Newton
    method using a line search.
@@ -436,7 +434,6 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOpt
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* -------------------------------------------------------------------------- */
 /*MC

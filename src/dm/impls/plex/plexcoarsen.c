@@ -22,7 +22,7 @@ PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]
   ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
   for (c = nlevels-1; c >= 0; --c) {
     ierr = DMCoarsen(rdm, PetscObjectComm((PetscObject) dm), &dmCoarsened[c]);CHKERRQ(ierr);
-    ierr = DMCopyBoundary(rdm, dmCoarsened[c]);CHKERRQ(ierr);
+    ierr = DMCopyDisc(rdm, dmCoarsened[c]);CHKERRQ(ierr);
     if (localized) {ierr = DMLocalizeCoordinates(dmCoarsened[c]);CHKERRQ(ierr);}
     ierr = DMSetCoarseDM(rdm, dmCoarsened[c]);CHKERRQ(ierr);
     rdm  = dmCoarsened[c];

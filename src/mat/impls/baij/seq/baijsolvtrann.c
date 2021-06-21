@@ -29,7 +29,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
     }
   }
 
-
   /* forward solve the upper triangular transpose */
   ls = a->solve_work + A->cmap->n;
   for (i=0; i<n; i++) {
@@ -97,7 +96,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
       t[i*bs+j] = b[c[i]*bs+j];
     }
   }
-
 
   /* forward solve the upper triangular transpose */
   ls = a->solve_work + A->cmap->n;

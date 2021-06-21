@@ -172,8 +172,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
-
 /*TEST
 
    test:
@@ -191,12 +189,14 @@ int main(int argc,char **argv)
       nsize: 4
       args: -verbose -build_twosided_f -build_twosided ibarrier
       output_file: output/ex8_1.out
+      requires: define(PETSC_HAVE_MPI_IBARRIER)
 
    test:
       suffix: ibarrier
       nsize: 4
       args: -verbose -build_twosided ibarrier
       output_file: output/ex8_1.out
+      requires: define(PETSC_HAVE_MPI_IBARRIER)
 
    test:
       suffix: redscatter

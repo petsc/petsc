@@ -141,7 +141,7 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(G,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(G,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,G,3);
   ierr = VecLockReadPush(X);CHKERRQ(ierr);
@@ -367,8 +367,6 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
 . rows    - index list of rows for sigma_w
 . cols    - index list of columns for sigma_w
 - vals - array of weights
-
-
 
   Note: Either sigma_v or sigma_w (or both) should be NULL
 

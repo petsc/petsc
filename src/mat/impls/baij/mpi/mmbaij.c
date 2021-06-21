@@ -148,7 +148,6 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
   MatScalar      *a  = Bbaij->a;
   MatScalar      *atmp;
 
-
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
@@ -212,7 +211,6 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
 
 static PetscInt *uglyrmapd = NULL,*uglyrmapo = NULL;  /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
 static Vec      uglydd     = NULL,uglyoo     = NULL;  /* work vectors used to scale the two parts of the local matrix */
-
 
 PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 {

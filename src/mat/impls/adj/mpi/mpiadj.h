@@ -3,7 +3,6 @@
 #define __ADJ_H
 #include <petsc/private/matimpl.h>
 
-
 /*
   MATMPIAdj format - Compressed row storage for storing adjacency lists, and possibly weights
                      This is for grid reorderings (to reduce bandwidth)

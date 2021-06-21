@@ -52,7 +52,6 @@ static char help[] = "Poiseuille flow problem. Viscous, laminar flow in a 2D cha
 /*                                                                             */
 /*---------------------------------------------------------------------------- */
 
-
 #include <petscksp.h>
 
 typedef struct {
@@ -715,7 +714,6 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-
 /*TEST
 
    test:
@@ -756,6 +754,5 @@ int main(int argc, char **argv)
       suffix: 7
       nsize: 2
       args: -nx 4 -ny 8 -mat_set_symmetric -ksp_type preonly -pc_type fieldsplit -pc_fieldsplit_type gkb -pc_fieldsplit_gkb_tol 1e-4 -pc_fieldsplit_gkb_nu 5 -fieldsplit_0_ksp_type cg -fieldsplit_0_pc_type jacobi -fieldsplit_0_ksp_rtol 1e-6
-
 
 TEST*/

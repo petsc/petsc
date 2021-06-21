@@ -28,7 +28,6 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
   PetscFunctionReturn(0);
 }
 
-
 /*@
     VecGhostGetLocalForm - Obtains the local ghosted representation of
     a parallel vector (obtained with VecCreateGhost(), VecCreateGhostWithArray()
@@ -117,7 +116,7 @@ PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(l,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(l,VEC_CLASSID,2);
 
   *flg = PETSC_FALSE;
   ierr = PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq);CHKERRQ(ierr);

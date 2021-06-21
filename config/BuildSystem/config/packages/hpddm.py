@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = 'e58205623814f59bf2aec2e2bab8eafcfbd22466' # main mar-24-2021
+    self.gitcommit              = '0c476fe8dc9208b9530935217dfa95104d366430' # main june-17-2021
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.0.8'
     self.versionname            = 'HPDDM_VERSION'
@@ -13,7 +13,6 @@ class Configure(config.package.Package):
     self.functions              = []
     self.includes               = ['HPDDM.hpp']
     self.skippackagewithoptions = 1
-    self.useddirectly           = 1
     self.linkedbypetsc          = 0
     self.builtafterpetsc        = 1
     self.precisions             = ['single','double']
@@ -29,15 +28,14 @@ class Configure(config.package.Package):
     self.mpi             = framework.require('config.packages.MPI',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.slepc           = framework.require('config.packages.slepc',self)
-    self.mkl_sparse      = framework.require('config.packages.mkl_sparse',self)
     self.deps            = [self.blasLapack,self.cxxlibs,self.mathlib]
-    self.odeps           = [self.mpi,self.slepc,self.mkl_sparse]
+    self.odeps           = [self.mpi,self.slepc]
     return
 
   def Install(self):
     import os
-    if not self.mkl_sparse.found and self.blasLapack.mkl:
-      raise RuntimeError('Cannot use HPDDM with the MKL but no \'mkl_spblas.h\', check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
+    if self.blasLapack.mkl and not self.blasLapack.mkl_spblas_h:
+      raise RuntimeError('Cannot use HPDDM with the MKL as \'mkl_spblas.h\' was not found, check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
     buildDir = os.path.join(self.packageDir,'petsc-build')
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
@@ -75,7 +73,7 @@ class Configure(config.package.Package):
           # how can we get the slepc lib? Eventually, we may want to use the variables from the framework
           #cxxflags += self.headers.toStringNoDupes(self.slepc.dinclude)
           #ldflags += self.libraries.toString(self.slepc.dlib)
-          dinclude = [incDir,self.headers.toString(self.dinclude),os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include'),os.path.join(self.petscdir.dir,'include'),os.path.join(self.packageDir,'include')]
+          dinclude = [incDir]+self.dinclude+[os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include'),os.path.join(self.petscdir.dir,'include'),os.path.join(self.packageDir,'include')]
           dlib = [os.path.join(libDir,'libslepc.'+self.setCompilers.sharedLibraryExt)]
           cxxflags += ' '+self.headers.toStringNoDupes(dinclude)
           ldflags += ' '+self.libraries.toStringNoDupes(dlib)
@@ -89,15 +87,6 @@ class Configure(config.package.Package):
             cxxflags += ' -Dpetsc_EXPORTS'
             # need to explicitly link to PETSc and BLAS on Windows
             ldflags += ' '+self.libraries.toStringNoDupes([os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt),self.libraries.toStringNoDupes(self.blasLapack.lib)])
-          self.addMakeRule('hpddmcopy','',\
-                             ['@echo "*** Copying HPDDM ***"',\
-                              '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
-                              '@'+cpstr+' > ${PETSC_ARCH}/lib/petsc/conf/hpddm.log 2>&1 || \\\n\
-                   (echo "**************************ERROR*************************************" && \\\n\
-                   echo "Error copying HPDDM. Check ${PETSC_ARCH}/lib/petsc/conf/hpddm.log" && \\\n\
-                   echo "********************************************************************" && \\\n\
-                   touch '+os.path.join('${PETSC_ARCH}','lib','petsc','conf','hpddm.errorflg')+' && \\\n\
-                   exit 1)'])
           self.addMakeRule('hpddmbuild',slepcbuilddep,\
                              ['@echo "*** Building and installing HPDDM ***"',\
                               '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\

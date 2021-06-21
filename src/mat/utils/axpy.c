@@ -43,8 +43,7 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y,PetscScalar a,Mat X,MatStru
 +  a - the scalar multiplier
 .  X - the first matrix
 .  Y - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN
-         or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, UNKNOWN_NONZERO_PATTERN, or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
 
    Notes: No operation is performed when a is zero.
 
@@ -382,7 +381,7 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 +  a - the PetscScalar multiplier
 .  Y - the first matrix
 .  X - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, UNKNOWN_NONZERO_PATTERN, or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
 
    Level: intermediate
 
@@ -481,8 +480,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
 {
   Mat            a;
   PetscScalar    *newVals;
-  PetscInt       *newCols;
-  PetscInt       rStart, rEnd, numRows, maxRows, r, colMax = 0;
+  PetscInt       *newCols, rStart, rEnd, numRows, maxRows, r, colMax = 0;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -510,9 +508,12 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
       ierr   = MatRestoreRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
     }
     numRows = rEnd - rStart;
-    ierr    = MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
-    ierr    = PetscMalloc2(colMax,&newCols,colMax,&newVals);CHKERRQ(ierr);
+    ierr    = MPIU_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+    ierr    = PetscMalloc2(colMax, &newCols, colMax, &newVals);CHKERRQ(ierr);
+    ierr    = MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &flg);CHKERRQ(ierr); /* cache user-defined value */
     ierr    = MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
+    /* short-circuit code in MatAssemblyBegin() and MatAssemblyEnd()             */
+    /* that are potentially called many times depending on the distribution of A */
     for (r = rStart; r < rStart+maxRows; ++r) {
       const PetscScalar *vals;
       const PetscInt    *cols;
@@ -532,7 +533,8 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
       ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
     ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
-    ierr = PetscFree2(newCols,newVals);CHKERRQ(ierr);
+    ierr = PetscFree2(newCols, newVals);CHKERRQ(ierr);
+    ierr = MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, flg);CHKERRQ(ierr); /* reset option to its user-defined value */
   }
   PetscFunctionReturn(0);
 }

@@ -9,7 +9,6 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
     Same as ex6.c and ex7.c except calls the TSROSW integrator on the entire DAE
 */
 
-
 /*
    f(U,V) = U + V
 

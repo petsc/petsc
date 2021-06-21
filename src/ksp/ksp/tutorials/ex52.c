@@ -154,7 +154,7 @@ int main(int argc,char **args)
   /*
     Example of how to use external package MUMPS
     Note: runtime options
-          '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -mat_mumps_icntl_7 2 -mat_mumps_icntl_1 0.0'
+          '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -mat_mumps_icntl_7 3 -mat_mumps_icntl_1 0.0'
           are equivalent to these procedural calls
   */
 #if defined(PETSC_HAVE_MUMPS)
@@ -233,7 +233,6 @@ int main(int argc,char **args)
   }
 #endif
 
-
   /*
     Example of how to use external package STRUMPACK
     Note: runtime options
@@ -264,7 +263,7 @@ int main(int argc,char **args)
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
     }
 #if !defined(PETSC_HAVE_STRUMPACK)
-    SETERRQ(PETSC_COMM_WORLD,PETSC_,"This test requires STRUMPACK");
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires STRUMPACK");
 #endif
     ierr = PCFactorSetMatSolverType(pc,MATSOLVERSTRUMPACK);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
@@ -390,7 +389,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

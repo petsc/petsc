@@ -187,7 +187,7 @@ PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], Pet
   PetscInt lo = 0,hi = n;
 
   PetscFunctionBegin;
-  PetscValidPointer(loc,4);
+  PetscValidPointer(loc,5);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
   PetscValidPointer(t,3);
   PetscCheckSorted(n,t);

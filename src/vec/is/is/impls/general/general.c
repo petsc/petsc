@@ -3,7 +3,6 @@
      Provides the functions for index sets (IS) defined by a list of integers.
 */
 #include <../src/vec/is/is/impls/general/general.h> /*I  "petscis.h"  I*/
-#include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerhdf5impl.h>
 
 static PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
@@ -193,7 +192,8 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   hid_t           inttype;    /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
   hid_t           file_id, group;
   hsize_t         dim, maxDims[3], dims[3], chunkDims[3], count[3],offset[3];
-  PetscInt        bs, N, n, timestep, low;
+  PetscBool       timestepping;
+  PetscInt        bs, N, n, timestep=PETSC_MIN_INT, low;
   const PetscInt *ind;
   const char     *isname;
   PetscErrorCode  ierr;
@@ -202,7 +202,10 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
   bs   = PetscMax(bs, 1); /* If N = 0, bs  = 0 as well */
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5IsTimestepping(viewer, &timestepping);CHKERRQ(ierr);
+  if (timestepping) {
+    ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+  }
 
   /* Create the dataspace for the dataset.
    *
@@ -308,6 +311,8 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Sclose,(memspace));
   PetscStackCallHDF5(H5Dclose,(dset_id));
+
+  ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)is,"timestepping",PETSC_BOOL,&timestepping);CHKERRQ(ierr);
   ierr = PetscInfo1(is, "Wrote IS object with name %s\n", isname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

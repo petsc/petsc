@@ -1,4 +1,4 @@
-New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree -2
+New space: triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree -2
   All nodes:
       Quadrature of order -1 on 1 points (dim 3)
   All node indices:
@@ -7,7 +7,7 @@ New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, 
 ( 1, 1, 1, 1, 1,): [ -0., 1., -0.,]
   All matrix: 9 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree -1
+New space: triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree -1
   All nodes:
       Quadrature of order -1 on 1 points (dim 3)
   All node indices:
@@ -16,14 +16,14 @@ New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, 
 ( 1, 1, 1, 1, 1,): [ 1., -0., 0.,]
   All matrix: 9 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree 0
+New space: triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree 0
   All nodes:
       Quadrature of order -1 on 1 points (dim 3)
   All node indices:
 ( 1, 1, 1, 1, 1,): [ 1.,]
   All matrix: 1 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree 1
+New space: triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree 1
   All nodes:
       Quadrature of order -1 on 1 points (dim 3)
   All node indices:
@@ -32,7 +32,7 @@ New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, 
 ( 1, 1, 1, 1, 1,): [ 0., 0., 1.,]
   All matrix: 9 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree 2
+New space: triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree 2
   All nodes:
       Quadrature of order -1 on 1 points (dim 3)
   All node indices:
@@ -41,14 +41,14 @@ New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, 
 ( 1, 1, 1, 1, 1,): [ -0., -0., 1.,]
   All matrix: 9 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree 3
+New space: triangular_prism, order 0, trimmed 0, tensor 2, continuous 1, form degree 3
   All nodes:
       Quadrature of order -1 on 1 points (dim 3)
   All node indices:
 ( 1, 1, 1, 1, 1,): [ 1.,]
   All matrix: 1 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree -2
+New space: triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree -2
   All nodes:
       Quadrature of order -1 on 18 points (dim 3)
   All node indices:
@@ -71,7 +71,7 @@ New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, 
 ( 1, 0, 2, 1, 2,): [ -1., 0., 0.,]
 ( 2, 0, 1, 1, 2,): [ -1., 0., 0.,]
   All matrix: 54 nonzeros
-New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree -1
+New space: triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree -1
   All nodes:
       Quadrature of order -1 on 18 points (dim 3)
   All node indices:
@@ -94,7 +94,7 @@ New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, 
 ( 0, 0, 1, 2, 1,): [ 1., 0., 0.,]
 ( 0, 0, 1, 1, 2,): [ 1., 0., 0.,]
   All matrix: 54 nonzeros
-New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree 0
+New space: triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree 0
   All nodes:
       Quadrature of order -1 on 6 points (dim 3)
   All node indices:
@@ -105,7 +105,7 @@ New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, 
 ( 0, 1, 0, 0, 1,): [ 1.,]
 ( 0, 0, 1, 0, 1,): [ 1.,]
   All matrix: 6 nonzeros
-New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree 1
+New space: triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree 1
   All nodes:
       Quadrature of order -1 on 18 points (dim 3)
   All node indices:
@@ -128,7 +128,7 @@ New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, 
 ( 0, 0, 1, 2, 1,): [ 0., 0., 1.,]
 ( 0, 0, 1, 1, 2,): [ 0., 0., 1.,]
   All matrix: 54 nonzeros
-New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree 2
+New space: triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree 2
   All nodes:
       Quadrature of order -1 on 18 points (dim 3)
   All node indices:
@@ -151,7 +151,7 @@ New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, 
 ( 1, 0, 2, 1, 2,): [ 0., 0., -1.,]
 ( 2, 0, 1, 1, 2,): [ 0., 0., -1.,]
   All matrix: 54 nonzeros
-New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree 3
+New space: triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, form degree 3
   All nodes:
       Quadrature of order -1 on 6 points (dim 3)
   All node indices:
@@ -163,7 +163,7 @@ New space: tensor_triangular_prism, order 1, trimmed 0, tensor 2, continuous 1, 
 ( 1, 1, 2, 1, 2,): [ 1.,]
   All matrix: 6 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree -2
+New space: triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree -2
   All nodes:
       Quadrature of order -1 on 51 points (dim 3)
   All node indices:
@@ -225,7 +225,7 @@ New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 12 points (dim 3)
   Interior matrix: 45 nonzeros
-New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree -1
+New space: triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree -1
   All nodes:
       Quadrature of order -1 on 51 points (dim 3)
   All node indices:
@@ -287,7 +287,7 @@ New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 3 points (dim 3)
   Interior matrix: 9 nonzeros
-New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree 0
+New space: triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree 0
   All nodes:
       Quadrature of order -1 on 18 points (dim 3)
   All node indices:
@@ -310,7 +310,7 @@ New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, 
 ( 0, 1, 0, 0, 1,): [ 1.,]
 ( 0, 0, 1, 0, 1,): [ 1.,]
   All matrix: 18 nonzeros
-New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree 1
+New space: triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree 1
   All nodes:
       Quadrature of order -1 on 51 points (dim 3)
   All node indices:
@@ -372,7 +372,7 @@ New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 3 points (dim 3)
   Interior matrix: 9 nonzeros
-New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree 2
+New space: triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree 2
   All nodes:
       Quadrature of order -1 on 51 points (dim 3)
   All node indices:
@@ -434,7 +434,7 @@ New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 12 points (dim 3)
   Interior matrix: 45 nonzeros
-New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree 3
+New space: triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, form degree 3
   All nodes:
       Quadrature of order -1 on 18 points (dim 3)
   All node indices:
@@ -458,7 +458,7 @@ New space: tensor_triangular_prism, order 2, trimmed 0, tensor 2, continuous 1, 
 ( 1, 1, 3, 1, 3,): [ 1.,]
   All matrix: 18 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree -2
+New space: triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree -2
   All nodes:
       Quadrature of order -1 on 102 points (dim 3)
   All node indices:
@@ -586,7 +586,7 @@ New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 34 points (dim 3)
   Interior matrix: 156 nonzeros
-New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree -1
+New space: triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree -1
   All nodes:
       Quadrature of order -1 on 102 points (dim 3)
   All node indices:
@@ -714,7 +714,7 @@ New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 16 points (dim 3)
   Interior matrix: 60 nonzeros
-New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree 0
+New space: triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree 0
   All nodes:
       Quadrature of order -1 on 40 points (dim 3)
   All node indices:
@@ -762,7 +762,7 @@ New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 2 points (dim 3)
   Interior matrix: 2 nonzeros
-New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree 1
+New space: triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree 1
   All nodes:
       Quadrature of order -1 on 102 points (dim 3)
   All node indices:
@@ -890,7 +890,7 @@ New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 16 points (dim 3)
   Interior matrix: 60 nonzeros
-New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree 2
+New space: triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree 2
   All nodes:
       Quadrature of order -1 on 102 points (dim 3)
   All node indices:
@@ -1018,7 +1018,7 @@ New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 34 points (dim 3)
   Interior matrix: 156 nonzeros
-New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree 3
+New space: triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, form degree 3
   All nodes:
       Quadrature of order -1 on 40 points (dim 3)
   All node indices:
@@ -1064,7 +1064,7 @@ New space: tensor_triangular_prism, order 3, trimmed 0, tensor 2, continuous 1, 
 ( 1, 1, 4, 1, 4,): [ 1.,]
   All matrix: 40 nonzeros
   Interior data is the same as all data
-New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree -2
+New space: triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree -2
   All nodes:
       Quadrature of order -1 on 174 points (dim 3)
   All node indices:
@@ -1297,7 +1297,7 @@ New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 69 points (dim 3)
   Interior matrix: 360 nonzeros
-New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree -1
+New space: triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree -1
   All nodes:
       Quadrature of order -1 on 174 points (dim 3)
   All node indices:
@@ -1530,7 +1530,7 @@ New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 42 points (dim 3)
   Interior matrix: 180 nonzeros
-New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree 0
+New space: triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree 0
   All nodes:
       Quadrature of order -1 on 75 points (dim 3)
   All node indices:
@@ -1613,7 +1613,7 @@ New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 9 points (dim 3)
   Interior matrix: 9 nonzeros
-New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree 1
+New space: triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree 1
   All nodes:
       Quadrature of order -1 on 174 points (dim 3)
   All node indices:
@@ -1846,7 +1846,7 @@ New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 42 points (dim 3)
   Interior matrix: 180 nonzeros
-New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree 2
+New space: triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree 2
   All nodes:
       Quadrature of order -1 on 174 points (dim 3)
   All node indices:
@@ -2079,7 +2079,7 @@ New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, 
   Interior nodes:
       Quadrature of order -1 on 69 points (dim 3)
   Interior matrix: 360 nonzeros
-New space: tensor_triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree 3
+New space: triangular_prism, order 4, trimmed 0, tensor 2, continuous 1, form degree 3
   All nodes:
       Quadrature of order -1 on 75 points (dim 3)
   All node indices:

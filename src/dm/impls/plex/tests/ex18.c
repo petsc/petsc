@@ -1400,7 +1400,7 @@ static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewe
         case 1: ierr = PetscStrcpy(entityType, "edge");CHKERRQ(ierr); break;
         case 2: ierr = PetscStrcpy(entityType, "face");CHKERRQ(ierr); break;
         case 3: ierr = PetscStrcpy(entityType, "cell");CHKERRQ(ierr); break;
-        default: SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for depth <= 3");CHKERRQ(ierr);
+        default: SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for depth <= 3");
       }
       if (depth == dim && dim < 3) {
         ierr = PetscStrlcat(entityType, " (cell)", sizeof(entityType));CHKERRQ(ierr);
@@ -1433,7 +1433,7 @@ static PetscErrorCode ViewPointsWithType(DM dm, IS points, PetscViewer v)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for ASCII viewer");CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for ASCII viewer");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v), &rank);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPushSynchronized(v);CHKERRQ(ierr);
   ierr = ISGetLocalSize(points, &npoints);CHKERRQ(ierr);
@@ -1679,9 +1679,10 @@ int main(int argc, char **argv)
       nsize: 1
       args: -distribute 0 -interpolate {{none create}separate output}
     test:
+      # Detail viewing in a non-distributed mesh is broken because the DMLabelView() is collective, but the label is not shared
       suffix: 5_dist0
       nsize: 2
-      args: -distribute 0 -interpolate {{none create}separate output}
+      args: -distribute 0 -interpolate {{none create}separate output} -dm_view
     test:
       suffix: 5_dist1
       nsize: 2

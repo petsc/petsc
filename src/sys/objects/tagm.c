@@ -8,7 +8,6 @@
 
 */
 
-
 /*@C
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All
     processors that share the object MUST call this routine EXACTLY the same
@@ -225,7 +224,6 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     PetscObjectsListGetGlobalNumbering - computes a global numbering
     of PetscObjects living on subcommunicators of a given communicator.
 
-
     Collective.
 
     Input Parameters:
@@ -237,7 +235,6 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     Output Parameters:
 +   count      - global number of distinct subcommunicators on objlist (may be > len)
 -   numbering  - global numbers of objlist entries (allocated by user)
-
 
     Level: developer
 
@@ -263,9 +260,9 @@ PetscErrorCode  PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, 
   }
   if (count) {
     /* Obtain the sum of all roots -- the global number of distinct subcomms. */
-    ierr = MPIU_Allreduce(&roots,count,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&roots,count,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   }
-  if (numbering){
+  if (numbering) {
     /* Introduce a global numbering for subcomms, initially known only by subcomm roots. */
     /*
       At each subcomm root number all of the subcomms it owns locally

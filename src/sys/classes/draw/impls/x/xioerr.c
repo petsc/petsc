@@ -14,5 +14,4 @@ PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler xioerrhdl)
   return (PetscXIOErrorHandler)XSetIOErrorHandler((XIOErrorHandler)xioerrhdl);
 }
 
-
 #endif

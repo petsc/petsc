@@ -22,7 +22,6 @@ Evolve the Cahn-Hillard equations:
 ---------------
 ./biharmonic3 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type beuler    -da_refine 6  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
 
-
 */
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -257,7 +256,6 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   ierr = DMRestoreLocalVector(da,&localXdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* ------------------------------------------------------------------- */
 PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)

@@ -11,8 +11,6 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
    Processors: 1
 T*/
 
-
-
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -246,7 +244,6 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
-
 
   /*
      Print the convergence history.  This is intended just to demonstrate
@@ -505,7 +502,6 @@ PetscErrorCode postcheck(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_y,PetscB
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:
@@ -539,5 +535,4 @@ PetscErrorCode postcheck(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_y,PetscB
       args: -pc -par 6.807 -snes_monitor -snes_converged_reason
 
 TEST*/
-
 

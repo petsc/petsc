@@ -60,7 +60,6 @@ $     MATORDERINGRCM - Reverse Cuthill-McKee
 $     MATORDERINGQMD - Quotient Minimum Degree
 - label - [Optional] Label used to segregate ordering into sets, or NULL
 
-
   Output Parameter:
 . perm - The point permutation as an IS, perm[old point number] = new point number
 
@@ -79,7 +78,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(perm, 3);
+  PetscValidPointer(perm, 4);
   ierr = DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency);CHKERRQ(ierr);
   ierr = PetscMalloc3(numCells,&cperm,numCells,&mask,numCells*2,&xls);CHKERRQ(ierr);
   if (numCells) {

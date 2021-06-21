@@ -164,7 +164,6 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 
    Level: advanced
 
-
 .seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor(), TaoSetGradientRoutine()
 @*/
 PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx)
@@ -173,7 +172,7 @@ PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx
   MatFDColoring       coloring = (MatFDColoring)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,MAT_FDCOLORING_CLASSID,6);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,5);
   ierr = PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n");CHKERRQ(ierr);
   ierr = MatFDColoringApply(B,coloring,V,ctx);CHKERRQ(ierr);
   if (H != B) {

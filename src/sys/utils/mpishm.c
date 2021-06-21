@@ -31,7 +31,6 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_Delete_Fn(MPI_Comm comm,Petsc
 /*@C
     PetscShmCommGet - Given a PETSc communicator returns a communicator of all ranks that share a common memory
 
-
     Collective.
 
     Input Parameter:
@@ -206,7 +205,6 @@ struct _n_PetscOmpCtrl {
   hwloc_cpuset_t    cpuset;          /* cpu bindings of omp master */
   hwloc_cpuset_t    omp_cpuset;      /* union of cpu bindings of ranks in omp_comm */
 };
-
 
 /* Allocate and initialize a pthread_barrier_t object in memory shared by processes in omp_comm
    contained by the controller.

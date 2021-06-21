@@ -1,6 +1,6 @@
-DM Object: Mesh 1 MPI processes
+DM Object: box 1 MPI processes
   type: plex
-Mesh in 2 dimensions:
+box in 2 dimensions:
   0-cells: 4
   1-cells: 5
   2-cells: 2
@@ -20,6 +20,6 @@ DMSwarmDataBucketView:
                             blocksize        = 2 
                             blocksize        = 1 
                             blocksize        = 1 
-L2 projection mass:     1.8493864339e+00, x-momentum:     9.4241475860e-01, energy:     1.0480119317e+00.
-L2 projection mass:     1.8493864339e+00, x-momentum:     9.4241475860e-01, energy:     1.0480119317e+00.
-L2 projection mass:     1.8493864339e+00, x-momentum:     9.4241475860e-01, energy:     1.0480119317e+00.
+L2 projection mass:     1.8935001261e+00, x-momentum:     9.9037733513e-01, energy:     1.1268276105e+00.
+L2 projection mass:     1.8935001261e+00, x-momentum:     9.9037733513e-01, energy:     1.1268276105e+00.
+L2 projection mass:     1.8935001261e+00, x-momentum:     9.9037733513e-01, energy:     1.1268276105e+00.

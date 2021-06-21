@@ -1247,7 +1247,6 @@ PetscErrorCode MatHaraSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
   if (ishara) {
     Mat_HARA *a = (Mat_HARA*)A->data;
 
-
     if (!a->sampler) a->sampler = new PetscMatrixSampler();
     a->sampler->SetSamplingMat(B);
     if (bs > 0) a->bs = bs;

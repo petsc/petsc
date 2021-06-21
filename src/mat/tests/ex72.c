@@ -6,17 +6,17 @@ Usage:  ./ex72 -fin <infile> -fout <outfile> \n\
 The option -aij_only allows to use MATAIJ for all cases.\n\\n";
 
 /*
-*   NOTES:
-*
-*   1) Matrix Market files are always 1-based, i.e. the index of the first
-*      element of a matrix is (1,1), not (0,0) as in C.  ADJUST THESE
-*      OFFSETS ACCORDINGLY offsets accordingly when reading and writing
-*      to files.
-*
-*   2) ANSI C requires one to use the "l" format modifier when reading
-*      double precision floating point numbers in scanf() and
-*      its variants.  For example, use "%lf", "%lg", or "%le"
-*      when reading doubles, otherwise errors will occur.
+   NOTES:
+
+   1) Matrix Market files are always 1-based, i.e. the index of the first
+      element of a matrix is (1,1), not (0,0) as in C.  ADJUST THESE
+      OFFSETS ACCORDINGLY offsets accordingly when reading and writing
+      to files.
+
+   2) ANSI C requires one to use the "l" format modifier when reading
+      double precision floating point numbers in scanf() and
+      its variants.  For example, use "%lf", "%lg", or "%le"
+      when reading doubles, otherwise errors will occur.
 */
 #include <petscmat.h>
 #include "ex72mmio.h"
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
 
   /*  This is how one can screen matrix types if their application */
   /*  only supports a subset of the Matrix Market data types.      */
-  if (!mm_is_matrix(matcode) || !mm_is_sparse(matcode)){
+  if (!mm_is_matrix(matcode) || !mm_is_sparse(matcode)) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input must be a sparse matrix. Market Market type: [%s]\n", mm_typecode_to_str(matcode));
   }
 
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   /*   specifier as in "%lg", "%lf", "%le", otherwise errors will occur */
   /*  (ANSI C X3.159-1989, Sec. 4.9.6.2, p. 136 lines 13-15)            */
 
-  for (i=0; i<nz; i++){
+  for (i=0; i<nz; i++) {
     if (pattern) {
       ninput = fscanf(file, "%d %d\n", &ia[i], &ja[i]);
       if (ninput < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file\n");

@@ -1,0 +1,236 @@
+===============
+Changes: 2.0.28
+===============
+
+Changes
+-------
+(See `Features`_ below)
+
+.. rubric:: General:
+
+-  No longer support PETSC_ARCH=sun4
+-  The macros in petscconf.h now begin with PETSC\_
+-  ``PetsReal()`` and ``PetscImaginary()`` are now
+   ``PetscRealPart()`` ``PetscImaginaryPart()``
+-  -optionstable -> -options_table -optionsleft -> -options_left but
+   old left for compatibility
+
+.. rubric:: AO (Application Orderings):
+
+.. rubric:: TS (Timestepping Solvers):
+
+-  ``TSSetMonitor()`` now takes an additional final optional argument
+   that monitor context.
+
+.. rubric:: SNES (Nonlinear Solvers):
+
+-  SNES_EQ_LS etc changed to drop \_, for example SNESEQLS
+-  Changed calling sequence of SNES monitoring routines to add an
+   additional output parameter indicating why it converged or
+   diverged.
+-  Added additional final argument to ``SNESSetMonitor()`` an
+   optional destroy routine for the monitor context.
+-  Changed calling sequence of ``MatSNESMFAddNullSpace()`` to take
+   ``PCNullSpace`` object rather than array of vectors.
+-  Added final ctx argument to ``SNESGetFunction()``,
+   ``SNESGetGradient()`` and ``SNESGetMinimizationFunction()``
+
+.. rubric:: SLES (Linear Solvers):
+
+-  See PC and KSP
+-  ``SLESSolveTrans()`` is now ``SLESSolveTranspose()``
+-  ``SLESSolve()`` now ALWAYS returns a 0 or positive iteration
+   count. Call ``KSPGetConvergedReason()`` to see if converged or
+   diverged and why.
+
+.. rubric:: KSP (Krylov Subspace Methods):
+
+-  Added additional final argument to ``KSPSetMonitor()`` an optional
+   destroy routine for the monitor context.
+-  ``KSPSolvetrans()`` is now ``KSPSolveTranspose()``
+-  Added flexible gmres (use fgmres or KSPFGMRES as the type) see
+   ``KSPFGMRESSetModifyPC()`` for one way to change PC at each
+   iteration.
+
+.. rubric:: PC (Preconditioners):
+
+-  ``MGSetRestriction()`` and ``MGSetInterpolation()`` now accept
+   PETSc figures out which one it is based on the number of rows and
+   columns. Now you don't need to use the Shell matrices if you
+   computed it "the other way then PETSc use to expect".
+-  ``PCApplyTrans()`` is now ``PCApplyTranspose()``
+-  options -pc_ilu_mat_ordering_type <nd,...> and
+   -pc_lu_mat_ordering_type <nd,...> now set the ordering type.
+
+.. rubric:: MAT (Matrices):
+
+-  Added two additional arguments to
+   ``MatCreate(MPI_Comm comm,int             m,int n,int M,int N,Mat *)``
+   where m and n are the local ownership sizes. To get the effect of
+   the old ``MatCreate()`` use m and n equal to PETSC_DECIDE
+-  Changed ``MatSetLocalToGlobalMappingBlocked()`` to
+   ``MatSetLocalToGlobalMappingBlock()`` so that it would be less
+   then 32 characters long.
+-  ``MatSolveTrans()``\ and ``MatSolveTransAdd()`` are now
+   ``MatSolveTransposeXXX()`` ``MatMultTrans()`` and
+   ``MatMultTransAdd()``\ are now ``MatMultTransposeXXX()``
+-  ``MatCreateMPIAdj()`` changed to ``MatCreateMPICSR()``;
+   ``MatCreateSeqAdj()`` dropped.
+-  Another ``MatSetOption()``, ``MAT_IGNORE_ZERO_ENTRIES`` for AIJ
+   matrices with ``ADD_VALUES``.
+-  added matrix option ``MAT_KEEP_ZEROED_ROWS`` causes
+   ``MatZeroRows()`` to keep the original nonzero data structure and
+   just put 0.0 into the elements that are to be zeroed. Without this
+   option it removes the locations from the nonzero structure.
+
+.. rubric:: DA (Distributed Arrays):
+
+.. rubric:: VEC (Vectors):
+
+-  Added VecGetArray2d() and VecRestoreArray2d()
+
+.. rubric:: IS (Index Sets):
+
+-  Added second argument to ``ISInvertPermutation``\ () that
+   indicates how many indices are to be stored on that processor;
+   ignored for one processor code. If you use
+   ``ISInvertPermutation``\ () simply add a second argument of
+   ``PETSC_DECIDE``.
+
+.. rubric:: Draw (Graphics):
+
+-  DrawHistxxx changed to DrawHGxxx
+
+.. rubric:: Viewers:
+
+.. rubric:: System:
+
+-  Routines XXXRegister() are now XXXRegisterDynamic() used for
+   registering new object types in dynamic libraries and
+   XXXRegister_Private() is now XXXRegister() used to register new
+   object types whose definitions are in the exectuable.
+-  The final argument to OptionsHasName() and OptionsGetXXX() is a
+   PetscTruth \* instead of an int\*
+-  PETSc functions and objects that began with Table now begin with
+   PetscTable
+-  Changed these routines to return an error code. extern int
+   PetscStrchr(const char[],char,char \**); extern int
+   PetscStrrchr(const char[],char,char \**); extern int
+   PetscStrstr(const char[],const char[],char \**); extern int
+   PetscStrtok(const char[],const char[],char \**); extern int
+   PetscStrlen(const char[],int \*); added PetscStrallocpy(const
+   char[],char \**); PetscStrncmp() and PetscStrcasecmp() now return
+   PETSC_TRUE as a final argument if the strings match else
+   PETSC_FALSE. Note this means removing ! from your current tests
+   and adding it where you don't have it.
+-  PetscMemcmp() now has a final argument of true for matching
+   memories.
+-  The Fortran versions of the PetscStrxxx() and PetscMemxxx()
+   routines also now have the error flag as the final argument
+-  PetscFree() now always returns an error code that may be checked
+   with CHKERRQ(). On systems where free() returns a void (and the
+   user has no access to an error condition in free(), PetscFree()
+   returns 0 i.e. no error; on other systems it returns the error
+   number from free.
+-  The BT bitarray macros are now prefixed with PetscBT
+
+.. rubric:: Error Handling:
+
+.. rubric:: Event Logging:
+
+.. rubric:: Fortran Interface:
+
+Features
+--------
+(See `Changes`_ above)
+
+.. rubric:: General:
+
+-  When doing string substitutions in library directory paths etc one
+   must use ${PETSC_DIR} ${BOPT} etc now instead of $PETSC_DIR etc.
+   Also you can put anything in {anything} as long as it is an
+   environmental variable or passed in the options database with
+   -anything
+-  Added PetscEmacsclientErrorHandler() -on_error_emacs [machinename]
+   to allow emacs to jump to error; can be used with any other error
+   handler.
+-  So long as you have defined the macro \__FUNC_\_ "main" before
+   your main C/C++ subroutine you can use SETERRQ() and CHKERRQ()
+   instead of SETERRA(), CHKERRA().
+
+.. rubric:: AO (Application Orderings):
+
+.. rubric:: TS (Timestepping Solvers):
+
+.. rubric:: SNES (Nonlinear Solvers):
+
+-  Added ``SNESSetLineSearchParams()`` and
+   ``SNESGetLineSearchParams()``, contributed by Matt Knepley.
+-  Added ``SNESGetConvergedReason()`` to find out if a
+   ``SNESSolve()`` has converged/diverged and why
+-  Added ``SNESMonitorVecUpdate()`` and -snes_vecmonitor_update to
+   display the Newton update at each iteration.
+
+.. rubric:: SLES (Linear Solvers):
+
+-  See PC and KSP
+
+.. rubric:: KSP (Krylov Subspace Methods):
+
+-  Added -ksp_gmres_krylov_monitor and ``KSPGMRESKrylovMonitor()`` to
+   allow one to view the vectors in the Krylov space.
+
+.. rubric:: PC (Preconditioners):
+
+-  We now provide a drop tolerance based ILU for SeqAIJ matrix format
+   via Yousef Saad's SPARSEKIT2 software. Use
+   -pc_ilu_use_drop_tolerance <dt,dtcol,rowmax> or
+   ``PCILUSetUseDropTolerance``\ (pc,dt,dtcol,rowmax).
+
+.. rubric:: MAT (Matrices):
+
+.. rubric:: DA (Distributed Arrays):
+
+.. rubric:: VEC (Vectors):
+
+.. rubric:: IS (Index Sets):
+
+.. rubric:: Draw (Graphics):
+
+-  ``DrawCreate()`` and ``DrawOpenX()`` now can take
+
+.. rubric:: Viewers:
+
+-  Added ``ViewerASCIIUseTabs()`` to allow turning off tabbing during
+   certain viewer operations.
+-  Added ``ViewerGetSingleton()``, ViewerRestoreSingleton() to allow
+   managing the calling a a sequential viewer from within a parallel
+   viewer.
+-  Added ``ViewerASCIISynchronizedPrintf``\ (viewer,....)
+-  Binary and ASCII viewers can create compressed files by simply
+   appending a .gz on the filename.
+-  PETSc now has a new viewer that generates rudimentary Postscript.
+   Improvements, additions may be added as needed. ``DrawOpenPS()``,
+   or ``DrawSetType(,DRAW_PS);`` or -draw_type ps
+
+.. rubric:: System:
+
+-  using -trdump with PETSC_USE_STACK compile option (default for
+   BOPT=g*) will print the entire stack for each malloc, allow one to
+   more easily track down where mallocs where made that where not
+   freed.
+-  Added PetscSum_Op to replace MPI_SUM for reductions with
+   MPIU_SCALAR
+-  Added PetscMaxSum_Op to do max on first half of entries and sum on
+   second half.
+-  Added CHKMEMQ and CHKMEMA macros to help track down memory
+   corruption.
+
+.. rubric:: Error Handling:
+
+.. rubric:: Event Logging:
+
+.. rubric:: Fortran Interface:
+
+-  Added Fortran 90 interface support for HP Convex and
+   Solaris.machine.

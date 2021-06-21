@@ -72,7 +72,6 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 
 #  endif
 
-
 PetscErrorCode PetscStackCreate(void)
 {
   PetscStack *petscstack_in;
@@ -99,23 +98,28 @@ PetscErrorCode PetscStackCreate(void)
   return 0;
 }
 
-
 PetscErrorCode  PetscStackView(FILE *file)
 {
   int        i,j;
 
   if (!file) file = PETSC_STDOUT;
 
-  if (file == PETSC_STDOUT) {
-    (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
-    (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
-    (*PetscErrorPrintf)("      is given.\n");
-    for (i=petscstack->currentsize-1,j=1; i>=0; i--,j++) (*PetscErrorPrintf)("#%d %s() at %s:%d\n",j,petscstack->function[i],petscstack->file[i],petscstack->line[i]);
+  if (petscstack->currentsize <= 1) {
+     if (file == PETSC_STDOUT) {
+       (*PetscErrorPrintf)("No error traceback is available, the problem could be in the main program. \n");
+     } else {
+       fprintf(file,"No error traceback is available, the problem could be in the main program. \n");
+     }
   } else {
-    fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
-    fprintf(file,"      INSTEAD the line number of the start of the function\n");
-    fprintf(file,"      is given.\n");
-    for (i=petscstack->currentsize-1,j=1; i>=0; i--,j++) fprintf(file,"[%d] #%d %s() at %s:%d\n",PetscGlobalRank,j,petscstack->function[i],petscstack->file[i],petscstack->line[i]);
+    if (file == PETSC_STDOUT) {
+      (*PetscErrorPrintf)("The EXACT line numbers in the error traceback are not available.\n");
+      (*PetscErrorPrintf)("instead the line number of the start of the function is given.\n");
+      for (i=petscstack->currentsize-1,j=1; i>=0; i--,j++) (*PetscErrorPrintf)("#%d %s() at %s:%d\n",j,petscstack->function[i],petscstack->file[i],petscstack->line[i]);
+    } else {
+      fprintf(file,"The EXACT line numbers in the error traceback are not available.\n");
+      fprintf(file,"Instead the line number of the start of the function is given.\n");
+      for (i=petscstack->currentsize-1,j=1; i>=0; i--,j++) fprintf(file,"[%d] #%d %s() at %s:%d\n",PetscGlobalRank,j,petscstack->function[i],petscstack->file[i],petscstack->line[i]);
+    }
   }
   return 0;
 }

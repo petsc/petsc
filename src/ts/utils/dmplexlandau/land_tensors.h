@@ -1,6 +1,14 @@
 #define LANDAU_INVSQRT(q) (1./PetscSqrtReal(q))
 #define LANDAU_SQRT(q) PetscSqrtReal(q)
 
+#if defined(__CUDA_ARCH__)
+#define PETSC_DEVICE_FUNC_DECL __device__
+#elif defined(KOKKOS_INLINE_FUNCTION)
+#define PETSC_DEVICE_FUNC_DECL KOKKOS_INLINE_FUNCTION
+#else
+#define PETSC_DEVICE_FUNC_DECL static
+#endif
+
 #if LANDAU_DIM==2
 /* elliptic functions
  */

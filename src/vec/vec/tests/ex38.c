@@ -78,7 +78,6 @@ int main(int argc, char *argv[])
   return ierr;
 }
 
-
 /*TEST
 
    testset:
@@ -101,5 +100,9 @@ int main(int argc, char *argv[])
         requires: kokkos_kernels
         suffix: kokkos
         args: -vec_type kokkos
+      test:
+        requires: hip
+        suffix: hip
+        args: -vec_type hip
 
 TEST*/

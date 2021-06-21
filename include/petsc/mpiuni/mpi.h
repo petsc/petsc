@@ -19,7 +19,7 @@
   compilers - like borland, that do not have a usable MPI
   implementation]
 
-  However - providing a seqential, standards compliant MPI
+  However - providing a sequential, standards compliant MPI
   implementation is *not* the goal of MPIUNI. The development strategy
   was - to make enough changes to it so that PETSc sources, examples
   compile without errors, and runs in the uni-processor mode. This is
@@ -168,6 +168,7 @@ MPIUni_PETSC_EXTERN void *MPIUNI_TMP;
 #define MPI_ERR_OTHER       17
 #define MPI_ERR_UNKNOWN     18
 #define MPI_ERR_INTERN      21
+#define MPI_ERR_NOSUPPORT   22
 
 #define MPI_KEYVAL_INVALID   0
 #define MPI_TAG_UB           0
@@ -822,7 +823,7 @@ typedef int MPI_Fint;
       MPIUNI_ARG(root),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)))
-#define MPI_Allreduce(sendbuf, recvbuf,count,datatype,op,comm) \
+#define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
      (MPIUNI_ARG(op),\
       MPIUNI_ARG(comm),\
       MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)))
@@ -872,11 +873,33 @@ typedef int MPI_Fint;
      MPIUNI_ARG(group2),\
      *(result)=1,\
      MPI_SUCCESS)
-#define MPI_Group_union(group1,group2,newgroup) MPI_SUCCESS
-#define MPI_Group_intersection(group1,group2,newgroup) MPI_SUCCESS
-#define MPI_Group_difference(group1,group2,newgroup) MPI_SUCCESS
-#define MPI_Group_range_incl(group,n,ranges,newgroup) MPI_SUCCESS
-#define MPI_Group_range_excl(group,n,ranges,newgroup) MPI_SUCCESS
+#define MPI_Group_union(group1,group2,newgroup) \
+    (MPIUNI_ARG(group1),\
+     MPIUNI_ARG(group2),\
+     *(newgroup)=1,\
+     MPI_SUCCESS)
+#define MPI_Group_intersection(group1,group2,newgroup) \
+    (MPIUNI_ARG(group1),\
+     MPIUNI_ARG(group2),\
+     *(newgroup)=1,\
+     MPI_SUCCESS)
+#define MPI_Group_difference(group1,group2,newgroup) \
+    (MPIUNI_ARG(group1),\
+     MPIUNI_ARG(group2),\
+     *(newgroup)=MPI_GROUP_EMPTY,\
+     MPI_SUCCESS)
+#define MPI_Group_range_incl(group,n,ranges,newgroup) \
+    (MPIUNI_ARG(group),\
+     MPIUNI_ARG(n),\
+     MPIUNI_ARG(ranges),\
+     *(newgroup)=1,\
+     MPI_SUCCESS)
+#define MPI_Group_range_excl(group,n,ranges,newgroup) \
+    (MPIUNI_ARG(group),\
+     MPIUNI_ARG(n),\
+     MPIUNI_ARG(ranges),\
+     *(newgroup)=MPI_GROUP_EMPTY,\
+     MPI_SUCCESS)
 #define MPI_Group_free(group) \
      (*(group) = MPI_GROUP_NULL, MPI_SUCCESS)
 
@@ -942,8 +965,9 @@ typedef int MPI_Fint;
       MPI_SUCCESS)
 #define MPI_Error_string(errorcode,string,result_len) \
      (MPIUNI_ARG(errorcode),\
-      *(result_len) = 9,\
-      MPIUNI_Memcpy(string,"MPI error",10*MPI_sizeof(MPI_CHAR)))
+     (errorcode == MPI_ERR_NOSUPPORT) ? \
+       (*(result_len) = 35, MPIUNI_Memcpy(string,"MPI error, not supported by MPI-uni",35*MPI_sizeof(MPI_CHAR))) : \
+      (*(result_len) = 9, MPIUNI_Memcpy(string,"MPI error",9*MPI_sizeof(MPI_CHAR))))
 #define MPI_Error_class(errorcode,errorclass) \
      (*(errorclass) = errorcode, MPI_SUCCESS)
 #define MPI_Wtick() 1.0

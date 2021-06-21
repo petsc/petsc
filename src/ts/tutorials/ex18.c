@@ -48,11 +48,6 @@ struct _n_Functional {
 };
 
 typedef struct {
-  /* Domain and mesh definition */
-  DM             dm;
-  PetscInt       dim;               /* The topological mesh dimension */
-  DMBoundaryType bd[2];             /* The boundary type for the x- and y-boundary */
-  char           filename[2048];    /* The optional ExodusII file */
   /* Problem definition */
   PetscBool      useFV;             /* Use a finite volume scheme for advection */
   PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
@@ -73,15 +68,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *velocityDist[4]  = {"zero", "constant", "harmonic", "shear"};
   const char    *porosityDist[5]  = {"zero", "constant", "gaussian", "tilted", "delta"};
-  PetscInt       bd, vd, pd, d;
+  PetscInt       vd, pd, d;
   PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim          = 2;
-  options->bd[0]        = DM_BOUNDARY_PERIODIC;
-  options->bd[1]        = DM_BOUNDARY_PERIODIC;
-  options->filename[0]  = '\0';
   options->useFV        = PETSC_FALSE;
   options->velocityDist = VEL_HARMONIC;
   options->porosityDist = ZERO;
@@ -92,14 +83,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->source[2]    = 0.5;
 
   ierr = PetscOptionsBegin(comm, "", "Magma Dynamics Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  bd   = options->bd[0];
-  ierr = PetscOptionsEList("-x_bd_type", "The x-boundary type", "ex18.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->bd[0]], &bd, NULL);CHKERRQ(ierr);
-  options->bd[0] = (DMBoundaryType) bd;
-  bd   = options->bd[1];
-  ierr = PetscOptionsEList("-y_bd_type", "The y-boundary type", "ex18.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->bd[1]], &bd, NULL);CHKERRQ(ierr);
-  options->bd[1] = (DMBoundaryType) bd;
-  ierr = PetscOptionsString("-f", "Exodus.II filename to read", "ex18.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_fv", "Use the finite volume method for advection", "ex18.c", options->useFV, &options->useFV, NULL);CHKERRQ(ierr);
   vd   = options->velocityDist;
   ierr = PetscOptionsEList("-velocity_dist","Velocity distribution type","ex18.c",velocityDist,4,velocityDist[options->velocityDist],&vd,NULL);CHKERRQ(ierr);
@@ -108,9 +91,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-porosity_dist","Initial porosity distribution type","ex18.c",porosityDist,5,porosityDist[options->porosityDist],&pd,NULL);CHKERRQ(ierr);
   options->porosityDist = (PorosityDistribution) pd;
   ierr = PetscOptionsReal("-inflow_state", "The inflow state", "ex18.c", options->inflowState, &options->inflowState, NULL);CHKERRQ(ierr);
-  d    = options->dim;
+  d    = 2;
   ierr = PetscOptionsRealArray("-source_loc", "The source location", "ex18.c", options->source, &d, &flg);CHKERRQ(ierr);
-  if (flg && d != options->dim) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
+  if (flg && d != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -387,10 +370,14 @@ static PetscErrorCode constant_u_2d(PetscInt dim, PetscReal time, const PetscRea
 static PetscErrorCode constant_x_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   const PetscReal t = *((PetscReal *) ctx);
-  PetscErrorCode  ierr;
   u[0] = x[0];
   u[1] = x[1] + t;
+#if 0
+  PetscErrorCode  ierr;
   ierr = DMLocalizeCoordinate(globalUser->dm, u, PETSC_FALSE, u);CHKERRQ(ierr);
+#else
+  u[1] = u[1] - (int) PetscRealPart(u[1]);
+#endif
   return 0;
 }
 
@@ -590,10 +577,9 @@ static PetscErrorCode advect_inflow(PetscReal time, const PetscReal *c, const Pe
 
 static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
-
   PetscFunctionBeginUser;
-  xG[0] = xI[user->dim];
+  //xG[0] = xI[dim];
+  xG[0] = xI[2];
   PetscFunctionReturn(0);
 }
 
@@ -635,31 +621,19 @@ static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscReal *x
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DM              distributedMesh = NULL;
-  PetscBool       periodic        = user->bd[0] == DM_BOUNDARY_PERIODIC || user->bd[0] == DM_BOUNDARY_TWIST || user->bd[1] == DM_BOUNDARY_PERIODIC || user->bd[1] == DM_BOUNDARY_TWIST ? PETSC_TRUE : PETSC_FALSE;
-  const char     *filename        = user->filename;
-  const PetscInt  cells[3]        = {3, 3, 3};
-  const PetscReal L[3]            = {1.0, 1.0, 1.0};
-  PetscReal       maxCell[3];
-  PetscInt        d;
-  size_t          len;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (!len) {
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, PETSC_FALSE, cells, NULL, NULL, user->bd, PETSC_TRUE, dm);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);
-  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+#if 0
+  PetscBool       periodic = user->bd[0] == DM_BOUNDARY_PERIODIC || user->bd[0] == DM_BOUNDARY_TWIST || user->bd[1] == DM_BOUNDARY_PERIODIC || user->bd[1] == DM_BOUNDARY_TWIST ? PETSC_TRUE : PETSC_FALSE;
+  const PetscReal L[3]     = {1.0, 1.0, 1.0};
+  PetscReal       maxCell[3];
+  PetscInt        d;
+
   if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, PETSC_TRUE, maxCell, L, user->bd);CHKERRQ(ierr);}
-  /* Distribute mesh */
-  ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-  if (distributedMesh) {
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = distributedMesh;
-  }
+#endif
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -668,14 +642,20 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 static PetscErrorCode SetupBC(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  DMBoundaryType bdt[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
   PetscDS        prob;
   DMLabel        label;
   PetscBool      check;
+  PetscInt       dim, n = 3;
+  const char    *prefix;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnumArray(NULL, prefix, "-dm_plex_box_bd", DMBoundaryTypes, (PetscEnum *) bdt, &n, NULL);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Set initial guesses and exact solutions */
-  switch (user->dim) {
+  switch (dim) {
     case 2:
       user->initialGuess[0] = initialVelocity;
       switch(user->porosityDist) {
@@ -689,11 +669,11 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
         break;
       }
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", user->dim);
+    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
   }
   exactFuncs[0] = user->initialGuess[0];
   exactFuncs[1] = user->initialGuess[1];
-  switch (user->dim) {
+  switch (dim) {
     case 2:
       switch (user->velocityDist) {
         case VEL_ZERO:
@@ -701,9 +681,9 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
         case VEL_CONSTANT:
           exactFuncs[0] = constant_u_2d; break;
         case VEL_HARMONIC:
-          switch (user->bd[0]) {
+          switch (bdt[0]) {
             case DM_BOUNDARY_PERIODIC:
-              switch (user->bd[1]) {
+              switch (bdt[1]) {
                 case DM_BOUNDARY_PERIODIC:
                   exactFuncs[0] = doubly_periodic_u_2d; break;
                 default:
@@ -717,10 +697,10 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
         case VEL_SHEAR:
           exactFuncs[0] = shear_bc; break;
           break;
-        default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+        default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
       }
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", user->dim);
+    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
   }
   {
     PetscBool isImplicit = PETSC_FALSE;
@@ -741,24 +721,29 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   if (label) {
     const PetscInt id = 1;
 
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) exactFuncs[0], NULL, user, NULL);CHKERRQ(ierr);
   }
   ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
-    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow",  "Face Sets", 1, 0, NULL, (void (*)(void)) advect_inflow, NULL,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", "Face Sets", 1, 0, NULL, (void (*)(void)) advect_outflow, NULL, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow",  label,  ALEN(inflowids),  inflowids, 1, 0, NULL, (void (*)(void)) advect_inflow, NULL, user, NULL);CHKERRQ(ierr);
+    ierr = DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", label, ALEN(outflowids), outflowids, 1, 0, NULL, (void (*)(void)) advect_outflow, NULL, user, NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
+  DMBoundaryType bdt[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
   PetscDS        prob;
+  PetscInt       n = 3;
+  const char    *prefix;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnumArray(NULL, prefix, "-dm_plex_box_bd", DMBoundaryTypes, (PetscEnum *) bdt, &n, NULL);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->velocityDist) {
   case VEL_ZERO:
@@ -770,9 +755,9 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     ierr = PetscDSSetJacobian(prob, 1, 1, g0_constant_pp, NULL, NULL, NULL);CHKERRQ(ierr);
     break;
   case VEL_HARMONIC:
-    switch (user->bd[0]) {
+    switch (bdt[0]) {
     case DM_BOUNDARY_PERIODIC:
-      switch (user->bd[1]) {
+      switch (bdt[1]) {
       case DM_BOUNDARY_PERIODIC:
         ierr = PetscDSSetResidual(prob, 0, f0_lap_doubly_periodic_u, f1_lap_u);CHKERRQ(ierr);
         break;
@@ -805,16 +790,17 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm = dm;
-  const PetscInt  dim = user->dim;
   PetscQuadrature q;
   PetscFE         fe[2];
   PetscFV         fv;
   MPI_Comm        comm;
+  PetscInt        dim;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, dim, PETSC_FALSE, "velocity_", PETSC_DEFAULT, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
   ierr = PetscFECreateDefault(comm, dim, 1, PETSC_FALSE, "porosity_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
@@ -1097,7 +1083,6 @@ int main(int argc, char **argv)
   ierr = CreateDM(comm, &user, &dm);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = ProcessMonitorOptions(comm, &user);CHKERRQ(ierr);
-  user.dm = dm;
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
@@ -1155,35 +1140,192 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  # 2D harmonic velocity, no porosity
-  test:
-    suffix: p1p1
-    requires: !complex !single
-    args: -x_bd_type none -y_bd_type none -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_factor_shift_type nonzero -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
-  test:
-    suffix: p1p1_xper
-    requires: !complex !single
-    args: -dm_refine 1 -y_bd_type none -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
-  test:
-    suffix: p1p1_xper_ref
-    requires: !complex !single
-    args: -dm_refine 2 -y_bd_type none -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
-  test:
-    suffix: p1p1_xyper
-    requires: !complex !single
-    args: -dm_refine 1 -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
-  test:
-    suffix: p1p1_xyper_ref
-    requires: !complex !single
-    args: -dm_refine 2 -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
-  test:
-    suffix: p2p1
-    requires: !complex !single
-    args: -x_bd_type none -y_bd_type none -velocity_petscspace_degree 2 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
-  test:
-    suffix: p2p1_xyper
-    requires: !complex !single
-    args: -dm_refine 1 -velocity_petscspace_degree 2 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3,3
+
+    # 2D harmonic velocity, no porosity
+    test:
+      suffix: p1p1
+      requires: !complex !single
+      args: -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_factor_shift_type nonzero -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+    test:
+      suffix: p1p1_xper
+      requires: !complex !single
+      args: -dm_refine 1 -dm_plex_box_bd periodic,none -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+    test:
+      suffix: p1p1_xper_ref
+      requires: !complex !single
+      args: -dm_refine 2 -dm_plex_box_bd periodic,none -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+    test:
+      suffix: p1p1_xyper
+      requires: !complex !single
+      args: -dm_refine 1 -dm_plex_box_bd periodic,periodic -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+    test:
+      suffix: p1p1_xyper_ref
+      requires: !complex !single
+      args: -dm_refine 2 -dm_plex_box_bd periodic,periodic -velocity_petscspace_degree 1 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+    test:
+      suffix: p2p1
+      requires: !complex !single
+      args: -velocity_petscspace_degree 2 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ts_monitor   -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+    test:
+      suffix: p2p1_xyper
+      requires: !complex !single
+      args: -dm_refine 1 -dm_plex_box_bd periodic,periodic -velocity_petscspace_degree 2 -porosity_petscspace_degree 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_error_if_not_converged -ksp_error_if_not_converged -dmts_check
+
+    test:
+      suffix: adv_1
+      requires: !complex !single
+      args: -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -ts_view -dm_view
+
+    test:
+      suffix: adv_2
+      requires: !complex
+      TODO: broken memory corruption
+      args: -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3,4 -bc_outflow 1,2 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason
+
+    test:
+      suffix: adv_3
+      requires: !complex
+      TODO: broken memory corruption
+      args: -dm_plex_box_bd periodic,none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason
+
+    test:
+      suffix: adv_3_ex
+      requires: !complex
+      args: -dm_plex_box_bd periodic,none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt   0.1 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -ksp_max_it 100 -ts_view -dm_view
+
+    test:
+      suffix: adv_4
+      requires: !complex
+      TODO: broken memory corruption
+      args: -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason
+
+    # 2D Advection, box, delta
+    test:
+      suffix: adv_delta_yper_0
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error
+
+    test:
+      suffix: adv_delta_yper_1
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_max_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error -dm_refine 1 -source_loc 0.416666,0.416666
+
+    test:
+      suffix: adv_delta_yper_2
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_max_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error -dm_refine 2 -source_loc 0.458333,0.458333
+
+    test:
+      suffix: adv_delta_yper_fim_0
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 0 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view   -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
+
+    test:
+      suffix: adv_delta_yper_fim_1
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view   -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
+
+    test:
+      suffix: adv_delta_yper_fim_2
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view   -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
+
+    test:
+      suffix: adv_delta_yper_im_0
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 0 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
+
+    test:
+      suffix: adv_delta_yper_im_1
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 0 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 1 -source_loc 0.416666,0.416666
+
+    test:
+      suffix: adv_delta_yper_im_2
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 0 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 2 -source_loc 0.458333,0.458333
+
+    test:
+      suffix: adv_delta_yper_im_3
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
+
+    #    I believe the nullspace is sin(pi y)
+    test:
+      suffix: adv_delta_yper_im_4
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 1 -source_loc 0.416666,0.416666
+
+    test:
+      suffix: adv_delta_yper_im_5
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 2 -source_loc 0.458333,0.458333
+
+    test:
+      suffix: adv_delta_yper_im_6
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd none,periodic -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view   -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type svd -snes_converged_reason
+    # 2D Advection, magma benchmark 1
+
+    test:
+      suffix: adv_delta_shear_im_0
+      requires: !complex
+      TODO: broken
+      args: -dm_plex_box_bd periodic,none -dm_refine 2 -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist shear -porosity_dist   delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 1,3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -source_loc 0.458333,0.708333
+    # 2D Advection, box, gaussian
+
+    test:
+      suffix: adv_gauss
+      requires: !complex
+      TODO: broken
+      args: -use_fv -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type ssp -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view
+
+    test:
+      suffix: adv_gauss_im
+      requires: !complex
+      TODO: broken
+      args: -use_fv -use_implicit -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_max_time 2.0 -ts_max_steps   100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
+
+    test:
+      suffix: adv_gauss_im_1
+      requires: !complex
+      TODO: broken
+      args: -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
+
+    test:
+      suffix: adv_gauss_im_2
+      requires: !complex
+      TODO: broken
+      args: -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
+
+    test:
+      suffix: adv_gauss_corner
+      requires: !complex
+      TODO: broken
+      args: -use_fv -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type ssp -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 2 -ts_view -dm_view
+
+    # 2D Advection+Harmonic 12-
+    test:
+      suffix: adv_harm_0
+      requires: !complex
+      TODO: broken memory corruption
+      args: -velocity_petscspace_degree 2 -use_fv -velocity_dist harmonic -porosity_dist gaussian -ts_type beuler -ts_max_time 2.0 -ts_max_steps   1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -use_implicit -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it   100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason -snes_monitor -dmts_check
+
   #   Must check that FV BCs propagate to coarse meshes
   #   Must check that FV BC ids propagate to coarse meshes
   #   Must check that FE+FV BCs work at the same time
@@ -1192,184 +1334,31 @@ int main(int argc, char **argv)
   test:
     suffix: adv_0
     requires: !complex !single exodusii
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view
 
   test:
     suffix: adv_0_im
     requires: !complex exodusii
     TODO: broken  memory corruption
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -use_fv -use_implicit -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu
 
   test:
     suffix: adv_0_im_2
     requires: !complex exodusii
     TODO: broken
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -snes_rtol 1.0e-7
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -use_fv -use_implicit -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -snes_rtol 1.0e-7
 
   test:
     suffix: adv_0_im_3
     requires: !complex exodusii
     TODO: broken
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
 
   test:
     suffix: adv_0_im_4
     requires: !complex exodusii
     TODO: broken
-    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
   # 2D Advection, misc
-
-  test:
-    suffix: adv_1
-    requires: !complex !single
-    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -ts_view -dm_view
-
-  test:
-    suffix: adv_2
-    requires: !complex
-    TODO: broken memory corruption
-    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3,4 -bc_outflow 1,2 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason
-
-  test:
-    suffix: adv_3
-    requires: !complex
-    TODO: broken memory corruption
-    args: -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason
-
-  test:
-    suffix: adv_3_ex
-    requires: !complex
-    args: -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.1 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -ksp_max_it 100 -ts_view -dm_view
-
-  test:
-    suffix: adv_4
-    requires: !complex
-    TODO: broken memory corruption
-    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason
-
-  # 2D Advection, box, delta
-  test:
-    suffix: adv_delta_yper_0
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error
-
-  test:
-    suffix: adv_delta_yper_1
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_max_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error -dm_refine 1 -source_loc 0.416666,0.416666
-
-  test:
-    suffix: adv_delta_yper_2
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_max_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error -dm_refine 2 -source_loc 0.458333,0.458333
-
-  test:
-    suffix: adv_delta_yper_fim_0
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 0 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
-
-  test:
-    suffix: adv_delta_yper_fim_1
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
-
-  test:
-    suffix: adv_delta_yper_fim_2
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
-
-  test:
-    suffix: adv_delta_yper_im_0
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 0 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
-
-  test:
-    suffix: adv_delta_yper_im_1
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 0 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 1 -source_loc 0.416666,0.416666
-
-  test:
-    suffix: adv_delta_yper_im_2
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 0 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 2 -source_loc 0.458333,0.458333
-
-  test:
-    suffix: adv_delta_yper_im_3
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
-
-  #    I believe the nullspace is sin(pi y)
-  test:
-    suffix: adv_delta_yper_im_4
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 1 -source_loc 0.416666,0.416666
-
-  test:
-    suffix: adv_delta_yper_im_5
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_max_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 2 -source_loc 0.458333,0.458333
-
-  test:
-    suffix: adv_delta_yper_im_6
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type svd -snes_converged_reason
-  # 2D Advection, magma benchmark 1
-
-  test:
-    suffix: adv_delta_shear_im_0
-    requires: !complex
-    TODO: broken
-    args: -y_bd_type none -dm_refine 2 -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist shear -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_max_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 1,3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -source_loc 0.458333,0.708333
-  # 2D Advection, box, gaussian
-
-  test:
-    suffix: adv_gauss
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type ssp -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view
-
-  test:
-    suffix: adv_gauss_im
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
-
-  test:
-    suffix: adv_gauss_im_1
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 1 -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
-
-  test:
-    suffix: adv_gauss_im_2
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_degree 2 -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
-
-  test:
-    suffix: adv_gauss_corner
-    requires: !complex
-    TODO: broken
-    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type ssp -ts_max_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 2 -ts_view -dm_view
-
-  # 2D Advection+Harmonic 12-
-  test:
-    suffix: adv_harm_0
-    requires: !complex
-    TODO: broken memory corruption
-    args: -x_bd_type none -y_bd_type none -velocity_petscspace_degree 2 -use_fv -velocity_dist harmonic -porosity_dist gaussian -ts_type beuler -ts_max_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -use_implicit -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason -snes_monitor -dmts_check
 
 TEST*/

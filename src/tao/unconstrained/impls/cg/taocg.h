@@ -2,7 +2,6 @@
     Context for conjugate gradient method (unconstrained minimization)
  */
 
-
 #ifndef __TAO_CG_H
 #define __TAO_CG_H
 
@@ -17,7 +16,6 @@ typedef struct {
     PetscReal delta_max;   /*  Minimum value for scaling */
     PetscReal delta_min;   /*  Maximum value for scaling */
 
-
     /*  The algorithm restarts when the gradient at the current point g_k,
        and the gradient of the previous point, g_{k-1}, satisfy the
        following inequality:
@@ -31,5 +29,4 @@ typedef struct {
 } TAO_CG;
 
 #endif /* ifndef __TAO_CG_H */
-
 

@@ -156,14 +156,26 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
 
   PetscFunctionBegin;
   ierr = TaoComputeResidualJacobian(tao,X,tao->ls_jac,tao->ls_jac_pre);CHKERRQ(ierr);
+  if (gn->mat_explicit) {
+    ierr = MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_REUSE_MATRIX, PETSC_DEFAULT, &gn->H);CHKERRQ(ierr);
+  }
 
   switch (gn->reg_type) {
   case BRGN_REGULARIZATION_USER:
     ierr = (*gn->regularizerhessian)(tao,X,gn->Hreg,gn->reg_hess_ctx);CHKERRQ(ierr);
+    if (gn->mat_explicit) {
+      ierr = MatAXPY(gn->H, 1.0, gn->Hreg, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
     break;
   case BRGN_REGULARIZATION_L2PURE:
+    if (gn->mat_explicit) {
+      ierr = MatShift(gn->H, gn->lambda);CHKERRQ(ierr);
+    }
     break;
   case BRGN_REGULARIZATION_L2PROX:
+    if (gn->mat_explicit) {
+      ierr = MatShift(gn->H, gn->lambda);CHKERRQ(ierr);
+    }
     break;
   case BRGN_REGULARIZATION_L1DICT:
     /* calculate and store diagonal matrix as a vector: diag = epsilon^2 ./ sqrt(x.^2+epsilon^2).^3* --> diag = epsilon^2 ./ sqrt(y.^2+epsilon^2).^3,where y = D*x */
@@ -179,6 +191,9 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
     ierr = VecPointwiseMult(gn->diag,gn->y_work,gn->diag);CHKERRQ(ierr);/* gn->diag = sqrt(y.^2+epsilon^2).^3 */
     ierr = VecReciprocal(gn->diag);CHKERRQ(ierr);
     ierr = VecScale(gn->diag,gn->epsilon*gn->epsilon);CHKERRQ(ierr);
+    if (gn->mat_explicit) {
+      ierr = MatDiagonalSet(gn->H, gn->diag, ADD_VALUES);CHKERRQ(ierr);
+    }
     break;
   case BRGN_REGULARIZATION_LM:
     /* compute diagonal of J^T J */
@@ -193,6 +208,9 @@ static PetscErrorCode GNComputeHessian(Tao tao,Vec X,Mat H,Mat Hpre,void *ptr)
     ierr = VecRestoreArray(gn->diag,&diag_ary);CHKERRQ(ierr);
     ierr = PetscFree(cnorms);CHKERRQ(ierr);
     ierr = ComputeDamping(gn);CHKERRQ(ierr);
+    if (gn->mat_explicit) {
+      ierr = MatDiagonalSet(gn->H, gn->damping, ADD_VALUES);CHKERRQ(ierr);
+    }
     break;
   }
   PetscFunctionReturn(0);
@@ -274,6 +292,7 @@ static PetscErrorCode TaoSetFromOptions_BRGN(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"least-squares problems with regularizer: ||f(x)||^2 + lambda*g(x), g(x) = ||xk-xkm1||^2 or ||Dx||_1 or user defined function.");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_brgn_mat_explicit","switches the Hessian construction to be an explicit matrix rather than MATSHELL","",gn->mat_explicit,&gn->mat_explicit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_regularizer_weight","regularizer weight (default 1e-4)","",gn->lambda,&gn->lambda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_l1_smooth_epsilon","L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)","",gn->epsilon,&gn->epsilon,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_lm_downhill_lambda_change","Factor to decrease trust region by on downhill steps","",gn->downhill_lambda_change,&gn->downhill_lambda_change,NULL);
@@ -351,22 +370,29 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   }
   if (BRGN_REGULARIZATION_LM == gn->reg_type) {
     if (!gn->diag) {
-      ierr = MatCreateVecs(gn->parent->ls_jac,&gn->diag,NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(tao->ls_jac,&gn->diag,NULL);CHKERRQ(ierr);
     }
     if (!gn->damping) {
-      ierr = MatCreateVecs(gn->parent->ls_jac,&gn->damping,NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(tao->ls_jac,&gn->damping,NULL);CHKERRQ(ierr);
     }
   }
 
   if (!tao->setupcalled) {
     /* Hessian setup */
-    ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
-    ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
-    ierr = MatSetSizes(gn->H,n,n,N,N);CHKERRQ(ierr);
-    ierr = MatSetType(gn->H,MATSHELL);CHKERRQ(ierr);
+    if (gn->mat_explicit) {
+      ierr = TaoComputeResidualJacobian(tao,tao->solution,tao->ls_jac,tao->ls_jac_pre);CHKERRQ(ierr);
+      ierr = MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &gn->H);
+    } else {
+      ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
+      ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
+      ierr = MatCreate(PetscObjectComm((PetscObject)tao),&gn->H);CHKERRQ(ierr);
+      ierr = MatSetSizes(gn->H,n,n,N,N);CHKERRQ(ierr);
+      ierr = MatSetType(gn->H,MATSHELL);CHKERRQ(ierr);
+      ierr = MatSetOption(gn->H, MAT_SYMMETRIC, PETSC_TRUE);
+      ierr = MatShellSetOperation(gn->H,MATOP_MULT,(void (*)(void))GNHessianProd);CHKERRQ(ierr);
+      ierr = MatShellSetContext(gn->H,(void*)gn);CHKERRQ(ierr);
+    }
     ierr = MatSetUp(gn->H);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(gn->H,MATOP_MULT,(void (*)(void))GNHessianProd);CHKERRQ(ierr);
-    ierr = MatShellSetContext(gn->H,(void*)gn);CHKERRQ(ierr);
     /* Subsolver setup,include initial vector and dicttionary D */
     ierr = TaoSetUpdate(gn->subsolver,GNHookFunction,(void*)gn);CHKERRQ(ierr);
     ierr = TaoSetInitialVector(gn->subsolver,tao->solution);CHKERRQ(ierr);
@@ -455,9 +481,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   gn->downhill_lambda_change = 1./5.;
   gn->uphill_lambda_change = 1.5;
   gn->parent = tao;
-
-  ierr = MatCreate(PetscObjectComm((PetscObject)tao),&gn->H);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(gn->H,"tao_brgn_hessian_");CHKERRQ(ierr);
 
   ierr = TaoCreate(PetscObjectComm((PetscObject)tao),&gn->subsolver);CHKERRQ(ierr);
   ierr = TaoSetType(gn->subsolver,TAOBNLS);CHKERRQ(ierr);

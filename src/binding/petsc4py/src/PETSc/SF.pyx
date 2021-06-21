@@ -137,6 +137,11 @@ cdef class SF(Object):
         CHKERR( PetscSFCreateEmbeddedLeafSF(self.sf, nleaves, cselected, &sf.sf) )
         return sf
 
+    def compose(self, SF sf):
+        cdef SF csf = SF()
+        CHKERR( PetscSFCompose(self.sf, sf.sf, &csf.sf))
+        return csf
+
     def bcastBegin(self, unit, ndarray rootdata, ndarray leafdata, op):
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
         cdef MPI_Op cop = mpi4py_Op_Get(op)

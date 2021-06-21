@@ -9,8 +9,6 @@ static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
     and then destroys it.
 T*/
 
-
-
 #include <petscis.h>
 #include <petscviewer.h>
 
@@ -54,7 +52,6 @@ int main(int argc,char **argv)
      Free the space used by the local to global mapping
   */
   ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
-
 
   ierr = PetscFinalize();
   return ierr;

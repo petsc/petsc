@@ -93,7 +93,6 @@ int main(int argc,char **argv)
   ierr = DMView(da,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
-
   /* Build of the DMDA -- 2D -- boundary_periodic */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"2D -- DM_BOUNDARY_PERIODIC\n");CHKERRQ(ierr);
   ierr = DMDACreate(PETSC_COMM_WORLD, &da);CHKERRQ(ierr);
@@ -141,7 +140,6 @@ int main(int argc,char **argv)
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMView(da,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-
 
   /* Build of the DMDA -- 3D -- boundary_periodic */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"3D -- DM_BOUNDARY_PERIODIC\n");CHKERRQ(ierr);

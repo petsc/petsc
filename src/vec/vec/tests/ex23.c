@@ -72,14 +72,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
-
 /*TEST
 
    testset:
       nsize: 2
       output_file: output/ex23_1.out
       filter: grep -v "  type:"
+      diff_args: -j
       test:
         suffix: standard
         args: -vec_type standard
@@ -95,4 +94,9 @@ int main(int argc,char **argv)
         requires: kokkos_kernels
         suffix: kokkos
         args: -vec_type kokkos
+      test:
+        requires: hip
+        suffix: hip
+        args: -vec_type hip
+
 TEST*/

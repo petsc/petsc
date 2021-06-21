@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/random/randomimpl.h>
+#include <petsc/private/randomimpl.h>
 
 #define USE_MPI
 #define SIMPLE_SPRNG

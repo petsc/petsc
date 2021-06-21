@@ -169,7 +169,6 @@ int main(int argc,char **args)
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
   ierr = SNESSetType(snes,"newtonls");CHKERRQ(ierr);
 
-
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
@@ -934,7 +933,6 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscMemcpy(l2p,l2a,nvertices*sizeof(int));CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,nvertices,l2p);CHKERRQ(ierr);
 
-
   /* Renumber unit normals of dual face (from node1 to node2)
       and the area of the dual mesh face */
   FCALLOC(nedgeLocEst,&ftmp);
@@ -1235,7 +1233,6 @@ int GetLocalOrdering(GRID *grid)
     remNodes -= nnodesLocEst;
     ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
-
 
   /* Renumber dual volume "area" */
   FCALLOC(nvertices,&grid->area);
@@ -1587,7 +1584,6 @@ int GetLocalOrdering(GRID *grid)
     grid->f2ntf[2*nffacetLoc+i] = tmp[j++] + 1;
   }
 
-
   ierr = PetscFree(tmp);CHKERRQ(ierr);
   ierr = PetscFree(tmp1);CHKERRQ(ierr);
   ierr = PetscFree(tmp2);CHKERRQ(ierr);
@@ -1734,7 +1730,6 @@ int GetLocalOrdering(GRID *grid)
               grid->f2ntn[nnfacetLoc+i],grid->f2ntn[2*nnfacetLoc+i]);
     }
     fprintf(fptr1,"\n");
-
 
     fprintf(fptr1,"---------------------------------------------\n");
     fprintf(fptr1,"Viscous Boundary Nodes\n");
@@ -2386,7 +2381,6 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
   ierr = VecSetBlockSize(grid->gradLoc,3*bs);CHKERRQ(ierr);
   ierr = VecSetType(grid->gradLoc,VECSEQ);CHKERRQ(ierr);
 
-
 /* Create Scatter between the local and global vectors */
 /* First create scatter for qnode */
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
@@ -2512,7 +2506,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
   }
 
 /* Set local to global mapping for setting the matrix elements in
-* local ordering : first set row by row mapping
+   local ordering : first set row by row mapping
 */
   ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
   ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
@@ -2589,7 +2583,6 @@ int set_up_grid(GRID *grid)
   nffacet = grid->nffacet;
   ntte    = grid->ntte;*/
   /* end of stuff */
-
 
   /* if (!ileast) lnodes = 1;
     printf("In set_up_grid->jvisc = %d\n",grid->jvisc);
@@ -2738,7 +2731,6 @@ int set_up_grid(GRID *grid)
   PetscFunctionReturn(0);
 }
 
-
 /*========================== WRITE_FINE_GRID ================================*/
 /*                                                                           */
 /* Write memory locations and other information for the fine grid            */
@@ -2805,9 +2797,6 @@ int write_fine_grid(GRID *grid)
   /*fprintf(output,"grid.yn      = %p\n",grid->yn);
   fprintf(output,"grid.zn      = %p\n",grid->zn);
   fprintf(output,"grid.rl      = %p\n",grid->rl);*/
-/*
-* close output file
-*/
   fclose(output);
   PetscFunctionReturn(0);
 }

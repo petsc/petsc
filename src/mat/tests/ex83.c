@@ -31,7 +31,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size != 4) SETERRQ(comm,1,"Must run with 4 processors \n");
+  if (size != 4) SETERRQ(comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors \n");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   /*set a small matrix */
   ierr = PetscMalloc1(5,&ia);CHKERRQ(ierr);

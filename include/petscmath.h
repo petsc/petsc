@@ -684,7 +684,6 @@ M*/
    Input Parameter:
 .   v1 - the double
 
-
    Level: beginner
 
 .seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscSqr()
@@ -802,6 +801,14 @@ typedef PetscReal MatReal;
 
 struct petsc_mpiu_2scalar {PetscScalar a,b;};
 PETSC_EXTERN MPI_Datatype MPIU_2SCALAR PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2scalar);
+
+/*
+   MPI Datatypes for composite reductions:
+   MPIU_REAL_INT -> struct { PetscReal; PetscInt; }
+   MPIU_SCALAR_INT -> struct { PetscScalar; PetscInt; }
+*/
+PETSC_EXTERN MPI_Datatype MPIU_REAL_INT;
+PETSC_EXTERN MPI_Datatype MPIU_SCALAR_INT;
 
 #if defined(PETSC_USE_64BIT_INDICES)
 struct petsc_mpiu_2int {PetscInt a,b;};
@@ -923,7 +930,6 @@ M*/
 
 M*/
 #define PetscGTE(x,b)  ((x) >= (PetscRealConstant(b)-PETSC_SMALL))
-
 
 PETSC_EXTERN PetscErrorCode PetscLinearRegression(PetscInt,const PetscReal[],const PetscReal[],PetscReal*,PetscReal*);
 #endif

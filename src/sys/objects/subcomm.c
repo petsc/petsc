@@ -504,4 +504,3 @@ static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   PetscFunctionReturn(0);
 }
 
-

@@ -1356,7 +1356,6 @@ static PetscErrorCode PetscDualSpaceCreateFacetSubspace_Lagrange(PetscDualSpace 
   if (!K) {
     PetscBool isSimplex;
 
-
     if (depth == dim) {
       PetscInt coneSize;
 

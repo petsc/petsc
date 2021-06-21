@@ -142,7 +142,6 @@ static PetscErrorCode LINPACKcgtql1(PetscInt *n,PetscReal *d,PetscReal *e,PetscI
   *ierr = 0;
   if (*n == 1) goto L1001;
 
-
   i__1 = *n;
   for (i = 2; i <= i__1; ++i) e[i - 1] = e[i];
 
@@ -257,7 +256,6 @@ static PetscReal LINPACKcgpthy(PetscReal *a,PetscReal *b)
   PetscFunctionBegin;
 /*     FINDS DSQRT(A**2+B**2) WITHOUT OVERFLOW OR DESTRUCTIVE UNDERFLOW */
 
-
 /* Computing MAX */
   d__1 = PetscAbsReal(*a);
   d__2 = PetscAbsReal(*b);
@@ -283,5 +281,4 @@ L20:
   ret_val = p;
   PetscFunctionReturn(ret_val);
 } /* cgpthy_ */
-
 

@@ -87,7 +87,6 @@ int main(int argc,char **argv)
     ierr = ISDestroy(&isx[i]);CHKERRQ(ierr);
   }
 
-
   for (j = 0; j < 2; j++) {
     const char *filename  = (j == 0) ? "testfile_isstride" : "testfile_isblock";
     PetscInt    blocksize = (j == 0) ? 1 : size;

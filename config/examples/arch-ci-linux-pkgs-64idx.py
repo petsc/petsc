@@ -24,6 +24,9 @@ configure_options = [
   '--download-p4est=1',
   '--download-revolve=1',
   '--with-zlib=1',
+  '--with-blaslapack-dir='+os.environ['MKLROOT'],
+  '--download-slepc=1',
+  '--download-hpddm=1',
   ]
 
 if __name__ == '__main__':

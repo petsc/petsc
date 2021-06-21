@@ -137,7 +137,6 @@ PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
 
    Level: beginner
 
-
 .seealso: PetscDrawArrow(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawPoint()
 
@@ -164,7 +163,6 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
 -  cl - the colors of the endpoints
 
    Level: beginner
-
 
 .seealso: PetscDrawLine(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
           PetscDrawMarker(), PetscDrawPoint()
@@ -234,7 +232,7 @@ PetscErrorCode  PetscDrawLineGetWidth(PetscDraw draw,PetscReal *width)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscValidScalarPointer(width,2);
+  PetscValidRealPointer(width,2);
   if (!draw->ops->linegetwidth) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support getting line width",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->linegetwidth)(draw,width);CHKERRQ(ierr);
   PetscFunctionReturn(0);

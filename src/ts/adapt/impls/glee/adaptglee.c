@@ -20,7 +20,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   ierr = PetscObjectTypeCompare((PetscObject)ts,TSGLEE,&bGTEMethod);CHKERRQ(ierr);
   order = adapt->candidates.order[0];
 
-  if (bGTEMethod){/* the method is of GLEE type */
+  if (bGTEMethod) {/* the method is of GLEE type */
     DM dm;
 
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
     *accept = PETSC_TRUE;
   }
 
-  if (bGTEMethod){
+  if (bGTEMethod) {
     if (*accept == PETSC_TRUE && adapt->glee_use_local) {
       /* If step is accepted, then overwrite previous step error with the current error to be used on the next step */
       /* WARNING: if the adapters are composable, then the accept test will not be reliable*/

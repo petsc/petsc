@@ -8,8 +8,6 @@ static char help[] = "Solves a linear system in parallel with KSP.\n\n";
    Processors: n
 T*/
 
-
-
 /*
    Description: Solves a complex linear system in parallel with KSP.
 
@@ -218,7 +216,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

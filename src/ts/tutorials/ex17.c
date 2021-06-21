@@ -5,7 +5,6 @@ static const char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for
    At t=0: u(x) = exp(c*r*r*r), if r=PetscSqrtReal((x-.5)*(x-.5)) < .125
            u(x) = 0.0           if r >= .125
 
-
    Boundary conditions:
    Dirichlet BC:
    At x=0, x=1, u = 0.0
@@ -101,7 +100,6 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   dt   = .01;
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
-
 
   /* Use slow fd Jacobian or fast fd Jacobian with colorings.
      Note: this requirs snes which is not created until TSSetUp()/TSSetFromOptions() is called */
@@ -303,7 +301,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ptr)
       suffix: 2
       requires: !single
       args: -da_grid_x 100 -ts_type theta -ts_theta_theta 0.5
-
 
 TEST*/
 

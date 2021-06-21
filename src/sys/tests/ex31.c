@@ -1,7 +1,6 @@
 
 static char help[] = "Tests PetscGetFullPath().\n\n";
 
-
 #include <petscsys.h>
 
 /* for windows - fix up path - so that we can do diff test */
@@ -33,8 +32,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
 
 /*TEST
 

@@ -7,6 +7,7 @@
 #define petsctime_ petsctime
 #endif
 
-PETSC_EXTERN void  petsctime_(PetscLogDouble *t, int *__ierr){
+PETSC_EXTERN void  petsctime_(PetscLogDouble *t, int *__ierr)
+{
 *__ierr = PetscTime(t);
 }

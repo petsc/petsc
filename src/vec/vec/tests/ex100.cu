@@ -24,9 +24,6 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_ADIOS)
   PetscBool         isadios = PETSC_FALSE;
 #endif
-#if defined(PETSC_HAVE_ADIOS2)
-  PetscBool         isadios2 = PETSC_FALSE;
-#endif
   PetscScalar const *values;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -39,9 +36,6 @@ int main(int argc,char **args)
 #endif
 #if defined(PETSC_HAVE_ADIOS)
   ierr = PetscOptionsGetBool(NULL,NULL,"-adios",&isadios,NULL);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_ADIOS2)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-adios2",&isadios2,NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscOptionsGetBool(NULL,NULL,"-mpiio",&mpiio_use,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-sizes_set",&vstage2,NULL);CHKERRQ(ierr);
@@ -83,12 +77,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in adios to vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerADIOSOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_ADIOS2)
-  } else if (isadios2) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in adios to vector.dat ...\n");CHKERRQ(ierr);
-    ierr = PetscViewerADIOS2Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-#endif
-  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with either -binary or -hdf5 -adios -adios2 option\n");
+  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with one of -binary -hdf5 -adios options\n");
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -112,11 +101,6 @@ int main(int argc,char **args)
   } else if (isadios) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in adios from vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerADIOSOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_ADIOS2)
-  } else if (isadios2) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in adios2 from vector.dat ...\n");CHKERRQ(ierr);
-    ierr = PetscViewerADIOS2Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 #endif
   }
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);

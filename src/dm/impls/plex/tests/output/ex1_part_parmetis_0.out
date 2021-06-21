@@ -13,7 +13,7 @@ Graph Partitioner: 2 MPI Processes
   load imbalance ratio 1.05
   debug flag 0
   random seed -1
-DM Object: Parallel Mesh 2 MPI processes
+DM Object: box 2 MPI processes
   type: plex
   Cell balance: 1.00 (max 8, min 8, empty 0)
   Edge Cut: 4 (on node 0.000)

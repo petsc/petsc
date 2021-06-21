@@ -155,8 +155,7 @@ static PetscErrorCode PetscSpaceSumSetNumSubspaces_Sum(PetscSpace space,PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (sum->setupCalled) SETERRQ(PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,
-                                "Cannot change number of subspaces after setup called\n");
+  if (sum->setupCalled) SETERRQ(PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Cannot change number of subspaces after setup called\n");
   if (numSumSpaces == Ns) PetscFunctionReturn(0);
   if (Ns >= 0) {
     PetscInt s;
@@ -265,8 +264,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscOptionItems *PetscOption
     }
     ierr = PetscSpaceSetFromOptions(subspace);CHKERRQ(ierr);
     ierr = PetscSpaceGetNumVariables(subspace,&sNv);CHKERRQ(ierr);
-    if (!sNv) SETERRQ1(PetscObjectComm(
-                         (PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Subspace %D has not been set properly, number of variables is 0.\n",i);
+    if (!sNv) SETERRQ1(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Subspace %D has not been set properly, number of variables is 0.\n",i);
     ierr = PetscSpaceSumSetSubspace(sp,i,subspace);CHKERRQ(ierr);
     ierr = PetscSpaceDestroy(&subspace);CHKERRQ(ierr);
   }
@@ -311,12 +309,10 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
 
   if (concatenate) {
     if (sum_Nc != Nc) {
-      SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,
-               "Total number of subspace components (%D) does not match number of target space components (%D).",sum_Nc,Nc);
+      SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Total number of subspace components (%D) does not match number of target space components (%D).",sum_Nc,Nc);
     }
   } else {
-    if (sum_Nc != Ns*Nc) SETERRQ(PetscObjectComm(
-                                   (PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspaces must have same number of components as the target space.");
+    if (sum_Nc != Ns*Nc) SETERRQ(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspaces must have same number of components as the target space.");
   }
 
   sp->degree       = deg;
@@ -439,8 +435,7 @@ static PetscErrorCode PetscSpaceEvaluate_Sum(PetscSpace sp,PetscInt npoints,cons
     ierr = PetscSpaceGetNumVariables(sum->sumspaces[s],&sNv);CHKERRQ(ierr);
     ierr = PetscSpaceGetNumComponents(sum->sumspaces[s],&sNc);CHKERRQ(ierr);
     ierr = PetscSpaceGetDimension(sum->sumspaces[s],&spdim);CHKERRQ(ierr);
-    if (offset + spdim > pdimfull) SETERRQ(PetscObjectComm(
-                                             (PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspace dimensions exceed target space dimension.\n");
+    if (offset + spdim > pdimfull) SETERRQ(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_OUTOFRANGE,"Subspace dimensions exceed target space dimension.\n");
     ierr = PetscSpaceEvaluate(sum->sumspaces[s],npoints,points,sB,sD,sH);CHKERRQ(ierr);
     if (B || D || H) {
       for (p=0; p<npoints; ++p) {

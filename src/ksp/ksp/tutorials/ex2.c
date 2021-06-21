@@ -317,6 +317,11 @@ int main(int argc,char **args)
       args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type umfpack
 
    test:
+      suffix: spqr
+      requires: suitesparse
+      args: -ksp_type preonly -pc_type qr -pc_factor_mat_solver_type spqr
+
+   test:
      suffix: pc_symmetric
      args: -m 10 -n 9 -ksp_converged_reason -ksp_type gmres -ksp_pc_side symmetric -pc_type cholesky
 

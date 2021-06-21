@@ -42,4 +42,3 @@ PETSC_EXTERN void petscfeviewfromoptions_(PetscFE *ao,PetscObject obj,char* type
   FREECHAR(type,t);
 }
 
-

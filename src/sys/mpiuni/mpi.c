@@ -283,7 +283,7 @@ int MPI_Comm_rank(MPI_Comm comm, int *rank)
 int MPIUni_Abort(MPI_Comm comm,int errorcode)
 {
   printf("MPI operation not supported by PETSc's sequential MPI wrappers\n");
-  return MPI_FAILURE;
+  return MPI_ERR_NOSUPPORT;
 }
 
 int MPI_Abort(MPI_Comm comm,int errorcode)

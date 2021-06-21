@@ -12,7 +12,7 @@ PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
   ierr = VecDot_Seq(xin,yin,&work);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -24,7 +24,7 @@ PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
   ierr = VecTDot_Seq(xin,yin,&work);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&work,&sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -86,7 +86,6 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
 {
   Vec_MPI        *v = (Vec_MPI*)V->data;
@@ -109,7 +108,6 @@ static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
 
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode VecResetArray_MPI(Vec vin)
 {
@@ -201,7 +199,7 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG)) {
     InsertMode addv;
-    ierr = MPIU_Allreduce((PetscEnum*)&X->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce((PetscEnum*)&X->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRMPI(ierr);
     if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   }
   X->bstash.insertmode = X->stash.insertmode; /* Block stash implicitly tracks InsertMode of scalar stash */
@@ -389,7 +387,6 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject,Vec X)
 {
 #if !defined(PETSC_HAVE_MPIUNI)
@@ -410,7 +407,6 @@ static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject
 #endif
   PetscFunctionReturn(0);
 }
-
 
 static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 VecDuplicateVecs_Default,
@@ -654,7 +650,6 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
 
    Level: advanced
 
-
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray(), VecMPISetGhost()
@@ -760,7 +755,6 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
 .  nghost - number of local ghost points
 -  ghosts - global indices of ghost points, these do not need to be in increasing order (sorted)
 
-
    Notes:
    Use VecGhostGetLocalForm() to access the local, ghosted representation
    of the vector.
@@ -832,7 +826,6 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------------------------------------*/
 /*@C
    VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
@@ -861,7 +854,6 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
    portion is bs*nghost
 
    Level: advanced
-
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),

@@ -8,8 +8,6 @@ This example employs a user-defined monitoring routine.\n\n";
    Processors: 1
 T*/
 
-
-
 /*
    Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
@@ -79,7 +77,6 @@ int main(int argc,char **argv)
      Set function evaluation routine and vector
   */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -171,7 +168,6 @@ int main(int argc,char **argv)
   ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
-
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -351,7 +347,6 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;
 }
-
 
 /*TEST
 

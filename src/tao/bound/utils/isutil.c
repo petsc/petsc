@@ -80,7 +80,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
       ierr = VecGetArray(vfull,&fv);CHKERRQ(ierr);
       ierr = VecGetArray(*vreduced,&rv);CHKERRQ(ierr);
       ierr = ISGetIndices(is,&s);CHKERRQ(ierr);
-      if (nlocal > (fhigh-flow)) SETERRQ2(PETSC_COMM_SELF,1,"IS local size %D > Vec local size %D",nlocal,fhigh-flow);
+      if (nlocal > (fhigh-flow)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS local size %D > Vec local size %D",nlocal,fhigh-flow);
       for (i=0;i<nlocal;++i) {
         rv[s[i]-flow] = fv[s[i]-flow];
       }
@@ -236,7 +236,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
 
   ierr = VecGetOwnershipRange(X, &low, &high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
-  if (n>0){
+  if (n>0) {
     ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XL, &xl);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XU, &xu);CHKERRQ(ierr);
@@ -281,11 +281,11 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   ierr = ISDestroy(inactive);CHKERRQ(ierr);
 
   /* Collect global sizes */
-  ierr = MPIU_Allreduce(&n_isl, &N_isl, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isu, &N_isu, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isf, &N_isf, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isa, &N_isa, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&n_isi, &N_isi, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n_isl, &N_isl, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&n_isu, &N_isu, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&n_isf, &N_isf, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&n_isa, &N_isa, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&n_isi, &N_isi, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
 
   /* Create index set for lower bounded variables */
   if (N_isl > 0) {
@@ -414,31 +414,31 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(XL,VEC_CLASSID,2);
   PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
-  PetscValidHeaderSpecific(Xout,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(Xout,VEC_CLASSID,6);
 
   PetscValidType(X,1);
   PetscValidType(XL,2);
   PetscValidType(XU,3);
-  PetscValidType(Xout,4);
+  PetscValidType(Xout,6);
   PetscCheckSameType(X,1,XL,2);
   PetscCheckSameType(X,1,XU,3);
-  PetscCheckSameType(X,1,Xout,4);
+  PetscCheckSameType(X,1,Xout,6);
   PetscCheckSameComm(X,1,XL,2);
   PetscCheckSameComm(X,1,XU,3);
-  PetscCheckSameComm(X,1,Xout,4);
+  PetscCheckSameComm(X,1,Xout,6);
   VecCheckSameSize(X,1,XL,2);
   VecCheckSameSize(X,1,XU,3);
   VecCheckSameSize(X,1,Xout,4);
 
   ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  if (n>0){
+  if (n>0) {
     ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XL, &xl);CHKERRQ(ierr);
     ierr = VecGetArrayRead(XU, &xu);CHKERRQ(ierr);
     ierr = VecGetArray(Xout, &xout);CHKERRQ(ierr);
 
-    for (i=0;i<n;++i){
+    for (i=0;i<n;++i) {
       if ((xl[i] > PETSC_NINFINITY) && (x[i] <= xl[i] + bound_tol)) {
         xout[i] = xl[i]; ++nDiff_loc;
       } else if ((xu[i] < PETSC_INFINITY) && (x[i] >= xu[i] - bound_tol)) {
@@ -451,6 +451,6 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
     ierr = VecRestoreArrayRead(XU, &xu);CHKERRQ(ierr);
     ierr = VecRestoreArray(Xout, &xout);CHKERRQ(ierr);
   }
-  ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&nDiff_loc, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }

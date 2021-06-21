@@ -1,0 +1,66 @@
+
+ IS to select slice from 3D DMDA vector : 
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 8
+[0] 0 4
+[0] 1 5
+[0] 2 6
+[0] 3 7
+[0] 4 20
+[0] 5 21
+[0] 6 22
+[0] 7 23
+[1] Number of indices in set 8
+[1] 0 36
+[1] 1 37
+[1] 2 38
+[1] 3 39
+[1] 4 52
+[1] 5 53
+[1] 6 54
+[1] 7 55
+
+ Extracted slice vector, in DMDA ordering : 
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+-6.
+-3.
+0.
+3.
+94.
+97.
+100.
+103.
+Process [1]
+194.
+197.
+200.
+203.
+294.
+297.
+300.
+303.
+
+ Extracted slice vector, in natural ordering : 
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+-6.
+-3.
+0.
+3.
+94.
+97.
+100.
+103.
+Process [1]
+194.
+197.
+200.
+203.
+294.
+297.
+300.
+303.

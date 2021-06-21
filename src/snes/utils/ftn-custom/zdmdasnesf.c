@@ -137,5 +137,3 @@ PETSC_EXTERN void dmdasnessetfunctionlocal_(DM *da,InsertMode *mode,void (*func)
   } else *ierr = 1;
 }
 
-
-

@@ -28,7 +28,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
 static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
+  PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,2);
   PetscFunctionReturn(0);
 }
 
@@ -59,7 +59,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidScalarPointer(f,3);
+  PetscValidRealPointer(f,3);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   PetscValidHeaderSpecific(s,VEC_CLASSID,5);
 
@@ -230,7 +230,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       ls->reason = TAOLINESEARCH_HALTED_LOWERBOUND;
       break;
     }
-    if ((mt->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)){
+    if ((mt->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)) {
       ierr = PetscInfo1(ls,"Relative width of interval of uncertainty is at most rtol (%g)\n",(double)ls->rtol);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_RTOL;
       break;

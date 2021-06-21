@@ -8,6 +8,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_None(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_LU(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_QR(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_MG(PC);
@@ -92,6 +93,7 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCBJACOBI      ,PCCreate_BJacobi);CHKERRQ(ierr);
   ierr = PCRegister(PCSOR          ,PCCreate_SOR);CHKERRQ(ierr);
   ierr = PCRegister(PCLU           ,PCCreate_LU);CHKERRQ(ierr);
+  ierr = PCRegister(PCQR           ,PCCreate_QR);CHKERRQ(ierr);
   ierr = PCRegister(PCSHELL        ,PCCreate_Shell);CHKERRQ(ierr);
   ierr = PCRegister(PCMG           ,PCCreate_MG);CHKERRQ(ierr);
   ierr = PCRegister(PCEISENSTAT    ,PCCreate_Eisenstat);CHKERRQ(ierr);

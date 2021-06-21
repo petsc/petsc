@@ -145,8 +145,8 @@ class Package(config.base.Configure):
       self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    if not self.isMPI and not self.package in ['make','cuda','thrust','valgrind','hwloc','x']:
-      # force MPI to be the first package configured since all other packages
+    if not self.isMPI and not self.package in ['make','cuda','hip','thrust','valgrind','hwloc','x']:
+      # force MPI to be the first package (except for those listed above) configured since all other packages
       # may depend on its compilers defined here
       self.mpi         = framework.require('config.packages.MPI',self)
     return
@@ -598,7 +598,7 @@ class Package(config.base.Configure):
     1) load the appropriate module on your system and use --with-'+self.name+' or \n\
     2) locate its installation on your machine or install it yourself and use --with-'+self.name+'-dir=path\n')
 
-    if 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse' and not hasattr(self,'postProcess') and not self.builtafterpetsc: # package already built in prefix hash location so reuse it
+    if self.argDB['download-'+self.package] and 'package-prefix-hash' in self.argDB and self.argDB['package-prefix-hash'] == 'reuse' and not hasattr(self,'postProcess') and not self.builtafterpetsc: # package already built in prefix hash location so reuse it
       self.installDir = self.defaultInstallDir
       return self.defaultInstallDir
     if self.argDB['download-'+self.package]:
@@ -902,6 +902,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     foundHeader  = 0
 
     for location, directory, lib, incl in self.generateGuesses():
+      #  directory is not used in the search, it is used only in logging messages about where the
+      #  searching is taking place. It has to already be embedded inside the lib argument
       if self.builtafterpetsc:
         self.found = 1
         return
@@ -920,7 +922,12 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
           incl.append(loc)
       if self.functions:
         self.logPrint('Checking for library in '+location+': '+str(lib))
-        if directory: self.logPrint('Contents: '+str(os.listdir(directory)))
+        if directory:
+          self.logPrint('Contents of '+directory+': '+str(os.listdir(directory)))
+          if os.path.isdir(os.path.join(directory, self.libdir)):
+            self.logPrint('Contents '+os.path.join(directory,self.libdir)+': '+str(os.listdir(os.path.join(directory,self.libdir))))
+          if os.path.isdir(os.path.join(directory, self.altlibdir)):
+            self.logPrint('Contents '+os.path.join(directory,self.altlibdir)+': '+str(os.listdir(os.path.join(directory,self.altlibdir))))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 
@@ -1169,15 +1176,28 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
 
     mpicc = os.path.join(installDir,"bin",mpiccName)
     if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
+    try:
+      self.logPrint('Showing compiler and options used by newly built MPI')
+      self.executeShellCommand(mpicc + ' -show', log = self.log)[0]
+    except:
+      pass
     if hasattr(self.compilers, 'CXX'):
       mpicxx = os.path.join(installDir,"bin",mpicxxName)
       if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
+      try:
+        self.executeShellCommand(mpicxx + ' -show', log = self.log)[0]
+      except:
+        pass
     if hasattr(self.compilers, 'FC'):
       if self.fortran.fortranIsF90:
         mpifc = os.path.join(installDir,"bin",mpif90Name)
       else:
         mpifc = os.path.join(installDir,"bin",mpif77Name)
       if not os.path.isfile(mpifc): raise RuntimeError('Could not locate installed MPI compiler: '+mpifc)
+      try:
+        self.executeShellCommand(mpifc + ' -show', log = self.log)[0]
+      except:
+        pass
     # redo compiler detection
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
     self.compilers.__init__(self.framework)
@@ -1189,6 +1209,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     self.compilers.saveLog()
     self.compilers.configure()
     self.logWrite(self.compilers.restoreLog())
+    if self.cuda.found:
+      self.cuda.configureLibrary()
     return
 
   def rmArgs(self,args,rejects):
@@ -1615,15 +1637,18 @@ class GNUPackage(Package):
         raise RuntimeError('libtoolize required for ' + self.PACKAGE+' not found! Use your package manager to install libtool')
       try:
         self.logPrintBox('Running libtoolize on ' +self.PACKAGE+'; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand(self.programs.libtoolize, cwd=self.packageDir, timeout=100, log=self.log)
+        output,err,ret  = config.base.Configure.executeShellCommand([self.programs.libtoolize, '--install'], cwd=self.packageDir, timeout=100, log=self.log)
         if ret:
-          raise RuntimeError('Error in libtoolize: ' + str(e))
+          raise RuntimeError('Error in libtoolize: ' + output+err)
+      except RuntimeError as e:
+        raise RuntimeError('Error running libtoolize on ' + self.PACKAGE+': '+str(e))
+      try:
         self.logPrintBox('Running autoreconf on ' +self.PACKAGE+'; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand([self.programs.autoreconf, '--force', '--install'], cwd=self.packageDir, timeout=200, log = self.log)
         if ret:
-          raise RuntimeError('Error in autoreconf: ' + str(e))
+          raise RuntimeError('Error in autoreconf: ' + output+err)
       except RuntimeError as e:
-        raise RuntimeError('Error running libtoolize or autoreconf on ' + self.PACKAGE+': '+str(e))
+        raise RuntimeError('Error running autoreconf on ' + self.PACKAGE+': '+str(e))
 
 
   def Install(self):

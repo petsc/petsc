@@ -48,7 +48,6 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillsparse,PetscInt w,PetscInt **rfill)
 {
   PetscErrorCode ierr;
@@ -65,7 +64,6 @@ static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillspars
   ierr = PetscArraycpy(*rfill,dfillsparse,nz+w+1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
 {
@@ -88,8 +86,6 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   PetscFunctionReturn(0);
 }
 
-
-
 /*@
     DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix().
@@ -100,7 +96,6 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
 +   da - the distributed array
 .   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks
-
 
     Level: developer
 
@@ -141,7 +136,6 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
   PetscFunctionReturn(0);
 }
 
-
 /*@
     DMDASetBlockFillsSparse - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix(), using sparse representations
@@ -153,7 +147,6 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 +   da - the distributed array
 .   dfill - the sparse fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the sparse fill pattern in the off-diagonal blocks
-
 
     Level: developer
 
@@ -197,7 +190,6 @@ PetscErrorCode  DMDASetBlockFillsSparse(DM da,const PetscInt *dfillsparse,const 
 
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *coloring)
 {
@@ -581,7 +573,7 @@ PetscErrorCode MatSetupDM(Mat mat,DM da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
+  PetscValidHeaderSpecificType(da,DM_CLASSID,2,DMDA);
   ierr = PetscTryMethod(mat,"MatSetupDM_C",(Mat,DM),(mat,da));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -190,38 +190,6 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
 }
 #endif
 
-#if defined(PETSC_HAVE_ADIOS2)
-#include <adios2_c.h>
-#include <petsc/private/vieweradios2impl.h>
-#include <petsc/private/viewerimpl.h>
-
-PetscErrorCode VecLoad_ADIOS2(Vec xin, PetscViewer viewer)
-{
-  PetscViewer_ADIOS2 *adios2 = (PetscViewer_ADIOS2*)viewer->data;
-  PetscErrorCode     ierr;
-  PetscScalar        *x;
-  PetscInt           Nfile,N,rstart,n;
-  const char         *vecname;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
-
-  /* Set Vec sizes,blocksize,and type if not already set */
-  if ((xin)->map->n < 0 && (xin)->map->N < 0) {
-    ierr = VecSetSizes(xin, PETSC_DECIDE, Nfile);CHKERRQ(ierr);
-  }
-  /* If sizes and type already set,check if the vector global size is correct */
-  ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
-  if (N != Nfile) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%D) then input vector (%D)", Nfile, N);
-
-  ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(xin,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xin,&x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -232,9 +200,6 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 #if defined(PETSC_HAVE_ADIOS)
   PetscBool      isadios;
 #endif
-#if defined(PETSC_HAVE_ADIOS2)
-  PetscBool      isadios2;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
@@ -243,9 +208,6 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 #endif
 #if defined(PETSC_HAVE_ADIOS)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_ADIOS2)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS2,&isadios2);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_HAVE_HDF5)
@@ -264,15 +226,6 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since ADIOS format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
     }
     ierr = VecLoad_ADIOS(newvec, viewer);CHKERRQ(ierr);
-  } else
-#endif
-#if defined(PETSC_HAVE_ADIOS2)
-  if (isadios2) {
-    if (!((PetscObject)newvec)->name) {
-      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since ADIOS2 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
-    }
-    ierr = VecLoad_ADIOS2(newvec, viewer);CHKERRQ(ierr);
   } else
 #endif
   {

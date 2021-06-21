@@ -94,7 +94,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   /* Project the initial point onto the feasible region */
   ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
 
-  if (nDiff > 0 || !tao->recycle){
+  if (nDiff > 0 || !tao->recycle) {
     ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient);CHKERRQ(ierr);
   }
   ierr = VecNorm(cg->unprojected_gradient,NORM_2,&gnorm);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ static PetscErrorCode TaoSetUp_BNCG(Tao tao)
   if (!cg->G_old) {
     ierr = VecDuplicate(tao->gradient,&cg->G_old);CHKERRQ(ierr);
   }
-  if (cg->diag_scaling){
+  if (cg->diag_scaling) {
     ierr = VecDuplicate(tao->solution,&cg->d_work);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->solution,&cg->y_work);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->solution,&cg->g_work);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ static PetscErrorCode TaoSetUp_BNCG(Tao tao)
     ierr = VecDuplicate(tao->gradient,&cg->unprojected_gradient_old);CHKERRQ(ierr);
   }
   ierr = MatLMVMAllocate(cg->B, cg->sk, cg->yk);CHKERRQ(ierr);
-  if (cg->pc){
+  if (cg->pc) {
     ierr = MatLMVMSetJ0(cg->B, cg->pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -233,10 +233,10 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
     ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
     ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
     ierr = PetscOptionsEList("-tao_bncg_type","cg formula", "", CG_Table, CGTypes, CG_Table[cg->cg_type], &cg->cg_type,NULL);CHKERRQ(ierr);
-    if (cg->cg_type != CG_SSML_BFGS){
+    if (cg->cg_type != CG_SSML_BFGS) {
       cg->alpha = -1.0; /* Setting defaults for non-BFGS methods. User can change it below. */
     }
-    if (CG_GradientDescent == cg->cg_type){
+    if (CG_GradientDescent == cg->cg_type) {
       cg->cg_type = CG_PCGradientDescent;
       /* Set scaling equal to none or, at best, scalar scaling. */
       cg->unscaled_restart = PETSC_TRUE;
@@ -261,11 +261,11 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
     ierr = PetscOptionsInt("-tao_bncg_min_restart_num", "(developer) Number of iterations between restarts (times dimension)", "", cg->min_restart_num, &cg->min_restart_num, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-tao_bncg_spaced_restart","(developer) Enable regular steepest descent restarting every fixed number of iterations","",cg->spaced_restart,&cg->spaced_restart,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-tao_bncg_no_scaling","Disable all scaling except in restarts","",cg->no_scaling,&cg->no_scaling,NULL);CHKERRQ(ierr);
-    if (cg->no_scaling){
+    if (cg->no_scaling) {
       cg->diag_scaling = PETSC_FALSE;
       cg->alpha = -1.0;
     }
-    if (cg->alpha == -1.0 && cg->cg_type == CG_KouDai && !cg->diag_scaling){ /* Some more default options that appear to be good. */
+    if (cg->alpha == -1.0 && cg->cg_type == CG_KouDai && !cg->diag_scaling) { /* Some more default options that appear to be good. */
       cg->neg_xi = PETSC_TRUE;
     }
     ierr = PetscOptionsBool("-tao_bncg_neg_xi","(developer) Use negative xi when it might be a smaller descent direction than necessary","",cg->neg_xi,&cg->neg_xi,NULL);CHKERRQ(ierr);
@@ -295,7 +295,7 @@ static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "Pure gradient steps: %i\n", cg->pure_gd_steps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Not a descent direction: %i\n", cg->descent_error);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Line search fails: %i\n", cg->ls_fails);CHKERRQ(ierr);
-    if (cg->diag_scaling){
+    if (cg->diag_scaling) {
       ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
       if (isascii) {
         ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
@@ -315,9 +315,9 @@ PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscRe
   PetscFunctionBegin;
   *scale = 0.0;
 
-  if (1.0 == alpha){
+  if (1.0 == alpha) {
     *scale = yts/yty;
-  } else if (0.0 == alpha){
+  } else if (0.0 == alpha) {
     *scale = sts/yts;
   }
   else if (-1.0 == alpha) *scale = 1.0;
@@ -455,7 +455,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode TaoBNCGResetUpdate(Tao tao, PetscReal gnormsq)
 {
    TAO_BNCG          *cg = (TAO_BNCG*)tao->data;
@@ -513,12 +512,12 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
   PetscFunctionBegin;
 
   /* Local curvature check to see if we need to restart */
-  if (tao->niter >= 1 || tao->recycle){
+  if (tao->niter >= 1 || tao->recycle) {
     ierr = VecWAXPY(cg->yk, -1.0, cg->G_old, tao->gradient);CHKERRQ(ierr);
     ierr = VecNorm(cg->yk, NORM_2, &ynorm);CHKERRQ(ierr);
     ynorm2 = ynorm*ynorm;
     ierr = VecDot(cg->yk, tao->stepdirection, &dk_yk);CHKERRQ(ierr);
-    if (step*dnorm < PETSC_MACHINE_EPSILON || step*dk_yk < PETSC_MACHINE_EPSILON){
+    if (step*dnorm < PETSC_MACHINE_EPSILON || step*dk_yk < PETSC_MACHINE_EPSILON) {
       cg_restart = PETSC_TRUE;
       ++cg->skipped_updates;
     }
@@ -528,7 +527,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
     }
   }
   /* If the user wants regular restarts, do it every 6n iterations, where n=dimension */
-  if (cg->spaced_restart){
+  if (cg->spaced_restart) {
     ierr = VecGetSize(tao->gradient, &dim);CHKERRQ(ierr);
     if (0 == tao->niter % (6*dim)) cg_restart = PETSC_TRUE;
   }
@@ -568,8 +567,8 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
   } else if (ynorm2 > PETSC_MACHINE_EPSILON) {
     switch (cg->cg_type) {
     case CG_PCGradientDescent:
-      if (!cg->diag_scaling){
-        if (!cg->no_scaling){
+      if (!cg->diag_scaling) {
+        if (!cg->no_scaling) {
         cg->sts = step*step*dnorm*dnorm;
         ierr = TaoBNCGComputeScalarScaling(ynorm2, step*dk_yk, cg->sts, &tau_k, cg->alpha);CHKERRQ(ierr);
         } else {
@@ -585,7 +584,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
 
     case CG_HestenesStiefel:
       /* Classic Hestenes-Stiefel method, modified with scalar and diagonal preconditioning. */
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         cg->sts = step*step*dnorm*dnorm;
         ierr = VecDot(cg->yk, tao->gradient, &gkp1_yk);CHKERRQ(ierr);
         ierr = TaoBNCGComputeScalarScaling(ynorm2, step*dk_yk, cg->sts, &tau_k, cg->alpha);CHKERRQ(ierr);
@@ -605,7 +604,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       ierr = VecNorm(cg->yk, NORM_2, &ynorm);CHKERRQ(ierr);
       ynorm2 = ynorm*ynorm;
       ierr = VecDot(cg->yk, tao->stepdirection, &dk_yk);CHKERRQ(ierr);
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         ierr = TaoBNCGComputeScalarScaling(ynorm2, step*dk_yk, step*step*dnorm*dnorm, &tau_k, cg->alpha);CHKERRQ(ierr);
         beta = tau_k*gnorm2/gnorm2_old;
         ierr = VecAXPBY(tao->stepdirection, -tau_k, beta, tao->gradient);CHKERRQ(ierr);
@@ -620,7 +619,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
 
     case CG_PolakRibierePolyak:
       snorm = step*dnorm;
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         ierr = VecDot(cg->G_old, cg->G_old, &gnorm2_old);CHKERRQ(ierr);
         ierr = VecDot(cg->yk, tao->gradient, &gkp1_yk);CHKERRQ(ierr);
         ierr = TaoBNCGComputeScalarScaling(ynorm2, step*dk_yk, snorm*snorm, &tau_k, cg->alpha);CHKERRQ(ierr);
@@ -639,7 +638,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       ierr = VecWAXPY(cg->yk, -1.0, cg->G_old, tao->gradient);CHKERRQ(ierr);
       ierr = VecNorm(cg->yk, NORM_2, &ynorm);CHKERRQ(ierr);
       ynorm2 = ynorm*ynorm;
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         ierr = VecDot(cg->G_old, cg->G_old, &gnorm2_old);CHKERRQ(ierr);
         ierr = VecDot(cg->yk, tao->gradient, &gkp1_yk);CHKERRQ(ierr);
         ierr = TaoBNCGComputeScalarScaling(ynorm2, step*dk_yk, snorm*snorm, &tau_k, cg->alpha);CHKERRQ(ierr);
@@ -659,7 +658,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
     case CG_DaiYuan:
       /* Dai, Yu-Hong, and Yaxiang Yuan. "A nonlinear conjugate gradient method with a strong global convergence property."
          SIAM Journal on optimization 10, no. 1 (1999): 177-182. */
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         ierr = VecDot(tao->stepdirection, tao->gradient, &gd);CHKERRQ(ierr);
         ierr = VecDot(cg->G_old, tao->stepdirection, &gd_old);CHKERRQ(ierr);
         ierr = TaoBNCGComputeScalarScaling(ynorm2, step*dk_yk, cg->yts, &tau_k, cg->alpha);CHKERRQ(ierr);
@@ -686,13 +685,13 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       ierr = VecWAXPY(cg->sk, -1.0, cg->X_old, tao->solution);CHKERRQ(ierr);
       snorm = dnorm*step;
       cg->yts = step*dk_yk;
-      if (cg->use_dynamic_restart){
+      if (cg->use_dynamic_restart) {
         ierr = TaoBNCGCheckDynamicRestart(tao, step, gd, gd_old, &cg->dynamic_restart, fold);CHKERRQ(ierr);
       }
-      if (cg->dynamic_restart){
+      if (cg->dynamic_restart) {
         ierr = TaoBNCGResetUpdate(tao, gnorm2);CHKERRQ(ierr);
       } else {
-        if (!cg->diag_scaling){
+        if (!cg->diag_scaling) {
           ierr = VecDot(cg->yk, tao->gradient, &gkp1_yk);CHKERRQ(ierr);
           ierr = TaoBNCGComputeScalarScaling(ynorm2, cg->yts, snorm*snorm, &tau_k, cg->alpha);CHKERRQ(ierr);
           /* Supplying cg->alpha = -1.0 will give the CG_DESCENT 5.3 special case of tau_k = 1.0 */
@@ -736,7 +735,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       ierr = VecWAXPY(cg->sk, -1.0, cg->X_old, tao->solution);CHKERRQ(ierr);
       snorm = step*dnorm;
       cg->yts = dk_yk*step;
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         ierr = VecDot(cg->yk, tao->gradient, &gkp1_yk);CHKERRQ(ierr);
         ierr = TaoBNCGComputeScalarScaling(ynorm2, cg->yts, snorm*snorm, &tau_k, cg->alpha);CHKERRQ(ierr);
         /* Use cg->alpha = -1.0 to get tau_k = 1.0 as in CG_DESCENT 5.3 */
@@ -778,13 +777,13 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       ierr = VecWAXPY(cg->sk, -1.0, cg->X_old, tao->solution);CHKERRQ(ierr);
       snorm = step*dnorm;
       cg->yts = dk_yk*step;
-      if (cg->use_dynamic_restart){
+      if (cg->use_dynamic_restart) {
         ierr = TaoBNCGCheckDynamicRestart(tao, step, gd, gd_old, &cg->dynamic_restart, fold);CHKERRQ(ierr);
       }
-      if (cg->dynamic_restart){
+      if (cg->dynamic_restart) {
         ierr = TaoBNCGResetUpdate(tao, gnorm2);CHKERRQ(ierr);
       } else {
-        if (!cg->diag_scaling){
+        if (!cg->diag_scaling) {
           ierr = VecDot(cg->yk, tao->gradient, &gkp1_yk);CHKERRQ(ierr);
           ierr = TaoBNCGComputeScalarScaling(ynorm2, cg->yts, snorm*snorm, &tau_k, cg->alpha);CHKERRQ(ierr);
           beta = tau_k*(gkp1_yk/dk_yk - ynorm2*gd/(dk_yk*dk_yk)) - step*gd/dk_yk;
@@ -819,13 +818,13 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
           beta = gkp1D_yk/dk_yk - step*gamma - tau_k;
           /* Here is the requisite check */
           ierr = VecDot(tao->stepdirection, cg->g_work, &tmp);CHKERRQ(ierr);
-          if (cg->neg_xi){
+          if (cg->neg_xi) {
             /* modified KD implementation */
             if (gkp1D_yk/dk_yk < 0) gamma = -1.0*gd/dk_yk;
             else {
               gamma = cg->xi*gd/dk_yk;
             }
-            if (beta < cg->zeta*tmp/(dnorm*dnorm)){
+            if (beta < cg->zeta*tmp/(dnorm*dnorm)) {
               beta = cg->zeta*tmp/(dnorm*dnorm);
               gamma = 0.0;
             }
@@ -853,7 +852,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       cg->yts = dk_yk*step;
       cg->yty = ynorm2;
       cg->sts = snorm*snorm;
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         ierr = VecDot(cg->yk, tao->gradient, &gkp1_yk);CHKERRQ(ierr);
         ierr = TaoBNCGComputeScalarScaling(cg->yty, cg->yts, cg->sts, &tau_k, cg->alpha);CHKERRQ(ierr);
         tmp = gd/dk_yk;
@@ -882,7 +881,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       cg->yts = dk_yk*step;
       cg->yty = ynorm2;
       cg->sts = snorm*snorm;
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         /* Instead of a regular convex combination, we will solve a quadratic formula. */
         ierr = TaoBNCGComputeScalarScaling(cg->yty, cg->yts, cg->sts, &tau_k, cg->alpha);CHKERRQ(ierr);
         ierr = VecDot(cg->yk, tao->gradient, &gkp1_yk);CHKERRQ(ierr);
@@ -913,7 +912,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       cg->yts = step*dk_yk;
       cg->yty = ynorm2;
       cg->sts = snorm*snorm;
-      if (!cg->diag_scaling){
+      if (!cg->diag_scaling) {
         /* Instead of a regular convex combination, we will solve a quadratic formula. */
         ierr = TaoBNCGComputeScalarScaling(cg->yty, step*dk_yk, snorm*snorm, &tau_bfgs, cg->bfgs_scale);CHKERRQ(ierr);
         ierr = TaoBNCGComputeScalarScaling(cg->yty, step*dk_yk, snorm*snorm, &tau_dfp, cg->dfp_scale);CHKERRQ(ierr);
@@ -969,7 +968,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
   f_old = cg->f;
   /* Perform bounded line search. If we are recycling a solution from a previous */
   /* TaoSolve, then we want to immediately skip to calculating a new direction rather than performing a linesearch */
-  if (!(tao->recycle && 0 == tao->niter)){
+  if (!(tao->recycle && 0 == tao->niter)) {
     /* Above logic: the below code happens every iteration, except for the first iteration of a recycled TaoSolve */
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch, 1.0);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &cg->f, cg->unprojected_gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
@@ -978,7 +977,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
     /*  Check linesearch failure */
     if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
       ++cg->ls_fails;
-      if (cg->cg_type == CG_GradientDescent){
+      if (cg->cg_type == CG_GradientDescent) {
         /* Nothing left to do but fail out of the optimization */
         step = 0.0;
         tao->reason = TAO_DIVERGED_LS_FAILURE;
@@ -992,7 +991,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
         cg->f = f_old;
 
         /* Fall back on preconditioned CG (so long as you're not already using it) */
-        if (cg->cg_type != CG_PCGradientDescent && cg->diag_scaling){
+        if (cg->cg_type != CG_PCGradientDescent && cg->diag_scaling) {
           pcgd_fallback = PETSC_TRUE;
           ierr = TaoBNCGStepDirectionUpdate(tao, gnorm2, step, f_old, gnorm2_old, dnorm, pcgd_fallback);CHKERRQ(ierr);
 
@@ -1004,14 +1003,14 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
           ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
           pcgd_fallback = PETSC_FALSE;
-          if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER){
+          if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
             /* Going to perform a regular gradient descent step. */
             ++cg->ls_fails;
             step = 0.0;
           }
         }
         /* Fall back on the scaled gradient step */
-        if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER){
+        if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
           ++cg->ls_fails;
           ierr = TaoBNCGResetUpdate(tao, gnorm2);CHKERRQ(ierr);
           ierr = TaoBNCGBoundStep(tao, cg->as_type, tao->stepdirection);CHKERRQ(ierr);
@@ -1020,7 +1019,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
           ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
         }
 
-        if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER){
+        if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
           /* Nothing left to do but fail out of the optimization */
           ++cg->ls_fails;
           step = 0.0;

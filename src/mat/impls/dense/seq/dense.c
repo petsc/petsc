@@ -438,7 +438,7 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolve_SeqDense_Internal_LU(Mat A, PetscScalar *x, PetscBLASInt xlda, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k, PetscBool T)
+static PetscErrorCode MatSolve_SeqDense_Internal_LU(Mat A, PetscScalar *x, PetscBLASInt ldx, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k, PetscBool T)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscBLASInt    info;
@@ -455,7 +455,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_LU(Mat A, PetscScalar *x, Petsc
 
 static PetscErrorCode MatConjugate_SeqDense(Mat);
 
-static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x, PetscBLASInt xlda, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k, PetscBool T)
+static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x, PetscBLASInt ldx, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k, PetscBool T)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscBLASInt    info;
@@ -488,7 +488,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, PetscBLASInt xlda, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k)
+static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, PetscBLASInt ldx, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscBLASInt    info;
@@ -502,23 +502,23 @@ static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, Petsc
     trans = 'T';
   }
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", &trans, &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&xlda,mat->fwork,&mat->lfwork,&info));
+  PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", &trans, &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,mat->fwork,&mat->lfwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ORMQR - Bad orthogonal transform");
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &mat->rank,&nrhs,mat->v,&mat->lda,x,&xlda,&info));
+  PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &mat->rank,&nrhs,mat->v,&mat->lda,x,&ldx,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"TRTRS - Bad triangular solve");
   for (PetscInt j = 0; j < nrhs; j++) {
     for (PetscInt i = mat->rank; i < k; i++) {
-      x[j*xlda + i] = 0.;
+      x[j*ldx + i] = 0.;
     }
   }
   ierr = PetscLogFlops(nrhs*(4.0*m*mat->rank - PetscSqr(mat->rank)));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar *x, PetscBLASInt xlda, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k)
+static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar *x, PetscBLASInt ldx, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k)
 {
   Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
   PetscBLASInt      info;
@@ -527,12 +527,12 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar 
   PetscFunctionBegin;
   if (A->rmap->n == A->cmap->n && mat->rank == A->rmap->n) {
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "T", "N", &m,&nrhs,mat->v,&mat->lda,x,&xlda,&info));
+    PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "T", "N", &m,&nrhs,mat->v,&mat->lda,x,&ldx,&info));
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"TRTRS - Bad triangular solve");
     if (PetscDefined(USE_COMPLEX)) {ierr = MatConjugate_SeqDense(A);CHKERRQ(ierr);}
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", "N", &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&xlda,mat->fwork,&mat->lfwork,&info));
+    PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", "N", &m,&nrhs,&mat->rank,mat->v,&mat->lda,mat->tau,x,&ldx,mat->fwork,&mat->lfwork,&info));
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ORMQR - Bad orthogonal transform");
     if (PetscDefined(USE_COMPLEX)) {ierr = MatConjugate_SeqDense(A);CHKERRQ(ierr);}
@@ -567,7 +567,7 @@ static PetscErrorCode MatSolve_SeqDense_SetUp(Mat A, Vec xx, Vec yy, PetscScalar
 static PetscErrorCode MatSolve_SeqDense_TearDown(Mat A, Vec xx, Vec yy, PetscScalar **_y, PetscBLASInt *_m, PetscBLASInt *_k)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense *) A->data;
-  PetscScalar    *y;
+  PetscScalar    *y = NULL;
   PetscBLASInt   m, k;
   PetscErrorCode ierr;
 
@@ -590,8 +590,8 @@ static PetscErrorCode MatSolve_SeqDense_TearDown(Mat A, Vec xx, Vec yy, PetscSca
 
 static PetscErrorCode MatSolve_SeqDense_LU(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -603,8 +603,8 @@ static PetscErrorCode MatSolve_SeqDense_LU(Mat A, Vec xx, Vec yy)
 
 static PetscErrorCode MatSolveTranspose_SeqDense_LU(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -655,8 +655,8 @@ static PetscErrorCode MatSolve_SeqDense_QR(Mat A, Vec xx, Vec yy)
 
 static PetscErrorCode MatSolveTranspose_SeqDense_QR(Mat A, Vec xx, Vec yy)
 {
-  PetscScalar    *y;
-  PetscBLASInt   m, k;
+  PetscScalar    *y = NULL;
+  PetscBLASInt   m = 0, k = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -666,77 +666,78 @@ static PetscErrorCode MatSolveTranspose_SeqDense_QR(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatSolve_SeqDense_SetUp(Mat A, Mat B, Mat X, PetscScalar **_y, PetscBLASInt *_ylda, PetscBLASInt *_m, PetscBLASInt *_nrhs, PetscBLASInt *_k)
+static PetscErrorCode MatMatSolve_SeqDense_SetUp(Mat A, Mat B, Mat X, PetscScalar **_y, PetscBLASInt *_ldy, PetscBLASInt *_m, PetscBLASInt *_nrhs, PetscBLASInt *_k)
 {
   PetscErrorCode    ierr;
   const PetscScalar *b;
   PetscScalar       *y;
-  PetscInt          n, _blda, _xlda;
-  PetscBLASInt      nrhs=0,m=0,k=0,blda=0,xlda=0,ylda=0;
+  PetscInt          n, _ldb, _ldx;
+  PetscBLASInt      nrhs=0,m=0,k=0,ldb=0,ldx=0,ldy=0;
 
   PetscFunctionBegin;
+  *_ldy=0; *_m=0; *_nrhs=0; *_k=0;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);
   ierr = MatGetSize(B,NULL,&n);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n,&nrhs);CHKERRQ(ierr);
-  ierr = MatDenseGetLDA(B,&_blda);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(_blda, &blda);CHKERRQ(ierr);
-  ierr = MatDenseGetLDA(X,&_xlda);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(_xlda, &xlda);CHKERRQ(ierr);
-  if (xlda < m) {
+  ierr = MatDenseGetLDA(B,&_ldb);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(_ldb, &ldb);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(X,&_ldx);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(_ldx, &ldx);CHKERRQ(ierr);
+  if (ldx < m) {
     ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
     ierr = PetscMalloc1(nrhs * m, &y);CHKERRQ(ierr);
-    if (blda == m) {
-      ierr = PetscArraycpy(y,b,blda*nrhs);CHKERRQ(ierr);
+    if (ldb == m) {
+      ierr = PetscArraycpy(y,b,ldb*nrhs);CHKERRQ(ierr);
     } else {
       for (PetscInt j = 0; j < nrhs; j++) {
-        ierr = PetscArraycpy(&y[j*m],&b[j*blda],m);CHKERRQ(ierr);
+        ierr = PetscArraycpy(&y[j*m],&b[j*ldb],m);CHKERRQ(ierr);
       }
     }
-    ylda = m;
+    ldy = m;
     ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
   } else {
-    if (blda == xlda) {
+    if (ldb == ldx) {
       ierr = MatCopy(B, X, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatDenseGetArray(X,&y);CHKERRQ(ierr);
     } else {
       ierr = MatDenseGetArray(X,&y);CHKERRQ(ierr);
       ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
       for (PetscInt j = 0; j < nrhs; j++) {
-        ierr = PetscArraycpy(&y[j*xlda],&b[j*blda],m);CHKERRQ(ierr);
+        ierr = PetscArraycpy(&y[j*ldx],&b[j*ldb],m);CHKERRQ(ierr);
       }
       ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
     }
-    ylda = xlda;
+    ldy = ldx;
   }
   *_y    = y;
-  *_ylda = ylda;
+  *_ldy = ldy;
   *_k    = k;
   *_m    = m;
   *_nrhs = nrhs;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatSolve_SeqDense_TearDown(Mat A, Mat B, Mat X, PetscScalar **_y, PetscBLASInt *_ylda, PetscBLASInt *_m, PetscBLASInt *_nrhs, PetscBLASInt *_k)
+static PetscErrorCode MatMatSolve_SeqDense_TearDown(Mat A, Mat B, Mat X, PetscScalar **_y, PetscBLASInt *_ldy, PetscBLASInt *_m, PetscBLASInt *_nrhs, PetscBLASInt *_k)
 {
   PetscScalar       *y;
-  PetscInt          _xlda;
-  PetscBLASInt      k,ylda,nrhs,xlda=0;
+  PetscInt          _ldx;
+  PetscBLASInt      k,ldy,nrhs,ldx=0;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   y    = *_y;
   *_y  = NULL;
   k    = *_k;
-  ylda = *_ylda;
+  ldy = *_ldy;
   nrhs = *_nrhs;
-  ierr = MatDenseGetLDA(X,&_xlda);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(_xlda, &xlda);CHKERRQ(ierr);
-  if (xlda != ylda) {
+  ierr = MatDenseGetLDA(X,&_ldx);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(_ldx, &ldx);CHKERRQ(ierr);
+  if (ldx != ldy) {
     PetscScalar *xv;
     ierr = MatDenseGetArray(X,&xv);CHKERRQ(ierr);
     for (PetscInt j = 0; j < nrhs; j++) {
-      ierr = PetscArraycpy(&xv[j*xlda],&y[j*ylda],k);CHKERRQ(ierr);
+      ierr = PetscArraycpy(&xv[j*ldx],&y[j*ldy],k);CHKERRQ(ierr);
     }
     ierr = MatDenseRestoreArray(X,&xv);CHKERRQ(ierr);
     ierr = PetscFree(y);CHKERRQ(ierr);
@@ -749,78 +750,78 @@ static PetscErrorCode MatMatSolve_SeqDense_TearDown(Mat A, Mat B, Mat X, PetscSc
 static PetscErrorCode MatMatSolve_SeqDense_LU(Mat A, Mat B, Mat X)
 {
   PetscScalar    *y;
-  PetscBLASInt   m, k, ylda, nrhs;
+  PetscBLASInt   m, k, ldy, nrhs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
-  ierr = MatSolve_SeqDense_Internal_LU(A, y, ylda, m, nrhs, k, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatSolve_SeqDense_Internal_LU(A, y, ldy, m, nrhs, k, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDense_LU(Mat A, Mat B, Mat X)
 {
   PetscScalar    *y;
-  PetscBLASInt   m, k, ylda, nrhs;
+  PetscBLASInt   m, k, ldy, nrhs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
-  ierr = MatSolve_SeqDense_Internal_LU(A, y, ylda, m, nrhs, k, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatSolve_SeqDense_Internal_LU(A, y, ldy, m, nrhs, k, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMatSolve_SeqDense_Cholesky(Mat A, Mat B, Mat X)
 {
   PetscScalar    *y;
-  PetscBLASInt   m, k, ylda, nrhs;
+  PetscBLASInt   m, k, ldy, nrhs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
-  ierr = MatSolve_SeqDense_Internal_Cholesky(A, y, ylda, m, nrhs, k, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatSolve_SeqDense_Internal_Cholesky(A, y, ldy, m, nrhs, k, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDense_Cholesky(Mat A, Mat B, Mat X)
 {
   PetscScalar    *y;
-  PetscBLASInt   m, k, ylda, nrhs;
+  PetscBLASInt   m, k, ldy, nrhs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
-  ierr = MatSolve_SeqDense_Internal_Cholesky(A, y, ylda, m, nrhs, k, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatSolve_SeqDense_Internal_Cholesky(A, y, ldy, m, nrhs, k, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMatSolve_SeqDense_QR(Mat A, Mat B, Mat X)
 {
   PetscScalar    *y;
-  PetscBLASInt   m, k, ylda, nrhs;
+  PetscBLASInt   m, k, ldy, nrhs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
-  ierr = MatSolve_SeqDense_Internal_QR(A, y, ylda, m, nrhs, k);CHKERRQ(ierr);
-  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatSolve_SeqDense_Internal_QR(A, y, ldy, m, nrhs, k);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMatSolveTranspose_SeqDense_QR(Mat A, Mat B, Mat X)
 {
   PetscScalar    *y;
-  PetscBLASInt   m, k, ylda, nrhs;
+  PetscBLASInt   m, k, ldy, nrhs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
-  ierr = MatSolveTranspose_SeqDense_Internal_QR(A, y, ylda, m, nrhs, k);CHKERRQ(ierr);
-  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ylda, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_SetUp(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
+  ierr = MatSolveTranspose_SeqDense_Internal_QR(A, y, ldy, m, nrhs, k);CHKERRQ(ierr);
+  ierr = MatMatSolve_SeqDense_TearDown(A, B, X, &y, &ldy, &m, &nrhs, &k);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -880,9 +881,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const M
   fact->preallocated           = PETSC_TRUE;
   fact->assembled              = PETSC_TRUE;
   fact->ops->lufactornumeric   = MatLUFactorNumeric_SeqDense;
-  fact->ops->solve             = MatSolve_SeqDense_LU;
-  fact->ops->matsolve          = MatMatSolve_SeqDense_LU;
-  fact->ops->solvetranspose    = MatSolveTranspose_SeqDense_LU;
   PetscFunctionReturn(0);
 }
 
@@ -975,13 +973,10 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const Ma
   fact->assembled                  = PETSC_TRUE;
   fact->preallocated               = PETSC_TRUE;
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqDense;
-  fact->ops->solve                 = MatSolve_SeqDense_Cholesky;
-  fact->ops->matsolve              = MatMatSolve_SeqDense_Cholesky;
-  fact->ops->solvetranspose        = MatSolve_SeqDense_Cholesky;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatQRFactor_SeqDense(Mat A,IS col,const MatFactorInfo *minfo)
+PetscErrorCode MatQRFactor_SeqDense(Mat A,IS col,const MatFactorInfo *minfo)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
@@ -997,8 +992,8 @@ static PetscErrorCode MatQRFactor_SeqDense(Mat A,IS col,const MatFactorInfo *min
     ierr = PetscLogObjectMemory((PetscObject)A,min*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   if (!mat->pivots) {
-    ierr = PetscMalloc1(m,&mat->pivots);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)A,m*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&mat->pivots);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   if (!mat->qrrhs) {
     ierr = MatCreateVecs(A, NULL, &(mat->qrrhs));CHKERRQ(ierr);
@@ -1046,27 +1041,20 @@ static PetscErrorCode MatQRFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactor
   info.fill = 1.0;
 
   ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
-  ierr = MatQRFactor_SeqDense(fact,NULL,&info);CHKERRQ(ierr);
+  ierr = PetscUseMethod(fact,"MatQRFactor_C",(Mat,IS,const MatFactorInfo *),(fact,NULL,&info));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatQRFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const MatFactorInfo *info)
+PetscErrorCode MatQRFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   fact->assembled                  = PETSC_TRUE;
   fact->preallocated               = PETSC_TRUE;
-  fact->ops->solve                 = MatSolve_SeqDense_QR;
-  fact->ops->matsolve              = MatMatSolve_SeqDense_QR;
-  if (A->cmap->n == A->rmap->n) {
-    fact->ops->solvetranspose    = MatSolveTranspose_SeqDense_QR;
-    fact->ops->matsolvetranspose = MatMatSolveTranspose_SeqDense_QR;
-  }
   ierr = PetscObjectComposeFunction((PetscObject)fact,"MatQRFactorNumeric_C",MatQRFactorNumeric_SeqDense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* uses LAPACK */
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
@@ -1077,16 +1065,23 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftyp
   ierr = MatCreate(PetscObjectComm((PetscObject)A),fact);CHKERRQ(ierr);
   ierr = MatSetSizes(*fact,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(*fact,MATDENSE);CHKERRQ(ierr);
+  (*fact)->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     (*fact)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqDense;
     (*fact)->ops->ilufactorsymbolic = MatLUFactorSymbolic_SeqDense;
-  } else {
+  } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense;
+  } else if (ftype == MAT_FACTOR_QR) {
+    ierr = PetscObjectComposeFunction((PetscObject)(*fact),"MatQRFactorSymbolic_C",MatQRFactorSymbolic_SeqDense);CHKERRQ(ierr);
   }
   (*fact)->factortype = ftype;
 
   ierr = PetscFree((*fact)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERPETSC,&(*fact)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_LU]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_ILU]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_CHOLESKY]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGEXTERNAL,(char**)&(*fact)->preferredordering[MAT_FACTOR_ICC]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1240,14 +1235,14 @@ static PetscErrorCode MatGetRow_SeqDense(Mat A,PetscInt row,PetscInt *ncols,Pets
   PetscFunctionBegin;
   *ncols = A->cmap->n;
   if (cols) {
-    ierr = PetscMalloc1(A->cmap->n+1,cols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->cmap->n,cols);CHKERRQ(ierr);
     for (i=0; i<A->cmap->n; i++) (*cols)[i] = i;
   }
   if (vals) {
     const PetscScalar *v;
 
     ierr = MatDenseGetArrayRead(A,&v);CHKERRQ(ierr);
-    ierr = PetscMalloc1(A->cmap->n+1,vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->cmap->n,vals);CHKERRQ(ierr);
     v   += row;
     for (i=0; i<A->cmap->n; i++) {(*vals)[i] = *v; v += mat->lda;}
     ierr = MatDenseRestoreArrayRead(A,&v);CHKERRQ(ierr);
@@ -1260,6 +1255,7 @@ static PetscErrorCode MatRestoreRow_SeqDense(Mat A,PetscInt row,PetscInt *ncols,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (ncols) *ncols = 0;
   if (cols) {ierr = PetscFree(*cols);CHKERRQ(ierr);}
   if (vals) {ierr = PetscFree(*vals);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
@@ -1767,8 +1763,6 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatQRFactor_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatQRFactorNumeric_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatQRFactorSymbolic_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetLDA_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseSetLDA_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",NULL);CHKERRQ(ierr);
@@ -2062,23 +2056,23 @@ static PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatZeroEntries_SeqDense(Mat A)
+PetscErrorCode MatZeroEntries_SeqDense(Mat A)
 {
   Mat_SeqDense   *l = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       lda=l->lda,m=A->rmap->n,j;
+  PetscInt       lda=l->lda,m=A->rmap->n,n=A->cmap->n,j;
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  ierr = MatDenseGetArray(A,&v);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayWrite(A,&v);CHKERRQ(ierr);
   if (lda>m) {
-    for (j=0; j<A->cmap->n; j++) {
+    for (j=0; j<n; j++) {
       ierr = PetscArrayzero(v+j*lda,m);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscArrayzero(v,A->rmap->n*A->cmap->n);CHKERRQ(ierr);
+    ierr = PetscArrayzero(v,PetscInt64Mult(m,n));CHKERRQ(ierr);
   }
-  ierr = MatDenseRestoreArray(A,&v);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayWrite(A,&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2361,7 +2355,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatReu
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,nrows,ncols,blda;
+  PetscInt       i,j,nrows,ncols,ldb;
   const PetscInt *irow,*icol;
   PetscScalar    *av,*bv,*v = mat->v;
   Mat            newmat;
@@ -2391,11 +2385,11 @@ static PetscErrorCode MatCreateSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatReu
 
   /* Now extract the data pointers and do the copy,column at a time */
   ierr = MatDenseGetArray(newmat,&bv);CHKERRQ(ierr);
-  ierr = MatDenseGetLDA(newmat,&blda);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(newmat,&ldb);CHKERRQ(ierr);
   for (i=0; i<ncols; i++) {
     av = v + mat->lda*icol[i];
     for (j=0; j<nrows; j++) bv[j] = av[irow[j]];
-    bv += blda;
+    bv += ldb;
   }
   ierr = MatDenseRestoreArray(newmat,&bv);CHKERRQ(ierr);
 
@@ -2417,7 +2411,7 @@ static PetscErrorCode MatCreateSubMatrices_SeqDense(Mat A,PetscInt n,const IS ir
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscCalloc1(n+1,B);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n,B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
@@ -3385,8 +3379,6 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   b->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatQRFactor_C",MatQRFactor_SeqDense);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatQRFactorNumeric_C",MatQRFactorNumeric_SeqDense);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatQRFactorSymbolic_C",MatQRFactorSymbolic_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetLDA_C",MatDenseGetLDA_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseSetLDA_C",MatDenseSetLDA_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetArray_C",MatDenseGetArray_SeqDense);CHKERRQ(ierr);

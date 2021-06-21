@@ -4,7 +4,7 @@
 #include <petscsf.h>
 #include <petscds.h>
 
-/** hierarchy routines */
+/* hierarchy routines */
 
 /*@
   DMPlexSetReferenceTree - set the reference tree for hierarchically non-conforming meshes.
@@ -470,7 +470,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   comm = PETSC_COMM_SELF;
 #endif
   /* create a reference element */
-  ierr = DMPlexCreateReferenceCell(comm, dim, simplex, &K);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(comm, DMPolytopeTypeSimpleShape(dim, simplex), &K);CHKERRQ(ierr);
   ierr = DMCreateLabel(K, "identity");CHKERRQ(ierr);
   ierr = DMGetLabel(K, "identity", &identity);CHKERRQ(ierr);
   ierr = DMPlexGetChart(K, &pStart, &pEnd);CHKERRQ(ierr);
@@ -650,7 +650,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
     }
   }
   ierr = ISRestoreIndices(is,&vals);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRMPI(ierr);
   if (!globalAnyNew) {
     ierr = PetscSectionDestroy(&secNew);CHKERRQ(ierr);
     *sectionNew = NULL;
@@ -659,7 +659,7 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
   else {
     PetscBool globalCompress;
 
-    ierr = MPIU_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRMPI(ierr);
     if (compress) {
       PetscSection secComp;
       PetscInt *valsComp = NULL;
@@ -3211,7 +3211,6 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         const PetscInt ***perms;
         const PetscScalar ***flips;
         const PetscInt *pperms;
-
 
         ierr = PetscFEGetDualSpace(fe,&dsp);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDimension(dsp,&fSize);CHKERRQ(ierr);

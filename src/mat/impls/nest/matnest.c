@@ -122,7 +122,7 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   ierr = MatDenseGetLDA(C,&ldc);CHKERRQ(ierr);
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(B,&barray);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayWrite(C,&carray);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(C,&carray);CHKERRQ(ierr);
   for (i=0; i<nr; i++) {
     ierr = ISGetSize(bA->isglobal.row[i],&M);CHKERRQ(ierr);
     ierr = MatCreateDense(PetscObjectComm((PetscObject)A),contents->dm[i+1]-contents->dm[i],PETSC_DECIDE,M,N,carray+contents->dm[i],&viewC);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
     }
     ierr = MatDestroy(&viewC);CHKERRQ(ierr);
   }
-  ierr = MatDenseRestoreArrayWrite(C,&carray);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(C,&carray);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -617,7 +617,6 @@ static PetscErrorCode MatNestFindISRange(Mat A,PetscInt n,const IS list[],IS is,
   }
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode MatNestFillEmptyMat_Private(Mat A,PetscInt i,PetscInt j,Mat *B)
 {
@@ -1611,7 +1610,6 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
   PetscFunctionReturn(0);
 }
 
-
 /* If an IS was provided, there is nothing Nest needs to do, otherwise Nest will build a strided IS */
 /*
   nprocessors = NP
@@ -2152,7 +2150,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
       ierr = PetscMalloc1(bm,&iremote);CHKERRQ(ierr);
       ierr = PetscMalloc1(bm,&sub_dnnz);CHKERRQ(ierr);
       ierr = PetscMalloc1(bm,&sub_onnz);CHKERRQ(ierr);
-      for (k = 0; k < bm; ++k){
+      for (k = 0; k < bm; ++k) {
         sub_dnnz[k] = 0;
         sub_onnz[k] = 0;
       }

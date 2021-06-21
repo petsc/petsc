@@ -1,5 +1,16 @@
 #include <petsc/private/petscscalapack.h>  /*I "petscmat.h" I*/
 
+const char ScaLAPACKCitation[] = "@BOOK{scalapack-user-guide,\n"
+"       AUTHOR = {L. S. Blackford and J. Choi and A. Cleary and E. D'Azevedo and\n"
+"                 J. Demmel and I. Dhillon and J. Dongarra and S. Hammarling and\n"
+"                 G. Henry and A. Petitet and K. Stanley and D. Walker and R. C. Whaley},\n"
+"       TITLE = {Sca{LAPACK} Users' Guide},\n"
+"       PUBLISHER = {SIAM},\n"
+"       ADDRESS = {Philadelphia, PA},\n"
+"       YEAR = 1997\n"
+"}\n";
+static PetscBool ScaLAPACKCite = PETSC_FALSE;
+
 #define DEFAULT_BLOCKSIZE 64
 
 /*
@@ -62,11 +73,11 @@ static PetscErrorCode MatGetInfo_ScaLAPACK(Mat A,MatInfoType flag,MatInfo *info)
     info->nz_allocated   = isend[0];
     info->nz_used        = isend[1];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
     info->nz_allocated   = irecv[0];
     info->nz_used        = irecv[1];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(isend,irecv,2,MPIU_PETSCLOGDOUBLE,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
     info->nz_allocated   = irecv[0];
     info->nz_used        = irecv[1];
   }
@@ -841,6 +852,7 @@ static PetscErrorCode MatGetFactor_scalapack_scalapack(Mat A,MatFactorType ftype
   PetscFunctionBegin;
   /* Create the factorization matrix */
   ierr = MatCreateScaLAPACK(PetscObjectComm((PetscObject)A),a->mb,a->nb,a->M,a->N,a->rsrc,a->csrc,&B);CHKERRQ(ierr);
+  B->trivialsymbolic = PETSC_TRUE;
   B->factortype = ftype;
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERSCALAPACK,&B->solvertype);CHKERRQ(ierr);
@@ -869,7 +881,7 @@ static PetscErrorCode MatNorm_ScaLAPACK(Mat A,NormType type,PetscReal *nrm)
   PetscScalar    *work=NULL,dummy;
 
   PetscFunctionBegin;
-  switch (type){
+  switch (type) {
     case NORM_1:
       ntype = "1";
       lwork = PetscMax(a->locr,a->locc);
@@ -1279,7 +1291,7 @@ PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A,MatAssemblyType type)
       ierr = PetscBLASIntCast(row[i]+1,&gridx);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(col[i]+1,&gcidx);CHKERRQ(ierr);
       PetscStackCallBLAS("SCALAPACKinfog2l",SCALAPACKinfog2l_(&gridx,&gcidx,a->desc,&a->grid->nprow,&a->grid->npcol,&a->grid->myrow,&a->grid->mycol,&lridx,&lcidx,&rsrc,&csrc));
-      if (rsrc!=a->grid->myrow || csrc!=a->grid->mycol) SETERRQ(PetscObjectComm((PetscObject)A),1,"Something went wrong, received value does not belong to this process");
+      if (rsrc!=a->grid->myrow || csrc!=a->grid->mycol) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_LIB,"Something went wrong, received value does not belong to this process");
       switch (A->insertmode) {
         case INSERT_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] = val[i]; break;
         case ADD_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] += val[i]; break;
@@ -1479,7 +1491,7 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
   PetscFunctionBegin;
   {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
-    ierr = MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
     if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
     mat->insertmode = addv; /* in case this processor had no cache */
   }
@@ -1737,6 +1749,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   if (Petsc_ScaLAPACK_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_ScaLAPACK_keyval,(void*)0);CHKERRMPI(ierr);
     ierr = PetscRegisterFinalize(Petsc_ScaLAPACK_keyval_free);CHKERRQ(ierr);
+    ierr = PetscCitationsRegister(ScaLAPACKCitation,&ScaLAPACKCite);CHKERRQ(ierr);
   }
   ierr = PetscCommDuplicate(PetscObjectComm((PetscObject)A),&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_get_attr(icomm,Petsc_ScaLAPACK_keyval,(void**)&grid,(int*)&flg);CHKERRMPI(ierr);

@@ -1,7 +1,6 @@
 from petsc4py import PETSc
 import unittest
 from sys import getrefcount
-
 # --------------------------------------------------------------------
 
 class Matrix(object):
@@ -142,6 +141,7 @@ class TestMatrix(unittest.TestCase):
         f = lambda : self.A.diagonalScale(x, y)
         self.assertRaises(Exception, f)
 
+
 class TestIdentity(TestMatrix):
 
     PYCLS = 'Identity'
@@ -262,6 +262,7 @@ class TestDiagonal(TestMatrix):
         AT.multTranspose(yt, xt)
         self.assertTrue(xt.equal(y))
         del A
+
 
 # --------------------------------------------------------------------
 

@@ -72,7 +72,6 @@
 !
       sizeofbag = size(transfer(dummydata,dummychar))
 
-
 ! create the bag
       call PetscBagCreate(PETSC_COMM_WORLD,sizeofbag,bag,ierr);CHKERRA(ierr)
       call PetscBagGetData(bag,data,ierr);CHKERRA(ierr)

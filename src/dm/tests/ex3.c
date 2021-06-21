@@ -57,8 +57,6 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawGetDraw(viewer_private,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
-
-
   /* Initialize the array */
   ierr = VecGetLocalSize(local,&localsize);CHKERRQ(ierr);
   ierr = VecGetArray(global,&globalptr);CHKERRQ(ierr);

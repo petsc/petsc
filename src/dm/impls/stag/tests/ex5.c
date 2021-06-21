@@ -137,7 +137,7 @@ PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)
   if (isFirst) {
     arrIn[-1][idxP] = arrIn[0][idxP];
   }
-  if (isLast){
+  if (isLast) {
     arrIn[start + n][idxP] = arrIn[start + n - 1][idxP];
   }
 

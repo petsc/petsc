@@ -16,7 +16,6 @@ static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 {
   PetscErrorCode    ierr;

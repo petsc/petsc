@@ -1,5 +1,5 @@
 
-static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
+static char help[] = "Scatters from a parallel vector into sequential vectors.\n\n";
 
 #include <petscvec.h>
 
@@ -47,7 +47,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
 /*TEST
 
    test:
@@ -90,6 +89,7 @@ int main(int argc,char **argv)
       requires: kokkos_kernels
 
    testset:
+      diff_args: -j
       requires: hip
       filter: grep -v type
       args: -vec_type hip

@@ -934,7 +934,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscDS          probh;
   DMLabel          fault, material;
   IS               cohesiveCells;
-  PetscHashFormKey keys[3];
+  PetscFormKey keys[3];
   PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
   PetscInt         dim, Nf, cMax, cEnd, id;
   PetscErrorCode   ierr;
@@ -988,7 +988,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   ierr = DMPlexComputeResidual_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, locX, NULL, 0.0, locF, user);CHKERRQ(ierr);
   ierr = VecViewFromOptions(locF, NULL, "-local_residual_view");CHKERRQ(ierr);
   ierr = MatZeroEntries(J);CHKERRQ(ierr);
-  ierr = DMPlexComputeJacobian_Hybrid_Internal(dm, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user);CHKERRQ(ierr);
+  ierr = DMPlexComputeJacobian_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user);CHKERRQ(ierr);
   ierr = MatViewFromOptions(J, NULL, "-local_jacobian_view");CHKERRQ(ierr);
 
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
@@ -1018,7 +1018,7 @@ int main(int argc, char **argv)
 /*TEST
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
-          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -petscds_view -local_section_view \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -dm_petscds_view -local_section_view \
           -local_solution_view -local_residual_view -local_jacobian_view
     test:
       suffix: tri_0
@@ -1035,7 +1035,7 @@ int main(int argc, char **argv)
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
-          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -petscds_view
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -dm_petscds_view
     test:
       suffix: tet_1
       nsize: 2
@@ -1047,7 +1047,7 @@ int main(int argc, char **argv)
 
   testset:
     args: -orig_dm_plex_check_all -dm_plex_check_all \
-          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -petscds_view
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 -dm_petscds_view
     # 2D Quads
     test:
       suffix: quad_0

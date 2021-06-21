@@ -12,7 +12,6 @@
  *
  */
 
-
 /*
  * Take the processes that own the vectors and Organize them on a virtual ring.
  */
@@ -29,8 +28,8 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
   ierr = PetscObjectGetComm((PetscObject)agmres->vecs[0], &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPIU_Allreduce(&rank, &First, 1, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&rank, &Last, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&rank, &First, 1, MPI_INT, MPI_MIN, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&rank, &Last, 1, MPI_INT, MPI_MAX, comm);CHKERRMPI(ierr);
 
   if ((rank != Last) && (!rank)) {
     agmres->Ileft  = rank - 1;
@@ -133,7 +132,6 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   MPI_Status     status;
   PetscBLASInt   N = MAXKSPSIZE + 1;
 
-
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(KSP_AGMRESRoddec,ksp,0,0,0);CHKERRQ(ierr);
@@ -228,7 +226,6 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   ierr = PetscLogEventEnd(KSP_AGMRESRoddec,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*
  *  Computes Out <-- Q * In where Q is the orthogonal matrix from AGMRESRoddec

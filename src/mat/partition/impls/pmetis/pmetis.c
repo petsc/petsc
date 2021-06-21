@@ -332,13 +332,12 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptionItems *PetscOpt
     ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBool("-mat_partitioning_parmetis_repartition","","MatPartitioningParmetisSetRepartition",flag,&flag,NULL);CHKERRQ(ierr);
-  if (flag){
+  if (flag) {
     ierr =  MatPartitioningParmetisSetRepartition(part);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 {
@@ -349,7 +348,6 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
   ierr = PetscFree(pmetis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*MC
    MATPARTITIONINGPARMETIS - Creates a partitioning context via the external package PARMETIS.
@@ -453,11 +451,9 @@ $         mix  tetrahedrals and hexahedrals
 $     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that row's cell.
 $     The number of rows in mesh is number of cells, the number of columns is the number of vertices.
 
-
    Level: advanced
 
 .seealso: MatMeshToVertexGraph(), MatCreateMPIAdj(), MatPartitioningCreate()
-
 
 @*/
 PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)

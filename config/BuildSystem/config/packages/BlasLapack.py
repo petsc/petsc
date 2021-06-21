@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     self.f2c                 = 0  # indicates either the f2cblaslapack are used or there is no Fortran compiler (and system BLAS/LAPACK is used)
     self.has64bitindices     = 0
     self.mkl                 = 0  # indicates BLAS/LAPACK library used is Intel MKL
+    self.mkl_spblas_h        = 0  # indicates mkl_spblas.h is found
     self.separateBlas        = 1
     self.required            = 1
     self.alternativedownload = 'f2cblaslapack'
@@ -561,23 +562,30 @@ class Configure(config.package.Package):
         incl = self.argDB['with-blaslapack-include']
         if not isinstance(incl, list): incl = [incl]
         self.include = incl
-      if not self.checkCompile('#include "mkl_spblas.h"',''):
+      if self.checkCompile('#include "mkl_spblas.h"',''):
+        self.mkl_spblas_h = 1
+        self.logPrint('MKL mkl_spblas.h found in default include path.')
+      else:
         self.logPrint('MKL include path not automatically picked up by compiler. Trying to find mkl_spblas.h...')
         if 'with-blaslapack-dir' in self.argDB:
           pathlist = [os.path.join(self.argDB['with-blaslapack-dir'],'include'),
                       os.path.join(self.argDB['with-blaslapack-dir'],'..','include'),
                       os.path.join(self.argDB['with-blaslapack-dir'],'..','..','include')]
-          found = 0
-          for path in pathlist:
-            if os.path.isdir(path) and self.checkInclude([path], ['mkl_spblas.h']):
-              self.include = [path]
-              found = 1
-              break
+        elif 'with-blaslapack-include' in self.argDB:
+          pathlist = self.include
+        else:
+          pathlist = []
+        for path in pathlist:
+          if os.path.isdir(path) and self.checkInclude([path], ['mkl_spblas.h']):
+            self.include = [path]
+            self.mkl_spblas_h = 1
+            self.logPrint('MKL mkl_spblas.h found at:'+path)
+            break
 
-          if not found:
-            self.logPrint('Unable to find MKL include directory!')
-          else:
-            self.logPrint('MKL include path set to ' + str(self.include))
+        if not self.mkl_spblas_h:
+          self.logPrint('Unable to find MKL include directory!')
+        else:
+          self.logPrint('MKL include path set to ' + str(self.include))
       self.versionname    = 'INTEL_MKL_VERSION'
       self.versioninclude = 'mkl_version.h'
       self.versiontitle   = 'Intel MKL Version'
@@ -624,7 +632,7 @@ class Configure(config.package.Package):
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
     routines = ['gelss','gerfs','gges','hgeqz','hseqr','orgqr','ormqr','stebz',
-                'stegr','stein','steqr','sytri','tgsen','trsen','trtrs']
+                'stegr','stein','steqr','sytri','tgsen','trsen','trtrs','geqp3']
     self.libraries.saveLog()
     oldLibs = self.compilers.LIBS
     found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)

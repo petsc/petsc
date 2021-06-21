@@ -143,7 +143,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf,const PetscInt *tom
   ierr = PetscSFGetType(sf,&type);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)sf,PETSCSFBASIC,&isbasic);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)sf,PETSCSFNEIGHBOR,&isneighbor);CHKERRQ(ierr);
-  if (!isbasic && !isneighbor) SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"VecScatterRemap on SF type %s is not supported",type);CHKERRQ(ierr);
+  if (!isbasic && !isneighbor) SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"VecScatterRemap on SF type %s is not supported",type);
 
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr); /* to bulid sf->irootloc if SetUp is not yet called */
 
@@ -187,7 +187,6 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf,const PetscInt *tom
   Output parameters:
 + num_procs   - number of remote processors
 - num_entries - number of vector entries to send or recv
-
 
   .seealso: VecScatterGetRemote_Private(), VecScatterGetRemoteOrdered_Private()
 
@@ -440,6 +439,10 @@ PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
   Input Parameters:
 + name        - The name of a new user-defined creation routine
 - create_func - The creation routine itself
+
+  Level: advanced
+
+.seealso: VecRegister()
 @*/
 PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)(VecScatter))
 {
@@ -473,7 +476,7 @@ PetscErrorCode  VecScatterGetMerged(VecScatter sf,PetscBool *flg)
   if (flg) *flg = sf->vscat.beginandendtogether;
   PetscFunctionReturn(0);
 }
-/*@
+/*@C
    VecScatterDestroy - Destroys a scatter context created by VecScatterCreate()
 
    Collective on VecScatter
@@ -617,7 +620,6 @@ PetscErrorCode  VecScatterRemap(VecScatter sf,PetscInt tomap[],PetscInt frommap[
 
   Level: beginner
 
-
 .seealso: VecScatterCreate(), VecScatterDestroy(), VecScatterSetUp()
 @*/
 PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
@@ -758,7 +760,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
   ierr = ISGetLocalSize(iy,&iysize);CHKERRQ(ierr);
   ierr = VecGetSize(x,&xlen);CHKERRQ(ierr);
   ierr = VecGetSize(y,&ylen);CHKERRQ(ierr);
-  if (ixsize != iysize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Scatter sizes of ix and iy don't match locally");
+  if (ixsize != iysize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Scatter sizes of ix and iy don't match locally ix=%D iy=%D",ixsize,iysize);
   ierr = ISGetMinMax(ix,&min,&max);CHKERRQ(ierr);
   if (min < 0 || max >= xlen) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scatter indices in ix are out of range");
   ierr = ISGetMinMax(iy,&min,&max);CHKERRQ(ierr);
@@ -801,7 +803,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     }
 
     /* One stone (the expensive allreduce) two birds: pattern[] tells if it is ToAll or ToZero */
-    ierr   = MPIU_Allreduce(MPI_IN_PLACE,pattern,2,MPIU_INT,MPI_LAND,xcomm);CHKERRQ(ierr);
+    ierr   = MPIU_Allreduce(MPI_IN_PLACE,pattern,2,MPIU_INT,MPI_LAND,xcomm);CHKERRMPI(ierr);
 
     if (pattern[0] || pattern[1]) {
       ierr = PetscSFCreate(xcomm,&sf);CHKERRQ(ierr);
@@ -834,7 +836,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     m[1] = -bsy;
   }
   /* Get max and min of bsx,bsy over all processes in one allreduce */
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_MAX,bigcomm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_MAX,bigcomm);CHKERRMPI(ierr);
   max = m[0]; min = -m[1];
 
   /* Since we used allreduce above, all ranks will have the same min and max. min==max
@@ -846,7 +848,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     ierr = VecGetLocalSize(y,&ylen);CHKERRQ(ierr);
     m[0] = xlen%min;
     m[1] = ylen%min;
-    ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_LOR,bigcomm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(MPI_IN_PLACE,m,2,MPIU_INT,MPI_LOR,bigcomm);CHKERRMPI(ierr);
     if (!m[0] && !m[1]) can_do_block_opt = PETSC_TRUE;
   }
 
@@ -1189,7 +1191,6 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
       VecScatterCreateToZero - Creates an output vector and a scatter context used to
               copy all vector values into the output vector on the zeroth processor
@@ -1278,7 +1279,6 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
 -  mode - the scattering mode, usually SCATTER_FORWARD.  The available modes are:
     SCATTER_FORWARD or SCATTER_REVERSE
 
-
    Level: intermediate
 
    Options Database: See VecScatterCreate()
@@ -1303,7 +1303,6 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
    is sequential, VecScatterBegin() can serve to gather values to a
    single processor.  Similarly, if y is parallel and x sequential, the
    routine can scatter from one processor to many processors.
-
 
 .seealso: VecScatterCreate(), VecScatterEnd()
 @*/

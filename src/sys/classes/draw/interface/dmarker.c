@@ -17,7 +17,6 @@ const char *const PetscDrawMarkerTypes[]     = {"CROSS","POINT","PLUS","CIRCLE",
 
    Level: beginner
 
-
 .seealso: PetscDrawPoint(), PetscDrawString(), PetscDrawSetMarkerType(), PetscDrawGetMarkerType()
 
 @*/
@@ -27,7 +26,7 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->markertype == PETSC_DRAW_MARKER_CROSS){
+  if (draw->markertype == PETSC_DRAW_MARKER_CROSS) {
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       int i,j,k;
       ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
@@ -38,7 +37,7 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
     } else if (draw->ops->string) {
        ierr = (*draw->ops->string)(draw,xl,yl,cl,"x");CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing marker type CROSS");
-  } else if (draw->markertype == PETSC_DRAW_MARKER_PLUS){
+  } else if (draw->markertype == PETSC_DRAW_MARKER_PLUS) {
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       int i,j,k;
       ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
@@ -49,7 +48,7 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
     } else if (draw->ops->string) {
        ierr = (*draw->ops->string)(draw,xl,yl,cl,"+");CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing marker type PLUS");
-  } else if (draw->markertype == PETSC_DRAW_MARKER_CIRCLE){
+  } else if (draw->markertype == PETSC_DRAW_MARKER_CIRCLE) {
     if (draw->ops->coordinatetopixel && draw->ops->pointpixel) {
       int i,j,k;
       ierr = (*draw->ops->coordinatetopixel)(draw,xl,yl,&i,&j);CHKERRQ(ierr);
@@ -82,7 +81,6 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 
    Level: beginner
 
-
 .seealso: PetscDrawPoint(), PetscDrawMarker(), PetscDrawGetMarkerType()
 
 @*/
@@ -104,7 +102,6 @@ PetscErrorCode  PetscDrawSetMarkerType(PetscDraw draw,PetscDrawMarkerType mtype)
 -  mtype - either PETSC_DRAW_MARKER_CROSS (default) or PETSC_DRAW_MARKER_POINT
 
    Level: beginner
-
 
 .seealso: PetscDrawPoint(), PetscDrawMarker(), PetscDrawSetMarkerType()
 

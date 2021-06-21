@@ -161,7 +161,7 @@ function printcmd() {
   # Print command that can be run from PETSC_DIR
   cmd="$1"
   basedir=`dirname ${PWD} | sed "s#${petsc_dir}/##"`
-  modcmd=`echo ${cmd} | sed -e "s#\.\.#${basedir}#" | sed s#\>.*##`
+  modcmd=`echo ${cmd} | sed -e "s#\.\.#${basedir}#" | sed s#\>.*## | sed s#\%#\%\%#`
   if $mpiexec_function; then
      # Have to expand valgrind/cudamemchk
      modcmd=`eval "$modcmd"`
@@ -191,13 +191,16 @@ function petsc_testrun() {
   cmd_res=$?
   #  If it is a lack of GPU resources or MPI failure (Intel) then try once more
   #  See: src/sys/error/err.c
-  if [ $cmd_res -eq 96 -o $cmd_res -eq 97 ]; then
+  if [ $cmd_res -eq 96 -o $cmd_res -eq 97 -o $cmd_res -eq 98 ]; then
+    printf "# retrying ${tlabel}\n" | tee -a ${testlogerrfile}
+    sleep 3
     eval "{ time -p $cmd ; } 2>> timing.out"
     cmd_res=$?
   fi
   touch "$2" "$3"
-  # ETIMEDOUT=110 on most systems (used by Open MPI 3.0).  MPICH uses
-  # 255.  Earlier Open MPI returns 1 but outputs about MPIEXEC_TIMEOUT.
+  # It appears current MPICH and OpenMPI just shut down the job executation and do not return an error code to the executable
+  # ETIMEDOUT=110 was used by OpenMPI 3.0.  MPICH used 255
+  # Earlier OpenMPI versions returned 1 and the error string
   if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \
         fgrep -q -s 'APPLICATION TIMED OUT' "$2" "$3" || \
         fgrep -q -s MPIEXEC_TIMEOUT "$2" "$3" || \

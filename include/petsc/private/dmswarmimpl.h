@@ -24,7 +24,7 @@ typedef struct _p_DMSwarmSort* DMSwarmSort;
 
 typedef struct {
   DMSwarmDataBucket db;
-
+  PetscInt  refct;
   PetscBool field_registration_initialized;
   PetscBool field_registration_finalized;
   /* DMSwarmProjectMethod *swarm_project;*/ /* swarm, geometry, result */
@@ -61,7 +61,6 @@ struct _p_DMSwarmSort {
   PetscInt *pcell_offsets;
   SwarmPoint *list;
 };
-
 
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_Push_Basic(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMScatter(DM,PetscBool);

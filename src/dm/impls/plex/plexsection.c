@@ -467,11 +467,9 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     for (bd = 0; bd < numBd; ++bd) {
       PetscInt                field;
       DMBoundaryConditionType type;
-      const char             *labelName;
       DMLabel                 label;
 
-      ierr = PetscDSGetBoundary(dsBC, bd, &type, NULL, &labelName, &field, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-      ierr = DMGetLabel(dm, labelName, &label);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(dsBC, bd, NULL, &type, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       if (label && isFE[field] && (type & DM_BC_ESSENTIAL)) ++numBC;
     }
   }
@@ -498,7 +496,6 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     ierr = DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC);CHKERRQ(ierr);
     ierr = PetscDSGetNumBoundary(dsBC, &numBd);CHKERRQ(ierr);
     for (bd = 0; bd < numBd; ++bd) {
-      const char             *bdLabel;
       DMLabel                 label;
       const PetscInt         *comps;
       const PetscInt         *values;
@@ -506,14 +503,14 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
       DMBoundaryConditionType type;
       PetscBool               duplicate = PETSC_FALSE;
 
-      ierr = PetscDSGetBoundary(dsBC, bd, &type, NULL, &bdLabel, &field, &numComps, &comps, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
-      ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(dsBC, bd, NULL, &type, NULL, &label, &numValues, &values, &field, &numComps, &comps, NULL, NULL, NULL);CHKERRQ(ierr);
       if (!isFE[field] || !label) continue;
       /* Only want to modify label once */
       for (bd2 = 0; bd2 < bd; ++bd2) {
-        const char *bdname;
-        ierr = PetscDSGetBoundary(dsBC, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-        ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
+        DMLabel l;
+
+        ierr = PetscDSGetBoundary(dsBC, bd2, NULL, NULL, NULL, &l, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+        duplicate = l == label ? PETSC_TRUE : PETSC_FALSE;
         if (duplicate) break;
       }
       if (!duplicate && (isFE[field])) {
@@ -531,7 +528,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
           IS              tmp;
           const PetscInt *idx;
 
-          ierr = DMGetStratumIS(dm, bdLabel, values[v], &tmp);CHKERRQ(ierr);
+          ierr = DMLabelGetStratumIS(label, values[v], &tmp);CHKERRQ(ierr);
           if (!tmp) continue;
           ierr = ISGetLocalSize(tmp, &n);CHKERRQ(ierr);
           ierr = ISGetIndices(tmp, &idx);CHKERRQ(ierr);
@@ -549,7 +546,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
           IS              tmp;
           const PetscInt *idx;
 
-          ierr = DMGetStratumIS(dm, bdLabel, values[v], &tmp);CHKERRQ(ierr);
+          ierr = DMLabelGetStratumIS(label, values[v], &tmp);CHKERRQ(ierr);
           if (!tmp) continue;
           ierr = ISGetLocalSize(tmp, &n);CHKERRQ(ierr);
           ierr = ISGetIndices(tmp, &idx);CHKERRQ(ierr);

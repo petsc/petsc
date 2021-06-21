@@ -24,7 +24,6 @@
     Fortran Note:
     This routine is not supported in Fortran.
 
-
     Notes:
     Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the SAWs viewer allows
     one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
@@ -63,7 +62,6 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 
    The object must have already been named before calling this routine since naming an
    object can be collective.
-
 
 .seealso: PetscObjectSetName(), PetscObjectSAWsViewOff()
 

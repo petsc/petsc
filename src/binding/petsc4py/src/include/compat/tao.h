@@ -11,6 +11,14 @@ PetscErrorCode TaoLMVMSetH0(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat mat) {PetscTao
 PetscErrorCode TaoLMVMGetH0(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat *mat) {PetscTaoError;}
 PetscErrorCode TaoLMVMGetH0KSP(PETSC_UNUSED Tao tao,PETSC_UNUSED KSP *ksp) {PetscTaoError;}
 
+PetscErrorCode TaoBRGNGetSubsolver(PETSC_UNUSED Tao tao,PETSC_UNUSED Tao *subsolver) {PetscTaoError;}
+PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(PETSC_UNUSED Tao tao,PETSC_UNUSED PetscErrorCode (*func)(Tao,Vec,PetscReal*,Vec,void*),PETSC_UNUSED void *ctx) {PetscTaoError;}
+PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat H,PETSC_UNUSED PetscErrorCode (*func)(Tao,Vec,Mat,void*),PETSC_UNUSED void *ctx) {PetscTaoError;}
+PetscErrorCode TaoBRGNSetRegularizerWeight(PETSC_UNUSED Tao tao,PETSC_UNUSED PetscReal weight) {PetscTaoError;}
+PetscErrorCode TaoBRGNSetL1SmoothEpsilon(PETSC_UNUSED Tao tao,PETSC_UNUSED PetscReal epsilon) {PetscTaoError;}
+PetscErrorCode TaoBRGNSetDictionaryMatrix(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat D) {PetscTaoError;}
+PetscErrorCode TaoBRGNGetDampingVector(PETSC_UNUSED Tao tao,PETSC_UNUSED Vec *d) {PetscTaoError;}
+
 #undef PetscTaoError
 
 #endif/*PETSC_USE_COMPLEX*/

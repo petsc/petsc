@@ -31,6 +31,7 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   g->numPoints = Nq;
   g->dim       = dim;
   g->dimEmbed  = dimEmbed;
+  g->isHybrid  = PETSC_FALSE;
   N = numCells * Nq;
   ierr = PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ);CHKERRQ(ierr);
   if (faceData) {
@@ -91,7 +92,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
 
   PetscFunctionBegin;
   PetscValidPointer(geom,1);
-  PetscValidPointer(chunkGeom,2);
+  PetscValidPointer(chunkGeom,4);
   if (!(*chunkGeom)) {
     ierr = PetscNew(chunkGeom);CHKERRQ(ierr);
   }
@@ -137,6 +138,111 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
 
   PetscFunctionBegin;
   ierr = PetscFree(*chunkGeom);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscFEGeomGetPoint - Get the geometry for cell c at point p as a PetscFEGeom
+
+  Input Parameters:
++ geom    - PetscFEGeom object
+. c       - The cell
+. p       - The point
+- pcoords - The reference coordinates of point p, or NULL
+
+  Output Parameter:
+. pgeom - The geometry of cell c at point p
+
+  Note: For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into pgeom,
+  nothing needs to be done with it afterwards.
+
+  In the affine case, pgeom must have storage for the integration point coordinates in pgeom->v if pcoords is passed in.
+
+  Level: intermediate
+
+.seealso: PetscFEGeomRestoreChunk(), PetscFEGeomCreate()
+@*/
+PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, const PetscReal pcoords[], PetscFEGeom *pgeom)
+{
+  const PetscInt dim = geom->dim;
+  const PetscInt dE  = geom->dimEmbed;
+  const PetscInt Np  = geom->numPoints;
+
+  PetscFunctionBeginHot;
+  pgeom->dim      = dim;
+  pgeom->dimEmbed = dE;
+  //pgeom->isAffine = geom->isAffine;
+  if (geom->isAffine) {
+    if (!p) {
+      pgeom->xi   = geom->xi;
+      pgeom->J    = &geom->J[c*Np*dE*dE];
+      pgeom->invJ = &geom->invJ[c*Np*dE*dE];
+      pgeom->detJ = &geom->detJ[c*Np];
+      pgeom->n    = geom->n ? &geom->n[c*Np*dE] : NULL;
+    }
+    if (pcoords) {CoordinatesRefToReal(dE, dim, pgeom->xi, &geom->v[c*Np*dE], pgeom->J, pcoords, pgeom->v);}
+  } else {
+    pgeom->v    = &geom->v[(c*Np+p)*dE];
+    pgeom->J    = &geom->J[(c*Np+p)*dE*dE];
+    pgeom->invJ = &geom->invJ[(c*Np+p)*dE*dE];
+    pgeom->detJ = &geom->detJ[c*Np+p];
+    pgeom->n    = geom->n ? &geom->n[(c*Np+p)*dE] : NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscFEGeomGetCellPoint - Get the cell geometry for face f at point p as a PetscFEGeom
+
+  Input Parameters:
++ geom    - PetscFEGeom object
+. f       - The face
+- p       - The point
+
+  Output Parameter:
+. pgeom - The cell geometry of face f at point p
+
+  Note: For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into pgeom,
+  nothing needs to be done with it afterwards.
+
+  Level: intermediate
+
+.seealso: PetscFEGeomRestoreChunk(), PetscFEGeomCreate()
+@*/
+PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom)
+{
+  const PetscBool bd  = geom->dimEmbed > geom->dim && !geom->isHybrid ? PETSC_TRUE : PETSC_FALSE;
+  const PetscInt  dim = bd ? geom->dimEmbed : geom->dim;
+  const PetscInt  dE  = geom->dimEmbed;
+  const PetscInt  Np  = geom->numPoints;
+
+  PetscFunctionBeginHot;
+  pgeom->dim      = dim;
+  pgeom->dimEmbed = dE;
+  //pgeom->isAffine = geom->isAffine;
+  if (geom->isAffine) {
+    if (!p) {
+      if (bd) {
+        pgeom->J     = &geom->suppJ[0][c*Np*dE*dE];
+        pgeom->invJ  = &geom->suppInvJ[0][c*Np*dE*dE];
+        pgeom->detJ  = &geom->suppDetJ[0][c*Np];
+      } else {
+        pgeom->J    = &geom->J[c*Np*dE*dE];
+        pgeom->invJ = &geom->invJ[c*Np*dE*dE];
+        pgeom->detJ = &geom->detJ[c*Np];
+      }
+    }
+  } else {
+    if (bd) {
+      pgeom->J     = &geom->suppJ[0][(c*Np+p)*dE*dE];
+      pgeom->invJ  = &geom->suppInvJ[0][(c*Np+p)*dE*dE];
+      pgeom->detJ  = &geom->suppDetJ[0][c*Np+p];
+    } else {
+      pgeom->J    = &geom->J[(c*Np+p)*dE*dE];
+      pgeom->invJ = &geom->invJ[(c*Np+p)*dE*dE];
+      pgeom->detJ = &geom->detJ[c*Np+p];
+    }
+  }
   PetscFunctionReturn(0);
 }
 

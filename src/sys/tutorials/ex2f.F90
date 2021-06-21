@@ -1,6 +1,5 @@
 ! Synchronized printing: Fortran Example
 
-
 program main
 #include <petsc/finclude/petscsys.h>
       use petscmpi  ! or mpi or mpi_f08

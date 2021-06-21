@@ -180,8 +180,8 @@ PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
 PETSC_INTERN PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions,PetscBool*);
 
-
 PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
+#if !defined(PETSC_CLANG_STATIC_ANALYZER)
 /*
     Macros to test if a PETSc object is valid and if pointers are valid
 */
@@ -268,8 +268,30 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   do {                                                                  \
     if (!(f)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Function Pointer: Parameter # %d",arg); \
   } while (0)
-
 #endif
+#else /* PETSC_CLANG_STATIC_ANALYZER */
+template <typename T>
+void PetscValidHeaderSpecificType(T,PetscClassId,int,const char[]);
+template <typename T>
+void PetscValidHeaderSpecific(T,PetscClassId,int);
+template <typename T>
+void PetscValidHeaderSpecific(const T,PetscClassId,int);
+template <typename T>
+void PetscValidHeader(T,int);
+template <typename T>
+void PetscValidPointer(T,int);
+template <typename T>
+void PetscValidCharPointer(T*,int);
+template <typename T>
+void PetscValidIntPointer(T*,int);
+template <typename T>
+void PetscValidBoolPointer(T*,int);
+template <typename T>
+void PetscValidScalarPointer(T*,int);
+template <typename T>
+void PetscValidRealPointer(T*,int);
+#define PetscValidFunction(f,arg)
+#endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 #define PetscSorted(n,idx,sorted)           \
   do {                                      \
@@ -280,6 +302,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
         { (sorted) = PETSC_FALSE; break; }  \
   } while (0)
 
+#if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #if !defined(PETSC_USE_DEBUG)
 
 #define PetscCheckSameType(a,arga,b,argb) do {(void)(a);(void)(b);} while (0)
@@ -306,6 +329,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   do {                                                                  \
     if (((PetscObject)(a))->type != ((PetscObject)(b))->type) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb); \
   } while (0)
+
 /*
     Check type_name
 */
@@ -327,6 +351,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 /*
    Use this macro to check if the type is set
 */
+
 #define PetscValidType(a,arg)                                           \
   do {                                                                  \
     if (!((PetscObject)(a))->type_name) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"%s object's type is not set: Argument # %d",((PetscObject)(a))->class_name,arg); \
@@ -355,7 +380,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscReal b1[5],b2[5];                                              \
     if (PetscIsNanScalar(b0)) {b1[4] = 1;} else {b1[4] = 0;};           \
     b1[0] = -PetscRealPart(b0); b1[1] = PetscRealPart(b0); b1[2] = -PetscImaginaryPart(b0); b1[3] = PetscImaginaryPart(b0); \
-    _7_ierr = MPI_Allreduce(b1,b2,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a)));CHKERRMPI(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a)));CHKERRMPI(_7_ierr); \
     if (!(b2[4] > 0) && !(PetscEqualReal(-b2[0],b2[1]) && PetscEqualReal(-b2[2],b2[3]))) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -365,7 +390,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscReal b0=(b),b1[3],b2[3];                                       \
     if (PetscIsNanReal(b0)) {b1[2] = 1;} else {b1[2] = 0;};             \
     b1[0] = -b0; b1[1] = b0;                                            \
-    _7_ierr = MPI_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a)));CHKERRMPI(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)(a)));CHKERRMPI(_7_ierr); \
     if (!(b2[2] > 0) && !PetscEqualReal(-b2[0],b2[1])) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -374,7 +399,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr;                                             \
     PetscInt b0=(b),b1[2],b2[2];                                        \
     b1[0] = -b0; b1[1] = b0;                                            \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRMPI(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -383,7 +408,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt b0=(b),b1[2],b2[2];                                     \
     b1[0] = -b0; b1[1] = b0;                                            \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRMPI(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"PetscMPIInt value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -392,7 +417,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt b0=(PetscMPIInt)(b),b1[2],b2[2];                        \
     b1[0] = -b0; b1[1] = b0;                                            \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRMPI(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -401,7 +426,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscErrorCode _7_ierr;                                             \
     PetscMPIInt b0=(PetscMPIInt)(b),b1[2],b2[2];                        \
     b1[0] = -b0; b1[1] = b0;                                            \
-    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRQ(_7_ierr); \
+    _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)(a)));CHKERRMPI(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(PetscObjectComm((PetscObject)(a)),PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes, argument # %d",arg); \
   } while (0)
 
@@ -413,6 +438,31 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   } while (0)
 
 #endif
+#else /* PETSC_CLANG_STATIC_ANALYZER */
+template <typename Ta,typename Tb>
+void PetscCheckSameType(Ta,int,Tb,int);
+#define PetscCheckTypeName(a,type)
+#define PetscCheckTypeNames(a,type1,type2)
+template <typename T>
+void PetscValidType(T,int);
+template <typename Ta,typename Tb>
+void PetscCheckSameComm(Ta,int,Tb,int);
+template <typename Ta,typename Tb>
+void PetscCheckSameTypeAndComm(Ta,int,Tb,int);
+template <typename Ta,typename Tb>
+void PetscValidLogicalCollectiveScalar(Ta,Tb,int);
+template <typename Ta,typename Tb>
+void PetscValidLogicalCollectiveReal(Ta,Tb,int);
+template <typename Ta,typename Tb>
+void PetscValidLogicalCollectiveInt(Ta,Tb,int);
+template <typename Ta,typename Tb>
+void PetscValidLogicalCollectiveMPIInt(Ta,Tb,int);
+template <typename Ta,typename Tb>
+void PetscValidLogicalCollectiveBool(Ta,Tb,int);
+template <typename Ta,typename Tb>
+void PetscValidLogicalCollectiveEnum(Ta,Tb,int);
+#define PetscCheckSorted(n,idx)
+#endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 /*
    PetscTryMethod - Queries an object for a method, if it exists then calls it.
@@ -823,17 +873,19 @@ typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
 typedef enum {PETSC_SR_REDUCE_SUM=0,PETSC_SR_REDUCE_MAX=1,PETSC_SR_REDUCE_MIN=2} PetscSRReductionType;
 
 typedef struct {
-  MPI_Comm    comm;
-  MPI_Request request;
-  PetscBool   async;
-  PetscScalar *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
-  PetscScalar *gvalues;     /* values after call to MPI_Allreduce() */
-  void        **invecs;     /* for debugging only, vector/memory used with each op */
-  PetscInt    *reducetype;  /* is particular value to be summed or maxed? */
-  SRState     state;        /* are we calling xxxBegin() or xxxEnd()? */
-  PetscInt    maxops;       /* total amount of space we have for requests */
-  PetscInt    numopsbegin;  /* number of requests that have been queued in */
-  PetscInt    numopsend;    /* number of requests that have been gotten by user */
+  MPI_Comm       comm;
+  MPI_Request    request;
+  PetscBool      mix;
+  PetscBool      async;
+  PetscScalar    *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
+  PetscScalar    *gvalues;     /* values after call to MPI_Allreduce() */
+  void           **invecs;     /* for debugging only, vector/memory used with each op */
+  PetscInt       *reducetype;  /* is particular value to be summed or maxed? */
+  struct { PetscScalar v; PetscInt i; } *lvalues_mix,*gvalues_mix; /* used when mixing reduce operations */
+  SRState        state;        /* are we calling xxxBegin() or xxxEnd()? */
+  PetscInt       maxops;       /* total amount of space we have for requests */
+  PetscInt       numopsbegin;  /* number of requests that have been queued in */
+  PetscInt       numopsend;    /* number of requests that have been gotten by user */
 } PetscSplitReduction;
 
 PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction**);

@@ -8,7 +8,6 @@
       use petscmat
       implicit none
 
-
       Vec            x,b,u
       Mat            A, fact
       PetscInt       i,j,II,JJ,m

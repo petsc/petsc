@@ -35,6 +35,7 @@ Process 1:
   (   2) dim  3 offset   3 1. 0. 0.
   (   3) dim  3 offset   6 0. 0.5 0.
   (   4) dim  3 offset   9 0. 0. 0.5
+Labels:
 Label 'marker':
 [0]: 1 (1)
 [0]: 2 (1)

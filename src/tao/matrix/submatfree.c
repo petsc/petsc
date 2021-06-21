@@ -38,7 +38,6 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   ctx->VR = ctx->VC;
   ierr    =  PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
 
-
   ctx->Rows = Rows;
   ctx->Cols = Cols;
   ierr = PetscObjectReference((PetscObject)Rows);CHKERRQ(ierr);
@@ -65,7 +64,8 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSMFResetRowColumn(Mat mat,IS Rows,IS Cols){
+PetscErrorCode MatSMFResetRowColumn(Mat mat,IS Rows,IS Cols)
+{
   MatSubMatFreeCtx ctx;
   PetscErrorCode   ierr;
 
@@ -134,8 +134,6 @@ PetscErrorCode MatDestroy_SMF(Mat mat)
   PetscFunctionReturn(0);
 }
 
-
-
 PetscErrorCode MatView_SMF(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode   ierr;
@@ -180,11 +178,11 @@ PetscErrorCode MatEqual_SMF(Mat A,Mat B,PetscBool *flg)
   ierr = MatShellGetContext(B,(void **)&ctx2);CHKERRQ(ierr);
   ierr = ISEqual(ctx1->Rows,ctx2->Rows,&flg2);CHKERRQ(ierr);
   ierr = ISEqual(ctx1->Cols,ctx2->Cols,&flg3);CHKERRQ(ierr);
-  if (flg2==PETSC_FALSE || flg3==PETSC_FALSE){
+  if (flg2==PETSC_FALSE || flg3==PETSC_FALSE) {
     *flg=PETSC_FALSE;
   } else {
     ierr = MatEqual(ctx1->A,ctx2->A,&flg1);CHKERRQ(ierr);
-    if (flg1==PETSC_FALSE){ *flg=PETSC_FALSE;}
+    if (flg1==PETSC_FALSE) { *flg=PETSC_FALSE;}
     else { *flg=PETSC_TRUE;}
   }
   PetscFunctionReturn(0);
@@ -253,7 +251,7 @@ PetscErrorCode MatCreateSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (newmat){
+  if (newmat) {
     ierr = MatDestroy(&*newmat);CHKERRQ(ierr);
   }
   ierr = MatCreateSubMatrixFree(ctx->A,isrow,iscol, newmat);CHKERRQ(ierr);

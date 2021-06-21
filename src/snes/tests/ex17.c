@@ -6,8 +6,6 @@ Concepts: SNES^basic uniprocessor example, block objects
 Processors: 1
 T*/
 
-
-
 /*
 Include "petscsnes.h" so that we can use SNES solvers.  Note that this
 file automatically includes:
@@ -55,7 +53,6 @@ static PetscErrorCode FormJacobian1_block(SNES,Vec,Mat,Mat,void*);
 static PetscErrorCode FormFunction1_block(SNES,Vec,Vec,void*);
 static PetscErrorCode FormJacobian2_block(SNES,Vec,Mat,Mat,void*);
 static PetscErrorCode FormFunction2_block(SNES,Vec,Vec,void*);
-
 
 static PetscErrorCode assembled_system(void)
 {
@@ -207,7 +204,6 @@ static PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
   ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
 
-
   /*
   Restore vectors
   */
@@ -263,7 +259,6 @@ static PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* ------------------------------------------------------------------- */
 static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
@@ -671,18 +666,13 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD, 1,"This is a uniprocessor example only!");
-
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   ierr = assembled_system();CHKERRQ(ierr);
-
   ierr = block_system();CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

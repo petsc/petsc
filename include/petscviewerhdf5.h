@@ -21,6 +21,20 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t
 /* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
 #define PETSC_HDF5_MAX_CHUNKSIZE 2147483647
 
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has)
+{
+  PetscErrorCode ierr;
+  size_t         len;
+
+  PetscFunctionBegin;
+  *has = emptyIsRelative;
+  ierr = PetscStrlen(path,&len);CHKERRQ(ierr);
+  if (len) {
+    *has = (PetscBool) (path[0] != '/');
+  }
+  PetscFunctionReturn(0);
+}
+
 PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
 {
   PetscFunctionBegin;
@@ -34,20 +48,24 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
 PETSC_EXTERN PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType,hid_t*);
 PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t,PetscDataType*);
 
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer,const char[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObject(PetscViewer,PetscObject,PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer,const char[],const char[],PetscDataType,void*);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer,const char[],const char[],PetscDataType,const void*,void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer,const char[],const char[],PetscDataType,const void*);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer, const char[], const char[], PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer,PetscObject,const char[],PetscDataType,void*);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer,const char[],const char[],PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer,PetscObject,const char[],PetscDataType,void*,void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer,PetscObject,const char[],PetscDataType,const void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasObjectAttribute(PetscViewer,PetscObject,const char[],PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteSDS(PetscViewer,float *,int,int *,int);
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer,const char []);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer, const char *[]);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer,const char*[]);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer,const char[],PetscBool*);
+
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5PushTimestepping(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5PopTimestepping(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5IsTimestepping(PetscViewer,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetTimestep(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*);

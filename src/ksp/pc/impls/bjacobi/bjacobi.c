@@ -36,7 +36,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
 
   /*   local block count  given */
   if (jac->n_local > 0 && jac->n < 0) {
-    ierr = MPIU_Allreduce(&jac->n_local,&jac->n,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&jac->n_local,&jac->n,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     if (jac->l_lens) { /* check that user set these correctly */
       sum = 0;
       for (i=0; i<jac->n_local; i++) {
@@ -146,7 +146,6 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
@@ -228,7 +227,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       }
     } else {
       PetscInt n_global;
-      ierr = MPIU_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solver information for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D, first local block number = %D\n",
@@ -1109,8 +1108,24 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
 /* ---------------------------------------------------------------------------------------------*/
 /*
-      These are for a single block with multiple processes;
+      These are for a single block with multiple processes
 */
+static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiproc(PC pc)
+{
+  PetscErrorCode     ierr;
+  PC_BJacobi         *jac = (PC_BJacobi*)pc->data;
+  KSP                subksp = jac->ksp[0];
+  KSPConvergedReason reason;
+
+  PetscFunctionBegin;
+  ierr = KSPSetUp(subksp);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(subksp,&reason);CHKERRQ(ierr);
+  if (reason == KSP_DIVERGED_PC_FAILED) {
+    pc->failedreason = PC_SUBPC_ERROR;
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
 {
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
@@ -1223,7 +1238,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   PetscBool            wasSetup = PETSC_TRUE;
   VecType              vectype;
 
-
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (jac->n_local > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only a single block in a subcommunicator is supported");
@@ -1272,10 +1286,11 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->xsub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->ysub);CHKERRQ(ierr);
 
-    pc->ops->reset   = PCReset_BJacobi_Multiproc;
-    pc->ops->destroy = PCDestroy_BJacobi_Multiproc;
-    pc->ops->apply   = PCApply_BJacobi_Multiproc;
-    pc->ops->matapply= PCMatApply_BJacobi_Multiproc;
+    pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiproc;
+    pc->ops->reset         = PCReset_BJacobi_Multiproc;
+    pc->ops->destroy       = PCDestroy_BJacobi_Multiproc;
+    pc->ops->apply         = PCApply_BJacobi_Multiproc;
+    pc->ops->matapply      = PCMatApply_BJacobi_Multiproc;
   } else { /* pc->setupcalled */
     subcomm = PetscSubcommChild(mpjac->psubcomm);
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {

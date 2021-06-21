@@ -1,4 +1,4 @@
-#include <../src/sys/classes/random/randomimpl.h>
+#include <petsc/private/randomimpl.h>
 #include <Random123/threefry.h>
 
 /* The structure of the Random123 methods are similar enough that templates could be used to make the other CBRNGs in

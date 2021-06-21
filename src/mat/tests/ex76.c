@@ -263,7 +263,6 @@ int main(int argc,char **args)
       */
     }
 
-
     ierr = MatMult(sA,x,b);CHKERRQ(ierr);
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
 

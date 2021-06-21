@@ -13,7 +13,6 @@
         end interface
         end module petsctao
 
-
 ! The all encompassing petsc module
 
         module petscdef

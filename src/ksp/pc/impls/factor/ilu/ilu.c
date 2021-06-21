@@ -100,6 +100,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       /* In-place factorization only makes sense with the natural ordering,
          so we only need to get the ordering once, even if nonzero structure changes */
       /* Should not get the ordering if the factorization routine does not use it, but do not yet have access to the factor matrix */
+      ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
+      ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
       if (ilu->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row);CHKERRQ(ierr);}
       if (ilu->col) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col);CHKERRQ(ierr);}
@@ -123,13 +125,14 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
-      PetscBool useordering;
+      PetscBool canuseordering;
       if (!((PC_Factor*)ilu)->fact) {
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       }
-      ierr = MatFactorGetUseOrdering(((PC_Factor*)ilu)->fact,&useordering);CHKERRQ(ierr);
-      if (useordering) {
+      ierr = MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering);CHKERRQ(ierr);
+      if (canuseordering) {
+        ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col);CHKERRQ(ierr);
@@ -143,15 +146,16 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       ilu->hdr.actualfill = info.fill_ratio_needed;
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!ilu->hdr.reuseordering) {
-        PetscBool useordering;
+        PetscBool canuseordering;
         ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-        ierr = MatFactorGetUseOrdering(((PC_Factor*)ilu)->fact,&useordering);CHKERRQ(ierr);
-        if (useordering) {
+        ierr = MatFactorGetCanUseOrdering(((PC_Factor*)ilu)->fact,&canuseordering);CHKERRQ(ierr);
+        if (canuseordering) {
           /* compute a new ordering for the ILU */
           ierr = ISDestroy(&ilu->row);CHKERRQ(ierr);
           ierr = ISDestroy(&ilu->col);CHKERRQ(ierr);
+          ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
           ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
           ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->row);CHKERRQ(ierr);
           ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilu->col);CHKERRQ(ierr);
@@ -289,7 +293,6 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
       Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
       Science and Engineering, Kluwer.
 
-
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftSetType(), PCFactorSetAmount(),
            PCFactorSetDropTolerance(),PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
@@ -306,14 +309,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   PetscFunctionBegin;
   ierr     = PetscNewLog(pc,&ilu);CHKERRQ(ierr);
   pc->data = (void*)ilu;
-  ierr     = PCFactorInitialize(pc);CHKERRQ(ierr);
+  ierr     = PCFactorInitialize(pc,MAT_FACTOR_ILU);CHKERRQ(ierr);
 
-  ((PC_Factor*)ilu)->factortype         = MAT_FACTOR_ILU;
   ((PC_Factor*)ilu)->info.levels        = 0.;
   ((PC_Factor*)ilu)->info.fill          = 1.0;
   ilu->col                              = NULL;
   ilu->row                              = NULL;
-  ierr                                  = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ((PC_Factor*)ilu)->info.dt            = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount       = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcol         = PETSC_DEFAULT;

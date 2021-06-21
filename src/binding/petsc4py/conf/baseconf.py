@@ -10,6 +10,7 @@ __all__ = ['PetscConfig',
 # --------------------------------------------------------------------
 
 import sys, os
+import re
 try:
     import setuptools
 except ImportError:
@@ -96,7 +97,9 @@ UnixCCompiler.runtime_library_dir_option = rpath_option
 
 class PetscConfig:
 
-    def __init__(self, petsc_dir, petsc_arch):
+    def __init__(self, petsc_dir, petsc_arch, dest_dir=None):
+        if dest_dir is None:
+            dest_dir = os.environ.get('DESTDIR')
         self.configdict = { }
         if not petsc_dir:
             raise DistutilsError("PETSc not found")
@@ -106,6 +109,7 @@ class PetscConfig:
         self.configdict = self._get_petsc_config(petsc_dir, petsc_arch)
         self.PETSC_DIR  = self['PETSC_DIR']
         self.PETSC_ARCH = self['PETSC_ARCH']
+        self.DESTDIR = dest_dir
         language_map = {'CONLY':'c', 'CXXONLY':'c++'}
         self.language = language_map[self['PETSC_LANGUAGE']]
 
@@ -182,12 +186,19 @@ class PetscConfig:
 
     def configure_extension(self, extension):
         # includes and libraries
-        petsc_inc = flaglist(self['PETSC_CC_INCLUDES'])
-        petsc_lib = flaglist(
-            '-L%s %s' % (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']))
+        # paths in PETSc config files point to final installation location, but
+        # we might be building against PETSc in staging location (DESTDIR) when
+        # DESTDIR is set, so append DESTDIR (if nonempty) to those paths
+        petsc_inc = flaglist(prepend_to_flags(self.DESTDIR, self['PETSC_CC_INCLUDES']))
+        lib_flags = prepend_to_flags(self.DESTDIR, '-L%s %s' % \
+                (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']))
+        petsc_lib = flaglist(lib_flags)
         # runtime_library_dirs is not supported on Windows
         if sys.platform != 'win32':
-            petsc_lib['runtime_library_dirs'].append(self['PETSC_LIB_DIR'])
+            # if DESTDIR is set, then we're building against PETSc in a staging
+            # directory, but rpath needs to point to final install directory.
+            rpath = strip_prefix(self.DESTDIR, self['PETSC_LIB_DIR'])
+            petsc_lib['runtime_library_dirs'].append(rpath)
 
         # Link in extra libraries on static builds
         if self['BUILDSHAREDLIB'] != 'yes':
@@ -495,6 +506,7 @@ class build_ext(_build_ext):
             ARCH = arch or config['PETSC_ARCH']
             if ARCH not in self.PETSC_ARCH_LIST:
                 self.PETSC_ARCH_LIST.append(ARCH)
+            self.DESTDIR = config.DESTDIR
             ext.language = config.language
             config.log_info()
             pkgpath, newext = self._copy_ext(ext)
@@ -533,7 +545,7 @@ class build_ext(_build_ext):
 PETSC_DIR  = %(PETSC_DIR)s
 PETSC_ARCH = %(PETSC_ARCH)s
 """
-        variables = {'PETSC_DIR'  : self.petsc_dir,
+        variables = {'PETSC_DIR'  : strip_prefix(self.DESTDIR, self.petsc_dir),
                      'PETSC_ARCH' : os.path.pathsep.join(arch_list)}
         return template, variables
 
@@ -700,6 +712,27 @@ def flaglist(flags):
             #log.warn("unrecognized flag '%s'" % word)
             pass
     return conf
+
+def prepend_to_flags(path, flags):
+    """Prepend a path to compiler flags with absolute paths"""
+    if not path:
+        return flags
+    def append_path(m):
+        switch = m.group(1)
+        open_quote = m.group(4)
+        old_path = m.group(5)
+        close_quote = m.group(6)
+        if os.path.isabs(old_path):
+            moded_path = os.path.normpath(path + os.path.sep + old_path)
+            return switch + open_quote + moded_path + close_quote
+        return m.group(0)
+    return re.sub(r'((^|\s+)(-I|-L))(\s*["\']?)(\S+)(["\']?)',
+            append_path, flags)
+
+def strip_prefix(prefix, string):
+    if not prefix:
+        return string
+    return re.sub(r'^' + prefix, '', string)
 
 # --------------------------------------------------------------------
 

@@ -87,7 +87,6 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
     On entry, the value in vector VEC_VV(0) should be
     the initial residual.
 
-
 */
 static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
@@ -181,7 +180,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
        coefficients we use in the orthogonalization process,because of the shift */
 
     /* Do some local twiddling to allow for a single reduction */
-    for (i=0;i<loc_it+1;i++){
+    for (i=0;i<loc_it+1;i++) {
       redux[i] = VEC_VV(i);
     }
     redux[loc_it+1] = ZVEC(loc_it);
@@ -353,7 +352,6 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 
 /*
     KSPSolve_PIPEFGMRES - This routine applies the PIPEFGMRES method.
-
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use pipefgmres
@@ -666,7 +664,6 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 .   -ksp_pipefgmres_shift - the shift to use (defaults to 1. See KSPPIPEFGMRESSetShift()
                              vectors are allocated as needed)
 -   -ksp_gmres_krylov_monitor - plot the Krylov space generated
-
 
    Level: intermediate
 

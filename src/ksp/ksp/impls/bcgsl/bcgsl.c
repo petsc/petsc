@@ -14,7 +14,6 @@
 #include <../src/ksp/ksp/impls/bcgsl/bcgslimpl.h>
 #include <petscblaslapack.h>
 
-
 static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*) ksp->data;
@@ -49,7 +48,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   KSPCheckNorm(ksp,zeta0);
   rnmax_computed = zeta0;
   rnmax_true     = zeta0;
-
 
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
@@ -268,7 +266,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscFunctionReturn(0);
     }
-
 
     ierr = VecMAXPY(VX, bcgsl->ell,AY0c+1, VVR);CHKERRQ(ierr);
     for (i=1; i<=bcgsl->ell; i++) AY0c[i] *= -1.0;

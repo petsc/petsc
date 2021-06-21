@@ -56,9 +56,9 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidScalarPointer(emax,2);
-  PetscValidScalarPointer(emin,3);
-  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Singular values not requested before KSPSetUp()");
+  PetscValidRealPointer(emax,2);
+  PetscValidRealPointer(emin,3);
+  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Singular values not requested before KSPSetUp()");
 
   if (ksp->ops->computeextremesingularvalues) {
     ierr = (*ksp->ops->computeextremesingularvalues)(ksp,emax,emin);CHKERRQ(ierr);
@@ -117,11 +117,11 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (n) PetscValidScalarPointer(r,3);
-  if (n) PetscValidScalarPointer(c,4);
+  if (n) PetscValidRealPointer(r,3);
+  if (n) PetscValidRealPointer(c,4);
   if (n<0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requested < 0 Eigenvalues");
   PetscValidIntPointer(neig,5);
-  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Eigenvalues not requested before KSPSetUp()");
+  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Eigenvalues not requested before KSPSetUp()");
 
   if (n && ksp->ops->computeeigenvalues) {
     ierr = (*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
@@ -175,7 +175,7 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->calc_ritz) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Ritz pairs not requested before KSPSetUp()");
+  if (!ksp->calc_ritz) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Ritz pairs not requested before KSPSetUp()");
   if (ksp->ops->computeritz) {ierr = (*ksp->ops->computeritz)(ksp,ritz,small,nrit,S,tetar,tetai);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -622,7 +622,7 @@ PetscErrorCode KSPConvergedRateView(KSP ksp, PetscViewer viewer)
 {
   PetscViewerFormat format;
   PetscBool         isAscii;
-  PetscReal         rrate, rRsq, erate, eRsq;
+  PetscReal         rrate, rRsq, erate = 0.0, eRsq = 0.0;
   PetscInt          its;
   const char       *prefix, *reason = KSPConvergedReasons[ksp->reason];
   PetscErrorCode    ierr;
@@ -1056,7 +1056,6 @@ $    If nullspace(A) != nullspace(A') then left preconditioning will work but ri
        the nullspace(AB) from the search direction. While we know the nullspace(A) the nullspace(AB) equals B^-1 times the nullspace(A) but except for trivial preconditioners
        such as diagonal scaling we cannot apply the inverse of the preconditioner to a vector and thus cannot compute the nullspace(AB).
 
-
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
    then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
@@ -1187,7 +1186,7 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
 @*/
 PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 {
-  Mat            A, vB, vX;
+  Mat            A, P, vB, vX;
   Vec            cb, cx;
   PetscInt       m1, M1, m2, M2, n1, N1, n2, N2, Bbn = PETSC_DECIDE;
   PetscBool      match;
@@ -1207,7 +1206,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     ierr = MatAssemblyEnd(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   if (B == X) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_IDN, "B and X must be different matrices");
-  ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, &P);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B, &m2, &n2);CHKERRQ(ierr);
   ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
@@ -1266,6 +1265,10 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
         ierr = MatDenseRestoreSubMatrix(X, &vX);CHKERRQ(ierr);
       }
     }
+    if (ksp->viewMat)  {ierr = ObjectView((PetscObject) A, ksp->viewerMat, ksp->formatMat);CHKERRQ(ierr);}
+    if (ksp->viewPMat) {ierr = ObjectView((PetscObject) P, ksp->viewerPMat,ksp->formatPMat);CHKERRQ(ierr);}
+    if (ksp->viewRhs)  {ierr = ObjectView((PetscObject) B, ksp->viewerRhs, ksp->formatRhs);CHKERRQ(ierr);}
+    if (ksp->viewSol)  {ierr = ObjectView((PetscObject) X, ksp->viewerSol, ksp->formatSol);CHKERRQ(ierr);}
     if (ksp->view) {
       ierr = KSPView(ksp, ksp->viewer);CHKERRQ(ierr);
     }
@@ -1416,7 +1419,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    KSPDestroy - Destroys KSP context.
 
    Collective on ksp
@@ -1714,7 +1717,6 @@ PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
    Notes:
     Normally PETSc continues if a linear solver fails to converge, you can call KSPGetConvergedReason() after a KSPSolve()
     to determine if it has converged.
-
 
 .seealso: KSPGetErrorIfNotConverged(), KSP
 @*/
@@ -2492,7 +2494,6 @@ $     converge (KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reaso
 .  reason - the reason why it has converged or diverged
 -  cctx  - optional convergence context, as set by KSPSetConvergenceTest()
 
-
    Notes:
    Must be called after the KSP type has been set so put this after
    a call to KSPSetType(), or KSPSetFromOptions().
@@ -2734,7 +2735,6 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
    Options Database Key:
 +   -ksp_diagonal_scale -
 -   -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve
-
 
     Notes:
     Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b

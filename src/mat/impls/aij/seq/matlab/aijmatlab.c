@@ -202,6 +202,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
 
   (*F)->ops->destroy           = MatDestroy_matlab;
   (*F)->ops->getinfo           = MatGetInfo_External;
+  (*F)->trivialsymbolic        = PETSC_TRUE;
   (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
 
@@ -212,7 +213,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   ierr = PetscStrallocpy(MATSOLVERMATLAB,&(*F)->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void)
 {
@@ -252,10 +252,8 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
   MATSOLVERMATLAB - "matlab" - Providing direct solver LU for sequential aij matrix via the external package MATLAB.
-
 
   Works with MATSEQAIJ matrices.
 

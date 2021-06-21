@@ -217,7 +217,6 @@ static PetscErrorCode TSStep_Mimex_Split(TS ts)
   PetscFunctionReturn(0);
 }
 
-
 /* Evalute F at U and G at U0 for explicit fields and U for implicit fields */
 static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
 {

@@ -17,10 +17,7 @@ typedef enum {SOL_QUADRATIC_LINEAR, SOL_QUADRATIC_TRIG, SOL_TRIG_LINEAR, NUM_SOL
 const char *solutionTypes[NUM_SOLUTION_TYPES+1] = {"quadratic_linear", "quadratic_trig", "trig_linear", "unknown"};
 
 typedef struct {
-  char         filename[PETSC_MAX_PATH_LEN];   /* Mesh filename */
-  char         bdfilename[PETSC_MAX_PATH_LEN]; /* Mesh boundary filename */
-  PetscReal    scale;                          /* Scale factor for mesh */
-  SolutionType solType;                        /* Type of exact solution */
+  SolutionType solType; /* Type of exact solution */
 } AppCtx;
 
 /*
@@ -153,73 +150,23 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->filename[0]   = '\0';
-  options->bdfilename[0] = '\0';
-  options->scale         = 0.0;
-  options->solType       = SOL_QUADRATIC_LINEAR;
+  options->solType = SOL_QUADRATIC_LINEAR;
 
   ierr = PetscOptionsBegin(comm, "", "Heat Equation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex45.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-bd_filename", "The mesh boundary file", "ex45.c", options->bdfilename, options->bdfilename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-scale", "Scale factor for the mesh", "ex45.c", options->scale, &options->scale, NULL);CHKERRQ(ierr);
-  sol  = options->solType;
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex45.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateBCLabel(DM dm, const char name[])
-{
-  DM             plex;
-  DMLabel        label;
-  PetscBool      hasLabel;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
-  if (hasLabel) PetscFunctionReturn(0);
-  ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(plex, 1, label);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 {
-  size_t         len, lenbd;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscStrlen(ctx->filename,   &len);CHKERRQ(ierr);
-  ierr = PetscStrlen(ctx->bdfilename, &lenbd);CHKERRQ(ierr);
-  if (lenbd) {
-    DM bdm;
-
-    ierr = DMPlexCreateFromFile(comm, ctx->bdfilename, PETSC_TRUE, &bdm);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) bdm, "bd_");CHKERRQ(ierr);
-    ierr = DMSetFromOptions(bdm);CHKERRQ(ierr);
-    if (ctx->scale != 0.0) {
-      Vec coordinates, coordinatesLocal;
-
-      ierr = DMGetCoordinates(bdm, &coordinates);CHKERRQ(ierr);
-      ierr = DMGetCoordinatesLocal(bdm, &coordinatesLocal);CHKERRQ(ierr);
-      ierr = VecScale(coordinates, ctx->scale);CHKERRQ(ierr);
-      ierr = VecScale(coordinatesLocal, ctx->scale);CHKERRQ(ierr);
-    }
-    ierr = DMViewFromOptions(bdm, NULL, "-dm_view");CHKERRQ(ierr);
-    ierr = DMPlexGenerate(bdm, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-    ierr = DMDestroy(&bdm);CHKERRQ(ierr);
-  } else if (len) {
-    ierr = DMPlexCreateFromFile(comm, ctx->filename, PETSC_TRUE, dm);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
-  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  ierr = CreateBCLabel(*dm, "marker");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -227,10 +174,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 {
   PetscDS        ds;
+  DMLabel        label;
   const PetscInt id = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(ds, 0, 0, g0_temp, NULL, NULL, g3_temp);CHKERRQ(ierr);
   switch (ctx->solType) {
@@ -238,19 +187,19 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
       ierr = PetscDSSetResidual(ds, 0, f0_quad_lin,  f1_temp);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 0, mms_quad_lin, ctx);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_lin_t, ctx);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) mms_quad_lin, (void (*)(void)) mms_quad_lin_t, 1, &id, ctx);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_quad_lin, (void (*)(void)) mms_quad_lin_t, ctx, NULL);CHKERRQ(ierr);
       break;
     case SOL_QUADRATIC_TRIG:
       ierr = PetscDSSetResidual(ds, 0, f0_quad_trig, f1_temp);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 0, mms_quad_trig, ctx);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_trig_t, ctx);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) mms_quad_trig, (void (*)(void)) mms_quad_trig_t, 1, &id, ctx);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_quad_trig, (void (*)(void)) mms_quad_trig_t, ctx, NULL);CHKERRQ(ierr);
       break;
     case SOL_TRIG_LINEAR:
       ierr = PetscDSSetResidual(ds, 0, f0_trig_lin,  f1_temp);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolution(ds, 0, mms_trig_lin, ctx);CHKERRQ(ierr);
       ierr = PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_trig_lin_t, ctx);CHKERRQ(ierr);
-      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) mms_trig_lin, (void (*)(void)) mms_trig_lin_t, 1, &id, ctx);CHKERRQ(ierr);
+      ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms_trig_lin, (void (*)(void)) mms_trig_lin_t, ctx, NULL);CHKERRQ(ierr);
       break;
     default: SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(ctx->solType, NUM_SOLUTION_TYPES)], ctx->solType);
   }
@@ -279,7 +228,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = SetupProblem(dm, ctx);CHKERRQ(ierr);
   while (cdm) {
-    ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);
     ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
@@ -375,31 +323,31 @@ int main(int argc, char **argv)
           -ts_type beuler -ts_max_steps 4 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
   test:
     suffix: 2d_q1
-    args: -sol_type quadratic_linear -dm_plex_box_simplex 0 -dm_refine 1 -temp_petscspace_degree 1 -dmts_check .0001 \
+    args: -sol_type quadratic_linear -dm_plex_simplex 0 -dm_refine 1 -temp_petscspace_degree 1 -dmts_check .0001 \
           -ts_type beuler -ts_max_steps 5 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
   test:
     # -dm_refine 2 -convest_num_refine 3 get L_2 convergence rate: [1.9]
     suffix: 2d_q1_sconv
-    args: -sol_type quadratic_linear -dm_plex_box_simplex 0 -temp_petscspace_degree 1 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
+    args: -sol_type quadratic_linear -dm_plex_simplex 0 -temp_petscspace_degree 1 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
           -ts_type beuler -ts_max_steps 1 -ts_dt 0.00001 -snes_error_if_not_converged -pc_type lu
   test:
     # -dm_refine 4 -convest_num_refine 3 get L_2 convergence rate: [1.2]
     suffix: 2d_q1_tconv
-    args: -sol_type quadratic_trig -dm_plex_box_simplex 0 -temp_petscspace_degree 1 -ts_convergence_estimate -convest_num_refine 1 \
+    args: -sol_type quadratic_trig -dm_plex_simplex 0 -temp_petscspace_degree 1 -ts_convergence_estimate -convest_num_refine 1 \
           -ts_type beuler -ts_max_steps 4 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
   test:
     suffix: 2d_q2
-    args: -sol_type quadratic_linear -dm_plex_box_simplex 0 -dm_refine 0 -temp_petscspace_degree 2 -dmts_check .0001 \
+    args: -sol_type quadratic_linear -dm_plex_simplex 0 -dm_refine 0 -temp_petscspace_degree 2 -dmts_check .0001 \
           -ts_type beuler -ts_max_steps 5 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
   test:
     # -dm_refine 2 -convest_num_refine 3 get L_2 convergence rate: [2.9]
     suffix: 2d_q2_sconv
-    args: -sol_type trig_linear -dm_plex_box_simplex 0 -temp_petscspace_degree 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
+    args: -sol_type trig_linear -dm_plex_simplex 0 -temp_petscspace_degree 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
           -ts_type beuler -ts_max_steps 1 -ts_dt 0.00000001 -snes_error_if_not_converged -pc_type lu
   test:
     # -dm_refine 3 -convest_num_refine 3 get L_2 convergence rate: [1.0]
     suffix: 2d_q2_tconv
-    args: -sol_type quadratic_trig -dm_plex_box_simplex 0 -temp_petscspace_degree 2 -ts_convergence_estimate -convest_num_refine 1 \
+    args: -sol_type quadratic_trig -dm_plex_simplex 0 -temp_petscspace_degree 2 -ts_convergence_estimate -convest_num_refine 1 \
           -ts_type beuler -ts_max_steps 4 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
 
   test:
@@ -438,38 +386,39 @@ int main(int argc, char **argv)
           -ts_type beuler -ts_max_steps 4 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
   test:
     suffix: 3d_q1
-    args: -sol_type quadratic_linear -dm_plex_box_simplex 0 -dm_refine 1 -temp_petscspace_degree 1 -dmts_check .0001 \
+    args: -sol_type quadratic_linear -dm_plex_simplex 0 -dm_refine 1 -temp_petscspace_degree 1 -dmts_check .0001 \
           -ts_type beuler -ts_max_steps 5 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
   test:
     # -dm_refine 2 -convest_num_refine 3 get L_2 convergence rate: [1.9]
     suffix: 3d_q1_sconv
-    args: -sol_type quadratic_linear -dm_plex_box_simplex 0 -temp_petscspace_degree 1 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
+    args: -sol_type quadratic_linear -dm_plex_simplex 0 -temp_petscspace_degree 1 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
           -ts_type beuler -ts_max_steps 1 -ts_dt 0.00001 -snes_error_if_not_converged -pc_type lu
   test:
     # -dm_refine 4 -convest_num_refine 3 get L_2 convergence rate: [1.2]
     suffix: 3d_q1_tconv
-    args: -sol_type quadratic_trig -dm_plex_box_simplex 0 -temp_petscspace_degree 1 -ts_convergence_estimate -convest_num_refine 1 \
+    args: -sol_type quadratic_trig -dm_plex_simplex 0 -temp_petscspace_degree 1 -ts_convergence_estimate -convest_num_refine 1 \
           -ts_type beuler -ts_max_steps 4 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
   test:
     suffix: 3d_q2
-    args: -sol_type quadratic_linear -dm_plex_box_simplex 0 -dm_refine 0 -temp_petscspace_degree 2 -dmts_check .0001 \
+    args: -sol_type quadratic_linear -dm_plex_simplex 0 -dm_refine 0 -temp_petscspace_degree 2 -dmts_check .0001 \
           -ts_type beuler -ts_max_steps 5 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
   test:
     # -dm_refine 2 -convest_num_refine 3 get L_2 convergence rate: [2.9]
     suffix: 3d_q2_sconv
-    args: -sol_type trig_linear -dm_plex_box_simplex 0 -temp_petscspace_degree 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
+    args: -sol_type trig_linear -dm_plex_simplex 0 -temp_petscspace_degree 2 -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
           -ts_type beuler -ts_max_steps 1 -ts_dt 0.00000001 -snes_error_if_not_converged -pc_type lu
   test:
     # -dm_refine 3 -convest_num_refine 3 get L_2 convergence rate: [1.0]
     suffix: 3d_q2_tconv
-    args: -sol_type quadratic_trig -dm_plex_box_simplex 0 -temp_petscspace_degree 2 -ts_convergence_estimate -convest_num_refine 1 \
+    args: -sol_type quadratic_trig -dm_plex_simplex 0 -temp_petscspace_degree 2 -ts_convergence_estimate -convest_num_refine 1 \
           -ts_type beuler -ts_max_steps 4 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
 
   test:
     # For a nice picture, -bd_dm_refine 2 -dm_refine 1 -dm_view hdf5:${PETSC_DIR}/sol.h5 -ts_monitor_solution hdf5:${PETSC_DIR}/sol.h5::append
     suffix: egads_sphere
     requires: egads ctetgen
-    args: -sol_type quadratic_linear -bd_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -scale 40 \
+    args: -sol_type quadratic_linear \
+          -dm_plex_boundary_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_plex_boundary_label marker -bd_dm_plex_scale 40 \
           -temp_petscspace_degree 2 -dmts_check .0001 \
           -ts_type beuler -ts_max_steps 5 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
 

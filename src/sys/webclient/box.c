@@ -248,10 +248,10 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
 -   filename - file to upload; if you upload multiple times it will have different names each time on Box Drive
 
   Options Database:
-.  -box_refresh_token   XXX
+.  -box_refresh_token XXX - the token value
 
   Usage Patterns:
-    With PETSc option -box_refresh_token  XXX given
+    With PETSc option -box_refresh_token XXX given
     PetscBoxUpload(comm,NULL,filename);        will upload file with no user interaction
 
     Without PETSc option -box_refresh_token XXX given

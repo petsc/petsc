@@ -39,7 +39,7 @@ PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
     }
     ierr = MatRestoreRow(A, r, &ncols, &cols, NULL);CHKERRQ(ierr);
   }
-  ierr = MPIU_Allreduce(lbw, gbw, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) A));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(lbw, gbw, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) A));CHKERRMPI(ierr);
   *bw = 2*PetscMax(gbw[0], gbw[1]) + 1;
   PetscFunctionReturn(0);
 }

@@ -39,53 +39,53 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
-
 /*TEST
 
-   test:
+   testset:
       diff_args: -j
       filter: grep -v type
-      suffix: 1
-
-   test:
-      requires: cuda
-      diff_args: -j
-      filter: grep -v type
-      suffix: 1_cuda
-      args: -vec_type cuda
       output_file: output/ex21_1.out
 
-   test:
-      requires: kokkos_kernels
-      diff_args: -j
-      filter: grep -v type
-      suffix: 1_kokkos
-      args: -vec_type kokkos
-      output_file: output/ex21_1.out
+      test:
+         suffix: 1
 
-   test:
-      diff_args: -j
-      filter: grep -v type
-      suffix: 2
-      nsize: 2
+      test:
+         requires: cuda
+         suffix: 1_cuda
+         args: -vec_type cuda
 
-   test:
-      requires: cuda
+      test:
+         requires: kokkos_kernels
+         suffix: 1_kokkos
+         args: -vec_type kokkos
+
+      test:
+         requires: hip
+         suffix: 1_hip
+         args: -vec_type hip
+
+   testset:
       diff_args: -j
       filter: grep -v type
-      suffix: 2_cuda
-      nsize: 2
-      args: -vec_type cuda
       output_file: output/ex21_2.out
-
-   test:
-      requires: kokkos_kernels
-      diff_args: -j
-      filter: grep -v type
-      suffix: 2_kokkos
       nsize: 2
-      args: -vec_type kokkos
-      output_file: output/ex21_2.out
+
+      test:
+         suffix: 2
+
+      test:
+         requires: cuda
+         suffix: 2_cuda
+         args: -vec_type cuda
+
+      test:
+         requires: kokkos_kernels
+         suffix: 2_kokkos
+         args: -vec_type kokkos
+
+      test:
+         requires: hip
+         suffix: 2_hip
+         args: -vec_type hip
 
 TEST*/

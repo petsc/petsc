@@ -5,7 +5,6 @@ static char help[] = "Tests VecView() functionality with DMDA objects when using
 #include <petscdm.h>
 #include <petscdmda.h>
 
-
 #define DMDA_I 5
 #define DMDA_J 4
 #define DMDA_K 6
@@ -247,7 +246,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

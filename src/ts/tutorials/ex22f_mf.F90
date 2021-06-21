@@ -23,7 +23,6 @@
     PetscReal::MFuser(6)
   end module PETScShiftMod
 
-
 program main
   use PETScShiftMod
   use petscdmda
@@ -55,7 +54,6 @@ program main
   PetscReal      one,pone
   PetscInt       im11,i2
   PetscBool      flg
-
 
   PetscInt       xs,xe,gxs,gxe,dof,gdof
   PetscScalar    shell_shift
@@ -128,7 +126,6 @@ program main
 
   call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr);CHKERRA(ierr)
   call TSSetIJacobian(ts,A,A,FormIJacobianMF,user,ierr);CHKERRA(ierr)
-
 
   ftime = 1.0
   call TSSetMaxTime(ts,ftime,ierr);CHKERRA(ierr)
@@ -429,7 +426,6 @@ subroutine FormInitialSolution(ts,X,user,ierr)
   call VecRestoreArray(X,xx,ixx,ierr);CHKERRQ(ierr)
 end subroutine FormInitialSolution
 
-
 ! ---------------------------------------------------------------------
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
@@ -515,7 +511,6 @@ subroutine  MyMult(A,X,F,ierr)
 
   return
 end subroutine MyMult
-
 
 !
 subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)

@@ -26,7 +26,7 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = MPIU_Allreduce(&red->dcnt,&ncnt,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&red->dcnt,&ncnt,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
     ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    Number rows eliminated %D Percentage rows eliminated %g\n",ncnt,100.0*((PetscReal)ncnt)/((PetscReal)N));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Redistribute preconditioner: \n");CHKERRQ(ierr);
@@ -40,24 +40,25 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
 
 static PetscErrorCode PCSetUp_Redistribute(PC pc)
 {
-  PC_Redistribute   *red = (PC_Redistribute*)pc->data;
-  PetscErrorCode    ierr;
-  MPI_Comm          comm;
-  PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt,dcnt,*drows;
-  PetscLayout       map,nmap;
-  PetscMPIInt       size,tag,n;
+  PC_Redistribute          *red = (PC_Redistribute*)pc->data;
+  PetscErrorCode           ierr;
+  MPI_Comm                 comm;
+  PetscInt                 rstart,rend,i,nz,cnt,*rows,ncnt,dcnt,*drows;
+  PetscLayout              map,nmap;
+  PetscMPIInt              size,tag,n;
   PETSC_UNUSED PetscMPIInt imdex;
-  PetscInt          *source = NULL;
-  PetscMPIInt       *sizes = NULL,nrecvs;
-  PetscInt          j,nsends;
-  PetscInt          *owner = NULL,*starts = NULL,count,slen;
-  PetscInt          *rvalues,*svalues,recvtotal;
-  PetscMPIInt       *onodes1,*olengths1;
-  MPI_Request       *send_waits = NULL,*recv_waits = NULL;
-  MPI_Status        recv_status,*send_status;
-  Vec               tvec,diag;
-  Mat               tmat;
-  const PetscScalar *d;
+  PetscInt                 *source = NULL;
+  PetscMPIInt              *sizes = NULL,nrecvs;
+  PetscInt                 j,nsends;
+  PetscInt                 *owner = NULL,*starts = NULL,count,slen;
+  PetscInt                 *rvalues,*svalues,recvtotal;
+  PetscMPIInt              *onodes1,*olengths1;
+  MPI_Request              *send_waits = NULL,*recv_waits = NULL;
+  MPI_Status               recv_status,*send_status;
+  Vec                      tvec,diag;
+  Mat                      tmat;
+  const PetscScalar        *d,*values;
+  const PetscInt           *cols;
 
   PetscFunctionBegin;
   if (pc->setupcalled) {
@@ -75,9 +76,14 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = MatGetOwnershipRange(pc->mat,&rstart,&rend);CHKERRQ(ierr);
     cnt  = 0;
     for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
-      if (nz > 1) cnt++;
-      ierr = MatRestoreRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatGetRow(pc->mat,i,&nz,&cols,&values);CHKERRQ(ierr);
+      for (PetscInt j=0; j<nz; j++) {
+        if (values[j] != 0 && cols[j] != i) {
+          cnt++;
+          break;
+        }
+      }
+      ierr = MatRestoreRow(pc->mat,i,&nz,&cols,&values);CHKERRQ(ierr);
     }
     ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
     ierr = PetscMalloc1(rend - rstart - cnt,&drows);CHKERRQ(ierr);
@@ -85,10 +91,17 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     /* list non-diagonal rows on process */
     cnt = 0; dcnt = 0;
     for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
-      if (nz > 1) rows[cnt++] = i;
+      PetscBool diagonly = PETSC_TRUE;
+      ierr = MatGetRow(pc->mat,i,&nz,&cols,&values);CHKERRQ(ierr);
+      for (PetscInt j=0; j<nz; j++) {
+        if (values[j] != 0 && cols[j] != i) {
+          diagonly = PETSC_FALSE;
+          break;
+        }
+      }
+      if (!diagonly) rows[cnt++] = i;
       else drows[dcnt++] = i - rstart;
-      ierr = MatRestoreRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatRestoreRow(pc->mat,i,&nz,&cols,&values);CHKERRQ(ierr);
     }
 
     /* create PetscLayout for non-diagonal rows on each process */
@@ -101,94 +114,102 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     /* create PetscLayout for load-balanced non-diagonal rows on each process */
     ierr = PetscLayoutCreate(comm,&nmap);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
     ierr = PetscLayoutSetSize(nmap,ncnt);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(nmap,1);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
 
     ierr = MatGetSize(pc->pmat,&NN,NULL);CHKERRQ(ierr);
     ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));CHKERRQ(ierr);
-    /*
-        this code is taken from VecScatterCreate_PtoS()
-        Determines what rows need to be moved where to
-        load balance the non-diagonal rows
-    */
-    /*  count number of contributors to each processor */
-    ierr   = PetscMalloc2(size,&sizes,cnt,&owner);CHKERRQ(ierr);
-    ierr   = PetscArrayzero(sizes,size);CHKERRQ(ierr);
-    j      = 0;
-    nsends = 0;
-    for (i=rstart; i<rend; i++) {
-      if (i < nmap->range[j]) j = 0;
-      for (; j<size; j++) {
-        if (i < nmap->range[j+1]) {
-          if (!sizes[j]++) nsends++;
-          owner[i-rstart] = j;
-          break;
+
+    if (size > 1) {
+      /* the following block of code assumes MPI can send messages to self, which is not supported for MPI-uni hence we need to handle the size 1 case as a special case */
+      /*
+       this code is taken from VecScatterCreate_PtoS()
+       Determines what rows need to be moved where to
+       load balance the non-diagonal rows
+       */
+      /*  count number of contributors to each processor */
+      ierr   = PetscMalloc2(size,&sizes,cnt,&owner);CHKERRQ(ierr);
+      ierr   = PetscArrayzero(sizes,size);CHKERRQ(ierr);
+      j      = 0;
+      nsends = 0;
+      for (i=rstart; i<rend; i++) {
+        if (i < nmap->range[j]) j = 0;
+        for (; j<size; j++) {
+          if (i < nmap->range[j+1]) {
+            if (!sizes[j]++) nsends++;
+            owner[i-rstart] = j;
+            break;
+          }
         }
       }
-    }
-    /* inform other processors of number of messages and max length*/
-    ierr      = PetscGatherNumberOfMessages(comm,NULL,sizes,&nrecvs);CHKERRQ(ierr);
-    ierr      = PetscGatherMessageLengths(comm,nsends,nrecvs,sizes,&onodes1,&olengths1);CHKERRQ(ierr);
-    ierr      = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
-    recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
+      /* inform other processors of number of messages and max length*/
+      ierr      = PetscGatherNumberOfMessages(comm,NULL,sizes,&nrecvs);CHKERRQ(ierr);
+      ierr      = PetscGatherMessageLengths(comm,nsends,nrecvs,sizes,&onodes1,&olengths1);CHKERRQ(ierr);
+      ierr      = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
+      recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
 
-    /* post receives:  rvalues - rows I will own; count - nu */
-    ierr  = PetscMalloc3(recvtotal,&rvalues,nrecvs,&source,nrecvs,&recv_waits);CHKERRQ(ierr);
-    count = 0;
-    for (i=0; i<nrecvs; i++) {
-      ierr   = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRMPI(ierr);
-      count += olengths1[i];
-    }
+      /* post receives:  rvalues - rows I will own; count - nu */
+      ierr  = PetscMalloc3(recvtotal,&rvalues,nrecvs,&source,nrecvs,&recv_waits);CHKERRQ(ierr);
+      count = 0;
+      for (i=0; i<nrecvs; i++) {
+        ierr   = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRMPI(ierr);
+        count += olengths1[i];
+      }
 
-    /* do sends:
+      /* do sends:
        1) starts[i] gives the starting index in svalues for stuff going to
        the ith processor
-    */
-    ierr      = PetscMalloc3(cnt,&svalues,nsends,&send_waits,size,&starts);CHKERRQ(ierr);
-    starts[0] = 0;
-    for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[i-1];
-    for (i=0; i<cnt; i++)  svalues[starts[owner[i]]++] = rows[i];
-    for (i=0; i<cnt; i++)  rows[i] = rows[i] - rstart;
-    red->drows = drows;
-    red->dcnt  = dcnt;
-    ierr       = PetscFree(rows);CHKERRQ(ierr);
+       */
+      ierr      = PetscMalloc3(cnt,&svalues,nsends,&send_waits,size,&starts);CHKERRQ(ierr);
+      starts[0] = 0;
+      for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[i-1];
+      for (i=0; i<cnt; i++)  svalues[starts[owner[i]]++] = rows[i];
+      for (i=0; i<cnt; i++)  rows[i] = rows[i] - rstart;
+      red->drows = drows;
+      red->dcnt  = dcnt;
+      ierr       = PetscFree(rows);CHKERRQ(ierr);
 
-    starts[0] = 0;
-    for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[i-1];
-    count = 0;
-    for (i=0; i<size; i++) {
-      if (sizes[i]) {
-        ierr = MPI_Isend(svalues+starts[i],sizes[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRMPI(ierr);
+      starts[0] = 0;
+      for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[i-1];
+      count = 0;
+      for (i=0; i<size; i++) {
+        if (sizes[i]) {
+          ierr = MPI_Isend(svalues+starts[i],sizes[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRMPI(ierr);
+        }
       }
-    }
 
-    /*  wait on receives */
-    count = nrecvs;
-    slen  = 0;
-    while (count) {
-      ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRMPI(ierr);
-      /* unpack receives into our local space */
-      ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRMPI(ierr);
-      slen += n;
-      count--;
-    }
-    if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
+      /*  wait on receives */
+      count = nrecvs;
+      slen  = 0;
+      while (count) {
+        ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRMPI(ierr);
+        /* unpack receives into our local space */
+        ierr  = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRMPI(ierr);
+        slen += n;
+        count--;
+      }
+      if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
+      ierr = ISCreateGeneral(comm,slen,rvalues,PETSC_COPY_VALUES,&red->is);CHKERRQ(ierr);
 
-    ierr = ISCreateGeneral(comm,slen,rvalues,PETSC_COPY_VALUES,&red->is);CHKERRQ(ierr);
-
-    /* free up all work space */
-    ierr = PetscFree(olengths1);CHKERRQ(ierr);
-    ierr = PetscFree(onodes1);CHKERRQ(ierr);
-    ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
-    ierr = PetscFree2(sizes,owner);CHKERRQ(ierr);
-    if (nsends) {   /* wait on sends */
-      ierr = PetscMalloc1(nsends,&send_status);CHKERRQ(ierr);
-      ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRMPI(ierr);
-      ierr = PetscFree(send_status);CHKERRQ(ierr);
+      /* free all work space */
+      ierr = PetscFree(olengths1);CHKERRQ(ierr);
+      ierr = PetscFree(onodes1);CHKERRQ(ierr);
+      ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
+      ierr = PetscFree2(sizes,owner);CHKERRQ(ierr);
+      if (nsends) {   /* wait on sends */
+        ierr = PetscMalloc1(nsends,&send_status);CHKERRQ(ierr);
+        ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRMPI(ierr);
+        ierr = PetscFree(send_status);CHKERRQ(ierr);
+      }
+      ierr = PetscFree3(svalues,send_waits,starts);CHKERRQ(ierr);
+    } else {
+      ierr = ISCreateGeneral(comm,cnt,rows,PETSC_OWN_POINTER,&red->is);CHKERRQ(ierr);
+      red->drows = drows;
+      red->dcnt  = dcnt;
+      slen = cnt;
     }
-    ierr = PetscFree3(svalues,send_waits,starts);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&nmap);CHKERRQ(ierr);
 

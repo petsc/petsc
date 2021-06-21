@@ -1,6 +1,5 @@
 #include <../src/snes/impls/richardson/snesrichardsonimpl.h>
 
-
 PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
   PetscFunctionBegin;

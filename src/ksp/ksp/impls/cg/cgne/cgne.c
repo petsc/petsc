@@ -55,7 +55,6 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 
-
     Virtually identical to the KSPSolve_CG, it should definitely reuse the same code.
 
 */
@@ -204,13 +203,11 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
    Options Database Keys:
 .   -ksp_cg_type <Hermitian or symmetric - (for complex matrices only) indicates the matrix is Hermitian or symmetric
 
-
    Level: beginner
 
    Notes:
     eigenvalue computation routines will return information about the
           spectrum of A^t*A, rather than A.
-
 
    CGNE is a general-purpose non-symmetric method. It works well when the singular values are much better behaved than
    eigenvalues. A unitary matrix is a classic example where CGNE converges in one iteration, but GMRES and CGS need N

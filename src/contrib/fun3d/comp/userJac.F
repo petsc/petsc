@@ -44,7 +44,6 @@
       Mat  A
       MatStructure flag
 
-
       integer isface(1)
       integer isnode(1),ivnode(1),ifnode(1)
 !     integer ia(1),ja(1),iau(1),fhelp(nedge,2)
@@ -2724,6 +2723,4 @@
       endif
       return
       end
-
-
 

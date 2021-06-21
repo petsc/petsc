@@ -409,7 +409,6 @@ static PetscErrorCode ObjectiveRegularizationADMM(Tao tao, Vec z, PetscReal *J, 
   PetscFunctionReturn(0);
 }
 
-
 /* NORM_2 Case: x - mu*(x + u - z)
  * NORM_1 Case: x/(|x| + eps) - mu*(x + u - z)
  * Else: TODO */
@@ -547,7 +546,7 @@ static PetscErrorCode TaoSolveADMM(UserCtx ctx,  Vec x)
   for (i=0; i<ctx->iter; i++) {
     ierr = VecCopy(z,zold);CHKERRQ(ierr);
     ierr = TaoSolve(tao1);CHKERRQ(ierr); /* Updates xk */
-    if (ctx->p == NORM_1){
+    if (ctx->p == NORM_1) {
       ierr = VecWAXPY(temp,1.,xk,u);CHKERRQ(ierr);
       ierr = TaoSoftThreshold(temp,-ctx->alpha/mu,ctx->alpha/mu,z);CHKERRQ(ierr);
     } else {

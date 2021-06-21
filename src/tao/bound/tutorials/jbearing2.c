@@ -35,8 +35,6 @@ The command line options are:\n\
    Processors: n
 T*/
 
-
-
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
@@ -114,7 +112,6 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr); /* Solution */
   ierr = VecDuplicate(x,&user.B);CHKERRQ(ierr); /* Linear objective */
 
-
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
   ierr = DMCreateMatrix(user.dm,&user.A);CHKERRQ(ierr);
@@ -134,7 +131,6 @@ int main(int argc, char **argv)
   */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
-
 
   /* Set the initial vector */
   ierr = VecSet(x, zero);CHKERRQ(ierr);
@@ -186,7 +182,6 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-
 static PetscReal p(PetscReal xi, PetscReal ecc)
 {
   PetscReal t=1.0+ecc*PetscCosScalar(xi);
@@ -209,7 +204,6 @@ PetscErrorCode ComputeB(AppCtx* user)
   hy=two*user->b/(ny+1.0);
   ehxhy = ecc*hx*hy;
 
-
   /*
      Get local grid boundaries
   */
@@ -218,9 +212,9 @@ PetscErrorCode ComputeB(AppCtx* user)
 
   /* Compute the linear term in the objective function */
   ierr = VecGetArray(user->B,&b);CHKERRQ(ierr);
-  for (i=xs; i<xs+xm; i++){
+  for (i=xs; i<xs+xm; i++) {
     temp=PetscSinScalar((i+1)*hx);
-    for (j=ys; j<ys+ym; j++){
+    for (j=ys; j<ys+ym; j++) {
       k=xm*(j-ys)+(i-xs);
       b[k]=  - ehxhy*temp;
     }
@@ -269,7 +263,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
 
-  for (i=xs; i< xs+xm; i++){
+  for (i=xs; i< xs+xm; i++) {
     xi=(i+1)*hx;
     trule1=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc)) / six; /* L(i,j) */
     trule2=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc)) / six; /* U(i,j) */
@@ -284,31 +278,31 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
     vup=-hyhy*(trule1+trule6);
     vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
 
-    for (j=ys; j<ys+ym; j++){
+    for (j=ys; j<ys+ym; j++) {
 
       row=(j-gys)*gxm + (i-gxs);
        v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
 
        k=0;
-       if (j>gys){
+       if (j>gys) {
          v[k]=vdown; col[k]=row - gxm; k++;
        }
 
-       if (i>gxs){
+       if (i>gxs) {
          v[k]= vleft; col[k]=row - 1; k++;
        }
 
        v[k]= vmiddle; col[k]=row; k++;
 
-       if (i+1 < gxs+gxm){
+       if (i+1 < gxs+gxm) {
          v[k]= vright; col[k]=row+1; k++;
        }
 
-       if (j+1 <gys+gym){
+       if (j+1 <gys+gym) {
          v[k]= vup; col[k] = row+gxm; k++;
        }
        tt=0;
-       for (kk=0;kk<k;kk++){
+       for (kk=0;kk<k;kk++) {
          tt+=v[kk]*x[col[kk]];
        }
        row=(j-ys)*xm + (i-xs);
@@ -328,12 +322,10 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
   ierr = VecAXPY(G, one, user->B);CHKERRQ(ierr);
   *fcn = f1/2.0 + f2;
 
-
   ierr = PetscLogFlops((91 + 10.0*ym) * xm);CHKERRQ(ierr);
   return 0;
 
 }
-
 
 /*
    FormHessian computes the quadratic term in the quadratic objective function
@@ -367,9 +359,9 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, void *ptr)
   ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
   ierr = MatAssembled(hes,&assembled);CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(hes);CHKERRQ(ierr);}
+  if (assembled) {ierr = MatZeroEntries(hes);CHKERRQ(ierr);}
 
-  for (i=xs; i< xs+xm; i++){
+  for (i=xs; i< xs+xm; i++) {
     xi=(i+1)*hx;
     trule1=hxhy*(p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc)) / six; /* L(i,j) */
     trule2=hxhy*(p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc)) / six; /* U(i,j) */
@@ -385,25 +377,25 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, void *ptr)
     vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
     v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
 
-    for (j=ys; j<ys+ym; j++){
+    for (j=ys; j<ys+ym; j++) {
       row=(j-gys)*gxm + (i-gxs);
 
       k=0;
-      if (j>gys){
+      if (j>gys) {
         v[k]=vdown; col[k]=row - gxm; k++;
       }
 
-      if (i>gxs){
+      if (i>gxs) {
         v[k]= vleft; col[k]=row - 1; k++;
       }
 
       v[k]= vmiddle; col[k]=row; k++;
 
-      if (i+1 < gxs+gxm){
+      if (i+1 < gxs+gxm) {
         v[k]= vright; col[k]=row+1; k++;
       }
 
-      if (j+1 <gys+gym){
+      if (j+1 <gys+gym) {
         v[k]= vup; col[k] = row+gxm; k++;
       }
       ierr = MatSetValuesLocal(hes,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -463,7 +455,6 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 
 }
-
 
 /*TEST
 

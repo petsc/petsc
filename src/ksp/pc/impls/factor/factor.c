@@ -1,5 +1,44 @@
 
 #include <../src/ksp/pc/impls/factor/factor.h>  /*I "petscpc.h" I*/
+#include <petsc/private/matimpl.h>
+
+/*
+    If an ordering is not yet set and the matrix is available determine a default ordering
+*/
+PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
+{
+  Mat            B;
+  PetscBool      foundmtype,flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (pc->pmat) {
+    PC_Factor *fact = (PC_Factor*)pc->data;
+    ierr = MatSolverTypeGet(fact->solvertype,((PetscObject)pc->pmat)->type_name,fact->factortype,NULL,&foundmtype,NULL);CHKERRQ(ierr);
+    if (foundmtype) {
+      if (!fact->fact) {
+        ierr = MatGetFactor(pc->pmat,fact->solvertype,fact->factortype,&fact->fact);CHKERRQ(ierr);
+      } else if (!fact->fact->assembled) {
+        ierr = PetscStrcmp(fact->solvertype,fact->fact->solvertype,&flg);CHKERRQ(ierr);
+        if (!flg) {
+          ierr = MatGetFactor(pc->pmat,fact->solvertype,fact->factortype,&B);CHKERRQ(ierr);
+          ierr = MatHeaderReplace(fact->fact,&B);CHKERRQ(ierr);
+        }
+      }
+      if (!fact->ordering) {
+        PetscBool       canuseordering;
+        MatOrderingType otype;
+
+        ierr = MatFactorGetCanUseOrdering(fact->fact,&canuseordering);CHKERRQ(ierr);
+        if (canuseordering) {
+          ierr = MatFactorGetPreferredOrdering(fact->fact,fact->factortype,&otype);CHKERRQ(ierr);
+        } else otype = MATORDERINGEXTERNAL;
+        ierr = PetscStrallocpy(otype,(char **)&fact->ordering);CHKERRQ(ierr);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode PCFactorSetReuseOrdering_Factor(PC pc,PetscBool flag)
 {
@@ -172,8 +211,8 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveReal(pc,dtcol,2);
-  PetscValidLogicalCollectiveInt(pc,maxrowcount,3);
+  PetscValidLogicalCollectiveReal(pc,dtcol,3);
+  PetscValidLogicalCollectiveInt(pc,maxrowcount,4);
   ierr = PetscTryMethod(pc,"PCFactorSetDropTolerance_C",(PC,PetscReal,PetscReal,PetscInt),(pc,dt,dtcol,maxrowcount));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -567,14 +606,14 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
     Level: intermediate
 
     Notes:
-    nested dissection is used by default
+      Nested dissection is used by default for some of PETSc's sparse matrix formats
 
-    For Cholesky and ICC and the SBAIJ format the only reordering available is natural since only the upper half of the matrix is stored
-    and reordering this matrix is very expensive.
+     For Cholesky and ICC and the SBAIJ format the only reordering available is natural since only the upper half of the matrix is stored
+     and reordering this matrix is very expensive.
 
-    You can use SeqAIJ matrix with Cholesky and ICC and use any ordering
+      You can use a SeqAIJ matrix with Cholesky and ICC and use any ordering.
 
-    external means PETSc will not compute an ordering and the package will use its own ordering, for MATSOLVERCHOLMOD and MATSOLVERUMFPACK
+      MATORDERINGEXTERNAL means PETSc will not compute an ordering and the package will use its own ordering, usable with MATSOLVERCHOLMOD, MATSOLVERUMFPACK, and others.
 
 .seealso: MatOrderingType
 
@@ -668,19 +707,20 @@ PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool flag)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,2);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flag,2);
   ierr = PetscTryMethod(pc,"PCFactorSetReuseFill_C",(PC,PetscBool),(pc,flag));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorInitialize(PC pc)
+PetscErrorCode PCFactorInitialize(PC pc,MatFactorType ftype)
 {
   PetscErrorCode ierr;
-  PC_Factor       *fact = (PC_Factor*)pc->data;
+  PC_Factor      *fact = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
   ierr                       = MatFactorInfoInitialize(&fact->info);CHKERRQ(ierr);
+  fact->factortype           = ftype;
   fact->info.shifttype       = (PetscReal)MAT_SHIFT_NONE;
   fact->info.shiftamount     = 100.0*PETSC_MACHINE_EPSILON;
   fact->info.zeropivot       = 100.0*PETSC_MACHINE_EPSILON;

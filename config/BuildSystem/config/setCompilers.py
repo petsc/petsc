@@ -110,7 +110,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CUDAC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the CUDA linker flags'))
 
     help.addArgument('Compilers', '-HIPPP=<prog>', nargs.Arg(None, None, 'Specify the HIP preprocessor'))
-    help.addArgument('Compilers', '-HIPPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the HIPpreprocessor options'))
+    help.addArgument('Compilers', '-HIPPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the HIP preprocessor options'))
     help.addArgument('Compilers', '-with-hipc=<prog>', nargs.Arg(None, None, 'Specify the HIP compiler'))
     help.addArgument('Compilers', '-HIPC=<prog>',         nargs.Arg(None, None, 'Specify the HIP compiler'))
     help.addArgument('Compilers', '-HIPFLAGS=<string>',   nargs.Arg(None, None, 'Specify the HIP compiler options'))
@@ -220,6 +220,22 @@ class Configure(config.base.Configure):
       if 'HIP version:' in output:
         if log: log.write('Detected HIP compiler\n')
         return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
+  def isGcc110plus(compiler, log):
+    '''returns true if the compiler is gcc-11.0.x or later'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output +  error
+      import re
+      strmatch = re.match('gcc\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      if strmatch:
+        VMAJOR,VMINOR = strmatch.groups()
+        if (int(VMAJOR),int(VMINOR)) >= (11,0):
+          if log: log.write('Detected Gcc110plus compiler\n')
+          return 1
     except RuntimeError:
       pass
 
@@ -880,11 +896,28 @@ class Configure(config.base.Configure):
     return
 
   def generateHIPPreprocessorGuesses(self):
-    ''' Placeholder for now '''
+    '''Determines the HIP preprocessor from --with-hipcpp, then HIPPP, then the HIP compiler'''
+    if 'with-hipcpp' in self.argDB:
+      yield self.argDB['with-cudacpp']
+    elif 'HIPPP' in self.argDB:
+      yield self.argDB['HIPPP']
+    else:
+      if hasattr(self, 'HIPC'):
+        yield self.HIPC+' -E'
     return
 
   def checkHIPPreprocessor(self):
-    ''' Placeholder for now '''
+    '''Locate a functional HIP preprocessor'''
+    for compiler in self.generateHIPPreprocessorGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'HIPPP'):
+          self.pushLanguage('HIP')
+          if not self.checkPreprocess('#include <stdlib.h>\n__global__ void testFunction() {return;};'):
+            raise RuntimeError('Cannot preprocess HIP with '+self.HIPPP+'.')
+          self.popLanguage()
+          return
+      except RuntimeError as e:
+        self.popLanguage()
     return
 
   def generateSYCLCompilerGuesses(self):
@@ -1283,17 +1316,28 @@ class Configure(config.base.Configure):
     raise RuntimeError('Bad compiler flag: '+flag)
 
   def generatePICGuesses(self):
-    yield ''
     if self.language[-1] == 'CUDA':
       yield '-Xcompiler -fPIC'
-    elif config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
-      yield '-fPIC'
+      return
+    if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
+      PICFlags = ['-fPIC']
     else:
-      yield '-PIC'
-      yield '-fPIC'
-      yield '-KPIC'
-      yield '-qpic'
-    return
+      PICFlags = ['-PIC','-fPIC','-KPIC','-qpic']
+    try:
+      output = self.executeShellCommand(self.getCompiler() + ' -show', log = self.log)[0]
+    except:
+      self.logPrint('Skipping checking MPI compiler command for PIC flag since MPI compiler -show causes an exception so is likely not an MPI compiler')
+      output = ''
+    output = output + ' ' + getattr(self, self.getCompilerFlagsArg(1)) + ' '
+    # Try without specific PIC flag only if the MPI compiler or user compiler flag already provides a PIC option
+    for i in PICFlags:
+      if output.find(' '+i+' ') > -1:
+        self.logPrint('Trying no specific compiler flag for PIC code since MPI compiler or current flags seem to provide such a flag with '+i)
+        yield ''
+        break
+    for i in PICFlags:
+      yield i
+    yield ''
 
   def checkPIC(self):
     '''Determine the PIC option for each compiler'''

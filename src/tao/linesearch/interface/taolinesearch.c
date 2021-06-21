@@ -115,7 +115,6 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
 . gpcg
 - unit - Do not perform any line search
 
-
    Options Database Keys:
 .   -tao_ls_type - select which method TAO should use
 
@@ -856,7 +855,7 @@ PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch ls, Tao ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  PetscValidHeaderSpecific(ts,TAO_CLASSID,1);
+  PetscValidHeaderSpecific(ts,TAO_CLASSID,2);
   ls->tao = ts;
   ls->usetaoroutines=PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1298,7 +1297,6 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(
    TaoLineSearchAppendOptionsPrefix - Appends to the prefix used for searching
    for all TaoLineSearch options in the database.
 
-
    Collective on TaoLineSearch
 
    Input Parameters:
@@ -1308,7 +1306,6 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
-
 
    Level: advanced
 
@@ -1347,7 +1344,6 @@ PetscErrorCode TaoLineSearchGetOptionsPrefix(TaoLineSearch ls, const char *p[])
 /*@C
    TaoLineSearchSetOptionsPrefix - Sets the prefix used for searching for all
    TaoLineSearch options in the database.
-
 
    Logically Collective on TaoLineSearch
 

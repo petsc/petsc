@@ -534,12 +534,10 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
   return 0;
 }
 
-
 /*TEST
 
     test:
       requires: !single
 
 TEST*/
-
 

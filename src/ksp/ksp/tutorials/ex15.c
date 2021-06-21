@@ -10,8 +10,6 @@ Input parameters include:\n\
    Processors: n
 T*/
 
-
-
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -320,7 +318,6 @@ PetscErrorCode SampleShellPCDestroy(PC pc)
 
   return 0;
 }
-
 
 /*TEST
 

@@ -1,6 +1,5 @@
 ! Demonstrates PetscGetVersionNumber(): Fortran Example
 
-
 program main
 #include <petsc/finclude/petscsys.h>
       use petscsys
@@ -37,7 +36,6 @@ program main
       endif
 
       call PetscFinalize(ierr)
-
 
 end program main
 

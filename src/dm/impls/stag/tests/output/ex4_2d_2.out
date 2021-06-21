@@ -22,7 +22,7 @@ Stratum dof: 0:2 1:3 2:4
 [3] Local elements : 1 x 1 (3 x 3 with ghosts)
 [3] Local native entries: 24
 [3] Local entries total : 108
-Vec Object: 4 MPI processes
+Vec Object: coordinates 4 MPI processes
   type: mpi
 Process [0]
 1.

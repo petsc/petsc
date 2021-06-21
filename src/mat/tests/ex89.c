@@ -79,12 +79,21 @@ int main(int argc,char **argv)
   /* (1) Developer API */
   ierr = MatProductCreate(A,P,NULL,&C);CHKERRQ(ierr);
   ierr = MatProductSetType(C,MATPRODUCT_PtAP);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(C,"default");CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(C,"allatonce");CHKERRQ(ierr);
   ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatProductSymbolic(C);CHKERRQ(ierr);
   ierr = MatProductNumeric(C);CHKERRQ(ierr);
   ierr = MatProductNumeric(C);CHKERRQ(ierr); /* Test reuse of symbolic C */
+
+  { /* Test MatProductView() */
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIOpen(comm,NULL, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = MatProductView(C,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
 
   ierr = MatPtAPMultEqual(A,P,C,10,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
@@ -124,25 +133,31 @@ int main(int argc,char **argv)
    test:
       suffix: allatonce
       nsize: 4
-      args: -M 10 -N 10 -Z 10 -matptap_via allatonce
-      output_file: output/ex89_1.out
+      args: -M 10 -N 10 -Z 10
+      output_file: output/ex89_2.out
 
    test:
       suffix: allatonce_merged
       nsize: 4
-      args: -M 10 -M 5 -M 10 -matptap_via allatonce_merged
-      output_file: output/ex96_1.out
+      args: -M 10 -M 5 -M 10 -matproduct_ptap_via allatonce_merged
+      output_file: output/ex89_3.out
 
    test:
-      suffix: allatonce_3D
+      suffix: nonscalable_3D
       nsize: 4
-      args: -M 10 -M 5 -M 10 -test_3D 1 -matptap_via allatonce
-      output_file: output/ex96_1.out
+      args: -M 10 -M 5 -M 10 -test_3D 1 -matproduct_ptap_via nonscalable
+      output_file: output/ex89_4.out
 
    test:
       suffix: allatonce_merged_3D
       nsize: 4
-      args: -M 10 -M 5 -M 10 -test_3D 1 -matptap_via allatonce_merged
-      output_file: output/ex96_1.out
+      args: -M 10 -M 5 -M 10 -test_3D 1 -matproduct_ptap_via allatonce_merged
+      output_file: output/ex89_3.out
+
+   test:
+      suffix: nonscalable
+      nsize: 4
+      args: -M 10 -N 10 -Z 10 -matproduct_ptap_via nonscalable
+      output_file: output/ex89_5.out
 
 TEST*/

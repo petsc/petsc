@@ -7,7 +7,6 @@ static PetscReal phi(PetscReal*,PetscInt,PetscReal,PetscReal*,PetscReal,PetscRea
 static PetscInt project(PetscInt,PetscReal*,PetscReal,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,TAO_DF*);
 static PetscErrorCode solve(TAO_DF*);
 
-
 /*------------------------------------------------------------*/
 /* The main solver function
 
@@ -44,7 +43,6 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
   head->next = NULL;
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode TaoSolve_BMRM(Tao tao)
 {
@@ -199,7 +197,6 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   ierr = VecScatterDestroy(&bmrm->scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* ---------------------------------------------------------- */
 
@@ -460,7 +457,7 @@ PetscReal phi(PetscReal *x,PetscInt n,PetscReal lambda,PetscReal *a,PetscReal b,
   PetscReal r = 0.0;
   PetscInt  i;
 
-  for (i = 0; i < n; i++){
+  for (i = 0; i < n; i++) {
     x[i] = -c[i] + lambda*a[i];
     if (x[i] > u[i])     x[i] = u[i];
     else if (x[i] < l[i]) x[i] = l[i];
@@ -510,7 +507,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
     if (PetscAbsReal(r) < TOL_R) return 0;
   }
 
-  if (r < 0.0){
+  if (r < 0.0) {
     lambdal = lambda;
     rl      = r;
     lambda  = lambda + dlambda;
@@ -546,7 +543,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 
   if (PetscAbsReal(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
-  if (ru == 0){
+  if (ru == 0) {
     return innerIter;
   }
 
@@ -558,10 +555,10 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 
   while (PetscAbsReal(r) > TOL_R
          && dlambda > TOL_LAM * (1.0 + PetscAbsReal(lambda))
-         && innerIter < df->maxProjIter){
+         && innerIter < df->maxProjIter) {
     innerIter++;
-    if (r > 0.0){
-      if (s <= 2.0){
+    if (r > 0.0) {
+      if (s <= 2.0) {
         lambdau = lambda;
         ru      = r;
         s       = 1.0 - rl/ru;
@@ -580,7 +577,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
         s          = (lambdau - lambdal) / (lambdau - lambda);
       }
     } else {
-      if (s >= 2.0){
+      if (s >= 2.0) {
         lambdal = lambda;
         rl      = r;
         s       = 1.0 - rl/ru;
@@ -609,7 +606,6 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
   return innerIter;
 }
 
-
 PetscErrorCode solve(TAO_DF *df)
 {
   PetscErrorCode ierr;
@@ -623,7 +619,7 @@ PetscErrorCode solve(TAO_DF *df)
   PetscReal      **Q = df->Q, *f = df->f, *t = df->t;
   PetscInt       dim = df->dim, *ipt = df->ipt, *ipt2 = df->ipt2, *uv = df->uv;
 
-  /*** variables for the adaptive nonmonotone linesearch ***/
+  /* variables for the adaptive nonmonotone linesearch */
   PetscInt    L, llast;
   PetscReal   fr, fbest, fv, fc, fv0;
 
@@ -649,17 +645,16 @@ PetscErrorCode solve(TAO_DF *df)
   }
 
   ierr = PetscArrayzero(t, dim);CHKERRQ(ierr);
-  for (i = 0; i < it; i++){
+  for (i = 0; i < it; i++) {
     tempQ = Q[ipt[i]];
     for (j = 0; j < dim; j++) t[j] += (tempQ[j]*x[ipt[i]]);
   }
-  for (i = 0; i < dim; i++){
+  for (i = 0; i < dim; i++) {
     g[i] = t[i] + f[i];
   }
 
-
   /* y = -(x_{k} - g_{k}) */
-  for (i = 0; i < dim; i++){
+  for (i = 0; i < dim; i++) {
     y[i] = g[i] - x[i];
   }
 
@@ -668,12 +663,12 @@ PetscErrorCode solve(TAO_DF *df)
 
   /* y = P(x_{k} - g_{k}) - x_{k} */
   max = ALPHA_MIN;
-  for (i = 0; i < dim; i++){
+  for (i = 0; i < dim; i++) {
     y[i] = tempv[i] - x[i];
     if (PetscAbsReal(y[i]) > max) max = PetscAbsReal(y[i]);
   }
 
-  if (max < tol*1e-3){
+  if (max < tol*1e-3) {
     return 0;
   }
 
@@ -683,7 +678,7 @@ PetscErrorCode solve(TAO_DF *df)
   fv0   = 0.0;
   for (i = 0; i < dim; i++) fv0 += x[i] * (0.5*t[i] + f[i]);
 
-  /*** adaptive nonmonotone linesearch ***/
+  /* adaptive nonmonotone linesearch */
   L     = 2;
   fr    = ALPHA_MAX;
   fbest = fv0;
@@ -691,7 +686,7 @@ PetscErrorCode solve(TAO_DF *df)
   llast = 0;
   akold = bkold = 0.0;
 
-  /***      Iterator begins     ***/
+  /*     Iterator begins     */
   for (innerIter = 1; innerIter <= df->maxPGMIter; innerIter++) {
 
     /* tempv = -(x_{k} - alpha*g_{k}) */
@@ -700,12 +695,11 @@ PetscErrorCode solve(TAO_DF *df)
     /* Project x_{k} - alpha*g_{k} */
     projcount += project(dim, a, b, tempv, l, u, y, &lam_ext, df);
 
-
     /* gd = \inner{d_{k}}{g_{k}}
         d = P(x_{k} - alpha*g_{k}) - x_{k}
     */
     gd = 0.0;
-    for (i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
       d[i] = y[i] - x[i];
       gd  += d[i] * g[i];
     }
@@ -715,7 +709,7 @@ PetscErrorCode solve(TAO_DF *df)
     /* compute Qd = Q*d  or  Qd = Q*y - t depending on their sparsity */
 
     it = it2 = 0;
-    for (i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
       if (PetscAbsReal(d[i]) > (ProdDELTAsv*1.0e-2)) ipt[it++]   = i;
     }
     for (i = 0; i < dim; i++) {
@@ -724,13 +718,13 @@ PetscErrorCode solve(TAO_DF *df)
 
     ierr = PetscArrayzero(Qd, dim);CHKERRQ(ierr);
     /* compute Qd = Q*d */
-    if (it < it2){
-      for (i = 0; i < it; i++){
+    if (it < it2) {
+      for (i = 0; i < it; i++) {
         tempQ = Q[ipt[i]];
         for (j = 0; j < dim; j++) Qd[j] += (tempQ[j] * d[ipt[i]]);
       }
     } else { /* compute Qd = Q*y-t */
-      for (i = 0; i < it2; i++){
+      for (i = 0; i < it2; i++) {
         tempQ = Q[ipt2[i]];
         for (j = 0; j < dim; j++) Qd[j] += (tempQ[j] * y[ipt2[i]]);
       }
@@ -749,24 +743,24 @@ PetscErrorCode solve(TAO_DF *df)
 
     /* fv is computing f(x_{k} + d_{k}) */
     fv = 0.0;
-    for (i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
       xplus[i] = x[i] + d[i];
       tplus[i] = t[i] + Qd[i];
       fv      += xplus[i] * (0.5*tplus[i] + f[i]);
     }
 
     /* fr is fref */
-    if ((innerIter == 1 && fv >= fv0) || (innerIter > 1 && fv >= fr)){
+    if ((innerIter == 1 && fv >= fv0) || (innerIter > 1 && fv >= fr)) {
       lscount++;
       fv = 0.0;
-      for (i = 0; i < dim; i++){
+      for (i = 0; i < dim; i++) {
         xplus[i] = x[i] + lamnew*d[i];
         tplus[i] = t[i] + lamnew*Qd[i];
         fv      += xplus[i] * (0.5*tplus[i] + f[i]);
       }
     }
 
-    for (i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
       sk[i] = xplus[i] - x[i];
       yk[i] = tplus[i] - t[i];
       x[i]  = xplus[i];
@@ -775,14 +769,14 @@ PetscErrorCode solve(TAO_DF *df)
     }
 
     /* update the line search control parameters */
-    if (fv < fbest){
+    if (fv < fbest) {
       fbest = fv;
       fc    = fv;
       llast = 0;
     } else {
       fc = (fc > fv ? fc : fv);
       llast++;
-      if (llast == L){
+      if (llast == L) {
         fr    = fc;
         fc    = fv;
         llast = 0;
@@ -790,7 +784,7 @@ PetscErrorCode solve(TAO_DF *df)
     }
 
     ak = bk = 0.0;
-    for (i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
       ak += sk[i] * sk[i];
       bk += sk[i] * yk[i];
     }
@@ -807,22 +801,22 @@ PetscErrorCode solve(TAO_DF *df)
     akold = ak;
     bkold = bk;
 
-    /*** stopping criterion based on KKT conditions ***/
+    /* stopping criterion based on KKT conditions */
     /* at optimal, gradient of lagrangian w.r.t. x is zero */
 
     bk = 0.0;
     for (i = 0; i < dim; i++) bk +=  x[i] * x[i];
 
-    if (PetscSqrtReal(ak) < tol*10 * PetscSqrtReal(bk)){
+    if (PetscSqrtReal(ak) < tol*10 * PetscSqrtReal(bk)) {
       it     = 0;
       luv    = 0;
       kktlam = 0.0;
-      for (i = 0; i < dim; i++){
+      for (i = 0; i < dim; i++) {
         /* x[i] is active hence lagrange multipliers for box constraints
                 are zero. The lagrange multiplier for ineq. const. is then
                 defined as below
         */
-        if ((x[i] > DELTAsv) && (x[i] < c-DELTAsv)){
+        if ((x[i] > DELTAsv) && (x[i] < c-DELTAsv)) {
           ipt[it++] = i;
           kktlam    = kktlam - a[i]*g[i];
         } else  uv[luv++] = i;
@@ -840,11 +834,11 @@ PetscErrorCode solve(TAO_DF *df)
         }
         if (info == 1)  {
           for (i = 0; i < luv; i++)  {
-            if (x[uv[i]] <= DELTAsv){
+            if (x[uv[i]] <= DELTAsv) {
               /* x[i] == lower bound, hence, lagrange multiplier (say, beta) for lower bound may
                      not be zero. So, the gradient without beta is > 0
               */
-              if (g[uv[i]] + kktlam*a[uv[i]] < -tol){
+              if (g[uv[i]] + kktlam*a[uv[i]] < -tol) {
                 info = 0;
                 break;
               }

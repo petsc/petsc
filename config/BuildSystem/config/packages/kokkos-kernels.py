@@ -4,10 +4,11 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '3.2.00'
+    self.gitcommit        = '54e4213ca028163a76639d23b1204b213203bc79' # develop of 2021-04-28
     self.versionname      = 'KOKKOS_KERNELS_VERSION'  # It looks kokkos-kernels does not yet have a macro for version number
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
-    self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
+    # cannot test includes with standard approaches since that requires Kokkos nvcc_wapper that we do not handle in configure
+    #self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
     self.liblist          = [['libkokkoskernels.a']]
     self.functions        = ['']
     # I don't know how to make it work since all KK routines are templated and always need Kokkos::View. So I cheat here and use functionCxx from Kokkos.
@@ -32,6 +33,7 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
+    self.scalarTypes         = framework.require('PETSc.options.scalarTypes',self)
     self.kokkos              = framework.require('config.packages.kokkos',self)
     self.deps                = [self.kokkos]
     self.cuda                = framework.require('config.packages.cuda',self)
@@ -56,6 +58,12 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     KokkosRoot = self.kokkos.directory
     args.append('-DKokkos_ROOT='+KokkosRoot)
+    if self.scalarTypes.scalartype == 'complex':
+      if self.scalarTypes.precision == 'double':
+        args.append('-DKokkosKernels_INST_COMPLEX_DOUBLE=ON')
+      elif self.scalarTypes.precision == 'single':
+        args.append('-DKokkosKernels_INST_COMPLEX_FLOAT=ON')
+
     # By default it installs in lib64, change it to lib
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')

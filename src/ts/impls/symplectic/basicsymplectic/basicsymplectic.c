@@ -169,7 +169,7 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name,PetscInt order,PetscInt
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
   PetscValidPointer(c,4);
-  PetscValidPointer(d,4);
+  PetscValidPointer(d,5);
 
   ierr = TSBasicSymplecticInitializePackage();CHKERRQ(ierr);
   ierr = PetscNew(&link);CHKERRQ(ierr);

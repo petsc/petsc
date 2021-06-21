@@ -33,7 +33,6 @@
       PetscBool  flg
       PetscScalar  v
 
-
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
         print*,'Unable to initialize PETSc'
@@ -215,7 +214,6 @@
  110  format('next matrix: defines linear system')
 
       end
-
 
 !/*TEST
 !

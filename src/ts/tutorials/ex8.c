@@ -204,7 +204,7 @@ static PetscErrorCode CECreate(Problem p)
 }
 
 /*
-*  Stiff 3-variable oscillatory system from chemical reactions. problem OREGO in Hairer&Wanner
+   Stiff 3-variable oscillatory system from chemical reactions. problem OREGO in Hairer&Wanner
 */
 static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
@@ -285,9 +285,8 @@ static PetscErrorCode OregoCreate(Problem p)
   PetscFunctionReturn(0);
 }
 
-
 /*
-*  User-defined monitor for comparing to exact solutions when possible
+   User-defined monitor for comparing to exact solutions when possible
 */
 typedef struct {
   MPI_Comm comm;
@@ -315,7 +314,6 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
   ierr = PetscPrintf(mon->comm,"step %4D t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,(double)t,(double)h,(double)nrm_x,(double)nrm_exact,(double)nrm_diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 int main(int argc,char **argv)
 {
@@ -365,7 +363,7 @@ int main(int argc,char **argv)
     PetscErrorCode (*pcreate)(Problem);
 
     ierr = PetscFunctionListFind(plist,pname,&pcreate);CHKERRQ(ierr);
-    if (!pcreate) SETERRQ1(PETSC_COMM_SELF,1,"No problem '%s'",pname);
+    if (!pcreate) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"No problem '%s'",pname);
     ierr = (*pcreate)(problem);CHKERRQ(ierr);
   }
 

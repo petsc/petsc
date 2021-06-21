@@ -23,6 +23,8 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 
 #if defined(PETSC_HAVE_CUDA)
   #include <cuda_runtime.h>
+  #include <cuda_runtime_api.h>
+  #include <cuda_device_runtime_api.h>
   #include <petsccublas.h>
 #endif
 
@@ -39,7 +41,6 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
 #endif
-
 
 /* ------------------------Nasty global variables -------------------------------*/
 /*
@@ -94,6 +95,8 @@ MPI_Datatype MPIU___FLOAT128 = 0;
 MPI_Datatype MPIU___FP16 = 0;
 #endif
 MPI_Datatype MPIU_2SCALAR = 0;
+MPI_Datatype MPIU_REAL_INT = 0;
+MPI_Datatype MPIU_SCALAR_INT = 0;
 #if defined(PETSC_USE_64BIT_INDICES)
 MPI_Datatype MPIU_2INT = 0;
 #endif
@@ -272,6 +275,7 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
   typedef cudaError_t                             cupmError_t;
   typedef struct cudaDeviceProp                   cupmDeviceProp;
   typedef cudaStream_t                            cupmStream_t;
+  typedef cudaEvent_t                             cupmEvent_t;
   #define cupmGetDeviceCount(x)                   cudaGetDeviceCount(x)
   #define cupmGetDevice(x)                        cudaGetDevice(x)
   #define cupmSetDevice(x)                        cudaSetDevice(x)
@@ -301,6 +305,7 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
   #define PetscOptionsCheckCUPM                   PetscOptionsCheckCUDA
   #define PetscMPICUPMAwarenessCheck              PetscMPICUDAAwarenessCheck
   #define PetscDefaultCupmStream                  PetscDefaultCudaStream
+  #define cupmEventCreate(x)                      cudaEventCreate(x)
   #include "cupminit.inc"
 #endif
 
@@ -308,12 +313,14 @@ PETSC_INTERN PetscBool   PetscObjectsLog;
   typedef hipError_t                              cupmError_t;
   typedef hipDeviceProp_t                         cupmDeviceProp;
   typedef hipStream_t                             cupmStream_t;
+  typedef hipEvent_t                              cupmEvent_t;
   #define cupmGetDeviceCount(x)                   hipGetDeviceCount(x)
   #define cupmGetDevice(x)                        hipGetDevice(x)
   #define cupmSetDevice(x)                        hipSetDevice(x)
   #define cupmSetDeviceFlags(x)                   hipSetDeviceFlags(x)
   #define cupmGetDeviceProperties(x,y)            hipGetDeviceProperties(x,y)
   #define cupmStreamCreate(x)                     hipStreamCreate(x)
+  #define cupmEventCreate(x)                      hipEventCreate(x);
   #define cupmGetLastError()                      hipGetLastError()
   #define cupmDeviceMapHost                       hipDeviceMapHost
   #define cupmSuccess                             hipSuccess

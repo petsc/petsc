@@ -20,10 +20,10 @@ variables:
   TIMEOUT: 450
 
 #
-# The most basic template that most tests will expand upon. In particular merge requests and branch pushes DO NOT trigger testing
+# The most basic template that most tests will expand upon
 #
 
-.test:
+.test-basic:
   interruptible: true
   only:
     refs:
@@ -35,8 +35,16 @@ variables:
       - merge_requests
   dependencies: []
 
+.test:
+  extends: .test-basic
+  except:
+    variables:
+      # Skip if the docs-only label is attached to a merge request
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+      - $PETSC_CI_SCHEDULED =~ /yes/
+
 check-ci-settings:
-  extends: .test
+  extends: .test-basic
   stage: .pre
   tags:
     - check-ci-settings
@@ -65,9 +73,9 @@ check-ci-settings:
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
+    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O3 -march=native' CXXOPTFLAGS='-O3 -march=native' FOPTFLAGS='-O3 -march=native' ${CONFIG_OPTS}
     - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
-    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS=-Werror allgtests-tap search="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS="-Werror -std=f2008" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   after_script:
     - date
     - ccache --show-stats
@@ -109,10 +117,48 @@ c99-mlib-static-py2:
   variables:
     PYTHON: python2
     CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
-    TEST_SEARCH: snes_tutorials-ex19%
+    TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
+
+petsc4py-install:
+  extends: .stage-2
+  tags:
+    - linux-stage2
+  variables:
+    PYTHON: python3
+    T_PREFIX: petsc-install
+    T_DESTDIR: petsc-destdir
+    T_PETSC4PY: src/binding/petsc4py
+    T_VALIDATE_CMD: lib/petsc/bin/maint/validate-petsc4py.sh
+  script:
+    - printf "PATH:$PATH\n"
+    - mkdir hide
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
+    - ${PYTHON} ./configure --prefix="${PWD}/${T_PREFIX}" --with-petsc4py=1 --with-debugging=0 --with-mpi-dir=/home/glci/soft/mpich-3.3.2
+    - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
+    - printf "====== Test A. Install into staging directory then into prefix directory (mimics distro package recipe) =====\n"
+    - make install DESTDIR="${PWD}/${T_DESTDIR}"
+    - test "$(find ${PWD}/${T_PREFIX} -mindepth 1 | wc -l)" -eq 0
+    - test "$(find ${PWD}/${T_DESTDIR} -mindepth 1 | wc -l)" -gt 0
+    - (cd "${PWD}/${T_DESTDIR}" && find * -exec install -v -D "{}" "/{}" \; )
+    - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
+    - rm -r "${PWD}/${T_PREFIX}" "${PWD}/${T_DESTDIR}" && mkdir "${PWD}/${T_PREFIX}"
+    - printf "====== Test B. Install directly into prefix directory =====\n"
+    - make install
+    - test "$(find ${PWD}/${T_PREFIX} -mindepth 1 | wc -l)" -gt 0
+    - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
+    - rm -r "${PWD}/${T_PREFIX}"/*/petsc4py*
+    - printf "====== Test C. Install manually with setuptools =====\n"
+    - export PETSC_DIR="${PWD}/${T_PREFIX}" && (cd "${T_PETSC4PY}" && ${PYTHON} setup.py build)
+    - export PETSC_DIR="${PWD}/${T_PREFIX}" P="${PWD}" && (cd "${T_PETSC4PY}" && ${PYTHON} setup.py install --install-lib="${P}/${T_PREFIX}/lib")
+    - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
+    - rm -r "${PWD}/${T_PREFIX}"/*/petsc4py*
+    - printf "====== Test D. Install manually with setuptools with staging =====\n"
+    - export PETSC_DIR="${PWD}/${T_PREFIX}" P="${PWD}" && (cd "${T_PETSC4PY}" && ${PYTHON} setup.py install --root="${P}/${T_DESTDIR}" --install-lib="${P}/${T_PREFIX}/lib")
+    - (cd "${PWD}/${T_DESTDIR}" && find * -exec install -v -D "{}" "/{}" \; )
+    - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
 
 checksource:
-  extends: .test
+  extends: .test-basic
   stage: .pre
   tags:
     - stage1
@@ -120,9 +166,10 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - make checkbadSource SHELL=bash
     - make -f gmakefile check_output SHELL=bash
+    - make check_petsc4py_rst
 
 pause-for-approval:
-  extends: .test
+  extends: .test-basic
   stage: .pre
   tags:
     - stage1
@@ -140,7 +187,7 @@ pause-for-approval:
   allow_failure: false
 
 check-py-vermin:
-  extends: .test
+  extends: .test-basic
   stage: .pre
   tags:
     - stage1
@@ -165,7 +212,7 @@ check-py-vermin:
     - make updatedatafiles
     - if [ -z ${DISABLE_PETSC4PY_TESTS+x} ]; then if [ -z ${ENABLE_PETSC4PY_LDPRELOAD+x} ]; then echo "NOT using LD_PRELOAD"; make petsc4pytest; else echo "using LD_PRELOAD"; LD_PRELOAD=${PWD}/${TEST_ARCH}/lib/libpetsc.so make petsc4pytest; fi; fi
     - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS}; fi
-    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov && bash <(curl -s https://codecov.io/bash) -c > /dev/null 2>&1; fi
+    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -553,6 +600,7 @@ linux-cxx-cmplx-pkgs-64idx:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
     LOAD_MODULES: llvm/9.0.0-7fyffox gcc/8.3.0-fjpc5ys cmake/3.14.2-rl3q676
 
+# Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
   extends:
     - .stage-3
@@ -561,6 +609,8 @@ linux-pkgs-dbg-ftn-interfaces:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
+    OMP_PROC_BIND: "false"
+    OMP_NUM_THREADS: 4
 
 linux-pkgs-cxx-mlib:
   extends:
@@ -654,8 +704,7 @@ linux-nagfor:
   tags:
     - gce-nfs, linux-mcpu
   variables:
-    PATH: /usr/lib/ccache:/home/svcpetsc/.local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/nfs/gce/projects/petsc/soft/nag/6.1/bin
-    NAG_KUSARI_FILE: licman1.mcs.anl.gov:7733
+    LOAD_MODULES: nag/6.1
     TEST_ARCH: arch-ci-linux-nagfor
 
 linux-intel-cmplx:
@@ -685,8 +734,24 @@ linux-analyzer:
     - .linux_test
   tags:
     - gce-nfs
+  script:
+    - printf "PATH:$PATH\n"
+    - printf "PYTHONPATH:$PYTHONPATH\n"
+    - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
+    - printf "./config/examples/${TEST_ARCH}.py\n"
+    - cat ./config/examples/${TEST_ARCH}.py
+    - ./config/examples/${TEST_ARCH}.py
+    - make LINTER_OPTIONS="${LINTER_OPTIONS}" test-lint
+    - make LINTER_OPTIONS="${LINTER_OPTIONS}" lint
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
+    LOAD_MODULES: llvm/11.0.0-snbtima cmake/3.20.0-vov726r
+    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config --libdir`/libclang.so.11 --verbose"
+  artifacts:
+    paths:
+    - ${TEST_ARCH}/lib/petsc/conf/*.log
+    - ./petscLintPatches/*.patch
 
 linux-intel:
   extends:
@@ -703,7 +768,7 @@ linux-opt-misc:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-opt-misc
     LOAD_MODULES: gcc/6.5.0-57usejd
@@ -713,10 +778,10 @@ linux-pkgs-64idx:
     - .stage-3
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
-    LOAD_MODULES: cmake/3.15.5-fh74toq
+    LOAD_MODULES: cmake/3.15.5-fh74toq intel-mkl/19.5
 
 linux-64idx-i8:
   extends:
@@ -735,7 +800,7 @@ linux-gcc-ifc-cmplx:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-gcc-ifc-cmplx
-    LOAD_MODULES: intel/19.0-nompilib
+    LOAD_MODULES: intel/19.0-nompilib cmake/3.20.0-vov726r
 
 linux-opt-cxx-quad:
   extends:
@@ -754,7 +819,7 @@ linux-ILP64:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-ILP64
-    LOAD_MODULES: gcc/6.5.0-57usejd
+    LOAD_MODULES: mpich/2-1.5-gcc750
 
 linux-64idx-i8-uni:
   extends:
@@ -774,24 +839,24 @@ mswin-intel-cxx-cmplx:
   variables:
     TEST_ARCH: arch-ci-mswin-intel-cxx-cmplx
 
-mswin-intel:
-  extends:
-    - .stage-3
-    - .mswin_test
-  tags:
-    - os:win
-  variables:
-    TEST_ARCH: arch-ci-mswin-intel
+#mswin-intel:
+#  extends:
+#    - .stage-3
+#    - .mswin_test
+#  tags:
+#    - os:win
+#  variables:
+#    TEST_ARCH: arch-ci-mswin-intel
 
-mswin-opt-impi:
-  extends:
-    - .stage-3
-    - .mswin_test
-  tags:
-    - os:win
-  variables:
-    TEST_ARCH: arch-ci-mswin-opt-impi
-    DISABLE_TESTS: 1
+#mswin-opt-impi:
+#  extends:
+#    - .stage-3
+#    - .mswin_test
+#  tags:
+#    - os:win
+#  variables:
+#    TEST_ARCH: arch-ci-mswin-opt-impi
+#    DISABLE_TESTS: 1
 
 opensolaris-pkgs-opt:
   extends:
@@ -886,42 +951,59 @@ analyze-pipeline:
     - arch-ci-analyze-pipeline/*
     expire_in: 4 days
 
-.docs-review-base:
-  extends: .test
-  image: python:3.9
-  only:
-    variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /^doc|,doc/
+
+#
+# Base job for a documentation build
+#
+.docs:
+  stage: stage-2
+  tags:
+    - name:pj02
   before_script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends librsvg2-bin
-    - apt-get install -y flex
-    - pip install -r src/docs/sphinx_docs/requirements.txt
+    - VENV=venv-petsc-docs &&
+      python3 -m venv $VENV &&
+      . $VENV/bin/activate &&
+      cd doc &&
+      pip install -r requirements.txt
+  allow_failure: true
+
+#
+# Build documentation and make available for review using GitLab pages
+#
+docs-review:
+  extends:
+    - .docs
+    - .test-basic
   script:
-    - cd src/docs/sphinx_docs && sphinx-build -T -E -b html -D language=en -j auto . ../../../public
-  artifacts:
-    paths:
-      - public
+    - sphinx-build -T -E -b html -D language=en -j auto . ../public
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html
-
-docs-only-review:
-  stage: .pre
-  extends: .docs-review-base
-  only:
-    variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
-
-docs-review:
-  stage: stage-2
-  extends: .docs-review-base
-  only:
-    variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs($|,)/
+  artifacts:
+    paths:
+      - public
   except:
     variables:
-      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+      - $PETSC_CI_SCHEDULED =~ /yes/
+
+#
+# Deploy documentation using GitLab pages
+#
+pages:  # this job name has special meaning to GitLab
+  extends: .docs
+  interruptible: true
+  script:
+    - mkdir -p ../public/ && cp public/* ../public/
+    - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
+    - git checkout origin/main && make website-deploy BUILDDIR="../public/main"
+    - make clean BUILDDIR="../public/release"
+    - git checkout origin/release && make website-deploy BUILDDIR="../public/release"
+  only:
+    variables:
+      - $PETSC_CI_SCHEDULED == "yes"
+  artifacts:
+    paths:
+      - public
 
 #
 #

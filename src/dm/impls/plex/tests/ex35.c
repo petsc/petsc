@@ -73,7 +73,9 @@ int main(int argc, char **argv)
   ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   ierr = PetscMallocGetCurrentUsage(&before);CHKERRQ(ierr);
   if (trace) {ierr = PetscMallocTraceSet(NULL, PETSC_TRUE, 5000.);CHKERRQ(ierr);}
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_FALSE, &dm);CHKERRQ(ierr);
+  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   if (trace) {ierr = PetscMallocTraceSet(NULL, PETSC_FALSE, 5000);CHKERRQ(ierr);}
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscMallocGetCurrentUsage(&after);CHKERRQ(ierr);
@@ -104,39 +106,39 @@ int main(int argc, char **argv)
     test:
       suffix: tri
       requires: triangle
-      args: -dm_plex_box_simplex 1
+      args: -dm_plex_simplex 1 -dm_plex_interpolate 0
 
     test:
       suffix: tri_interp
       requires: triangle
-      args: -dm_plex_box_simplex 1 -dm_plex_box_interpolate
+      args: -dm_plex_simplex 1 -dm_plex_interpolate 1
 
     test:
       suffix: quad
-      args: -dm_plex_box_simplex 0
+      args: -dm_plex_simplex 0 -dm_plex_interpolate 0
 
     test:
       suffix: quad_interp
-      args: -dm_plex_box_simplex 0 -dm_plex_box_interpolate
+      args: -dm_plex_simplex 0 -dm_plex_interpolate 1
 
-  # Mempry checks cannot be included in tests because the allocated memory differs among environments
+  # Memory checks cannot be included in tests because the allocated memory differs among environments
   testset:
-    args: -malloc_requested_size -dm_plex_box_dim 3 -dm_plex_box_faces 5,5,5 -check_memory 0
+    args: -malloc_requested_size -dm_plex_dim 3 -dm_plex_box_faces 5,5,5 -check_memory 0
     test:
       suffix: tet
       requires: ctetgen
-      args: -dm_plex_box_simplex 1
+      args: -dm_plex_simplex 1 -dm_plex_interpolate 0
 
     test:
       suffix: tet_interp
       requires: ctetgen
-      args: -dm_plex_box_simplex 1 -dm_plex_box_interpolate
+      args: -dm_plex_simplex 1 -dm_plex_interpolate 1
 
     test:
       suffix: hex
-      args: -dm_plex_box_simplex 0
+      args: -dm_plex_simplex 0 -dm_plex_interpolate 0
 
     test:
       suffix: hex_interp
-      args: -dm_plex_box_simplex 0 -dm_plex_box_interpolate
+      args: -dm_plex_simplex 0 -dm_plex_interpolate 1
 TEST*/

@@ -635,7 +635,6 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(const PetscInt *ai,co
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ      *a =(Mat_SeqSBAIJ*)A->data;

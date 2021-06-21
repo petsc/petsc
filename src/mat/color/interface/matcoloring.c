@@ -93,7 +93,6 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatColoringDestroy - Destroys the matrix coloring context
 

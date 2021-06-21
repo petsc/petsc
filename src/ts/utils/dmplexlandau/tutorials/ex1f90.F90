@@ -52,10 +52,10 @@ program DMPlexTestLandauInterface
   !    Create timestepping solver context
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   call TSCreate(PETSC_COMM_SELF,ts,ierr);CHKERRA(ierr)
-  call TSSetOptionsPrefix(ts, 'ex1f90_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
+  call TSSetOptionsPrefix(ts, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
   call TSSetDM(ts,dm,ierr);CHKERRA(ierr)
   call TSGetSNES(ts,snes,ierr);CHKERRA(ierr)
-  call SNESSetOptionsPrefix(snes, 'ex1f90_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
+  call SNESSetOptionsPrefix(snes, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
   call SNESGetLineSearch(snes,linesearch,ierr);CHKERRA(ierr)
   call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr);CHKERRA(ierr)
   call TSSetIFunction(ts,PETSC_NULL_VEC,LandauIFunction,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
@@ -63,9 +63,9 @@ program DMPlexTestLandauInterface
   call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr);CHKERRA(ierr)
 
   call SNESGetKSP(snes,ksp,ierr);CHKERRA(ierr)
-  call KSPSetOptionsPrefix(ksp, 'ex1f90_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
+  call KSPSetOptionsPrefix(ksp, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
   call KSPGetPC(ksp,pc,ierr);CHKERRA(ierr)
-  call PCSetOptionsPrefix(pc, 'ex1f90_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
+  call PCSetOptionsPrefix(pc, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
 
   call TSSetFromOptions(ts,ierr);CHKERRA(ierr)
   call TSSetSolution(ts,X,ierr);CHKERRA(ierr)
@@ -96,6 +96,6 @@ end program DMPlexTestLandauInterface
 !  test:
 !    suffix: 0
 !    requires: p4est !complex
-!    args: -petscspace_degree 3 -petscspace_poly_tensor 1 -dm_landau_type p4est -info :dm,tsadapt -dm_landau_ion_masses 2,4 -dm_landau_ion_charges 1,18 -dm_landau_thermal_temps 5,5,.5 -dm_landau_n 1.00018,1,1e-5 -dm_landau_n_0 1e20 -ex1f90_ts_monitor -ex1f90_snes_rtol 1.e-6 -ex1f90_snes_monitor -ex1f90_snes_converged_reason -ex1f90_ts_type arkimex -ex1f90_ts_arkimex_type 1bee -ex1f90_ts_max_snes_failures -1 -ex1f90_ts_rtol 1e-4 -ex1f90_ts_dt 1.e-6 -ex1f90_ts_max_time 1 -ex1f90_ts_adapt_clip .5,1.25 -ex1f90_ts_adapt_scale_solve_failed 0.75 -ex1f90_ts_adapt_time_step_increase_delay 5 -ex1f90_ts_max_steps 1 -ex1f90_pc_type lu -ex1f90_ksp_type preonly -dm_landau_amr_levels_max 7 -dm_landau_domain_radius 5 -dm_landau_amr_re_levels 0 -dm_landau_re_radius 1 -dm_landau_amr_z_refine1 1 -dm_landau_amr_z_refine2 0 -dm_landau_amr_post_refine 0 -dm_landau_z_radius1 .1 -dm_landau_z_radius2 .1 -dm_refine 1 -dm_landau_device_type cpu
+!    args: -petscspace_degree 3 -petscspace_poly_tensor 1 -dm_landau_type p4est -dm_landau_ion_masses 2,4 -dm_landau_ion_charges 1,18 -dm_landau_thermal_temps 5,5,.5 -dm_landau_n 1.00018,1,1e-5 -dm_landau_n_0 1e20 -ex1_ts_monitor -ex1_snes_rtol 1.e-14 -ex1_snes_stol 1.e-14 -ex1_snes_monitor -ex1_snes_converged_reason -ex1_ts_type arkimex -ex1_ts_arkimex_type 1bee -ex1_ts_max_snes_failures -1 -ex1_ts_rtol 1e-1 -ex1_ts_dt 1.e-1 -ex1_ts_max_time 1 -ex1_ts_adapt_clip .5,1.25 -ex1_ts_adapt_scale_solve_failed 0.75 -ex1_ts_adapt_time_step_increase_delay 5 -ex1_ts_max_steps 1 -ex1_pc_type lu -ex1_ksp_type preonly -dm_landau_amr_levels_max 7 -dm_landau_domain_radius 5 -dm_landau_amr_re_levels 0 -dm_landau_re_radius 1 -dm_landau_amr_z_refine1 1 -dm_landau_amr_z_refine2 0 -dm_landau_amr_post_refine 0 -dm_landau_z_radius1 .1 -dm_landau_z_radius2 .1 -dm_refine 1 -dm_landau_gpu_assembly false
 !
 !TEST*/

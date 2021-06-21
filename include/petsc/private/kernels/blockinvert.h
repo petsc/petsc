@@ -494,7 +494,6 @@ PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
 #define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C)
 #define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w)
 
-
 #endif
 
 #endif

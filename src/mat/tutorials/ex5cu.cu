@@ -1,108 +1,105 @@
-static char help[] = "Test of Cuda matrix assemble with 1D Laplacian.\n\n";
+static char help[] = "Test of CUDA matrix assemble with simple matrix.\n\n";
 
-// This a minimal example of the use of the Cuda and Kokkos MatAIJ metadata for assembly.
+// This a minimal example of the use of the CUDA MatAIJ metadata for assembly.
 //
-// The matrix must be a type 'aijcusparse' or 'aijkokkos' and must first be assembled
-// to get the AIJ metadata, which is created in MatAssemblyEnd on the host. Next, get a
-// pointer to simple CSR mirror (PetscSplitCSRDataStructure) of the matrix data on
-// the device with Mat[CUSPARSE/Kokkos]GetDeviceMatWrite. Then use this object to populate
-// the matrix on the device with the standard MatSetValues for the device
-// (MatSetValuesDevice). Finaly one calls MatAssemblyBegin/End on the host and the
-// matrix is ready to use on the device without matrix data movement between the
-// host and device. N.B., after MatXGetDeviceMatWrite has been called you can not call
-// MatSetValues (Host) again.
+// The matrix must be a type 'aijcusparse' and must first be assembled on the CPU to provide the nonzero pattern.
+// Next, get a pointer to a simple CSR mirror (PetscSplitCSRDataStructure) of the matrix data on
+//    the GPU with MatCUSPARSEGetDeviceMatWrite().
+// Then use this object to populate the matrix on the GPU with MatSetValuesDevice().
+// Finally call MatAssemblyBegin/End() and the matrix is ready to use on the GPU without matrix data movement between the
+//    host and GPU.
 
 #include <petscconf.h>
 #include <petscmat.h>
 #include <petsccublas.h>
+#include <assert.h>
 
-// hack to avoid configure problems in CI. Delete when resolved
-#define atomicAdd(e, f) (*e) += f
-
-#define PETSC_DEVICE_FUNC_DECL __device__
 #include <petscaijdevice.h>
-
 __global__
-void assemble_device(PetscSplitCSRDataStructure *d_mat, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank, PetscErrorCode *ierr)
+void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank)
 {
   const PetscInt  inc = blockDim.x, my0 = threadIdx.x;
   PetscInt        i;
-  PetscScalar     values[] = {1,-1,-1,1.1};
+  PetscErrorCode  ierr;
+
   for (i=start+my0; i<end; i+=inc) {
-    PetscInt js[] = {i-1, i};
-    MatSetValuesDevice(d_mat,2,js,2,js,values,ADD_VALUES,ierr);
-    if (*ierr) return;
+    PetscInt    js[] = {i-1, i};
+    PetscScalar is = i;
+    PetscScalar values[] = {is,-2*is,-3*is,4*is};
+    ierr = MatSetValuesDevice(d_mat,2,js,2,js,values,ADD_VALUES);if (ierr) assert(0);
   }
 }
 
-void assemble_mat(Mat A, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank)
+PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank)
 {
-  PetscInt        i;
-  PetscScalar     values[] = {1,-1,-1,1.1};
-  PetscErrorCode  ierr;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
   for (i=start; i<end; i++) {
-    PetscInt js[] = {i-1, i};
-    ierr = MatSetValues(A,2,js,2,js,values,ADD_VALUES);
-    if (ierr) return;
+    PetscInt    js[] = {i-1, i};
+    PetscScalar is = i;
+    PetscScalar values[] = {is,-2*is,-3*is,4*is};
+    ierr = MatSetValues(A,2,js,2,js,values,ADD_VALUES);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 }
 
 int main(int argc,char **args)
 {
-  PetscErrorCode               ierr;
-  Mat                          A;
-  PetscInt                     N=11, nz=3, Istart, Iend, num_threads = 128;
-  PetscSplitCSRDataStructure   *d_mat;
-  PetscLogEvent                event;
-  Vec                          x,y;
-  cudaError_t                  cerr;
-  PetscMPIInt                  rank;
+  PetscErrorCode             ierr;
+  Mat                        A,Ae;
+  PetscInt                   N=11, nz=3, Istart, Iend, num_threads = 128;
+  PetscSplitCSRDataStructure d_mat;
+  PetscLogEvent              event;
+  cudaError_t                cerr;
+  PetscMPIInt                rank,size;
+  PetscBool                  testmpiseq = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL);CHKERRQ(ierr); // for debugging, will be wrong if nz<3
   ierr = PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL);CHKERRQ(ierr);
-  if (nz>N+1) {
-    PetscPrintf(PETSC_COMM_WORLD,"warning decreasing nz\n");
-    nz=N+1;
-  }
+  ierr = PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL, "-testmpiseq", &testmpiseq, NULL);CHKERRQ(ierr);
+  if (nz<3)   nz=3;
+  if (nz>N+1) nz=N+1;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   ierr = PetscLogEventRegister("GPU operator", MAT_CLASSID, &event);CHKERRQ(ierr);
   ierr = MatCreateAIJCUSPARSE(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,nz,NULL,nz-1,NULL,&A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-
-  // assemble end on CPU. We are not doing it redudent here, and ignoring off proc entries, but we could
-  assemble_mat(A, Istart, Iend, N, rank);CHKERRQ(ierr);
+  /* current GPU assembly code does not support offprocessor values insertion */
+  ierr = assemble_on_cpu(A, Istart, Iend, N, rank);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  // test cusparse
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(y,NULL,"-vec_view");CHKERRQ(ierr);
+  ierr = MatComputeOperator(A,MATAIJ,&Ae);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)Ae,"CPU MATRIX");CHKERRQ(ierr);
+  ierr = MatView(Ae,NULL);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ae);CHKERRQ(ierr);
 
-  // assemble on GPU
-  if (Iend<N) Iend++; // elements, ignore off processor entries so do redundent
+  if (testmpiseq && size == 1) {
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
+  ierr = MatZeroEntries(A);CHKERRQ(ierr);
   ierr = MatCUSPARSEGetDeviceMatWrite(A,&d_mat);CHKERRQ(ierr);
-  ierr = MatZeroEntries(A);CHKERRQ(ierr); // needed?
-  assemble_device<<<1,num_threads>>>(d_mat, Istart, Iend, N, rank, &ierr);
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
-  fflush(stdout);
+  assemble_on_gpu<<<1,num_threads>>>(d_mat, Istart, Iend, N, rank);
+  cerr = cudaDeviceSynchronize();CHKERRCUDA(cerr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(y,NULL,"-vec_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
 
+  ierr = MatComputeOperator(A,MATAIJ,&Ae);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)Ae,"GPU MATRIX");CHKERRQ(ierr);
+  ierr = MatView(Ae,NULL);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -110,11 +107,24 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-      requires: cuda !define(PETSC_USE_CTABLE)
+      requires: cuda
 
    test:
       suffix: 0
-      args: -n 11 -vec_view
-      nsize:  2
+      diff_args: -j
+      args: -n 11
+      nsize: 1
+
+   test:
+      suffix: 1
+      diff_args: -j
+      args: -n 11
+      nsize: 2
+
+   test:
+      suffix: 2
+      diff_args: -j
+      args: -n 11 -testmpiseq
+      nsize: 1
 
 TEST*/

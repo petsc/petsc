@@ -13,4 +13,3 @@ PETSC_EXTERN void matcreateseqbaijmkl_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,P
   *ierr = MatCreateSeqBAIJMKL(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*bs,*m,*n,*nz,nnz,newmat);
 }
 
-

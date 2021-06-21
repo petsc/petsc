@@ -37,7 +37,6 @@
        call PetscFinalize(ierr)
        end
 
-
        subroutine ComputeInitialGuess(ksp,b,ctx,ierr)
        use petscksp
        implicit none

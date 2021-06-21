@@ -1,6 +1,6 @@
-DM Object: Parallel Mesh 2 MPI processes
+DM Object: Sphere 2 MPI processes
   type: plex
-Parallel Mesh in 2 dimensions:
+Sphere in 2 dimensions:
   0-cells: 8 8
   1-cells: 10 10
   2-cells: 3 3

@@ -47,7 +47,7 @@ static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf,MPI_Datatype unit,P
   ierr = PetscMPIIntCast(sf->nroots,&sendcount);CHKERRQ(ierr);
   ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_ROOT2LEAF,&rootbuf,&leafbuf,&req,NULL);CHKERRQ(ierr);
   ierr = PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
-  ierr = MPIU_Iallgather(rootbuf,sendcount,unit,leafbuf,sendcount,unit,comm,req);CHKERRQ(ierr);
+  ierr = MPIU_Iallgather(rootbuf,sendcount,unit,leafbuf,sendcount,unit,comm,req);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 

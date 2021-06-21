@@ -11,14 +11,23 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *r
   PetscInt       i, *mask,*xls,*ls,nrow,*perm;
   const PetscInt *ia,*ja;
   PetscBool      done;
+  Mat            B = NULL;
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
+  if (!done) {
+    ierr = MatConvert(mat,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(B,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
+  }
 
   ierr = PetscMalloc4(nrow,&mask,nrow,&perm,nrow+1,&xls,nrow,&ls);CHKERRQ(ierr);
   SPARSEPACKgennd(&nrow,ia,ja,mask,perm,xls,ls);
-  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
+  if (B) {
+    ierr = MatRestoreRowIJ(B,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  } else {
+    ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
+  }
 
   /* shift because Sparsepack indices start at one */
   for (i=0; i<nrow; i++) perm[i]--;
@@ -28,5 +37,4 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *r
   ierr = PetscFree4(mask,perm,xls,ls);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 

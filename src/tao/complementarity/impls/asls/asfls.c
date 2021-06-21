@@ -52,7 +52,6 @@
        University of Wisconsin  Madison, 1999.
 */
 
-
 static PetscErrorCode TaoSetUp_ASFLS(Tao tao)
 {
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
@@ -255,7 +254,6 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 
     /* Add the direction in the free variables back into the real direction. */
     ierr = VecISAXPY(tao->stepdirection, asls->free, 1.0,asls->dxfree);CHKERRQ(ierr);
-
 
     /* Check the projected real direction for descent and if not, use the negative
        gradient direction. */

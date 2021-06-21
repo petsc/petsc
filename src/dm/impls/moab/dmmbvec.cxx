@@ -46,7 +46,6 @@ PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range* range
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMMoabGetVecTag - Get the MOAB tag associated with this Vec
 
@@ -77,7 +76,6 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMMoabGetVecRange - Get the MOAB entities associated with this Vec
 
@@ -107,7 +105,6 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
   *range = *vmoab->tag_range;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   DMMoabVecGetArray - Returns the writable direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
@@ -193,7 +190,6 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   DMMoabVecRestoreArray - Restores the writable direct access array obtained via DMMoabVecGetArray
@@ -358,7 +354,6 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMMoabVecRestoreArray - Restores the read-only direct access array obtained via DMMoabVecGetArray
 
@@ -412,7 +407,6 @@ PetscErrorCode  DMMoabVecRestoreArrayRead(DM dm, Vec vec, void* array)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Range* userrange, PetscBool is_global_vec, PetscBool destroy_tag, Vec *vec)
 {
   PetscErrorCode    ierr;
@@ -445,7 +439,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Ran
 #endif
 
 #ifdef MOAB_HAVE_MPI
-  ierr = MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, (((PetscObject)dm)->comm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, (((PetscObject)dm)->comm));CHKERRMPI(ierr);
 #else
   gnative_vec = lnative_vec;
 #endif
@@ -555,7 +549,6 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Ran
   PetscFunctionReturn(0);
 }
 
-
 /*  DMVecCreateTagName_Moab_Private
  *
  *  Creates a unique tag name that will be shared across processes. If
@@ -597,7 +590,7 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char** 
 
 #ifdef MOAB_HAVE_MPI
   /* Make sure that n is consistent across all processes */
-  ierr = MPIU_Allreduce(&n, &global_n, 1, MPI_INT, MPI_MAX, pcomm->comm());CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&n, &global_n, 1, MPI_INT, MPI_MAX, pcomm->comm());CHKERRMPI(ierr);
 #else
   global_n = n;
 #endif
@@ -607,7 +600,6 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, char** 
   mberr = mbiface->tag_set_data(indexTag, &rootset, 1, (const void*)&global_n); MBERRNM(mberr);
   PetscFunctionReturn(0);
 }
-
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM dm, Vec *gvec)
 {
@@ -621,7 +613,6 @@ PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM dm, Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM dm, Vec *lvec)
 {
   PetscErrorCode  ierr;
@@ -633,7 +624,6 @@ PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM dm, Vec *lvec)
   ierr = DMCreateVector_Moab_Private(dm,NULL,dmmoab->vlocal,PETSC_FALSE,PETSC_TRUE,lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
 {
@@ -658,7 +648,6 @@ PetscErrorCode DMVecDuplicate_Moab(Vec x, Vec *y)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode DMVecUserDestroy_Moab(void *user)
 {
   Vec_MOAB        *vmoab = (Vec_MOAB*)user;
@@ -680,7 +669,6 @@ PetscErrorCode DMVecUserDestroy_Moab(void *user)
   PetscFunctionReturn(0);
 }
 
-
 PETSC_EXTERN PetscErrorCode  DMGlobalToLocalBegin_Moab(DM dm, Vec g, InsertMode mode, Vec l)
 {
   PetscErrorCode    ierr;
@@ -690,7 +678,6 @@ PETSC_EXTERN PetscErrorCode  DMGlobalToLocalBegin_Moab(DM dm, Vec g, InsertMode 
   ierr = VecScatterBegin(dmmoab->ltog_sendrecv, g, l, mode, SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PETSC_EXTERN PetscErrorCode  DMGlobalToLocalEnd_Moab(DM dm, Vec g, InsertMode mode, Vec l)
 {
@@ -702,7 +689,6 @@ PETSC_EXTERN PetscErrorCode  DMGlobalToLocalEnd_Moab(DM dm, Vec g, InsertMode mo
   PetscFunctionReturn(0);
 }
 
-
 PETSC_EXTERN PetscErrorCode  DMLocalToGlobalBegin_Moab(DM dm, Vec l, InsertMode mode, Vec g)
 {
   PetscErrorCode    ierr;
@@ -712,7 +698,6 @@ PETSC_EXTERN PetscErrorCode  DMLocalToGlobalBegin_Moab(DM dm, Vec l, InsertMode 
   ierr = VecScatterBegin(dmmoab->ltog_sendrecv, l, g, mode, SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PETSC_EXTERN PetscErrorCode  DMLocalToGlobalEnd_Moab(DM dm, Vec l, InsertMode mode, Vec g)
 {

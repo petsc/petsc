@@ -20,5 +20,4 @@ IBOutlet GLKView *glkView;
 @property (nonatomic,retain) UITextField *textField;
 @property (nonatomic,retain) UITextView *textView;
 
-
 @end

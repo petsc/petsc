@@ -50,13 +50,9 @@
       integer4, parameter :: MPIU_INTEGER = MPI_INTEGER
 #endif
 
-      MPI_Comm PETSC_COMM_WORLD
-      MPI_Comm PETSC_COMM_SELF
-      common /petscfortran9/ PETSC_COMM_WORLD
-      common /petscfortran10/ PETSC_COMM_SELF
-      data   PETSC_COMM_WORLD /0/
-      data   PETSC_COMM_SELF /0/
-        end module
+      MPI_Comm::PETSC_COMM_WORLD=0
+      MPI_Comm::PETSC_COMM_SELF=0
+      end module
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
@@ -252,6 +248,36 @@
           PetscInt num
           PetscDataType type
           PetscErrorCode z
+          end subroutine
+        end Interface
+
+        Interface petscintview
+        subroutine petscintview(N,idx,viewer,ierr)
+          use petscsysdefdummy, only: tPetscViewer
+          PetscInt N
+          PetscInt idx(*)
+          PetscViewer viewer
+          PetscErrorCode ierr
+        end subroutine
+        end Interface
+
+        Interface petscscalarview
+        subroutine petscscalarview(N,s,viewer,ierr)
+          use petscsysdefdummy, only: tPetscViewer
+          PetscInt N
+          PetscScalar s(*)
+          PetscViewer viewer
+          PetscErrorCode ierr
+        end subroutine
+        end Interface
+
+        Interface petscrealview
+        subroutine petscrealview(N,s,viewer,ierr)
+          use petscsysdefdummy, only: tPetscViewer
+          PetscInt N
+          PetscReal s(*)
+          PetscViewer viewer
+          PetscErrorCode ierr
         end subroutine
         end Interface
 
@@ -297,6 +323,7 @@
         PetscScalar PETSC_NULL_SCALAR(1)
         PetscReal PETSC_NULL_REAL(1)
         PetscBool PETSC_NULL_BOOL
+        MPI_Comm  PETSC_NULL_MPI_COMM(1)
 !
 !
 !
@@ -317,6 +344,9 @@
         interface
 #include <../src/sys/f90-mod/ftn-auto-interfaces/petscsys.h90>
         end interface
+        interface PetscInitialize
+          module procedure PetscInitializeWithHelp, PetscInitializeNoHelp, PetscInitializeNoArguments
+        end interface
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_COMM_SELF
@@ -327,6 +357,7 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_SCALAR
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_REAL
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_BOOL
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MPI_COMM
 #if defined(PETSC_USE_REAL___FLOAT128)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_SCALAR
@@ -341,6 +372,34 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_INFINITY
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NINFINITY
 #endif
+
+      contains
+      subroutine PetscInitializeWithHelp(filename,help,ierr)
+          character(len=*)           :: filename
+          character(len=*)           :: help
+          PetscErrorCode             :: ierr
+
+          if (filename .ne. PETSC_NULL_CHARACTER) then
+             filename = trim(filename)
+          endif
+          call PetscInitializeF(filename,help,PETSC_TRUE,ierr)
+        end subroutine PetscInitializeWithHelp
+
+        subroutine PetscInitializeNoHelp(filename,ierr)
+          character(len=*)           :: filename
+          PetscErrorCode             :: ierr
+
+          if (filename .ne. PETSC_NULL_CHARACTER) then
+             filename = trim(filename)
+          endif
+          call PetscInitializeF(filename,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+        end subroutine PetscInitializeNoHelp
+
+        subroutine PetscInitializeNoArguments(ierr)
+          PetscErrorCode             :: ierr
+
+          call PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_FALSE,ierr)
+        end subroutine PetscInitializeNoArguments
         end module
 
         subroutine PetscSetCOMM(c1,c2)
@@ -366,13 +425,13 @@
         subroutine PetscSetModuleBlock()
         use petscsys, only: PETSC_NULL_CHARACTER,PETSC_NULL_INTEGER,&
              PETSC_NULL_SCALAR,PETSC_NULL_DOUBLE,PETSC_NULL_REAL,&
-             PETSC_NULL_BOOL,PETSC_NULL_FUNCTION
+             PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM
         implicit none
 
         call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,            &
      &     PETSC_NULL_INTEGER,PETSC_NULL_SCALAR,                        &
      &     PETSC_NULL_DOUBLE,PETSC_NULL_REAL,                           &
-     &     PETSC_NULL_BOOL,PETSC_NULL_FUNCTION)
+     &     PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM)
 
         return
         end
@@ -412,5 +471,4 @@
 
         return
         end
-
 

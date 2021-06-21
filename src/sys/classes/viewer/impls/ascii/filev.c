@@ -203,7 +203,6 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerCreate(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush()
 @*/
@@ -254,7 +253,6 @@ PETSC_INTERN FILE *petsc_history;
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIGetTab(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushTab()
@@ -288,7 +286,6 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISetTab(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushTab()
@@ -319,7 +316,6 @@ PetscErrorCode  PetscViewerASCIIGetTab(PetscViewer viewer,PetscInt *tabs)
 
     Fortran Note:
     This routine is not supported in Fortran.
-
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -352,7 +348,6 @@ PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer viewer,PetscInt tabs)
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushTab()
@@ -382,7 +377,6 @@ PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
 
     Notes:
     See documentation of PetscViewerASCIISynchronizedPrintf() for more details how the synchronized output should be done properly.
-
 
 .seealso: PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush(), PetscViewerASCIIPopSynchronized(),
           PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIOpen(),
@@ -414,7 +408,6 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 
     Notes:
     See documentation of PetscViewerASCIISynchronizedPrintf() for more details how the synchronized output should be done properly.
-
 
 .seealso: PetscViewerASCIIPushSynchronized(), PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush(),
           PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIIOpen(),
@@ -451,7 +444,6 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
@@ -482,7 +474,6 @@ PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer viewer)
 
     Fortran Note:
     This routine is not supported in Fortran.
-
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPushTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
@@ -518,7 +509,6 @@ PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer viewer)
     Fortran Note:
     This routine is not supported in Fortran.
 
-
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPushTab(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
@@ -543,7 +533,6 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool flg)
 }
 
 /* ----------------------------------------------------------------------- */
-
 
 /*@C
     PetscViewerASCIIPrintf - Prints to a file, only from the first
@@ -733,7 +722,6 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
     else if (isstdout) vascii->fd = PETSC_STDOUT;
     else {
 
-
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       switch (vascii->mode) {
       case FILE_MODE_READ:
@@ -760,7 +748,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
         }
         break;
       default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid file mode %d", vascii->mode);
+        SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[vascii->mode]);
       }
       if (!vascii->fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
     }
@@ -834,7 +822,6 @@ PetscErrorCode  PetscViewerView_ASCII(PetscViewer v,PetscViewer viewer)
 
 /*MC
    PETSCVIEWERASCII - A viewer that prints to stdout or an ASCII file
-
 
 .seealso:  PETSC_VIEWER_STDOUT_(),PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_STDOUT_WORLD,PetscViewerCreate(), PetscViewerASCIIOpen(),
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY, PETSCVIEWERMATLAB,

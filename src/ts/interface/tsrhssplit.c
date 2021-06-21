@@ -127,7 +127,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,3);
 
   /* look up the split */
   ierr = TSRHSSplitGetRHSSplit(ts,splitname,&isplit);CHKERRQ(ierr);

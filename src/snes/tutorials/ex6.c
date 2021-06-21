@@ -69,7 +69,6 @@ int main(int argc,char **argv)
   */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -103,14 +102,14 @@ int main(int argc,char **argv)
   /* Just make sure we can not repeat addding the same function
    * PETSc will be able to igore the repeated function
    */
-  for (i=0; i<4; i++){
+  for (i=0; i<4; i++) {
     ierr = SNESConvergedReasonViewSet(snes,MySNESConvergedReasonView,&monP,0);CHKERRQ(ierr);
   }
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   /* Just make sure we can not repeat addding the same function
    * PETSc will be able to igore the repeated function
    */
-  for (i=0; i<4; i++){
+  for (i=0; i<4; i++) {
     ierr = KSPConvergedReasonViewSet(ksp,MyKSPConvergedReasonView,&monP,0);CHKERRQ(ierr);
   }
   /*
@@ -340,7 +339,6 @@ PetscErrorCode MyKSPConvergedReasonView(KSP ksp,void *ctx)
   ierr = PetscViewerASCIISubtractTab(viewer,3);CHKERRQ(ierr);
   return 0;
 }
-
 
 /*TEST
 

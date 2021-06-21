@@ -24,6 +24,9 @@ if __name__ == '__main__':
     '--with-precision=double',
     '--with-clanguage=c',
     '--download-fblaslapack=1',
+    '--download-magma=1',
+    '--with-magma-fortran-bindings=0',
+    '--with-magma-gputarget=gfx906',
   ]
 
   configure.petsc_configure(configure_options)

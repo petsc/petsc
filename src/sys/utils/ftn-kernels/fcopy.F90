@@ -17,7 +17,6 @@
       return
       end
 
-
       subroutine FortranZero(n,x)
       implicit none
       PetscScalar  x(*)

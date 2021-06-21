@@ -13,7 +13,6 @@ PetscErrorCode ex1_nonsquare_bs1(void)
   PetscInt       M,N,m,n,bs;
   PetscErrorCode ierr;
 
-
   /*
      Create the Jacobian matrix
   */
@@ -104,7 +103,6 @@ PetscErrorCode ex2_square_bsvariable(void)
   Mat            A,preallocator;
   PetscInt       M,N,m,n,bs = 1;
   PetscErrorCode ierr;
-
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-block_size",&bs,NULL);CHKERRQ(ierr);
 
@@ -252,7 +250,6 @@ int main(int argc, char **args)
      nsize: 6
      args: -test_id 0 -mat_type aij
 
-
    test:
      suffix: t1_a_aij
      nsize: 1
@@ -268,8 +265,6 @@ int main(int argc, char **args)
      nsize: 1
      args: -test_id 1 -mat_type sbaij
 
-
-
    test:
      suffix: t4_a_aij_bs3
      nsize: 1
@@ -284,8 +279,6 @@ int main(int argc, char **args)
      suffix: t6_a_sbaij_bs3
      nsize: 1
      args: -test_id 1 -mat_type sbaij -block_size 3
-
-
 
    test:
      suffix: t4_b_aij_bs3

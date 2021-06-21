@@ -33,16 +33,6 @@ PETSC_EXTERN PetscErrorCode ISGetType(IS, ISType *);
 PETSC_EXTERN PetscErrorCode ISRegister(const char[],PetscErrorCode (*)(IS));
 PETSC_EXTERN PetscErrorCode ISCreate(MPI_Comm,IS*);
 
-/*
-    Default index set data structures that PETSc provides.
-*/
-PETSC_EXTERN PetscErrorCode ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,IS *);
-PETSC_EXTERN PetscErrorCode ISGeneralSetIndices(IS,PetscInt,const PetscInt[],PetscCopyMode);
-PETSC_EXTERN PetscErrorCode ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],PetscCopyMode,IS *);
-PETSC_EXTERN PetscErrorCode ISBlockSetIndices(IS,PetscInt,PetscInt,const PetscInt[],PetscCopyMode);
-PETSC_EXTERN PetscErrorCode ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
-PETSC_EXTERN PetscErrorCode ISStrideSetStride(IS,PetscInt,PetscInt,PetscInt);
-
 PETSC_EXTERN PetscErrorCode ISDestroy(IS*);
 PETSC_EXTERN PetscErrorCode ISSetPermutation(IS);
 PETSC_EXTERN PetscErrorCode ISPermutation(IS,PetscBool *);
@@ -106,14 +96,8 @@ PETSC_EXTERN PetscErrorCode ISGetPointRange(IS,PetscInt*,PetscInt*,const PetscIn
 PETSC_EXTERN PetscErrorCode ISRestorePointRange(IS,PetscInt*,PetscInt*,const PetscInt**);
 PETSC_EXTERN PetscErrorCode ISGetPointSubrange(IS,PetscInt,PetscInt,const PetscInt*);
 
-PETSC_EXTERN PetscErrorCode ISBlockGetIndices(IS,const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode ISBlockRestoreIndices(IS,const PetscInt *[]);
-PETSC_EXTERN PetscErrorCode ISBlockGetLocalSize(IS,PetscInt *);
-PETSC_EXTERN PetscErrorCode ISBlockGetSize(IS,PetscInt *);
 PETSC_EXTERN PetscErrorCode ISGetBlockSize(IS,PetscInt*);
 PETSC_EXTERN PetscErrorCode ISSetBlockSize(IS,PetscInt);
-
-PETSC_EXTERN PetscErrorCode ISStrideGetInfo(IS,PetscInt *,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode ISToGeneral(IS);
 
@@ -130,7 +114,23 @@ PETSC_EXTERN PetscErrorCode ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
 PETSC_EXTERN PetscErrorCode ISRenumber(IS,IS,PetscInt*,IS*);
 PETSC_EXTERN PetscErrorCode ISCreateSubIS(IS,IS,IS*);
 
+/* ISGENERAL specific */
+PETSC_EXTERN PetscErrorCode ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,IS *);
+PETSC_EXTERN PetscErrorCode ISGeneralSetIndices(IS,PetscInt,const PetscInt[],PetscCopyMode);
 PETSC_EXTERN PetscErrorCode ISGeneralFilter(IS,PetscInt,PetscInt);
+
+/* ISBLOCK specific */
+PETSC_EXTERN PetscErrorCode ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],PetscCopyMode,IS *);
+PETSC_EXTERN PetscErrorCode ISBlockSetIndices(IS,PetscInt,PetscInt,const PetscInt[],PetscCopyMode);
+PETSC_EXTERN PetscErrorCode ISBlockGetIndices(IS,const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode ISBlockRestoreIndices(IS,const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode ISBlockGetLocalSize(IS,PetscInt *);
+PETSC_EXTERN PetscErrorCode ISBlockGetSize(IS,PetscInt *);
+
+/* ISSTRIDE specific */
+PETSC_EXTERN PetscErrorCode ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
+PETSC_EXTERN PetscErrorCode ISStrideSetStride(IS,PetscInt,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode ISStrideGetInfo(IS,PetscInt *,PetscInt*);
 
 /* --------------------------------------------------------------------------*/
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
@@ -193,7 +193,6 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMa
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping,PetscInt);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping,ISLocalToGlobalMapping*);
 
-
 /* --------------------------------------------------------------------------*/
 /*E
     ISColoringType - determines if the coloring is for the entire parallel grid/graph/matrix
@@ -237,7 +236,6 @@ PETSC_EXTERN PetscErrorCode ISPartitioningCount(IS,PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 PETSC_EXTERN PetscErrorCode ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 PETSC_EXTERN PetscErrorCode ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,PetscInt,const IS[],IS[]);
-
 
 struct _n_PetscLayout{
   MPI_Comm               comm;

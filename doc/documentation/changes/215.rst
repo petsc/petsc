@@ -1,0 +1,58 @@
+==============
+Changes: 2.1.5
+==============
+
+
+.. rubric:: General:
+
+-  Replace autoconf-configure with python-configure. Tested on Linux,
+   IRIX, Alpha-OSF, Mac OSX
+-  Added PETSc interface to UMFPACK (Seq)
+-  SuperLU & SuperLU_DIST insterface is updated to the latest
+   download versions. Complex version of these packages are now
+   supported.
+-  Added Support for QR factorization into PETSc/SPOOLES interface
+   (Seq)
+-  Added Support for installing PETSc with TAU instrumentation
+   package. Please check config files in bmake/linux_tau.
+-  Added support for Cray SX-6 vector machine
+
+.. rubric:: Vec:
+
+-  Added VecMaxPointwiseDivide()
+
+.. rubric:: Mat:
+
+-  Added MatTranspose() for SBAIJ
+-  Added MatConvert_SeqAIJ_SeqSBAIJ()
+-  Added MatGetInertia()
+-  Added MatAXPY() to SBAIJ and BAIJ mat formats
+-  Added MatSetValuesBlocked() for SEQSBAIJ and MPISBAIJ formats
+-  Improved single precision SSE factorization routines
+-  Added scalable parallel binary viewer for MPIAIJ matrix
+
+.. rubric:: SLES:
+
+-  Added ICC preconditioner support for MATSEQAIJ
+-  PCSetUp() now defaults to ICC for SBAIJ
+-  BoomerAMG preconditioner now defaults to zero initial guess
+-  Added GetTotalBlocks() and GetLocalBlocks() to PCBJacobi
+-  Improved LU and ILU damping for AIJ matrix type - New
+   factorization damping policy (check manual)
+
+.. rubric:: SNES:
+
+.. rubric:: TS:
+
+-  Added TSGetDuration()
+
+.. rubric:: Other:
+
+-  Turned off logging of objects and actions by default - saves
+   memory usage
+-  Reduce memory usage for DA and SDA objects
+-  Support generation of SBAIJ matrices from DA
+
+.. rubric:: Fortran:
+
+-  Added f90 support for intel compilers on linux and linux64

@@ -42,5 +42,3 @@ typedef struct {
 
 #endif
 
-
-

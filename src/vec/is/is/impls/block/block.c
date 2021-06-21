@@ -392,7 +392,6 @@ static PetscErrorCode ISToGeneral_Block(IS inis)
   PetscFunctionReturn(0);
 }
 
-
 static struct _ISOps myops = { ISGetIndices_Block,
                                ISRestoreIndices_Block,
                                ISInvertPermutation_Block,
@@ -434,7 +433,6 @@ static struct _ISOps myops = { ISGetIndices_Block,
 .  idx - the list of integers, one for each block, the integers contain the index of the first index of each block divided by the block size
 -  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported
 
-
    Notes:
    When the communicator is not MPI_COMM_SELF, the operations on the
    index sets, IS, are NOT conceptually the same as MPI_Group operations.
@@ -469,7 +467,7 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
   PetscFunctionBegin;
   if (bs < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
-  if (n) PetscValidIntPointer(idx,3);
+  if (n) PetscValidIntPointer(idx,4);
 
   ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is),n*bs,is->map->N,bs,&map);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&is->map);CHKERRQ(ierr);
@@ -540,7 +538,7 @@ PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(is,5);
+  PetscValidPointer(is,6);
   if (bs < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,4);

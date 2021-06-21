@@ -166,7 +166,6 @@ PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, Petsc
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    TSADAPTHISTORY - Time stepping controller that follows a given time history, used for Tangent Linear Model simulations
 

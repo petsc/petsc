@@ -509,7 +509,7 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Ma
 
   PetscFunctionBegin;
   if (nmat < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
-  PetscValidPointer(mat,3);
+  PetscValidPointer(mat,4);
 
   ierr = MatGetLocalSize(mats[0],PETSC_IGNORE,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mats[nmat-1],&m,PETSC_IGNORE);CHKERRQ(ierr);
@@ -525,7 +525,6 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Ma
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 static PetscErrorCode MatCompositeAddMat_Composite(Mat mat,Mat smat)
 {
@@ -843,7 +842,6 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 
    Input Parameters:
 .  mat - the composite matrix
-
 
    Options Database Keys:
 +  -mat_composite_merge - merge in MatAssemblyEnd()
@@ -1166,8 +1164,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   b->mergetype    = MAT_COMPOSITE_MERGE_RIGHT;
   b->structure    = DIFFERENT_NONZERO_PATTERN;
   b->merge_mvctx  = PETSC_TRUE;
-
-
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeAddMat_C",MatCompositeAddMat_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCompositeSetType_C",MatCompositeSetType_Composite);CHKERRQ(ierr);

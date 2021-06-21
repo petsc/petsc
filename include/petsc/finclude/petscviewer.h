@@ -4,7 +4,6 @@
 #if !defined (PETSCVIEWERDEF_H)
 #define PETSCVIEWERDEF_H
 
-
 #define PetscViewer type(tPetscViewer)
 
 #define PetscViewerAndFormat PetscFortranAddr
@@ -28,5 +27,5 @@
 #define PETSCVIEWERGLVIS 'glvis'
 #define PETSCVIEWERADIOS 'adios'
 #define PETSCVIEWERADIOS2 'adios2'
-
+#define PETSCVIEWEREXODUSII 'exodusii'
 #endif

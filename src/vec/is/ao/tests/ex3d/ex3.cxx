@@ -6,7 +6,6 @@ static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.e
     mpiexec -n 12 ./ex3
     mpiexec -n 30 ./ex3 -ao_type basic
 */
-#define PETSC_SKIP_CXX_COMPLEX_FIX
 
 #include <iostream>
 #include <fstream>
@@ -64,7 +63,6 @@ int main(int argc, char** argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

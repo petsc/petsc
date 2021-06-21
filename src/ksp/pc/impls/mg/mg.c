@@ -459,7 +459,8 @@ PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
 .  levels - the number of levels
 -  comms - optional communicators for each level; this is to allow solving the coarser problems
            on smaller sets of processes. For processes that are not included in the computation
-           you must pass MPI_COMM_NULL.
+           you must pass MPI_COMM_NULL. Use comms = NULL to specify that all processes
+           should participate in each level of problem.
 
    Level: intermediate
 
@@ -480,10 +481,13 @@ PetscErrorCode PCMGSetLevels_MG(PC pc,PetscInt levels,MPI_Comm *comms)
      must take special care in providing the restriction and interpolation operation. We recommend
      providing these as two step operations; first perform a standard restriction or interpolation on
      the full number of ranks for that level and then use an MPI call to copy the resulting vector
-     array entries (after calls to VecGetArray()) to the smaller or larger number of ranks, not in both
+     array entries (after calls to VecGetArray()) to the smaller or larger number of ranks, note in both
      cases the MPI calls must be made on the larger of the two communicators. Traditional MPI send and
      recieves or MPI_AlltoAllv() could be used to do the reshuffling of the vector entries.
 
+   Fortran Notes:
+     Use comms = PETSC_NULL_MPI_COMM as the equivalent of NULL in the C interface. Note PETSC_NULL_MPI_COMM
+     is not MPI_COMM_NULL. It is more like PETSC_NULL_INTEGER, PETSC_NULL_REAL etc.
 
 .seealso: PCMGSetType(), PCMGGetLevels()
 @*/
@@ -497,7 +501,6 @@ PetscErrorCode PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   ierr = PetscTryMethod(pc,"PCMGSetLevels_C",(PC,PetscInt,MPI_Comm*),(pc,levels,comms));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode PCDestroy_MG(PC pc)
 {
@@ -525,7 +528,6 @@ PetscErrorCode PCDestroy_MG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*
    PCApply_MG - Runs either an additive, multiplicative, Kaskadic
@@ -805,7 +807,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
-    if (mg->view){
+    if (mg->view) {
       ierr = (*mg->view)(pc,viewer);CHKERRQ(ierr);
     }
     for (i=0; i<levels; i++) {
@@ -903,7 +905,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
   ierr = KSPGetPC(mglevels[0]->smoothd,&cpc);CHKERRQ(ierr);
 
-
   /* If user did not provide fine grid operators OR operator was not updated since last global KSPSetOperators() */
   /* so use those from global PC */
   /* Is this what we always want? What if user wants to keep old one? */
@@ -973,7 +974,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
     needRestricts = PETSC_TRUE;  /* user must compute either mat, pmat, or both so must restrict x to coarser levels */
   }
 
-
   /*
    Skipping if user has provided all interpolation/restriction needed (since DM might not be able to produce them (when coming from SNES/TS)
    Skipping for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs?
@@ -1020,13 +1020,13 @@ PetscErrorCode PCSetUp_MG(PC pc)
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
       ierr = DMHasCreateRestriction(dms[i],&dmhasrestrict);CHKERRQ(ierr);
-      if (dmhasrestrict && !mglevels[i+1]->restrct){
+      if (dmhasrestrict && !mglevels[i+1]->restrct) {
         ierr = DMCreateRestriction(dms[i],dms[i+1],&p);CHKERRQ(ierr);
         ierr = PCMGSetRestriction(pc,i+1,p);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
       ierr = DMHasCreateInjection(dms[i],&dmhasinject);CHKERRQ(ierr);
-      if (dmhasinject && !mglevels[i+1]->inject){
+      if (dmhasinject && !mglevels[i+1]->inject) {
         ierr = DMCreateInjection(dms[i],dms[i+1],&p);CHKERRQ(ierr);
         ierr = PCMGSetInjection(pc,i+1,p);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
@@ -1100,7 +1100,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
       dB = B;
     }
   }
-
 
   /* Adapt interpolation matrices */
   if (mg->adaptInterpolation) {
@@ -1192,7 +1191,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   for (i=1; i<n; i++) {
-    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1){
+    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1) {
       /* if doing only down then initial guess is zero */
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
     }
@@ -1368,7 +1367,6 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
 
    Output Parameter:
 .  type - one of PC_MG_MULTIPLICATIVE, PC_MG_ADDITIVE,PC_MG_FULL, PC_MG_KASKADE
-
 
    Level: advanced
 

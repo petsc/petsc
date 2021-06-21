@@ -47,7 +47,6 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-
 !     Here we would like to print only one message that represents all
 !     the processes in the group. Sleep so that IO from different ranks
 !     don't get mixed up. Note this is not an ideal solution
@@ -68,7 +67,6 @@
 #if defined(PETSC_HAVE_ELEMENTAL)
       call PetscElementalFinalizePackage(ierr)
 #endif
-
 
 !     Since we initialized MPI, we must call MPI_Finalize()
 

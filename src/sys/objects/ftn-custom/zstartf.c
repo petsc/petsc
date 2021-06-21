@@ -86,7 +86,7 @@ PETSC_EXTERN void petscinitializefortran_(int *ierr)
 PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character,
                                   void *fnull_integer,void *fnull_scalar,void * fnull_double,
                                   void *fnull_real,
-                                  void* fnull_truth,void (*fnull_function)(void),PETSC_FORTRAN_CHARLEN_T len)
+                                  void* fnull_truth,void (*fnull_function)(void),void *fnull_mpi_comm,PETSC_FORTRAN_CHARLEN_T len)
 {
   PETSC_NULL_CHARACTER_Fortran = fnull_character;
   PETSC_NULL_INTEGER_Fortran   = fnull_integer;
@@ -95,6 +95,7 @@ PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character,
   PETSC_NULL_REAL_Fortran      = fnull_real;
   PETSC_NULL_BOOL_Fortran      = fnull_truth;
   PETSC_NULL_FUNCTION_Fortran  = fnull_function;
+  PETSC_NULL_MPI_COMM_Fortran  = fnull_mpi_comm;
 }
 
 /*
@@ -104,5 +105,4 @@ PETSC_EXTERN void petsc_null_function_(void)
 {
   return;
 }
-
 

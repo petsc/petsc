@@ -387,7 +387,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 . Ffunc - functional F from the formulation
 - Gfunc - constructor for the gradient of F from the formulation
 
-
   Calling sequence of Sfunc:
 $ PetscErrorCode func(TS ts, PetscReal time, Vec u, Mat S, void *)
 

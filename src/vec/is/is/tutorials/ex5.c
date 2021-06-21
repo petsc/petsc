@@ -55,7 +55,6 @@ int main(int argc,char **argv)
   */
   ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
 
-
   ierr = PetscFinalize();
   return ierr;
 }

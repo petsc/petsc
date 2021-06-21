@@ -43,6 +43,8 @@ cdef extern from * nogil:
     FILE *PETSC_STDERR
 
     int PetscPrintf(MPI_Comm,char[],...)
+    int PetscVSNPrintf(char*,size_t,const char[],size_t *,va_list)
+    int PetscVFPrintfDefault(FILE*,const char[],va_list)
     int PetscSynchronizedPrintf(MPI_Comm,char[],...)
     int PetscSynchronizedFlush(MPI_Comm,FILE*)
 
@@ -54,6 +56,8 @@ cdef extern from * nogil:
 
     int PetscHasExternalPackage(const char[],PetscBool*)
 
+cdef extern from *:
+    int (*PetscVFPrintf)(FILE*,const char[],va_list)
 
 cdef inline int Sys_Sizes(
     object size, object bsize,

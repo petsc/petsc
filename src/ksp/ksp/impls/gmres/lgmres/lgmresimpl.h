@@ -42,7 +42,6 @@ typedef struct {
   PetscInt matvecs;                 /*keep track of matvecs */
 } KSP_LGMRES;
 
-
 #define HH(a,b)  (lgmres->hh_origin + (b)*(lgmres->max_k+2)+(a))
 /* HH will be size (max_k+2)*(max_k+1)  -  think of HH as
    being stored columnwise (inc. zeros) for access purposes. */
@@ -66,6 +65,4 @@ typedef struct {
 #define A_AUGVEC(i)    lgmres->augvecs[AUG_OFFSET+i+lgmres->aug_dim] /*A times error vector */
 #define AUG_TEMP       lgmres->augvecs[0]              /* work vector */
 #endif
-
-
 

@@ -78,6 +78,15 @@ cdef class Section(Object):
         cdef PetscInt cEnd   = asInt(pEnd)
         CHKERR( PetscSectionSetChart(self.sec, cStart, cEnd) )
 
+    def getPermutation(self):
+        cdef IS perm = IS()
+        CHKERR( PetscSectionGetPermutation(self.sec, &perm.iset))
+        PetscINCREF(perm.obj)
+        return perm
+
+    def setPermutation(self, IS perm):
+        CHKERR( PetscSectionSetPermutation(self.sec, perm.iset))
+
     def getDof(self,point):
         cdef PetscInt cpoint = asInt(point), cnumDof = 0
         CHKERR( PetscSectionGetDof(self.sec,cpoint,&cnumDof) )

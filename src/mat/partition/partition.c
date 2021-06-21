@@ -111,7 +111,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
   PetscFunctionReturn(0);
 }
 
-
 /* gets as input the "sizes" array computed by ParMetis_*_NodeND and returns
        seps[  0 :         2*p) : the start and end node of each subdomain
        seps[2*p : 2*p+2*(p-1)) : the start and end node of each separator
@@ -166,7 +165,6 @@ PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscI
 
 PetscFunctionList MatPartitioningList              = NULL;
 PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
-
 
 /*@C
    MatPartitioningRegister - Adds a new sparse matrix partitioning to the  matrix package.
@@ -352,7 +350,6 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatPartitioningImprove - Improves the quality of a given partition.
 
@@ -372,7 +369,6 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 $    -mat_partitioning_improve
 
    Level: beginner
-
 
 .seealso:  MatPartitioningApply(), MatPartitioningCreate(),
            MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
@@ -787,7 +783,6 @@ $  -mat_partitioning_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, parmetis)
 $  -mat_partitioning_nparts - number of subgraphs
-
 
    Notes:
     If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are

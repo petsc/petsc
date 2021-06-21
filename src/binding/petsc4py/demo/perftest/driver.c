@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
   ierr = GetInt("-stop",    &stop,    start);CHKERRQ(ierr);
   ierr = GetInt("-samples", &samples, 1);CHKERRQ(ierr);
 
-  for (n=start; n<=stop; n+=step){
+  for (n=start; n<=stop; n+=step) {
     int nx=n+1, ny=n+1, nz=n+1;
     ierr = RunTest(nx,ny,nz,samples,&wt);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,

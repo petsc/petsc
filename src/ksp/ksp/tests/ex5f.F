@@ -45,7 +45,6 @@
       call PetscFinalize(ierr)
       end
 
-
 !  This is a bogus multiply that copies the vector. This corresponds to
 !  an identity matrix A
 

@@ -298,7 +298,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(mu[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,2,lambda,mu);CHKERRQ(ierr);
 
-
   /*   Set RHS JacobianP */
   ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 

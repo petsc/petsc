@@ -816,7 +816,6 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    test:

@@ -281,7 +281,6 @@ nonlinear conjugate gradient solver for nonlinear optimization.
   Level: beginner
 M*/
 
-
 PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG         *cgP;

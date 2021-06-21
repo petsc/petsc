@@ -8,8 +8,6 @@ static char help[] = "Demonstrates calling Trilinos and then PETSc in the same p
    Example obtained from: http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html
 T*/
 
-
-
 #include <petscsys.h>
 #include <Tpetra_DefaultPlatform.hpp>
 #include <Tpetra_Version.hpp>
@@ -81,9 +79,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
-
-
 
 /*TEST
 

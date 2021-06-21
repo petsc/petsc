@@ -63,7 +63,7 @@ $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 # Skip including generated files (which triggers rebuilding them) when we're just going to clean anyway.
-ifneq ($(filter-out clean check,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out clean check info,$(MAKECMDGOALS:clean%=clean)),)
 include $(generated)
 endif
 
@@ -71,6 +71,7 @@ endif
 ifeq ($(PETSC_DLL_EXPORTS),1)
 $(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 $(OBJDIR)/%.o : CXXCPPFLAGS+=-Dpetsc_EXPORTS
+$(OBJDIR)/%.o : CUDACPPFLAGS+=-Dpetsc_EXPORTS
 endif
 
 langs := F F90 cxx c

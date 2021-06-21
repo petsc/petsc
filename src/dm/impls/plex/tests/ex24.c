@@ -11,42 +11,25 @@ EXTERN_C_END
 #endif
 
 typedef struct {
-  PetscInt  dim;                          /* The topological mesh dimension */
-  PetscInt  faces[3];                     /* Number of faces per dimension */
-  PetscBool simplex;                      /* Use simplices or hexes */
-  PetscBool interpolate;                  /* Interpolate mesh */
   PetscBool compare_is;                   /* Compare ISs and PetscSections */
   PetscBool compare_dm;                   /* Compare DM */
   PetscBool tpw;                          /* Use target partition weights */
-  char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   char      partitioning[64];
   char      repartitioning[64];
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt dim;
-  PetscBool repartition = PETSC_TRUE;
+  PetscBool      repartition = PETSC_TRUE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->compare_is   = PETSC_FALSE;
-  options->compare_dm   = PETSC_FALSE;
-  options->dim          = 3;
-  options->simplex      = PETSC_TRUE;
-  options->interpolate  = PETSC_FALSE;
-  options->filename[0]  = '\0';
+  options->compare_is = PETSC_FALSE;
+  options->compare_dm = PETSC_FALSE;
+
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compare_is", "Compare ISs and PetscSections?", FILENAME, options->compare_is, &options->compare_is, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compare_dm", "Compare DMs?", FILENAME, options->compare_dm, &options->compare_dm, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", FILENAME, options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", FILENAME, options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", FILENAME, options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", FILENAME, options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
-  options->faces[0] = 1; options->faces[1] = 1; options->faces[2] = 1;
-  dim = options->dim;
-  ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);
-  if (dim) options->dim = dim;
   ierr = PetscStrncpy(options->partitioning,MATPARTITIONINGPARMETIS,sizeof(options->partitioning));CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioning","The mat partitioning type to test","None",options->partitioning, options->partitioning,sizeof(options->partitioning),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-repartition", "Partition again after the first partition?", FILENAME, repartition, &repartition, NULL);CHKERRQ(ierr);
@@ -69,27 +52,15 @@ static PetscErrorCode ScotchResetRandomSeed()
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim          = user->dim;
-  PetscInt      *faces        = user->faces;
-  PetscBool      simplex      = user->simplex;
-  PetscBool      interpolate  = user->interpolate;
-  const char    *filename     = user->filename;
-  size_t         len;
-  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (len) {
-    ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
-    ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateBoxMesh(comm, dim, simplex, faces, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
-  }
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -97,6 +68,7 @@ int main(int argc, char **argv)
 {
   MPI_Comm       comm;
   DM             dm1, dm2, dmdist1, dmdist2;
+  DMPlexInterpolatedFlag interp;
   MatPartitioning mp;
   PetscPartitioner part1, part2;
   AppCtx         user;
@@ -255,7 +227,8 @@ int main(int argc, char **argv)
   ierr = DMPlexDistribute(dmdist2, 0, NULL, &dm2);CHKERRQ(ierr);
 
   /* compare the two distributed DMs */
-  if (!user.interpolate) {
+  ierr = DMPlexIsInterpolated(dm1, &interp);CHKERRQ(ierr);
+  if (interp == DMPLEX_INTERPOLATED_NONE) {
     ierr = DMPlexEqual(dm1, dm2, &flg);CHKERRQ(ierr);
     if (!flg) {ierr = PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.repartitioning,size);CHKERRQ(ierr);}
   }
@@ -281,7 +254,7 @@ int main(int argc, char **argv)
     suffix: 0
     nsize: {{1 2 3 4 8}}
     requires: chaco parmetis ptscotch exodusii
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -interpolate
+    args: -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
     args: -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}} -tpweight {{0 1}}
   test:
     # repartition mesh already partitioned naively by MED loader
@@ -289,21 +262,20 @@ int main(int argc, char **argv)
     nsize: {{1 2 3 4 8}}
     TODO: MED
     requires: parmetis ptscotch med
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate
+    args: -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med
     args: -repartition 0 -partitioning {{parmetis ptscotch}}
   test:
     # partition mesh generated by ctetgen using scotch, then repartition with scotch, diff view
     suffix: 3
     nsize: 4
     requires: ptscotch ctetgen
-    args: -faces 2,3,2 -partitioning ptscotch -repartitioning ptscotch -interpolate
+    args: -dm_plex_dim 3 -dm_plex_box_faces 2,3,2 -partitioning ptscotch -repartitioning ptscotch
     args: -p1_petscpartitioner_view -p2_petscpartitioner_view -dp1_petscpartitioner_view -dp2_petscpartitioner_view -tpweight {{0 1}}
   test:
     # partition mesh generated by ctetgen using partitioners supported both by MatPartitioning and PetscPartitioner
     suffix: 4
     nsize: {{1 2 3 4 8}}
     requires: chaco parmetis ptscotch ctetgen
-    args: -faces {{2,3,4  5,4,3  7,11,5}} -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}} -interpolate -tpweight {{0 1}}
+    args: -dm_plex_dim 3 -dm_plex_box_faces {{2,3,4  5,4,3  7,11,5}} -partitioning {{chaco parmetis ptscotch}} -repartitioning {{parmetis ptscotch}} -tpweight {{0 1}}
 
 TEST*/
-

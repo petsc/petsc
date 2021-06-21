@@ -1,0 +1,207 @@
+============
+Changes: 3.7
+============
+
+
+.. rubric:: General:
+
+-  -log_summary is deprecated, you should use -log_view
+
+-  PetscViewerSetFormat() is deprecated, you should use
+   PetscViewerPushFormat() followed after the viewing with
+   PetscViewerPopFormat()
+
+-  PetscMemoryShowUsage() and -memory_info changed to
+   PetscMemoryView() and -memory_view
+
+-  PetscOptionsSetValue() may now be called BEFORE PetscInitialize()
+   and any options set then will be used in the initialization
+   process. These options are overwritten by command line options.
+
+-  The following routines now take an optional *PetscOptions* object
+   as the first argument, use NULL to get the previous behavior.
+
+   ::
+
+      PetscOptionsHasName(PetscOptions,const char[],const char[],PetscBool *);
+      PetscOptionsGetInt(PetscOptions,const char[],const char [],PetscInt *,PetscBool *);
+      PetscOptionsGetBool(PetscOptions,const char[],const char [],PetscBool  *,PetscBool *);
+      PetscOptionsGetReal(PetscOptions,const char[],const char[],PetscReal *,PetscBool *);
+      PetscOptionsGetScalar(PetscOptions,const char[],const char[],PetscScalar *,PetscBool *);
+      PetscOptionsGetIntArray(PetscOptions,const char[],const char[],PetscInt[],PetscInt *,PetscBool *);
+      PetscOptionsGetRealArray(PetscOptions,const char[],const char[],PetscReal[],PetscInt *,PetscBool *);
+      PetscOptionsGetScalarArray(PetscOptions,const char[],const char[],PetscScalar[],PetscInt *,PetscBool *);
+      PetscOptionsGetBoolArray(PetscOptions,const char[],const char[],PetscBool [],PetscInt *,PetscBool *);
+      PetscOptionsGetString(PetscOptions,const char[],const char[],char[],size_t,PetscBool *);
+      PetscOptionsGetStringArray(PetscOptions,const char[],const char[],char*[],PetscInt*,PetscBool *);
+      PetscOptionsGetEList(PetscOptions,const char[],const char[],const char*const*,PetscInt,PetscInt*,PetscBool *);
+      PetscOptionsGetEnum(PetscOptions,const char[],const char[],const char*const*,PetscEnum*,PetscBool *);
+      PetscOptionsGetEnumArray(PetscOptions,const char[],const char[],const char*const*,PetscEnum*,PetscInt *,PetscBool *);
+      PetscOptionsSetAlias(PetscOptions,const char[],const char[]);
+      PetscOptionsSetValue(PetscOptions,const char[],const char[]);
+      PetscOptionsClearValue(PetscOptions,const char[]);
+      PetscOptionsAllUsed(PetscOptions,PetscInt*);
+      PetscOptionsUsed(PetscOptions,const char *,PetscBool*);
+      PetscOptionsView(PetscOptions,PetscViewer);
+      PetscOptionsInsert(PetscOptions,int*,char ***,const char[]);
+      PetscOptionsInsertFile(MPI_Comm,PetscOptions,const char[],PetscBool );
+      PetscOptionsInsertString(PetscOptions,const char[]);
+      PetscOptionsPrefixPush(PetscOptions,const char[]);
+      PetscOptionsReject(PetscOptions,const char[],const char[]);
+      PetscOptionsGetAll(PetscOptions,char*[]);
+
+-  PetscLogBegin() is now PetscLogDefaultBegin().
+
+.. rubric:: Configure/Build:
+
+-  Added --download-packages-dir=directory to support easy use of
+   --download-xxx behind firewalls
+-  --download-package for externalpackage with a gitrepo will never
+   be stale. Each time configure is invoked - it will do a 'git
+   fetch' and 'git checkout commit-id'. And if the commit-id changes
+   from the previous build - the package will be rebuilt. To prevent
+   this sync [and use previous snapshot] - one can use
+   --download-package-commit=HEAD
+-  Added --with-libpng/--with-giflib/--with-libjpeg and cooresponding
+   --download versions to support PNG/GIF/JPEG image generation
+-  Removed support for AfterImage in favor of libpng/GIFLIB/libjpeg
+
+.. rubric:: IS:
+
+.. rubric:: PetscDraw:
+
+-  Added option -draw_cmap to use a named colormap (e.g., hue
+   (default), jet, coolwarm, parula, viridis) in the drawing of
+   contour plots.
+-  Support for saving images and movies was improved. Support for
+   generating binary PPM images is built-in, but the format is
+   uncompressed and images are large (640x480 pixels ~ 900 KiB).
+   PETSc can optionally generate PNG/GIF/JPEG images using the
+   libpng/GIFLIB/libjpeg packages (configure
+   --with-package/--download-package). These libraries are popular,
+   well maintained, and available through most packages managers
+   (dnf/yum, apt, brew). For most users, PNG images should be enough.
+-  Added routine PetscDrawSave(), users should explicitly call it to
+   save images after configuring with PetscDrawSetSave().
+-  The PetscDrawSynchronizedXXX() routines were removed, the
+   corresponding PetscDrawXXX() are now collective.
+
+.. rubric:: PF:
+
+.. rubric:: Vec:
+
+-  For complex numbers VecNorm(v,NORM_1,) will return the traditional
+   1 norm of the 2 norm of the complex numbers; that is the 1 norm of
+   the absolute values of the complex entries. Previously it returned
+   the 1 norm of the 1 norm of the complex entries (what is returned
+   by the BLAS routine asum()). Both are valid norms but most people
+   expect the former.
+
+.. rubric:: VecScatter:
+
+.. rubric:: PetscSection:
+
+.. rubric:: Mat:
+
+.. rubric:: PC:
+
+-  If the DM has a CreateRestriction() function the PCMG
+   automatically uses that to create the restriction operator instead
+   of defaulting to using the transpose of the interpolation
+-  Added -pc_hypre_boomeramg_nodal_coarsen - where n is from 1 to 6
+   (see HYPRE_BOOMERAMGSetNodal())
+-  Added -pc_hypre_boomeramg_vec_interp_variant where v is from 1 to
+   4 (see HYPRE_BoomerAMGSetInterpVecVariant())
+-  see PCHYPRE to allow taking advantage of MatSetNearNullSpace() for
+   hypre BoomerAMG
+-  Added PCTelescope which supports running solvers on
+   sub-communicators. This PC allows re-partitioning of coarse levels
+   solves within PCMG when using Galerkin coarse level operators.
+
+.. rubric:: KSP:
+
+-  KSPSetMonitor(KSPMonitorXXX, calls now require passing a viewer as
+   the final argument, you can no longer pass a NULL)
+-  -ksp_monitor_solution now takes arguments of the form
+   [viewertype[:filename[:formatoption]]] allowing viewing the
+   solution in many ways. To get back the previous behavior use
+   -ksp_monitor_solution draw
+-  A Flexible Conjugate Gradient (FCG) implementation has been added
+   as KSPFCG.
+-  New implementations for pipelined, flexible Krylov methods have
+   been added as KSPPIPEFGMRES, KSPPIPEFCG, and KSPPIPEGCR.
+
+.. rubric:: SNES:
+
+-  SNESSetMonitor(SNESMonitorXXX, calls now require passing a viewer
+   as the final argument, you can no longer pass a NULL)
+-  -snes_monitor_solution/residual/solution_update now takes
+   arguments of the form [viewertype[:filename[:formatoption]]]
+   allowing viewing the solution in many ways. To get back the
+   previous behavior use -ksp_monitor_solution draw
+
+.. rubric:: SNESLineSearch:
+
+-  -snes_linesearch_monitor now takes an optional [:filename]
+   arguement, changed SNESLineSearchSet/GetMonitor to
+   SNESLineSearchSet/GetDefaultMonitor
+-  Added SNESLineSearchMonitorSet()
+-  Partial support for -snes_linesearch_monitor_solution_update
+
+.. rubric:: TS:
+
+-  You must call TSSetExactFinalTime() or use the option
+   -ts_exact_final_time before calling TSSolve()
+-  TSSetMonitor(TSMonitorXXX, calls now require passing a viewer as
+   the final argument, you can no longer pass a NULL)
+-  -ts_monitor_solution now takes arguments of the form
+   [viewertype[:filename[:formatoption]]] allowing viewing the
+   solution in many ways. To get back the previous behavior use
+   -ksp_monitor_solution draw
+-  -ts_monitor_binary_solution filename should now be written as
+   -ts_monitor_solution binary:filename
+-  Renamed TSSetEventMonitor() to TSSetEventHandler(). Updated many
+   TS implementations to support event detection.
+-  Updated TSTHETA, TSBEULER, and TSCN to support time adaptivity by
+   estimating the local truncation error with a BDF-2 formula.
+-  Updated TSALPHA implementation. Removed TSAlphaSetAdapt() and
+   TSAlphaAdaptDefault(), use TSAlphaUseAdapt() instead.
+-  Added TSBDF, an implementation of backward difference formulas
+   using constant order (1 to 6) and supporting time adaptivity.
+-  Implemented new interface for second-order systems to avoid using
+   a first-order system formulation. Added TSALPHA2 implementation
+   (generalized-alpha, Chung & Hubert 1993) featuring user-controlled
+   damping of high-frequency modes and time adaptivity through a
+   BDF-2 formula.
+
+.. rubric:: DM/DA:
+
+-  Added DMShellSetCreateRestriction
+-  Added the generic option prefix interfaces: DMGetOptionsPrefix(),
+   DMAppendOptionsPrefix()
+-  DMLabel labels are now available to all DM objects, not just
+   DMPlex object
+-  DMClone() now handles copying the coordinates, so that
+   DMCopyCoordinates() is no longer necessary
+
+.. rubric:: DMPlex:
+
+.. rubric:: PetscViewer:
+
+-  Replaced PetscViewerASCIISynchronizedAllow() with
+   PetscViewerASCIIPushSynchronized()
+   PetscViewerASCIIPopSynchronized()
+
+.. rubric:: SYS:
+
+.. rubric:: Tao:
+
+-  Removed convergence tolerances -tao_fatol and tao_frtol also
+   remove these two parameters from TAOSetTolerance() and
+   TaoGetTolerance()
+
+.. rubric:: AO:
+
+.. rubric:: Sieve:
+
+.. rubric:: Fortran:

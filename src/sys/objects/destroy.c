@@ -241,7 +241,6 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    PetscObjectBaseTypeCompareAny - Determines whether a PETSc object has the base type of any of a list of types.
 
@@ -266,7 +265,7 @@ PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj,PetscBool *match,co
   va_list        Argp;
 
   PetscFunctionBegin;
-  PetscValidPointer(match,3);
+  PetscValidPointer(match,2);
   *match = PETSC_FALSE;
   va_start(Argp,type_name);
   while (type_name && type_name[0]) {
@@ -336,7 +335,6 @@ PetscErrorCode  PetscObjectRegisterDestroyAll(void)
   PetscObjectRegisterDestroy_Count = 0;
   PetscFunctionReturn(0);
 }
-
 
 #define MAXREGFIN 256
 static int PetscRegisterFinalize_Count = 0;

@@ -205,7 +205,6 @@ subroutine FormInitGuess(da, X, lambda, ierr)
 
 end subroutine FormInitGuess
 
-
 subroutine FormFunction(da, X, F, lambda, ierr)
   use Bratu2D
   implicit none
@@ -237,7 +236,6 @@ subroutine FormFunction(da, X, F, lambda, ierr)
 
 end subroutine FormFunction
 
-
 subroutine FormJacobian(da, X, J, lambda, ierr)
   use Bratu2D
   implicit none
@@ -268,7 +266,6 @@ subroutine FormJacobian(da, X, J, lambda, ierr)
 end subroutine FormJacobian
 
 ! --------------------------------------------------------------------
-
 
 ! Local Variables:
 ! mode: f90

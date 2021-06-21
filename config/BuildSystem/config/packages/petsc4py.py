@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     import nargs
     help.addArgument('PETSc', '-with-petsc4py=<bool>', nargs.ArgBool(None, False, 'Build PETSc Python bindings (petsc4py)'))
     help.addArgument('PETSc', '-with-petsc4py-test-np=<np>',nargs.ArgInt(None, None, min=1, help='Number of processes to use for petsc4py tests'))
+    help.addArgument('PETSc', '-with-numpy-include=<dir>', nargs.Arg(None, None, 'Path to numpy headers from numpy.get_include() (default: autodetect)'))
     return
 
   def setupDependencies(self, framework):
@@ -45,11 +46,21 @@ class Configure(config.package.Package):
       else:
         archflags = "ARCHFLAGS=\'-arch x86_64\' "
 
-    # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
+    # Set PETSC_DIR/PETSC_ARCH to point at the dir with the PETSc installation:
+    # if DESTDIR is non-empty, then PETSc has been installed into staging dir
+    # if prefix has been specified at config time, path to PETSc includes that prefix
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-       newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' '+'PETSC_ARCH= MPICC=${PCC} '
+      newdir = 'PETSC_DIR=${DESTDIR}'+os.path.abspath(os.path.expanduser(self.argDB['prefix'])) + \
+              ' PETSC_ARCH= '
     else:
-       newdir = 'MPICC=${PCC} '
+      newdir = ''
+
+    newdir += 'MPICC=${PCC} '
+
+    # Pass to setup.py if given, otherwise setup.py will autodetect
+    numpy_include = self.argDB.get('with-numpy-include')
+    if numpy_include is not None:
+      newdir += 'NUMPY_INCLUDE="'+numpy_include+'" '
 
     #  if installing as Superuser than want to return to regular user for clean and build
     if self.installSudo:
@@ -91,7 +102,7 @@ class Configure(config.package.Package):
     self.addMakeMacro('PETSC4PY_NP',np)
     self.addMakeRule('petsc4pytest', '',
         ['@echo "*** Testing petsc4py on ${PETSC4PY_NP} processes ***"',
-         '@PYTHONPATH=%s:${PYTHONPATH} ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
+         '@PYTHONPATH=%s:${PETSC_MPI4PY_PYTHONPATH}:${PYTHONPATH} ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
              (installLibPath, self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
          '@echo "====================================="'])
 

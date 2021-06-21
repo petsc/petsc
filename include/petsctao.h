@@ -9,7 +9,6 @@ PetscErrorCode MatDFischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 
-
 /*E
   TaoSubsetType - PetscInt representing the way TAO handles active sets
 
@@ -72,7 +71,6 @@ M*/
 
 .seealso: TaoADMMSetUpdateType(), TAO_ADMM_UPDATE_BASIC, TAO_ADMM_UPDATE_ADAPTIVE
 M*/
-
 
 /*E
      TaoADMMRegularizerType - Determine regularizer routine - either user provided or soft threshold

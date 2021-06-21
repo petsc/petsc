@@ -110,7 +110,7 @@ int main(int argc,char **args)
          output_file: output/ex77_preonly.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
-   # special code path in PCApplyMat() for PCBJACOBI when a block is shared by multiple processes
+   # special code path in PCMatApply() for PCBJACOBI when a block is shared by multiple processes
    testset:
       nsize: 2
       args: -pc_type bjacobi -pc_bjacobi_blocks 1 -sub_pc_type none
@@ -123,7 +123,7 @@ int main(int argc,char **args)
          output_file: output/ex77_preonly.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly -sub_ksp_type hpddm
-   # special code path in PCApplyMat() for PCGASM when a block is shared by multiple processes
+   # special code path in PCMatApply() for PCGASM when a block is shared by multiple processes
    testset:
       nsize: 2
       args: -pc_type gasm -pc_gasm_total_subdomains 1 -sub_pc_type none
@@ -136,5 +136,19 @@ int main(int argc,char **args)
          output_file: output/ex77_preonly.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly -sub_ksp_type hpddm
+
+   testset:
+      nsize: 1
+      requires: suitesparse
+      args: -pc_type qr
+      test:
+         suffix: 7
+         output_file: output/ex77_preonly.out
+         args: -ksp_type preonly
+      test:
+         suffix: 7_hpddm
+         output_file: output/ex77_preonly.out
+         requires: hpddm
+         args: -ksp_type hpddm -ksp_hpddm_type preonly
 
 TEST*/

@@ -24,47 +24,46 @@ struct timezone { int tz_minuteswest;
 # include <sys/time.h>
 
 /*
-* Program: Stream
-* Programmer: Joe R. Zagar
-* Revision: 4.0-BETA, October 24, 1995
-* Original code developed by John D. McCalpin
-*
-* This program measures memory transfer rates in MB/s for simple
-* computational kernels coded in C.  These numbers reveal the quality
-* of code generation for simple uncacheable kernels as well as showing
-* the cost of floating-point operations relative to memory accesses.
-*
-* INSTRUCTIONS:
-*
-*       1) Stream requires a good bit of memory to run.  Adjust the
-*          value of 'N' (below) to give a 'timing calibration' of
-*          at least 20 clock-ticks.  This will provide rate estimates
-*          that should be good to about 5% precision.
-*/
+  Program: Stream
+  Programmer: Joe R. Zagar
+  Revision: 4.0-BETA, October 24, 1995
+  Original code developed by John D. McCalpin
+
+  This program measures memory transfer rates in MB/s for simple
+  computational kernels coded in C.  These numbers reveal the quality
+  of code generation for simple uncacheable kernels as well as showing
+  the cost of floating-point operations relative to memory accesses.
+
+  INSTRUCTIONS:
+
+        1) Stream requires a good bit of memory to run.  Adjust the
+           value of 'N' (below) to give a 'timing calibration' of
+           at least 20 clock-ticks.  This will provide rate estimates
+           that should be good to about 5% precision.
+ */
 
 # define N      200000
 # define NTIMES     50
 # define OFFSET      0
 
 /*
-*      3) Compile the code with full optimization.  Many compilers
-*         generate unreasonably bad code before the optimizer tightens
-*         things up.  If the results are unreasonably good, on the
-*         other hand, the optimizer might be too smart for me!
-*
-*         Try compiling with:
-*               cc -O stream_d.c second.c -o stream_d -lm
-*
-*         This is known to work on Cray, SGI, IBM, and Sun machines.
-*
-*
-*      4) Mail the results to mccalpin@cs.virginia.edu
-*         Be sure to include:
-*                a) computer hardware model number and software revision
-*                b) the compiler flags
-*                c) all of the output from the test case.
-* Thanks!
-*
+       3) Compile the code with full optimization.  Many compilers
+          generate unreasonably bad code before the optimizer tightens
+          things up.  If the results are unreasonably good, on the
+          other hand, the optimizer might be too smart for me!
+
+          Try compiling with:
+                cc -O stream_d.c second.c -o stream_d -lm
+
+          This is known to work on Cray, SGI, IBM, and Sun machines.
+
+       4) Mail the results to mccalpin@cs.virginia.edu
+          Be sure to include:
+                 a) computer hardware model number and software revision
+                 b) the compiler flags
+                 c) all of the output from the test case.
+  Thanks!
+
 */
 
 # define HLINE "-------------------------------------------------------------\n"
@@ -93,7 +92,6 @@ static double bytes[4] = {
 };
 
 extern double second();
-
 
 int main(int argc,char **args)
 {
@@ -167,10 +165,10 @@ int checktick(void)
   }
 
 /*
-* Determine the minimum difference between these M values.
-* This result will be our estimate (in microseconds) for the
-* clock granularity.
-*/
+  Determine the minimum difference between these M values.
+  This result will be our estimate (in microseconds) for the
+  clock granularity.
+ */
 
   minDelta = 1000000;
   for (i = 1; i < M; i++) {

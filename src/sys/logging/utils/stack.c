@@ -47,7 +47,7 @@ PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
 PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool  *empty)
 {
   PetscFunctionBegin;
-  PetscValidIntPointer(empty,2);
+  PetscValidBoolPointer(empty,2);
   if (stack->top == -1) *empty = PETSC_TRUE;
   else *empty = PETSC_FALSE;
   PetscFunctionReturn(0);

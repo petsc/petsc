@@ -1,7 +1,6 @@
 #include <petscsf.h>
 #include <petsc/private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
-
 /*@
   DMDAConvertToCell - Convert (i,j,k) to local cell number
 

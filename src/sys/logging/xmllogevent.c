@@ -103,7 +103,6 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
 PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
 PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
 
-
 /*@C
   PetscLogNestedBegin - Turns on nested logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
@@ -167,7 +166,6 @@ PetscErrorCode PetscLogNestedEnd(void)
   nNestedEventsAllocated = 0;
   PetscFunctionReturn(0);
 }
-
 
 /*
  UTILITIES: FIND STUFF IN SORTED ARRAYS
@@ -520,9 +518,9 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
 
   valrank[0] = local_val;
   valrank[1] = (PetscLogDouble) rank;
-  ierr = MPIU_Allreduce(&local_val, &min, 1, MPIU_PETSCLOGDOUBLE,  MPI_MIN,    comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(valrank,    &max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&local_val, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&local_val, &min, 1, MPIU_PETSCLOGDOUBLE,  MPI_MIN,    comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(valrank,    &max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(&local_val, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm);CHKERRMPI(ierr);
   avg  = tot/((PetscLogDouble) size);
   if (min != 0.0) ratio = max[0]/min;
   else ratio = 0.0;
@@ -679,7 +677,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
   /* Calculate the global maximum for the default timer index, so array treeIndices can
    * be allocated only once */
-  ierr = MPIU_Allreduce(&maxDefaultTimer, &j, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&maxDefaultTimer, &j, 1, MPI_INT, MPI_MAX, comm);CHKERRMPI(ierr);
   maxDefaultTimer = j;
 
   /* Find default timer's place in the tree */
@@ -745,14 +743,14 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 
   /* Allocate an array to store paths */
   depth = maxdepth;
-  ierr = MPIU_Allreduce(&depth, &maxdepth, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&depth, &maxdepth, 1, MPI_INT, MPI_MAX, comm);CHKERRMPI(ierr);
   ierr = PetscMalloc1(maxdepth+1, &nstPath);CHKERRQ(ierr);
   ierr = PetscMalloc1(maxdepth+1, &nstMyPath);CHKERRQ(ierr);
 
   /* Find an illegal nested event index (1+largest nested event index) */
   illegalEvent = 1+nestedEvents[nNestedEvents-1].nstEvent;
   i = illegalEvent;
-  ierr = MPIU_Allreduce(&i, &illegalEvent, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&i, &illegalEvent, 1, MPI_INT, MPI_MAX, comm);CHKERRMPI(ierr);
 
   /* First, detect timers which are not available in this process, but are available in others
    *        Allocate a new tree, that can contain all timers
@@ -778,7 +776,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
       }
 
       /* Communicate with other processes to obtain the next path and its depth */
-      ierr = MPIU_Allreduce(nstMyPath, nstPath, depth, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(nstMyPath, nstPath, depth, MPI_INT, MPI_MIN, comm);CHKERRMPI(ierr);
       for (j=depth-1; (int) j>=0; j--) {
         if (nstPath[j]==illegalEvent) depth=j;
       }
@@ -866,13 +864,13 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer,cons
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   val_in[0] = value;
   val_in[1] = (PetscLogDouble) rank;
-  ierr = MPIU_Allreduce(val_in, max,  1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(val_in, min,  1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(val_in, max,  1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm);CHKERRMPI(ierr);
+  ierr = MPIU_Allreduce(val_in, min,  1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm);CHKERRMPI(ierr);
   maxvalue = max[0];
   maxLoc   = (PetscMPIInt) max[1];
   minvalue = min[0];
   minLoc   = (PetscMPIInt) min[1];
-  ierr = MPIU_Allreduce(&value, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&value, &tot, 1, MPIU_PETSCLOGDOUBLE,  MPI_SUM,    comm);CHKERRMPI(ierr);
 
   if (maxvalue<maxthreshold && minvalue>=minthreshold) {
     /* One call per parent or NO value: don't print */
@@ -902,7 +900,7 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer,PetscEventP
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&time, &timeMx, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&time, &timeMx, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRMPI(ierr);
   *isPrinted = ((timeMx/totalTime) >= THRESHOLD) ? PETSC_TRUE : PETSC_FALSE;
   if (*isPrinted) {
     ierr = PetscViewerXMLStartSection(viewer, "event", NULL);CHKERRQ(ierr);
@@ -953,19 +951,163 @@ static int compareSortItems(const void *item1_, const void *item2_)
   return 0;
 }
 
+/*
+ * Find the number of child events.
+ */
+static PetscErrorCode PetscLogNestedTreeGetChildrenCount(const PetscNestedEventTree *tree,int nTimers,int iStart,int depth,int *nChildren)
+{
+  int n=0;
+
+  PetscFunctionBegin;
+  for (int i=iStart+1; i<nTimers; i++) {
+    if (tree[i].depth <= depth) break;
+    if (tree[i].depth == depth + 1) n++;
+  }
+  *nChildren = n;
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Initialize child event sort items with ID and times.
+ */
+static PetscErrorCode PetscLogNestedTreeSetChildrenSortItems(const PetscViewer viewer,const PetscNestedEventTree *tree,int nTimers,int iStart,int depth,int nChildren,PetscSortItem **children)
+{
+  MPI_Comm        comm;
+  PetscLogDouble  *times, *maxTimes;
+  PetscErrorCode  ierr;
+  PetscStageLog   stageLog;
+  PetscEventPerfInfo *eventPerfInfo;
+  const int          stage = MAINSTAGE;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  eventPerfInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
+
+  if (nChildren>0) {
+    /* Create an array for the id-s and maxTimes of the children,
+     *  leaving 2 spaces for self-time and other-time */
+
+    ierr = PetscMalloc1(nChildren+2,children);CHKERRQ(ierr);
+    nChildren = 0;
+    for (int i=iStart+1; i<nTimers; i++) {
+      if (tree[i].depth<=depth) break;
+      if (tree[i].depth == depth + 1) {
+        (*children)[nChildren].id  = i;
+        (*children)[nChildren].val = eventPerfInfo[tree[i].dftEvent].time ;
+        nChildren++;
+      }
+    }
+
+    /* Calculate the children's maximum times, to see whether children will be ignored or printed */
+    ierr = PetscMalloc1(nChildren,&times);CHKERRQ(ierr);
+    for (int i=0; i<nChildren; i++) { times[i] = (*children)[i].val; }
+
+    ierr = PetscMalloc1(nChildren,&maxTimes);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(times, maxTimes, nChildren, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRMPI(ierr);
+    ierr = PetscFree(times);CHKERRQ(ierr);
+
+    for (int i=0; i<nChildren; i++) { (*children)[i].val = maxTimes[i]; }
+    ierr = PetscFree(maxTimes);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Set 'self' and 'other' performance info.
+ */
+static PetscErrorCode PetscLogNestedTreeSetSelfOtherPerfInfo(const PetscNestedEventTree *tree,int iStart,PetscLogDouble totalTime,const PetscSortItem *children,int nChildren,
+                                                             PetscEventPerfInfo *myPerfInfo,PetscEventPerfInfo *selfPerfInfo,PetscEventPerfInfo *otherPerfInfo,int *parentCount,PetscLogDouble *countsPerCall)
+{
+  const int          stage = MAINSTAGE;
+  PetscErrorCode     ierr;
+  PetscStageLog      stageLog;
+  PetscEventPerfInfo *eventPerfInfo;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  eventPerfInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
+  if (!tree[iStart].own) {
+  /* Set values for a timer that was not activated in this process
+   * (but was, in other processes of this run) */
+    ierr = PetscMemzero(myPerfInfo,sizeof(*myPerfInfo));CHKERRQ(ierr);
+
+    *selfPerfInfo  = *myPerfInfo;
+    *otherPerfInfo = *myPerfInfo;
+
+    *parentCount   = 1;
+    *countsPerCall = 0;
+  } else {
+  /* Set the values for a timer that was activated in this process */
+    PetscLogEvent dftEvent   = tree[iStart].dftEvent;
+
+    *parentCount    = countParents(tree,eventPerfInfo,iStart);
+    *myPerfInfo     = eventPerfInfo[dftEvent];
+    *countsPerCall  = (PetscLogDouble) myPerfInfo->count / (PetscLogDouble) *parentCount;
+
+    *selfPerfInfo                = *myPerfInfo;
+    otherPerfInfo->time          = 0;
+    otherPerfInfo->flops         = 0;
+    otherPerfInfo->numMessages   = 0;
+    otherPerfInfo->messageLength = 0;
+    otherPerfInfo->numReductions = 0;
+
+    for (int i=0; i<nChildren; i++) {
+      /* For all child counters: subtract the child values from self-timers */
+
+      PetscLogEvent      dftChild      = tree[children[i].id].dftEvent;
+      PetscEventPerfInfo childPerfInfo = eventPerfInfo[dftChild];
+
+      selfPerfInfo->time          -= childPerfInfo.time;
+      selfPerfInfo->flops         -= childPerfInfo.flops;
+      selfPerfInfo->numMessages   -= childPerfInfo.numMessages;
+      selfPerfInfo->messageLength -= childPerfInfo.messageLength;
+      selfPerfInfo->numReductions -= childPerfInfo.numReductions;
+
+      if ((children[i].val/totalTime) < THRESHOLD) {
+        /* Add them to 'other' if the time is ignored in the output */
+        otherPerfInfo->time          += childPerfInfo.time;
+        otherPerfInfo->flops         += childPerfInfo.flops;
+        otherPerfInfo->numMessages   += childPerfInfo.numMessages;
+        otherPerfInfo->messageLength += childPerfInfo.messageLength;
+        otherPerfInfo->numReductions += childPerfInfo.numReductions;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Set max times across ranks for 'self' and 'other'.
+ */
+static PetscErrorCode PetscLogNestedTreeSetMaxTimes(MPI_Comm comm,int nChildren,const PetscEventPerfInfo selfPerfInfo,const PetscEventPerfInfo otherPerfInfo,PetscSortItem *children)
+{
+  PetscLogDouble times[2], maxTimes[2];
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  times[0] = selfPerfInfo.time;
+  times[1] = otherPerfInfo.time;
+
+  ierr = MPIU_Allreduce(times,maxTimes,2,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRMPI(ierr);
+  children[nChildren+0].id = -1;
+  children[nChildren+0].val = maxTimes[0];
+  children[nChildren+1].id = -2;
+  children[nChildren+1].val = maxTimes[1];
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, int iStart, PetscLogDouble totalTime)
 {
   int                depth = tree[iStart].depth;
   const char         *name;
-  int                parentCount, nChildren;
+  int                parentCount=1, nChildren;
   PetscSortItem      *children;
   PetscErrorCode     ierr;
-  const int          stage = MAINSTAGE;
   PetscStageLog      stageLog;
   PetscEventRegInfo  *eventRegInfo;
-  PetscEventPerfInfo *eventPerfInfo;
-  PetscEventPerfInfo myPerfInfo,  otherPerfInfo, selfPerfInfo;
-  PetscLogDouble     countsPerCall;
+  PetscEventPerfInfo myPerfInfo={0},selfPerfInfo={0},otherPerfInfo={0};
+  PetscLogDouble     countsPerCall=0;
   PetscBool          wasPrinted;
   PetscBool          childWasPrinted;
   MPI_Comm           comm;
@@ -974,112 +1116,22 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
   /* Look up the name of the event and its PerfInfo */
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   eventRegInfo  = stageLog->eventLog->eventInfo;
-  eventPerfInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
   name = eventRegInfo[(PetscLogEvent)tree[iStart].nstEvent].name;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
-  /* Count the number of child processes */
-  nChildren = 0;
-  {
-    int i;
-    for (i=iStart+1; i<nTimers; i++) {
-      if (tree[i].depth <= depth) break;
-      if (tree[i].depth == depth + 1) nChildren++;
-    }
-  }
-
-  if (nChildren>0) {
-    /* Create an array for the id-s and maxTimes of the children,
-     *  leaving 2 spaces for self-time and other-time */
-    int            i;
-    PetscLogDouble *times, *maxTimes;
-
-    ierr = PetscMalloc1(nChildren+2,&children);CHKERRQ(ierr);
-    nChildren = 0;
-    for (i=iStart+1; i<nTimers; i++) {
-      if (tree[i].depth<=depth) break;
-      if (tree[i].depth == depth + 1) {
-        children[nChildren].id  = i;
-        children[nChildren].val = eventPerfInfo[tree[i].dftEvent].time ;
-        nChildren++;
-      }
-    }
-
-    /* Calculate the children's maximum times, to see whether children will be ignored or printed */
-    ierr = PetscMalloc1(nChildren,&times);CHKERRQ(ierr);
-    for (i=0; i<nChildren; i++) { times[i] = children[i].val; }
-
-    ierr = PetscMalloc1(nChildren,&maxTimes);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(times, maxTimes, nChildren, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = PetscFree(times);CHKERRQ(ierr);
-
-    for (i=0; i<nChildren; i++) { children[i].val = maxTimes[i]; }
-    ierr = PetscFree(maxTimes);CHKERRQ(ierr);
-  }
-
-  if (!tree[iStart].own) {
-  /* Set values for a timer that was not activated in this process
-   * (but was, in other processes of this run) */
-    ierr = PetscMemzero(&myPerfInfo,sizeof(myPerfInfo));CHKERRQ(ierr);
-
-    selfPerfInfo  = myPerfInfo;
-    otherPerfInfo = myPerfInfo;
-
-    parentCount   = 1;
-    countsPerCall = 0;
-  } else {
-  /* Set the values for a timer that was activated in this process */
-    int           i;
-    PetscLogEvent dftEvent   = tree[iStart].dftEvent;
-
-    parentCount    = countParents( tree, eventPerfInfo, iStart);
-    myPerfInfo     = eventPerfInfo[dftEvent];
-    countsPerCall  = (PetscLogDouble) myPerfInfo.count / (PetscLogDouble) parentCount;
-
-    selfPerfInfo                = myPerfInfo;
-    otherPerfInfo.time          = 0;
-    otherPerfInfo.flops         = 0;
-    otherPerfInfo.numMessages   = 0;
-    otherPerfInfo.messageLength = 0;
-    otherPerfInfo.numReductions = 0;
-
-    for (i=0; i<nChildren; i++) {
-      /* For all child counters: subtract the child values from self-timers */
-
-      PetscLogEvent      dftChild  = tree[children[i].id].dftEvent;
-      PetscEventPerfInfo childPerfInfo = eventPerfInfo[dftChild];
-
-      selfPerfInfo.time          -= childPerfInfo.time;
-      selfPerfInfo.flops         -= childPerfInfo.flops;
-      selfPerfInfo.numMessages   -= childPerfInfo.numMessages;
-      selfPerfInfo.messageLength -= childPerfInfo.messageLength;
-      selfPerfInfo.numReductions -= childPerfInfo.numReductions;
-
-      if ((children[i].val/totalTime) < THRESHOLD) {
-        /* Add them to 'other' if the time is ignored in the output */
-        otherPerfInfo.time          += childPerfInfo.time;
-        otherPerfInfo.flops         += childPerfInfo.flops;
-        otherPerfInfo.numMessages   += childPerfInfo.numMessages;
-        otherPerfInfo.messageLength += childPerfInfo.messageLength;
-        otherPerfInfo.numReductions += childPerfInfo.numReductions;
-      }
-    }
-  }
+  ierr = PetscLogNestedTreeGetChildrenCount(tree,nTimers,iStart,depth,&nChildren);CHKERRQ(ierr);
+  ierr = PetscLogNestedTreeSetChildrenSortItems(viewer,tree,nTimers,iStart,depth,nChildren,&children);CHKERRQ(ierr);
+  ierr = PetscLogNestedTreeSetSelfOtherPerfInfo(tree,iStart,totalTime,children,nChildren,&myPerfInfo,&selfPerfInfo,&otherPerfInfo,&parentCount,&countsPerCall);CHKERRQ(ierr);
 
   /* Main output for this timer */
   ierr = PetscLogNestedTreePrintLine(viewer, myPerfInfo, countsPerCall, parentCount, depth, name, totalTime, &wasPrinted);CHKERRQ(ierr);
 
   /* Now print the lines for the children */
   if (nChildren > 0) {
-    /* Calculate max-times for 'self' and 'other' */
     int            i;
-    PetscLogDouble times[2], maxTimes[2];
-    times[0] = selfPerfInfo.time;   times[1] = otherPerfInfo.time;
-    ierr = MPIU_Allreduce(times, maxTimes, 2, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-    children[nChildren+0].id = -1;
-    children[nChildren+0].val = maxTimes[0];
-    children[nChildren+1].id = -2;
-    children[nChildren+1].val = maxTimes[1];
+
+    /* Calculate max-times for 'self' and 'other' */
+    ierr = PetscLogNestedTreeSetMaxTimes(comm,nChildren,selfPerfInfo,otherPerfInfo,children);CHKERRQ(ierr);
 
     /* Now sort the children (including 'self' and 'other') on total time */
     qsort(children, nChildren+2, sizeof(PetscSortItem), compareSortItems);
@@ -1126,49 +1178,15 @@ static PetscErrorCode PetscLogNestedTreePrintTop(PetscViewer viewer, PetscNested
   int                i, nChildren;
   PetscSortItem      *children;
   PetscErrorCode     ierr;
-  const int          stage = MAINSTAGE;
-  PetscStageLog      stageLog;
-  PetscEventPerfInfo *eventPerfInfo;
   MPI_Comm           comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
-  /* Look up the PerfInfo */
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  eventPerfInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
-
-  /* Count the number of child processes, and count total time */
-  nChildren = 0;
-  for (i=0; i<nTimers; i++)
-    if (tree[i].depth==1) nChildren++;
+  ierr = PetscLogNestedTreeGetChildrenCount(tree,nTimers,-1,0,&nChildren);CHKERRQ(ierr);
+  ierr = PetscLogNestedTreeSetChildrenSortItems(viewer,tree,nTimers,-1,0,nChildren,&children);CHKERRQ(ierr);
 
   if (nChildren>0) {
-    /* Create an array for the id-s and maxTimes of the children,
-     *  leaving 2 spaces for self-time and other-time */
-    PetscLogDouble *times, *maxTimes;
-
-    ierr = PetscMalloc1(nChildren,&children);CHKERRQ(ierr);
-    nChildren = 0;
-    for (i=0; i<nTimers; i++) {
-      if (tree[i].depth == 1) {
-        children[nChildren].id  = i;
-        children[nChildren].val = eventPerfInfo[tree[i].dftEvent].time ;
-        nChildren++;
-      }
-    }
-
-    /* Calculate the children's maximum times, to sort them */
-    ierr = PetscMalloc1(nChildren,&times);CHKERRQ(ierr);
-    for (i=0; i<nChildren; i++) { times[i] = children[i].val; }
-
-    ierr = PetscMalloc1(nChildren,&maxTimes);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(times, maxTimes, nChildren, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = PetscFree(times);CHKERRQ(ierr);
-
-    for (i=0; i<nChildren; i++) { children[i].val = maxTimes[i]; }
-    ierr = PetscFree(maxTimes);CHKERRQ(ierr);
-
     /* Now sort the children on total time */
     qsort(children, nChildren, sizeof(PetscSortItem), compareSortItems);
     /* Print (or ignore) the children in ascending order of total time */
@@ -1240,7 +1258,7 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
   /* Calculate largest nested event-ID */
   nstMax_local = 0;
   for (i=0; i<nNestedEvents; i++) nstMax_local = PetscMax(nestedEvents[i].nstEvent,nstMax_local);
-  ierr = MPIU_Allreduce(&nstMax_local, &nstMax, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&nstMax_local, &nstMax, 1, MPI_INT, MPI_MAX, comm);CHKERRMPI(ierr);
 
   /* Initialize all total-times with zero */
   ierr = PetscMalloc1(nstMax+1,&selftimes);CHKERRQ(ierr);
@@ -1321,7 +1339,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
   ierr = PetscMalloc1(nstMax+1,&times);CHKERRQ(ierr);
   ierr = PetscMalloc1(nstMax+1,&maxTimes);CHKERRQ(ierr);
   for (nst=0; nst<=nstMax; nst++) { times[nst] = selftimes[nst].time;}
-  ierr = MPIU_Allreduce(times, maxTimes, nstMax+1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(times, maxTimes, nstMax+1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRMPI(ierr);
   ierr = PetscFree(times);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(nstMax+1,&sortSelfTimes);CHKERRQ(ierr);
@@ -1350,7 +1368,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
       selfPerfInfo.numReductions = selftimes[nstEvent].numReductions;
 
       ierr = PetscLogNestedTreePrintLine(viewer, selfPerfInfo, dum_count, dum_parentcount, dum_depth, name, totalTime, &wasPrinted);CHKERRQ(ierr);
-      if (wasPrinted){
+      if (wasPrinted) {
         ierr = PetscViewerXMLEndSection(viewer, "event");CHKERRQ(ierr);
       }
     }
@@ -1377,7 +1395,7 @@ PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
 
   /* Get the total elapsed time, local and global maximum */
   ierr = PetscTime(&locTotalTime);CHKERRQ(ierr);  locTotalTime -= petsc_BaseTime;
-  ierr = MPIU_Allreduce(&locTotalTime, &globTotalTime, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&locTotalTime, &globTotalTime, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRMPI(ierr);
 
   /* Print global information about this run */
   ierr = PetscPrintExeSpecs(viewer);CHKERRQ(ierr);
@@ -1398,67 +1416,85 @@ PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
 }
 
 /*
- * Populate an array containing the ancestors (callers) of an event.
+ * Get the name of a nested event.
  */
-static PetscErrorCode GetEventAncestors(const PetscNestedEventTree *tree,int nEvents,const PetscNestedEventTree event,PetscNestedEventTree **ancestors,int *nAncestors)
+static PetscErrorCode PetscGetNestedEventName(const PetscNestedEventTree *tree,int id,char **name)
 {
-  PetscErrorCode       ierr;
-  int                  pos=0;
-  PetscNestedEventTree currentEvent=event;
-
-  PetscFunctionBegin;
-  // Find the number of ancestors.
-  *nAncestors = 0;
-  while (currentEvent.dftParent != -1) {
-    for (int i=0; i<nEvents; i++) {
-      if (tree[i].dftEvent == currentEvent.dftParent) {
-        currentEvent = tree[i];
-        (*nAncestors)++;
-        break;
-      }
-    }
-  }
-  // Now populate the array.
-  ierr = PetscMalloc1(*nAncestors, ancestors);CHKERRQ(ierr);
-  currentEvent = event;
-  while (currentEvent.dftParent != -1) {
-    for (int i=0; i<nEvents; i++) {
-      if (tree[i].dftEvent == currentEvent.dftParent) {
-        currentEvent = tree[i];
-        (*ancestors)[pos] = currentEvent;
-        pos++;
-        break;
-      }
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
- * Get the name of an event.
- */
-static PetscErrorCode GetEventName(const PetscNestedEventTree event,char **name)
-{
-  PetscErrorCode ierr;
-  PetscStageLog  stageLog;
-
-  PetscFunctionBegin;
-  ierr  = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  *name = stageLog->eventLog->eventInfo[event.nstEvent].name;
-  PetscFunctionReturn(0);
-}
-
-/*
- * Return the duration of an event in seconds.
- */
-static PetscErrorCode GetEventTime(const PetscNestedEventTree event,PetscLogDouble *eventTime)
-{
-  PetscErrorCode ierr;
-  PetscStageLog  stageLog;
+  PetscErrorCode  ierr;
+  PetscStageLog   stageLog;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  *eventTime = stageLog->stageInfo[MAINSTAGE].eventLog->eventInfo[event.dftEvent].time;
+  *name = stageLog->eventLog->eventInfo[(PetscLogEvent)tree[id].nstEvent].name;
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Get the total time elapsed.
+ */
+static PetscErrorCode PetscGetTotalTime(const PetscViewer viewer,PetscLogDouble *totalTime)
+{
+  PetscErrorCode  ierr;
+  PetscLogDouble  locTotalTime;
+  MPI_Comm        comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = PetscTime(&locTotalTime);CHKERRQ(ierr);
+  locTotalTime -= petsc_BaseTime;
+  ierr = MPIU_Allreduce(&locTotalTime,totalTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRMPI(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+ * Write a line to the flame graph output and then recurse into child events.
+ */
+static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer,PetscNestedEventTree *tree,int nTimers,int iStart,PetscLogDouble totalTime,PetscIntStack eventStack)
+{
+  int                 depth=tree[iStart].depth,parentCount=1,i,nChildren;
+  char                *name=NULL;
+  PetscErrorCode      ierr;
+  PetscEventPerfInfo  myPerfInfo={0},selfPerfInfo={0},otherPerfInfo={0};
+  PetscLogDouble      countsPerCall=0,locTime,globTime;
+  PetscSortItem       *children;
+  PetscStageLog       stageLog;
+  MPI_Comm            comm;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+
+  /* Determine information about the child events as well as 'self' and 'other' */
+  ierr = PetscLogNestedTreeGetChildrenCount(tree,nTimers,iStart,depth,&nChildren);CHKERRQ(ierr);
+  ierr = PetscLogNestedTreeSetChildrenSortItems(viewer,tree,nTimers,iStart,depth,nChildren,&children);CHKERRQ(ierr);
+  ierr = PetscLogNestedTreeSetSelfOtherPerfInfo(tree,iStart,totalTime,children,nChildren,&myPerfInfo,&selfPerfInfo,&otherPerfInfo,&parentCount,&countsPerCall);CHKERRQ(ierr);
+
+  /* Write line to the file. The time shown is 'self' + 'other' because each entry in the output
+   * is the total time spent in the event minus the amount spent in child events. */
+  locTime = selfPerfInfo.time + otherPerfInfo.time;
+  ierr = MPIU_Allreduce(&locTime,&globTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRMPI(ierr);
+  if (globTime/totalTime > THRESHOLD && tree[iStart].own) {
+    /* Iterate over parent events in the stack and write them */
+    for (i=0; i<=eventStack->top; i++) {
+      ierr = PetscGetNestedEventName(tree,eventStack->stack[i],&name);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s;",name);CHKERRQ(ierr);
+    }
+    ierr = PetscGetNestedEventName(tree,iStart,&name);CHKERRQ(ierr);
+    /* The output is given as an integer in microseconds because otherwise the file cannot be read
+     * by apps such as speedscope (https://speedscope.app/). */
+    ierr = PetscViewerASCIIPrintf(viewer,"%s %" PetscInt64_FMT "\n",name,(PetscInt64)(globTime*1e6));CHKERRQ(ierr);
+  }
+
+  /* Add the current event to the parent stack and write the child events */
+  PetscIntStackPush(eventStack, iStart);
+  for (i=0; i<nChildren; i++) {
+    ierr = PetscLogNestedTreePrintFlamegraph(viewer,tree,nTimers,children[i].id,totalTime,eventStack);CHKERRQ(ierr);
+  }
+  /* Pop the top item from the stack and immediately discard it */
+  {
+    int tmp;
+    PetscIntStackPop(eventStack, &tmp);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1478,42 +1514,28 @@ static PetscErrorCode GetEventTime(const PetscNestedEventTree event,PetscLogDoub
  */
 PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer)
 {
-  int                  nEvents,nAncestors;
-  char                 *eventName;
-  PetscErrorCode       ierr;
-  PetscNestedEventTree *tree=NULL,*ancestors=NULL,event;
-  PetscLogDouble       eventTime=0,locTotalTime,globTotalTime;
-  MPI_Comm             comm;
+  int                   nTimers=0,i,nChildren;
+  PetscErrorCode        ierr;
+  PetscIntStack         eventStack;
+  PetscLogDouble        totalTime;
+  PetscNestedEventTree  *tree=NULL;
+  PetscSortItem         *children;
 
   PetscFunctionBegin;
-  // Determine the overall time for the program.
-  ierr = PetscTime(&locTotalTime);CHKERRQ(ierr);
-  locTotalTime -= petsc_BaseTime;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&locTotalTime,&globTotalTime,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = PetscGetTotalTime(viewer,&totalTime);CHKERRQ(ierr);
+  ierr = PetscLogNestedTreeCreate(viewer, &tree, &nTimers);CHKERRQ(ierr);
+  /* We use an integer stack to keep track of parent event IDs */
+  ierr = PetscIntStackCreate(&eventStack);
 
-  ierr = PetscLogNestedTreeCreate(viewer, &tree, &nEvents);CHKERRQ(ierr);
-
-  // Now write the events to the file.
-  for (int i=0; i<nEvents; i++) {
-    event     = tree[i];
-    ierr = GetEventTime(event,&eventTime);CHKERRQ(ierr);
-    if (eventTime/globTotalTime < THRESHOLD) continue;
-
-    // Print out the ancestor events in reverse order, starting with the oldest.
-    ierr = GetEventAncestors(tree,nEvents,event,&ancestors,&nAncestors);CHKERRQ(ierr);
-    for (int j=nAncestors-1; j>=0; j--) {
-      ierr = GetEventName(ancestors[j],&eventName);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"%s;",eventName);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(ancestors);CHKERRQ(ierr);
-    // Now print the actual event and duration.
-    // The time is written as an integer (in microseconds) so the file can be understood by tools such as Speedscope.
-    ierr = GetEventName(event,&eventName);CHKERRQ(ierr);
-    PetscViewerASCIIPrintf(viewer,"%s %" PetscInt64_FMT "\n",eventName,(PetscInt64)(eventTime*1e6));
+  /* Initialize the child events and write them recursively */
+  ierr = PetscLogNestedTreeGetChildrenCount(tree,nTimers,-1,0,&nChildren);CHKERRQ(ierr);
+  ierr = PetscLogNestedTreeSetChildrenSortItems(viewer,tree,nTimers,-1,0,nChildren,&children);CHKERRQ(ierr);
+  for (i=0; i<nChildren; i++) {
+    ierr = PetscLogNestedTreePrintFlamegraph(viewer,tree,nTimers,children[i].id,totalTime,eventStack);CHKERRQ(ierr);
   }
 
-  ierr = PetscLogNestedTreeDestroy(tree, nEvents);CHKERRQ(ierr);
+  ierr = PetscLogNestedTreeDestroy(tree, nTimers);CHKERRQ(ierr);
+  ierr = PetscIntStackDestroy(eventStack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

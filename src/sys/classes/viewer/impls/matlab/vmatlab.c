@@ -2,7 +2,6 @@
 #include <petsc/private/viewerimpl.h>
 #include <mat.h>
 
-
 typedef struct {
   MATFile       *ep;
   PetscMPIInt   rank;
@@ -119,8 +118,9 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
   /* only first processor opens file */
   if (!vmatlab->rank) {
     if (type == FILE_MODE_READ) vmatlab->ep = matOpen(name,"r");
-    else if (type == FILE_MODE_WRITE || type == FILE_MODE_WRITE) vmatlab->ep = matOpen(name,"w");
-    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
+    else if (type == FILE_MODE_WRITE) vmatlab->ep = matOpen(name,"w");
+    else if (type == FILE_MODE_UNDEFINED) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[type]);
   }
   PetscFunctionReturn(0);
 }
@@ -178,7 +178,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscFunctionBegin;
   ierr         = PetscNewLog(viewer,&e);CHKERRQ(ierr);
   ierr         = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&e->rank);CHKERRMPI(ierr);
-  e->btype     = (PetscFileMode)-1;
+  e->btype     = FILE_MODE_UNDEFINED;
   viewer->data = (void*) e;
 
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_Matlab);CHKERRQ(ierr);
@@ -213,7 +213,6 @@ $    FILE_MODE_WRITE - open existing file for MATLAB output
      This only saves Vecs it cannot be used to save Mats. We recommend using the PETSCVIEWERBINARY to save objects to be loaded into MATLAB
      instead of this routine.
 
-
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(), PETSCVIEWERBINARY, PetscViewerBinaryOpen()
           VecView(), MatView(), VecLoad(), MatLoad()
 @*/
@@ -243,10 +242,10 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
    Options Database Keys:
-.    -viewer_matlab_filename <name>
+.    -viewer_matlab_filename <name> - name of the Matlab file
 
    Environmental variables:
-.   PETSC_VIEWER_MATLAB_FILENAME
+.   PETSC_VIEWER_MATLAB_FILENAME - name of the Matlab file
 
      Notes:
      Unlike almost all other PETSc routines, PETSC_VIEWER_MATLAB_ does not return
@@ -292,8 +291,4 @@ PetscViewer  PETSC_VIEWER_MATLAB_(MPI_Comm comm)
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_REPEAT," ");PetscFunctionReturn(NULL);}
   PetscFunctionReturn(viewer);
 }
-
-
-
-
 

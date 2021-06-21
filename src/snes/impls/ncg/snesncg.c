@@ -325,7 +325,6 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
   ierr = VecCopy(dX,lX);CHKERRQ(ierr);
   ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
 
-
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -477,7 +476,6 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
    References:
 .  1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
-
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN, SNESLINESEARCHNCGLINEAR, SNESNCGSetType(), SNESNCGGetType(), SNESLineSearchSetType()
 M*/

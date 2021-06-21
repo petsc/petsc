@@ -3,7 +3,6 @@
 
 /* ------------------------------------------------------------------------------------------*/
 
-
 PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
 {
   PC_Factor      *icc = (PC_Factor*)pc->data;
@@ -183,18 +182,21 @@ PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
+/* allow access to preallocation information */
+#include <petsc/private/matimpl.h>
+
 PetscErrorCode  PCFactorSetMatSolverType_Factor(PC pc,MatSolverType stype)
 {
   PetscErrorCode ierr;
   PC_Factor      *lu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (lu->fact) {
+  if (lu->fact && lu->fact->assembled) {
     MatSolverType ltype;
     PetscBool     flg;
     ierr = MatFactorGetSolverType(lu->fact,&ltype);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
+    if (!flg) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package from %s to %s after PC has been setup or used",ltype,stype);
   }
 
   ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
@@ -262,17 +264,16 @@ PetscErrorCode  PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC 
     ierr = PCFactorSetReuseOrdering(pc,flg);CHKERRQ(ierr);
   }
 
-  ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,sizeof(tname),&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
-  }
-
-  /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
   ierr = PetscOptionsDeprecated("-pc_factor_mat_solver_package","-pc_factor_mat_solver_type","3.9",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-pc_factor_mat_solver_type","Specific direct solver to use","MatGetFactor",((PC_Factor*)factor)->solvertype,solvertype,sizeof(solvertype),&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetMatSolverType(pc,solvertype);CHKERRQ(ierr);
+  }
+  ierr = PCFactorSetDefaultOrdering_Factor(pc);CHKERRQ(ierr);
+  ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,sizeof(tname),&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -281,7 +282,8 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
 {
   PC_Factor       *factor = (PC_Factor*)pc->data;
   PetscErrorCode  ierr;
-  PetscBool       isstring,iascii,flg;
+  PetscBool       isstring,iascii,canuseordering;
+  MatInfo         info;
   MatOrderingType ordering;
 
   PetscFunctionBegin;
@@ -313,38 +315,28 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  using %s [%s]\n",MatFactorShiftTypesDetail[(int)factor->info.shifttype],MatFactorShiftTypes[(int)factor->info.shifttype]);CHKERRQ(ierr);
     }
 
-    ierr = PetscStrcmp(factor->ordering,MATORDERINGNATURAL_OR_ND,&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscBool isseqsbaij;
-      ierr = PetscObjectTypeCompareAny((PetscObject)pc->pmat,&isseqsbaij,MATSEQSBAIJ,MATSEQBAIJ,NULL);CHKERRQ(ierr);
-      if (isseqsbaij) {
-        ordering = MATORDERINGNATURAL;
-      } else {
-        ordering = MATORDERINGND;
-      }
-    } else {
-      ordering = factor->ordering;
-    }
-    if (!factor->fact) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s (may be overridden during setup)\n",ordering);CHKERRQ(ierr);
-    } else {
-      PetscBool useordering;
-      MatInfo   info;
-      ierr = MatFactorGetUseOrdering(factor->fact,&useordering);CHKERRQ(ierr);
-      if (!useordering) ordering = "external";
+    if (factor->fact) {
+      ierr = MatFactorGetCanUseOrdering(factor->fact,&canuseordering);CHKERRQ(ierr);
+      if (!canuseordering) ordering = MATORDERINGEXTERNAL;
+      else ordering = factor->ordering;
       ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",ordering);CHKERRQ(ierr);
-      ierr = MatGetInfo(factor->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %g, needed %g\n",(double)info.fill_ratio_given,(double)info.fill_ratio_needed);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    Factored matrix follows:\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(factor->fact,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      if (!factor->fact->assembled) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  matrix solver type: %s\n",factor->fact->solvertype);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  matrix not yet factored; no additional information available\n");CHKERRQ(ierr);
+      } else {
+        ierr = MatGetInfo(factor->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %g, needed %g\n",(double)info.fill_ratio_given,(double)info.fill_ratio_needed);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    Factored matrix follows:\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+        ierr = MatView(factor->fact,viewer);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      }
     }
 
   } else if (isstring) {

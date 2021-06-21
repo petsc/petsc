@@ -204,6 +204,31 @@ class BaseTestDA(object):
         rda = da.refine()
         scatter = da.createInjection(rda)
 
+    def testzeroRowsColumnsStencil(self):
+        da = self.da
+        A = da.createMatrix()
+        x = da.createGlobalVector()
+        x.set(2.0)
+        A.setDiagonal(x)
+        diag1 = x.duplicate()
+        A.getDiagonal(diag1)
+        if self.SIZES != 2: #only coded test for 2D case
+        	return
+        istart,iend, jstart, jend = da.getRanges()
+        self.assertTrue(x.equal(diag1))
+        zeroidx = []
+        for i in range(istart,iend):
+            for j in range(jstart,jend):
+                row = PETSc.Mat.Stencil()
+                row.index = (i,j)
+                zeroidx = zeroidx + [row]
+        diag2 = x.duplicate()
+        diag2.set(1.0)
+        A.zeroRowsColumnsStencil(zeroidx, 1.0, x, diag2)
+        ans = x.duplicate()
+        ans.set(2.0)
+        self.assertTrue(ans.equal(diag2))
+
 
 MIRROR   = PETSc.DMDA.BoundaryType.MIRROR
 GHOSTED  = PETSc.DMDA.BoundaryType.GHOSTED

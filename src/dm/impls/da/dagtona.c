@@ -87,7 +87,7 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
-  ierr = MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,m,PETSC_DETERMINE,NULL,&global);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(global,&start,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from);CHKERRQ(ierr);

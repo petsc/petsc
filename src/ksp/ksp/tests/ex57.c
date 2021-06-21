@@ -24,7 +24,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ(PETSC_COMM_WORLD,5,5,PETSC_DETERMINE,PETSC_DETERMINE,3,NULL,0,NULL,&subA[0]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[0],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     val = 1.0; col = row;
     ierr = MatSetValues(subA[0],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,5,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[1]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[1],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     col = 1;
     val = 0.0;
     ierr = MatSetValues(subA[1],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,5,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[2]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[2],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     col = 1;
     val = 0.0;
     ierr = MatSetValues(subA[2],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,3,5,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[3]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[3],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     col = row;
     val = 0.0;
     ierr = MatSetValues(subA[3],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,3,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[4]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[4],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     col = row;
     val = 4.0;
     ierr = MatSetValues(subA[4],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,3,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[5]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[5],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     col = row;
     val = 0.0;
     ierr = MatSetValues(subA[5],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,4,5,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[6]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[6],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     col = 2;
     val = 0.0;
     ierr = MatSetValues(subA[6],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,4,3,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[7]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[7],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     col = 1;
     val = 0.0;
     ierr = MatSetValues(subA[7],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
 
   ierr = MatCreateAIJ( PETSC_COMM_WORLD,4,4,PETSC_DETERMINE,PETSC_DETERMINE,1,NULL,1,NULL,&subA[8]);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(subA[8],&mstart,&mend);CHKERRQ(ierr);
-  for (row = mstart; row < mend; ++row){
+  for (row = mstart; row < mend; ++row) {
     col = row;
     val = 8.0;
     ierr = MatSetValues(subA[8],1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);

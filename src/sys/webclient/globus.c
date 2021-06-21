@@ -151,7 +151,6 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
   PetscFunctionReturn(0);
 }
 
-
 /*@C
      PetscGlobusGetTransfers - Get a record of current transfers requested from Globus
 
@@ -215,7 +214,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
 -   filename - file to upload
 
   Options Database:
-.  -globus_access_token   XXX
+.  -globus_access_token XXX - the Globus token
 
    Level: intermediate
 
@@ -289,5 +288,4 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
   }
   PetscFunctionReturn(0);
 }
-
 

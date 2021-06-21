@@ -22,7 +22,6 @@
 !  Processors: n
 !T*/
 
-
 !
 !  --------------------------------------------------------------------------
 !
@@ -475,7 +474,6 @@
       return
       end subroutine InitialGuessLocal
 
-
 ! ---------------------------------------------------------------------
 !
 !  FormJacobian - Evaluates Jacobian matrix.
@@ -505,9 +503,8 @@
 !  Declarations for use with local arrays:
       Vec::      Xsub(1)
      Mat::     Amat
-      PetscInt       izero,ione
+      PetscInt       ione
 
-      izero = 0
       ione = 1
 
       call DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
@@ -620,7 +617,6 @@
       return
       end subroutine FormJacobianLocal
 
-
 ! ---------------------------------------------------------------------
 !
 !  FormFunction - Evaluates nonlinear function, F(x).
@@ -647,15 +643,13 @@
 
 !  Declarations for use with local arrays:
      Vec::              Xsub(2),Fsub(2)
-      PetscInt               izero,ione,itwo
+      PetscInt               itwo
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
 
-      izero = 0
-      ione = 1
       itwo = 2
       call DMCompositeGetAccessArray(solver%da,X,itwo,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
       call DMCompositeGetAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr);CHKERRQ(ierr)
@@ -672,7 +666,6 @@
       call DMCompositeRestoreAccessArray(solver%da,F,itwo,PETSC_NULL_INTEGER,Fsub,ierr);CHKERRQ(ierr)
       return
       end subroutine formfunction
-
 
 ! ---------------------------------------------------------------------
 !
@@ -699,12 +692,11 @@
      Vec::      X1,F1
       PetscErrorCode ierr
 !  Local variables:
-      PetscScalar one,sc
+      PetscScalar sc
       PetscScalar u,v(1)
       PetscInt  i,j,low,high,ii,ione,irow,row(1)
       PetscScalar,pointer :: lx_v(:)
 
-      one    = 1.0
       sc     = solver%lambda
       ione   = 1
 

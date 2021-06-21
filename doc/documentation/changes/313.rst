@@ -1,0 +1,267 @@
+=============
+Changes: 3.13
+=============
+
+
+.. rubric:: General:
+
+-  Update ``make test`` to run the full test suite. Use
+   ``make check`` to run the short test
+-  Remove last PetscBool argument from PetscBinaryWrite() and
+   PetscBinarySynchronizedWrite()
+-  Change PetscLayoutFindOwner() and PetscLayoutFindOwnerIndex() to
+   return a PetscMPIInt instead of a PetscInt
+-  Support for Compaq F90 is removed along with supporting flags
+   PETSC_HAVE_FORTRAN_STDCALL, PETSC_BLASLAPACK_STDCALL,
+   HAVE_FORTRAN_MIXED_STR_ARG
+-  Promote all example directories ``examples/tutorials/`` and
+   ``examples/tests/`` to ``tutorials/`` and ``tests/`` respectively
+-  Make title argument of PetscOptionsBegin() obligatory
+
+.. rubric:: Configure/Build:
+
+.. rubric:: IS:
+
+-  Add ISSetInfo(): set local and global properties of an IS (whether
+   the IS is sorted, unique, a permutation, an interval, or identity)
+-  Add ISGetInfo(): query local and global properties of an IS
+
+.. rubric:: PetscDraw:
+
+.. rubric:: PetscSF:
+
+-  Fix few bugs in PETSCSFWINDOW when using PETSCSF_WINDOW_SYNC_LOCK
+   or PETSCSF_WINDOW_SYNC_ACTIVE synchronization types
+-  Add window reusage for PETSCSFWINDOW and support for different
+   creation flavor types. See PetscSFWindowFlavorType man page for
+   details
+-  Set default of -use_gpu_aware_mpi from false to true
+
+.. rubric:: PF:
+
+.. rubric:: Vec:
+
+-  VecPinToCPU() is deprecated in favor of VecBindToCPU()
+-  Add Vec{Set|Get}PinnedMemoryMin() and -vec_pinned_memory_min
+   option. Note that VECCUDA now defaults to using pinned memory for
+   host allocations
+
+.. rubric:: VecScatter:
+
+.. rubric:: PetscSection:
+
+.. rubric:: PetscPartitioner:
+
+-  PetscPartitionerPartition() does not longer gets a DM as input.
+   Vertex weights can be specified through PetscSection
+-  Add support for target partition weights for
+   PETSCPARTITIONERSIMPLE, PETSCPARTITIONERPARMETIS and
+   PETSCPARTITIONERPTSCOTCH
+
+.. rubric:: Mat:
+
+-  Improve the performance of MatConvert_AIJ_BAIJ by preallocating
+   the Mat before dispatching to MatConvert_Basic
+-  Change the behavior of MatConvert_AIJ_SBAIJ for block size greater
+   than one, the block structure is now preserved (even for the
+   diagonal entries)
+-  Fix various bugs related with matrix conversions from Hermitian
+   SBAIJ matrices with complex numbers
+-  Add MatPropagateSymmetryOptions to propagate symmetry information
+   from one matrix to another
+-  Fix a bug in MATSUPERLU_DIST interface when MATMPIAIJ with
+   commsize 1 is used
+-  Add MATCHOLMOD support for block solves
+-  --download-suitesparse now uses the official SuiteSparse
+   repository
+-  MatPinToCPU() is deprecated in favor of MatBindToCPU()
+-  Fix MatAXPY for MATSHELL
+-  MatAXPY(Y,0.0,X,DIFFERENT_NONZERO_PATTERN) no longer modifies the
+   nonzero pattern of Y to include that of X
+-  Add support of selective 64-bit MUMPS, i.e., the regular/default
+   build of MUMPS. One should still build PETSc --with-64-bit-indices
+   to handle matrices with >2G nonzeros
+-  Add MatProductCreate(), MatProductCreateWithMat(),
+   MatProductSetType(), MatProductSetAlgorithm(),
+   MatProductSetFill(), MatProductSetFromOptions(),
+   MatProductSymbolic(), MatProductNumeric(),
+   MatProductReplaceMats(), MatProductClear()
+-  Deprecate MatMatMultSymbolic(), MatMatMultNumeric()
+-  Deprecate MatMatTransposeMultSymbolic(),
+   MatMatTransposeMultNumeric()
+-  Deprecate MatPtAPSymbolic(), MatPtAPNumeric()
+-  Deprecate MatRARtSymbolic(), MatRARtNumeric()
+-  Fix a deadlock with MATELEMENTAL; if one configures PETSc with
+   Elemental *and* has PETSC_COMM_WORLD != MPI_COMM_WORLD, it is now
+   one's responsability to explicitly call
+   PetscElementalInitializePackage()/PetscElementalFinalizePackage()
+   outside of PetscInitialize()/PetscFinalize().
+   PetscElementalInitializePackage()/PetscElementalFinalizePackage()
+   are collective on MPI_COMM_WORLD.
+
+.. rubric:: PC:
+
+-  Change the default behavior of PCASM and PCGASM to not
+   automatically switch to PCASMType BASIC if the matrices are
+   symmetric
+-  Change the default behavior of PCCHOLESKY to use nested dissection
+   ordering for AIJ matrix
+
+.. rubric:: KSP:
+
+-  Add KSPHPDDMGetDeflationSpace and KSPHPDDMSetDeflationSpace for
+   recycling Krylov methods in KSPHPDDM
+
+.. rubric:: SNES:
+
+-  Deprecate ``-snes_test_jacobian_display`` and
+   ``-snes_test_jacobian_display_threshold``. ``-snes_test_jacobian``
+   accepts an optional threshold parameter (since v3.10) and
+   ``-snes_test_jacobian_view`` should be used in favor of
+   ``-snes_test_jacobian_display``
+
+.. rubric:: SNESLineSearch:
+
+-  Add SNESLineSearchGetType() in v3.13.1.
+
+.. rubric:: TS:
+
+.. rubric:: TAO:
+
+-  TAOPDIPM: A new solver in TAO for general NLP problems
+
+.. rubric:: DM/DA:
+
+-  DMCopyLabels(): add two additional input flags
+-  DMPlexDistribute(): fix a bug associated with vertex partition
+   weights and overlapped meshes
+-  DMPlexDistribute(): vertex partition weights are now computed by
+   summing all the local section dofs in the transitive closure of
+   each cell
+-  Add PetscTabulation to hold function tabulation data
+-  Add DMEnclosureType to describe relations between meshes
+-  Add DMGetEnclosureRelation() and DMGetEnclosurePoint() to discover
+   relations between meshes
+-  Add DMPolytopeType to describe different cell constructions
+
+.. rubric:: DMPlex:
+
+-  DMPlexInterpolate() now works correctly for distributed DMPlex
+-  The idea of hybrid and ghost cells has been removed from Plex in
+   favor of cell type
+-  Plex can now classify points by cell type, stored in a DMLabel.
+   This is useful for operations that require more than topological
+   data, such as mesh interpolation, geometric calculations, and is
+   also used an index to avoid repeated topological queries
+-  Add DMPlexSetCellType() and DMPlexCreateReferenceCellByType()
+-  Distribution sorts strata by cell type.
+-  Plex can now allow any number of cell types in a single mesh.
+   Interpolation, refinement, and extraction of submeshes mixed
+   meshes work smoothly. Both oriented and tensor-product prisms can
+   be used in the same mesh
+-  Cell refiners have been abstracted. Currently there are two
+   (regular refinement, and conversion to hexes). The plan is to add
+   more, such as local extrusion and conversion to simplices
+-  Remove SimplexToTensor in favor of DM_REFINER_TO_BOX
+-  DMForest now responds to DMPlexGetOverlap() and propagates its
+   overlap to the underlying Plex
+-  Add DMPlexGetSimplexOrBoxCells() to replace
+   DMPlexGetInteriorCellStratum()
+-  Add DMPolytopTypeGetDim(), DMPolyTopeTypeGetConeSize(),
+   DMPolytopeTypeGetNumVertices()
+-  Add DMLabelSetStratumBounds()
+-  Add DMPlexOrientCell() which orients a single cell
+-  Add DMPlexCompareOrientations() which compares the cone point
+   order of a single cell with the given reference cone
+-  Add DMPlexIsInterpolated() which finds out whether the plex is
+   interpolated
+-  Add DMPlexIsInterpolatedCollective() which finds out whether the
+   plex is interpolated on all ranks
+-  Add DMPlexIsDistributed() which finds out whether the plex is
+   distributed
+
+.. rubric:: DMNetwork:
+
+-  Add DMNetworkSetComponentNumVariables(),
+   DMNetworkGetComponentVariableOffset(), and
+   DMNetworkGetComponentVariableGlobalOffset() to set number of
+   variables for a component, and retrieve its local/global offsets.
+
+.. rubric:: DT:
+
+-  All tabulated data is now stored in PetscTabulation structures.
+   This changes interfaces in PetscDS, PetscFE, and PetscFV
+-  Rename DefaultTabulation to CellTabulation everywhere
+-  PetscDTGaussJacobiQuadrature() is now truly Gauss-Jacobi
+   quadrature. The quadrature for the simplex (without weight
+   function) is now called PetscDTStroudConicalQuadrature()
+-  Add PetscDTJacobiEval(), PetscDTGaussLobattoJacobiQuadrature()
+-  Add PetscDTIndexToBary() and PetscDTBaryToIndex() for barycentric
+   lattice calculations
+-  Add PetscDTNodeType to enumerate methods of defining interpolation
+   nodes
+-  PetscDualSpace now has PetscDualSpaceSetFormDegree() and
+   PetscDualSpaceGetFormDegree() for governing functional
+   pushforward/pullback behavior
+-  PETSCDUALSPACELAGRANGE now has PetscDualSpaceGetTrimmed() and
+   PetscDualSpaceSetTrimmed() for creating degrees of freedom for
+   trimmed polynomial spaces
+-  PETSCDUALSPACELAGRANGE now has PetscDualSpaceGetNodeType() and
+   PetscDualSpaceSetNodType() for controlling the placement of
+   interpolation nodes
+-  PETSCDUALSPACEBDM is no longer a standalone type of
+   PetscDualSpace: it is now a constructor alias for
+   PETSCDUALSPACELAGRANGE
+
+.. rubric:: PetscViewer:
+
+-  Remove last PetscBool argument from PetscViewerBinaryWrite()
+-  Add "fieldnum" argument to PetscViewerVTKAddField() to indicate
+   only one field of the vector should be viewed
+
+.. rubric:: SYS:
+
+-  Rename PetscSignalSegvCheckPointer() to
+   PetscSignalSegvCheckPointerOrMpi()
+-  Extend -info option controlling PetscInfo(). It now takes takes
+   optional arguments
+   ``-info [filename][:[~]list,of,classnames[:[~]self]]``. See
+   PetscInfo() manpage
+-  Add new API to control PetscInfo() programatically:
+
+   -  Add PetscInfoEnabled() - Indicate whether a given PETSc class
+      is allowed in PetscInfo()
+   -  Add PetscInfoSetFile() - Set output destination of PetscInfo()
+   -  Add PetscInfoGetFile() - Get output destination of PetscInfo()
+   -  Add PetscInfoSetClasses() - Sets the classes which PetscInfo()
+      is filtered for/against
+   -  Add PetscInfoGetClass() - Indicates whether the provided
+      classname is marked as a filter in PetscInfo() as set by
+      PetscInfoSetClasses()
+   -  Add PetscInfoProcessClass() - Activates or deactivates a class
+      based on the filtering status of PetscInfo()
+   -  Add PetscInfoGetInfo() - Returns the current state of several
+      indicator flags for PetscInfo()
+   -  Add PetscInfoSetFilterCommSelf() - Sets PetscInfoCommFlag enum
+      to control communicator size filtering for PetscInfo()
+   -  Add PetscInfoDestroy() - Destroys and resets internal
+      PetscInfo() filter options
+   -  Change PetscInfoAllow() to only activate/deactivate
+      PetscInfo(), file setting is now handled separately by
+      PetscInfoSetFile()
+
+-  Add PetscSubcommGetParent() - Gets the communicator that was used
+   to create the PetscSubcomm
+-  Add PetscSubcommGetContiguousParent() - Gets a communicator that
+   that is a duplicate of the parent but has the ranks reordered by
+   the order they are in the children
+-  Add PetscSubcommGetChild() - Gets the communicator created by the
+   PetscSubcomm
+-  Change the default option of -build_twosided from ibarrier to
+   allreduce for communicators with no more than 1024 ranks
+
+.. rubric:: AO:
+
+.. rubric:: Sieve:
+
+.. rubric:: Fortran:

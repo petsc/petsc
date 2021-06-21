@@ -109,7 +109,6 @@ PETSC_EXTERN void snesnewtontrsetprecheck_(SNES *snes, void (*func)(SNES,Vec,Vec
   SNESNewtonTRSetPreCheck(*snes,ourtrprecheckfunction,NULL);
 }
 
-
 static PetscErrorCode ourtrpostcheckfunction(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_y,PetscBool *changed_w,void *ctx)
 {
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
@@ -282,7 +281,6 @@ PETSC_EXTERN void snessetfunction_(SNES *snes,Vec *r,void (*func)(SNES*,Vec*,Vec
   *ierr = SNESSetFunction(*snes,*r,oursnesfunction,NULL);
 }
 
-
 PETSC_EXTERN void snessetngs_(SNES *snes,void (*func)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.ngs,(PetscVoidFunction)func,ctx);if (*ierr) return;
@@ -403,7 +401,6 @@ PETSC_EXTERN void snesmonitorsolutionupdate_(SNES *snes,PetscInt *its,PetscReal 
 {
   *ierr = SNESMonitorSolutionUpdate(*snes,*its,*fgnorm,*dummy);
 }
-
 
 PETSC_EXTERN void snesmonitorset_(SNES *snes,void (*func)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*),void *mctx,void (*mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {

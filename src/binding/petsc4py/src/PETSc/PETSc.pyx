@@ -257,6 +257,10 @@ cdef extern from "stdlib.h" nogil:
     void* realloc (void*,size_t)
     void free(void*)
 
+cdef extern from "stdarg.h" nogil:
+    ctypedef struct va_list:
+        pass
+
 cdef extern from "string.h"  nogil:
     void* memset(void*,int,size_t)
     void* memcpy(void*,void*,size_t)
@@ -316,10 +320,15 @@ cdef void finalize() nogil:
     cdef int ierr = 0
     # deallocate command line arguments
     global PyPetsc_Argc; global PyPetsc_Argv;
+    global PetscVFPrintf; global prevfprintf;
     delinitargs(&PyPetsc_Argc, &PyPetsc_Argv)
     # manage PETSc finalization
     if not (<int>PetscInitializeCalled): return
     if (<int>PetscFinalizeCalled): return
+    # stop stdout/stderr redirect
+    if (prevfprintf != NULL):
+        PetscVFPrintf = prevfprintf
+        prevfprintf = NULL
     # deinstall Python error handler
     ierr = PetscPopErrorHandler()
     if ierr != 0:
@@ -331,6 +340,42 @@ cdef void finalize() nogil:
         fprintf(stderr, "PetscFinalize() failed "
                 "[error code: %d]\n", ierr)
     # and we are done, see you later !!
+
+cdef int PetscVFPrintf_PythonStd(FILE *fd, const char formt[], va_list ap):
+    import sys
+    cdef char cstring[8192]
+    cdef size_t stringlen = sizeof(cstring)
+    cdef size_t final_pos
+    if (fd == PETSC_STDOUT) and not (sys.stdout == sys.__stdout__):
+        CHKERR( PetscVSNPrintf(&cstring[0],stringlen,formt,&final_pos,ap))
+        if final_pos > 0 and cstring[final_pos-1] == '\x00':
+            final_pos -= 1
+        ustring = cstring[:final_pos].decode('UTF-8')
+        sys.stdout.write(ustring)
+    elif (fd == PETSC_STDERR) and not (sys.stderr == sys.__stderr__):
+        CHKERR( PetscVSNPrintf(&cstring[0],stringlen,formt,&final_pos,ap))
+        if final_pos > 0 and cstring[final_pos-1] == '\x00':
+            final_pos -= 1
+        ustring = cstring[:final_pos].decode('UTF-8')
+        sys.stderr.write(ustring)
+    else:
+        PetscVFPrintfDefault(fd, formt, ap)
+    return 0
+
+cdef int(*prevfprintf)(FILE*, const char*, va_list)
+prevfprintf = NULL
+
+cdef int _push_vfprintf(int (*vfprintf)(FILE *, const char*, va_list)) except -1:
+    global PetscVFPrintf, prevfprintf
+    assert prevfprintf == NULL
+    prevfprintf = PetscVFPrintf
+    PetscVFPrintf = vfprintf
+
+cdef int _pop_vfprintf() except -1:
+    global PetscVFPrintf, prevfprintf
+    assert prevfprintf != NULL
+    PetscVFPrintf = prevfprintf
+    prevfprintf == NULL
 
 cdef int initialize(object args, object comm) except -1:
     if (<int>PetscInitializeCalled): return 1
@@ -347,6 +392,9 @@ cdef int initialize(object args, object comm) except -1:
     cdef PetscErrorHandlerFunction handler = NULL
     handler = <PetscErrorHandlerFunction>PetscPythonErrorHandler
     CHKERR( PetscPushErrorHandler(handler, NULL) )
+    import sys
+    if (sys.stdout != sys.__stdout__) or (sys.stderr != sys.__stderr__):
+        _push_vfprintf(&PetscVFPrintf_PythonStd)
     # register finalization function
     if Py_AtExit(finalize) < 0:
         PySys_WriteStderr(b"warning: could not register %s with Py_AtExit()",
@@ -467,4 +515,13 @@ def _finalize():
     global citations_registry
     citations_registry.clear()
 
+def _push_python_vfprintf():
+    _push_vfprintf(&PetscVFPrintf_PythonStd)
+
+def _pop_python_vfprintf():
+    _pop_vfprintf()
+
+def _stdout_is_stderr():
+    global PETSC_STDOUT, PETSC_STDERR;
+    return PETSC_STDOUT == PETSC_STDERR
 # --------------------------------------------------------------------

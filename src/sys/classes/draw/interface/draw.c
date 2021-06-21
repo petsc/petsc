@@ -387,7 +387,6 @@ PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
   PetscFunctionReturn(0);
 }
 
-
 /*@
    PetscDrawSetDoubleBuffer - Sets a window to be double buffered.
 

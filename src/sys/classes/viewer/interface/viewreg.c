@@ -7,7 +7,6 @@
 
 PetscFunctionList PetscViewerList = NULL;
 
-
 PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton = NULL;
 KHASH_SET_INIT_STR(HTPrinted)
 struct  _n_PetscOptionsHelpPrinted{
@@ -62,7 +61,6 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
 .     found - PETSC_TRUE if the string was already set
 
     Level: intermediate
-
 
 .seealso: PetscOptionsHelpPrintedCreate()
 @*/
@@ -223,7 +221,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
   PetscBool                      flag,hashelp;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name,3);
+  PetscValidCharPointer(name,4);
 
   if (viewer) *viewer = NULL;
   if (format) *format = PETSC_VIEWER_DEFAULT;
@@ -470,7 +468,7 @@ $     PetscViewerSetType(viewer,"my_viewer_type")
    or at runtime via the option
 $     -viewer_type my_viewer_type
 
-.seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
+.seealso: PetscViewerRegisterAll()
  @*/
 PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)(PetscViewer))
 {

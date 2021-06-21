@@ -106,7 +106,6 @@ PetscErrorCode  AODestroy(AO *ao)
   PetscFunctionReturn(0);
 }
 
-
 #include <../src/vec/is/is/impls/general/general.h>
 /* ---------------------------------------------------------------------*/
 
@@ -379,7 +378,7 @@ PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
-  PetscValidIntPointer(array,3);
+  PetscValidRealPointer(array,3);
   ierr = (*ao->ops->petsctoapplicationpermutereal)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -415,7 +414,7 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
-  PetscValidIntPointer(array,3);
+  PetscValidRealPointer(array,3);
   ierr = (*ao->ops->applicationtopetscpermutereal)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

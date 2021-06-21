@@ -26,6 +26,3 @@ PETSC_EXTERN void isblockrestoreindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PE
   *__ierr = ISBlockRestoreIndices(*x,&fa);
 }
 
-
-
-

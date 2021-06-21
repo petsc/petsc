@@ -17,8 +17,6 @@
    Processors: n
 T*/
 
-
-
 typedef struct {
   PetscInt n; /* Number of total variables */
   PetscInt m; /* Number of constraints */
@@ -50,7 +48,6 @@ typedef struct {
   Mat Div, Divwork;
   Mat DSG;
   Mat Diag,Ones;
-
 
   Vec q;
   Vec ur; /* reference */
@@ -178,7 +175,7 @@ int main(int argc, char **argv)
   /* SOLVE THE APPLICATION */
   ierr = PetscLogStageRegister("Trials",&user.stages[1]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user.stages[1]);CHKERRQ(ierr);
-  for (i=0; i<ntests; i++){
+  for (i=0; i<ntests; i++) {
     ierr = TaoSolve(tao);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its);CHKERRQ(ierr);
     ierr = VecCopy(x0,user.x);CHKERRQ(ierr);
@@ -492,7 +489,6 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
     /* Twork = sdiag(Twork) * Swork */
     ierr = VecPointwiseMult(user->Twork,user->Swork,user->Twork);CHKERRQ(ierr);
 
-
     /* Swork = pointwisemult(Sdiag,Twork) */
     ierr = VecPointwiseMult(user->Swork,user->Twork,user->Sdiag);CHKERRQ(ierr);
 
@@ -675,7 +671,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   ierr = VecGetOwnershipRange(user->y,&lo2,&hi2);CHKERRQ(ierr);
   istart = 0;
-  for (i=0; i<user->ns; i++){
+  for (i=0; i<user->ns; i++) {
     ierr = VecGetOwnershipRange(user->suby,&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo2+istart,1,&is_from_y);CHKERRQ(ierr);
     ierr = VecScatterCreate(user->y,is_from_y,user->suby,NULL,&user->yi_scatter[i]);CHKERRQ(ierr);
@@ -698,7 +694,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   ierr = VecGetOwnershipRange(user->d,&lo2,&hi2);CHKERRQ(ierr);
   istart = 0;
-  for (i=0; i<user->ns; i++){
+  for (i=0; i<user->ns; i++) {
     ierr = VecGetOwnershipRange(user->subd,&lo,&hi);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo2+istart,1,&is_from_d);CHKERRQ(ierr);
     ierr = VecScatterCreate(user->d,is_from_d,user->subd,NULL,&user->di_scatter[i]);CHKERRQ(ierr);
@@ -744,7 +740,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   neg_hinv = -hinv;
 
   ierr = VecGetOwnershipRange(XX,&istart,&iend);CHKERRQ(ierr);
-  for (linear_index=istart; linear_index<iend; linear_index++){
+  for (linear_index=istart; linear_index<iend; linear_index++) {
     i = linear_index % user->mx;
     j = ((linear_index-i)/user->mx) % user->mx;
     k = ((linear_index-i)/user->mx-j) / user->mx;
@@ -754,11 +750,11 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     ierr = VecSetValues(XX,1,&linear_index,&vx,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(YY,1,&linear_index,&vy,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(ZZ,1,&linear_index,&vz,INSERT_VALUES);CHKERRQ(ierr);
-    for (is=0; is<2; is++){
-      for (js=0; js<2; js++){
-        for (ks=0; ks<2; ks++){
+    for (is=0; is<2; is++) {
+      for (js=0; js<2; js++) {
+        for (ks=0; ks<2; ks++) {
           ls = is*4 + js*2 + ks;
-          if (ls<user->ns){
+          if (ls<user->ns) {
             l =ls*n + linear_index;
             /* remap */
             subindex = l%n;
@@ -851,22 +847,22 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatSeqAIJSetPreallocation(user->Grad,2,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->Grad,&istart,&iend);CHKERRQ(ierr);
 
-  for (i=istart; i<iend; i++){
-    if (i<m/3){
+  for (i=istart; i<iend; i++) {
+    if (i<m/3) {
       iblock = i / (user->mx-1);
       j = iblock*user->mx + (i % (user->mx-1));
       ierr = MatSetValues(user->Grad,1,&i,1,&j,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
       j = j+1;
       ierr = MatSetValues(user->Grad,1,&i,1,&j,&hinv,INSERT_VALUES);CHKERRQ(ierr);
     }
-    if (i>=m/3 && i<2*m/3){
+    if (i>=m/3 && i<2*m/3) {
       iblock = (i-m/3) / (user->mx*(user->mx-1));
       j = iblock*user->mx*user->mx + ((i-m/3) % (user->mx*(user->mx-1)));
       ierr = MatSetValues(user->Grad,1,&i,1,&j,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
       j = j + user->mx;
       ierr = MatSetValues(user->Grad,1,&i,1,&j,&hinv,INSERT_VALUES);CHKERRQ(ierr);
     }
-    if (i>=2*m/3){
+    if (i>=2*m/3) {
       j = i-2*m/3;
       ierr = MatSetValues(user->Grad,1,&i,1,&j,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
       j = j + user->mx*user->mx;
@@ -885,22 +881,22 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatSeqAIJSetPreallocation(user->Av,2,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->Av,&istart,&iend);CHKERRQ(ierr);
 
-  for (i=istart; i<iend; i++){
-    if (i<m/3){
+  for (i=istart; i<iend; i++) {
+    if (i<m/3) {
       iblock = i / (user->mx-1);
       j = iblock*user->mx + (i % (user->mx-1));
       ierr = MatSetValues(user->Av,1,&i,1,&j,&half,INSERT_VALUES);CHKERRQ(ierr);
       j = j+1;
       ierr = MatSetValues(user->Av,1,&i,1,&j,&half,INSERT_VALUES);CHKERRQ(ierr);
     }
-    if (i>=m/3 && i<2*m/3){
+    if (i>=m/3 && i<2*m/3) {
       iblock = (i-m/3) / (user->mx*(user->mx-1));
       j = iblock*user->mx*user->mx + ((i-m/3) % (user->mx*(user->mx-1)));
       ierr = MatSetValues(user->Av,1,&i,1,&j,&half,INSERT_VALUES);CHKERRQ(ierr);
       j = j + user->mx;
       ierr = MatSetValues(user->Av,1,&i,1,&j,&half,INSERT_VALUES);CHKERRQ(ierr);
     }
-    if (i>=2*m/3){
+    if (i>=2*m/3) {
       j = i-2*m/3;
       ierr = MatSetValues(user->Av,1,&i,1,&j,&half,INSERT_VALUES);CHKERRQ(ierr);
       j = j + user->mx*user->mx;
@@ -918,28 +914,28 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatSeqAIJSetPreallocation(user->L,2,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->L,&istart,&iend);CHKERRQ(ierr);
 
-  for (i=istart; i<iend; i++){
-    if (i<m/3){
+  for (i=istart; i<iend; i++) {
+    if (i<m/3) {
       iblock = i / (user->mx-1);
       j = iblock*user->mx + (i % (user->mx-1));
       ierr = MatSetValues(user->L,1,&i,1,&j,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
       j = j+1;
       ierr = MatSetValues(user->L,1,&i,1,&j,&hinv,INSERT_VALUES);CHKERRQ(ierr);
     }
-    if (i>=m/3 && i<2*m/3){
+    if (i>=m/3 && i<2*m/3) {
       iblock = (i-m/3) / (user->mx*(user->mx-1));
       j = iblock*user->mx*user->mx + ((i-m/3) % (user->mx*(user->mx-1)));
       ierr = MatSetValues(user->L,1,&i,1,&j,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
       j = j + user->mx;
       ierr = MatSetValues(user->L,1,&i,1,&j,&hinv,INSERT_VALUES);CHKERRQ(ierr);
     }
-    if (i>=2*m/3 && i<m){
+    if (i>=2*m/3 && i<m) {
       j = i-2*m/3;
       ierr = MatSetValues(user->L,1,&i,1,&j,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
       j = j + user->mx*user->mx;
       ierr = MatSetValues(user->L,1,&i,1,&j,&hinv,INSERT_VALUES);CHKERRQ(ierr);
     }
-    if (i>=m){
+    if (i>=m) {
       j = i - m;
       ierr = MatSetValues(user->L,1,&i,1,&j,&sqrt_beta,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -958,22 +954,22 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     ierr = MatSeqAIJSetPreallocation(user->Div,6,NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(user->Grad,&istart,&iend);CHKERRQ(ierr);
 
-    for (i=istart; i<iend; i++){
-      if (i<m/3){
+    for (i=istart; i<iend; i++) {
+      if (i<m/3) {
         iblock = i / (user->mx-1);
         j = iblock*user->mx + (i % (user->mx-1));
         ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
         j = j+1;
         ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES);CHKERRQ(ierr);
       }
-      if (i>=m/3 && i<2*m/3){
+      if (i>=m/3 && i<2*m/3) {
         iblock = (i-m/3) / (user->mx*(user->mx-1));
         j = iblock*user->mx*user->mx + ((i-m/3) % (user->mx*(user->mx-1)));
         ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
         j = j + user->mx;
         ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES);CHKERRQ(ierr);
       }
-      if (i>=2*m/3){
+      if (i>=2*m/3) {
         j = i-2*m/3;
         ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
         j = j + user->mx*user->mx;
@@ -1116,7 +1112,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatMPIAIJSetPreallocation(user->Q,8,NULL,8,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->Q,8,NULL);CHKERRQ(ierr);
 
-  for (i=0; i<user->mx; i++){
+  for (i=0; i<user->mx; i++) {
     x[i] = h*(i+0.5);
     y[i] = h*(i+0.5);
     z[i] = h*(i+0.5);
@@ -1124,12 +1120,12 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatGetOwnershipRange(user->Q,&istart,&iend);CHKERRQ(ierr);
 
   nx = user->mx; ny = user->mx; nz = user->mx;
-  for (i=istart; i<iend; i++){
+  for (i=istart; i<iend; i++) {
 
     xri = xr[i];
     im = 0;
     xim = x[im];
-    while (xri>xim && im<nx){
+    while (xri>xim && im<nx) {
       im = im+1;
       xim = x[im];
     }
@@ -1141,7 +1137,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     yri = yr[i];
     im = 0;
     yim = y[im];
-    while (yri>yim && im<ny){
+    while (yri>yim && im<ny) {
       im = im+1;
       yim = y[im];
     }
@@ -1153,7 +1149,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     zri = zr[i];
     im = 0;
     zim = z[im];
-    while (zri>zim && im<nz){
+    while (zri>zim && im<nz) {
       im = im+1;
       zim = z[im];
     }
@@ -1306,9 +1302,6 @@ PetscErrorCode EllipticMonitor(Tao tao, void *ptr)
   ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%g ||y-yt||=%g\n",(double)unorm,(double)ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
 
 /*TEST
 

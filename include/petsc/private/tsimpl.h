@@ -156,12 +156,13 @@ struct _p_TS {
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*);
   PetscErrorCode (*monitordestroy[MAXTSMONITORS])(void**);
-  void *monitorcontext[MAXTSMONITORS];
-  PetscInt  numbermonitors;
+  void            *monitorcontext[MAXTSMONITORS];
+  PetscInt         numbermonitors;
   PetscErrorCode (*adjointmonitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,PetscInt,Vec*,Vec*,void*);
   PetscErrorCode (*adjointmonitordestroy[MAXTSMONITORS])(void**);
-  void *adjointmonitorcontext[MAXTSMONITORS];
-  PetscInt  numberadjointmonitors;
+  void            *adjointmonitorcontext[MAXTSMONITORS];
+  PetscInt         numberadjointmonitors;
+  PetscInt         monitorFrequency; /* Number of timesteps between monitor output */
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
@@ -416,6 +417,8 @@ struct _n_TSEvent {
   PetscInt       *side;            /* Used for detecting repetition of end-point, -1 => left, +1 => right */
   PetscReal       timestep_prev;   /* previous time step */
   PetscReal       timestep_posteventinterval;  /* time step immediately after the event interval */
+  PetscReal       timestep_postevent;  /* time step immediately after the event */
+  PetscReal       timestep_min;    /* Minimum time step */
   PetscBool      *zerocrossing;    /* Flag to signal zero crossing detection */
   PetscErrorCode  (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event handler function */
   PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*); /* User post event function */

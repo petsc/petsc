@@ -22,7 +22,6 @@ static PetscErrorCode GetISs(Vec vecs[],IS is[])
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode test_view(void)
 {
   Vec            X, a,b;
@@ -181,7 +180,6 @@ PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_va
   PetscFunctionReturn(0);
 }
 
-
 /*
 X = ([0,1,2,3], [10,12,14,16,18])
 Y = ([4,7,10,13], [5,6,7,8,9])
@@ -217,7 +215,6 @@ PetscErrorCode test_axpy_dot_max(void)
   ierr       = VecDestroy(&x1);CHKERRQ(ierr);
   ierr       = VecDestroy(&x2);CHKERRQ(ierr);
 
-
   tmp_buf[0] = y1;
   tmp_buf[1] = y2;
   ierr       = VecCreateNest(PETSC_COMM_WORLD,2,NULL,tmp_buf,&Y);CHKERRQ(ierr);
@@ -241,7 +238,6 @@ PetscErrorCode test_axpy_dot_max(void)
   ierr = VecDotNorm2(X,Y, &scalar, &real2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar), (double)real2);CHKERRQ(ierr);
 
-
   ierr = VecAXPY(Y, 1.0, X);CHKERRQ(ierr); /* Y <- a X + Y */
   ierr = VecNestGetSubVec(Y, 0, &y1);CHKERRQ(ierr);
   ierr = VecNestGetSubVec(Y, 1, &y2);CHKERRQ(ierr);
@@ -255,7 +251,6 @@ PetscErrorCode test_axpy_dot_max(void)
   ierr = VecDotNorm2(X,Y, &scalar, &real2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar), (double)real2);CHKERRQ(ierr);
 
-
   ierr = VecMax(X, &index, &real);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %D \n",(double) real, index);CHKERRQ(ierr);
   ierr = VecMin(X, &index, &real);CHKERRQ(ierr);
@@ -265,7 +260,6 @@ PetscErrorCode test_axpy_dot_max(void)
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 int main(int argc, char **args)
 {
@@ -277,7 +271,6 @@ int main(int argc, char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 
@@ -308,5 +301,9 @@ int main(int argc, char **args)
         suffix: kokkos
         args: -vec_type kokkos
 
+      test:
+        requires: hip
+        suffix: hip
+        args: -vec_type hip
 
 TEST*/

@@ -7,8 +7,6 @@ static const char help[] = "-Laplacian u = b as a nonlinear problem.\n\n";
    Processors: n
 T*/
 
-
-
 /*
 
     The linear and nonlinear versions of these should give almost identical results on this problem
@@ -242,8 +240,6 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
   PetscFunctionReturn(0);
 }
 
-
-
 /* ------------------------------------------------------------------- */
 /*
       Applies some sweeps on nonlinear Gauss-Seidel on each process
@@ -268,7 +264,6 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   hy    = 1.0/(PetscReal)(My-1);
   hxdhy = hx/hy;
   hydhx = hy/hx;
-
 
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
 
@@ -321,7 +316,6 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

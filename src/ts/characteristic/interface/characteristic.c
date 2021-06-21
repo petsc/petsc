@@ -417,7 +417,6 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = CharacteristicSendCoordinatesEnd(c);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
-
   /* Calculate velocity at t_n+1/2 (fill remote requests) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeRemote,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscInfo1(NULL, "Calculating %d remote velocities at t_{n - 1/2}\n", c->queueRemoteSize);CHKERRQ(ierr);

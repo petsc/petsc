@@ -58,12 +58,5 @@ typedef struct{
   PetscInt subset_type;
 }TAO_GPCG;
 
-
-
 #endif
-
-
-
-
-
 

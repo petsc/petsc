@@ -54,7 +54,6 @@
 !      PCType      ptype
 !      double precision tol
 
-
 !  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
 !  MUST be declared as external.
 

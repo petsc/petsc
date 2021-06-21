@@ -15,7 +15,6 @@ Last Modification:
 ***********************************comm.c*************************************/
 #include <../src/ksp/pc/impls/tfs/tfs.h>
 
-
 /* global program control variables - explicitly exported */
 PetscMPIInt PCTFS_my_id            = 0;
 PetscMPIInt PCTFS_num_nodes        = 1;

@@ -385,7 +385,6 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   const PetscInt    *aj,*ai;
   char              matdescra[6];
 
-
   /* Variables not in MatMult_SeqAIJ. */
   char transa = 'n';  /* Used to indicate to MKL that we are not computing the transpose product. */
 

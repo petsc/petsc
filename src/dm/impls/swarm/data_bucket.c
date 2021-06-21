@@ -461,7 +461,7 @@ PetscErrorCode DMSwarmDataBucketCreateFromSubset(DMSwarmDataBucket DBIn,const Pe
   ierr = DMSwarmDataBucketSetSizes(*DB,L,buffer);CHKERRQ(ierr);
   /* now copy the desired guys from DBIn => DB */
   for (p = 0; p < N; ++p) {
-    ierr = DMSwarmDataBucketCopyPoint(DBIn,list[p], *DB,p);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketCopyPoint(DBIn,list[p], *DB,list[p]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -532,7 +532,6 @@ PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt pid_x,const DMSwarmDataF
   ierr = PetscMemcpy(DMSWARM_DATAFIELD_point_access(field_y->data,pid_y,field_y->atomic_size),DMSWARM_DATAFIELD_point_access(field_x->data,pid_x,field_x->atomic_size),field_y->atomic_size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* zero only the datafield at this point */
 PetscErrorCode DMSwarmDataFieldZeroPoint(const DMSwarmDataField field,const PetscInt index)

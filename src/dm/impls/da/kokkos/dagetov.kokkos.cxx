@@ -151,7 +151,6 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM da,Vec vec,ConstPetscScalarKokk
   PetscFunctionReturn(0);
 }
 
-
 /* Function template explicit instantiation */
 template   PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView         (DM,Vec,ConstPetscScalarKokkosOffsetView1D*);
 template   PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView     (DM,Vec,ConstPetscScalarKokkosOffsetView1D*);

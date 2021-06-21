@@ -54,7 +54,6 @@ typedef struct {
   PetscBool              CleanUpSuperLU_Dist;  /* Flag to clean up (non-global) SuperLU objects during Destroy */
 } Mat_SuperLU_DIST;
 
-
 PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
@@ -580,6 +579,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   */
   set_default_options_dist(&options);
 
+  B->trivialsymbolic = PETSC_TRUE;
   if (ftype == MAT_FACTOR_LU) {
     B->factortype = MAT_FACTOR_LU;
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;

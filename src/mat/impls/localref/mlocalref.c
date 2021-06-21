@@ -172,7 +172,6 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatCreateLocalRef - Gets a logical reference to a local submatrix, for use in assembly
 

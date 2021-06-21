@@ -47,7 +47,6 @@ Input parameters include:\n\
    ---   = [                            ]
    d\mu    [  0;   0;  (1 - u_1^2) u_2  ]
 
-
   ------------------------------------------------------------------------- */
 
 #include <petscts.h>
@@ -60,7 +59,7 @@ struct _n_User {
 };
 
 /*
-*  User-defined routines
+   User-defined routines
 */
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {
@@ -171,7 +170,6 @@ int main(int argc,char **argv)
   user.mu          = 1;
   user.next_output = 0.0;
 
-
   ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
 
@@ -217,7 +215,6 @@ int main(int argc,char **argv)
   x_ptr[0] = 2;   x_ptr[1] = 0.66666654321;
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,.001);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options

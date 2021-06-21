@@ -29,7 +29,7 @@ PetscErrorCode DMLabelCreate(MPI_Comm comm, const char name[], DMLabel *label)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(label,2);
+  PetscValidPointer(label,3);
   ierr = DMInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(*label,DMLABEL_CLASSID,"DMLabel","DMLabel","DM",comm,DMLabelDestroy,DMLabelView);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (v = 0; v < label->numStrata; v++){
+  for (v = 0; v < label->numStrata; v++) {
     ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -99,7 +99,7 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
   switch (stag->stencilType) {
     case DMSTAG_STENCIL_STAR: stencilType = DMDA_STENCIL_STAR; stencilWidth = stag->stencilWidth; break;
     case DMSTAG_STENCIL_BOX : stencilType = DMDA_STENCIL_BOX ; stencilWidth = stag->stencilWidth; break;
-    default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported Stencil Type %d",stag->stencilType);
+    default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported Stencil Type %d",stag->stencilType);
   }
 
   /* Create DMDA, using same boundary type */
@@ -113,7 +113,7 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
     case 3:
       ierr = DMDACreate3d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],stag->boundaryType[1],stag->boundaryType[2],stencilType,N[0],N[1],N[2],stag->nRanks[0],stag->nRanks[1],stag->nRanks[2],dof,stencilWidth,l[0],l[1],l[2],dmda);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented for dim %d",dim);
+    default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim %d",dim);
   }
   for (i=0; i<dim; ++i) {
     ierr = PetscFree(l[i]);CHKERRQ(ierr);
@@ -171,8 +171,8 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  PetscValidHeaderSpecificType(dmTo,DM_CLASSID,4,DMDA);
-  PetscValidHeaderSpecific(vecTo,VEC_CLASSID,5);
+  PetscValidHeaderSpecificType(dmTo,DM_CLASSID,5,DMDA);
+  PetscValidHeaderSpecific(vecTo,VEC_CLASSID,6);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMDAGetDof(dmTo,&dofToMax);CHKERRQ(ierr);
   if (-c > dofToMax) SETERRQ1(PetscObjectComm((PetscObject)dmTo),PETSC_ERR_ARG_OUTOFRANGE,"Invalid negative component value. Must be >= -%D",dofToMax);
@@ -263,7 +263,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
       }
     }
     ierr = DMDAVecRestoreArrayDOF(dmTo,vecTo,&arrTo);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %d",dim);
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %d",dim);
   ierr = DMRestoreLocalVector(dm,&vecLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -383,7 +383,7 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
       ierr = DMStagRestoreProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,&cArrZ);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"Stag to DA coordinate transfer only supported for DMStag coordinate DM of type DMstag or DMProduct");
     ierr = DMDAVecRestoreArrayDOF(dmdaCoord,daCoord,&cArrDa);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %d",dim);
+  } else SETERRQ1(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"Unsupported dimension %d",dim);
   PetscFunctionReturn(0);
 }
 

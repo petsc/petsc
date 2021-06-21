@@ -41,7 +41,6 @@ PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root,const PetscInt *xadj,const 
 /*       LOOP THROUGH THE NEIGHBORS OF ROOT IN THE*/
 /*       QUOTIENT GRAPH.*/
 
-
   PetscFunctionBegin;
   /* Parameter adjustments */
   --nbrhd;

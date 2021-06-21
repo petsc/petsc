@@ -36,6 +36,8 @@ cdef extern from * nogil:
     int PetscSFCreateEmbeddedRootSF(PetscSF,PetscInt,const PetscInt*,PetscSF*)
     int PetscSFCreateEmbeddedLeafSF(PetscSF,PetscInt,const PetscInt*,PetscSF*)
 
+    int PetscSFCompose(PetscSF,PetscSF,PetscSF*)
+
     int PetscSFBcastBegin(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
     int PetscSFBcastEnd(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)
     int PetscSFReduceBegin(PetscSF,MPI_Datatype,const void*,void*,MPI_Op)

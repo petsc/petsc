@@ -23,7 +23,6 @@ $    i.e. the size of Krylov space minus one
    KSPGMRESClassicalGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetCGSRefinementType() to determine if
      iterative refinement is used to increase stability.
 
-
    Options Database Keys:
 
 +  -ksp_gmres_classicalgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization() (default)
@@ -67,7 +66,6 @@ $    i.e. the size of Krylov space minus one
 
    KSPGMRESClassicalGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetCGSRefinementType() to determine if
      iterative refinement is used to increase stability.
-
 
    Options Database Keys:
 

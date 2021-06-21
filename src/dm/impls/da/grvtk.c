@@ -258,7 +258,6 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 {
   const char *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";

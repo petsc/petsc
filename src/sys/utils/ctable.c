@@ -170,7 +170,6 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,Ins
   PetscFunctionReturn(0);
 }
 
-
 /* PetscTableRemoveAll() ********************************************
  *
  *
@@ -188,8 +187,6 @@ PetscErrorCode  PetscTableRemoveAll(PetscTable ta)
   }
   PetscFunctionReturn(0);
 }
-
-
 
 /* PetscTableGetHeadPosition() ********************************************
  *
@@ -246,7 +243,6 @@ PetscErrorCode  PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,Pe
   *rPosition = pos;
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
 {

@@ -32,12 +32,8 @@ data to 0    data to 2       data to 3
 
 |--------|-----------------|--|
 
-
 User has to unpack message themselves. I can get you the pointer for each i
 entry, but you'll have to cast it to the appropriate data type.
-
-
-
 
 Phase A: Build topology
 
@@ -70,7 +66,6 @@ DMSwarmDataExBegin()
 DMSwarmDataExEnd()
 
 ... user calls any getters here ...
-
 
 */
 #include <petscvec.h>
@@ -492,10 +487,10 @@ PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
 }
 
 /*
-*) Zeros out pack data counters
-*) Ensures mesaage length is set
-*) Checks send counts properly initialized
-*) allocates space for pack data
+ *) Zeros out pack data counters
+ *) Ensures mesaage length is set
+ *) Checks send counts properly initialized
+ *) allocates space for pack data
 */
 PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de,size_t unit_message_size)
 {

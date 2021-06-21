@@ -155,7 +155,7 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 2);
+  PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 2);
   ierr = PetscQuadratureDestroy(&pt->quad);CHKERRQ(ierr);
   ierr = PetscQuadratureDuplicate(q, &pt->quad);CHKERRQ(ierr);
   PetscFunctionReturn(0);

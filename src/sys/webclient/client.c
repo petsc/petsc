@@ -48,7 +48,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 #endif
 
     PetscFunctionBegin;
-    if (!bio_err){
+    if (!bio_err) {
       SSL_library_init();
       SSL_load_error_strings();
       bio_err = BIO_new_fp(stderr,BIO_NOCLOSE);
@@ -161,7 +161,6 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   PetscFunctionReturn(0);
 }
 
-
 /*@C
      PetscHTTPSRequest - Send a request to an HTTPS server
 
@@ -195,7 +194,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   ierr = PetscStrlen(request,&request_len);CHKERRQ(ierr);
 
   r = SSL_write(ssl,request,(int)request_len);
-  switch (SSL_get_error(ssl,r)){
+  switch (SSL_get_error(ssl,r)) {
     case SSL_ERROR_NONE:
       if (request_len != (size_t)r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Incomplete write to SSL socket");
       break;
@@ -214,7 +213,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
 
     r = SSL_read(ssl,buff+len,(int)buffsize);
     len += r;
-    switch (SSL_get_error(ssl,r)){
+    switch (SSL_get_error(ssl,r)) {
     case SSL_ERROR_NONE:
       break;
     case SSL_ERROR_ZERO_RETURN:

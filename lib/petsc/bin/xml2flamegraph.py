@@ -10,63 +10,55 @@ except ImportError:
     sys.exit("Import error: lxml must be installed. Try 'pip install lxml'.")
 
 
-class Event:
-
-    def __init__(self, stack, time):
-        self._stack = stack
-        self._time = time  # must be in seconds
-
-    def to_flamegraph_str(self):
-        """Return the event as a string in the Flame Graph format.
-
-        For example: 
-            'main event;event1;event4 123'
-
-        The event duration is given in microseconds because only integer
-        values are accepted by speedscope.
-        """
-        return f"{';'.join(self._stack)} {int(self._time*1e6)}"
+def parse_time(event):
+    # The time can either be stored under 'value' or 'avgvalue'
+    if hasattr(event.time, "value"):
+        return event.time.value
+    elif hasattr(event.time, "avgvalue"):
+        return event.time.avgvalue
+    else:
+        raise AssertionError
 
 
-def parse_xml(input_file):
-    """Traverse the XML and return a list of events."""
-    root = objectify.parse(input_file).find("//timertree")
-    total_time = root.find("totaltime")
+def make_line(callstack, time, total_time):
+    """The output time needs to be an integer for the file to be
+    accepted by speedscope (speedscope.app). Therefore we output it in
+    microseconds. It is originally a percentage of the total time
+    (given in seconds).
+    """
+    event_str = ";".join(str(event.name) for event in callstack)
+    time_us = int(time / 100 * total_time * 1e6)
+    return f"{event_str} {time_us}"
 
-    events = []
-    for event in root.findall(".//event"):
-        name = event.name.text
-        # Skip 'self' and 'other' events.
-        if name == "self" or name.endswith(": other-timed"): continue
 
-        stack = [name]
-        for ancestor in event.iterancestors():
-            if ancestor.tag != "event":
-                continue
-            stack.append(ancestor.name.text)
-        # The callstack needs to start from the root.
-        stack.reverse()
+def traverse_children(parent, total_time, callstack=None):
+    if callstack == None:
+        callstack = []
 
-        # The time can either be stored under 'value' or 'avgvalue'.
-        if hasattr(event.time, "value"):
-            time = event.time.value
-        elif hasattr(event.time, "avgvalue"):
-            time = event.time.avgvalue
+    # Sort the events into 'self' and child events
+    self_events, child_events = [], []
+    for event in parent.event:
+        if event.name == "self" or str(event.name).endswith("other-timed"):
+            self_events.append(event)
         else:
-            raise AssertionError
+            child_events.append(event)
 
-        # The times in the XML file are given as percentages, we need to 
-        # convert them to actual values in seconds.
-        time *= total_time / 100
-        events.append(Event(stack, time))
-    return events
+    lines = []
+    if self_events:
+        time = sum(parse_time(event) for event in self_events)
+        lines.append(make_line(callstack, time, total_time))
 
-
-def write_flamegraph_str(events, outfile):
-    """Output the list of events to a file."""
-    flamegraph_str = "\n".join(event.to_flamegraph_str() for event in events)
-    with open(outfile, "w") as f:
-        f.write(flamegraph_str)
+    for event in child_events:
+        # Check to see if event has any children. The latter check is for the
+        # case when the <events> tag is present but empty.
+        if hasattr(event, "events") and hasattr(event.events, "event"):
+            callstack.append(event)
+            lines.extend(traverse_children(event.events, total_time, callstack))
+            callstack.pop()
+        else:
+            time = parse_time(event)
+            lines.append(make_line(callstack+[event], time, total_time))
+    return lines
 
 
 def parse_args():
@@ -81,16 +73,18 @@ def check_args(args):
         raise ValueError("Input file must be an XML file.")
     if not os.path.exists(args.infile):
         raise ValueError("The input file does not exist.")
-    if not args.outfile.endswith(".txt"):
-        raise ValueError("Output file must be a text file.")
 
 
 def main():
     args = parse_args()
     check_args(args)
 
-    events = parse_xml(args.infile)
-    write_flamegraph_str(events, args.outfile)
+    root = objectify.parse(args.infile).find("//timertree")
+    total_time = root.find("totaltime")
+    lines = traverse_children(root, total_time)
+
+    with open(args.outfile, "w") as f:
+        f.write("\n".join(lines))
 
 
 if __name__ == "__main__":

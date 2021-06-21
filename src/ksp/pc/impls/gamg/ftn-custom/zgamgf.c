@@ -39,5 +39,3 @@ PETSC_EXTERN void pcgamgsetesteigksptype_(PC *pc,char* type,PetscErrorCode *ierr
   FREECHAR(type,t);
 }
 
-
-

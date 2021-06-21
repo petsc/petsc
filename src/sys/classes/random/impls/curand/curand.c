@@ -1,4 +1,4 @@
-#include <../src/sys/classes/random/randomimpl.h>
+#include <petsc/private/randomimpl.h>
 #include <curand.h>
 
 #define CHKERRCURAND(stat) \
@@ -29,7 +29,7 @@ PetscErrorCode  PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, Petsc
 {
   curandStatus_t     cerr;
   PetscRandom_CURAND *curand = (PetscRandom_CURAND*)r->data;
-  size_t             nn = n < 0 ? -2*(size_t)n : n; /* handle complex case */
+  size_t             nn = n < 0 ? (size_t)(-2*n) : n; /* handle complex case */
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_SINGLE)

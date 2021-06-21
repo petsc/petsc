@@ -49,7 +49,6 @@ static void evaluate_solCx(PetscReal pos[],PetscReal _eta_A,PetscReal _eta_B,   
   PetscReal t1545;
   PetscReal t1564,t1583;
 
-
   /* del_rho = sin(n*Pi*z)*cos(nx*Pi*x)  n=nx gives only non-zero terms*/
   n  = _n; /* only one n in Fourier series because  del_rho has cos term */
   nx = 1; /* can set these two to whatever we like */
@@ -2223,10 +2222,8 @@ static void evaluate_solCx(PetscReal pos[],PetscReal _eta_A,PetscReal _eta_B,   
 
   u4 = (t57 + t95 + t135 + t164) / (0.4e1 * t24 * t15 + 0.8e1 * t127 * t15 * t18 + 0.4e1 * t131 * t15 * t19);
 
-
   /****************************************************************************************/
   /****************************************************************************************/
-
 
   u5 = (PetscReal)(-2*Z*n*PETSC_PI*u2-u3*2*n*PETSC_PI)*PetscCosReal(n*PETSC_PI*z); /* pressure */
 

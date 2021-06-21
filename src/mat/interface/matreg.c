@@ -193,7 +193,6 @@ $     -mat_type my_mat
 
 .seealso: MatRegisterAll()
 
-
   Level: advanced
 @*/
 PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))

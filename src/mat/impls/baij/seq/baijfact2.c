@@ -799,4 +799,3 @@ PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A)
   PetscFunctionReturn(0);
 }
 
-

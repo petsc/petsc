@@ -4,7 +4,6 @@ static char help[] = "Test VecCreate{Seq|MPI}ViennaCLWithArrays.\n\n";
 #include "petsc.h"
 #include "petscviennacl.h"
 
-
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

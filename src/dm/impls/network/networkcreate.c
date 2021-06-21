@@ -7,7 +7,7 @@ PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   ierr = PetscOptionsHead(PetscOptionsObject,"DMNetwork Options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -333,6 +333,10 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
   network->nEdges    = 0;
   network->nsubnet   = 0;
 
+  network->max_comps_registered = 20;
+  network->component            = NULL;
+  network->header               = NULL;
+  network->cvalue               = NULL;
 
   ierr = DMInitialize_Network(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

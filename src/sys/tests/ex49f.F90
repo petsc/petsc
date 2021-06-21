@@ -36,12 +36,12 @@ program main
   PetscInt,parameter::    N=3
   PetscMPIInt,parameter:: mN=3
   PetscInt                x(N),x1(N),y(N),z(N)
-  PetscMPIInt             mx(N),my(N),mz(N)
+  PetscMPIInt             mx(N),my(N)
   PetscScalar             s(N)
   PetscReal               r(N)
   PetscMPIInt,parameter:: two=2, five=5, seven=7
   type(uctx)::            ctx
-  PetscInt                dummyint, i
+  PetscInt                i
   PetscSizeT              sizeofentry
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -52,10 +52,13 @@ program main
   z  = [3, 5, 2]
   mx = [five, seven, two]
   my = [five, seven, two]
-  mz = [five, seven, two]
   s  = [1.0, 2.0, 3.0]
   r  = [1.0, 2.0, 3.0]
-  sizeofentry = sizeof(dummyint)
+#if defined(PETSC_USE_64BIT_INDICES)
+  sizeofentry = 8;
+#else
+  sizeofentry = 4;
+#endif
   ctx%myint = 1
   call PetscSortInt(N,x,ierr)
   call PetscTimSort(N,x1,sizeofentry,CompareIntegers,ctx,ierr)

@@ -53,7 +53,6 @@ PetscErrorCode PCDeflationSetInitOnly(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode PCDeflationSetLevels_Deflation(PC pc,PetscInt current,PetscInt max)
 {
   PC_Deflation   *def = (PC_Deflation*)pc->data;
@@ -413,7 +412,7 @@ PetscErrorCode PCDeflationGetPC(PC pc,PC *apc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(pc,2);
+  PetscValidPointer(pc,1);
   ierr = PetscTryMethod(pc,"PCDeflationGetPC_C",(PC,PC*),(pc,apc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

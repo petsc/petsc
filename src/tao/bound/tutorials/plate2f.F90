@@ -40,7 +40,6 @@
       PetscInt         mx, my, Nx, Ny, N
       end module
 
-
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,7 +61,6 @@
       PetscBool        flg
       PetscInt         i1,i3,i7
 
-
       external FormFunctionGradient
       external FormHessian
       external MSA_BoundaryConditions
@@ -73,7 +71,6 @@
       i1=1
       i3=3
       i7=7
-
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -107,7 +104,6 @@
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                         '-bheight',bheight,flg,ierr)
       CHKERRA(ierr)
-
 
 ! Calculate any derived values from parameters
       N = mx*my
@@ -157,7 +153,6 @@
       CHKERRA(ierr)
       call MatSetLocalToGlobalMapping(H,isltog,isltog,ierr)
       CHKERRA(ierr)
-
 
 ! The Tao code begins here
 ! Create TAO solver and set desired solution method.
@@ -237,7 +232,6 @@
 !  info  - error code
 !
 
-
       subroutine FormFunctionGradient(tao,X,fcn,G,dummy,ierr)
       use mymodule
       implicit none
@@ -263,7 +257,6 @@
       PetscReal      df5dxc,df6dxc
       PetscReal      xc,xl,xr,xt,xb,xlt,xrb
 
-
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
 ! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
 ! will return an array of doubles referenced by x_array offset by x_index.
@@ -284,7 +277,6 @@
       area = 0.5 * hx * hy
       rhx = real(mx) + 1.0
       rhy = real(my) + 1.0
-
 
 ! Get local mesh boundaries
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
@@ -412,7 +404,6 @@
          enddo
       endif
 
-
       if (ys .eq. 0) then !bottom side
          do i=xs,xs+xm-1
             d2 = (bottom_v(i+1-xs+bottom_i)-bottom_v(i-xs+2+bottom_i))    &
@@ -422,7 +413,6 @@
          enddo
       endif
 
-
       if (xs + xm .eq. mx) then ! right side
          do j=ys,ys+ym-1
             d1 = (x_v((j+1-gys)*gxm-1+x_i)-right_v(j-ys+1+right_i))*rhx
@@ -431,7 +421,6 @@
          enddo
       endif
 
-
       if (ys + ym .eq. my) then
          do i=xs,xs+xm-1
             d1 = (x_v((gym-1)*gxm+i-gxs+x_i) - top_v(i-xs+1+top_i))*rhy
@@ -439,7 +428,6 @@
             ft = ft + sqrt(1.0 + d1*d1 + d4*d4)
          enddo
       endif
-
 
       if ((ys .eq. 0) .and. (xs .eq. 0)) then
          d1 = (left_v(0 + left_i) - left_v(1 + left_i)) * rhy
@@ -457,7 +445,6 @@
       call MPI_Allreduce(ft,fcn,1,MPIU_SCALAR,                            &
      &             MPIU_SUM,PETSC_COMM_WORLD,ierr)
 
-
 ! Restore vectors
       call VecRestoreArray(localX,x_v,x_i,ierr)
       call VecRestoreArray(localV,g_v,g_i,ierr)
@@ -474,10 +461,6 @@
 
       return
       end  !FormFunctionGradient
-
-
-
-
 
 ! ----------------------------------------------------------------------------
 !
@@ -566,7 +549,6 @@
       call MatAssembled(Hessian,assembled,ierr)
       if (assembled .eqv. PETSC_TRUE) call MatZeroEntries(Hessian,ierr)
 
-
       rhx = real(mx) + 1.0
       rhy = real(my) + 1.0
       hx = 1.0/rhx
@@ -638,7 +620,6 @@
             f4 = sqrt(1.0 + d3*d3 + d2*d2)
             f5 = sqrt(1.0 + d2*d2 + d5*d5)
             f6 = sqrt(1.0 + d4*d4 + d6*d6)
-
 
             hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+                 &
      &              (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2)
@@ -717,8 +698,6 @@
             call MatSetValuesLocal(Hessian,i1,row,k,col,v,INSERT_VALUES,      &
      &                              ierr)
 
-
-
          enddo
       enddo
 
@@ -729,7 +708,6 @@
       call VecRestoreArray(Top,top_v,top_i,ierr)
       call VecRestoreArray(Bottom,bottom_v,bottom_i,ierr)
 
-
 ! Assemble the matrix
       call MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY,ierr)
@@ -738,10 +716,6 @@
 
       return
       end
-
-
-
-
 
 ! Top,Left,Right,Bottom,bheight,mx,my,bmx,bmy,H, defined in plate2f.h
 
@@ -786,7 +760,6 @@
       two=2.0
       three=3.0
 
-
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
      &                  PETSC_NULL_INTEGER,ierr)
       call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,              &
@@ -796,7 +769,6 @@
       lsize = ym + 2
       rsize = ym + 2
       tsize = xm + 2
-
 
       call VecCreateMPI(PETSC_COMM_WORLD,bsize,PETSC_DECIDE,Bottom,ierr)
       call VecCreateMPI(PETSC_COMM_WORLD,tsize,PETSC_DECIDE,Top,ierr)
@@ -813,7 +785,6 @@
             xt=l+hx*xs
             limit=bsize
             call VecGetArray(Bottom,boundary_v,boundary_i,ierr)
-
 
          elseif (j.eq.1) then
             yt=t
@@ -833,7 +804,6 @@
             limit=rsize
             call VecGetArray(Right,boundary_v,boundary_i,ierr)
          endif
-
 
          do i=0,limit-1
 
@@ -869,7 +839,6 @@
 
          enddo
 
-
          if (j.eq.0) then
             call VecRestoreArray(Bottom,boundary_v,boundary_i,ierr)
          elseif (j.eq.1) then
@@ -881,7 +850,6 @@
          endif
 
       enddo
-
 
 ! Scale the boundary if desired
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
@@ -907,7 +875,6 @@
       if (flg .eqv. PETSC_TRUE) then
          call VecScale(Left,scl,ierr)
       endif
-
 
       return
       end
@@ -951,7 +918,6 @@
       if (bmx .lt. 0) bmx = 0
       if (bmx .gt. mx) bmx = mx
 
-
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
      &             PETSC_NULL_INTEGER,ierr)
 
@@ -959,7 +925,6 @@
       call VecSet(xu,ub,ierr)
 
       call VecGetArray(xl,xl_v,xl_i,ierr)
-
 
       do i=xs,xs+xm-1
 
@@ -976,15 +941,10 @@
          enddo
       enddo
 
-
       call VecRestoreArray(xl,xl_v,xl_i,ierr)
 
       return
       end
-
-
-
-
 
 ! ----------------------------------------------------------------------------
 !
@@ -1046,8 +1006,6 @@
      &                     PETSC_NULL_INTEGER,ierr)
          call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
      &                     PETSC_NULL_INTEGER,ierr)
-
-
 
 !        Get pointers to vector data
          call VecGetArray(Top,top_v,top_i,ierr)

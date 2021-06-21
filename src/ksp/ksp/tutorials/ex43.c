@@ -60,7 +60,6 @@ Options: \n"
 
 static PetscErrorCode DMDABCApplyFreeSlip(DM,Mat,Vec);
 
-
 #define NSD            2 /* number of spatial dimensions */
 #define NODES_PER_EL   4 /* nodes per element */
 #define U_DOFS         2 /* degrees of freedom per velocity node */
@@ -1096,7 +1095,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   KSP                    ksp_S;
   PetscInt               coefficient_structure = 0;
   PetscInt               cpu_x,cpu_y,*lx = NULL,*ly = NULL;
-  PetscBool              use_gp_coords = PETSC_FALSE,set,output_gnuplot = PETSC_FALSE,glvis = PETSC_FALSE;
+  PetscBool              use_gp_coords = PETSC_FALSE,set,output_gnuplot = PETSC_FALSE,glvis = PETSC_FALSE,change = PETSC_FALSE;
   char                   filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode         ierr;
 
@@ -1104,6 +1103,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-gnuplot",&output_gnuplot,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-glvis",&glvis,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-change",&change,NULL);CHKERRQ(ierr);
 
   /* Generate the da for velocity and pressure */
   /*
@@ -1498,6 +1498,12 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
         ierr = KSPSetDM(ksp_U,da_U);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp_U,PETSC_FALSE);CHKERRQ(ierr);
         ierr = DMDestroy(&da_U);CHKERRQ(ierr);
+        if (change) {
+          const char opt[] = "-stokes_fieldsplit_u_pc_factor_mat_solver_type mumps";
+          ierr = PetscOptionsInsertString(NULL,opt);CHKERRQ(ierr);
+          ierr = KSPSetFromOptions(ksp_U);CHKERRQ(ierr);
+        }
+        ierr = KSPSetUp(ksp_U);CHKERRQ(ierr);
       }
     }
   }
@@ -1867,7 +1873,6 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
   PetscFunctionReturn(0);
 }
 
-
 /*TEST
 
    build:
@@ -1876,10 +1881,19 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
    test:
       args: -stokes_pc_use_amat -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short
 
-   test:
-      suffix: 2
+   testset:
       args: -stokes_pc_use_amat -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_fieldsplit_u_ksp_type preonly -stokes_fieldsplit_u_pc_type lu -stokes_fieldsplit_p_ksp_type preonly -stokes_fieldsplit_p_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short
-      output_file: output/ex43_1.out
+      test:
+         suffix: 2
+         args:
+         output_file: output/ex43_1.out
+      test:
+         requires: mumps
+         suffix: 2_mumps
+         args: -change true -stokes_ksp_view
+         output_file: output/ex43_2_mumps.out
+         # mumps INFO,INFOG,RINFO,RINFOG may vary on different archs, so keep just a stable one
+         filter:  egrep -v "(INFOG\([^7]|INFO\(|\[0\])"
 
    test:
       suffix: 3
@@ -1936,6 +1950,5 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
       suffix: bddc_stokes_subdomainjump_deluxe
       nsize: 9
       args: -c_str 4 -jump_magnitude 3 -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_coarse_redundant_pc_type svd -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc
-
 
 TEST*/

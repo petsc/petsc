@@ -601,8 +601,8 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   PetscInt       *in;
 
   PetscFunctionBegin;
-  if (n) PetscValidIntPointer(indices,3);
-  PetscValidPointer(mapping,4);
+  if (n) PetscValidIntPointer(indices,4);
+  PetscValidPointer(mapping,6);
 
   *mapping = NULL;
   ierr = ISInitializePackage();CHKERRQ(ierr);
@@ -636,7 +636,6 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
 }
 
 PetscFunctionList ISLocalToGlobalMappingList = NULL;
-
 
 /*@
    ISLocalToGlobalMappingSetFromOptions - Set mapping options from the options database.
@@ -1007,7 +1006,6 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
   PetscFunctionReturn(0);
 }
 
-
 /*@C
     ISLocalToGlobalMappingGetBlockInfo - Gets the neighbor information for each processor and
      each index shared by more than one processor
@@ -1031,7 +1029,6 @@ $        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, Pe
           PetscInt indices[nproc][numprocmax],ierr)
         There is no ISLocalToGlobalMappingRestoreInfo() in Fortran. You must make sure that procs[], numprocs[] and
         indices[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
-
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingRestoreInfo()
@@ -1110,7 +1107,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   for (i=0; i<n; i++) {
     if (lindices[i] > max) max = lindices[i];
   }
-  ierr   = MPIU_Allreduce(&max,&Ng,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr   = MPIU_Allreduce(&max,&Ng,1,MPIU_INT,MPI_MAX,comm);CHKERRMPI(ierr);
   Ng++;
   ierr   = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
@@ -1531,7 +1528,6 @@ $        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, Pe
         There is no ISLocalToGlobalMappingRestoreInfo() in Fortran. You must make sure that procs[], numprocs[] and
         indices[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
 
-
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingRestoreInfo()
 @*/
@@ -1875,7 +1871,6 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Basic(ISLocalToGlobalMa
    Options Database Keys:
 .   -islocaltoglobalmapping_type hash - select this method
 
-
    Notes:
     This is selected automatically for large problems if the user does not set the type.
 
@@ -1892,7 +1887,6 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
   ltog->ops->destroy                        = ISLocalToGlobalMappingDestroy_Hash;
   PetscFunctionReturn(0);
 }
-
 
 /*@C
     ISLocalToGlobalMappingRegister -  Adds a method for applying a global to local mapping with an ISLocalToGlobalMapping

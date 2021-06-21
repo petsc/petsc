@@ -32,7 +32,6 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
   PetscFunctionReturn(0);
 }
 
-
 /*@C
   DMMoabOutput - Output the solution vectors that are stored in the DMMoab object as tags
   along with the complete mesh data structure in the native H5M or VTK format. The H5M output file

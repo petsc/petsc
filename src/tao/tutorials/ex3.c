@@ -56,30 +56,30 @@ typedef struct {
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DM             distributedMesh = NULL;
+  PetscBool      flg;
+  char           filename[2048];
   PetscErrorCode ierr;
-  const PetscInt dim = 2;
-  char filename[2048];
-  PetscBool flg;
 
   PetscFunctionBeginUser;
-  ierr = PetscOptionsBegin(comm, "", "Poisson mother problem options", "DMPLEX");CHKERRQ(ierr);
   filename[0] = '\0';
   user->use_riesz = PETSC_TRUE;
 
-  ierr = PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex2.c", user->use_riesz, &user->use_riesz, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-f", "filename to read", "ex2.c", filename, filename, sizeof(filename), &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Poisson mother problem options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex3.c", user->use_riesz, &user->use_riesz, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-f", "filename to read", "ex3.c", filename, filename, sizeof(filename), &flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (!flg) {
-    ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   } else {
+    /* TODO Eliminate this in favor of DMLoad() in new code */
 #if defined(PETSC_HAVE_HDF5)
     const PetscInt vertices_per_cell = 3;
     PetscViewer    viewer;
     Vec            coordinates;
     Vec            topology;
-    PetscInt       numCells;
+    PetscInt       dim = 2, numCells;
     PetscInt       numVertices;
     PetscScalar*   coords;
     PetscScalar*   topo_f;
@@ -148,14 +148,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-hdf5");
 #endif
   }
-
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-  if (distributedMesh) {
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = distributedMesh;
-  }
-
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -251,9 +243,9 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   ierr = DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL);CHKERRQ(ierr);
 
   /* Code from Matt to get the indices associated with the boundary dofs */
-  ierr = DMAddBoundary(dm_laplace, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) zero, NULL, 1, &id, NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalSection(dm_laplace, &section);CHKERRQ(ierr);
   ierr = DMGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
+  ierr = DMAddBoundary(dm_laplace, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMGetLocalSection(dm_laplace, &section);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(label, 1, &n);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(label, 1, &is);CHKERRQ(ierr);
   ierr = ISGetIndices(is, &points);CHKERRQ(ierr);

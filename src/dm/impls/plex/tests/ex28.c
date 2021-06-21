@@ -2,8 +2,6 @@ static char help[] = "Compare parallel partitioning strategies using matrix grap
 
 #include <petscmat.h>
 
-
-
 int main(int argc, char **args)
 {
   MatPartitioning part;

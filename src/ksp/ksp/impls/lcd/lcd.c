@@ -136,7 +136,6 @@ PetscErrorCode KSPReset_LCD(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode KSPDestroy_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -220,7 +219,6 @@ PetscErrorCode KSPSetFromOptions_LCD(PetscOptionItems *PetscOptionsObject,KSP ks
      View).
 
   Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
-
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType(), KSPLCDSetRestart(), KSPLCDSetHapTol()

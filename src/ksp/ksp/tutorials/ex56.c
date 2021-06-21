@@ -339,7 +339,6 @@ int main(int argc,char **args)
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
 
-
     ierr = VecNorm(bb, NORM_2, &norm2);CHKERRQ(ierr);
 
     ierr = VecDuplicate(xx, &res);CHKERRQ(ierr);
@@ -948,7 +947,6 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
   ierr = PetscArraycpy(dd,DD,576);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*TEST
 

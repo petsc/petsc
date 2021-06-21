@@ -195,7 +195,6 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat *C)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
   PetscErrorCode ierr;
@@ -212,7 +211,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
 
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   /* For simplicity, this example only works on mx=my=mz */
-  if (mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
+  if (mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
@@ -276,8 +275,6 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 /*TEST
 

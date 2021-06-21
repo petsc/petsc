@@ -1,9 +1,7 @@
 static char help[] ="Tests MatFDColoringSetValues()\n\n";
 
-
 #include <petscdm.h>
 #include <petscdmda.h>
-
 
 int main(int argc,char **argv)
 {

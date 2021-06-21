@@ -40,12 +40,12 @@ int main(int argc,char **argv)
   ierr = VecSet(y,314);CHKERRQ(ierr);
 
   /* Pull y to CPU (make its offloadmask = PETSC_OFFLOAD_CPU) */
-  ierr = VecGetArray(y,&val);
+  ierr = VecGetArray(y,&val);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&val);CHKERRQ(ierr);
 
   /* The vscat is simply a vector copy */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&ix);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&iy);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&ix);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&iy);CHKERRQ(ierr);
   ierr = VecScatterCreate(x,ix,y,iy,&vscat);CHKERRQ(ierr);
 
   /* Do device to host vecscatter and then immediately use y on host. VecScat/SF may use asynchronous
@@ -71,6 +71,7 @@ int main(int argc,char **argv)
 
    test:
     requires: cuda
+    diff_args: -j
     #make sure the host memory is pinned
     # sf_backend cuda is not needed if compiling only with cuda
     args: -vec_type cuda -sf_backend cuda -vec_pinned_memory_min 0
@@ -78,6 +79,7 @@ int main(int argc,char **argv)
    test:
     suffix: hip
     requires: hip
+    diff_args: -j
     output_file: output/ex2_1.out
     #make sure the host memory is pinned
     # sf_backend hip is not needed if compiling only with hip

@@ -49,7 +49,6 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRA(ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
 
-
 !     Here we would like to print only one message that represents all
 !     the processes in the group.
       if (rank .eq. 0) write(6,100) size,rank

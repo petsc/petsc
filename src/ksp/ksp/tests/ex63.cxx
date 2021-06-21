@@ -39,7 +39,7 @@
 // ***********************************************************************
 //
 
-/**
+/*
    \file   quick_solve.cpp
    \author Eric Bavier <etbavie@sandia.gov>
    \date   Thu Jul 14 16:24:46 MDT 2011
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Before we do anything, check that the solver is enabled
-  if (!Amesos2::query(solver_name)){
+  if (!Amesos2::query(solver_name)) {
     std::cerr << solver_name << " not enabled.  Exiting..." << std::endl;
     return EXIT_SUCCESS;        // Otherwise CTest will pick it up as
                                 // failure, which it isn't really
@@ -136,10 +136,10 @@ int main(int argc, char *argv[]) {
   std::string mat_pathname = filedir + filename;
   RCP<MAT> A = Tpetra::MatrixMarket::Reader<MAT>::readSparseFile(mat_pathname,comm,node);
 
-  if (printMatrix){
+  if (printMatrix) {
     A->describe(*fos, Teuchos::VERB_EXTREME);
   }
-  else if (verbose && myRank==0){
+  else if (verbose && myRank==0) {
     *fos << std::endl << A->description() << std::endl << std::endl;
   }
 
@@ -161,36 +161,36 @@ int main(int argc, char *argv[]) {
   RCP<Amesos2::Solver<MAT,MV> > solver;
   try{
     solver = Amesos2::create<MAT,MV>(solver_name, A, Xhat, B);
-  } catch (std::invalid_argument e){
+  } catch (std::invalid_argument e) {
     *fos << e.what() << std::endl;
     return 0;
   }
 
   solver->numericFactorization();
 
-  if (printLUStats && myRank == 0){
+  if (printLUStats && myRank == 0) {
     Amesos2::Status solver_status = solver->getStatus();
     *fos << "L+U nnz = " << solver_status.getNnzLU() << std::endl;
   }
 
   solver->solve();
 
-  if (printSolution){
+  if (printSolution) {
     // Print the solution
     Xhat->describe(*fos,Teuchos::VERB_EXTREME);
     X->describe(*fos,Teuchos::VERB_EXTREME);
   }
 
-  if (printTiming){
+  if (printTiming) {
     // Print some timing statistics
     solver->printTiming(*fos);
   }
 
-  if (printResidual){
+  if (printResidual) {
     Teuchos::Array<Magnitude> xhatnorms(numVectors);
     Xhat->update(-1.0, *X, 1.0);
     Xhat->norm2(xhatnorms());
-    if (myRank == 0){
+    if (myRank == 0) {
       *fos << "Norm2 of Ax - b = " << xhatnorms << std::endl;
     }
   }
@@ -217,7 +217,6 @@ int main(int argc, char *argv[]) {
   ierr = PetscFinalize();
   return ierr;
 }
-
 
 /*TEST
 

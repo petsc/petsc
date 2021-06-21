@@ -1903,7 +1903,7 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
     ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
     ierr = MatCreateFromParCSR(parcsr,MATAIJ,PETSC_USE_POINTER,&B);CHKERRQ(ierr);
     ierr = MatGetOperation(B,MATOP_VIEW,(void(**)(void))&mview);CHKERRQ(ierr);
-    if (!mview) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing view operation");CHKERRQ(ierr);
+    if (!mview) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing view operation");
     ierr = (*mview)(B,view);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   } else {

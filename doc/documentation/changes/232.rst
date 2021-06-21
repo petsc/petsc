@@ -1,0 +1,84 @@
+==============
+Changes: 2.3.2
+==============
+
+
+.. rubric:: General:
+
+-  We have a new Semi-Lagrangian advection solver using the method of
+   characteristics to the ``src/contrib/semiLagrange``, contributed
+   by `Richard Katz <mailto:katz@ldeo.columbia.edu>`__ and `Marc
+   Spiegelman <mailto:mspieg@ldeo.columbia.edu>`__ of Columbia
+   University. Examples are included.
+-  Added C99 complex support. [check configure changes below]
+
+.. rubric:: Vec:
+
+.. rubric:: Mat:
+
+-  Added MatCreateScatter() and MATSCATTER to easily construct
+   efficient "restriction operators"
+-  Removed MatConvertRegister() and friends, added ``(*convertfrom)`` to
+   Mat function table to replace it
+
+.. rubric:: PC:
+
+-  Added PCGALERKIN and PCGalerkinSetRestriction/Interpolation() to
+   allow easy creating of Galerkin-like preconditioners.
+-  Added PCGetOperatorsSet()
+-  Added support for the KSP/PC to auto-create the Mat(s) for you.
+   (Which you usally set with KSP/PCSetOperators()). See manual page
+   for KSP/PCGetOperators(). Note this is slightly speculative code
+   currently.
+-  PCSetOperators()/KSPSetOperators() now do reference counting on
+   the operators you pass in. Current usage will work, however this
+   means you NO LONGER need to keep a reference to the operators
+   around until the KSP/PC object is destroyed.
+
+.. rubric:: KSP:
+
+-  Added KSPDefaultConvergedSetUIRNorm() and
+   -ksp_default_converged_initial_residual_norm to go back to the pre
+   PETSc 2.3.1 of determing relative tolerance for convergence.
+-  Added KSPGetOperatorsSet()
+
+.. rubric:: config/configure.py:
+
+-  Now c++ complex version requires the options'
+   '--with-scalar-type=complex --with-clanguage=cxx'. Specyfing only
+   '--with-scalar-type=complex' will default to '--with-clanguage=c'
+   i.e uses C99 complex support.
+
+.. rubric:: SNES:
+
+-  The convergence test functions for SNES now pass the current
+   iteration in as the second argument. Also the convergence test
+   routine is called after the initial function evaluation in SNES
+   but before the first Newton step is computed.
+-  Added SNESSetKSP().
+
+.. rubric:: TS:
+
+.. rubric:: DA:
+
+.. rubric:: DMMG:
+
+.. rubric:: SYS:
+
+-  Removed PetscRandomType from the prototype of PetscRandomCreate().
+-  Added PetscRandomSetType(), PetscRandomGetValueReal() and
+   PetscRandomGetValueImaginary().
+-  Replaced RANDOM_DEFAULT, RANDOM_DEFAULT_REAL and
+   RANDOM_DEFAULT_IMAGINARY, the type of random numbers, with
+   PETSCRAND48, PETSCRAND etc.
+
+.. rubric:: AO:
+
+-  AODATA object and associated routines are now deprecated and
+   scheduled for future removal
+
+.. rubric:: Fortran:
+
+.. rubric:: `ExternalPackages <https://www.mcs.anl.gov/petsc/miscellaneous/external.html>`__:
+
+-  SPRNG support added.

@@ -25,7 +25,6 @@ typedef struct Vec_Chain{
   struct Vec_Chain *next;
 }Vec_Chain;
 
-
 /* Context for Dai-Fletcher solver */
 typedef struct{
   PetscInt maxProjIter;
@@ -61,9 +60,5 @@ typedef struct{
   /* Tolerance for optimization error */
   PetscReal tol;
 }TAO_DF;
-
-
-
-
 
 #endif

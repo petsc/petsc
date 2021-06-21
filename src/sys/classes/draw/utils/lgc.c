@@ -55,7 +55,6 @@ PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    PetscDrawLGSPDraw - Redraws a line graph.
 
@@ -83,7 +82,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
-  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,2);
+  PetscValidHeaderSpecific(sp,PETSC_DRAWLG_CLASSID,2);
   ierr = PetscDrawIsNull(lg->win,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRMPI(ierr);
@@ -124,7 +123,6 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
     PetscDrawLGCreate - Creates a line graph data structure.
@@ -320,7 +318,6 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -360,7 +357,6 @@ PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_
    Level: intermediate
 
 .seealso: PetscDrawLGCreate()
-
 @*/
 PetscErrorCode  PetscDrawLGReset(PetscDrawLG lg)
 {
@@ -420,12 +416,11 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
 -  flg - should mark each data point
 
    Options Database:
-.  -lg_use_markers  <true,false>
+.  -lg_use_markers  <true,false> - true means the graphPetscDrawLG draws a marker for each point
 
    Level: intermediate
 
 .seealso: PetscDrawLGCreate()
-
 @*/
 PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
 {
@@ -447,7 +442,6 @@ PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
    Level: intermediate
 
 .seealso: PetscDrawSPDraw(), PetscDrawLGSPDraw(), PetscDrawLGReset()
-
 @*/
 PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 {
@@ -558,7 +552,7 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
   if (nopts < 1)                  PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
-  if (!viewer){
+  if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg),&viewer);CHKERRQ(ierr);
   }
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)lg,viewer);CHKERRQ(ierr);

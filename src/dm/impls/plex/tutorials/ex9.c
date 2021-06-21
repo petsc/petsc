@@ -3,9 +3,8 @@ static char help[] = "Evaluate the shape quality of a mesh\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
-  PetscBool report;                       /* Print a quality report */
-  PetscReal condLimit, tol;               /* Condition number limit for cell output */
+  PetscBool report;         /* Print a quality report */
+  PetscReal condLimit, tol; /* Condition number limit for cell output */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -13,13 +12,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->filename[0] = '\0';
   options->report      = PETSC_FALSE;
   options->tol         = 0.5;
   options->condLimit   = PETSC_DETERMINE;
 
   ierr = PetscOptionsBegin(comm, "", "Mesh Quality Evaluation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex9.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-report", "Output a mesh quality report", "ex9.c", options->report, &options->report, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-cond_limit", "Condition number limit for cell output", "ex9.c", options->condLimit, &options->condLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-orth_qual_atol", "Absolute tolerance for Orthogonal Quality", "ex9.c", options->tol, &options->tol, NULL);CHKERRQ(ierr);
@@ -29,12 +26,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->filename[0]) {ierr = DMPlexCreateFromFile(comm, user->filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else                   {ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -65,33 +61,34 @@ int main(int argc, char **argv)
     suffix: 0
     requires: exodusii
     nsize: {{1 2}}
-    args: -dm_distribute -petscpartitioner_type simple -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report
+    args: -dm_distribute -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report
 
   test:
     suffix: 1
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -report
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -report
 
   testset:
-    requires: exodusii
     args: -dm_plex_orthogonal_quality_label_view -dm_plex_orthogonal_quality_vec_view
 
     test:
       suffix: box_1
       nsize: 1
-      args: -dm_plex_box_simplex 0 -dm_plex_box_faces 2,2 -orth_qual_atol 1.0
+      args: -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -orth_qual_atol 1.0
 
     test:
       suffix: box_2
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dm_plex_box_simplex 0 -dm_plex_box_faces 2,2 -orth_qual_atol 1.0
+      args: -dm_distribute -petscpartitioner_type simple -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -orth_qual_atol 1.0
 
     test:
       suffix: mesh_1
       nsize: 1
-      args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
+      requires: exodusii
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
 
     test:
       suffix: mesh_2
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
+      requires: exodusii
+      args: -dm_distribute -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
 TEST*/

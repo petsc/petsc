@@ -3,8 +3,6 @@
      Some useful vector utility functions.
 */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>          /*I "petscvec.h" I*/
-extern MPI_Op MPIU_MAXINDEX_OP;
-extern MPI_Op MPIU_MININDEX_OP;
 
 /*@
    VecStrideSet - Sets a subvector of a vector defined
@@ -24,7 +22,6 @@ extern MPI_Op MPIU_MININDEX_OP;
    This will only work if the desire subvector is a stride subvector
 
    Level: advanced
-
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
@@ -70,7 +67,6 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
    This will only work if the desire subvector is a stride subvector
 
    Level: advanced
-
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
@@ -126,7 +122,6 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 
    Level: advanced
 
-
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
 PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
@@ -139,7 +134,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidRealPointer(nrm,3);
+  PetscValidRealPointer(nrm,4);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
@@ -153,12 +148,12 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
     PetscScalar sum = 0.0;
     for (i=0; i<n; i+=bs) sum += x[i]*(PetscConj(x[i]));
     tnorm = PetscRealPart(sum);
-    ierr  = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRMPI(ierr);
     *nrm  = PetscSqrtReal(*nrm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
     for (i=0; i<n; i+=bs) tnorm += PetscAbsScalar(x[i]);
-    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRMPI(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     tnorm = 0.0;
@@ -168,7 +163,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
       /* check special case of tmp == NaN */
       if (tmp != tmp) {tnorm = tmp; break;}
     }
-    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -185,7 +180,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  index - the location where the maximum occurred  (pass NULL if not required)
++  idex - the location where the maximum occurred  (pass NULL if not required)
 -  nrm - the maximum value in the subvector
 
    Notes:
@@ -201,7 +196,6 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
    Level: advanced
 
-
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
 PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
@@ -210,15 +204,13 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   PetscInt          i,n,bs,id;
   const PetscScalar *x;
   PetscReal         max,tmp;
-  MPI_Comm          comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidRealPointer(nrm,3);
+  PetscValidRealPointer(nrm,4);
 
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
@@ -237,17 +229,17 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr = MPIU_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
   } else {
-    PetscReal in[2],out[2];
-    PetscInt  rstart;
+    struct { PetscReal v; PetscInt i; } in,out;
+    PetscInt rstart;
 
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
-    in[0] = max;
-    in[1] = rstart+id+start;
-    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,MPIU_MAXINDEX_OP,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
-    *nrm  = out[0];
-    *idex = (PetscInt)out[1];
+    in.v  = max;
+    in.i  = rstart+id+start;
+    ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MAXLOC,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
+    *nrm  = out.v;
+    *idex = out.i;
   }
   PetscFunctionReturn(0);
 }
@@ -278,7 +270,6 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
    This is useful for computing, say the minimum of the pressure variable when
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
    This will only work if the desire subvector is a stride subvector.
-
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
@@ -315,17 +306,17 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr = MPIU_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
   } else {
-    PetscReal in[2],out[2];
-    PetscInt  rstart;
+    struct { PetscReal v; PetscInt i; } in,out;
+    PetscInt rstart;
 
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
-    in[0] = min;
-    in[1] = rstart+id;
-    ierr  = MPIU_Allreduce(in,out,2,MPIU_REAL,MPIU_MININDEX_OP,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
-    *nrm  = out[0];
-    *idex = (PetscInt)out[1];
+    in.v  = min;
+    in.i  = rstart+id+start;
+    ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MINLOC,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
+    *nrm  = out.v;
+    *idex = out.i;
   }
   PetscFunctionReturn(0);
 }
@@ -346,9 +337,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    The dimension of scales must be the same as the vector block size
 
-
    Level: advanced
-
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -401,7 +390,6 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 
    Level: advanced
 
-
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
 PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
@@ -430,7 +418,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
     }
     for (j=0; j<bs; j++) tnorm[j]  = PetscRealPart(sum[j]);
 
-    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRMPI(ierr);
     for (j=0; j<bs; j++) nrm[j] = PetscSqrtReal(nrm[j]);
   } else if (ntype == NORM_1) {
     for (j=0; j<bs; j++) tnorm[j] = 0.0;
@@ -439,7 +427,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
       for (j=0; j<bs; j++) tnorm[j] += PetscAbsScalar(x[i+j]);
     }
 
-    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRMPI(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     for (j=0; j<bs; j++) tnorm[j] = 0.0;
@@ -451,7 +439,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
         if (tmp != tmp) {tnorm[j] = tmp; break;}
       }
     }
-    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -478,7 +466,6 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
    The dimension of nrm must be the same as the vector block size
 
    Level: advanced
-
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
@@ -512,7 +499,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
       }
     }
   }
-  ierr = MPIU_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
 
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -539,7 +526,6 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
    information, or use a vector created from a multicomponent DMDA.
 
    The dimension of nrm must be the same as the vector block size
-
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
@@ -573,7 +559,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
       }
     }
   }
-  ierr   = MPIU_Allreduce(min,nrm,bs,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+  ierr   = MPIU_Allreduce(min,nrm,bs,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
 
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -713,9 +699,9 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   PetscScalar const **y;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(s,2);
-  PetscValidHeaderSpecific(*s,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,2);
+  PetscValidPointer(s,1);
+  PetscValidHeaderSpecific(*s,VEC_CLASSID,1);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s[0],&n2);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -876,7 +862,6 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
    Notes:
    One must call VecSetBlockSize() on both vectors before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
-
 
    The parallel layout of the vector and the subvector must be the same;
 
@@ -1280,7 +1265,6 @@ PetscErrorCode  VecSqrtAbs(Vec v)
   Notes:
     conj(x) is the complex conjugate of x when x is complex
 
-
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
 
 @*/
@@ -1295,7 +1279,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
   PetscValidHeaderSpecific(s, VEC_CLASSID,1);
   PetscValidHeaderSpecific(t, VEC_CLASSID,2);
   PetscValidScalarPointer(dp,3);
-  PetscValidScalarPointer(nm,4);
+  PetscValidRealPointer(nm,4);
   PetscValidType(s,1);
   PetscValidType(t,2);
   PetscCheckSameTypeAndComm(s,1,t,2);
@@ -1318,7 +1302,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
     work[0] = dpx;
     work[1] = nmx;
 
-    ierr = MPIU_Allreduce(work,sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(work,sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRMPI(ierr);
     *dp  = sum[0];
     *nm  = PetscRealPart(sum[1]);
 
@@ -1358,7 +1342,7 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) lsum += x[i];
-  ierr = MPIU_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1548,8 +1532,6 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 .  flg - PETSC_TRUE if the vectors are equal; PETSC_FALSE otherwise.
 
    Level: intermediate
-
-
 @*/
 PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
 {
@@ -1580,7 +1562,7 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
       }
     }
     /* combine results from all processors */
-    ierr = MPIU_Allreduce(&flg1,flg,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)vec1));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&flg1,flg,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)vec1));CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1655,6 +1637,3 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   PetscFunctionReturn(0);
 #endif
 }
-
-
-

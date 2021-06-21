@@ -63,7 +63,6 @@
 !         |-|--------------------------------------------------------|--|
 !
 
-
       if (rank .eq. 0) then
         ifrom(1) = 11
         ifrom(2) = 6
@@ -85,7 +84,6 @@
         call VecCreateGhostBlock(PETSC_COMM_WORLD,bs,nlocal,             &
      &       PETSC_DECIDE,nghost,ifrom,gxs,ierr)
       endif
-
 
 !      Test VecDuplicate
 
@@ -123,12 +121,10 @@
       call PetscFinalize(ierr)
       end
 
-
 !/*TEST
 !
 !     test:
 !       nsize: 2
 !
 !TEST*/
-
 

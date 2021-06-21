@@ -631,7 +631,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
   return 0;
 }
 
-
 /*TEST
 
     test:
@@ -655,5 +654,4 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
       args: ./ex2 -ts_max_steps 10 -ts_monitor -M 128
 
 TEST*/
-
 

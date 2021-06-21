@@ -39,7 +39,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
     PetscMPIInt b1[2],b2[2];
     b1[0] = -(PetscMPIInt)twosided;
     b1[1] = (PetscMPIInt)twosided;
-    ierr  = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr  = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRMPI(ierr);
     if (-b2[0] != b2[1]) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
   }
   _twosided_type = twosided;
@@ -78,8 +78,7 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
-
+#if defined(PETSC_HAVE_MPI_IBARRIER)
 static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
@@ -125,11 +124,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
       ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
       ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
       if (sent) {
-#if defined(PETSC_HAVE_MPI_IBARRIER)
         ierr = MPI_Ibarrier(comm,&barrier);CHKERRMPI(ierr);
-#elif defined(PETSC_HAVE_MPIX_IBARRIER)
-        ierr = MPIX_Ibarrier(comm,&barrier);CHKERRQ(ierr);
-#endif
         barrier_started = PETSC_TRUE;
         ierr = PetscFree(sendreqs);CHKERRQ(ierr);
       }
@@ -171,7 +166,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
     ierr   = PetscArrayzero(iflags,size);CHKERRQ(ierr);
   }
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
-  ierr     = MPIU_Allreduce(MPI_IN_PLACE,iflags,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr     = MPIU_Allreduce(MPI_IN_PLACE,iflags,size,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   nrecvs   = iflags[rank];
   ierr     = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
@@ -294,7 +289,7 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Dataty
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
   case PETSC_BUILDTWOSIDED_IBARRIER:
-#if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
+#if defined(PETSC_HAVE_MPI_IBARRIER)
     ierr = PetscCommBuildTwoSided_Ibarrier(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
     break;
 #else
@@ -361,7 +356,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
+#if defined(PETSC_HAVE_MPI_IBARRIER)
 
 static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,
                                                           PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,MPI_Request **toreqs,MPI_Request **fromreqs,
@@ -429,11 +424,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
       ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
       ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
       if (sent) {
-#if defined(PETSC_HAVE_MPI_IBARRIER)
         ierr = MPI_Ibarrier(comm,&barrier);CHKERRMPI(ierr);
-#elif defined(PETSC_HAVE_MPIX_IBARRIER)
-        ierr = MPIX_Ibarrier(comm,&barrier);CHKERRQ(ierr);
-#endif
         barrier_started = PETSC_TRUE;
       }
     } else {
@@ -568,7 +559,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
   case PETSC_BUILDTWOSIDED_IBARRIER:
-#if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
+#if defined(PETSC_HAVE_MPI_IBARRIER)
     f = PetscCommBuildTwoSidedFReq_Ibarrier;
     break;
 #else

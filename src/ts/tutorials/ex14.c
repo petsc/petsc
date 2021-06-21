@@ -1541,7 +1541,6 @@ static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *c
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
 {
   MPI_Comm       comm;

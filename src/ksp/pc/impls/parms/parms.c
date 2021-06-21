@@ -36,7 +36,6 @@ typedef struct {
   PetscScalar       *lvec0, *lvec1;
 } PC_PARMS;
 
-
 static PetscErrorCode PCSetUp_PARMS(PC pc)
 {
   Mat               pmat;
