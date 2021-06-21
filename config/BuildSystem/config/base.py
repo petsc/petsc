@@ -532,9 +532,8 @@ class Configure(script.Script):
     command = self.getCompilerCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
     self.framework.outputCHeader(self.compilerFixes)
-    f = open(self.compilerSource, 'w')
-    f.write(self.getCode(includes, body, codeBegin, codeEnd))
-    f.close()
+    with open(self.compilerSource, 'w') as f:
+      f.write(self.getCode(includes, body, codeBegin, codeEnd))
     (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.log)
     if not os.path.isfile(self.compilerObj):
       err += '\nPETSc Error: No output file produced'

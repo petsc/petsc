@@ -84,6 +84,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.makeMacroHeader = ''
     self.makeRuleHeader  = ''
     self.cHeader         = 'matt_fix.h'
+    self.enablepoison    = False
+    self.poisonheader    = 'matt_poison.h'
     self.headerPrefix    = ''
     self.substPrefix     = ''
     self.pkgheader       = ''
@@ -707,9 +709,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def outputPoison(self, f, name):
     '''Outputs a poison version of name to prevent accidental usage, see outputHeader'''
-    if (name.startswith('PETSC_HAVE_LIB') and not name in ['PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG','PETSC_HAVE_LIBCEED']) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
-    if name.startswith('PETSC_USE_') or name.startswith('PETSC_HAVE_') or name.startswith('PETSC_SKIP_'): 
-        f.write('#pragma GCC poison PETSC_%s\n' % name)
+    if (name.startswith('PETSC_HAVE_LIB') and not name in {'PETSC_HAVE_LIBPNG','PETSC_HAVE_LIBJPEG','PETSC_HAVE_LIBCEED'}) or (name.startswith('PETSC_HAVE_') and name.endswith('LIB')): return
+    if name.startswith(('PETSC_USE_','PETSC_HAVE_','PETSC_SKIP_')):
+      f.write('#pragma GCC poison PETSC_%s\n' % name)
 
   def outputMakeMacro(self, f, name, value):
     f.write(name+' = '+str(value)+'\n')
@@ -903,20 +905,19 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
       if self.file_create_pause: time.sleep(1)
-      f2 = open(name[0:-2]+'_poison.h', 'w')
-      self.pushLanguage('C')
-      if self.checkCompile('#pragma GCC poison TEST'):
-        self.popLanguage()
-        if hasattr(self.compilers, 'CXX'):
-          self.pushLanguage('C++')
-          if self.checkCompile('#pragma GCC poison TEST'):
-            self.outputPoisons(defineDict, f2)
-          self.popLanguage()
+      with open(self.poisonheader,'w') as fpoison:
+        if self.file_create_pause: time.sleep(1)
+        if self.enablepoison:
+          # it is safe to write the poison file
+          self.outputPoisons(defineDict,fpoison)
         else:
-          self.outputPoisons(defineDict, f2)
-      else:
-        self.popLanguage()
-      f2.close()
+          # at least 1 of the languages/compilers didn't like poison
+          poisonFileName = os.path.basename(self.poisonheader,)
+          poisonGuard = 'INCLUDED_'+poisonFileName.upper().replace('.', '_')
+          lines = [''.join(['#if !defined(',poisonGuard,')\n']),
+                   ''.join(['#define ',poisonGuard,'\n']),
+                   '#endif\n']
+          fpoison.writelines(lines)
     self.outputDefines(defineDict, f,petscconf)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
