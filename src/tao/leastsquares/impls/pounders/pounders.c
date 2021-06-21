@@ -535,6 +535,7 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
   PetscBLASInt   blasn=mfqP->n,  blasnpmax = mfqP->npmax, blask,info;
   PetscBLASInt   blas1=1,blasnmax = mfqP->nmax;
 
+  PetscFunctionBegin;
   blask = mfqP->nmodelpoints;
   /* Qtmp = I(n x n) */
   for (i=0;i<mfqP->n;i++) {

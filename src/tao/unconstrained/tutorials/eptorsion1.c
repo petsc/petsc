@@ -484,9 +484,10 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H,Mat Hpre, void *ptr)
 */
 PetscErrorCode MatrixFreeHessian(Tao tao,Vec X,Mat H,Mat PrecH, void *ptr)
 {
-  AppCtx     *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx *) ptr;
 
   /* Sets location of vector for use in computing matrix-vector products  of the form H(X)*y  */
+  PetscFunctionBeginUser;
   user->xvec = X;
   PetscFunctionReturn(0);
 }

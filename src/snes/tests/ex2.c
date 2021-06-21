@@ -99,6 +99,7 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);

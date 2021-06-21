@@ -701,6 +701,7 @@ PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta,
   PetscInt       cdim;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
   ierr = PetscMalloc1(1, &rc);CHKERRQ(ierr);
   dm->transformCtx       = rc;

@@ -20,7 +20,7 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
   PetscErrorCode ierr;
   Mat_AIJCRL     *aijcrl = (Mat_AIJCRL*) A->spptr;
 
-  /* Free everything in the Mat_AIJCRL data structure. */
+  PetscFunctionBegin;
   if (aijcrl) {
     ierr = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
     ierr = VecDestroy(&aijcrl->fwork);CHKERRQ(ierr);

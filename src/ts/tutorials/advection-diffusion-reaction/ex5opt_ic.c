@@ -48,6 +48,7 @@ PetscErrorCode InitializeLambda(DM da,Vec lambda,Vec U,AppCtx *appctx)
   Vec            Uob;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = VecDuplicate(U,&Uob);CHKERRQ(ierr);
   ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt.ob");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -67,6 +68,7 @@ PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = PetscViewerCreate(PetscObjectComm((PetscObject)da),viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
@@ -84,6 +86,7 @@ PetscErrorCode GenerateOBs(TS ts,Vec U,AppCtx *appctx)
   DM             da;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
   ierr = PetscSNPrintf(filename,sizeof filename,"ex5opt.ob");CHKERRQ(ierr);

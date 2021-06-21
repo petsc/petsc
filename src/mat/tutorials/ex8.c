@@ -35,11 +35,10 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
+  PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size);CHKERRMPI(ierr);
-
   if (size == 1) { /* SeqAIJ Matrix */
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
-
   } else { /* MPIAIJ Matrix */
     Mat AA,AB;
     ierr = MatMPIAIJGetSeqAIJ(mat,&AA,&AB,NULL);CHKERRQ(ierr);

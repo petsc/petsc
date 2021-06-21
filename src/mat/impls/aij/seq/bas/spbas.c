@@ -342,9 +342,9 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
   ierr = PetscInfo(NULL,"Row patterns have been compressed\n");CHKERRQ(ierr);
   ierr = PetscInfo1(NULL,"         (%g nonzeros per row)\n", (double) ((PetscReal) nnz / (PetscReal) nrows));CHKERRQ(ierr);
 
-  ierr=PetscFree(isort);CHKERRQ(ierr);
-  ierr=PetscFree(used);CHKERRQ(ierr);
-  ierr=PetscFree(ipoint);CHKERRQ(ierr);
+  ierr = PetscFree(isort);CHKERRQ(ierr);
+  ierr = PetscFree(used);CHKERRQ(ierr);
+  ierr = PetscFree(ipoint);CHKERRQ(ierr);
 
   mem_compressed = spbas_memory_requirement(*B);
   *mem_reduction = 100.0 * (PetscReal)(mem_orig-mem_compressed)/ (PetscReal) mem_orig;
@@ -367,20 +367,20 @@ PetscErrorCode spbas_delete(spbas_matrix matrix)
 
   PetscFunctionBegin;
   if (matrix.block_data) {
-    ierr=PetscFree(matrix.alloc_icol);CHKERRQ(ierr);
-    if (matrix.values) {ierr=PetscFree(matrix.alloc_val);CHKERRQ(ierr);}
+    ierr = PetscFree(matrix.alloc_icol);CHKERRQ(ierr);
+    if (matrix.values) {ierr = PetscFree(matrix.alloc_val);CHKERRQ(ierr);}
   } else {
-    for (i=0; i<matrix.nrows; i++) { ierr=PetscFree(matrix.icols[i]);CHKERRQ(ierr);}
+    for (i=0; i<matrix.nrows; i++) { ierr = PetscFree(matrix.icols[i]);CHKERRQ(ierr);}
     ierr = PetscFree(matrix.icols);CHKERRQ(ierr);
     if (matrix.values) {
-      for (i=0; i<matrix.nrows; i++) { ierr=PetscFree(matrix.values[i]);CHKERRQ(ierr);}
+      for (i=0; i<matrix.nrows; i++) { ierr = PetscFree(matrix.values[i]);CHKERRQ(ierr);}
     }
   }
 
-  ierr=PetscFree(matrix.row_nnz);CHKERRQ(ierr);
-  ierr=PetscFree(matrix.icols);CHKERRQ(ierr);
-  if (matrix.col_idx_type == SPBAS_OFFSET_ARRAY) {ierr=PetscFree(matrix.icol0);CHKERRQ(ierr);}
-  ierr=PetscFree(matrix.values);CHKERRQ(ierr);
+  ierr = PetscFree(matrix.row_nnz);CHKERRQ(ierr);
+  ierr = PetscFree(matrix.icols);CHKERRQ(ierr);
+  if (matrix.col_idx_type == SPBAS_OFFSET_ARRAY) {ierr = PetscFree(matrix.icol0);CHKERRQ(ierr);}
+  ierr = PetscFree(matrix.values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -552,6 +552,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
   PetscScalar    *vhlp2=NULL;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr  = PetscMalloc1(nnz,&ialloc);CHKERRQ(ierr);
   ihlp1 = ialloc;
   ihlp2 = icol;

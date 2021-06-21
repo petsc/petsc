@@ -2226,7 +2226,6 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     PetscSF        sfPoint;
     PetscErrorCode ierr;
 
-    PetscFunctionBegin;
     ierr = DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);

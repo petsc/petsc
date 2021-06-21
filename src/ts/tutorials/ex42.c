@@ -147,6 +147,7 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
   const PetscScalar *x;
   PetscInt          nb_cells, i;
 
+  PetscFunctionBegin;
   ierr = TSGetApplicationContext(ts, &user);CHKERRQ(ierr);
   nb_cells = user->nb_cells;
   ierr = VecGetArrayRead(Y, &x);CHKERRQ(ierr);

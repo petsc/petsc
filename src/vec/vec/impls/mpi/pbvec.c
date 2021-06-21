@@ -402,8 +402,9 @@ static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 #else
-  X->ops->assemblybegin =  VecAssemblyBegin_MPI;
-  X->ops->assemblyend   =  VecAssemblyEnd_MPI;
+  PetscFunctionBegin;
+  X->ops->assemblybegin = VecAssemblyBegin_MPI;
+  X->ops->assemblyend   = VecAssemblyEnd_MPI;
 #endif
   PetscFunctionReturn(0);
 }

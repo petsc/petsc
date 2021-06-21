@@ -46,6 +46,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode ScotchResetRandomSeed()
 {
+  PetscFunctionBegin;
 #if defined(PETSC_HAVE_PTSCOTCH)
   SCOTCH_randomReset();
 #endif

@@ -35,7 +35,7 @@ static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
-  ierr=PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",NULL,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",NULL,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
@@ -102,13 +102,13 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
       ierr = VecSet(tao->XU,PETSC_INFINITY);CHKERRQ(ierr);
   }
 
-  ierr=VecDuplicate(tao->solution,&gpcg->B);CHKERRQ(ierr);
-  ierr=VecDuplicate(tao->solution,&gpcg->Work);CHKERRQ(ierr);
-  ierr=VecDuplicate(tao->solution,&gpcg->X_New);CHKERRQ(ierr);
-  ierr=VecDuplicate(tao->solution,&gpcg->G_New);CHKERRQ(ierr);
-  ierr=VecDuplicate(tao->solution,&gpcg->DXFree);CHKERRQ(ierr);
-  ierr=VecDuplicate(tao->solution,&gpcg->R);CHKERRQ(ierr);
-  ierr=VecDuplicate(tao->solution,&gpcg->PG);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&gpcg->B);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&gpcg->Work);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&gpcg->X_New);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&gpcg->G_New);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&gpcg->DXFree);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&gpcg->R);CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&gpcg->PG);CHKERRQ(ierr);
   /*
     if (gpcg->ksp_type == GPCG_KSP_NASH) {
         ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);

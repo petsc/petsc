@@ -1645,11 +1645,12 @@ PetscErrorCode TSAdjointMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscI
  @*/
 PetscErrorCode TSAdjointCostIntegral(TS ts)
 {
-    PetscErrorCode ierr;
-    PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-    if (!ts->ops->adjointintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the adjoint run",((PetscObject)ts)->type_name);
-    ierr = (*ts->ops->adjointintegral)(ts);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  PetscErrorCode ierr;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->ops->adjointintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the adjoint run",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->adjointintegral)(ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /* ------------------ Forward (tangent linear) sensitivity  ------------------*/
@@ -1778,6 +1779,7 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts,PetscInt *numfwdint,Vec **vp)
 PetscErrorCode TSForwardStep(TS ts)
 {
   PetscErrorCode ierr;
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->forwardstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide forward sensitivity analysis",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_ForwardStep,ts,0,0,0);CHKERRQ(ierr);
@@ -1865,6 +1867,8 @@ PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Mat *Smat)
 PetscErrorCode TSForwardCostIntegral(TS ts)
 {
   PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->forwardintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the forward run",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->forwardintegral)(ts);CHKERRQ(ierr);
@@ -1890,6 +1894,7 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts,Mat didp)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(didp,MAT_CLASSID,2);
   if (!ts->mat_sensip) {

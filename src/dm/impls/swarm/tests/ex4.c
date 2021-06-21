@@ -355,6 +355,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U , Mat J, Mat P, void
   PetscScalar        vals[4] = {0., 1., -PetscSqr(user->omega), 0.};
   PetscErrorCode     ierr;
 
+  PetscFunctionBeginUser;
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
   //ierr = PetscPrintf(PETSC_COMM_WORLD, "# Particles (Np) = %d \n" , Np);CHKERRQ(ierr);
 

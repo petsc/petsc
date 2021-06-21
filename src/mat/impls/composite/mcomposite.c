@@ -407,14 +407,13 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 
 PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
 {
-  Mat_Composite     *shell = (Mat_Composite*)Y->data;
-  PetscErrorCode    ierr;
+  Mat_Composite  *shell = (Mat_Composite*)Y->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (shell->merge) {
     ierr = MatCompositeMerge(Y);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -784,8 +783,6 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
-
-  PetscFunctionBegin;
   scale = shell->scale;
   if (shell->type == MAT_COMPOSITE_ADDITIVE) {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {

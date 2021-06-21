@@ -31,7 +31,7 @@ static PetscInt edge_node[sizeof(PetscInt)*32];
 /***********************************comm.c*************************************/
 PetscErrorCode PCTFS_comm_init(void)
 {
-
+  PetscFunctionBegin;
   if (p_init++) PetscFunctionReturn(0);
 
   MPI_Comm_size(MPI_COMM_WORLD,&PCTFS_num_nodes);

@@ -1212,6 +1212,7 @@ PetscErrorCode PetscSFLinkScatterLocal(PetscSF sf,PetscSFLink link,PetscSFDirect
   char                 *srcbuf = NULL,*dstbuf = NULL;
   PetscBool            dstdups;
 
+  PetscFunctionBegin;
   if (!buflen) PetscFunctionReturn(0);
   if (rootmtype != leafmtype) { /* The cross memory space local scatter is done by pack, copy and unpack */
     if (direction == PETSCSF_ROOT2LEAF) {

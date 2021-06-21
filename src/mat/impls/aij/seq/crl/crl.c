@@ -16,6 +16,7 @@ PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
   PetscErrorCode ierr;
   Mat_AIJCRL     *aijcrl = (Mat_AIJCRL*) A->spptr;
 
+  PetscFunctionBegin;
   /* Free everything in the Mat_AIJCRL data structure. */
   if (aijcrl) {
     ierr = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
@@ -28,7 +29,6 @@ PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
 
 PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
 {
-  PetscFunctionBegin;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot duplicate AIJCRL matrices yet");
 }
 

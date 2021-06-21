@@ -510,7 +510,6 @@ PetscInt PCTFS_ivec_linear_search(PetscInt item,  PetscInt *list,  PetscInt n)
 {
   PetscInt tmp = n-1;
 
-  PetscFunctionBegin;
   while (n--) {
     if (*list++ == item) return(tmp-n);
   }

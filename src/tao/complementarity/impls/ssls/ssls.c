@@ -59,4 +59,3 @@ PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn
   ierr = MatMultTranspose(tao->jacobian,ssls->ff,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

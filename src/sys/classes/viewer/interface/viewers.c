@@ -127,6 +127,7 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
 */
 PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, PetscErrorCode (*nmdestroy)(void **), PetscErrorCode (*mon)(void), void *mctx, PetscErrorCode (*mdestroy)(void **), PetscBool *identical)
 {
+  PetscFunctionBegin;
   *identical = PETSC_FALSE;
   if (nmon == mon && nmdestroy == mdestroy) {
     if (nmctx == mctx) *identical = PETSC_TRUE;
