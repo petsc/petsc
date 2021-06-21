@@ -677,12 +677,12 @@ Notes on usage:
   - ``export http_proxy=http://proxy.tmi.alcf.anl.gov:3128``
   - ``export https_proxy=http://proxy.tmi.alcf.anl.gov:3128``
   - ``module load nvhpc`` (Do not module load any MPI)
-  - ``module load libtool-2.4.6-gcc-7.5.0-jdxbjft``
+  - ``module load libtool-2.4.6-gcc-7.5.0-jdxbjft cmake-3.20.2-gcc-10.2.0-wmku2nn``
   - ``./configure --with-mpi-dir=$CUDA_DIR/../comm_libs/mpi/ -with-cuda-dir=$CUDA_DIR/11.0  --download-f2cblaslapack=1``
-  - to ``install cmake add --download-cmake --download-cmake-configure-arguments="-- -DCMAKE_USE_OPENSSL=OFF"``
-  - to install Kokkos, do ``export CUDA_ROOT=$CUDA_DIR/11.0``
+  - to install Kokkos (with ``--download-kokkos --download-kokkos-kernels``, set CUDA_ROOT before running configure - i.e: ``export CUDA_ROOT=$CUDA_DIR/11.0``
   - Log into interactive compute nodes with ``qsub -I -t TimeInMinutes -n 1 -A AProjectName`` (for example, ``gpu_hack``) (``-q single-gpu`` will give you access to one GPU, and is often much quicker; otherwise you get access to all eight GPUs on a node)
   - Run executables with ``$CUDA_DIR/../comm_libs/mpi/bin/mpirun``
+  - It's also possible to build petsc on compute nodes. For this - one can use ``qsub --attrs=pubnet`` to obtain a compute node with network access enabled (for the build) as an alternative to setting up ``http_proxy/https_proxy``
 
 
 OLCF - Oak Ridge National Laboratory - Summit machine - NVIDIA GPUs and IBM Power PC processors
