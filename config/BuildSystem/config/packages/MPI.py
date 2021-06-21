@@ -680,6 +680,10 @@ Unable to run hostname to check the network')
         if m:
           self.logPrint('Found -L link option: '+arg, 4, 'compilers')
           self.libpaths += arg + ' '
+        m = re.match(r'^-Wl.*$', arg)
+        if m:
+          self.logPrint('Found -Wl link option: '+arg, 4, 'compilers')
+          self.libpaths += arg + ' '
         m = re.match(r'^-l.*$', arg)
         if m:
           self.logPrint('Found -l link option: '+arg, 4, 'compilers')
