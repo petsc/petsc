@@ -1321,7 +1321,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
    test:
       suffix: hypre_nullspace
       requires: hypre
-      args: -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre -elas_pc_hypre_boomeramg_nodal_coarsen 6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_ksp_view
+      args: -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre -elas_pc_hypre_boomeramg_nodal_coarsen 6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_pc_hypre_boomeramg_interp_type ext+i -elas_ksp_view
 
    test:
       nsize: 4

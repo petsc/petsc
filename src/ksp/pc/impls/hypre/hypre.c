@@ -1067,7 +1067,7 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"    Coarsen type        %s\n",HYPREBoomerAMGCoarsenType[jac->coarsentype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    Interpolation type  %s\n",jac->interptype != 100 ? HYPREBoomerAMGInterpType[jac->interptype] : "1pt");CHKERRQ(ierr);
     if (jac->nodal_coarsening) {
-      ierr = PetscViewerASCIIPrintf(viewer,"    Using nodal coarsening (with HYPRE_BOOMERAMGSetNodal() %D\n",jac->nodal_coarsening);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"    Using nodal coarsening with HYPRE_BOOMERAMGSetNodal() %D\n",jac->nodal_coarsening);CHKERRQ(ierr);
     }
     if (jac->vec_interp_variant) {
       ierr = PetscViewerASCIIPrintf(viewer,"    HYPRE_BoomerAMGSetInterpVecVariant() %D\n",jac->vec_interp_variant);CHKERRQ(ierr);
