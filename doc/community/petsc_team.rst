@@ -18,7 +18,7 @@ maintenance.
 .. include:: ../generated/petsc-team-table.inc
 
 
-Previous Emeritus Developers
-============================
+Emeritus Developers
+===================
 
 .. include:: ../generated/petsc-emeritus-table.inc
