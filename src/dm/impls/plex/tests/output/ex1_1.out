@@ -3012,9 +3012,9 @@ subface ver 2, mark 2:
 [0] TetGenMeshOutputNodes(): Writing nodes.
 [0] TetGenMeshOutputElements(): Writing elements.
 [0] TetGenMeshOutputSubfaces(): Writing faces.
-DM Object: Simplicial Mesh 1 MPI processes
+DM Object: Generated Mesh 1 MPI processes
   type: plex
-Simplicial Mesh in 3 dimensions:
+Generated Mesh in 3 dimensions:
 Supports:
 [0] Max support size: 24
 [0]: 32 ----> 14

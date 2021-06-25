@@ -4,7 +4,7 @@
 \usetikzlibrary{backgrounds}
 \usetikzlibrary{arrows}
 \begin{document}
-Simplicial Mesh for process {\textcolor{gray}0}, and {\textcolor{orange}1}.
+Generated Mesh for process {\textcolor{gray}0}, and {\textcolor{orange}1}.
 
 
 \begin{tikzpicture}[scale = 1.,font=\fontsize{8}{8}\selectfont]

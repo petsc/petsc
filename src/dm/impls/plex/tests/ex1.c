@@ -237,7 +237,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
 
-  ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *dm, "Generated Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   if (user->final_diagnostics) {
     DMPlexInterpolatedFlag interpolated;
