@@ -8034,6 +8034,20 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all)
   }
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DMSetLabelValue_Fast(DM dm, DMLabel *label, const char name[], PetscInt point, PetscInt value)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(label,2);
+  if (!*label) {
+    ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, name, label);CHKERRQ(ierr);
+  }
+  ierr = DMLabelSetValue(*label, point, value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
   Many mesh programs, such as Triangle and TetGen, allow only a single label for each mesh point. Therefore, we would
   like to encode all label IDs using a single, universal label. We can do this by assigning an integer to every
