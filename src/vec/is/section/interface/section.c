@@ -3,9 +3,7 @@
 */
 
 #include <petsc/private/sectionimpl.h>   /*I  "petscsection.h"   I*/
-#include <petscsection.h>
 #include <petscsf.h>
-#include <petscviewer.h>
 
 PetscClassId PETSC_SECTION_CLASSID;
 
@@ -2165,7 +2163,7 @@ PetscErrorCode  PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const
 
   Level: beginner
 
-.seealso PetscSectionCreate(), PetscSectionDestroy()
+.seealso PetscSectionCreate(), PetscSectionDestroy(), PetscSectionLoad()
 @*/
 PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 {
@@ -2198,6 +2196,46 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 #endif
   }
   PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscSectionLoad - Loads a PetscSection
+
+  Collective on PetscSection
+
+  Input Parameters:
++ s - the PetscSection object to load
+- v - the viewer
+
+  Note:
+  PetscSectionLoad(), when viewer is of type PETSCVIEWERHDF5, loads
+  a section saved with PetscSectionView(). The number of processes
+  used here (N) does not need to be the same as that used when saving.
+  After calling this function, the chart of s on rank i will be set
+  to [0, E_i), where \sum_{i=0}^{N-1}E_i equals to the total number of
+  saved section points.
+
+  Level: beginner
+
+.seealso PetscSectionCreate(), PetscSectionDestroy(), PetscSectionView()
+@*/
+PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
+{
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if PetscDefined(HAVE_HDF5)
+    ierr = PetscSectionLoad_HDF5_Internal(s, viewer);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  } else SETERRQ1(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 }
 
 static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)

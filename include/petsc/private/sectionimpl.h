@@ -82,5 +82,6 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(Pe
 PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
 #if defined(PETSC_HAVE_HDF5)
 PETSC_INTERN PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection, PetscViewer);
+PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscViewer);
 #endif
 #endif
