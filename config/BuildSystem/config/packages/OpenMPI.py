@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.download               = ['https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.0.tar.gz',
                                    'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-4.1.0.tar.gz']
-    self.downloaddirnames       = ['openmpi']
+    self.downloaddirnames       = ['openmpi','ompi']
     self.skippackagewithoptions = 1
     self.isMPI                  = 1
     return
@@ -45,6 +45,40 @@ class Configure(config.package.GNUPackage):
     # https://www.open-mpi.org/faq/?category=building#libevent-or-hwloc-errors-when-linking-fortran
     args.append('--with-libevent=internal')
     return args
+
+  def updateGitDir(self):
+    import os
+    config.package.GNUPackage.updateGitDir(self)
+    if not hasattr(self.sourceControl, 'git') or (self.packageDir != os.path.join(self.externalPackagesDir,'git.'+self.package)):
+      return
+    Dir = self.getDir()
+    try:
+      thirdparty = self.thirdparty
+    except AttributeError:
+      try:
+        self.executeShellCommand([self.sourceControl.git, 'submodule', 'update', '--init', '--recursive'], cwd=Dir, log=self.log)
+        import os
+        if os.path.isfile(os.path.join(Dir,'3rd-party','openpmix','README')):
+          self.thirdparty = os.path.join(Dir,'3rd-party')
+        else:
+          raise RuntimeError
+      except RuntimeError:
+        raise RuntimeError('Could not initialize 3rd-party submodule needed by OpenMPI')
+    return
+
+  def preInstall(self):
+    '''check for configure script - and run bootstrap - if needed'''
+    import os
+    if not os.path.isfile(os.path.join(self.packageDir,'configure')):
+      if not self.programs.libtoolize:
+        raise RuntimeError('Could not bootstrap OpenMPI using autotools: libtoolize not found')
+      if not self.programs.autoreconf:
+        raise RuntimeError('Could not bootstrap OpenMPI using autotools: autoreconf not found')
+      self.logPrintBox('Trying to bootstrap OpenMPI using autotools; this may take several minutes')
+      try:
+        self.executeShellCommand('AUTOMAKE_JOBS=%d ./autogen.pl' % self.make.make_np,cwd=self.packageDir,log=self.log)
+      except RuntimeError as e:
+        raise RuntimeError('Could not autogen.pl with OpenMPI: maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
 
   def checkDownload(self):
     if config.setCompilers.Configure.isCygwin(self.log):
