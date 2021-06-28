@@ -2155,13 +2155,21 @@ PetscErrorCode  PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const
 + s - the PetscSection object to view
 - v - the viewer
 
+  Note:
+  PetscSectionView(), when viewer is of type PETSCVIEWERHDF5, only saves
+  distribution independent data, such as dofs, offsets, constraint dofs,
+  and constraint indices. Points that have negative dofs, for instance,
+  are not saved as they represent points owned by other processes.
+  Point numbering and rank assignment is currently not stored.
+  The saved section can be loaded with PetscSectionLoad().
+
   Level: beginner
 
 .seealso PetscSectionCreate(), PetscSectionDestroy()
 @*/
 PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 {
-  PetscBool      isascii;
+  PetscBool      isascii, ishdf5;
   PetscInt       f;
   PetscErrorCode ierr;
 
@@ -2170,6 +2178,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)s), &viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)s,viewer);CHKERRQ(ierr);
     if (s->numFields) {
@@ -2181,6 +2190,12 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
     } else {
       ierr = PetscSectionView_ASCII(s, viewer);CHKERRQ(ierr);
     }
+  } else if (ishdf5) {
+#if PetscDefined(HAVE_HDF5)
+    ierr = PetscSectionView_HDF5_Internal(s, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
   }
   PetscFunctionReturn(0);
 }
