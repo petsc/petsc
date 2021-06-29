@@ -527,7 +527,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt c
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatSetPreallocationCOO - set preallocation for matrices using a coordinate format of the entries
 
    Collective on Mat
@@ -574,7 +574,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatSetValuesCOO - set values at once in a matrix preallocated using MatSetPreallocationCOO()
 
    Collective on Mat
