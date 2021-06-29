@@ -1,13 +1,13 @@
   Residual norms for elas_ solve.
-  0 KSP Residual norm 4.59873 
-  1 KSP Residual norm 0.213916 
-  2 KSP Residual norm 0.0370661 
-  3 KSP Residual norm 0.0206345 
-  4 KSP Residual norm 0.0152762 
-  5 KSP Residual norm 0.00491612 
-  6 KSP Residual norm 0.000670267 
-  7 KSP Residual norm 0.000126765 
-  8 KSP Residual norm 3.50154e-05 
+  0 KSP Residual norm 4.58717
+  1 KSP Residual norm 0.229768
+  2 KSP Residual norm 0.0358361
+  3 KSP Residual norm 0.0181252
+  4 KSP Residual norm 0.0125751
+  5 KSP Residual norm 0.00228289
+  6 KSP Residual norm 0.000466295
+  7 KSP Residual norm 0.00010782
+  8 KSP Residual norm 1.60974e-05
 Linear elas_ solve converged due to CONVERGED_RTOL iterations 8
 KSP Object: (elas_) 1 MPI processes
   type: cg
@@ -40,8 +40,8 @@ PC Object: (elas_) 1 MPI processes
       Not using more complex smoothers.
       Measure type        local
       Coarsen type        Falgout
-      Interpolation type  classical
-      Using nodal coarsening (with HYPRE_BOOMERAMGSetNodal() 6
+      Interpolation type  ext+i
+      Using nodal coarsening with HYPRE_BOOMERAMGSetNodal() 6
       HYPRE_BoomerAMGSetInterpVecVariant() 3
       HYPRE_BoomerAMGSetInterpVecQMax() 0
       HYPRE_BoomerAMGSetSmoothInterpVectors() 0

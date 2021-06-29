@@ -16,6 +16,7 @@ PetscErrorCode ex1_1(void)
   PetscMPIInt    rank,size;
   PetscInt       p;
 
+  PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   if ((size > 1) && (size != 4)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must be run wuth 4 MPI ranks");
@@ -101,6 +102,7 @@ PetscErrorCode ex1_2(void)
   PetscMPIInt    rank,size;
   PetscInt       p;
 
+  PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
@@ -191,6 +193,7 @@ PetscErrorCode ex1_3(void)
   PetscInt       is,js,ni,nj,overlap;
   DM             dmcell;
 
+  PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   overlap = 2;
@@ -304,6 +307,7 @@ PetscErrorCode collect_zone(DM dm,void *ctx,PetscInt *nfound,PetscInt **foundlis
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMSwarmGetLocalSize(dm,&npoints);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
@@ -351,6 +355,7 @@ PetscErrorCode ex1_4(void)
   CollectZoneCtx *zone;
   PetscReal      dx;
 
+  PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   nn = 101;

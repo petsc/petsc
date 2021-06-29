@@ -1414,6 +1414,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 {
 #if defined(PETSC_HAVE_EXODUSII)
   PetscMPIInt    num_proc, rank;
+  DMLabel        cellSets = NULL, faceSets = NULL, vertSets = NULL;
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar    *coords;
@@ -1514,7 +1515,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         ierr = DMPlexGetCellType(*dm, c, &ct);CHKERRQ(ierr);
         ierr = DMPlexInvertCell(ct, cone);CHKERRQ(ierr);
         ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
-        ierr = DMSetLabelValue(*dm, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue_Fast(*dm, &cellSets, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);
       }
       ierr = PetscFree2(cs_connect,cone);CHKERRQ(ierr);
     }
@@ -1557,7 +1558,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       ierr = PetscMalloc1(num_vertex_in_set, &vs_vertex_list);CHKERRQ(ierr);
       PetscStackCallStandard(ex_get_set,(exoid, EX_NODE_SET, vs_id[vs], vs_vertex_list, NULL));
       for (v = 0; v < num_vertex_in_set; ++v) {
-        ierr = DMSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
       }
       ierr = PetscFree(vs_vertex_list);CHKERRQ(ierr);
     }
@@ -1632,7 +1633,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         }
         ierr = DMPlexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
         if (numFaces != 1) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to %d faces", f, fs, numFaces);
-        ierr = DMSetLabelValue(*dm, "Face Sets", faces[0], fs_id[fs]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", faces[0], fs_id[fs]);CHKERRQ(ierr);
         /* Only add the label if one has been detected for this side set. */
         if (!fs_name_err) {
           ierr = DMSetLabelValue(*dm, fs_name, faces[0], fs_id[fs]);CHKERRQ(ierr);
@@ -1642,6 +1643,19 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       ierr = PetscFree2(fs_vertex_count_list,fs_vertex_list);CHKERRQ(ierr);
     }
     ierr = PetscFree(fs_id);CHKERRQ(ierr);
+  }
+
+  { /* Create Cell/Face/Vertex Sets labels at all processes */
+    enum {n = 3};
+    PetscBool flag[n];
+
+    flag[0] = cellSets ? PETSC_TRUE : PETSC_FALSE;
+    flag[1] = faceSets ? PETSC_TRUE : PETSC_FALSE;
+    flag[2] = vertSets ? PETSC_TRUE : PETSC_FALSE;
+    ierr = MPI_Bcast(flag, n, MPIU_BOOL, 0, comm);CHKERRMPI(ierr);
+    if (flag[0]) {ierr = DMCreateLabel(*dm, "Cell Sets");CHKERRQ(ierr);}
+    if (flag[1]) {ierr = DMCreateLabel(*dm, "Face Sets");CHKERRQ(ierr);}
+    if (flag[2]) {ierr = DMCreateLabel(*dm, "Vertex Sets");CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 #else

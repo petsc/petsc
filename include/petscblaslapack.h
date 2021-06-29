@@ -242,14 +242,7 @@ BLAS_EXTERN void LAPACKhseqr_(const char*,const char*,PetscBLASInt*,PetscBLASInt
 #endif
 #endif /* defined(PETSC_USE_COMPLEX) */
 
-/* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
-#if defined(PETSC_HAVE_ESSL) && defined(PETSC_USE_COMPLEX)
-BLAS_EXTERN void LAPACKgeev_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
-BLAS_EXTERN void LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
-#elif defined(PETSC_HAVE_ESSL)
-BLAS_EXTERN void LAPACKgeev_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
-BLAS_EXTERN void LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-#elif defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 BLAS_EXTERN void LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKgesvd_(const char*,const char*,const PetscBLASInt *,const PetscBLASInt*,PetscScalar *,const PetscBLASInt*,PetscReal*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscReal*,PetscBLASInt*);
 #else

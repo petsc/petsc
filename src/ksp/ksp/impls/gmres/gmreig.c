@@ -41,70 +41,9 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------------ */
-/* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
 PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
-#if defined(PETSC_HAVE_ESSL)
-  KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
-  PetscErrorCode ierr;
-  PetscInt       n = gmres->it + 1,N = gmres->max_k + 1;
-  PetscInt       i,*perm;
-  PetscScalar    *R     = gmres->Rsvd;
-  PetscScalar    *cwork = R + N*N,sdummy = 0;
-  PetscReal      *work,*realpart = gmres->Dsvd;
-  PetscBLASInt   zero = 0,bn,bN,idummy = -1,lwork;
-
-  PetscFunctionBegin;
-  ierr   = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
-  ierr   = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
-  ierr   = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
-  if (nmax < n) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
-  *neig = n;
-
-  if (!n) PetscFunctionReturn(0);
-
-  /* copy R matrix to work space */
-  ierr = PetscArraycpy(R,gmres->hes_origin,N*N);CHKERRQ(ierr);
-
-  /* compute eigenvalues */
-
-  /* for ESSL version need really cwork of length N (complex), 2N
-     (real); already at least 5N of space has been allocated */
-
-  ierr = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
-  ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_(&zero,R,&bN,cwork,&sdummy,&idummy,&idummy,&bn,work,&lwork));
-  ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  ierr = PetscFree(work);CHKERRQ(ierr);
-
-  /* For now we stick with the convention of storing the real and imaginary
-     components of evalues separately.  But is this what we really want? */
-  ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
-
 #if !defined(PETSC_USE_COMPLEX)
-  for (i=0; i<n; i++) {
-    realpart[i] = cwork[2*i];
-    perm[i]     = i;
-  }
-  ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    r[i] = cwork[2*perm[i]];
-    c[i] = cwork[2*perm[i]+1];
-  }
-#else
-  for (i=0; i<n; i++) {
-    realpart[i] = PetscRealPart(cwork[i]);
-    perm[i]     = i;
-  }
-  ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    r[i] = PetscRealPart(cwork[perm[i]]);
-    c[i] = PetscImaginaryPart(cwork[perm[i]]);
-  }
-#endif
-  ierr = PetscFree(perm);CHKERRQ(ierr);
-#elif !defined(PETSC_USE_COMPLEX)
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
   PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,i,*perm;
@@ -176,7 +115,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscFunctionReturn(0);
 }
 
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_ESSL)
+#if !defined(PETSC_USE_COMPLEX)
 PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal *tetar,PetscReal *tetai)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;

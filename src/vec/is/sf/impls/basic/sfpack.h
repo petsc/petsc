@@ -271,7 +271,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkStartCommunication(PetscSF sf,Pets
 PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkFinishCommunication(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
 {
   PetscFunctionBegin;
-  if (link->FinishCommunication) {PetscErrorCode ierr=(*link->FinishCommunication)(sf,link,direction);CHKERRQ(ierr);}
+  if (link->FinishCommunication) {PetscErrorCode ierr = (*link->FinishCommunication)(sf,link,direction);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

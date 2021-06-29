@@ -1438,6 +1438,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   DM             cdm;
   PetscSection   coordSection;
   Vec            coordinates;
+  DMLabel        cellSets = NULL, faceSets = NULL, vertSets = NULL, marker = NULL;
   PetscInt       dim = 0, coordDim = -1, order = 0;
   PetscInt       numNodes = 0, numElems = 0, numVerts = 0, numCells = 0;
   PetscInt       cell, cone[8], e, n, v, d;
@@ -1638,7 +1639,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
         ierr = DMPlexGetTransitiveClosure(*dm, f, PETSC_TRUE, &coneSize, &cone);CHKERRQ(ierr);
         for (p = 0; p < coneSize; p += 2) {
-          ierr = DMSetLabelValue(*dm, "marker", cone[p], 1);CHKERRQ(ierr);
+          ierr = DMSetLabelValue_Fast(*dm, &marker, "marker", cone[p], 1);CHKERRQ(ierr);
         }
         ierr = DMPlexRestoreTransitiveClosure(*dm, f, PETSC_TRUE, &coneSize, &cone);CHKERRQ(ierr);
       }
@@ -1655,7 +1656,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       /* Create cell sets */
       if (elem->dim == dim && dim > 0) {
         if (elem->numTags > 0) {
-          ierr = DMSetLabelValue(*dm, "Cell Sets", cell, elem->tags[0]);CHKERRQ(ierr);
+          ierr = DMSetLabelValue_Fast(*dm, &cellSets, "Cell Sets", cell, elem->tags[0]);CHKERRQ(ierr);
         }
         cell++;
       }
@@ -1672,7 +1673,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         }
         ierr = DMPlexGetFullJoin(*dm, elem->numVerts, cone, &joinSize, &join);CHKERRQ(ierr);
         if (joinSize != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex facet for Gmsh element %D (Plex cell %D)", elem->id, e);
-        ierr = DMSetLabelValue(*dm, "Face Sets", join[0], elem->tags[0]);CHKERRQ(ierr);
+        ierr = DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], elem->tags[0]);CHKERRQ(ierr);
         ierr = DMPlexRestoreJoin(*dm, elem->numVerts, cone, &joinSize, &join);CHKERRQ(ierr);
       }
 
@@ -1681,10 +1682,25 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         if (elem->numTags > 0) {
           const PetscInt nn = elem->nodes[0];
           const PetscInt vv = mesh->vertexMap[nn];
-          ierr = DMSetLabelValue(*dm, "Vertex Sets", vStart + vv, elem->tags[0]);CHKERRQ(ierr);
+          ierr = DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, elem->tags[0]);CHKERRQ(ierr);
         }
       }
     }
+  }
+
+  { /* Create Cell/Face/Vertex Sets labels at all processes */
+    enum {n = 4};
+    PetscBool flag[n];
+
+    flag[0] = cellSets ? PETSC_TRUE : PETSC_FALSE;
+    flag[1] = faceSets ? PETSC_TRUE : PETSC_FALSE;
+    flag[2] = vertSets ? PETSC_TRUE : PETSC_FALSE;
+    flag[3] = marker   ? PETSC_TRUE : PETSC_FALSE;
+    ierr = MPI_Bcast(flag, n, MPIU_BOOL, 0, comm);CHKERRMPI(ierr);
+    if (flag[0]) {ierr = DMCreateLabel(*dm, "Cell Sets");CHKERRQ(ierr);}
+    if (flag[1]) {ierr = DMCreateLabel(*dm, "Face Sets");CHKERRQ(ierr);}
+    if (flag[2]) {ierr = DMCreateLabel(*dm, "Vertex Sets");CHKERRQ(ierr);}
+    if (flag[3]) {ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);}
   }
 
   if (periodic) {
@@ -1693,8 +1709,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       if (mesh->vertexMap[n] >= 0) {
         if (PetscUnlikely(mesh->periodMap[n] != n)) {
           PetscInt m = mesh->periodMap[n];
-          ierr= PetscBTSet(periodicVerts, mesh->vertexMap[n]);CHKERRQ(ierr);
-          ierr= PetscBTSet(periodicVerts, mesh->vertexMap[m]);CHKERRQ(ierr);
+          ierr = PetscBTSet(periodicVerts, mesh->vertexMap[n]);CHKERRQ(ierr);
+          ierr = PetscBTSet(periodicVerts, mesh->vertexMap[m]);CHKERRQ(ierr);
         }
       }
     }

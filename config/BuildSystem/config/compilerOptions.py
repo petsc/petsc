@@ -87,6 +87,11 @@ class CompilerOptions(config.base.Configure):
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
           flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
+      if config.setCompilers.Configure.isNVCC(compiler, self.log):
+        if bopt == 'g':
+          flags.extend(['-lineinfo'])
+        elif bopt == 'O':
+          flags.append('-O3')
     # Generic
     if not len(flags):
       if bopt == 'g':

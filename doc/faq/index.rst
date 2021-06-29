@@ -212,8 +212,6 @@ How Do Such A Small Group Of People Manage To Write And Maintain Such A Large An
 
 #. **We try to provide the functionality requested by our users**
 
-#. **There is evil here that does not sleep, and the Great Eye is ever watchful**
-
 For Complex Numbers Will I Get Better Performance With C++?
 -----------------------------------------------------------
 

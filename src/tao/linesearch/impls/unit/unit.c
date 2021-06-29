@@ -26,7 +26,7 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer viewer
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr=PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step.\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step.\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

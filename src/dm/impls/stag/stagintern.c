@@ -38,6 +38,7 @@ PetscErrorCode DMStagDuplicateWithoutSetup(DM dm, MPI_Comm comm, DM *newdm)
   PetscInt        dim;
   MPI_Comm        newcomm;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   newcomm = (comm == MPI_COMM_NULL) ? PetscObjectComm((PetscObject)dm) : comm;
   ierr = DMCreate(newcomm,newdm);CHKERRQ(ierr);

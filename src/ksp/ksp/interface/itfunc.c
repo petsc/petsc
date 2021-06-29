@@ -2992,6 +2992,7 @@ PetscErrorCode KSPSetComputeInitialGuess(KSP ksp,PetscErrorCode (*func)(KSP,Vec,
 @*/
 PetscErrorCode KSPSetUseExplicitTranspose(KSP ksp,PetscBool flg)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveBool(ksp,flg,2);
   ksp->transpose.use_explicittranspose = flg;

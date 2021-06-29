@@ -11,7 +11,6 @@
 #endif
 
 #include <petsc/private/petscimpl.h>
-#include <petscvalgrind.h>
 
 /* XXX Should be done better !!!*/
 #if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES)

@@ -247,7 +247,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
 #endif
       CHECK_LAUNCH_ERROR(); // does a sync
 #if defined(PETSC_USE_LOG)
-      ierr = PetscLogGpuFlops((PetscLogDouble)Nf*(bm1*(bm1 + 1)*(2*bm1 + 1)/3 + 2*(nl-bw)*bw*bw + nl*(nl+1)/2));CHKERRQ(ierr);
+      ierr = PetscLogGpuFlops((PetscLogDouble)Nf*(bm1*(bm1 + 1)*(PetscLogDouble)(2*bm1 + 1)/3 + (PetscLogDouble)2*(nl-bw)*bw*bw + (PetscLogDouble)nl*(nl+1)/2));CHKERRQ(ierr);
 #endif
     }
   }
@@ -557,7 +557,6 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat A,Vec bb,Vec xx)
   PetscInt                              n=A->rmap->n, nz=cusparseTriFactors->nnz, Nf;
   PetscInt                              bw = (int)(2.*(double)n-1.-(double)(PetscSqrtReal(1.+4.*((double)n*(double)n-(double)nz))+PETSC_MACHINE_EPSILON))/2; // quadric formula for bandwidth
   PetscErrorCode                        ierr;
-  cudaError_t                           cerr;
   PetscContainer                        container;
 
   PetscFunctionBegin;
@@ -595,8 +594,8 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat A,Vec bb,Vec xx)
 
   ierr = VecCUDARestoreArrayRead(bb,&barray);CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayWrite(xx,&xarray);CHKERRQ(ierr);
-  cerr = WaitForCUDA();CHKERRCUDA(cerr);
-  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(2.0*cusparseTriFactors->nnz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }

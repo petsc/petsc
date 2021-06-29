@@ -52,14 +52,13 @@ if __name__ == '__main__':
     # Specify BLAS and LAPACK.
     ############################################################
 
-    # With GCC and PGI compilers, can download and build:
-    '--download-fblaslapack=1',
-
-    # Download and build does not work with the XL compilers.
-    # For this case, use ESSL. (ESSL does *not* work for builds with GCC and PGI.)
-    # Note that ESSL does not provide some of the LAPACK functions required by PETSc!
+    # Note: ESSL does not provide all functions used by PETSc, so we link netlib LAPACK as well.
     # On ORNL's Summit, one must 'module load' both the essl AND netlib-lapack modules:
-    #'--with-blaslapack-lib=-L' + os.environ['OLCF_ESSL_ROOT'] + '/lib64 -lessl -llapack',
+    '--with-blaslapack-lib=-L' + os.environ['OLCF_ESSL_ROOT'] + '/lib64 -lessl -llapack -lessl',
+
+    # An alternative in case of difficulty with ESSL is to download/build a portable implementation such as:
+    #'--download-fblaslapack=1',
+    #'--download-f2cblaslapack', '--download-blis',
 
     ############################################################
     # Enable GPU support through CUDA/CUSPARSE and ViennaCL.

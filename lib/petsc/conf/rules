@@ -57,6 +57,7 @@ clean-legacy:
 	@-${RM} ${CLEANFILES} ${TESTS} *.o *.lo *~ \
                ex[0-9] ex[0-9][0-9] ex[0-9][0-9][0-9] \
                ex[0-9]f ex[0-9][0-9]f ex[0-9][0-9][0-9]f \
+               ex[0-9]k ex[0-9][0-9]k ex[0-9][0-9][0-9]k \
                ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9][0-9][0-9]f90 \
                ex[0-9]cu ex[0-9][0-9]cu ex[0-9][0-9][0-9]cu \
                ex[0-9].exe ex[0-9][0-9].exe ex[0-9][0-9][0-9].exe \
@@ -125,7 +126,7 @@ tree: ${ACTION}
             ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} PRINT_PROGRESS=${PRINT_PROGRESS});\
 	  done
 
-printdot: 
+printdot:
 	-@if [ ${PRINT_PROGRESS}foo = dotfoo ] ; then printf "."; fi;
 
 # Performs the specified action throughout the directory tree
@@ -565,7 +566,7 @@ getexlist:
 	-@${RM} -f logfile.txt
 #
 #   Rules for generating html code from C and Fortran
-#	
+#
 checkmakefilelist:
 	-@ls makefile ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
 	ls makefile *.{c,cxx,cu,F,F90,h,h90,m} 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
@@ -665,6 +666,7 @@ checkbadPetscFunctionBegin:
 GITSRC = '*.[chF]' '*.F90' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
 GITSRCEXCL = \
 ':!include/*/khash.h' \
+':!include/*/valgrind.h' \
 ':!src/sys/yaml/*'
 checkbadSource:
 	-@git --no-pager grep -n -P 'self\.gitcommit' -- config/BuildSystem/config/packages | grep 'origin/' ; if [[ "$$?" == "0" ]]; then echo "Error: Do not use a branch name in a configure package file"; false; fi
@@ -708,9 +710,13 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'SETERRQ\(' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
 	-@echo "No spaces before { after if|for|while|switch----------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '(for|while|if|switch)(.*)\){$$' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
+	-@echo "No new line at end of file" >> checkbadSource.out
+	-@git --no-pager grep -n -P '[^\n]\z' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "No space after ierr" >> checkbadSource.out
+	-@git --no-pager grep -n -P 'ierr=' -- ${GITSRC} >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 17` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 19` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
@@ -825,7 +831,7 @@ checkbadURLS:
         done
 
 checkbadSpelling:
-	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ; 
+	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ;
 
 sourcelist:
 	-@for i in ${SOURCEALL}; do \

@@ -300,8 +300,13 @@ static int MPI_was_finalized   = 0;
 int MPI_Init(int *argc, char ***argv)
 {
   if (MPI_was_initialized) return MPI_FAILURE;
-  if (MPI_was_finalized) return MPI_FAILURE; /* MPI standard: once MPI_FINALIZE returns, no MPI routine (not even MPI_INIT) may be called, except ... */
+  /* MPI standard says "once MPI_Finalize returns, no MPI routine (not even MPI_Init) may be called", so an MPI standard compliant
+     MPIU should have this 'if (MPI_was_finalized) return MPI_FAILURE;' check. We relax it here to make life easier for users
+     of MPIU so that they can do multiple PetscInitialize/Finalize().
+  */
+  /* if (MPI_was_finalized) return MPI_FAILURE; */
   MPI_was_initialized = 1;
+  MPI_was_finalized   = 0;
   return MPI_SUCCESS;
 }
 
@@ -325,7 +330,9 @@ int MPI_Finalize(void)
   /* reset counters */
   MaxComm  = 2;
   num_attr = 1;
-  MPI_was_finalized = 1;
+  MPI_was_finalized   = 1;
+  MPI_was_initialized = 0;
+  PETSC_COMM_WORLD    = MPI_COMM_NULL;
   return MPI_SUCCESS;
 }
 

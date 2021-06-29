@@ -55,6 +55,8 @@ Manual Pages
   -  `System Routines (Options, IO, utilities) <../../docs/manualpages/Sys/index.html>`__
   -  `Profiling and Logging <../../docs/manualpages/Profiling/index.html>`__
 
+* `Single Index of all Manual Pages <../../docs/manualpages/singleindex.html>`__
+
 The manual pages are split into four categories; we recommend that
 you begin with basic functionality and then gradually explore more
 sophisticated library features.

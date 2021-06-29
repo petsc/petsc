@@ -302,8 +302,9 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp)
 {
   PetscSpace_Subspace *subsp;
-
   PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   ierr = PetscNewLog(sp,&subsp);CHKERRQ(ierr);
   sp->data = (void *) subsp;
   PetscFunctionReturn(0);

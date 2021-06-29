@@ -68,6 +68,7 @@ static PetscErrorCode TSStepRefine_RK_MultirateNonsplit(TS ts)
   PetscReal       t = ts->ptime,h = ts->time_step;
   PetscErrorCode  ierr;
 
+  PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&vec_fast);CHKERRQ(ierr);
   previousts = rk->subts_current;
   ierr = TSRHSSplitGetSubTS(rk->subts_current,"fast",&subts);CHKERRQ(ierr);
@@ -335,6 +336,7 @@ static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts)
   PetscReal       t = ts->ptime,h = ts->time_step;
   PetscErrorCode  ierr;
 
+  PetscFunctionBegin;
   for (k=0; k<rk->dtratio; k++) {
     ierr = VecGetSubVector(ts->vec_sol,rk->is_fast,&Xfast);CHKERRQ(ierr);
     for (i=0; i<s; i++) {

@@ -4,7 +4,7 @@ FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = petsc.h petscsys.h petscmath.h petscmatlab.h petscbt.h \
-        petscvalgrind.h petscversion.h petscviewerhdf5.h \
+        petscversion.h petscviewerhdf5.h \
         petscviewersaws.h petscwebclient.h petscblaslapack.h \
         petscsystypes.h
 LIBBASE  = libpetscvec

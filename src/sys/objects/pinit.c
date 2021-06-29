@@ -3,8 +3,11 @@
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 #include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
-#include <petscvalgrind.h>
 #include <petscviewer.h>
+
+#if !defined(PETSC_HAVE_WINDOWS_COMPILERS)
+#include <petsc/private/valgrind/valgrind.h>
+#endif
 
 #if defined(PETSC_HAVE_CUDA)
 #include <petsccublas.h>
@@ -71,6 +74,8 @@ PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
 
 PetscInt PetscHotRegionDepth;
+
+PetscBool PETSC_RUNNING_ON_VALGRIND = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_THREADSAFETY)
 PetscSpinlock PetscViewerASCIISpinLockOpen;
@@ -800,8 +805,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
 
-  PetscFunctionBegin;
-  if (PetscInitializeCalled) PetscFunctionReturn(0);
+  if (PetscInitializeCalled) return 0;
   /*
       The checking over compatible runtime libraries is complicated by the MPI ABI initiative
       https://wiki.mpich.org/mpich/index.php/ABI_Compatibility_Initiative which started with
@@ -1125,8 +1129,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
       Setup building of stack frames for all function calls
   */
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg,NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
-  ierr = PetscStackCreate();CHKERRQ(ierr);
+  ierr = PetscStackCreate(flg);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -1155,6 +1161,15 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = adios_read_init_method(ADIOS_READ_METHOD_BP,PETSC_COMM_WORLD,"");CHKERRQ(ierr);
 #endif
 
+#if defined(__VALGRIND_H)
+  PETSC_RUNNING_ON_VALGRIND = RUNNING_ON_VALGRIND? PETSC_TRUE: PETSC_FALSE;
+#if defined(PETSC_USING_DARWIN) && defined(PETSC_BLASLAPACK_SDOT_RETURNS_DOUBLE)
+  if (PETSC_RUNNING_ON_VALGRIND) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING: Running valgrind with the MacOS native BLAS and LAPACK can fail. If it fails suggest configuring with --download-fblaslapack or --download-f2cblaslapack");CHKERRQ(ierr);
+    }
+#endif
+#endif
+
   /*
       Set flag that we are completely initialized
   */
@@ -1162,7 +1177,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #if defined(PETSC_USE_LOG)

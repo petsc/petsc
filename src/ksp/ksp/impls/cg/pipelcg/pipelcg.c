@@ -61,8 +61,9 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
 
 static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
 {
-  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*)ksp->data;
-  PetscInt      ierr=0,l=plcg->l;
+  KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
+  PetscInt       l=plcg->l;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(plcg->sigma);CHKERRQ(ierr);
@@ -76,7 +77,7 @@ static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
 
 static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
 {
-  PetscInt ierr=0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = KSPReset_PIPELCG(ksp);CHKERRQ(ierr);
@@ -86,9 +87,9 @@ static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
 
 static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
-  PetscInt      ierr=0;
-  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*)ksp->data;
-  PetscBool     flag=PETSC_FALSE;
+  PetscErrorCode ierr;
+  KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
+  PetscBool      flag=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP PIPELCG options");CHKERRQ(ierr);
@@ -106,7 +107,7 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(PetscOptionItems *PetscOptionsOb
 
 static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
 {
-  PetscErrorCode ierr=0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE)
@@ -121,7 +122,7 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
 static PetscErrorCode KSPView_PIPELCG(KSP ksp,PetscViewer viewer)
 {
   KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
-  PetscErrorCode ierr=0;
+  PetscErrorCode ierr;
   PetscBool      iascii=PETSC_FALSE,isstring=PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -141,15 +142,16 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp,PetscViewer viewer)
 
 static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
 {
-  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*)ksp->data;
-  Mat           A=NULL,Pmat=NULL;
-  PetscInt      it=0,max_it=ksp->max_it,ierr=0,l=plcg->l,i=0,j=0,k=0;
-  PetscInt      start=0,middle=0,end=0;
-  Vec           *Z=plcg->Z,*U=plcg->U,*V=plcg->V,*Q=plcg->Q;
-  Vec           x=NULL,p=NULL,temp=NULL;
-  PetscScalar   sum_dummy=0.0,eta=0.0,zeta=0.0,lambda=0.0;
-  PetscReal     dp=0.0,tmp=0.0,beta=0.0,invbeta2=0.0;
-  MPI_Comm      comm;
+  KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
+  Mat            A=NULL,Pmat=NULL;
+  PetscInt       it=0,max_it=ksp->max_it,l=plcg->l,i=0,j=0,k=0;
+  PetscInt       start=0,middle=0,end=0;
+  Vec            *Z=plcg->Z,*U=plcg->U,*V=plcg->V,*Q=plcg->Q;
+  Vec            x=NULL,p=NULL,temp=NULL;
+  PetscScalar    sum_dummy=0.0,eta=0.0,zeta=0.0,lambda=0.0;
+  PetscReal      dp=0.0,tmp=0.0,beta=0.0,invbeta2=0.0;
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   x   = ksp->vec_sol;
@@ -397,8 +399,9 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
 
 static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
 {
-  KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L*)ksp->data;
-  PetscInt      ierr=0,i=0,j=0,l=plcg->l,max_it=ksp->max_it;
+  KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
+  PetscInt       i=0,j=0,l=plcg->l,max_it=ksp->max_it;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i = 0; i < PetscMax(3,l+1); ++i) {
@@ -428,7 +431,7 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
 */
 static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 {
-  PetscErrorCode ierr=0;
+  PetscErrorCode ierr;
   KSP_CG_PIPE_L  *plcg = (KSP_CG_PIPE_L*)ksp->data;
   Mat            A=NULL,Pmat=NULL;
   Vec            b=NULL,x=NULL,p=NULL;

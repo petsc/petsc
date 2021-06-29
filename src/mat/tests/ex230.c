@@ -16,6 +16,7 @@ PetscErrorCode ex1_nonsquare_bs1(void)
   /*
      Create the Jacobian matrix
   */
+  PetscFunctionBegin;
   M = 10;
   N = 8;
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -104,6 +105,7 @@ PetscErrorCode ex2_square_bsvariable(void)
   PetscInt       M,N,m,n,bs = 1;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = PetscOptionsGetInt(NULL,NULL,"-block_size",&bs,NULL);CHKERRQ(ierr);
 
   /*

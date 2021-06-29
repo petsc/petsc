@@ -44,7 +44,7 @@ int main(int argc,char **argv)
 
    testset:
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -v -e "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi)"
+      filter: egrep -v -e "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi|checkstack)"
       args: -options_left 0 -options_view -options_monitor_viewer ascii
       args: -skip_petscrc {{0 1}separate output} -options_monitor_cancel {{0 1}separate output}
       test:
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
       # test effect of -skip_petscrc in ex55options file
       suffix: 4
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -v -e "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi)"
+      filter: egrep -v -e "(malloc|nox|display|saws_port|vecscatter|options_left|check_pointer_intensity|cuda_initialize|error_output_stdout|use_gpu_aware_mpi|checkstack)"
       args: -options_left 0 -options_view -options_monitor
    testset:
       # test -help / -help intro / -version from command line

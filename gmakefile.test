@@ -116,7 +116,7 @@ PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DE
 
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
-  PETSC_COMPILE.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDE)
+  PETSC_COMPILE.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES)
   PETSC_LINK.kokkos.cxx = PATH=$(PATH):`dirname $(CUDAC)` NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CXX_LINKER_FLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
   PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.hip.cpp)
@@ -336,7 +336,7 @@ else ifdef search
 else ifdef s
   TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) 'name' '$(s)')
 else ifdef test-fail
-  TESTTARGETS := $(shell $(PETSC_ARCH)/tests/echofailures.sh)
+  TESTTARGETS := $(shell $(TESTDIR)/echofailures.sh)
 else ifdef query
   TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) '$(query)' '$(queryval)')
 else ifdef q

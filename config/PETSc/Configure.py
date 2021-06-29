@@ -947,6 +947,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       raise RuntimeError('Incorrect option --prefix='+self.framework.argDB['prefix']+' specified. It cannot be same as PETSC_DIR/PETSC_ARCH!')
     self.framework.header          = os.path.join(self.arch.arch,'include','petscconf.h')
     self.framework.cHeader         = os.path.join(self.arch.arch,'include','petscfix.h')
+    self.framework.poisonheader    = os.path.join(self.arch.arch,'include','petscconf_poison.h')
     self.framework.pkgheader       = os.path.join(self.arch.arch,'include','petscpkg_version.h')
     self.framework.makeMacroHeader = os.path.join(self.arch.arch,'lib','petsc','conf','petscvariables')
     self.framework.makeRuleHeader  = os.path.join(self.arch.arch,'lib','petsc','conf','petscrules')

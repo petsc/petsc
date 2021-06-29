@@ -326,7 +326,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr)
   /* Sum function contributions from all processes */
   ierr = (PetscErrorCode)MPI_Allreduce((void*)&floc,(void*)f,1,MPIU_REAL,MPIU_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr=PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16);CHKERRQ(ierr);
+  ierr = PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -255,7 +255,7 @@ static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "CG Type: %s\n", CG_Table[cgP->cg_type]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", cgP->ngradsteps);CHKERRQ(ierr);
-    ierr= PetscViewerASCIIPrintf(viewer, "Reset steps: %D\n", cgP->nresetsteps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Reset steps: %D\n", cgP->nresetsteps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
