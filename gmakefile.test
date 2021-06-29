@@ -336,7 +336,7 @@ else ifdef search
 else ifdef s
   TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) 'name' '$(s)')
 else ifdef test-fail
-  TESTTARGETS := $(shell $(PETSC_ARCH)/tests/echofailures.sh)
+  TESTTARGETS := $(shell $(TESTDIR)/echofailures.sh)
 else ifdef query
   TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) '$(query)' '$(queryval)')
 else ifdef q

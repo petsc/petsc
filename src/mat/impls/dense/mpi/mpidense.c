@@ -1734,7 +1734,7 @@ PetscErrorCode MatConvert_MPIDense_MPIDenseCUDA(Mat M,MatType type,MatReuse reus
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAPlaceArray_C",                              MatDenseCUDAPlaceArray_MPIDenseCUDA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAResetArray_C",                              MatDenseCUDAResetArray_MPIDenseCUDA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAReplaceArray_C",                            MatDenseCUDAReplaceArray_MPIDenseCUDA);CHKERRQ(ierr);
-  m    = (Mat_MPIDense*)(B)->data;
+  m    = (Mat_MPIDense*)(B->data);
   if (m->A) {
     ierr = MatConvert(m->A,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&m->A);CHKERRQ(ierr);
     ierr = MatSetUpMultiply_MPIDense(B);CHKERRQ(ierr);

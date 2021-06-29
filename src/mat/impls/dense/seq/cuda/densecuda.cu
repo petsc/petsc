@@ -1018,9 +1018,9 @@ static PetscErrorCode MatGetColumnVector_SeqDenseCUDA(Mat A,Vec v,PetscInt col)
     ierr = VecCUDARestoreArrayWrite(v,&x);CHKERRQ(ierr);
   } else { /* update host data */
     ierr = VecGetArrayWrite(v,&x);CHKERRQ(ierr);
-    if (A->offloadmask & PETSC_OFFLOAD_CPU) {
+    if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED || A->offloadmask & PETSC_OFFLOAD_CPU) {
       ierr = PetscArraycpy(x,a->v+col*a->lda,A->rmap->n);CHKERRQ(ierr);
-    } else {
+    } else if (A->offloadmask & PETSC_OFFLOAD_GPU) {
       cerr = cudaMemcpy(x,dA->d_v + col*a->lda,A->rmap->n*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     }
     ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
