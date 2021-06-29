@@ -936,7 +936,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ksp->ops->setfromoptions               = KSPSetFromOptions_GMRES;
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_ESSL)
+#if !defined(PETSC_USE_COMPLEX)
   ksp->ops->computeritz                  = KSPComputeRitz_GMRES;
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);

@@ -554,6 +554,7 @@ class Configure(config.package.Package):
     self.libraries.saveLog()
     if self.libraries.check(self.dlib, 'mkl_set_num_threads'):
       self.mkl = 1
+      self.has_cheaders = 1
       self.addDefine('HAVE_MKL',1)
       '''Set include directory for mkl.h and friends'''
       '''(the include directory is in CPATH if mklvars.sh has been sourced.'''
@@ -598,6 +599,11 @@ class Configure(config.package.Package):
     '''Check for the IBM ESSL library'''
     self.libraries.saveLog()
     if self.libraries.check(self.dlib, 'iessl'):
+      if 'with-blaslapack-include' in self.argDB:
+        incl = self.argDB['with-blaslapack-include']
+        if not isinstance(incl, list): incl = [incl]
+        self.include = incl
+      self.has_cheaders = 1
       self.addDefine('HAVE_ESSL',1)
     self.logWrite(self.libraries.restoreLog())
     return

@@ -101,9 +101,6 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
 PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type, IS *row, IS *col)
 {
   Mat             L;
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_ESSL)
-  PetscInt       *perm, tmp;
-#endif
   const PetscReal eps = 1.0e-12;
   PetscErrorCode  ierr;
 
@@ -124,10 +121,8 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     ierr = VecDestroy(&y);CHKERRQ(ierr);
   }
   /* Compute Fiedler vector (right now, all eigenvectors) */
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Spectral partitioning does not support complex numbers");
-#elif defined(PETSC_HAVE_ESSL)
-  SETERRQ(PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Spectral partitioning does not support ESSL Lapack Routines");
 #else
   {
     Mat          LD;
@@ -135,7 +130,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     PetscReal   *realpart, *imagpart, *eigvec, *work;
     PetscReal    sdummy;
     PetscBLASInt bn, bN, lwork = 0, lierr, idummy;
-    PetscInt     n, i, evInd;
+    PetscInt     n, i, evInd, *perm, tmp;
 
     ierr = MatConvert(L, MATDENSE, MAT_INITIAL_MATRIX, &LD);CHKERRQ(ierr);
     ierr = MatGetLocalSize(LD, &n, NULL);CHKERRQ(ierr);

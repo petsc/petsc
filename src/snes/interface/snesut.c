@@ -349,9 +349,6 @@ PetscErrorCode  SNESMonitorScaling(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
 
 PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,PetscViewerAndFormat *vf)
 {
-#if defined(PETSC_HAVE_ESSL)
-  SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"GEEV - No support for ESSL Lapack Routines");
-#else
   Vec            X;
   Mat            J,dJ,dJdense;
   PetscErrorCode ierr;
@@ -402,7 +399,6 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   PetscFunctionReturn(0);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
-#endif
 #endif
 }
 

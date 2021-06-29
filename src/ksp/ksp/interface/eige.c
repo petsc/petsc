@@ -158,60 +158,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr = MatDenseGetArray(BA,&array);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_ESSL)
-  /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
-  if (!rank) {
-    PetscScalar  sdummy,*cwork;
-    PetscReal    *work,*realpart;
-    PetscBLASInt clen,idummy,lwork,bn,zero = 0;
-    PetscInt     *perm;
-
 #if !defined(PETSC_USE_COMPLEX)
-    clen = n;
-#else
-    clen = 2*n;
-#endif
-    ierr   = PetscMalloc1(clen,&cwork);CHKERRQ(ierr);
-    idummy = -1;                /* unused */
-    ierr   = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
-    lwork  = 5*n;
-    ierr   = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
-    ierr   = PetscMalloc1(n,&realpart);CHKERRQ(ierr);
-    ierr   = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_(&zero,array,&bn,cwork,&sdummy,&idummy,&idummy,&bn,work,&lwork));
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    ierr = PetscFree(work);CHKERRQ(ierr);
-
-    /* For now we stick with the convention of storing the real and imaginary
-       components of evalues separately.  But is this what we really want? */
-    ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
-
-#if !defined(PETSC_USE_COMPLEX)
-    for (i=0; i<n; i++) {
-      realpart[i] = cwork[2*i];
-      perm[i]     = i;
-    }
-    ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      r[i] = cwork[2*perm[i]];
-      c[i] = cwork[2*perm[i]+1];
-    }
-#else
-    for (i=0; i<n; i++) {
-      realpart[i] = PetscRealPart(cwork[i]);
-      perm[i]     = i;
-    }
-    ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      r[i] = PetscRealPart(cwork[perm[i]]);
-      c[i] = PetscImaginaryPart(cwork[perm[i]]);
-    }
-#endif
-    ierr = PetscFree(perm);CHKERRQ(ierr);
-    ierr = PetscFree(realpart);CHKERRQ(ierr);
-    ierr = PetscFree(cwork);CHKERRQ(ierr);
-  }
-#elif !defined(PETSC_USE_COMPLEX)
   if (!rank) {
     PetscScalar  *work;
     PetscReal    *realpart,*imagpart;
