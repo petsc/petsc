@@ -368,8 +368,11 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')],'32','unknown')
       # BLIS
       yield ('User specified installation root BLIS/LAPACK', os.path.join(dir, 'libblis.a'), os.path.join(dir, 'liblapack.a'), 'unknown', 'unknown')
+      yield ('User specified installation root BLIS/LAPACK', os.path.join(dir,'lib','libblis.a'), os.path.join(dir,'lib','liblapack.a'), 'unknown', 'unknown')
       # Search for OpenBLAS
-      yield ('User specified OpenBLAS', None, os.path.join(dir, 'libopenblas.a'),'unknown','unknown')
+      for libdir in ['lib','']:
+        if os.path.exists(os.path.join(dir,libdir)):
+          yield ('User specified OpenBLAS',None,os.path.join(dir,libdir,'libopenblas.a'),'unknown','unknown')
       # Search for atlas
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32','no')
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32','no')
@@ -381,7 +384,9 @@ class Configure(config.package.Package):
         yield ('User specified installation root IBM ESSL', None, os.path.join(dir, lib, 'libessl.a'),'32','unknown')
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
-      yield ('User specified installation root BLAS/LAPACK', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'),'unknown','unknown')
+      for lib in ['lib64','lib','']:
+        if os.path.exists(os.path.join(dir,libdir)):
+          yield ('User specified installation root BLAS/LAPACK',os.path.join(dir,lib,'libblas.a'),os.path.join(dir,lib,'liblapack.a'),'unknown','unknown')
       raise RuntimeError('You set a value for --with-blaslapack-dir=<dir>, but '+self.argDB['with-blaslapack-dir']+' cannot be used\n')
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-f2cblaslapack\n')

@@ -1112,7 +1112,7 @@ PetscErrorCode  VecConjugate(Vec x)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
+PetscErrorCode  VecPointwiseMult(Vec w,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -1800,9 +1800,9 @@ PetscErrorCode PetscOptionsGetVec(PetscOptions options,const char prefix[],const
 @*/
 PetscErrorCode VecGetLayout(Vec x,PetscLayout *map)
 {
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(map,2);
   *map = x->map;
   PetscFunctionReturn(0);
 }
@@ -1841,9 +1841,13 @@ PetscErrorCode VecSetInf(Vec xin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayWrite(xin,&xx);CHKERRQ(ierr);
-  for (i=0; i<n; i++) xx[i] = inf;
-  ierr = VecRestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+  if (xin->ops->set) { /* can be called by a subset of processes, do not use collective routines */
+    ierr = (*xin->ops->set)(xin,inf);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArrayWrite(xin,&xx);CHKERRQ(ierr);
+    for (i=0; i<n; i++) xx[i] = inf;
+    ierr = VecRestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

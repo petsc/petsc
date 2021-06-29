@@ -16,7 +16,7 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
   Mat               A;
 #if defined(PETSC_HAVE_MUMPS) || defined(PETSC_HAVE_MKL_CPARDISO)
   Mat               F;
-  MatSolverType     stype;
+  MatSolverType     stype = MATSOLVERPETSC;
   PetscRandom       rdm;
   Vec               b,x,y;
   PetscInt          i,j;
