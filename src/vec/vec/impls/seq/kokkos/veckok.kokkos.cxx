@@ -733,39 +733,29 @@ PetscErrorCode VecConjugate_SeqKokkos(Vec xin)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecKokkosUpdateAfterChangingHostArray_Private(Vec v)
-{
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos*>(v->spptr);
-  Vec_Seq    *vecseq = static_cast<Vec_Seq*>(v->data);
-
-  PetscFunctionBegin;
-  /* Rebuild v_h and v_dual with the new host array*/
-  veckok->v_h    = PetscScalarKokkosViewHost(vecseq->array,v->map->n);
-  veckok->v_dual = PetscScalarKokkosDualView(veckok->v_d,veckok->v_h);
-  veckok->v_dual.modify_host();
-  PetscFunctionReturn(0);
-}
-
 /* Temporarily replace the array in vin with a[]. Return to the original array with a call to VecResetArray() */
 PetscErrorCode VecPlaceArray_SeqKokkos(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
+  Vec_Seq        *vecseq = (Vec_Seq*)vin->data;
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(vin->spptr);
 
   PetscFunctionBegin;
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
-  ierr = VecKokkosUpdateAfterChangingHostArray_Private(vin);CHKERRQ(ierr);
+  veckok->UpdateArray<Kokkos::HostSpace>(vecseq->array);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
 {
   PetscErrorCode ierr;
+  Vec_Seq        *vecseq = (Vec_Seq*)vin->data;
   Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(vin->spptr);
 
   PetscFunctionBegin;
   veckok->v_dual.sync_host(); /* User wants to unhook the provided host array. Sync it so that user can get the latest */
-  ierr = VecResetArray_Seq(vin);CHKERRQ(ierr);
-  ierr = VecKokkosUpdateAfterChangingHostArray_Private(vin);CHKERRQ(ierr);
+  ierr = VecResetArray_Seq(vin);CHKERRQ(ierr); /* Swap back the old host array, assuming its has the latest value */
+  veckok->UpdateArray<Kokkos::HostSpace>(vecseq->array);
   PetscFunctionReturn(0);
 }
 
@@ -780,7 +770,7 @@ PetscErrorCode VecReplaceArray_SeqKokkos(Vec vin,const PetscScalar *a)
   /* Make sure the users array has the latest values */
   if (vecseq->array != vecseq->array_allocated) veckok->v_dual.sync_host();
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
-  ierr = VecKokkosUpdateAfterChangingHostArray_Private(vin);CHKERRQ(ierr);
+  veckok->UpdateArray<Kokkos::HostSpace>(vecseq->array);
   PetscFunctionReturn(0);
 }
 
@@ -937,16 +927,10 @@ static PetscErrorCode BuildVecKokkosFromVecSeq_Private(Vec v)
 {
   Vec_Seq        *vecseq = static_cast<Vec_Seq*>(v->data);
   Vec_Kokkos     *veckok = NULL;
-  PetscScalar    *darray;
 
   PetscFunctionBegin;
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
-    darray = vecseq->array;
-  } else {
-    darray = static_cast<PetscScalar*>(Kokkos::kokkos_malloc<DefaultMemorySpace>(sizeof(PetscScalar)*v->map->n));
-  }
   if (v->spptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"v->spptr not NULL");
-  veckok = new Vec_Kokkos(v->map->n,vecseq->array,darray,darray);
+  veckok = new Vec_Kokkos(v->map->n,vecseq->array);
   Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
   v->spptr = static_cast<void*>(veckok);
   v->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
@@ -1024,7 +1008,7 @@ PetscErrorCode  VecCreateSeqKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
 
   ierr   = PetscObjectChangeTypeName((PetscObject)w,VECSEQKOKKOS);CHKERRQ(ierr); /* Change it to Kokkos */
   ierr   = VecSetOps_SeqKokkos(w);CHKERRQ(ierr);
-  veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray),NULL);
+  veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray));
   veckok->v_dual.modify_device(); /* Mark the device is modified */
   w->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
   w->spptr = static_cast<void*>(veckok);
