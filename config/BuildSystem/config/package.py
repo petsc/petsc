@@ -941,7 +941,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 60.0):
           self.foundoptionalincludes = 1
         self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
+        # For packages (ex. kokkos) that we are incapable of checking their includes, we set 'doNotCheckIncludes=1' as a workaround.
+        if (not self.includes) or (hasattr(self, 'doNotCheckIncludes') and self.doNotCheckIncludes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
