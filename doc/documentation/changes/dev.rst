@@ -62,6 +62,9 @@ Changes: Development
 
 .. rubric:: PetscSection:
 
+-  Extend ``PetscSectionView()`` for section saving to HDF5
+-  Add ``PetscSectionLoad()`` for section loading from HDF5
+
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
