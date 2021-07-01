@@ -1,3 +1,6 @@
+#ifndef PETSC_LOGIMPL_H
+#define PETSC_LOGIMPL_H
+
 #include <petsc/private/petscimpl.h>
 #include <petsctime.h>
 
@@ -129,3 +132,4 @@ PETSC_INTERN PetscErrorCode PetscLogView_Nested(PetscViewer);
 PETSC_INTERN PetscErrorCode PetscLogNestedEnd(void);
 PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
 #endif /* PETSC_USE_LOG */
+#endif /* PETSC_LOGIMPL_H */
