@@ -152,8 +152,16 @@ int main(int argc,char **argv)
 
 /*TEST
 
-   test:
-      args: -n 1000 -r 10 -d 1
-      # Do not need to output timing results for test
-      filter: grep -vE "per unique value took|Speedup of "
+   testset:
+     filter: grep -vE "per unique value took|Speedup of "
+
+     test:
+       suffix: small
+       args: -n 9 -r 1
+
+     test:
+       suffix: large
+       args: -n 1000 -r 10 -d 1
+       # Do not need to output timing results for test
+
 TEST*/
