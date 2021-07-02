@@ -19,7 +19,8 @@ PETSC_EXTERN PetscErrorCode PetscFERegisterAll(void);
 PETSC_EXTERN PetscBool FEcite;
 PETSC_EXTERN const char FECitation[];
 
-PETSC_EXTERN PetscLogEvent PETSCDUALSPACE_SetUp, PETSCFE_SetUp;
+PETSC_EXTERN PetscLogEvent PETSCDUALSPACE_SetUp;
+PETSC_EXTERN PetscLogEvent PETSCFE_SetUp;
 
 typedef struct _PetscSpaceOps *PetscSpaceOps;
 struct _PetscSpaceOps {

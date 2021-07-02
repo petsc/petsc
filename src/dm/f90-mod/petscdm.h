@@ -50,10 +50,11 @@
       PetscEnum, parameter :: DM_POLYTOPE_TRI_PRISM = 8
       PetscEnum, parameter :: DM_POLYTOPE_TRI_PRISM_TENSOR = 9
       PetscEnum, parameter :: DM_POLYTOPE_QUAD_PRISM_TENSOR = 10
-      PetscEnum, parameter :: DM_POLYTOPE_FV_GHOST = 11
-      PetscEnum, parameter :: DM_POLYTOPE_INTERIOR_GHOST = 12
-      PetscEnum, parameter :: DM_POLYTOPE_UNKNOWN = 13
-      PetscEnum, parameter :: DM_NUM_POLYTOPES = 14
+      PetscEnum, parameter :: DM_POLYTOPE_PYRAMID = 11
+      PetscEnum, parameter :: DM_POLYTOPE_FV_GHOST = 12
+      PetscEnum, parameter :: DM_POLYTOPE_INTERIOR_GHOST = 13
+      PetscEnum, parameter :: DM_POLYTOPE_UNKNOWN = 14
+      PetscEnum, parameter :: DM_NUM_POLYTOPES = 15
 
       type tDMPlexCellRefiner
         sequence

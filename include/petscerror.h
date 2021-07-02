@@ -507,7 +507,8 @@ M*/
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
-PETSC_EXTERN PetscBool petscwaitonerrorflg,petscindebugger;
+PETSC_EXTERN PetscBool petscwaitonerrorflg;
+PETSC_EXTERN PetscBool petscindebugger;
 
 /*MC
    PETSCABORT - Call MPI_Abort with an informative error code
