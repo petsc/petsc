@@ -499,7 +499,8 @@ M*/
 #define CHKERRCONTINUE(ierr)   do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");}} while (0)
 
 PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
-PETSC_EXTERN PetscBool petscwaitonerrorflg,petscindebugger;
+PETSC_EXTERN PetscBool petscwaitonerrorflg;
+PETSC_EXTERN PetscBool petscindebugger;
 
 /*MC
    PETSCABORT - Call MPI_Abort with an informative error code
