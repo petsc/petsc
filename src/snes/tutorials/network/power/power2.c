@@ -426,7 +426,7 @@ int main(int argc,char ** argv)
   PetscErrorCode   ierr;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="case9.m";
   PFDATA           *pfdata1,*pfdata2;
-  PetscInt         numEdges1=0,numVertices1=0,numEdges2=0,numVertices2=0;
+  PetscInt         numEdges1=0,numEdges2=0;
   PetscInt         *edgelist1 = NULL,*edgelist2 = NULL,componentkey[4];
   DM               networkdm;
   UserCtx_Power    User;
@@ -470,8 +470,6 @@ int main(int argc,char ** argv)
       User.Sbase = pfdata1->sbase;
 
       numEdges1 = pfdata1->nbranch;
-      numVertices1 = pfdata1->nbus;
-
       ierr = PetscMalloc1(2*numEdges1,&edgelist1);CHKERRQ(ierr);
       ierr = GetListofEdges_Power(pfdata1,edgelist1);CHKERRQ(ierr);
 
@@ -481,8 +479,6 @@ int main(int argc,char ** argv)
       User.Sbase = pfdata2->sbase;
 
       numEdges2 = pfdata2->nbranch;
-      numVertices2 = pfdata2->nbus;
-
       ierr = PetscMalloc1(2*numEdges2,&edgelist2);CHKERRQ(ierr);
       ierr = GetListofEdges_Power(pfdata2,edgelist2);CHKERRQ(ierr);
     }
@@ -494,8 +490,8 @@ int main(int argc,char ** argv)
 
     /* Set number of nodes/edges and edge connectivity */
     ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,nsubnet);CHKERRQ(ierr);
-    ierr = DMNetworkAddSubnetwork(networkdm,"",numVertices1,numEdges1,edgelist1,NULL);CHKERRQ(ierr);
-    ierr = DMNetworkAddSubnetwork(networkdm,"",numVertices2,numEdges2,edgelist2,NULL);CHKERRQ(ierr);
+    ierr = DMNetworkAddSubnetwork(networkdm,"",numEdges1,edgelist1,NULL);CHKERRQ(ierr);
+    ierr = DMNetworkAddSubnetwork(networkdm,"",numEdges2,edgelist2,NULL);CHKERRQ(ierr);
 
     /* Set up the network layout */
     ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);

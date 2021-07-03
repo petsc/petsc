@@ -979,7 +979,7 @@ int main(int argc,char ** argv)
   Userctx        user;
   KSP            ksp;
   PC             pc;
-  PetscInt       numEdges = 0,numVertices = 0;
+  PetscInt       numEdges = 0;
 
   ierr = PetscInitialize(&argc,&argv,"ex9busnetworkops",help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nc",&nc,NULL);CHKERRQ(ierr);
@@ -1001,12 +1001,10 @@ int main(int argc,char ** argv)
   ierr = PetscLogStageRegister("Create network",&stage1);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
 
-  /* Set local number of nodes and edges and edge connectivity */
-  if (!rank) {
-    numVertices = NBUS*nc; numEdges = NBRANCH*nc+(nc-1);
-  }
+  /* Set local number of edges and edge connectivity */
+  if (!rank) numEdges = NBRANCH*nc+(nc-1);
   ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,NULL,numVertices,numEdges,edgelist,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,NULL,numEdges,edgelist,NULL);CHKERRQ(ierr);
 
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);

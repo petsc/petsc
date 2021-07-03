@@ -414,8 +414,8 @@ int main(int argc,char **argv)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,Nsubnet);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,"power",numVertices[0],numEdges[0],edgelist_power,&power_netnum);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,"water",numVertices[1],numEdges[1],edgelist_water,&water_netnum);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,"power",numEdges[0],edgelist_power,&power_netnum);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,"water",numEdges[1],edgelist_water,&water_netnum);CHKERRQ(ierr);
 
   /* vertex subnet[0].4 shares with vertex subnet[1].0 */
   power_svtx = 4; water_svtx = 0;

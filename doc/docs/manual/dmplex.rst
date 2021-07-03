@@ -618,9 +618,9 @@ follows:
 
    ::
 
-      DMNetworkAddSubnetwork(DM dm, const char* name, PetscInt nv, PetscInt ne, PetscInt edgelist[], PetscInt *netnum);
+      DMNetworkAddSubnetwork(DM dm, const char* name, PetscInt ne, PetscInt edgelist[], PetscInt *netnum);
 
-   Here ``name`` is the subnetwork name, ``nv`` and ``ne`` are the numbers of local vertices and local edges on the subnetwork, and ``edgelist`` is the connectivity for the subnetwork.
+   Here ``name`` is the subnetwork name, ``ne`` is the number of local edges on the subnetwork, and ``edgelist`` is the connectivity for the subnetwork.
    The output ``netnum`` is the global numbering of the subnetwork in the network.
    Each element of ``edgelist`` is an integer array of size ``2*ne``
    containing the edge connectivity for the subnetwork.
