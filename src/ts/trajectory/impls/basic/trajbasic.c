@@ -4,7 +4,11 @@
 typedef struct {
   PetscViewer viewer;
 } TSTrajectory_Basic;
-
+/*
+  For n-th time step, TSTrajectorySet_Basic always saves the solution X(t_n) and the current time t_n,
+  and optionally saves the stage values Y[] between t_{n-1} and t_n, the previous time t_{n-1}, and
+  forward stage sensitivities S[] = dY[]/dp.
+*/
 static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   TSTrajectory_Basic *tjbasic = (TSTrajectory_Basic*)tj->data;
@@ -16,16 +20,15 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   ierr = PetscSNPrintf(filename,sizeof(filename),tj->dirfiletemplate,stepnum);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(tjbasic->viewer,filename);CHKERRQ(ierr); /* this triggers PetscViewer to be set up again */
   ierr = PetscViewerSetUp(tjbasic->viewer);CHKERRQ(ierr);
-  if (tj->solution_only || !ts->stifflyaccurate) {
-    ierr = VecView(X,tjbasic->viewer);CHKERRQ(ierr);
-  }
+  ierr = VecView(X,tjbasic->viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryWrite(tjbasic->viewer,&time,1,PETSC_REAL);CHKERRQ(ierr);
   if (stepnum && !tj->solution_only) {
     Vec       *Y;
     PetscReal tprev;
-
     ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
     for (i=0; i<ns; i++) {
+      /* For stiffly accurate TS methods, the last stage Y[ns-1] is the same as the solution X, thus does not need to be saved again. */
+      if (ts->stifflyaccurate && i == ns-1) continue;
       ierr = VecView(Y[i],tjbasic->viewer);CHKERRQ(ierr);
     }
     ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
@@ -69,17 +72,16 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   ierr = PetscSNPrintf(filename,sizeof(filename),tj->dirfiletemplate,stepnum);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-  if (tj->solution_only || !ts->stifflyaccurate) {
-    ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
-    ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
-  }
+  ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
+  ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,t,1,NULL,PETSC_REAL);CHKERRQ(ierr);
   if (stepnum && !tj->solution_only) {
     Vec       *Y;
     PetscReal timepre;
-
     ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
     for (i=0; i<ns; i++) {
+      /* For stiffly accurate TS methods, the last stage Y[ns-1] is the same as the solution X, thus does not need to be loaded again. */
+      if (ts->stifflyaccurate && i == ns-1) continue;
       ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerBinaryRead(viewer,&timepre,1,NULL,PETSC_REAL);CHKERRQ(ierr);

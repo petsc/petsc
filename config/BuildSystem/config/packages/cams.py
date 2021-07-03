@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit = 'baa7d400003c906fe8ba72076190d4445f40c0f9' #main june-18-2021
-    self.download  = ['git://https://github.com/caidao22/pkg-cams.git']
+    self.gitcommit = '631743a8d669f0259324622fd6aca29cfe58f659' #main july-02-2021
+    self.download  = ['git://https://github.com/caidao22/cams.git']
     self.functions = ['offline_cams_create']
     self.includes  = ['offline_schedule.h']
     self.liblist   = [['libcams.a']]
@@ -43,7 +43,13 @@ class Configure(config.package.Package):
     if self.installNeeded('make.inc'):
       self.logPrintBox('Configuring, compiling and installing cams; this may take several seconds')
       self.installDirProvider.printSudoPasswordMessage()
-      output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make lib',timeout=500, log = self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+' make install ',timeout=250, log = self.log)
-      self.postInstall(output1+err1+output2+err2,'make.inc')
+      try:
+        output1,err1,ret1 = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['clean', 'lib'], cwd=self.packageDir, timeout=250, log=self.log)
+      except RuntimeError as e:
+        raise RuntimeError('Error running make on CAMS: '+str(e))
+      try:
+        output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['install'], cwd=self.packageDir, timeout=250, log=self.log)
+      except RuntimeError as e:
+        raise RuntimeError('Error running install on CAMS: '+str(e))
+      self.postInstall(output1+err1+output2+err2, 'make.inc')
     return self.installDir
