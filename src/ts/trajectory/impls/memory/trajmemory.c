@@ -558,7 +558,8 @@ static PetscErrorCode UpdateTS(TS ts,Stack *stack,StackElement e,PetscInt stepnu
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (HaveSolution(e->cptype) && e->stepnum!=stepnum) {
+  /* In adjoint mode we do not need to copy solution if the stepnum is the same */
+  if (!adjoint_mode || (HaveSolution(e->cptype) && e->stepnum!=stepnum)) {
     ierr = VecCopy(e->X,ts->vec_sol);CHKERRQ(ierr);
   }
   if (HaveStages(e->cptype)) {
