@@ -19,6 +19,7 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--with-rsh=ssh')
+    args.append('--disable-man-pages')
     args.append('MAKE='+self.make.make)
     if not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Error: OpenMPI requires C++ compiler. None specified')
