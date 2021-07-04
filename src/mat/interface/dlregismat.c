@@ -199,6 +199,9 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatLUFactor",      MAT_CLASSID,&MAT_LUFactor);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatLUFactorSym",   MAT_CLASSID,&MAT_LUFactorSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatLUFactorNum",   MAT_CLASSID,&MAT_LUFactorNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatQRFactor",      MAT_CLASSID,&MAT_QRFactor);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatQRFactorSym",   MAT_CLASSID,&MAT_QRFactorSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatQRFactorNum",   MAT_CLASSID,&MAT_QRFactorNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCholeskyFctr",  MAT_CLASSID,&MAT_CholeskyFactor);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCholFctrSym",   MAT_CLASSID,&MAT_CholeskyFactorSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCholFctrNum",   MAT_CLASSID,&MAT_CholeskyFactorNumeric);CHKERRQ(ierr);
