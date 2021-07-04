@@ -1,6 +1,14 @@
 ===============
 PETSc |version|
 ===============
+PETSc, the Portable, Extensible Toolkit for Scientific Computation,
+pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is a suite of
+data structures and routines for the scalable (parallel) solution of scientific
+applications modeled by partial differential equations. It supports MPI, and GPUs through
+CUDA or OpenCL, as well as hybrid MPI-GPU parallelism. PETSc (sometimes called PETSc/TAO)
+also contains the TAO, the Toolkit for Advanced Optimization, software library.
+
+PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
 
 News
 ====
@@ -23,13 +31,6 @@ News
 
   Source code for `petsc4py <https://www.mcs.anl.gov/petsc/petsc4py-current/docs/>`__, developed by Lisandro Dalcin, is now distributed with the PETSc source and supported by the PETSc team and mailing lists.
 
-PETSc, pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is a suite of
-data structures and routines for the scalable (parallel) solution of scientific
-applications modeled by partial differential equations. It supports MPI, and GPUs through
-CUDA or OpenCL, as well as hybrid MPI-GPU parallelism. PETSc (sometimes called PETSc/TAO)
-also contains the TAO optimization software library.
-
-PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
 
 Main Topics
 ===========

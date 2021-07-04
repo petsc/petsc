@@ -2,7 +2,8 @@
 Overview and Features
 *********************
 
-PETSc is intended for use in large-scale application projects, many ongoing computational
+PETSc, the Portable, Extensible Toolkit for Scientific Computation,
+is intended for use in large-scale application projects. Many ongoing computational
 science projects are built around the PETSc libraries. PETSc is easy to use for
 beginners. Moreover, its careful design allows advanced users to have detailed control
 over the solution process. PETSc includes a large suite of parallel linear, nonlinear
