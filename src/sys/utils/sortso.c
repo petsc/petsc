@@ -1223,9 +1223,9 @@ PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], Pet
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  if (n <= 1) PetscFunctionReturn(0);
   PetscValidIntPointer(arr1,2);
   PetscValidIntPointer(arr2,3);
-  if (n == 1) PetscFunctionReturn(0);
   /* cannot export out to PetscIntSortWithArray here since it isn't stable */
   ierr = PetscTimSortWithArray(n, arr1, sizeof(PetscInt), arr2, sizeof(PetscInt), Compare_PetscInt_Private, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1259,8 +1259,8 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (n <= 1) PetscFunctionReturn(0);
   PetscValidIntPointer(arr,2);
-  if (n == 1) PetscFunctionReturn(0);
   if (n < 64) {
     ierr = PetscSortMPIInt(n, arr);CHKERRQ(ierr);
   } else {
