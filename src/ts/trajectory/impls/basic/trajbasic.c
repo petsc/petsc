@@ -16,7 +16,7 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   ierr = PetscSNPrintf(filename,sizeof(filename),tj->dirfiletemplate,stepnum);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(tjbasic->viewer,filename);CHKERRQ(ierr); /* this triggers PetscViewer to be set up again */
   ierr = PetscViewerSetUp(tjbasic->viewer);CHKERRQ(ierr);
-  if (!ts->stifflyaccurate) {
+  if (tj->solution_only || !ts->stifflyaccurate) {
     ierr = VecView(X,tjbasic->viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerBinaryWrite(tjbasic->viewer,&time,1,PETSC_REAL);CHKERRQ(ierr);
@@ -69,7 +69,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   ierr = PetscSNPrintf(filename,sizeof(filename),tj->dirfiletemplate,stepnum);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-  if (!ts->stifflyaccurate) {
+  if (tj->solution_only || !ts->stifflyaccurate) {
     ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
     ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
   }
