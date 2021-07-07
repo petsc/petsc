@@ -40,10 +40,10 @@ What Kind Of Parallel Computers Or Clusters Are Needed To Use PETSc? Or Why Do I
    - Fast, **low-latency** interconnect; any ethernet (even 10 GigE) simply cannot provide
      the needed performance.
 
-   - High per-CPU **memory** performance. Each CPU (core in multi-core systems) needs to
-     have its **own** memory bandwith of at least 2 or more gigabytes/second. Most modern
-     computers are no longer bottlenecked by how fast they can perform a single
-     calculation, rather, they are usually restricted by how quickly they can get their
+   - High per-core **memory** performance. Each core needs to
+     have its **own** memory bandwidth of at least 2 or more gigabytes/second. Most modern
+     computers are not bottlenecked by how fast they can perform
+     calculations; rather, they are usually restricted by how quickly they can get their
      data.
 
 To obtain good performance it is important that you know your machine! I.e. how many
