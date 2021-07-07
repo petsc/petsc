@@ -2106,7 +2106,6 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscO
     ierr = PetscOptionsBool("-ts_trajectory_use_dram","Use DRAM for checkpointing","TSTrajectorySetUseDRAM",tjsch->stack.use_dram,&tjsch->stack.use_dram,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  tjsch->stack.solution_only = tj->solution_only;
   PetscFunctionReturn(0);
 }
 
@@ -2133,6 +2132,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   total_steps = total_steps < 0 ? PETSC_MAX_INT : total_steps;
   if (fixedtimestep) tjsch->total_steps = PetscMin(ts->max_steps,total_steps);
 
+  tjsch->stack.solution_only = tj->solution_only;
   ierr = TSGetStages(ts,&numY,PETSC_IGNORE);CHKERRQ(ierr);
   if (stack->solution_only) {
     if (tjsch->max_units_ram) tjsch->max_cps_ram = tjsch->max_units_ram;
