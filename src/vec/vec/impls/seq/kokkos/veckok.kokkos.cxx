@@ -668,19 +668,15 @@ struct DotNorm2 {
   typedef ConstPetscScalarKokkosView::size_type  size_type;
 
   size_type                    value_count;
-  ConstPetscScalarKokkosView   xv_, yv_;
+  ConstPetscScalarKokkosView   xv_, yv_; /* first and second vectors in VecDotNorm2. The order matters. */
 
   DotNorm2(ConstPetscScalarKokkosView& xv,ConstPetscScalarKokkosView& yv) :
     value_count(2), xv_(xv), yv_(yv) {}
 
-  KOKKOS_INLINE_FUNCTION void operator() (const size_type i, value_type result) const {
-    #if defined(PETSC_USE_COMPLEX)
-      result[0] += Kokkos::conj(yv_(i))*xv_(i);
-      result[1] += Kokkos::conj(yv_(i))*xv_(i);
-    #else
-      result[0] += yv_(i)*xv_(i);
-      result[1] += yv_(i)*yv_(i);
-    #endif
+  KOKKOS_INLINE_FUNCTION void operator() (const size_type i, value_type result) const
+  {
+    result[0] += PetscConj(yv_(i))*xv_(i);
+    result[1] += PetscConj(yv_(i))*yv_(i);
   }
 
   KOKKOS_INLINE_FUNCTION void join (volatile value_type dst, const volatile value_type src) const {
@@ -707,6 +703,8 @@ PetscErrorCode VecDotNorm2_SeqKokkos(Vec xin, Vec yin, PetscScalar *dp, PetscSca
   ierr = VecGetKokkosView(yin,&yv);CHKERRQ(ierr);
   DotNorm2 dn(xv,yv);
   Kokkos::parallel_reduce(xin->map->n,dn,result);
+  *dp  = result[0];
+  *nm  = result[1];
   ierr = VecRestoreKokkosView(yin,&yv);CHKERRQ(ierr);
   ierr = VecRestoreKokkosView(xin,&xv);CHKERRQ(ierr);
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
