@@ -6,9 +6,6 @@
  Frequently Asked Questions (FAQ)
 ==================================
 
-This page provides help with the most common questions about PETSc and its design,
-execution, and general organization.
-
 .. contents:: Table Of Contents
    :local:
    :backlinks: top
