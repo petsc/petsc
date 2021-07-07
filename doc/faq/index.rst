@@ -24,7 +24,8 @@ Any Useful Books On Numerical Computing?
 `Bueler, PETSc for Partial Differential Equations: Numerical Solutions in C and Python
 <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
 
-`Writing Scientific Software: A Guide to Good Style
+
+`Oliveira and Stewart, Writing Scientific Software: A Guide to Good Style
 <https://www.cambridge.org/core/books/writing-scientific-software/23206704175AF868E43FE3FB399C2F53>`__
 
 .. _doc_faq_general_parallel:
