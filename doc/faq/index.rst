@@ -16,7 +16,7 @@ General
 How Can I Subscribe To The PETSc Mailing Lists?
 -----------------------------------------------
 
-See mailing list :ref:`documenation <doc_mail>`
+See mailing list :ref:`documentation <doc_mail>`
 
 Any Useful Books On Numerical Computing?
 ----------------------------------------
@@ -58,7 +58,7 @@ batch system), run the following from ``$PETSC_DIR``:
    > make streams [NPMAX=maximum_number_of_mpi_processes_you_plan_to_use]
 
 
-This will provide a summary of the bandwidth received with different number of MPI
+This will provide a summary of the bandwidth with different number of MPI
 processes and potential speedups. If you have a batch system:
 
 .. code-block:: console
@@ -98,7 +98,7 @@ uses a different memory bus:
 
   In addition to task affinity, this tool also allows changing the default memory affinity
   policy. On Linux, the default policy is to attempt to find memory on the same memory bus
-  that serves the core that a thread is running on at whatever time the memory is faulted
+  that serves the core that a thread is running on when the memory is faulted
   (not when ``malloc()`` is called). If local memory is not available, it is found
   elsewhere, possibly leading to serious memory imbalances.
 
@@ -210,7 +210,7 @@ How Do Such A Small Group Of People Manage To Write And Maintain Such A Large An
 For Complex Numbers Will I Get Better Performance With C++?
 -----------------------------------------------------------
 
-To use PETSc with complex numbers you mayuse the following ``configure`` options;
+To use PETSc with complex numbers you may use the following ``configure`` options;
 ``--with-scalar-type=complex`` and either ``--with-clanguage=c++`` or (the default)
 ``--with-clanguage=c``. In our experience they will deliver very similar performance
 (speed), but if one is concerned they should just try both and see if one is faster.
@@ -334,12 +334,12 @@ How Do I Begin Using PETSc If The Software Has Already Been Completely Built And
 Assuming that the PETSc libraries have been successfully built for a particular
 architecture and level of optimization, a new user must merely:
 
-#. Set ``$PETSC_DIR`` to the full path of the PETSc home
+#. Set ``PETSC_DIR`` to the full path of the PETSc home
    directory. This will be the location of the ``configure`` script, and usually called
    "petsc" or some vairation of that (for example, /home/username/petsc).
 
-#. Set ``$PETSC_ARCH``, which indicates the configuration on which PETSc will be
-   used. Note that the ``$PETSC_ARCH`` is simply a name the installer used when installing
+#. Set ``PETSC_ARCH``, which indicates the configuration on which PETSc will be
+   used. Note that ``$PETSC_ARCH`` is simply a name the installer used when installing
    the libraries. There will exist a directory within ``$PETSC_DIR`` that is named after
    its corresponding ``$PETSC_ARCH``. There many be several on a single system, for
    example "linux-c-debug" for the debug versions compiled by a c compiler or
