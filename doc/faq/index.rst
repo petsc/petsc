@@ -365,7 +365,8 @@ The PETSc Distribution Is SO Large. How Can I Reduce My Disk Space Usage?
 #. The PETSc test suite contains sample output for many of the examples. These are
    contained in the PETSc directories ``$PETSC_DIR/src/*/tutorials/output`` and
    ``$PETSC_DIR/src/*/tests/output``. Once you have run the test examples, you may remove
-   all of these directories to save some disk space.
+   all of these directories to save some disk space. You can locate the largest with
+   e.g. ``find . -name output -type d | xargs du -sh | sort -hr`` on a unix-based system.
 
 #. The debugging versions of the libraries are larger than the optimized versions. In a
    pinch you can work with the optimized version, although we bid you good luck in
