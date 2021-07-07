@@ -1,5 +1,3 @@
-.. include:: <isonum.txt>
-
 .. _doc_faq:
 
 ==================================
@@ -978,7 +976,7 @@ function provided to ``SNESComputeFunction()`` to approximate the action of Jaco
 
    Since no matrix-representation of the Jacobian is provided the ``-pc_type`` used with
    this option must be ``-pc_type none``. You may provide a custom preconditioner with
-   ``SNESGetKSP()`` |rarr| ``KSPGetPC()`` |rarr| ``PCSetType()`` and use ``PCSHELL``.
+   ``SNESGetKSP()``, ``KSPGetPC()``, and ``PCSetType()`` and use ``PCSHELL``.
 
 The option ``-snes_mf_operator`` will use Jacobian free to apply the Jacobian (in the
 Krylov solvers) but will use whatever matrix you provided with ``SNESSetJacobian()``
@@ -993,7 +991,7 @@ arguments and pass the function ``MatMFFDComputeJacobian()``.
 To provide your own approximate Jacobian matrix to compute the preconditioner (like
 ``-snes_mf_operator``), pass this other matrix as the second matrix argument to
 ``SNESSetJacobian()``. Make sure your provided ``computejacobian()`` function calls
-``MatAssemblyBegin()`` |rarr| ``MatAssemblyEnd()`` separately on **BOTH** matrix arguments
+``MatAssemblyBegin()`` and ``MatAssemblyEnd()`` separately on **BOTH** matrix arguments
 to this function. See ``src/snes/tests/ex7.c``.
 
 To difference a different function than that passed to ``SNESSetJacobian()`` to compute the
