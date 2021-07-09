@@ -71,6 +71,7 @@ PETSC_INTERN PetscErrorCode VecDestroy_SeqKokkos_Private(Vec);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqKokkos_Private(Vec);
 PETSC_INTERN PetscErrorCode VecMin_SeqKokkos(Vec,PetscInt*,PetscReal*);
 PETSC_INTERN PetscErrorCode VecMax_SeqKokkos(Vec,PetscInt*,PetscReal*);
+PETSC_INTERN PetscErrorCode VecSum_SeqKokkos(Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecShift_SeqKokkos(Vec,PetscScalar);
 PETSC_INTERN PetscErrorCode VecGetArray_SeqKokkos(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecRestoreArray_SeqKokkos(Vec,PetscScalar**);

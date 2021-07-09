@@ -166,6 +166,20 @@ PetscErrorCode VecMax_SeqKokkos(Vec xin,PetscInt *p,PetscReal *val)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecSum_SeqKokkos(Vec xin,PetscScalar* sum)
+{
+  PetscErrorCode                  ierr;
+  ConstPetscScalarKokkosView      xv;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  ierr = VecGetKokkosView(xin,&xv);CHKERRQ(ierr);
+  *sum = KokkosBlas::sum(xv);
+  ierr = VecRestoreKokkosView(xin,&xv);CHKERRQ(ierr);
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecShift_SeqKokkos(Vec xin,PetscScalar shift)
 {
   PetscErrorCode                  ierr;
@@ -907,6 +921,7 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
   v->ops->pointwisemult          = VecPointwiseMult_SeqKokkos;
   v->ops->min                    = VecMin_SeqKokkos;
   v->ops->max                    = VecMax_SeqKokkos;
+  v->ops->sum                    = VecSum_SeqKokkos;
   v->ops->shift                  = VecShift_SeqKokkos;
   v->ops->norm                   = VecNorm_SeqKokkos;
   v->ops->scale                  = VecScale_SeqKokkos;
