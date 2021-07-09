@@ -1302,6 +1302,59 @@ PetscErrorCode VecMin_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
   ierr = VecCUDARestoreArrayRead(v,&av);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode VecSum_SeqCUDA(Vec v,PetscScalar *sum)
+{
+  PetscErrorCode                        ierr;
+  PetscInt                              n = v->map->n;
+  const PetscScalar                     *a;
+  thrust::device_ptr<const PetscScalar> dptr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+  ierr = VecCUDAGetArrayRead(v,&a);CHKERRQ(ierr);
+  dptr = thrust::device_pointer_cast(a);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  try {
+    *sum = thrust::reduce(dptr,dptr+n,PetscScalar(0.0));
+  } catch (char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+  }
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = VecCUDARestoreArrayRead(v,&a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+struct petscshift : public thrust::unary_function<PetscScalar,PetscScalar>
+{
+  const PetscScalar shift_;
+  petscshift(PetscScalar shift) : shift_(shift){}
+  __host__ __device__
+  PetscScalar operator()(PetscScalar x) {return x + shift_;}
+};
+
+PetscErrorCode VecShift_SeqCUDA(Vec v,PetscScalar shift)
+{
+  PetscErrorCode                        ierr;
+  PetscInt                              n = v->map->n;
+  PetscScalar                           *a;
+  thrust::device_ptr<PetscScalar>       dptr;
+
+  PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
+  ierr = VecCUDAGetArray(v,&a);CHKERRQ(ierr);
+  dptr = thrust::device_pointer_cast(a);
+  ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+  try {
+    thrust::transform(dptr,dptr+n,dptr,petscshift(shift)); /* in-place transform */
+  } catch (char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+  }
+  ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
+  ierr = VecCUDARestoreArray(v,&a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_NVSHMEM)
 /* Free old CUDA array and re-allocate a new one from nvshmem symmetric heap.
    New array does not retain values in the old array. The offload mask is not changed.

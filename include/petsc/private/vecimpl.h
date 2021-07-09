@@ -103,6 +103,7 @@ struct _VecOps {
   PetscErrorCode (*restorearrayandmemtype)(Vec,PetscScalar**);
   PetscErrorCode (*restorearrayreadandmemtype)(Vec,const PetscScalar**);
   PetscErrorCode (*concatenate)(PetscInt,const Vec[],Vec*,IS*[]);
+  PetscErrorCode (*sum)(Vec,PetscScalar*);
 };
 
 /*

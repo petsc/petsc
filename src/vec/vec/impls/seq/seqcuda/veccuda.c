@@ -457,7 +457,8 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->max                    = VecMax_Seq;
     V->ops->min                    = VecMin_Seq;
     V->ops->reciprocal             = VecReciprocal_Default;
-
+    V->ops->sum                    = NULL;
+    V->ops->shift                  = NULL;
     /* default random number generator */
     ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
     ierr = PetscStrallocpy(PETSCRANDER48,&V->defaultrandtype);CHKERRQ(ierr);
@@ -502,6 +503,8 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->max                    = VecMax_SeqCUDA;
     V->ops->min                    = VecMin_SeqCUDA;
     V->ops->reciprocal             = VecReciprocal_SeqCUDA;
+    V->ops->sum                    = VecSum_SeqCUDA;
+    V->ops->shift                  = VecShift_SeqCUDA;
 
     /* default random number generator */
     ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
