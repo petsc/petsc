@@ -85,6 +85,10 @@ PetscLogDouble petsc_ctog_ct         = 0.0;  /* The total number of CPU to GPU c
 PetscLogDouble petsc_gtoc_ct         = 0.0;  /* The total number of GPU to CPU copies */
 PetscLogDouble petsc_ctog_sz         = 0.0;  /* The total size of CPU to GPU copies */
 PetscLogDouble petsc_gtoc_sz         = 0.0;  /* The total size of GPU to CPU copies */
+PetscLogDouble petsc_ctog_ct_scalar  = 0.0;  /* The total number of CPU to GPU copies */
+PetscLogDouble petsc_gtoc_ct_scalar  = 0.0;  /* The total number of GPU to CPU copies */
+PetscLogDouble petsc_ctog_sz_scalar  = 0.0;  /* The total size of CPU to GPU copies */
+PetscLogDouble petsc_gtoc_sz_scalar  = 0.0;  /* The total size of GPU to CPU copies */
 PetscLogDouble petsc_gflops          = 0.0;  /* The flops done on a GPU */
 PetscLogDouble petsc_gtime           = 0.0;  /* The time spent on a GPU */
 
