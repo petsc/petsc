@@ -155,7 +155,6 @@ PetscErrorCode VecDuplicate_MPIKokkos(Vec win,Vec *vv)
 {
   PetscErrorCode ierr;
   Vec            v;
-  PetscScalar    *darray;
   Vec_MPI        *vecmpi;
   Vec_Kokkos     *veckok;
 
@@ -167,12 +166,7 @@ PetscErrorCode VecDuplicate_MPIKokkos(Vec win,Vec *vv)
 
   /* Build the Vec_Kokkos struct */
   vecmpi = static_cast<Vec_MPI*>(v->data);
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
-    darray = vecmpi->array;
-  } else {
-    darray = static_cast<PetscScalar*>(Kokkos::kokkos_malloc<DefaultMemorySpace>(sizeof(PetscScalar)*(v->map->n+vecmpi->nghost)));
-  }
-  veckok   = new Vec_Kokkos(v->map->n,vecmpi->array,darray,darray);
+  veckok = new Vec_Kokkos(v->map->n,vecmpi->array);
   Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
   v->spptr       = veckok;
   v->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
@@ -250,23 +244,17 @@ PetscErrorCode VecCreate_MPIKokkos(Vec v)
   PetscErrorCode ierr;
   Vec_MPI        *vecmpi;
   Vec_Kokkos     *veckok;
-  PetscScalar    *darray;
 
   PetscFunctionBegin;
   ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   ierr = VecCreate_MPI(v);CHKERRQ(ierr);  /* Build a sequential vector, allocate array */
   ierr = VecSet_Seq(v,0.0);CHKERRQ(ierr); /* Zero the host array */
-  vecmpi = static_cast<Vec_MPI*>(v->data);
 
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
-    darray = vecmpi->array;
-  } else {
-    darray = static_cast<PetscScalar*>(Kokkos::kokkos_malloc<DefaultMemorySpace>(sizeof(PetscScalar)*v->map->n));
-  }
+  vecmpi = static_cast<Vec_MPI*>(v->data);
   ierr   = PetscObjectChangeTypeName((PetscObject)v,VECMPIKOKKOS);CHKERRQ(ierr);
   ierr   = VecSetOps_MPIKokkos(v);CHKERRQ(ierr);
-  veckok = new Vec_Kokkos(v->map->n,vecmpi->array,darray,darray);
+  veckok = new Vec_Kokkos(v->map->n,vecmpi->array);
   Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
   v->spptr = static_cast<void*>(veckok);
   v->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
@@ -322,16 +310,18 @@ PetscErrorCode  VecCreateMPIKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
   ierr = VecSetSizes(w,n,N);CHKERRQ(ierr);
   ierr = VecSetBlockSize(w,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(w->map);CHKERRQ(ierr);
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {harray = const_cast<PetscScalar*>(darray);}
-  else {harray = (PetscScalar*)Kokkos::kokkos_malloc<Kokkos::HostSpace>(sizeof(PetscScalar)*w->map->n);}
 
-  ierr   = VecCreate_MPI_Private(w,PETSC_FALSE,0,harray);CHKERRQ(ierr); /* Build a sequential vector with provided data */
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {harray = const_cast<PetscScalar*>(darray);}
+  else {ierr = PetscMalloc1(w->map->n,&harray);CHKERRQ(ierr);} /* If device is not the same as host, allocate the host array ourselves */
+
+  ierr   = VecCreate_MPI_Private(w,PETSC_FALSE/*alloc*/,0/*nghost*/,harray);CHKERRQ(ierr); /* Build a sequential vector with provided data */
   vecmpi = static_cast<Vec_MPI*>(w->data);
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) vecmpi->array_allocated = harray;
+
+  if (!std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) vecmpi->array_allocated = harray; /* The host array was allocated by petsc */
 
   ierr   = PetscObjectChangeTypeName((PetscObject)w,VECMPIKOKKOS);CHKERRQ(ierr);
   ierr   = VecSetOps_MPIKokkos(w);CHKERRQ(ierr);
-  veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray),NULL);
+  veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray));
   veckok->v_dual.modify_device(); /* Mark the device is modified */
   w->spptr = static_cast<void*>(veckok);
   w->offloadmask = PETSC_OFFLOAD_VECKOKKOS;

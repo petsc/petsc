@@ -172,7 +172,7 @@ def modifylevel(filename,secname):
           re_loc = re.compile('<BODY .*>')
           branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).rstrip()
           edit_branch = 'release' if branch == b'release' else 'main'
-          replacementtext = '<BODY BGCOLOR="FFFFFF">\n<div id="edit" align=right><a href="https://gitlab.com/petsc/petsc/-/edit/'+edit_branch+'/'+loc+'"><small>RFix/Edit manual page</small>R</a></div>'
+          replacementtext = '<BODY BGCOLOR="FFFFFF">\n<div id="edit" align=right><a href="https://gitlab.com/petsc/petsc/-/edit/'+edit_branch+'/'+loc+'"><small>Fix/Edit manual page</small></a></div>'
           buf = re_loc.sub(replacementtext,buf)
       else:
         print('Error! No location in file:', filename)
