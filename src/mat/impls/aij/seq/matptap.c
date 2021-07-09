@@ -200,12 +200,27 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
   PetscInt       *ci=c->i,*cj=c->j,*cjj;
   PetscInt       am =A->rmap->N,cn=C->cmap->N,cm=C->rmap->N;
   PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
-  MatScalar      *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
+  MatScalar      *aa,*apa,*pa,*pA,*paj,*ca,*caj;
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P (cn: non-scalable) */
   ierr = PetscCalloc2(cn,&apa,cn,&apjdense);CHKERRQ(ierr);
   ierr = PetscMalloc1(cn,&apj);CHKERRQ(ierr);
+  /* trigger CPU copies if needed and flag CPU mask for C */
+#if defined(PETSC_HAVE_DEVICE)
+  {
+    const PetscScalar *dummy;
+    ierr = MatSeqAIJGetArrayRead(A,&dummy);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArrayRead(A,&dummy);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArrayRead(P,&dummy);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArrayRead(P,&dummy);CHKERRQ(ierr);
+    if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
+  }
+#endif
+  aa = a->a;
+  pa = p->a;
+  pA = p->a;
+  ca = c->a;
 
   /* Clear old values in C */
   ierr = PetscArrayzero(ca,ci[cm]);CHKERRQ(ierr);

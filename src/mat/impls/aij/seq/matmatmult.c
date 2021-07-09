@@ -2102,11 +2102,11 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJ_PtAP(Mat C)
   PetscBool      flg = PETSC_FALSE;
   PetscInt       alg = 0; /* default algorithm -- alg=1 should be default!!! */
 #if !defined(PETSC_HAVE_HYPRE)
-  const char      *algTypes[2] = {"scalable","rap"};
-  PetscInt        nalg = 2;
+  const char     *algTypes[2] = {"scalable","rap"};
+  PetscInt       nalg = 2;
 #else
-  const char      *algTypes[3] = {"scalable","rap","hypre"};
-  PetscInt        nalg = 3;
+  const char     *algTypes[3] = {"scalable","rap","hypre"};
+  PetscInt       nalg = 3;
 #endif
 
   PetscFunctionBegin;
