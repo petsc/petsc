@@ -44,6 +44,7 @@
 #define PCJACOBI 'jacobi'
 #define PCSOR 'sor'
 #define PCLU 'lu'
+#define PCQR 'qr'
 #define PCSHELL 'shell'
 #define PCBJACOBI 'bjacobi'
 #define PCMG 'mg'
