@@ -55,6 +55,7 @@ cdef extern from * nogil:
     int ISStrideGetInfo(PetscIS,PetscInt*,PetscInt*)
 
     int ISToGeneral(PetscIS)
+    int ISBuildTwoSided(PetscIS,PetscIS,PetscIS*)
 
 
 cdef extern from * nogil:
