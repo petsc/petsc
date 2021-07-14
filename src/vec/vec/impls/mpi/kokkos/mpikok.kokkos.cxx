@@ -199,6 +199,7 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->norm                   = VecNorm_MPIKokkos;
   v->ops->min                    = VecMin_MPIKokkos;
   v->ops->max                    = VecMax_MPIKokkos;
+  v->ops->sum                    = VecSum_SeqKokkos;
   v->ops->shift                  = VecShift_SeqKokkos;
   v->ops->scale                  = VecScale_SeqKokkos;
   v->ops->copy                   = VecCopy_SeqKokkos;

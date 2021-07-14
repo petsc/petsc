@@ -57,6 +57,8 @@ PETSC_INTERN PetscErrorCode VecResetArray_SeqHIP_Private(Vec);
 PETSC_INTERN PetscErrorCode VecMax_SeqHIP(Vec,PetscInt*,PetscReal*);
 PETSC_INTERN PetscErrorCode VecMin_SeqHIP(Vec,PetscInt*,PetscReal*);
 PETSC_INTERN PetscErrorCode VecReciprocal_SeqHIP(Vec);
+PETSC_INTERN PetscErrorCode VecSum_SeqHIP(Vec,PetscScalar*);
+PETSC_INTERN PetscErrorCode VecShift_SeqHIP(Vec,PetscScalar);
 
 /* complex single */
 #if defined(PETSC_USE_COMPLEX)

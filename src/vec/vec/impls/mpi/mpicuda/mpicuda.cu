@@ -408,6 +408,8 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->max                    = VecMax_MPI;
     V->ops->min                    = VecMin_MPI;
     V->ops->reciprocal             = VecReciprocal_Default;
+    V->ops->sum                    = NULL;
+    V->ops->shift                  = NULL;
     /* default random number generator */
     ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
     ierr = PetscStrallocpy(PETSCRANDER48,&V->defaultrandtype);CHKERRQ(ierr);
@@ -451,6 +453,8 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->max                    = VecMax_MPICUDA;
     V->ops->min                    = VecMin_MPICUDA;
     V->ops->reciprocal             = VecReciprocal_SeqCUDA;
+    V->ops->sum                    = VecSum_SeqCUDA;
+    V->ops->shift                  = VecShift_SeqCUDA;
     /* default random number generator */
     ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
     ierr = PetscStrallocpy(PETSCCURAND,&V->defaultrandtype);CHKERRQ(ierr);
