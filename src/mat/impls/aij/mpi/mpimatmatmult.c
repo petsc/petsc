@@ -108,6 +108,13 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
 
   if (!ptap->P_oth && size>1) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatProductClear()");
 
+  /* flag CPU mask for C */
+#if defined(PETSC_HAVE_DEVICE)
+  if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
+  if (c->A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) c->A->offloadmask = PETSC_OFFLOAD_CPU;
+  if (c->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) c->B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
+
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*-----------------------------------------------------*/
   /* update numerical values of P_oth and P_loc */
@@ -660,6 +667,12 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (!ptap->P_oth && size>1) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatProductClear()");
 
+  /* flag CPU mask for C */
+#if defined(PETSC_HAVE_DEVICE)
+  if (C->offloadmask != PETSC_OFFLOAD_UNALLOCATED) C->offloadmask = PETSC_OFFLOAD_CPU;
+  if (c->A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) c->A->offloadmask = PETSC_OFFLOAD_CPU;
+  if (c->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) c->B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   apa_sparse = ptap->apa;
 
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */

@@ -416,6 +416,12 @@ int main(int argc,char **args)
      output_file: output/ex62_1.out
 
    test:
+     suffix: 14_seqaijcusparse_cpu
+     requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
+     args: -A_mat_type aijcusparse -B_mat_type aijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_matproduct_ab_backend_cpu -matmatmult_backend_cpu -PtAP_matproduct_ptap_backend_cpu -matptap_backend_cpu -RARt_matproduct_rart_backend_cpu -matrart_backend_cpu
+     output_file: output/ex62_1.out
+
+   test:
      suffix: 14_mpiaijcusparse_seq
      nsize: 1
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
@@ -423,10 +429,24 @@ int main(int argc,char **args)
      output_file: output/ex62_1.out
 
    test:
+     suffix: 14_mpiaijcusparse_seq_cpu
+     nsize: 1
+     requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_matproduct_ab_backend_cpu -matmatmult_backend_cpu -PtAP_matproduct_ptap_backend_cpu -matptap_backend_cpu
+     output_file: output/ex62_1.out
+
+   test:
      suffix: 14_mpiaijcusparse
      nsize: 3
      requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
+     output_file: output/ex62_1.out
+
+   test:
+     suffix: 14_mpiaijcusparse_cpu
+     nsize: 3
+     requires: cuda !complex double !define(PETSC_USE_64BIT_INDICES)
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_matproduct_ab_backend_cpu -matmatmult_backend_cpu -PtAP_matproduct_ptap_backend_cpu -matptap_backend_cpu
      output_file: output/ex62_1.out
 
    test:

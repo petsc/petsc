@@ -1103,10 +1103,12 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   Mat              A, B ,C;
   MatProductType   p1,p2;
   MatMatMatPrivate *mmabc;
+  const char       *prefix;
 
   PetscFunctionBegin;
   MatCheckProduct(mat,1);
   if (mat->product->data) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Product data not empty");
+  ierr = MatGetOptionsPrefix(mat,&prefix);CHKERRQ(ierr);
   ierr = PetscNew(&mmabc);CHKERRQ(ierr);
   product->data    = mmabc;
   product->destroy = MatDestroy_MatMatMatPrivate;
@@ -1136,6 +1138,8 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
     SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Not for ProductType %s",MatProductTypes[product->type]);
   }
   ierr = MatProductCreate(B,C,NULL,&mmabc->BC);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(mmabc->BC,prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(mmabc->BC,"P1_");CHKERRQ(ierr);
   ierr = MatProductSetType(mmabc->BC,p1);CHKERRQ(ierr);
   ierr = MatProductSetAlgorithm(mmabc->BC,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFill(mmabc->BC,product->fill);CHKERRQ(ierr);
@@ -1146,6 +1150,8 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   ierr = (*mmabc->BC->ops->productsymbolic)(mmabc->BC);CHKERRQ(ierr);
 
   ierr = MatProductCreate(A,mmabc->BC,NULL,&mmabc->ABC);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(mmabc->ABC,prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(mmabc->ABC,"P2_");CHKERRQ(ierr);
   ierr = MatProductSetType(mmabc->ABC,p2);CHKERRQ(ierr);
   ierr = MatProductSetAlgorithm(mmabc->ABC,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFill(mmabc->ABC,product->fill);CHKERRQ(ierr);
