@@ -86,7 +86,7 @@ check-ci-settings:
     when: always
     paths:
     - arch-*/lib/petsc/conf/*.log
-    - arch-*/lib/pkgconfig/PETSc.pc
+    - arch-*/lib/pkgconfig/petsc.pc
     - arch-*/tests/testresults.xml
     - arch-*/tests/test_*_tap.log
     - arch-*/tests/test_*_err.log
@@ -220,7 +220,7 @@ check-py-vermin:
     when: always
     paths:
     - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/lib/pkgconfig/PETSc.pc
+    - ${TEST_ARCH}/lib/pkgconfig/petsc.pc
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
