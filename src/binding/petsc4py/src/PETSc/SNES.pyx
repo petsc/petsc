@@ -493,9 +493,11 @@ cdef class SNES(Object):
     def getMonitor(self):
         return self.get_attr('__monitor__')
 
-    def cancelMonitor(self):
+    def monitorCancel(self):
         CHKERR( SNESMonitorCancel(self.snes) )
         self.set_attr('__monitor__', None)
+
+    cancelMonitor = monitorCancel
 
     def monitor(self, its, rnorm):
         cdef PetscInt  ival = asInt(its)
