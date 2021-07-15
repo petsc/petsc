@@ -230,6 +230,25 @@ PETSC_EXTERN PetscErrorCode VecView_Plex_HDF5_Native(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_HDF5_Native(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexView_HDF5(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexLoad_HDF5(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM, IS, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM, IS, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexSectionView_HDF5_Internal(DM, PetscViewer, DM);
+PETSC_INTERN PetscErrorCode DMPlexGlobalVectorView_HDF5_Internal(DM, PetscViewer, DM, Vec);
+PETSC_INTERN PetscErrorCode DMPlexLocalVectorView_HDF5_Internal(DM, PetscViewer, DM, Vec);
+PETSC_INTERN PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM, PetscViewer, PetscSF*);
+PETSC_INTERN PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM, PetscViewer, DM, PetscSF, PetscSF*, PetscSF*);
+PETSC_INTERN PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM, PetscViewer, DM, PetscSF, Vec);
+PETSC_INTERN PetscErrorCode DMPlexView_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Internal(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Native_Internal(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 #endif
 
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
@@ -253,20 +272,6 @@ PETSC_INTERN PetscErrorCode DMComputeL2GradientDiff_Plex(DM,PetscReal,PetscError
 PETSC_INTERN PetscErrorCode DMComputeL2FieldDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 PETSC_INTERN PetscErrorCode DMLocatePoints_Plex(DM, Vec, DMPointLocationType, PetscSF);
 
-PETSC_INTERN PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM, IS, PetscViewer);
-PETSC_INTERN PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM, PetscViewer);
-PETSC_INTERN PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM, IS, PetscViewer);
-PETSC_INTERN PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM, PetscViewer, PetscSF*);
-PETSC_INTERN PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM, PetscViewer);
-PETSC_INTERN PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM, PetscViewer);
-PETSC_INTERN PetscErrorCode DMPlexView_HDF5_Internal(DM, PetscViewer);
-PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Internal(DM, PetscViewer);
-PETSC_INTERN PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM, PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Internal(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Native_Internal(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 #if defined(PETSC_HAVE_EXODUSII)
 PETSC_EXTERN PetscErrorCode DMView_PlexExodusII(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_PlexExodusII_Internal(Vec, PetscViewer);
