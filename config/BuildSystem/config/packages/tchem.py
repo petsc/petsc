@@ -34,7 +34,7 @@ class Configure(config.package.Package):
       args.append('CXX="'+self.getCompiler()+'"')
       args.append('CXXFLAGS="'+self.updatePackageCxxFlags(self.getCompilerFlags())+'"')
       self.popLanguage()
-    args = '\n'.join(args)
+    args = ' '.join(args)
 
     conffile = os.path.join(self.packageDir, self.package)
     fd = open(conffile, 'w')
@@ -44,7 +44,7 @@ class Configure(config.package.Package):
     if self.installNeeded(conffile):
       try:
         self.logPrintBox('Configuring TChem')
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=300, log = self.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand(['./configure'] + args, cwd=self.packageDir, timeout=300, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running configure on TChem: '+str(e))
       try:

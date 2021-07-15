@@ -139,7 +139,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DKokkos_ENABLE_HIP=ON')
       with self.Language('HIP'):
         petscHipc = self.getCompiler()
-        hipFlags = self.updatePackageCFlags(self.getCompilerFlags())
+        hipFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
       args.append('-DKOKKOS_HIP_OPTIONS="'+hipFlags.replace(' ',';')+'"')
       self.getExecutable(petscHipc,getFullPath=1,resultName='systemHipc')
       if not hasattr(self,'systemHipc'):

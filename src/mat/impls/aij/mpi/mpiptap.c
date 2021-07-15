@@ -1696,8 +1696,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat Cmpi
   }
   /* Allocate space for apj and apv, initialize apj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr   = PetscMalloc2(api[am],&apj,api[am],&apv);CHKERRQ(ierr);
-  ierr   = PetscFreeSpaceContiguous(&free_space,apj);CHKERRQ(ierr);
+  ierr = PetscMalloc2(api[am],&apj,api[am],&apv);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceContiguous(&free_space,apj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
   /* Create AP_loc for reuse */
@@ -1994,8 +1994,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscObjectStateIncrease((PetscObject)AP_loc);CHKERRQ(ierr);
 
   /* 3) C_loc = Rd*AP_loc, C_oth = Ro*AP_loc */
-  ierr = ((ptap->C_loc)->ops->matmultnumeric)(ptap->Rd,AP_loc,ptap->C_loc);CHKERRQ(ierr);
-  ierr = ((ptap->C_oth)->ops->matmultnumeric)(ptap->Ro,AP_loc,ptap->C_oth);CHKERRQ(ierr);
+  ierr = MatProductNumeric(ptap->C_loc);CHKERRQ(ierr);
+  ierr = MatProductNumeric(ptap->C_oth);CHKERRQ(ierr);
   C_loc = ptap->C_loc;
   C_oth = ptap->C_oth;
 
