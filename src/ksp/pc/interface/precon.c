@@ -429,12 +429,13 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
-  /* use pmat to check vector sizes since for KSPLQR the pmat may be of a different size than mat */
+  /* use pmat to check vector sizes since for KSPLSQR the pmat may be of a different size than mat */
   ierr = MatGetLocalSize(pc->pmat,&m,&n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&nv);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
-  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);
-  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);
+  ierr = VecGetLocalSize(x,&mv);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(y,&nv);CHKERRQ(ierr);
+  /* check pmat * y = x is feasible */
+  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal input vector size %D",m,mv);
+  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal output vector size %D",n,nv);
   ierr = VecSetErrorIfLocked(y,3);CHKERRQ(ierr);
 
   ierr = PCSetUp(pc);CHKERRQ(ierr);
