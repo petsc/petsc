@@ -233,7 +233,7 @@ class BaseTestSNES(object):
         self.testSolve()
         self.assertTrue(len(reshist) > 0)
         reshist = {}
-        self.snes.cancelMonitor()
+        self.snes.monitorCancel()
         self.assertEqual(getrefcount(monitor), refcnt)
         self.testSolve()
         self.assertTrue(len(reshist) == 0)

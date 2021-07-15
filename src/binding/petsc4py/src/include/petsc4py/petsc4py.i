@@ -434,35 +434,36 @@ SWIG_From_dec(Type)(Type v) {
 /* PETSc Objects                                                    */
 /* ---------------------------------------------------------------- */
 
-%define SWIG_TYPECHECK_PETSC_OBJECT  500 %enddef
-%define SWIG_TYPECHECK_PETSC_VIEWER  501 %enddef
-%define SWIG_TYPECHECK_PETSC_RANDOM  502 %enddef
+%define SWIG_TYPECHECK_PETSC_OBJECT           500 %enddef
+%define SWIG_TYPECHECK_PETSC_VIEWER           501 %enddef
+%define SWIG_TYPECHECK_PETSC_RANDOM           502 %enddef
 
-%define SWIG_TYPECHECK_PETSC_IS            510 %enddef
-%define SWIG_TYPECHECK_PETSC_IS_LTOGM      511 %enddef
-%define SWIG_TYPECHECK_PETSC_SF            512 %enddef
-%define SWIG_TYPECHECK_PETSC_VEC           513 %enddef
-%define SWIG_TYPECHECK_PETSC_VEC_SCATTER   514 %enddef
-%define SWIG_TYPECHECK_PETSC_SECTION       515 %enddef
+%define SWIG_TYPECHECK_PETSC_IS               510 %enddef
+%define SWIG_TYPECHECK_PETSC_IS_LTOGM         511 %enddef
+%define SWIG_TYPECHECK_PETSC_SF               512 %enddef
+%define SWIG_TYPECHECK_PETSC_VEC              513 %enddef
+%define SWIG_TYPECHECK_PETSC_VEC_SCATTER      514 %enddef
+%define SWIG_TYPECHECK_PETSC_SECTION          515 %enddef
 
-%define SWIG_TYPECHECK_PETSC_MAT           520 %enddef
-%define SWIG_TYPECHECK_PETSC_MAT_NULLSPACE 521 %enddef
+%define SWIG_TYPECHECK_PETSC_MAT              520 %enddef
+%define SWIG_TYPECHECK_PETSC_MAT_PARTITIONING 521 %enddef
+%define SWIG_TYPECHECK_PETSC_MAT_NULLSPACE    522 %enddef
 
-%define SWIG_TYPECHECK_PETSC_KSP           530 %enddef
-%define SWIG_TYPECHECK_PETSC_PC            531 %enddef
-%define SWIG_TYPECHECK_PETSC_SNES          532 %enddef
-%define SWIG_TYPECHECK_PETSC_TS            533 %enddef
-%define SWIG_TYPECHECK_PETSC_TAO           534 %enddef
+%define SWIG_TYPECHECK_PETSC_KSP              530 %enddef
+%define SWIG_TYPECHECK_PETSC_PC               531 %enddef
+%define SWIG_TYPECHECK_PETSC_SNES             532 %enddef
+%define SWIG_TYPECHECK_PETSC_TS               533 %enddef
+%define SWIG_TYPECHECK_PETSC_TAO              534 %enddef
 
-%define SWIG_TYPECHECK_PETSC_AO            540 %enddef
-%define SWIG_TYPECHECK_PETSC_DM            541 %enddef
-%define SWIG_TYPECHECK_PETSC_DS            542 %enddef
-%define SWIG_TYPECHECK_PETSC_PARTITIONER   543 %enddef
+%define SWIG_TYPECHECK_PETSC_AO               540 %enddef
+%define SWIG_TYPECHECK_PETSC_DM               541 %enddef
+%define SWIG_TYPECHECK_PETSC_DS               542 %enddef
+%define SWIG_TYPECHECK_PETSC_PARTITIONER      543 %enddef
 
-%define SWIG_TYPECHECK_PETSC_FE            550 %enddef
-%define SWIG_TYPECHECK_PETSC_QUADRATURE    551 %enddef
+%define SWIG_TYPECHECK_PETSC_FE               550 %enddef
+%define SWIG_TYPECHECK_PETSC_QUADRATURE       551 %enddef
 
-%define SWIG_TYPECHECK_PETSC_DMLABEL       560 %enddef
+%define SWIG_TYPECHECK_PETSC_DMLABEL          560 %enddef
 
 %define %petsc4py_objt(Pkg, PyType, Type, CODE)
 
@@ -560,29 +561,30 @@ SWIG_From_dec(Type)(Type v) {
 
 %petsc4py_comm( Petsc, Comm , MPI_Comm , MPI_COMM , MPI_COMM_NULL )
 
-%petsc4py_objt( Petsc , Object      , PetscObject            , PETSC_OBJECT        )
-%petsc4py_objt( Petsc , Viewer      , PetscViewer            , PETSC_VIEWER        )
-%petsc4py_objt( Petsc , Random      , PetscRandom            , PETSC_RANDOM        )
-%petsc4py_objt( Petsc , IS          , IS                     , PETSC_IS            )
-%petsc4py_objt( Petsc , LGMap       , ISLocalToGlobalMapping , PETSC_IS_LTOGM      )
-%petsc4py_objt( Petsc , SF          , PetscSF                , PETSC_SF            )
-%petsc4py_objt( Petsc , Vec         , Vec                    , PETSC_VEC           )
-%petsc4py_objt( Petsc , Scatter     , VecScatter             , PETSC_VEC_SCATTER   )
-%petsc4py_objt( Petsc , Section     , PetscSection           , PETSC_SECTION       )
-%petsc4py_objt( Petsc , Mat         , Mat                    , PETSC_MAT           )
-%petsc4py_objt( Petsc , NullSpace   , MatNullSpace           , PETSC_MAT_NULLSPACE )
-%petsc4py_objt( Petsc , KSP         , KSP                    , PETSC_KSP           )
-%petsc4py_objt( Petsc , PC          , PC                     , PETSC_PC            )
-%petsc4py_objt( Petsc , SNES        , SNES                   , PETSC_SNES          )
-%petsc4py_objt( Petsc , TS          , TS                     , PETSC_TS            )
-%petsc4py_objt( Petsc , TAO         , Tao                    , PETSC_TAO           )
-%petsc4py_objt( Petsc , AO          , AO                     , PETSC_AO            )
-%petsc4py_objt( Petsc , DM          , DM                     , PETSC_DM            )
-%petsc4py_objt( Petsc , DS          , PetscDS                , PETSC_DS            )
-%petsc4py_objt( Petsc , Partitioner , PetscPartitioner       , PETSC_PARTITIONER   )
-%petsc4py_objt( Petsc , FE          , PetscFE                , PETSC_FE            )
-%petsc4py_objt( Petsc , Quad        , PetscQuadrature        , PETSC_QUADRATURE    )
-%petsc4py_objt( Petsc , DMLabel     , PetscDMLabel           , PETSC_DMLABEL       )
+%petsc4py_objt( Petsc , Object         , PetscObject            , PETSC_OBJECT           )
+%petsc4py_objt( Petsc , Viewer         , PetscViewer            , PETSC_VIEWER           )
+%petsc4py_objt( Petsc , Random         , PetscRandom            , PETSC_RANDOM           )
+%petsc4py_objt( Petsc , IS             , IS                     , PETSC_IS               )
+%petsc4py_objt( Petsc , LGMap          , ISLocalToGlobalMapping , PETSC_IS_LTOGM         )
+%petsc4py_objt( Petsc , SF             , PetscSF                , PETSC_SF               )
+%petsc4py_objt( Petsc , Vec            , Vec                    , PETSC_VEC              )
+%petsc4py_objt( Petsc , Scatter        , VecScatter             , PETSC_VEC_SCATTER      )
+%petsc4py_objt( Petsc , Section        , PetscSection           , PETSC_SECTION          )
+%petsc4py_objt( Petsc , Mat            , Mat                    , PETSC_MAT              )
+%petsc4py_objt( Petsc , MatPartitioning, MatPartitioning        , PETSC_MAT_PARTITIONING )
+%petsc4py_objt( Petsc , NullSpace      , MatNullSpace           , PETSC_MAT_NULLSPACE    )
+%petsc4py_objt( Petsc , KSP            , KSP                    , PETSC_KSP              )
+%petsc4py_objt( Petsc , PC             , PC                     , PETSC_PC               )
+%petsc4py_objt( Petsc , SNES           , SNES                   , PETSC_SNES             )
+%petsc4py_objt( Petsc , TS             , TS                     , PETSC_TS               )
+%petsc4py_objt( Petsc , TAO            , Tao                    , PETSC_TAO              )
+%petsc4py_objt( Petsc , AO             , AO                     , PETSC_AO               )
+%petsc4py_objt( Petsc , DM             , DM                     , PETSC_DM               )
+%petsc4py_objt( Petsc , DS             , PetscDS                , PETSC_DS               )
+%petsc4py_objt( Petsc , Partitioner    , PetscPartitioner       , PETSC_PARTITIONER      )
+%petsc4py_objt( Petsc , FE             , PetscFE                , PETSC_FE               )
+%petsc4py_objt( Petsc , Quad           , PetscQuadrature        , PETSC_QUADRATURE       )
+%petsc4py_objt( Petsc , DMLabel        , PetscDMLabel           , PETSC_DMLABEL          )
 
 /* ---------------------------------------------------------------- */
 

@@ -6,6 +6,7 @@
 #include "compat/hdf5.h"
 #include "compat/mumps.h"
 #include "compat/hypre.h"
+#include "compat/hpddm.h"
 #include "compat/viennacl.h"
 #include "compat/cuda.h"
 #include "compat/tao.h"

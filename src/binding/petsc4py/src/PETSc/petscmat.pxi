@@ -114,6 +114,7 @@ cdef extern from * nogil:
     PetscMatSolverType MATSOLVERBAS
     PetscMatSolverType MATSOLVERCUSPARSE
     PetscMatSolverType MATSOLVERCUDA
+    PetscMatSolverType MATSOLVERSPQR
 
     ctypedef enum PetscMatReuse "MatReuse":
         MAT_INITIAL_MATRIX
@@ -334,6 +335,7 @@ cdef extern from * nogil:
     int MatZeroRowsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
+    int MatFindZeroRows(PetscMat,PetscIS*)
 
     int MatZeroRowsColumns(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsColumnsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)

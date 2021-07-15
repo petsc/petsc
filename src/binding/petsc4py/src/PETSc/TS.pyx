@@ -623,9 +623,11 @@ cdef class TS(Object):
     def getMonitor(self):
         return self.get_attr('__monitor__')
 
-    def cancelMonitor(self):
+    def monitorCancel(self):
         self.set_attr('__monitor__', None)
         CHKERR( TSMonitorCancel(self.ts) )
+
+    cancelMonitor = monitorCancel
 
     def monitor(self, step, time, Vec u=None):
         cdef PetscInt  ival = asInt(step)

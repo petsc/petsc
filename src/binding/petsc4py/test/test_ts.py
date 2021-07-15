@@ -123,7 +123,7 @@ class BaseTestTSNonlinearRHS(BaseTestTSNonlinear):
         ts.monitor(ts.step_number, ts.time)
         self.assertEqual(ode.monitor_calls, n+1)
         n = ode.monitor_calls
-        ts.cancelMonitor()
+        ts.monitorCancel()
         ts.monitor(ts.step_number, ts.time)
         self.assertEqual(ode.monitor_calls, n)
 
@@ -209,7 +209,7 @@ class BaseTestTSNonlinearI(BaseTestTSNonlinear):
         ts.monitor(ts.step_number, ts.time)
         self.assertEqual(ode.monitor_calls, n+1)
         n = ode.monitor_calls
-        ts.cancelMonitor()
+        ts.monitorCancel()
         ts.monitor(ts.step_number, ts.time)
         self.assertEqual(ode.monitor_calls, n)
 
