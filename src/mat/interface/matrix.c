@@ -3371,7 +3371,7 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *in
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatQRFactor - Performs in-place QR factorization of matrix.
 
    Collective on Mat
@@ -3420,7 +3420,7 @@ PetscErrorCode MatQRFactor(Mat mat, IS col, const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatQRFactorSymbolic - Performs symbolic QR factorization of matrix.
    Call this routine before calling MatQRFactorNumeric().
 
@@ -3473,7 +3473,7 @@ PetscErrorCode MatQRFactorSymbolic(Mat fact,Mat mat,IS col,const MatFactorInfo *
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatQRFactorNumeric - Performs numeric QR factorization of a matrix.
    Call this routine after first calling MatQRFactorSymbolic().
 

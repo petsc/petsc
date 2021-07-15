@@ -1163,7 +1163,7 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
 
 /*@
    KSPConvergedDefaultSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
-      instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
+      instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDITIONED)
       is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
 
    Collective on ksp
@@ -1203,7 +1203,7 @@ PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
 
 /*@
    KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
-      In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
+      In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDITIONED)
       is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
 
    Collective on ksp
