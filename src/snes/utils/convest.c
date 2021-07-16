@@ -344,7 +344,10 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     const char   *dmname, *uname;
 
     ierr = PetscSNPrintf(stageName, PETSC_MAX_PATH_LEN-1, "ConvEst Refinement Level %D", r);CHKERRQ(ierr);
-    ierr = PetscLogStageRegister(stageName, &stage);CHKERRQ(ierr);
+#if defined(PETSC_USE_LOG)
+    ierr = PetscLogStageGetId(stageName, &stage);CHKERRQ(ierr);
+    if (stage < 0) {ierr = PetscLogStageRegister(stageName, &stage);CHKERRQ(ierr);}
+#endif
     ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
     if (r > 0) {
       ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
