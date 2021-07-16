@@ -5,7 +5,7 @@ DMPlex: Unstructured Grids in PETSc
 
 This chapter introduces the ``DMPLEX`` subclass of ``DM``, which allows
 the user to handle unstructured grids using the generic ``DM`` interface
-for hierarchy and multi-physics. ``DMPlex`` was created to remedy a huge
+for hierarchy and multi-physics. DMPlex was created to remedy a huge
 problem in all current PDE simulation codes, namely that the
 discretization was so closely tied to the data layout and solver that
 switching discretizations in the same code was not possible. Not only
@@ -16,7 +16,7 @@ application) development impossible.
 Representing Unstructured Grids
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The main advantage of ``DMPlex`` in representing topology is that it
+The main advantage of DMPlex in representing topology is that it
 treats all the different pieces of a mesh, e.g. cells, faces, edges, and
 vertices, in exactly the same way. This allows the interface to be very
 small and simple, while remaining flexible and general. This also allows
@@ -220,7 +220,7 @@ discretization. ``DMCreateMatrix`` must compute this pattern when it
 automatically creates the properly preallocated Jacobian matrix. In
 ``DMDA`` the influence pattern, or what we will call variable
 *adjacency*, depends only on the stencil since the topology is Cartesian
-and the discretization is implicitly finite difference. In ``DMPlex``,
+and the discretization is implicitly finite difference. In DMPlex,
 we allow the user to specify the adjacency topologically, while
 maintaining good defaults.
 
@@ -257,11 +257,11 @@ the following general form:
 
 -  Insert these values into the residual vector
 
-``DMPlex`` separates these different concerns by passing sets of points,
+DMPlex separates these different concerns by passing sets of points,
 which are just ``PetscInt``\ s, from mesh traversal routines to data
 extraction routines and back. In this way, the ``PetscSection`` which
 structures the data inside a ``Vec`` does not need to know anything
-about the mesh inside a ``DMPlex``.
+about the mesh inside a DMPlex.
 
 The most common mesh traversal is the transitive closure of a point,
 which is exactly the transitive closure of a point in the DAG using the
@@ -336,6 +336,237 @@ where we want the data from neighboring cells for each face:
 
 This kind of calculation is used in
 `TS Tutorial ex11 <../../src/ts/tutorials/ex11.c.html>`__.
+
+Saving and Loading Data with HDF5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PETSc allows users to save/load DMPlexs representing meshes,
+``PetscSection``\ s representing data layouts on the meshes, and
+``Vec``\ s defined on the data layouts to/from an HDF5 file in
+parallel, where one can use different number of processes for saving
+and for loading.
+
+Saving
+^^^^^^
+
+To save data to "example.h5" file, we first create a ``PetscViewer``
+of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_WRITE`` mode as:
+
+::
+
+   PetscViewer  viewer;
+
+   PetscViewerHDF5Open(PETSC_COMM_WORLD, "example.h5", FILE_MODE_WRITE, &viewer);
+
+As ``dm`` is a DMPlex object representing a mesh, we first
+give it a *mesh name*, "plexA", and save it as:
+
+::
+
+   PetscObjectSetName((PetscObject)dm, "plexA");
+   PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_PETSC);
+   DMPlexTopologyView(dm, viewer);
+   PetscViewerPopFormat(viewer);
+
+If the *mesh name* is not explicitly set, the default name
+is to be used.
+In the above ``PETSC_VIEWER_HDF5_PETSC`` format was used to
+save the entire representation of the mesh. This format also
+saves global point numbers attached to the mesh points.
+In this example the set of all global point numbers is
+:math:`X = [0, 11)`.
+
+The data layout, ``s``, needs to be wrapped in a ``DM`` object
+for it to be saved. Here, we create the wrapping ``DM``, ``sdm``,
+with ``DMClone()``, give it a *dm name*, "dmA", attach ``s`` to
+``sdm``, and save it as:
+
+::
+
+   DMClone(dm, &sdm);
+   PetscObjectSetName((PetscObject)sdm, "dmA");
+   DMSetLocalSection(sdm, s);
+   DMPlexSectionView(dm, viewer, sdm);
+
+If the *dm name* is not explicitly set, the default name
+is to be used. In the above, instead of using ``DMClone()``, one
+could also create a new ``DMSHELL`` object to attach ``s`` to.
+The first argument of ``DMPlexSectionView()`` is a ``DMPLEX`` object
+that represents the mesh, and the third argument is a ``DM``
+object that carries the data layout that we would like to save.
+They are, in general, two different objects, and the former carries
+a *mesh name*, while the latter carries a *dm name*. These names are
+used to construct a group structure in the HDF5 file.
+Note that the data layout points are associated with the
+mesh points, so each of them can also be tagged with a
+global point number in :math:`X`; ``DMPlexSectionView()``
+saves these tags along with the data layout itself, so that, when
+the mesh and the data layout are loaded separately later, one can
+associate the points in the former with those in the latter by
+comparing their global point numbers.
+
+We now create a local vector assiciated with ``sdm``, e.g., as:
+
+::
+
+   Vec  vec;
+
+   DMGetLocalVector(sdm, &vec);
+
+After setting values of ``vec``, we name it "vecA" and save it as:
+
+::
+
+   PetscObjectSetName((PetscObject)vec, "vecA");
+   DMPlexLocalVectorView(dm, viewer, sdm, vec);
+
+A global vector can be saved in the exact same way with trivial
+changes.
+
+After saving, we destroy the ``PetscViewer`` with:
+
+::
+
+   PetscViewerDestroy(&viewer);
+
+The output file "example.h5" now looks like the following:
+
+::
+
+   HDF5 "example.h5" {
+   FILE_CONTENTS {
+    group      /
+    group      /topologies
+    group      /topologies/plexA
+    group      /topologies/plexA/dms
+    group      /topologies/plexA/dms/dmA
+    dataset    /topologies/plexA/dms/dmA/order
+    group      /topologies/plexA/dms/dmA/section
+    dataset    /topologies/plexA/dms/dmA/section/atlasDof
+    dataset    /topologies/plexA/dms/dmA/section/atlasOff
+    group      /topologies/plexA/dms/dmA/vecs
+    group      /topologies/plexA/dms/dmA/vecs/vecA
+    dataset    /topologies/plexA/dms/dmA/vecs/vecA/vecA
+    group      /topology
+    dataset    /topology/cells
+    dataset    /topology/cones
+    dataset    /topology/order
+    dataset    /topology/orientation
+    }
+   }
+
+Loading
+^^^^^^^
+
+To load data from "example.h5" file, we create a ``PetscViewer``
+of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_READ`` mode as:
+
+::
+
+   PetscViewerHDF5Open(PETSC_COMM_WORLD, "example.h5", FILE_MODE_READ, &viewer);
+
+We then create a DMPlex object, give it a *mesh name*, "plexA", and load
+the mesh as:
+
+::
+
+   PetscSF  sfO;
+
+   DMCreate(PETSC_COMM_WORLD, &dm);
+   DMSetType(dm, DMPLEX);
+   PetscObjectSetName((PetscObject)dm, "plexA");
+   PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_PETSC);
+   DMPlexTopologyLoad(dm, viewer, &sfO);
+   PetscViewerPopFormat(viewer);
+
+where ``PETSC_VIEWER_HDF5_PETSC`` format was again used.
+The object returned by ``DMPlexTopologyLoad()``, ``sfO``, is a
+``PetscSF`` that pushes forward :math:`X` to the loaded mesh,
+``dm``; this ``PetscSF`` is constructed with the global point
+number tags that we saved along with the mesh points.
+
+As the DMPlex mesh just loaded might not have a desired distribution,
+it is common to redistribute the mesh for a better distribution using
+``DMPlexDistribute()``, e.g., as:
+
+::
+
+    DM        distributedDM;
+    PetscInt  overlap = 1;
+    PetscSF   sfDist, sf;
+
+    DMPlexDistribute(dm, overlap, &sfDist, &distributedDM);
+    if (distributedDM) {
+      DMDestroy(&dm);
+      dm = distributedDM;
+      PetscObjectSetName((PetscObject)dm, "plexA");
+    }
+    PetscSFCompose(sfO, sfDist, &sf);CHKERRQ(ierr);
+    PetscSFDestroy(&sfO);
+    PetscSFDestroy(&sfDist);
+
+Note that the new DMPlex does not automatically inherit the *mesh name*,
+so we need to name it "plexA" once again. ``sfDist`` is a ``PetscSF``
+that pushes forward the loaded mesh to the redistributed mesh, so, composed
+with ``sfO``, it makes the ``PetscSF`` that pushes forward :math:`X`
+directly to the redistributed mesh, which we call ``sf``.
+
+We then create a new ``DM``, ``sdm``, with ``DMClone()``, give it
+a *dm name*, "dmA", and load the on-disk data layout into ``sdm`` as:
+
+::
+
+   PetscSF  globalDataSF, localDataSF;
+
+   DMClone(dm, &sdm);
+   PetscObjectSetName((PetscObject)sdm, "dmA");
+   DMPlexSectionLoad(dm, viewer, sdm, sf, &globalDataSF, &localDataSF);
+
+where we could also create a new
+``DMSHELL`` object instead of using ``DMClone()``.
+Each point in the on-disk data layout being tagged with a global
+point number in :math:`X`, ``DMPlexSectionLoad()``
+internally constructs a ``PetscSF`` that pushes forward the on-disk
+data layout to :math:`X`.
+Composing this with ``sf``, ``DMPlexSectionLoad()`` internally
+constructs another ``PetscSF`` that pushes forward the on-disk
+data layout directly to the redistributed mesh. It then
+reconstructs the data layout ``s`` on the redistributed mesh and
+attaches it to ``sdm``. The objects returned by this function,
+``globalDataSF`` and ``localDataSF``, are ``PetscSF``\ s that can
+be used to migrate the on-disk vector data into local and global
+``Vec``\ s defined on ``sdm``.
+
+We now create a local vector assiciated with ``sdm``, e.g., as:
+
+::
+
+   Vec  vec;
+
+   DMGetLocalVector(sdm, &vec);
+
+We then name ``vec`` "vecA" and load the on-disk vector into ``vec`` as:
+
+::
+
+   PetscObjectSetName((PetscObject)vec, "vecA");
+   DMPlexLocalVectorLoad(dm, viewer, sdm, localDataSF, localVec);
+
+where ``localDataSF`` knows how to migrate the on-disk vector
+data into a local ``Vec`` defined on ``sdm``.
+The on-disk vector can be loaded into a global vector associated with
+``sdm`` in the exact same way with trivial changes.
+
+After loading, we destroy the ``PetscViewer`` with:
+
+::
+
+   PetscViewerDestroy(&viewer);
+
+The above infrastructure works seamlessly in distributed-memory parallel
+settings, in which one can even use different number of processes for
+saving and for loading; a more comprehensive example is found in
+`DMPlex Tutorial ex12 <../../src/dm/impls/plex/tutorials/ex12.c.html>`__.
 
 Networks
 ~~~~~~~~

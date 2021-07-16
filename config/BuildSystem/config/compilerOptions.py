@@ -89,7 +89,13 @@ class CompilerOptions(config.base.Configure):
           flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
       if config.setCompilers.Configure.isNVCC(compiler, self.log):
         if bopt == 'g':
-          flags.extend(['-lineinfo'])
+          # nvcc --help says:
+          #  -g : Generate debug information for host code.
+          #  -G : Generate debug information for device code. Turns off all optimizations. Don't use for profiling; use -lineinfo instead.
+          #  -lineinfo: Generate line-number information for device code.
+          # We use '-g -lineinfo' to generate debug info for both host and device code in *.cu files.
+          # If users want to turn off all optimizations, they can use --CUDAOPTFLAGS="-G".
+          flags.extend(['-g', '-lineinfo'])
         elif bopt == 'O':
           flags.append('-O3')
     # Generic

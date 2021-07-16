@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 This module holds configuration information for the petsc_tas_analysis.py in
   a dictionary format.  This module takes no parameters.
@@ -16,10 +16,17 @@ The dict fieldNames holds key value pairs for the fields of problems.  This is
     The key ex62 contains the name of fields for example 62, ie ex62.c
 """
 filePath = {}
-filePath['absoluteGraphs'] = '/home/arcowie/petscTas/graphs/'
-filePath['absoluteData']   = '/home/arcowie/petscTas/data'
+filePath['absoluteGraphs'] = '/home/arcowie/research/graphs/'
+filePath['absoluteData']   = '/home/arcowie/research/data/poission/'
+#filePath['absoluteData']   = '/home/arcowie/research/data/ex13/'
+#filePath['absoluteData']   = '/home/arcowie/research/data/chrest/'
+
 
 fieldNames = {}
 fieldNames['ex62'] = {}
 fieldNames['ex62']['field 0'] = 'Velocity'
 fieldNames['ex62']['field 1'] = 'Pressure'
+fieldNames['chrest'] = {}
+fieldNames['chrest']['field 0'] = 'Velocity'
+fieldNames['chrest']['field 1'] = 'Pressure'
+fieldNames['chrest']['field 2'] = 'Temperature'

@@ -133,7 +133,13 @@ cdef extern from * nogil:
     int DMPlexTopologyView(PetscDM,PetscViewer)
     int DMPlexCoordinatesView(PetscDM,PetscViewer)
     int DMPlexLabelsView(PetscDM,PetscViewer)
+    int DMPlexSectionView(PetscDM,PetscViewer,PetscDM)
+    int DMPlexGlobalVectorView(PetscDM,PetscViewer,PetscDM,PetscVec)
+    int DMPlexLocalVectorView(PetscDM,PetscViewer,PetscDM,PetscVec)
 
     int DMPlexTopologyLoad(PetscDM,PetscViewer,PetscSF*)
     int DMPlexCoordinatesLoad(PetscDM,PetscViewer)
     int DMPlexLabelsLoad(PetscDM,PetscViewer)
+    int DMPlexSectionLoad(PetscDM,PetscViewer,PetscDM,PetscSF,PetscSF*,PetscSF*)
+    int DMPlexGlobalVectorLoad(PetscDM,PetscViewer,PetscDM,PetscSF,PetscVec)
+    int DMPlexLocalVectorLoad(PetscDM,PetscViewer,PetscDM,PetscSF,PetscVec)

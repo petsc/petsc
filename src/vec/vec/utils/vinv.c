@@ -1334,16 +1334,20 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
   PetscErrorCode    ierr;
   PetscInt          i,n;
   const PetscScalar *x;
-  PetscScalar       lsum = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidScalarPointer(sum,2);
-  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
-  for (i=0; i<n; i++) lsum += x[i];
-  ierr = MPIU_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
-  ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
+  *sum = 0.0;
+  if (v->ops->sum) {
+    ierr = (*v->ops->sum)(v,sum);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
+    for (i=0; i<n; i++) *sum += x[i];
+    ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
+  }
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 

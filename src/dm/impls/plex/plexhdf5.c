@@ -836,6 +836,171 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMPlexSectionView_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm)
+{
+  MPI_Comm       comm;
+  const char    *topologydm_name;
+  const char    *sectiondm_name;
+  PetscSection   gsection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)sectiondm, &comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(sectiondm, &gsection);CHKERRQ(ierr);
+  /* Save raw section */
+  ierr = PetscSectionView(gsection, viewer);CHKERRQ(ierr);
+  /* Save plex wrapper */
+  {
+    PetscInt        pStart, pEnd, p, n;
+    IS              globalPointNumbers;
+    const PetscInt *gpoints;
+    IS              orderIS;
+    PetscInt       *order;
+
+    ierr = PetscSectionGetChart(gsection, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexCreatePointNumbering(dm, &globalPointNumbers);CHKERRQ(ierr);
+    ierr = ISGetIndices(globalPointNumbers, &gpoints);CHKERRQ(ierr);
+    for (p = pStart, n = 0; p < pEnd; ++p) if (gpoints[p] >= 0) n++;
+    /* "order" is an array of global point numbers.
+       When loading, it is used with topology/order array
+       to match section points with plex topology points. */
+    ierr = PetscMalloc1(n, &order);CHKERRQ(ierr);
+    for (p = pStart, n = 0; p < pEnd; ++p) if (gpoints[p] >= 0) order[n++] = gpoints[p];
+    ierr = ISRestoreIndices(globalPointNumbers, &gpoints);CHKERRQ(ierr);
+    ierr = ISDestroy(&globalPointNumbers);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, n, order, PETSC_OWN_POINTER, &orderIS);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)orderIS, "order");CHKERRQ(ierr);
+    ierr = ISView(orderIS, viewer);CHKERRQ(ierr);
+    ierr = ISDestroy(&orderIS);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexGlobalVectorView_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
+{
+  const char     *topologydm_name;
+  const char     *sectiondm_name;
+  const char     *vec_name;
+  PetscInt        bs;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Check consistency */
+  {
+    PetscSF   pointsf, pointsf1;
+
+    ierr = DMGetPointSF(dm, &pointsf);CHKERRQ(ierr);
+    ierr = DMGetPointSF(sectiondm, &pointsf1);CHKERRQ(ierr);
+    if (pointsf1 != pointsf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
+  }
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "vecs");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, vec_name);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(vec, &bs);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5WriteAttribute(viewer, NULL, "blockSize", PETSC_INT, (void *) &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(vec, 1);CHKERRQ(ierr);
+  /* VecView(vec, viewer) would call (*vec->opt->view)(vec, viewer), but,    */
+  /* if vec was created with DMGet{Global, Local}Vector(), vec->opt->view    */
+  /* is set to VecView_Plex, which would save vec in a predefined location.  */
+  /* To save vec in where we want, we create a new Vec (temp) with           */
+  /* VecCreate(), wrap the vec data in temp, and call VecView(temp, viewer). */
+  {
+    Vec                temp;
+    const PetscScalar *array;
+    PetscLayout        map;
+
+    ierr = VecCreate(PetscObjectComm((PetscObject)vec), &temp);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)temp, vec_name);CHKERRQ(ierr);
+    ierr = VecGetLayout(vec, &map);CHKERRQ(ierr);
+    ierr = VecSetLayout(temp, map);CHKERRQ(ierr);
+    ierr = VecSetUp(temp);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(vec, &array);CHKERRQ(ierr);
+    ierr = VecPlaceArray(temp, array);CHKERRQ(ierr);
+    ierr = VecView(temp, viewer);CHKERRQ(ierr);
+    ierr = VecResetArray(temp);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(vec, &array);CHKERRQ(ierr);
+    ierr = VecDestroy(&temp);CHKERRQ(ierr);
+  }
+  ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexLocalVectorView_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm, Vec vec)
+{
+  MPI_Comm        comm;
+  const char     *topologydm_name;
+  const char     *sectiondm_name;
+  const char     *vec_name;
+  PetscSection    section;
+  PetscBool       includesConstraints;
+  Vec             gvec;
+  PetscInt        m, bs;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  /* Check consistency */
+  {
+    PetscSF   pointsf, pointsf1;
+
+    ierr = DMGetPointSF(dm, &pointsf);CHKERRQ(ierr);
+    ierr = DMGetPointSF(sectiondm, &pointsf1);CHKERRQ(ierr);
+    if (pointsf1 != pointsf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
+  }
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "vecs");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, vec_name);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(vec, &bs);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5WriteAttribute(viewer, NULL, "blockSize", PETSC_INT, (void *) &bs);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &gvec);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)gvec, vec_name);CHKERRQ(ierr);
+  ierr = DMGetGlobalSection(sectiondm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetIncludesConstraints(section, &includesConstraints);CHKERRQ(ierr);
+  if (includesConstraints) {ierr = PetscSectionGetStorageSize(section, &m);CHKERRQ(ierr);}
+  else {ierr = PetscSectionGetConstrainedStorageSize(section, &m);CHKERRQ(ierr);}
+  ierr = VecSetSizes(gvec, m, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetUp(gvec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(sectiondm, vec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(sectiondm, vec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+  ierr = VecView(gvec, viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&gvec);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 typedef struct {
   PetscMPIInt rank;
   DM          dm;
@@ -1061,6 +1226,295 @@ PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
   ierr = DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL);CHKERRQ(ierr);
   ierr = DMPlexCoordinatesLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
   ierr = DMPlexLabelsLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexSectionLoad_HDF5_Internal_CreateDataSF(PetscSection rootSection, PetscLayout layout, PetscInt globalOffsets[], PetscSection leafSection, PetscSF *sectionSF)
+{
+  MPI_Comm        comm;
+  PetscInt        pStart, pEnd, p, m;
+  PetscInt       *goffs, *ilocal;
+  PetscBool       rootIncludeConstraints, leafIncludeConstraints;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)leafSection, &comm);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(leafSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetIncludesConstraints(rootSection, &rootIncludeConstraints);CHKERRQ(ierr);
+  ierr = PetscSectionGetIncludesConstraints(leafSection, &leafIncludeConstraints);CHKERRQ(ierr);
+  if (rootIncludeConstraints && leafIncludeConstraints) {ierr = PetscSectionGetStorageSize(leafSection, &m);CHKERRQ(ierr);}
+  else {ierr = PetscSectionGetConstrainedStorageSize(leafSection, &m);CHKERRQ(ierr);}
+  ierr = PetscMalloc1(m, &ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &goffs);CHKERRQ(ierr);
+  /* Currently, PetscSFDistributeSection() returns globalOffsets[] only */
+  /* for the top-level section (not for each field), so one must have   */
+  /* rootSection->pointMajor == PETSC_TRUE.                             */
+  if (!rootSection->pointMajor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for field major ordering");
+  /* Currently, we also assume that leafSection->pointMajor == PETSC_TRUE. */
+  if (!leafSection->pointMajor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for field major ordering");
+  for (p = pStart, m = 0; p < pEnd; ++p) {
+    PetscInt        dof, cdof, i, j, off, goff;
+    const PetscInt *cinds;
+
+    ierr = PetscSectionGetDof(leafSection, p, &dof);CHKERRQ(ierr);
+    if (dof < 0) continue;
+    goff = globalOffsets[p-pStart];
+    ierr = PetscSectionGetOffset(leafSection, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(leafSection, p, &cdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintIndices(leafSection, p, &cinds);CHKERRQ(ierr);
+    for (i = 0, j = 0; i < dof; ++i) {
+      PetscBool constrained = (PetscBool) (j < cdof && i == cinds[j]);
+
+      if (!constrained || (leafIncludeConstraints && rootIncludeConstraints)) {ilocal[m] = off++; goffs[m++] = goff++;}
+      else if (leafIncludeConstraints && !rootIncludeConstraints) ++off;
+      else if (!leafIncludeConstraints &&  rootIncludeConstraints) ++goff;
+      if (constrained) ++j;
+    }
+  }
+  ierr = PetscSFCreate(comm, sectionSF);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(*sectionSF);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(*sectionSF, layout, m, ilocal, PETSC_OWN_POINTER, goffs);CHKERRQ(ierr);
+  ierr = PetscFree(goffs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sfXB, PetscSF *gsf, PetscSF *lsf)
+{
+  MPI_Comm       comm;
+  PetscMPIInt    size, rank;
+  const char    *topologydm_name;
+  const char    *sectiondm_name;
+  PetscSection   sectionA, sectionB;
+  PetscInt       NX, nX, n, i;
+  PetscSF        sfAB;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadSizes(viewer, "/topology/order", NULL, &NX);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  /* A: on-disk points                        */
+  /* X: list of global point numbers, [0, NX) */
+  /* B: plex points                           */
+  /* Load raw section (sectionA)              */
+  ierr = PetscSectionCreate(comm, &sectionA);CHKERRQ(ierr);
+  ierr = PetscSectionLoad(sectionA, viewer);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(sectionA, NULL, &n);CHKERRQ(ierr);
+  /* Create sfAB: A -> B */
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt  N, N1;
+
+    ierr = PetscViewerHDF5ReadSizes(viewer, "order", NULL, &N1);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+    if (N1 != N) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Mismatching sizes: on-disk order array size (%D) != number of loaded section points (%D)", N1, N);
+  }
+#endif
+  {
+    IS              orderIS;
+    const PetscInt *gpoints;
+    PetscSF         sfXA, sfAX;
+    PetscLayout     layout;
+    PetscSFNode    *owners, *buffer;
+    PetscInt        nleaves;
+    PetscInt       *ilocal;
+    PetscSFNode    *iremote;
+
+    /* Create sfAX: A -> X */
+    ierr = ISCreate(comm, &orderIS);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)orderIS, "order");CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(orderIS->map, n);CHKERRQ(ierr);
+    ierr = ISLoad(orderIS, viewer);CHKERRQ(ierr);
+    ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(layout, NX);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+    ierr = PetscSFCreate(comm, &sfXA);CHKERRQ(ierr);
+    ierr = ISGetIndices(orderIS, &gpoints);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(sfXA, layout, n, NULL, PETSC_OWN_POINTER, gpoints);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(orderIS, &gpoints);CHKERRQ(ierr);
+    ierr = ISDestroy(&orderIS);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfXA, &nX, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &owners);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nX, &buffer);CHKERRQ(ierr);
+    for (i = 0; i < n; ++i) {owners[i].rank = rank; owners[i].index = i;}
+    for (i = 0; i < nX; ++i) {buffer[i].rank = -1; buffer[i].index = -1;}
+    ierr = PetscSFReduceBegin(sfXA, MPIU_2INT, owners, buffer, MPI_MAXLOC);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sfXA, MPIU_2INT, owners, buffer, MPI_MAXLOC);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfXA);CHKERRQ(ierr);
+    ierr = PetscFree(owners);CHKERRQ(ierr);
+    for (i = 0, nleaves = 0; i < nX; ++i) if (buffer[i].rank >= 0) nleaves++;
+    ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nleaves, &iremote);CHKERRQ(ierr);
+    for (i = 0, nleaves = 0; i < nX; ++i) {
+      if (buffer[i].rank >= 0) {
+        ilocal[nleaves] = i;
+        iremote[nleaves].rank = buffer[i].rank;
+        iremote[nleaves].index = buffer[i].index;
+        nleaves++;
+      }
+    }
+    ierr = PetscSFCreate(comm, &sfAX);CHKERRQ(ierr);
+    ierr = PetscSFSetFromOptions(sfAX);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sfAX, n, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    /* Fix PetscSFCompose() and replace the code-block below with:  */
+    /* ierr = PetscSFCompose(sfAX, sfXB, &sfAB);CHKERRQ(ierr);      */
+    /* which currently causes segmentation fault due to sparse map. */
+    {
+      PetscInt     npoints;
+      PetscInt     mleaves;
+      PetscInt    *jlocal;
+      PetscSFNode *jremote;
+
+      ierr = PetscSFGetGraph(sfXB, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc1(npoints, &owners);CHKERRQ(ierr);
+      for (i = 0; i < npoints; ++i) {owners[i].rank = -1; owners[i].index = -1;}
+      ierr = PetscSFBcastBegin(sfXB, MPIU_2INT, buffer, owners, MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sfXB, MPIU_2INT, buffer, owners, MPI_REPLACE);CHKERRQ(ierr);
+      for (i = 0, mleaves = 0; i < npoints; ++i) if (owners[i].rank >= 0) mleaves++;
+      ierr = PetscMalloc1(mleaves, &jlocal);CHKERRQ(ierr);
+      ierr = PetscMalloc1(mleaves, &jremote);CHKERRQ(ierr);
+      for (i = 0, mleaves = 0; i < npoints; ++i) {
+        if (owners[i].rank >= 0) {
+          jlocal[mleaves] = i;
+          jremote[mleaves].rank = owners[i].rank;
+          jremote[mleaves].index = owners[i].index;
+          mleaves++;
+        }
+      }
+      ierr = PetscSFCreate(comm, &sfAB);CHKERRQ(ierr);
+      ierr = PetscSFSetFromOptions(sfAB);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(sfAB, n, mleaves, jlocal, PETSC_OWN_POINTER, jremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+      ierr = PetscFree(owners);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(buffer);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfAX);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  /* Create plex section (sectionB) */
+  ierr = DMGetLocalSection(sectiondm, &sectionB);CHKERRQ(ierr);
+  if (lsf || gsf) {
+    PetscLayout  layout;
+    PetscInt     M, m;
+    PetscInt    *offsetsA;
+    PetscBool    includesConstraintsA;
+
+    ierr = PetscSFDistributeSection(sfAB, sectionA, &offsetsA, sectionB);CHKERRQ(ierr);
+    ierr = PetscSectionGetIncludesConstraints(sectionA, &includesConstraintsA);CHKERRQ(ierr);
+    if (includesConstraintsA) {ierr = PetscSectionGetStorageSize(sectionA, &m);CHKERRQ(ierr);}
+    else {ierr = PetscSectionGetConstrainedStorageSize(sectionA, &m);CHKERRQ(ierr);}
+    ierr = MPI_Allreduce(&m, &M, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+    ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(layout, M);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+    if (lsf) {
+      PetscSF lsfABdata;
+
+      ierr = DMPlexSectionLoad_HDF5_Internal_CreateDataSF(sectionA, layout, offsetsA, sectionB, &lsfABdata);CHKERRQ(ierr);
+      *lsf = lsfABdata;
+    }
+    if (gsf) {
+      PetscSection  gsectionB, gsectionB1;
+      PetscBool     includesConstraintsB;
+      PetscSF       gsfABdata, pointsf;
+
+      ierr = DMGetGlobalSection(sectiondm, &gsectionB1);CHKERRQ(ierr);
+      ierr = PetscSectionGetIncludesConstraints(gsectionB1, &includesConstraintsB);CHKERRQ(ierr);
+      ierr = DMGetPointSF(sectiondm, &pointsf);CHKERRQ(ierr);
+      ierr = PetscSectionCreateGlobalSection(sectionB, pointsf, includesConstraintsB, PETSC_TRUE, &gsectionB);CHKERRQ(ierr);
+      ierr = DMPlexSectionLoad_HDF5_Internal_CreateDataSF(sectionA, layout, offsetsA, gsectionB, &gsfABdata);CHKERRQ(ierr);
+      ierr = PetscSectionDestroy(&gsectionB);CHKERRQ(ierr);
+      *gsf = gsfABdata;
+    }
+    ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
+    ierr = PetscFree(offsetsA);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSFDistributeSection(sfAB, sectionA, NULL, sectionB);CHKERRQ(ierr);
+  }
+  ierr = PetscSFDestroy(&sfAB);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&sectionA);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm, PetscSF sf, Vec vec)
+{
+  MPI_Comm           comm;
+  const char        *topologydm_name;
+  const char        *sectiondm_name;
+  const char        *vec_name;
+  Vec                vecA;
+  PetscInt           mA, m, bs;
+  const PetscInt    *ilocal;
+  const PetscScalar *src;
+  PetscScalar       *dest;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "dms");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, sectiondm_name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "vecs");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, vec_name);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &vecA);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)vecA, vec_name);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &mA, &m, &ilocal, NULL);CHKERRQ(ierr);
+  /* Check consistency */
+  {
+    PetscSF   pointsf, pointsf1;
+    PetscInt  m1, i, j;
+
+    ierr = DMGetPointSF(dm, &pointsf);CHKERRQ(ierr);
+    ierr = DMGetPointSF(sectiondm, &pointsf1);CHKERRQ(ierr);
+    if (pointsf1 != pointsf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
+#if defined(PETSC_USE_DEBUG)
+    {
+      PetscInt  MA, MA1;
+
+      ierr = MPIU_Allreduce(&mA, &MA, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+      ierr = PetscViewerHDF5ReadSizes(viewer, vec_name, NULL, &MA1);CHKERRQ(ierr);
+      if (MA1 != MA) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total SF root size (%D) != On-disk vector data size (%D)", MA, MA1);
+    }
+#endif
+    ierr = VecGetLocalSize(vec, &m1);CHKERRQ(ierr);
+    if (m1 < m) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Target vector size (%D) < SF leaf size (%D)", m1, m);
+    for (i = 0; i < m; ++i) {
+      j = ilocal ? ilocal[i] : i;
+      if (j < 0 || j >= m1) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf's %D-th index, %D, not in [%D, %D)", i, j, 0, m1);
+    }
+  }
+  ierr = VecSetSizes(vecA, mA, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecLoad(vecA, viewer);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(vecA, &src);CHKERRQ(ierr);
+  ierr = VecGetArray(vec, &dest);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, src, dest, MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, src, dest, MPI_REPLACE);CHKERRQ(ierr);
+  ierr = VecRestoreArray(vec, &dest);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vecA, &src);CHKERRQ(ierr);
+  ierr = VecDestroy(&vecA);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer, NULL, "blockSize", PETSC_INT, NULL, (void *) &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

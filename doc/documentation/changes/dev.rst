@@ -62,6 +62,9 @@ Changes: Development
 
 .. rubric:: PetscSection:
 
+-  Extend ``PetscSectionView()`` for section saving to HDF5
+-  Add ``PetscSectionLoad()`` for section loading from HDF5
+
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
@@ -126,6 +129,14 @@ Changes: Development
 -  Add ``DMPlexTopologyView()``, ``DMPlexCoordinatesView()``, and
    ``DMPlexLabelsView()`` for incremental saving of a ``DMPlex`` object
    to an HDF5 file
+-  Add ``DMPlexSectionView()`` saving a ``PetscSection`` in
+   association with a ``DMPlex`` mesh
+-  Add ``DMPlexSectionLoad()`` loading a ``PetscSection`` in
+   association with a ``DMPlex`` mesh
+-  Add ``DMPlexGlobalVectorView()`` and ``DMPlexLocalVectorView()`` saving
+   global and local vectors in association with a data layout on a ``DMPlex`` mesh
+-  Add ``DMPlexGlobalVectorLoad()`` and ``DMPlexLocalVectorLoad()`` loading
+   global and local vectors in association with a data layout on a ``DMPlex`` mesh
 - Add ``DMPlexIsSimplex()`` to check the shape of the first cell
 - Add ``DMPlexShape`` to describe prebuilt mesh domains
 - Add ``DMPlexCreateCoordinateSpace()`` to make an FE space for the coordinates

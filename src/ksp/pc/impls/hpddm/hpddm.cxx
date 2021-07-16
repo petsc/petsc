@@ -756,7 +756,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   const char               *pcpre;
   const PetscScalar *const *ev;
   PetscInt                 n, requested = data->N, reused = 0;
-  PetscBool                subdomains = PETSC_FALSE, flag = PETSC_FALSE, ismatis;
+  PetscBool                subdomains = PETSC_FALSE, flag = PETSC_FALSE, ismatis, swap = PETSC_FALSE;
   DM                       dm;
   PetscErrorCode           ierr;
 
@@ -1008,6 +1008,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           /* swap pointers so that variables stay consistent throughout PCSetUp() */
           std::swap(C, data->aux);
           std::swap(uis, data->is);
+          swap = PETSC_TRUE;
         }
       } else if (data->share) {
         ierr = PetscInfo(pc, "Cannot share PC between ST and subdomain solver\n");CHKERRQ(ierr);
@@ -1162,7 +1163,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     pc->setfromoptionscalled = 0;
   }
   data->N += reused;
-  if (data->share) {
+  if (data->share && swap) {
     /* swap back pointers so that variables follow the user-provided numbering */
     std::swap(C, data->aux);
     std::swap(uis, data->is);

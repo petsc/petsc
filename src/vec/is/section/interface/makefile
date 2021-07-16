@@ -1,7 +1,7 @@
 ALL: lib
 
 SOURCEH	  =
-SOURCEC   = section.c
+SOURCEC   = section.c sectionhdf5.c
 LIBBASE	  = libpetscvec
 DIRS	    =
 LOCDIR    = src/vec/is/section/interface/

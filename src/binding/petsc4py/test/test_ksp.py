@@ -144,7 +144,7 @@ class BaseTestKSP(object):
         self.assertEqual(getrefcount(monitor), refcnt + 1)
         ## self.testSolve()
         reshist = {}
-        self.ksp.cancelMonitor()
+        self.ksp.monitorCancel()
         self.assertEqual(getrefcount(monitor), refcnt)
         self.testSolve()
         self.assertEqual(len(reshist), 0)

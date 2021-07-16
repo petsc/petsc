@@ -168,6 +168,7 @@ class MatSolverType(object):
     BAS             = S_(MATSOLVERBAS)
     CUSPARSE        = S_(MATSOLVERCUSPARSE)
     CUDA            = S_(MATSOLVERCUDA)
+    SPQR            = S_(MATSOLVERSPQR)
 
 class MatFactorShiftType(object):
     # native
@@ -1082,7 +1083,11 @@ cdef class Mat(Object):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatAssembled(self.mat, &flag) )
         return toBool(flag)
-    #
+
+    def findZeroRows(self):
+        cdef IS zerorows = IS()
+        CHKERR( MatFindZeroRows(self.mat, &zerorows.iset) )
+        return zerorows
 
     def createVecs(self, side=None):
         cdef Vec vecr, vecl
