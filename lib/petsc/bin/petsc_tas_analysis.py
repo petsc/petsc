@@ -16,219 +16,401 @@ from tasClasses import Field
 
 
 def main(cmdLineArgs):
-    files = dataProces(cmdLineArgs)
+    data = []
+    files = getFiles(cmdLineArgs)
+    if len(files['module']) != 0:
+        for fileName in files['module']:
+            data.append(dataProces(cmdLineArgs, fileName ))
+    if len(files['csv']) != 0:
+        for fileName in files['csv']:
+            data.append(dataProcesCSV(cmdLineArgs, fileName ))
+    for item in data:
+        graphGen(item, cmdLineArgs.enable_graphs, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
 
-    for file in files:
-        graphGen(file, cmdLineArgs.enable_graphs, cmdLineArgs.graph_flops_scaling, cmdLineArgs.dim)
-
-
-def dataProces(cmdLineArgs):
+def getFiles(cmdLineArgs):
     """
-    This function takes the list of data files supplied as command line arguments and parses them into a multi-level
-    dictionary, whose top level key is the file name, followed by data type, i.e. dofs, times, flops, errors, and
-    the finale value is a NumPy array of the data to plot.
+    This function first determins if it should look in the pathway specifed in filePath['absoluteData']
+    in the configurationTAS.py file or a file name given as a command line argument using -f or -file.
+    It then builds lists of file names and stores them in a dictionary, where they keys correspond to
+    the type of file, ie, module(ASCII type) or CSV.
 
-        data[<file name>][<data type>]:<numpy array>
+    :param cmdLineArgs: Contains command line arguments.
 
-    :param cmdLineArgs: Contains the file names, and command line arguments.
-    :type numpy array:
-
-    :returns:   data a dictionary containing the parsed data from the files specified on the command line.
+    :returns:   files, a dictionary with keys whose values are lists of file names, grouped by type
+                of file.
     """
-
-    data = {}
     dataPath = config.filePath['absoluteData']
     sys.path.append(dataPath)
-    files   = []
-    results = []
-    #if -file/-f was left blank then this will automatically add every .py and .pyc
-    #file to the files[] list to be processed.
+    files = {'module': [], 'csv': []}
+
     if(cmdLineArgs.file == None):
         try:
             filesTemp = os.listdir(dataPath)
             for f in filesTemp:
                 if f[-3:] == '.py':
-                    files.append(f[0:len(f)-3])
+                    files['module'].append(f[0:len(f)-3])
                 elif f[-4:] == '.pyc':
-                    files.append(f[0:len(f)-4])
+                    files['module'].append(f[0:len(f)-4])
+                elif f[-4:] == '.csv':
+                    files['csv'].append(f)
             if len(filesTemp) == 0 or len(files) == 0:
                 raise IOError()
         except IOError:
-            sys.exit ("No vaild data modules in " + dataPath + " and -file/-f argument is empty. \n"
-            "Please check for .py or .pyc files in " + dataPath + " or specify one with the -file/-f "
+            sys.exit ("No vaild data files in " + dataPath + " and -file/-f argument is empty. \n"
+            "Please check for .py, .pyc, or .csv files in " + dataPath + " or specify one with the -file/-f "
             "argument.")
     else:
-        files.append(cmdLineArgs.file[0])
+        if cmdLineArgs.file[0][-4:] == '.csv':
+            print('csv file')
+            files['csv'].append(cmdLineArgs.file[0])
+        else:
+            files['module'].append(cmdLineArgs.file[0])
+    for key in files.keys():
+        print(f'key: {key}, items {files[key]}')
+    return files
 
-    for module in files:
-        print(module)
-        module             = importlib.import_module(module)
-        Nf                 = getNf(module.Stages["ConvEst Refinement Level 1"]["ConvEst Error"][0]["error"])
-        nProcs             = module.size
-        dofs               = []
-        errors             = []
+def dataProcesCSV(cmdLineArgs, fileName):
+    """
+    This function takes the list of data files in CSV format supplied as a list and parses them into a tasClasses
+    object, whose top level key is the file name, followed by data type, i.e. dofs, times, flops, errors, and
+    the finale value is a NumPy array of the data to plot.
 
-        times              = []
-        timesMin           = []
-        meanTime           = []
-        timeGrowthRate     = []
+        data[<file name>][<data type>]:<numpy array>
 
-        flops              = []
-        flopsMax           = []
-        flopsMin           = []
-        meanFlop           = []
-        flopGrowthRate     = []
+    :param cmdLineArgs: Contains command line arguments.
+    :param fileNames: Contains the CSV file names.
+    :type string:
 
-        luFactor           = []
-        luFactorMin        = []
-        luFactorMean       = []
-        luFactorGrowthRate = []
+    :returns:   data a tasClasses file object containing the parsed data from the files specified on the command line.
+    """
+    data = {}
+    results = []
+    df                 = pd.read_csv(fileName)
+    Nf                 = getNfCSV(df)
+    nProcs             = int(df.columns.tolist()[24])
+    dofs               = []
+    errors             = []
 
-        file               = File(module.__name__)
+    times              = []
+    timesMin           = []
+    meanTime           = []
+    timeGrowthRate     = []
 
-        for f in range(Nf):
-            try:
-                if cmdLineArgs.problem != 'NULL':
-                    file.addField(Field(file.fileName, config.fieldNames[cmdLineArgs.problem]['field '+str(f)]))
-                else:
-                    file.addField(Field(file.fileName, str(f)))
-            except:
-                sys.exit('The problem you specified on the command line: ' + cmdLineArgs.problem + ' \ncould not be found' \
+    flops              = []
+    flopsMax           = []
+    flopsMin           = []
+    meanFlop           = []
+    flopGrowthRate     = []
+
+    luFactor           = []
+    luFactorMin        = []
+    luFactorMean       = []
+    luFactorGrowthRate = []
+
+    file               = File(fileName[0:len(fileName)-4])
+
+    #filters for using in df.loc[]
+    SNESSolveFilter    = (df['Event Name']=="SNESSolve")
+    MatLUFactorFilter  = ((df['Event Name'] == "MatLUFactorNum") | \
+        (df['Event Name'] == "MatLUFactorSym"))
+    ConvEstErrorFilter = (df['Event Name']=='ConvEst Error')
+    rankFilter = (df['Rank'] == 0)
+
+
+    for f in range(Nf): errors.append([])
+    for f in range(Nf): dofs.append([])
+
+    #level set to 1 due to problems with coarse grid effecting measurements
+    level  = 1
+    while level >= 1:
+        print('in while loop')
+        if ("ConvEst Refinement Level " + str(level) in df['Stage Name'].values):
+            stageName = "ConvEst Refinement Level "+str(level)
+            #Level dependent filters
+            stageNameFilter = (df['Stage Name'] == stageName)
+            fieldFilter = stageNameFilter & ConvEstErrorFilter & rankFilter
+
+            SNESSDf = df.loc[stageNameFilter & SNESSolveFilter]
+
+            MatLUFactorDf = df.loc[(stageNameFilter & MatLUFactorFilter), ['Time','Rank']]
+            #groupby done in order to get the sum of MatLUFactorNum and MatLUFactorSym
+            #For each Rank/CPU
+            MatLUFactorDf = MatLUFactorDf.groupby(['Rank']).sum()
+
+            meanTime.append((SNESSDf['Time'].sum())/nProcs)
+            times.append(SNESSDf['Time'].max())
+            timesMin.append(SNESSDf['Time'].min())
+
+
+            meanFlop.append((SNESSDf['FLOP'].sum())/nProcs)
+            flops.append(SNESSDf['FLOP'].sum())
+            flopsMax.append(SNESSDf['FLOP'].max())
+            flopsMin.append(SNESSDf['FLOP'].min())
+
+            if level > 1:
+                timeGrowthRate.append(meanTime[level-1]/meanTime[level-2])
+                flopGrowthRate.append(meanFlop[level-1]/meanFlop[level-2])
+
+            luFactorMean.append(MatLUFactorDf.sum()/nProcs)
+            luFactor.append(MatLUFactorDf.max())
+            luFactorMin.append(MatLUFactorDf.min())
+
+            for f in range(Nf):
+                dofs[f].append((df.loc[fieldFilter])['dof'+str(f)].values[0])
+                errors[f].append((df.loc[fieldFilter])['e'+str(f)].values[0])
+
+
+            level = level + 1
+        else:
+            level = -1
+
+    dofs   = np.array(dofs)
+    errors = np.array(errors)
+
+    times              = np.array(times)
+    meanTime           = np.array(meanTime)
+    timesMin           = np.array(timesMin)
+    timeGrowthRate     = np.array(timeGrowthRate)
+
+    flops              = np.array(flops)
+    meanFlop           = np.array(meanFlop)
+    flopsMax           = np.array(flopsMax)
+    flopsMin           = np.array(flopsMin)
+    flopGrowthRate     = np.array(flopGrowthRate)
+
+    luFactor           = np.array(luFactor)
+    luFactorMin        = np.array(luFactorMin)
+    luFactorMean       = np.array(luFactorMean)
+    luFactorGrowthRate = np.array(luFactorGrowthRate)
+
+
+    data["Times"]                 = times
+    data["Mean Time"]             = meanTime
+    data["Times Range"]           = times-timesMin
+    data["Time Growth Rate"]      = timeGrowthRate
+
+    data["Flops"]                 = flops
+    data["Mean Flops"]            = meanFlop
+    data["Flop Range"]            = flopsMax - flopsMin
+    data["Flop Growth Rate"]      = flopGrowthRate
+
+    data["LU Factor"]             = luFactor
+    data["LU Factor Mean"]        = luFactorMean
+    data["LU Factor Range"]       = luFactor-luFactorMin
+    data["LU Factor Growth Rate"] = luFactorGrowthRate
+
+    for f in range(Nf):
+        try:
+            if cmdLineArgs.problem != 'NULL':
+                file.addField(Field(file.fileName, config.fieldNames[cmdLineArgs.problem]['field '+str(f)]))
+            else:
+                file.addField(Field(file.fileName, str(f)))
+        except:
+            sys.exit('The problem you specified on the command line: ' + cmdLineArgs.problem + ' \ncould not be found' \
                 ' please check ' + config.__file__ + ' to ensure that you are using the correct name/have defined the fields for the problem.')
 
-        for f in range(Nf): errors.append([])
-        for f in range(Nf): dofs.append([])
 
-        #level set to 1 due to problems with coarse grid effecting measurements
-        level  = 1
-        while level >= 1:
-            stageName = "ConvEst Refinement Level "+str(level)
-            if stageName in module.Stages:
-                timeTempMax  = module.Stages[stageName]["SNESSolve"][0]["time"]
-                timeTempMin  = module.Stages[stageName]["SNESSolve"][0]["time"]
-                totalTime    = module.Stages[stageName]["SNESSolve"][0]["time"]
+    file.fileData = data
+    for f in range(Nf):
+        print('fieldList[f]', file.fieldList)
+        file.fieldList[f].fieldData["dofs"]   = dofs[f]
+        file.fieldList[f].fieldData["Errors"] = errors[f]
 
 
-                flopsTempMax  = module.Stages[stageName]["SNESSolve"][0]["flop"]
-                flopsTempMin  = module.Stages[stageName]["SNESSolve"][0]["flop"]
-                totalFlop    = module.Stages[stageName]["SNESSolve"][0]["flop"]
-
-                luFactorTempMax = module.Stages[stageName]["MatLUFactorNum"][0]["time"] + \
-                    module.Stages[stageName]["MatLUFactorSym"][0]["time"]
-                luFactorTempMin = luFactorTempMax
-                totalLuFactor   = luFactorTempMax
-
-                # print("Proc number: {} flops: {} running sum: {}".format(0, module.Stages[stageName]["SNESSolve"][0]["flop"],totalFlop))
-                # print("************Level {}************".format(level))
-
-                #This loops is used to grab the greatest time and flop when run in parallel
-                for n in range(1, nProcs):
-                    #Sum of MatLUFactorNum and MatLUFactorSym
-                    if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
-                        luFactorCur = module.Stages[stageName]["MatLUFactorNum"][n]["time"] + \
-                            module.Stages[stageName]["MatLUFactorSym"][n]["time"]
-
-                    #Gather Time information
-                    timeTempMax = timeTempMax if timeTempMax >= module.Stages[stageName]["SNESSolve"][n]["time"] \
-                            else module.Stages[stageName]["SNESSolve"][n]["time"]
-                    timeTempMin = timeTempMin if timeTempMin <= module.Stages[stageName]["SNESSolve"][n]["time"] \
-                            else module.Stages[stageName]["SNESSolve"][n]["time"]
-                    totalTime = totalTime + module.Stages[stageName]["SNESSolve"][n]["time"]
-
-                    #Gather Flop information
-                    flopsTempMax = flopsTempMax if flopsTempMax >= module.Stages[stageName]["SNESSolve"][n]["flop"] \
-                            else module.Stages[stageName]["SNESSolve"][n]["flop"]
-                    flopsTempMin = flopsTempMin if flopsTempMin <= module.Stages[stageName]["SNESSolve"][n]["flop"] \
-                            else module.Stages[stageName]["SNESSolve"][n]["flop"]
-                    totalFlop = totalFlop + module.Stages[stageName]["SNESSolve"][n]["flop"]
-
-                    #Gather LU factor infomation
-                    if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
-                        luFactorTempMax = luFactorTempMax if luFactorTempMax >= luFactorCur \
-                                else luFactorCur
-                        luFactorTempMin = luFactorTempMin if luFactorTempMin <= luFactorCur \
-                                else luFactorCur
-                        totalLuFactor = totalLuFactor + luFactorCur
-
-                    #print("Proc number: {} flops: {} running sum: {}".format(n, module.Stages[stageName]["SNESSolve"][n]["flop"],totalFlop))
-
-
-
-                #The informaiton from level 0 is NOT included.
-                meanTime.append(totalTime/nProcs)
-                times.append(timeTempMax)
-                timesMin.append(timeTempMin)
-
-                meanFlop.append(totalFlop/nProcs)
-                flops.append(totalFlop)
-                flopsMax.append(flopsTempMax)
-                flopsMin.append(timeTempMin)
-                if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
-                    luFactor.append(luFactorTempMax)
-                    luFactorMin.append(luFactorTempMin)
-                    luFactorMean.append(totalLuFactor/nProcs)
-
-                #Calculats the growth rate of statistics between levels
-                if level > 1:
-                    timeGrowthRate.append(meanTime[level-1]/meanTime[level-2])
-                    flopGrowthRate.append(meanFlop[level-1]/meanFlop[level-2])
-                    if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
-                        luFactorGrowthRate.append(luFactorMean[level-1]/luFactorMean[level-2])
-
-                for f in range(Nf):
-                    dofs[f].append(module.Stages[stageName]["ConvEst Error"][0]["dof"][f])
-                    errors[f].append(module.Stages[stageName]["ConvEst Error"][0]["error"][f])
-
-                level = level + 1
-            else:
-                level = -1
-
-        dofs   = np.array(dofs)
-        errors = np.array(errors)
-
-        times              = np.array(times)
-        meanTime           = np.array(meanTime)
-        timesMin           = np.array(timesMin)
-        timeGrowthRate     = np.array(timeGrowthRate)
-
-        flops              = np.array(flops)
-        meanFlop           = np.array(meanFlop)
-        flopsMax           = np.array(flopsMax)
-        flopsMin           = np.array(flopsMin)
-        flopGrowthRate     = np.array(flopGrowthRate)
-
-        luFactor           = np.array(luFactor)
-        luFactorMin        = np.array(luFactorMin)
-        luFactorMean       = np.array(luFactorMean)
-        luFactorGrowthRate = np.array(luFactorGrowthRate)
-
-
-        data["Times"]                = times
-        data["Mean Time"]            = meanTime
-        data["Times Range"]          = times-timesMin
-        data["Time Growth Rate"]     = timeGrowthRate
-
-        data["Flops"]                = flops
-        data["Mean Flops"]            = meanFlop
-        data["Flop Range"]           = flopsMax - flopsMin
-        data["Flop Growth Rate"]     = flopGrowthRate
-
-        data["LU Factor"]             = luFactor
-        data["LU Factor Mean"]        = luFactorMean
-        data["LU Factor Range"]       = luFactor-luFactorMin
-        data["LU Factor Growth Rate"] = luFactorGrowthRate
-
-
-        file.fileData = data
-        for f in range(Nf):
-            file.fieldList[f].fieldData["dofs"]   = dofs[f]
-            file.fieldList[f].fieldData["Errors"] = errors[f]
-
-    results.append(file)
+    #results.append(file)
     file.printFile()
 
 
-    return results
+    return file
+
+def dataProces(cmdLineArgs, fileName):
+    """
+    This function takes a data file, ASCII type, for supplied as command line arguments and parses it into a multi-level
+    dictionary, whose top level key is the file name, followed by data type, i.e. dofs, times, flops, errors, and
+    the finale value is a NumPy array of the data to plot.  This is the used to generate a tasClasses File object
+
+        data[<file name>][<data type>]:<numpy array>
+
+    :param cmdLineArgs: Contains the command line arguments.
+    :param fileName: Contains the name of file to be processed
+    :type string:
+
+    :returns:   data a tasClasses File object containing the parsed data from the file specified on the command line.
+    """
+
+    data = {}
+    files   = []
+    results = []
+    #if -file/-f was left blank then this will automatically add every .py and .pyc
+    #file to the files[] list to be processed.
+
+    module             = importlib.import_module(fileName)
+    Nf                 = getNf(module.Stages["ConvEst Refinement Level 1"]["ConvEst Error"][0]["error"])
+    nProcs             = module.size
+    dofs               = []
+    errors             = []
+
+    times              = []
+    timesMin           = []
+    meanTime           = []
+    timeGrowthRate     = []
+
+    flops              = []
+    flopsMax           = []
+    flopsMin           = []
+    meanFlop           = []
+    flopGrowthRate     = []
+
+    luFactor           = []
+    luFactorMin        = []
+    luFactorMean       = []
+    luFactorGrowthRate = []
+
+    file               = File(module.__name__)
+
+    for f in range(Nf):
+        try:
+            if cmdLineArgs.problem != 'NULL':
+                file.addField(Field(file.fileName, config.fieldNames[cmdLineArgs.problem]['field '+str(f)]))
+            else:
+                file.addField(Field(file.fileName, str(f)))
+        except:
+            sys.exit('The problem you specified on the command line: ' + cmdLineArgs.problem + ' \ncould not be found' \
+            ' please check ' + config.__file__ + ' to ensure that you are using the correct name/have defined the fields for the problem.')
+
+    for f in range(Nf): errors.append([])
+    for f in range(Nf): dofs.append([])
+
+    #level set to 1 due to problems with coarse grid effecting measurements
+    level  = 1
+    while level >= 1:
+        stageName = "ConvEst Refinement Level "+str(level)
+        if stageName in module.Stages:
+            timeTempMax  = module.Stages[stageName]["SNESSolve"][0]["time"]
+            timeTempMin  = module.Stages[stageName]["SNESSolve"][0]["time"]
+            totalTime    = module.Stages[stageName]["SNESSolve"][0]["time"]
+
+
+            flopsTempMax  = module.Stages[stageName]["SNESSolve"][0]["flop"]
+            flopsTempMin  = module.Stages[stageName]["SNESSolve"][0]["flop"]
+            totalFlop    = module.Stages[stageName]["SNESSolve"][0]["flop"]
+
+            luFactorTempMax = module.Stages[stageName]["MatLUFactorNum"][0]["time"] + \
+                module.Stages[stageName]["MatLUFactorSym"][0]["time"]
+            luFactorTempMin = luFactorTempMax
+            totalLuFactor   = luFactorTempMax
+
+            # print("Proc number: {} flops: {} running sum: {}".format(0, module.Stages[stageName]["SNESSolve"][0]["flop"],totalFlop))
+            # print("************Level {}************".format(level))
+
+            #This loops is used to grab the greatest time and flop when run in parallel
+            for n in range(1, nProcs):
+                #Sum of MatLUFactorNum and MatLUFactorSym
+                if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
+                    luFactorCur = module.Stages[stageName]["MatLUFactorNum"][n]["time"] + \
+                        module.Stages[stageName]["MatLUFactorSym"][n]["time"]
+
+                #Gather Time information
+                timeTempMax = timeTempMax if timeTempMax >= module.Stages[stageName]["SNESSolve"][n]["time"] \
+                        else module.Stages[stageName]["SNESSolve"][n]["time"]
+                timeTempMin = timeTempMin if timeTempMin <= module.Stages[stageName]["SNESSolve"][n]["time"] \
+                        else module.Stages[stageName]["SNESSolve"][n]["time"]
+                totalTime = totalTime + module.Stages[stageName]["SNESSolve"][n]["time"]
+
+                #Gather Flop information
+                flopsTempMax = flopsTempMax if flopsTempMax >= module.Stages[stageName]["SNESSolve"][n]["flop"] \
+                        else module.Stages[stageName]["SNESSolve"][n]["flop"]
+                flopsTempMin = flopsTempMin if flopsTempMin <= module.Stages[stageName]["SNESSolve"][n]["flop"] \
+                        else module.Stages[stageName]["SNESSolve"][n]["flop"]
+                totalFlop = totalFlop + module.Stages[stageName]["SNESSolve"][n]["flop"]
+
+                #Gather LU factor infomation
+                if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
+                    luFactorTempMax = luFactorTempMax if luFactorTempMax >= luFactorCur \
+                            else luFactorCur
+                    luFactorTempMin = luFactorTempMin if luFactorTempMin <= luFactorCur \
+                            else luFactorCur
+                    totalLuFactor = totalLuFactor + luFactorCur
+
+                #print("Proc number: {} flops: {} running sum: {}".format(n, module.Stages[stageName]["SNESSolve"][n]["flop"],totalFlop))
+
+
+
+            #The informaiton from level 0 is NOT included.
+            meanTime.append(totalTime/nProcs)
+            times.append(timeTempMax)
+            timesMin.append(timeTempMin)
+
+            meanFlop.append(totalFlop/nProcs)
+            flops.append(totalFlop)
+            flopsMax.append(flopsTempMax)
+            flopsMin.append(timeTempMin)
+            if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
+                luFactor.append(luFactorTempMax)
+                luFactorMin.append(luFactorTempMin)
+                luFactorMean.append(totalLuFactor/nProcs)
+
+            #Calculats the growth rate of statistics between levels
+            if level > 1:
+                timeGrowthRate.append(meanTime[level-1]/meanTime[level-2])
+                flopGrowthRate.append(meanFlop[level-1]/meanFlop[level-2])
+                #if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
+                #    luFactorGrowthRate.append(luFactorMean[level-1]/luFactorMean[level-2])
+
+            for f in range(Nf):
+                dofs[f].append(module.Stages[stageName]["ConvEst Error"][0]["dof"][f])
+                errors[f].append(module.Stages[stageName]["ConvEst Error"][0]["error"][f])
+
+            level = level + 1
+        else:
+            level = -1
+
+    dofs   = np.array(dofs)
+    errors = np.array(errors)
+
+    times              = np.array(times)
+    meanTime           = np.array(meanTime)
+    timesMin           = np.array(timesMin)
+    timeGrowthRate     = np.array(timeGrowthRate)
+
+    flops              = np.array(flops)
+    meanFlop           = np.array(meanFlop)
+    flopsMax           = np.array(flopsMax)
+    flopsMin           = np.array(flopsMin)
+    flopGrowthRate     = np.array(flopGrowthRate)
+
+    luFactor           = np.array(luFactor)
+    luFactorMin        = np.array(luFactorMin)
+    luFactorMean       = np.array(luFactorMean)
+    luFactorGrowthRate = np.array(luFactorGrowthRate)
+
+
+    data["Times"]                = times
+    data["Mean Time"]            = meanTime
+    data["Times Range"]          = times-timesMin
+    data["Time Growth Rate"]     = timeGrowthRate
+
+    data["Flops"]                = flops
+    data["Mean Flops"]            = meanFlop
+    data["Flop Range"]           = flopsMax - flopsMin
+    data["Flop Growth Rate"]     = flopGrowthRate
+
+    data["LU Factor"]             = luFactor
+    data["LU Factor Mean"]        = luFactorMean
+    data["LU Factor Range"]       = luFactor-luFactorMin
+    data["LU Factor Growth Rate"] = luFactorGrowthRate
+
+
+    file.fileData = data
+    for f in range(Nf):
+        file.fieldList[f].fieldData["dofs"]   = dofs[f]
+        file.fieldList[f].fieldData["Errors"] = errors[f]
+
+    #results.append(file)
+    file.printFile()
+
+
+    return file
 
 def getNf(errorList):
     """
@@ -249,6 +431,31 @@ def getNf(errorList):
          i += 1
     return Nf
 
+def getNfCSV(df):
+    """
+    This simple function is the same as getNf, except it is for the CSV files. It loops through
+    the values of the dofx columns, where x is an integer, from the row where
+    Stage Name = ConvEst Refinement Level 0, Event Name = ConvEst Error, and Rank = 0 until it
+    encounters -1.  The default convention is that each field from the problem has an entry in the error list with at most
+    8 fields.  If there are less thatn 8 fields those entries are set to -1.
+    Example:
+      A problem with 4 fields would have a list of the form [.01, .003, .2, .04, -1, -1, -1, -1]
+
+    :param df: Contains a Pandas Data Frame.
+    :type df: A Pandas Data Frame object.
+    :returns: Nf an integer that represents the number of fields.
+    """
+    #Get a single row from the Data Frame that contains the field information
+    df = df.loc[(df['Event Name']=='ConvEst Error') & (df['Stage Name']=='ConvEst Refinement Level 0')\
+        & (df['Rank']==0)].reset_index()
+    level = 1
+    while level >= 1:
+        dof = 'dof' + str(level)
+        if df.loc[0,dof] == -1:
+            break
+        else:
+            level = level + 1
+    return level
 
 def graphGen(file, enable_graphs, graph_flops_scaling, dim):
     """
@@ -286,13 +493,14 @@ def graphGen(file, enable_graphs, graph_flops_scaling, dim):
         field.setConvergeRate(convRate)
         field.setAlpha(lstSqMeshConv[0])
         field.setBeta(lstSqMeshConv[1])
-    file.writeCSV()
+    #file.writeCSV()
 
     if cmdLineArgs.enable_graphs == 1:
-        #Set up plots with labels
-        #petscDir = os.environ.get('PETSC_DIR') + '/share/petsc/xml/stylelib/' #needed to run on the cluster
-        plt.style.use('petsc_tas_style.mplstyle') #uses the specified style sheet for generating the plots
+        #Uses the specified style sheet for generating the plots
+        styleDir = os.path.join(os.environ.get('PETSC_DIR'), 'lib/petsc/bin')
+        plt.style.use(os.path.join(styleDir, 'petsc_tas_style.mplstyle'))
 
+        #Set up plots with labels
         meshConvFig = plt.figure()
         meshConvOrigHandles = []
         meshConvLstSqHandles = []

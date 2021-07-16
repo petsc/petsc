@@ -1935,12 +1935,17 @@ struct MatMatCusparse {
   PetscBool             reusesym; /* Cusparse does not have split symbolic and numeric phases for sparse matmat operations */
   PetscLogDouble        flops;
   CsrMatrix             *Bcsr;
+
 #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
   cusparseSpMatDescr_t  matSpBDescr;
   PetscBool             initialized;   /* C = alpha op(A) op(B) + beta C */
   cusparseDnMatDescr_t  matBDescr;
   cusparseDnMatDescr_t  matCDescr;
   PetscInt              Blda,Clda; /* Record leading dimensions of B and C here to detect changes*/
+ #if PETSC_PKG_CUDA_VERSION_GE(11,4,0)
+  void                  *dBuffer4;
+  void                  *dBuffer5;
+ #endif
   size_t                mmBufferSize;
   void                  *mmBuffer;
   void                  *mmBuffer2; /* SpGEMM WorkEstimation buffer */
@@ -1962,11 +1967,15 @@ static PetscErrorCode MatDestroy_MatMatCusparse(void *data)
   delete mmdata->Bcsr;
  #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
   if (mmdata->matSpBDescr) { stat = cusparseDestroySpMat(mmdata->matSpBDescr);CHKERRCUSPARSE(stat); }
-  if (mmdata->mmBuffer)    { cerr = cudaFree(mmdata->mmBuffer);CHKERRCUDA(cerr); }
-  if (mmdata->mmBuffer2)   { cerr = cudaFree(mmdata->mmBuffer2);CHKERRCUDA(cerr); }
   if (mmdata->matBDescr)   { stat = cusparseDestroyDnMat(mmdata->matBDescr);CHKERRCUSPARSE(stat); }
   if (mmdata->matCDescr)   { stat = cusparseDestroyDnMat(mmdata->matCDescr);CHKERRCUSPARSE(stat); }
   if (mmdata->spgemmDesc)  { stat = cusparseSpGEMM_destroyDescr(mmdata->spgemmDesc);CHKERRCUSPARSE(stat); }
+ #if PETSC_PKG_CUDA_VERSION_GE(11,4,0)
+  if (mmdata->dBuffer4)  { cerr = cudaFree(mmdata->dBuffer4);CHKERRCUDA(cerr); }
+  if (mmdata->dBuffer5)  { cerr = cudaFree(mmdata->dBuffer5);CHKERRCUDA(cerr); }
+ #endif
+  if (mmdata->mmBuffer)  { cerr = cudaFree(mmdata->mmBuffer);CHKERRCUDA(cerr); }
+  if (mmdata->mmBuffer2) { cerr = cudaFree(mmdata->mmBuffer2);CHKERRCUDA(cerr); }
  #endif
   ierr = MatDestroy(&mmdata->X);CHKERRQ(ierr);
   ierr = PetscFree(data);CHKERRQ(ierr);
@@ -2239,6 +2248,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
 #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
   cusparseSpMatDescr_t         BmatSpDescr;
 #endif
+  cusparseOperation_t          opA = CUSPARSE_OPERATION_NON_TRANSPOSE,opB = CUSPARSE_OPERATION_NON_TRANSPOSE; /* cuSPARSE spgemm doesn't support transpose yet */
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
@@ -2306,15 +2316,23 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
 #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
   BmatSpDescr = mmdata->Bcsr ? mmdata->matSpBDescr : Bmat->matDescr; /* B may be in compressed row storage */
-  stat = cusparseSpGEMM_compute(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
-                                Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
-                                cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
-                                mmdata->spgemmDesc, &mmdata->mmBufferSize, mmdata->mmBuffer);CHKERRCUSPARSE(stat);
-  stat = cusparseSpGEMM_copy(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
-                             Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
-                             cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc);CHKERRCUSPARSE(stat);
+  stat = cusparseSetPointerMode(Ccusp->handle, CUSPARSE_POINTER_MODE_DEVICE);CHKERRCUSPARSE(stat);
+  #if PETSC_PKG_CUDA_VERSION_GE(11,4,0)
+    stat = cusparseSpGEMMreuse_compute(Ccusp->handle, opA, opB,
+                               Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
+                               cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
+                               mmdata->spgemmDesc);CHKERRCUSPARSE(stat);
+  #else
+    stat = cusparseSpGEMM_compute(Ccusp->handle, opA, opB,
+                               Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
+                               cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
+                               mmdata->spgemmDesc, &mmdata->mmBufferSize, mmdata->mmBuffer);CHKERRCUSPARSE(stat);
+    stat = cusparseSpGEMM_copy(Ccusp->handle, opA, opB,
+                               Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
+                               cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc);CHKERRCUSPARSE(stat);
+  #endif
 #else
-  stat = cusparse_csr_spgemm(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+  stat = cusparse_csr_spgemm(Ccusp->handle, opA, opB,
                              Acsr->num_rows, Bcsr->num_cols, Acsr->num_cols,
                              Amat->descr, Acsr->num_entries, Acsr->values->data().get(), Acsr->row_offsets->data().get(), Acsr->column_indices->data().get(),
                              Bmat->descr, Bcsr->num_entries, Bcsr->values->data().get(), Bcsr->row_offsets->data().get(), Bcsr->column_indices->data().get(),
@@ -2356,11 +2374,11 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   PetscBool                    biscompressed,ciscompressed;
 #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
   int64_t                      C_num_rows1, C_num_cols1, C_nnz1;
-  size_t                       bufSize2;
   cusparseSpMatDescr_t         BmatSpDescr;
 #else
   int                          cnz;
 #endif
+  cusparseOperation_t          opA = CUSPARSE_OPERATION_NON_TRANSPOSE,opB = CUSPARSE_OPERATION_NON_TRANSPOSE; /* cuSPARSE spgemm doesn't support transpose yet */
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
@@ -2526,26 +2544,94 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
 
   mmdata->flops = flops;
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
+
 #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
   stat = cusparseSetPointerMode(Ccusp->handle, CUSPARSE_POINTER_MODE_DEVICE);CHKERRCUSPARSE(stat);
   stat = cusparseCreateCsr(&Cmat->matDescr, Ccsr->num_rows, Ccsr->num_cols, 0,
-                           NULL, NULL, NULL,
-                           CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
-                           CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype);CHKERRCUSPARSE(stat);
+                          NULL, NULL, NULL,
+                          CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+                          CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype);CHKERRCUSPARSE(stat);
   stat = cusparseSpGEMM_createDescr(&mmdata->spgemmDesc);CHKERRCUSPARSE(stat);
+ #if PETSC_PKG_CUDA_VERSION_GE(11,4,0)
+ {
+  /* cusparseSpGEMMreuse has more reasonable APIs than cusparseSpGEMM, so we prefer to use it.
+     We follow the sample code at https://github.com/NVIDIA/CUDALibrarySamples/blob/master/cuSPARSE/spgemm_reuse
+  */
+  void*  dBuffer1 = NULL;
+  void*  dBuffer2 = NULL;
+  void*  dBuffer3 = NULL;
+  /* dBuffer4, dBuffer5 are needed by cusparseSpGEMMreuse_compute, and therefore are stored in mmdata */
+  size_t bufferSize1 = 0;
+  size_t bufferSize2 = 0;
+  size_t bufferSize3 = 0;
+  size_t bufferSize4 = 0;
+  size_t bufferSize5 = 0;
+
+  /*----------------------------------------------------------------------*/
+  /* ask bufferSize1 bytes for external memory */
+  stat = cusparseSpGEMMreuse_workEstimation(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr,
+                                            CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc,
+                                            &bufferSize1, NULL);CHKERRCUSPARSE(stat);
+  cerr = cudaMalloc((void**) &dBuffer1, bufferSize1);CHKERRCUDA(cerr);
+  /* inspect the matrices A and B to understand the memory requirement for the next step */
+  stat = cusparseSpGEMMreuse_workEstimation(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr,
+                                            CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc,
+                                            &bufferSize1, dBuffer1);CHKERRCUSPARSE(stat);
+
+  /*----------------------------------------------------------------------*/
+  stat = cusparseSpGEMMreuse_nnz(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr,
+                                 CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc,
+                                 &bufferSize2, NULL, &bufferSize3, NULL, &bufferSize4, NULL);CHKERRCUSPARSE(stat);
+  cerr = cudaMalloc((void**) &dBuffer2, bufferSize2);CHKERRCUDA(cerr);
+  cerr = cudaMalloc((void**) &dBuffer3, bufferSize3);CHKERRCUDA(cerr);
+  cerr = cudaMalloc((void**) &mmdata->dBuffer4, bufferSize4);CHKERRCUDA(cerr);
+  stat = cusparseSpGEMMreuse_nnz(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr,
+                                 CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc,
+                                 &bufferSize2, dBuffer2, &bufferSize3, dBuffer3, &bufferSize4, mmdata->dBuffer4);CHKERRCUSPARSE(stat);
+  cerr = cudaFree(dBuffer1);CHKERRCUDA(cerr);
+  cerr = cudaFree(dBuffer2);CHKERRCUDA(cerr);
+
+  /*----------------------------------------------------------------------*/
+  /* get matrix C non-zero entries C_nnz1 */
+  stat  = cusparseSpMatGetSize(Cmat->matDescr, &C_num_rows1, &C_num_cols1, &C_nnz1);CHKERRCUSPARSE(stat);
+  c->nz = (PetscInt) C_nnz1;
+  /* allocate matrix C */
+  Ccsr->column_indices = new THRUSTINTARRAY32(c->nz);CHKERRCUDA(cudaPeekAtLastError()); /* catch out of memory errors */
+  Ccsr->values         = new THRUSTARRAY(c->nz);CHKERRCUDA(cudaPeekAtLastError()); /* catch out of memory errors */
+  /* update matC with the new pointers */
+  stat = cusparseCsrSetPointers(Cmat->matDescr, Ccsr->row_offsets->data().get(), Ccsr->column_indices->data().get(),
+                                Ccsr->values->data().get());CHKERRCUSPARSE(stat);
+
+  /*----------------------------------------------------------------------*/
+  stat = cusparseSpGEMMreuse_copy(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr,
+                                  CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc,
+                                  &bufferSize5, NULL);CHKERRCUSPARSE(stat);
+  cerr = cudaMalloc((void**) &mmdata->dBuffer5, bufferSize5);CHKERRCUDA(cerr);
+  stat = cusparseSpGEMMreuse_copy(Ccusp->handle, opA, opB, Amat->matDescr, BmatSpDescr, Cmat->matDescr,
+                                  CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc,
+                                  &bufferSize5, mmdata->dBuffer5);CHKERRCUSPARSE(stat);
+  cerr = cudaFree(dBuffer3);CHKERRCUDA(cerr);
+  stat = cusparseSpGEMMreuse_compute(Ccusp->handle, opA, opB,
+                                     Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
+                                     cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
+                                     mmdata->spgemmDesc);CHKERRCUSPARSE(stat);
+  ierr = PetscInfo9(C,"Buffer sizes for type %s, result %D x %D (k %D, nzA %D, nzB %D, nzC %D) are: %ldKB %ldKB\n",MatProductTypes[ptype],m,n,k,a->nz,b->nz,c->nz,bufferSize4/1024,bufferSize5/1024);CHKERRQ(ierr);
+ }
+ #else // ~PETSC_PKG_CUDA_VERSION_GE(11,4,0)
+  size_t bufSize2;
   /* ask bufferSize bytes for external memory */
-  stat = cusparseSpGEMM_workEstimation(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+  stat = cusparseSpGEMM_workEstimation(Ccusp->handle, opA, opB,
                                        Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
                                        cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
                                        mmdata->spgemmDesc, &bufSize2, NULL);CHKERRCUSPARSE(stat);
   cerr = cudaMalloc((void**) &mmdata->mmBuffer2, bufSize2);CHKERRCUDA(cerr);
   /* inspect the matrices A and B to understand the memory requirement for the next step */
-  stat = cusparseSpGEMM_workEstimation(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+  stat = cusparseSpGEMM_workEstimation(Ccusp->handle, opA, opB,
                                        Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
                                        cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
                                        mmdata->spgemmDesc, &bufSize2, mmdata->mmBuffer2);CHKERRCUSPARSE(stat);
   /* ask bufferSize again bytes for external memory */
-  stat = cusparseSpGEMM_compute(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+  stat = cusparseSpGEMM_compute(Ccusp->handle, opA, opB,
                                 Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
                                 cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
                                 mmdata->spgemmDesc, &mmdata->mmBufferSize, NULL);CHKERRCUSPARSE(stat);
@@ -2556,7 +2642,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
      is stored in the descriptor! What a messy API... */
   cerr = cudaMalloc((void**) &mmdata->mmBuffer, mmdata->mmBufferSize);CHKERRCUDA(cerr);
   /* compute the intermediate product of A * B */
-  stat = cusparseSpGEMM_compute(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+  stat = cusparseSpGEMM_compute(Ccusp->handle, opA, opB,
                                 Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
                                 cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT,
                                 mmdata->spgemmDesc, &mmdata->mmBufferSize, mmdata->mmBuffer);CHKERRCUSPARSE(stat);
@@ -2570,12 +2656,13 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   CHKERRCUDA(cudaPeekAtLastError()); /* catch out of memory errors */
   stat = cusparseCsrSetPointers(Cmat->matDescr, Ccsr->row_offsets->data().get(), Ccsr->column_indices->data().get(),
                                 Ccsr->values->data().get());CHKERRCUSPARSE(stat);
-  stat = cusparseSpGEMM_copy(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+  stat = cusparseSpGEMM_copy(Ccusp->handle, opA, opB,
                              Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
                              cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc);CHKERRCUSPARSE(stat);
+ #endif
 #else
   stat = cusparseSetPointerMode(Ccusp->handle, CUSPARSE_POINTER_MODE_HOST);CHKERRCUSPARSE(stat);
-  stat = cusparseXcsrgemmNnz(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+  stat = cusparseXcsrgemmNnz(Ccusp->handle, opA, opB,
                              Acsr->num_rows, Bcsr->num_cols, Acsr->num_cols,
                              Amat->descr, Acsr->num_entries, Acsr->row_offsets->data().get(), Acsr->column_indices->data().get(),
                              Bmat->descr, Bcsr->num_entries, Bcsr->row_offsets->data().get(), Bcsr->column_indices->data().get(),
@@ -2590,7 +2677,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   /* with the old gemm interface (removed from 11.0 on) we cannot compute the symbolic factorization only.
      I have tried using the gemm2 interface (alpha * A * B + beta * D), which allows to do symbolic by passing NULL for values, but it seems quite buggy when
      D is NULL, despite the fact that CUSPARSE documentation claims it is supported! */
-  stat = cusparse_csr_spgemm(Ccusp->handle, CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
+  stat = cusparse_csr_spgemm(Ccusp->handle, opA, opB,
                              Acsr->num_rows, Bcsr->num_cols, Acsr->num_cols,
                              Amat->descr, Acsr->num_entries, Acsr->values->data().get(), Acsr->row_offsets->data().get(), Acsr->column_indices->data().get(),
                              Bmat->descr, Bcsr->num_entries, Bcsr->values->data().get(), Bcsr->row_offsets->data().get(), Bcsr->column_indices->data().get(),
@@ -2682,6 +2769,70 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJCUSPARSE(Mat mat)
       ierr = PetscObjectTypeCompare((PetscObject)product->C,MATSEQAIJCUSPARSE,&Ciscusp);CHKERRQ(ierr);
     }
   }
+  if (Biscusp && Ciscusp) { /* we can always select the CPU backend */
+    PetscBool usecpu = PETSC_FALSE;
+    switch (product->type) {
+    case MATPRODUCT_AB:
+      if (product->api_user) {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatMatMult","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matmatmult_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AB","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matproduct_ab_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      }
+      break;
+    case MATPRODUCT_AtB:
+      if (product->api_user) {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatTransposeMatMult","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-mattransposematmult_backend_cpu","Use CPU code","MatTransposeMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AtB","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matproduct_atb_backend_cpu","Use CPU code","MatTransposeMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      }
+      break;
+    case MATPRODUCT_PtAP:
+      if (product->api_user) {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatPtAP","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matptap_backend_cpu","Use CPU code","MatPtAP",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_PtAP","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matproduct_ptap_backend_cpu","Use CPU code","MatPtAP",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      }
+      break;
+    case MATPRODUCT_RARt:
+      if (product->api_user) {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatRARt","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matrart_backend_cpu","Use CPU code","MatRARt",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_RARt","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matproduct_rart_backend_cpu","Use CPU code","MatRARt",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      }
+      break;
+    case MATPRODUCT_ABC:
+      if (product->api_user) {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatMatMatMult","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matmatmatmult_backend_cpu","Use CPU code","MatMatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_ABC","Mat");CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-matproduct_abc_backend_cpu","Use CPU code","MatMatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      }
+      break;
+    default:
+      break;
+    }
+    if (usecpu) Biscusp = Ciscusp = PETSC_FALSE;
+  }
+  /* dispatch */
   if (isdense) {
     switch (product->type) {
     case MATPRODUCT_AB:

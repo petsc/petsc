@@ -245,6 +245,8 @@ PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
   (*N)->rmap->N               = A->cmap->N;
   (*N)->cmap->n               = A->cmap->n;
   (*N)->rmap->n               = A->cmap->n;
+
+  ierr = MatSetOption(*N,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

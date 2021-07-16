@@ -245,6 +245,7 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   (*N)->assembled             = PETSC_TRUE;
   (*N)->preallocated          = PETSC_TRUE;
 
+  ierr = MatSetOption(*N,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatGetVecType(A,&vtype);CHKERRQ(ierr);
   ierr = MatSetVecType(*N,vtype);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_DEVICE)

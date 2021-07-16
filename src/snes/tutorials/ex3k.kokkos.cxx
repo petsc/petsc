@@ -227,7 +227,6 @@ int main(int argc,char **argv)
   PetscInt                    its,N = 5,maxit,maxf;
   PetscReal                   abstol,rtol,stol,norm;
   PetscBool                   viewinitial = PETSC_FALSE;
-  PetscScalarKokkosOffsetView FF,UU;
 
   ierr  = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr  = PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL);CHKERRQ(ierr);
@@ -294,15 +293,18 @@ int main(int argc,char **argv)
      Initialize application:
      Store forcing function of PDE and exact solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDAVecGetKokkosOffsetViewWrite(ctx.da,F,&FF);CHKERRQ(ierr);
-  ierr = DMDAVecGetKokkosOffsetViewWrite(ctx.da,U,&UU);CHKERRQ(ierr);
-  Kokkos:: parallel_for (Kokkos::RangePolicy<>(FF.begin(0),FF.end(0)),KOKKOS_LAMBDA (int i) {
-    PetscReal xp = i*ctx.h;
-    FF(i) = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    UU(i) = xp*xp*xp;
-  });
-  ierr = DMDAVecRestoreKokkosOffsetViewWrite(ctx.da,F,&FF);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreKokkosOffsetViewWrite(ctx.da,U,&UU);CHKERRQ(ierr);
+  {
+    PetscScalarKokkosOffsetView FF,UU;
+    ierr = DMDAVecGetKokkosOffsetViewWrite(ctx.da,F,&FF);CHKERRQ(ierr);
+    ierr = DMDAVecGetKokkosOffsetViewWrite(ctx.da,U,&UU);CHKERRQ(ierr);
+    Kokkos:: parallel_for (Kokkos::RangePolicy<>(FF.begin(0),FF.end(0)),KOKKOS_LAMBDA (int i) {
+      PetscReal xp = i*ctx.h;
+      FF(i) = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
+      UU(i) = xp*xp*xp;
+    });
+    ierr = DMDAVecRestoreKokkosOffsetViewWrite(ctx.da,F,&FF);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreKokkosOffsetViewWrite(ctx.da,U,&UU);CHKERRQ(ierr);
+  }
 
   if (viewinitial) {
     ierr = VecView(U,NULL);CHKERRQ(ierr);

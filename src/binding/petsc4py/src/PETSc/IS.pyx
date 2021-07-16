@@ -130,6 +130,13 @@ cdef class IS(Object):
         CHKERR( ISToGeneral(self.iset) )
         return self
 
+    def buildTwoSided(self, IS toindx=None):
+        cdef PetscIS ctoindx = NULL
+        if toindx is not None: ctoindx = toindx.iset
+        cdef IS result = IS()
+        CHKERR( ISBuildTwoSided(self.iset, ctoindx, &result.iset) )
+        return result
+
     def invertPermutation(self, nlocal=None):
         cdef PetscInt cnlocal = PETSC_DECIDE
         if nlocal is not None: cnlocal = asInt(nlocal)

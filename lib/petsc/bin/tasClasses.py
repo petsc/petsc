@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import numpy as np
 import csv
 
@@ -19,8 +19,8 @@ class File(object):
     def printFile(self):
         print('\t\t*******************Data for {}***************************'.format(self.fileName))
         np.set_printoptions(precision=3, linewidth=100)
-        for k,v in self.fileData.items():
-            print(" {: >18} : {}\n".format(k,v))
+        for k in self.fileData:
+            print(" {: >18} : {}\n".format(k,self.fileData[k]))
         for field in self.fieldList:
             field.printField()
 
@@ -90,5 +90,5 @@ class Field(File):
 
     def printField(self):
         print('**********Data for Field {}************'.format(self.fieldName))
-        for k, v in self.fieldData.items():
-            print(" {: >18} : {}\n".format(k,v))
+        for k in self.fieldData:
+            print(" {: >18} : {}\n".format(k,self.fieldData[k]))

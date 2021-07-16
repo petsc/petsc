@@ -664,6 +664,15 @@ cdef class DMPlex(DM):
     def labelsView(self, Viewer viewer):
         CHKERR( DMPlexLabelsView(self.dm, viewer.vwr))
 
+    def sectionView(self, Viewer viewer, DM sectiondm):
+        CHKERR( DMPlexSectionView(self.dm, viewer.vwr, sectiondm.dm))
+
+    def globalVectorView(self, Viewer viewer, DM sectiondm, Vec vec):
+        CHKERR( DMPlexGlobalVectorView(self.dm, viewer.vwr, sectiondm.dm, vec.vec))
+
+    def localVectorView(self, Viewer viewer, DM sectiondm, Vec vec):
+        CHKERR( DMPlexLocalVectorView(self.dm, viewer.vwr, sectiondm.dm, vec.vec))
+
     # Load
 
     def topologyLoad(self, Viewer viewer):
@@ -676,3 +685,15 @@ cdef class DMPlex(DM):
 
     def labelsLoad(self, Viewer viewer):
         CHKERR( DMPlexLabelsLoad(self.dm, viewer.vwr))
+
+    def sectionLoad(self, Viewer viewer, DM sectiondm, SF sfxc):
+        cdef SF gsf = SF()
+        cdef SF lsf = SF()
+        CHKERR( DMPlexSectionLoad(self.dm, viewer.vwr, sectiondm.dm, sfxc.sf, &gsf.sf, &lsf.sf))
+        return gsf, lsf
+
+    def globalVectorLoad(self, Viewer viewer, DM sectiondm, SF sf, Vec vec):
+        CHKERR( DMPlexGlobalVectorLoad(self.dm, viewer.vwr, sectiondm.dm, sf.sf, vec.vec))
+
+    def localVectorLoad(self, Viewer viewer, DM sectiondm, SF sf, Vec vec):
+        CHKERR( DMPlexLocalVectorLoad(self.dm, viewer.vwr, sectiondm.dm, sf.sf, vec.vec))

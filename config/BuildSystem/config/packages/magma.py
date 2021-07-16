@@ -8,26 +8,17 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     # disable version check
-    #self.version          = '2.5.2'
-    #self.minversion       = '2.5.2'
+    self.version          = '2.6.0'
+    #self.minversion       = '2.6.0'
     #self.versionname      = ???
-    #self.gitcommit        = 'v'+self.version
-    #version               = '2.5.4'
-    #self.gitcommit        = 'v'+version
-    self.gitcommit        = '7847870ac700d13e00740c01651cf85e7db15fe1' # master on Jun 2, 2021
+    self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://bitbucket.org/icl/magma']
-    # This is broken with HIP because they do not provide any configuration specific include file
-    # and they always default to CUDA when including the magma header.
-    # One should know in advance if magma has been compiled with CUDA or HIP support
-    # and define either HAVE_CUBLAS or HAVE_HIP (without namespacing.... what a shame)
-    # before including magma_v2.h. This is disgusting
-    #self.functions        = ['magma_init']
-    #self.includes         = ['magma_v2.h']
-    #self.liblist          = [['libmagma_sparse.a','libmagma.a'],
-    #                         ['libmagma_sparse.a','libmagma.a','libpthread.a'],
-    #                         ['libmagma.a'],
-    #                         ['libmagma.a','libpthread.a']]
-    self.liblist          = [['libmagma.a']]
+    self.functions        = ['magma_init']
+    self.includes         = ['magma_config.h']
+    self.liblist          = [['libmagma_sparse.a','libmagma.a'],
+                             ['libmagma_sparse.a','libmagma.a','libpthread.a'],
+                             ['libmagma.a'],
+                             ['libmagma.a','libpthread.a']]
     self.hastests         = 0
     self.hastestsdatafiles= 0
     self.requirec99flag   = 1 #From CMakeLists.txt -> some code may not compile
@@ -229,3 +220,24 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on MAGMA')
       self.postInstall(output1+err1+output2+err2,'make.inc')
     return self.installDir
+
+  def configureLibrary(self):
+    d = None
+    if 'with-'+self.package+'-include' in self.argDB:
+      inc = self.argDB['with-'+self.package+'-include']
+      if inc:
+        d = os.path.dirname(inc[0])
+    elif 'with-'+self.package+'-dir' in self.argDB:
+      d = os.path.join(self.argDB['with-'+self.package+'-dir'],'include')
+    if d:
+      usecuda = False
+      usehip  = False
+      with open(os.path.join(d,self.includes[0])) as f:
+        magmaconfig = f.read()
+        if '#define MAGMA_HAVE_CUDA' in magmaconfig: usecuda = True
+        if '#define MAGMA_HAVE_HIP'  in magmaconfig: usehip  = True
+      if self.cuda.found and not usecuda:
+        raise RuntimeError('Must enable CUDA to use MAGMA built with CUDA')
+      if self.hip.found and not usehip:
+        raise RuntimeError('Must enable HIP to use MAGMA built with HIP')
+    config.package.Package.configureLibrary(self)

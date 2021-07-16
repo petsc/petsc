@@ -169,6 +169,19 @@ cdef api PetscMat PyPetscMat_Get(object arg) except ? NULL:
     retv = ob.mat
     return retv
 
+# -- MatPartitioning --
+
+cdef api object PyPetscMatPartitioning_New(PetscMatPartitioning arg):
+    cdef MatPartitioning retv = MatPartitioning()
+    setref(&retv.part, arg)
+    return retv
+
+cdef api PetscMatPartitioning PyPetscMatPartitioning_Get(object arg) except ? NULL:
+    cdef PetscMatPartitioning retv = NULL
+    cdef MatPartitioning ob = <MatPartitioning?> arg
+    retv = ob.part
+    return retv
+
 # -- PC --
 
 cdef api object PyPetscPC_New(PetscPC arg):

@@ -886,7 +886,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     PetscInt cnt = 0;
     /* These symbols are currently in the OpenMPI and MPICH libraries; they may not always be, in that case the test will simply not detect the problem */
     if (dlsym(RTLD_DEFAULT,"ompi_mpi_init")) cnt++;
-    if (dlsym(RTLD_DEFAULT,"MPL_exit")) cnt++;
+    if (dlsym(RTLD_DEFAULT,"MPID_Abort")) cnt++;
     if (cnt > 1) {
       fprintf(stderr,"PETSc Error --- Application was linked against both OpenMPI and MPICH based MPI libraries and will not run correctly\n");
       return PETSC_ERR_MPI_LIB_INCOMP;

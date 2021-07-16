@@ -199,6 +199,10 @@ class TestObjectMat(BaseTestObject, unittest.TestCase):
         BaseTestObject.setUp(self)
         self.obj.assemble()
 
+class TestObjectMatPartitioning(BaseTestObject, unittest.TestCase):
+    CLASS  = PETSc.MatPartitioning
+    FACTORY = 'create'
+
 class TestObjectNullSpace(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.NullSpace
     FACTORY = 'create'

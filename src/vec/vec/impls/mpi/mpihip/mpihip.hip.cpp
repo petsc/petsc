@@ -408,6 +408,8 @@ PetscErrorCode VecBindToCPU_MPIHIP(Vec V,PetscBool pin)
     V->ops->max                    = VecMax_MPI;
     V->ops->min                    = VecMin_MPI;
     V->ops->reciprocal             = VecReciprocal_Default;
+    V->ops->sum                    = NULL;
+    V->ops->shift                  = NULL;
   } else {
     V->ops->dotnorm2               = VecDotNorm2_MPIHIP;
     V->ops->waxpy                  = VecWAXPY_SeqHIP;
@@ -448,6 +450,8 @@ PetscErrorCode VecBindToCPU_MPIHIP(Vec V,PetscBool pin)
     V->ops->max                    = VecMax_MPIHIP;
     V->ops->min                    = VecMin_MPIHIP;
     V->ops->reciprocal             = VecReciprocal_SeqHIP;
+    V->ops->sum                    = VecSum_SeqHIP;
+    V->ops->shift                  = VecShift_SeqHIP;
   }
   PetscFunctionReturn(0);
 }

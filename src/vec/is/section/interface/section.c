@@ -3,9 +3,7 @@
 */
 
 #include <petsc/private/sectionimpl.h>   /*I  "petscsection.h"   I*/
-#include <petscsection.h>
 #include <petscsf.h>
-#include <petscviewer.h>
 
 PetscClassId PETSC_SECTION_CLASSID;
 
@@ -1305,7 +1303,8 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscSection    gs;
   const PetscInt *pind = NULL;
   PetscInt       *recv = NULL, *neg = NULL;
-  PetscInt        pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots, nlocal, maxleaf;
+  PetscInt        pStart, pEnd, p, dof, cdof, off, foff, globalOff = 0, nroots, nlocal, maxleaf;
+  PetscInt        numFields, f, numComponents;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1314,7 +1313,10 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscValidLogicalCollectiveBool(s, includeConstraints, 3);
   PetscValidLogicalCollectiveBool(s, localOffsets, 4);
   PetscValidPointer(gsection, 5);
+  if (!s->pointMajor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "No support for field major ordering");
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), &gs);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);
+  if (numFields > 0) {ierr = PetscSectionSetNumFields(gs, numFields);CHKERRQ(ierr);}
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(gs, pStart, pEnd);CHKERRQ(ierr);
   gs->includesConstraints = includeConstraints;
@@ -1337,7 +1339,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     if (neg) neg[p] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(gs);CHKERRQ(ierr);
-  if (gs->bcIndices) {ierr = PetscArraycpy(gs->bcIndices, s->bcIndices,gs->bc->atlasOff[gs->bc->pEnd-gs->bc->pStart-1] + gs->bc->atlasDof[gs->bc->pEnd-gs->bc->pStart-1]);CHKERRQ(ierr);}
+  if (gs->bcIndices) {ierr = PetscArraycpy(gs->bcIndices, s->bcIndices, gs->bc->atlasOff[gs->bc->pEnd-gs->bc->pStart-1] + gs->bc->atlasDof[gs->bc->pEnd-gs->bc->pStart-1]);CHKERRQ(ierr);}
   if (nroots >= 0) {
     ierr = PetscArrayzero(recv,nlocal);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv,MPI_REPLACE);CHKERRQ(ierr);
@@ -1378,6 +1380,31 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     }
   }
   ierr = PetscFree2(neg,recv);CHKERRQ(ierr);
+  /* Set field dofs/offsets/constraints */
+  for (f = 0; f < numFields; ++f) {
+    gs->field[f]->includesConstraints = includeConstraints;
+    ierr = PetscSectionGetFieldComponents(s, f, &numComponents);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(gs, f, numComponents);CHKERRQ(ierr);
+  }
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionGetOffset(gs, p, &off);CHKERRQ(ierr);
+    for (f = 0, foff = off; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cdof);CHKERRQ(ierr);
+      if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetFieldConstraintDof(gs, p, f, cdof);CHKERRQ(ierr);}
+      ierr = PetscSectionGetFieldDof(s, p, f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(gs, p, f, off < 0 ? -(dof + 1) : dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldOffset(gs, p, f, foff);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldConstraintDof(gs, p, f, &cdof);CHKERRQ(ierr);
+      foff = off < 0 ? foff - (dof - cdof) : foff + (dof - cdof);
+    }
+  }
+  for (f = 0; f < numFields; ++f) {
+    PetscSection gfs = gs->field[f];
+
+    ierr = PetscSectionSetUpBC(gfs);CHKERRQ(ierr);
+    if (gfs->bcIndices) {ierr = PetscArraycpy(gfs->bcIndices, s->field[f]->bcIndices, gfs->bc->atlasOff[gfs->bc->pEnd-gfs->bc->pStart-1] + gfs->bc->atlasDof[gfs->bc->pEnd-gfs->bc->pStart-1]);CHKERRQ(ierr);}
+  }
+  gs->setup = PETSC_TRUE;
   ierr = PetscSectionViewFromOptions(gs, NULL, "-global_section_view");CHKERRQ(ierr);
   *gsection = gs;
   PetscFunctionReturn(0);
@@ -2126,13 +2153,21 @@ PetscErrorCode  PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const
 + s - the PetscSection object to view
 - v - the viewer
 
+  Note:
+  PetscSectionView(), when viewer is of type PETSCVIEWERHDF5, only saves
+  distribution independent data, such as dofs, offsets, constraint dofs,
+  and constraint indices. Points that have negative dofs, for instance,
+  are not saved as they represent points owned by other processes.
+  Point numbering and rank assignment is currently not stored.
+  The saved section can be loaded with PetscSectionLoad().
+
   Level: beginner
 
-.seealso PetscSectionCreate(), PetscSectionDestroy()
+.seealso PetscSectionCreate(), PetscSectionDestroy(), PetscSectionLoad()
 @*/
 PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 {
-  PetscBool      isascii;
+  PetscBool      isascii, ishdf5;
   PetscInt       f;
   PetscErrorCode ierr;
 
@@ -2141,6 +2176,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)s), &viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)s,viewer);CHKERRQ(ierr);
     if (s->numFields) {
@@ -2152,8 +2188,54 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
     } else {
       ierr = PetscSectionView_ASCII(s, viewer);CHKERRQ(ierr);
     }
+  } else if (ishdf5) {
+#if PetscDefined(HAVE_HDF5)
+    ierr = PetscSectionView_HDF5_Internal(s, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
   }
   PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscSectionLoad - Loads a PetscSection
+
+  Collective on PetscSection
+
+  Input Parameters:
++ s - the PetscSection object to load
+- v - the viewer
+
+  Note:
+  PetscSectionLoad(), when viewer is of type PETSCVIEWERHDF5, loads
+  a section saved with PetscSectionView(). The number of processes
+  used here (N) does not need to be the same as that used when saving.
+  After calling this function, the chart of s on rank i will be set
+  to [0, E_i), where \sum_{i=0}^{N-1}E_i equals to the total number of
+  saved section points.
+
+  Level: beginner
+
+.seealso PetscSectionCreate(), PetscSectionDestroy(), PetscSectionView()
+@*/
+PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
+{
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if PetscDefined(HAVE_HDF5)
+    ierr = PetscSectionLoad_HDF5_Internal(s, viewer);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  } else SETERRQ1(PetscObjectComm((PetscObject) s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 }
 
 static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
