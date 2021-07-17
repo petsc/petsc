@@ -1,0 +1,4 @@
+Failed to load initial guess, so use a vector of all zeros.
+KSP type: preonly
+Number of iterations =   1
+Residual norm 2315.72
