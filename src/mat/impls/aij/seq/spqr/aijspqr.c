@@ -53,7 +53,7 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A,PetscBool values,cholmod_
   *aijalloc = PETSC_TRUE;
   *valloc   = vain;
   if (values) {
-    ierr = MatSeqAIJRestoreArrayRead(A,&aa);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArrayRead(AT,&aa);CHKERRQ(ierr);
   }
 
   ierr = PetscMemzero(C,sizeof(*C));CHKERRQ(ierr);
