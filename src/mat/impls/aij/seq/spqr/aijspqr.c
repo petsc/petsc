@@ -10,27 +10,27 @@ EXTERN_C_END
 static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A,PetscBool values,cholmod_sparse *C,PetscBool *aijalloc,PetscBool *valloc)
 {
   Mat_SeqAIJ        *aij;
-  Mat                AT;
+  Mat               AT;
   const PetscScalar *aa;
   PetscScalar       *ca;
   const PetscInt    *ai, *aj;
   PetscInt          n = A->cmap->n, i,j,k,nz;
   SuiteSparse_long  *ci, *cj; /* SuiteSparse_long is the only choice for SPQR */
-  PetscBool         vain = PETSC_FALSE;
+  PetscBool         vain = PETSC_FALSE,flg;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatNormalGetMat(A, &A);CHKERRQ(ierr);
+  }
   /* cholmod_sparse is compressed sparse column */
-  {
-    PetscBool issym;
-
-    ierr = MatGetOption(A, MAT_SYMMETRIC, &issym);CHKERRQ(ierr);
-    if (issym) {
-      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-      AT = A;
-    } else {
-      ierr = MatTranspose(A, MAT_INITIAL_MATRIX, &AT);CHKERRQ(ierr);
-    }
+  ierr = MatGetOption(A, MAT_SYMMETRIC, &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    AT = A;
+  } else {
+    ierr = MatTranspose(A, MAT_INITIAL_MATRIX, &AT);CHKERRQ(ierr);
   }
   aij = (Mat_SeqAIJ*)AT->data;
   ai = aij->j;
@@ -58,8 +58,8 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A,PetscBool values,cholmod_
 
   ierr = PetscMemzero(C,sizeof(*C));CHKERRQ(ierr);
 
-  C->nrow   = (size_t)A->rmap->n;
-  C->ncol   = (size_t)A->cmap->n;
+  C->nrow   = (size_t)AT->cmap->n;
+  C->ncol   = (size_t)AT->rmap->n;
   C->nzmax  = (size_t)nz;
   C->p      = cj;
   C->i      = ci;
@@ -88,14 +88,22 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_SPQR(Mat A,MatSolverType *ty
 static PetscErrorCode MatSolve_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmod_dense **_Y_handle)
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
-  cholmod_dense  *Y_handle = NULL, *QTB_handle = NULL;
+  cholmod_dense  *Y_handle = NULL, *QTB_handle = NULL, *Z_handle = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  QTB_handle = SuiteSparseQR_C_qmult(SPQR_QTX, chol->spqrfact, cholB, chol->common);
-  if (!QTB_handle) SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_qmult failed");
-  Y_handle = SuiteSparseQR_C_solve(SPQR_RETX_EQUALS_B, chol->spqrfact, QTB_handle, chol->common);
-  if (!Y_handle) SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
+  if (!chol->normal) {
+    QTB_handle = SuiteSparseQR_C_qmult(SPQR_QTX, chol->spqrfact, cholB, chol->common);
+    if (!QTB_handle) SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_qmult failed");
+    Y_handle = SuiteSparseQR_C_solve(SPQR_RETX_EQUALS_B, chol->spqrfact, QTB_handle, chol->common);
+    if (!Y_handle) SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
+  } else {
+    Z_handle = SuiteSparseQR_C_solve(SPQR_RTX_EQUALS_ETB, chol->spqrfact, cholB, chol->common);
+    if (!Z_handle) SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
+    Y_handle = SuiteSparseQR_C_solve(SPQR_RETX_EQUALS_B, chol->spqrfact, Z_handle, chol->common);
+    if (!Y_handle) SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
+    ierr = !cholmod_l_free_dense(&Z_handle, chol->common);CHKERRQ(ierr);
+  }
   *_Y_handle = Y_handle;
   ierr = !cholmod_l_free_dense(&QTB_handle, chol->common);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -213,10 +221,12 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F,Mat A,const MatFactorInfo *i
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
   cholmod_sparse cholA;
-  PetscBool      aijalloc,valloc;
+  PetscBool      aijalloc,valloc,flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATNORMAL,&flg);CHKERRQ(ierr);
+  chol->normal = flg;
   ierr = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc,&valloc);CHKERRQ(ierr);
   ierr = !SuiteSparseQR_C_numeric(SPQR_DEFAULT_TOL, &cholA, chol->spqrfact, chol->common);
   if (ierr) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"SPQR factorization failed with status %d",chol->common->status);
@@ -226,21 +236,26 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F,Mat A,const MatFactorInfo *i
 
   F->ops->solve             = MatSolve_SPQR;
   F->ops->matsolve          = MatMatSolve_SPQR;
-  if (A->cmap->n == A->rmap->n) {
+  if (chol->normal) {
+    F->ops->solvetranspose    = MatSolve_SPQR;
+    F->ops->matsolvetranspose = MatMatSolve_SPQR;
+  } else if (A->cmap->n == A->rmap->n) {
     F->ops->solvetranspose    = MatSolveTranspose_SPQR;
     F->ops->matsolvetranspose = MatMatSolveTranspose_SPQR;
   }
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode  MatQRFactorSymbolic_SPQR(Mat F,Mat A,IS perm,const MatFactorInfo *info)
+PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
   PetscErrorCode ierr;
   cholmod_sparse cholA;
-  PetscBool      aijalloc,valloc;
+  PetscBool      aijalloc,valloc,flg;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATNORMAL,&flg);CHKERRQ(ierr);
+  chol->normal = flg;
   ierr = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc,&valloc);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG)) {
     ierr = !cholmod_l_check_sparse(&cholA, chol->common);CHKERRQ(ierr);

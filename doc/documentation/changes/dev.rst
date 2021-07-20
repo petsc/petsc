@@ -85,7 +85,8 @@ Changes: Development
 -  Add ``MatNormalGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMAL``
 
 .. rubric:: PC:
--  Add ``PCQR`` - interface to SuiteSparse QR factorization
+-  Add ``PCQR`` - interface to SuiteSparse QR factorization for ``MatSeqAIJ`` and
+   ``MATNORMAL``
 
 .. rubric:: KSP:
 
