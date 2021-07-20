@@ -1,22 +1,26 @@
 #if !defined(_VHYP_H)
 #define _VHYP_H
 
-#include <petscsys.h>
+#include <petsc/private/petschypre.h>
 #include <HYPRE_IJ_mv.h>
 #include <_hypre_IJ_mv.h>
-/*
-    Replaces the address where the HYPRE vector points to its data with the address of
-  PETSc's data. Saves the old address so it can be reset when we are finished with it.
-  Allows use to get the data into a HYPRE vector without the cost of memcopies
-*/
-#define VecHYPRE_ParVectorReplacePointer(b,newvalue,savedvalue) {                                 \
-    hypre_ParVector *par_vector   = (hypre_ParVector*)hypre_IJVectorObject(((hypre_IJVector*)b)); \
-    hypre_Vector    *local_vector = hypre_ParVectorLocalVector(par_vector);                       \
-    savedvalue         = local_vector->data;                                                      \
-    local_vector->data = newvalue;                                                                \
-}
 
-PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
-PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCopy(Vec,HYPRE_IJVector);
+struct VecHYPRE_IJVector_ {
+  HYPRE_IJVector ij;
+  /* Support for push/pop of PETSc's Vec memory into a ParVector */
+  Vec            pvec;
+  HYPRE_Complex  *hv;
+  PetscErrorCode (*restore)(Vec,PetscScalar**);
+};
+typedef struct VecHYPRE_IJVector_ *VecHYPRE_IJVector;
+
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(PetscLayout,VecHYPRE_IJVector*);
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorDestroy(VecHYPRE_IJVector*);
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCopy(Vec,VecHYPRE_IJVector);
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorPushVecRead(VecHYPRE_IJVector,Vec);
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorPushVecWrite(VecHYPRE_IJVector,Vec);
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorPushVec(VecHYPRE_IJVector,Vec);
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorPopVec(VecHYPRE_IJVector);
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJBindToCPU(VecHYPRE_IJVector,PetscBool);
 
 #endif
