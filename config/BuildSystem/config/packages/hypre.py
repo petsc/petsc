@@ -23,15 +23,26 @@ class Configure(config.package.GNUPackage):
     self.hastests          = 1
     self.hastestsdatafiles = 1
 
+  def setupHelp(self, help):
+    config.package.GNUPackage.setupHelp(self,help)
+    import nargs
+    help.addArgument('HYPRE', '-with-hypre-gpu-arch=<string>',  nargs.ArgString(None, 0, 'Value for --with-gpu-arch= configure option'))
+    return
+
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.openmp     = framework.require('config.packages.openmp',self)
-    self.cxxlibs    = framework.require('config.packages.cxxlibs',self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.mpi        = framework.require('config.packages.MPI',self)
-    self.mathlib    = framework.require('config.packages.mathlib',self)
-    self.scalar     = framework.require('PETSc.options.scalarTypes',self)
-    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
+    self.openmp        = framework.require('config.packages.openmp',self)
+    self.cxxlibs       = framework.require('config.packages.cxxlibs',self)
+    self.blasLapack    = framework.require('config.packages.BlasLapack',self)
+    self.mpi           = framework.require('config.packages.MPI',self)
+    self.mathlib       = framework.require('config.packages.mathlib',self)
+    self.cuda          = framework.require('config.packages.cuda',self)
+    self.hip           = framework.require('config.packages.hip',self)
+    self.openmp        = framework.require('config.packages.openmp',self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.scalar        = framework.require('PETSc.options.scalarTypes',self)
+    self.deps          = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
+    self.odeps         = [self.cuda,self.hip,self.openmp]
     if self.setCompilers.isCrayKNL(None,self.log):
       self.installwithbatch = 0
 
@@ -65,10 +76,48 @@ class Configure(config.package.GNUPackage):
     args.append('--with-lapack-lib=" "')
     args.append('--with-blas=no')
     args.append('--with-lapack=no')
-    if self.openmp.found:
+
+    cucc = ''
+    devflags = ''
+    hipbuild = False
+    cudabuild = False
+    hasharch = 'with-gpu-arch' in  args
+    if self.hip.found:
+      hipbuild = True
+      args.append('--with-hip')
+      if not hasharch:
+        if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
+          args.append('--with-gpu-arch=gfx908') # default
+        else:
+          args.append('--with-gpu-arch='+self.argDB['with-hypre-gpu-arch'])
+      self.pushLanguage('HIP')
+      cucc = self.getCompiler()
+      devflags += ' -x hip -std=c++14 '
+      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.HIPPPFLAGS
+      devflags = devflags.replace('-fvisibility=hidden','')
+      self.popLanguage()
+    elif self.cuda.found:
+      cudabuild = True
+      args.append('CUDA_HOME="'+self.cuda.cudaDir+'"')
+      args.append('--with-cuda')
+      if not hasharch:
+        if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
+          if hasattr(self.cuda,'gencodearch'):
+            args.append('--with-gpu-arch=' + self.cuda.gencodearch)
+          else:
+            args.append('--with-gpu-arch=70') # default
+        else:
+          args.append('--with-gpu-arch='+self.argDB['with-hypre-gpu-arch'])
+      self.pushLanguage('CUDA')
+      cucc = self.getCompiler()
+      devflags += ' -expt-extended-lambda -std=c++11 --x cu '
+      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.CUDAPPFLAGS
+      self.popLanguage()
+    elif self.openmp.found:
       args.append('--with-openmp')
       self.usesopenmp = 'yes'
-      # use OMP_NUM_THREADS to control the number of threads used
+    args.append('CUCC="'+cucc+'"')
+    args.append('CUFLAGS="'+devflags+'"')
 
     # explicitly tell hypre BLAS/LAPACK mangling since it may not match Fortran mangling
     if self.blasLapack.mangling == 'underscore':
@@ -100,6 +149,14 @@ class Configure(config.package.GNUPackage):
     args = self.rmArgsStartsWith(args,['LDFLAGS'])
     args.append('LDFLAGS="'+self.setCompilers.LDFLAGS.replace('-dynamic','')+'"')
 
+    # Prevent NVCC from complaining about different standards
+    if cudabuild:
+      args = [arg.replace('-std=gnu++14','-std=c++11') for arg in args]
+      args = [arg.replace('-std=c++14','-std=c++11') for arg in args]
+      args = [arg.replace('-std=c++17','-std=c++11') for arg in args]
+    if hipbuild:
+      args = [arg.replace('-std=c++17','-std=c++14') for arg in args]
+
     return args
 
   def consistencyChecks(self):
@@ -127,5 +184,8 @@ class Configure(config.package.GNUPackage):
     code = '#if defined(HYPRE_MIXEDINT)\n#error HYPRE_MIXEDINT defined!\n#endif\n'
     if not self.checkCompile('#include "HYPRE_config.h"',code):
       self.addDefine('HAVE_HYPRE_MIXEDINT', 1)
+    code = '#if defined(HYPRE_USING_GPU)\n#error HYPRE_USING_GPU defined!\n#endif\n'
+    if not self.checkCompile('#include "HYPRE_config.h"',code):
+      self.addDefine('HAVE_HYPRE_DEVICE', 1)
     setattr(self.compilers, flagsArg,oldFlags)
     return

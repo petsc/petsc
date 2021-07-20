@@ -17,8 +17,8 @@ class Configure(config.package.Package):
     self.versionname      = 'HIP_VERSION'
     self.functionsCxx     = [1,'', 'hipblasCreate']
     self.includes         = ['hipblas.h','hipsparse.h']
-    self.liblist          = [['libhipsparse.a','libhipblas.a','librocsparse.a','librocsolver.a','librocblas.a','libamdhip64.a'],
-                             ['hipsparse.lib','hipblas.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','amdhip64.lib'],]
+    self.liblist          = [['libhipsparse.a','libhipblas.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a'],
+                             ['hipsparse.lib','hipblas.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib'],]
     self.precisions       = ['single','double']
     self.cxx              = 1
     self.complex          = 1
