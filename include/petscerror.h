@@ -610,6 +610,30 @@ M*/
 
 #endif
 
+/*MC
+   CHKERRCXX - Checks C++ function calls and if they throw an exception, catch it and then return a PETSc error code
+
+   Synopsis:
+   #include <petscsys.h>
+   CHKERRCXX(func);
+
+   Not Collective
+
+   Input Parameters:
+.  func - C++ function calls
+
+  Level: beginner
+
+  Notes:
+   For example,
+
+$     void foo(int x) {throw std::runtime_error("error");}
+$     CHKERRCXX(foo(1));
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
+M*/
+#define CHKERRCXX(func) do {try {func;} catch (const std::exception& e) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"%s", e.what()); }} while (0)
+
 /* TODO: SEK:  Need to figure out the hipsolver issues */
 #if defined(PETSC_HAVE_HIP)
 #define CHKERRHIPSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HIPSOLVER error %d",err);} while (0)
