@@ -23,8 +23,11 @@ if __name__ == '__main__':
     '--with-hip-dir=/opt/rocm',
     '--with-precision=double',
     '--with-clanguage=c',
-    '--download-fblaslapack=1',
-    '--download-magma=1',
+    '--download-fblaslapack',
+    '--download-magma',
+    '--download-hypre',
+    '--download-hypre-configure-arguments=--enable-unified-memory',
+    '--with-hypre-gpu-arch=gfx906',
     '--with-magma-fortran-bindings=0',
     '--with-magma-gputarget=gfx906',
   ]

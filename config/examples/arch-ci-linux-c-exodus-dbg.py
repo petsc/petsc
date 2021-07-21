@@ -33,6 +33,7 @@ if __name__ == '__main__':
     '--download-triangle',
     '--download-p4est',
     '--download-viennacl',
+    '--download-hypre',
     '--with-cuda',
     '--with-shared-libraries',
     '--download-magma',

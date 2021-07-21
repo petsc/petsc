@@ -9,7 +9,7 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
 
 int main(int argc,char **args)
 {
-  Mat            Amat,Pmat;
+  Mat            Amat;
   PetscErrorCode ierr;
   PetscInt       i,m,M,its,Istart,Iend,j,Ii,ix,ne=4;
   PetscReal      x,y,h;
@@ -34,10 +34,10 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr  = MPI_Comm_rank(comm, &mype);CHKERRMPI(ierr);
-  ierr  = MPI_Comm_size(comm, &npe);CHKERRMPI(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
-  h     = 1./ne;
+  ierr = MPI_Comm_rank(comm, &mype);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(comm, &npe);CHKERRMPI(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
+  h    = 1./ne;
   /* ne*ne; number of global elements */
   ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-use_coordinates",&use_coords,NULL);CHKERRQ(ierr);
@@ -48,28 +48,20 @@ int main(int argc,char **args)
   /* create stiffness matrix */
   ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
   ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
   ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Amat,18,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL);CHKERRQ(ierr);
-
-  ierr = MatCreate(comm,&Pmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Pmat,m,m,M,M);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(Pmat,2);CHKERRQ(ierr);
-  ierr = MatSetType(Pmat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Pmat);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Pmat,18,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pmat,18,NULL,12,NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = MatHYPRESetPreallocation(Amat,18,NULL,18,NULL);CHKERRQ(ierr);
+#endif
 
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   if (m != Iend - Istart) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
   /* Generate vectors */
-  ierr = VecCreate(comm,&xx);CHKERRQ(ierr);
-  ierr = VecSetSizes(xx,m,M);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
-  ierr = VecDuplicate(xx,&bb);CHKERRQ(ierr);
+  ierr = MatCreateVecs(Amat,&xx,&bb);CHKERRQ(ierr);
   ierr = VecSet(bb,.0);CHKERRQ(ierr);
   /* generate element matrices -- see ex56.c on how to use different data set */
   {
@@ -168,7 +160,6 @@ int main(int argc,char **args)
         for (ii=0; ii<8; ii++) {
           for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         }
-        ierr = MatSetValuesBlocked(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         if (j>0) {
           ierr = MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         } else {
@@ -187,8 +178,6 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
 
@@ -199,7 +188,8 @@ int main(int argc,char **args)
     /* finish KSP/PC setup */
     ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     if (use_coords) {
-      PC             pc;
+      PC pc;
+
       ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
       ierr = PCSetCoordinates(pc, 2, m/2, coords);CHKERRQ(ierr);
     }
@@ -264,7 +254,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;
@@ -298,7 +287,14 @@ int main(int argc,char **args)
    test:
       suffix: hypre
       nsize: 4
-      requires: hypre !complex
+      requires: hypre !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short
+
+   # command line options match GPU defaults
+   test:
+      suffix: hypre_device
+      nsize: 4
+      requires: hypre !complex
+      args: -mat_type hypre -ksp_view -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi -pc_hypre_boomeramg_interp_type ext+i -pc_hypre_boomeramg_coarsen_type PMIS -pc_hypre_boomeramg_no_CF
 
 TEST*/

@@ -27,7 +27,7 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     config.package.GNUPackage.setupHelp(self,help)
     import nargs
-    help.addArgument('HYPRE', '-with-hypre-gpu-arch=<string>',  nargs.ArgString(None, 0, 'Value for --with-gpu-arch= configure option'))
+    help.addArgument('HYPRE', '-with-hypre-gpu-arch=<string>',  nargs.ArgString(None, 0, 'Value passed to hypre\'s --with-gpu-arch= configure option'))
     return
 
   def setupDependencies(self, framework):
@@ -94,7 +94,7 @@ class Configure(config.package.GNUPackage):
       self.pushLanguage('HIP')
       cucc = self.getCompiler()
       devflags += ' -x hip -std=c++14 '
-      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.HIPPPFLAGS
+      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.HIPPPFLAGS + ' ' + self.mpi.includepaths
       devflags = devflags.replace('-fvisibility=hidden','')
       self.popLanguage()
     elif self.cuda.found:
@@ -112,7 +112,7 @@ class Configure(config.package.GNUPackage):
       self.pushLanguage('CUDA')
       cucc = self.getCompiler()
       devflags += ' -expt-extended-lambda -std=c++11 --x cu '
-      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.CUDAPPFLAGS
+      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths
       self.popLanguage()
     elif self.openmp.found:
       args.append('--with-openmp')

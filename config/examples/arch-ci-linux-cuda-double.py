@@ -15,6 +15,9 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
+    # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang
+    # on Mac OS X, MSVC on Windows), you must set -ccbin appropriately in CUDAFLAGS, as in the example for PGI below:
+    # 'CUDAFLAGS=-ccbin pgc++',
     '--with-cuda=1',
     '--with-precision=double',
     '--with-clanguage=c',
@@ -25,9 +28,8 @@ if __name__ == '__main__':
     # std=c++17), and interleaving this specific compiler and version combination seems to
     # break linkage of static constexpr member variables
     '--with-cxx-dialect=c++14',
-    # Note: If using nvcc with a host compiler other than the CUDA SDK default for your platform (GCC on Linux, clang
-    # on Mac OS X, MSVC on Windows), you must set -ccbin appropriately in CUDAFLAGS, as in the example for PGI below:
-    # 'CUDAFLAGS=-ccbin pgc++',
+    '--download-hypre',
+    '--download-hypre-configure-arguments=--enable-unified-memory',
   ]
 
   configure.petsc_configure(configure_options)

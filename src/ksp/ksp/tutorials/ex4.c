@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its,bs=1,II,JJ,jj;
   PetscErrorCode ierr;
-  PetscBool      flg,test=PETSC_FALSE,reuse=PETSC_FALSE;
+  PetscBool      flg,test=PETSC_FALSE,reuse=PETSC_FALSE,viewexpl=PETSC_FALSE;
   PetscScalar    v;
   PC             pc;
 
@@ -29,6 +29,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_hmg_interface",&test,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_reuse_interpolation",&reuse,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-view_explicit_mat",&viewexpl,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs);CHKERRQ(ierr);
@@ -36,6 +37,9 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = MatHYPRESetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+#endif
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
@@ -82,6 +86,12 @@ int main(int argc,char **args)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (viewexpl) {
+    Mat E;
+    ierr = MatComputeOperator(A,MATAIJ,&E);CHKERRQ(ierr);
+    ierr = MatView(E,NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&E);CHKERRQ(ierr);
+  }
 
   ierr = MatCreateVecs(A,&u,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
@@ -156,25 +166,25 @@ int main(int argc,char **args)
    test:
       suffix: hypre
       nsize: 2
-      requires: hypre
+      requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre
 
    test:
       suffix: hypre_bs4
       nsize: 2
-      requires: hypre
+      requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre -bs 4 -pc_hmg_use_subspace_coarsening 1
 
    test:
       suffix: hypre_asm
       nsize: 2
-      requires: hypre
+      requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre -bs 4 -pc_hmg_use_subspace_coarsening 1 -mg_levels_3_pc_type asm
 
    test:
       suffix: hypre_fieldsplit
       nsize: 2
-      requires: hypre
+      requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre -bs 4 -mg_levels_4_pc_type fieldsplit
 
    test:
@@ -211,5 +221,24 @@ int main(int argc,char **args)
       suffix: component
       nsize: 2
       args: -ksp_monitor -ksp_rtol 1e-6 -pc_type hmg -pc_hmg_coarsening_component 2  -pc_hmg_use_subspace_coarsening 1 -bs 4 -hmg_inner_pc_type gamg
+
+   testset:
+      output_file: output/ex4_expl.out
+      nsize: {{1 2}}
+      filter: grep -v "MPI processes" | grep -v " type:" | grep -v "Mat Object"
+      args: -ksp_converged_reason -view_explicit_mat -pc_type none -ksp_type {{cg gmres}}
+      test:
+        suffix: expl_aij
+        args: -mat_type aij
+      test:
+        suffix: expl_hypre
+        requires: hypre
+        args: -mat_type hypre
+
+   test:
+      suffix: hypre_device
+      nsize: {{1 2}}
+      requires: hypre defined(PETSC_HAVE_HYPRE_DEVICE)
+      args: -mat_type hypre -ksp_converged_reason -pc_type hypre -m 13 -n 17
 
 TEST*/
