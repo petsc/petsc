@@ -6422,7 +6422,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStenc
    Input Parameters:
 +  mat - the matrix
 .  numRows - the number of rows to remove
-.  rows - the global row indices
+.  rows - the local row indices
 .  diag - value put in all diagonals of eliminated rows
 .  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
 -  b - optional vector of right hand side, that will be adjusted by provided solution
