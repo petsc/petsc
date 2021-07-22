@@ -87,13 +87,14 @@ Changes: Development
 .. rubric:: PC:
 -  Add ``PCQR`` - interface to SuiteSparse QR factorization for ``MatSeqAIJ`` and
    ``MATNORMAL``
+-  Add support for ``MATNORMAL`` in ``PCASM`` and ``PCHPDDM``
 
 .. rubric:: KSP:
 
 .. rubric:: SNES:
 
 -  Add ``SNESSetComputeMFFunction()``
--  Add support for ``-snes_mf_operator`` for use with ``SNESSetPicard``
+-  Add support for ``-snes_mf_operator`` for use with ``SNESSetPicard()``
 
 .. rubric:: SNESLineSearch:
 

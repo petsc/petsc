@@ -997,11 +997,22 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         } else {
           Mat        D;
           const char *matpre;
+          PetscBool  cmp[2];
           ierr = KSPGetOperators(ksp[0], subA, subA + 1);CHKERRQ(ierr);
           ierr = MatDuplicate(subA[1], MAT_SHARE_NONZERO_PATTERN, &D);CHKERRQ(ierr);
           ierr = MatGetOptionsPrefix(subA[1], &matpre);CHKERRQ(ierr);
           ierr = MatSetOptionsPrefix(D, matpre);CHKERRQ(ierr);
-          ierr = MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)D, MATNORMAL, cmp);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)C, MATNORMAL, cmp + 1);CHKERRQ(ierr);
+          if (!cmp[0] != !cmp[1]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_pc_asm_sub_mat_type %s and auxiliary Mat of type %s",((PetscObject)D)->type_name,((PetscObject)C)->type_name);
+          if (!cmp[0]) {
+            ierr = MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+          } else {
+            Mat mat[2];
+            ierr = MatNormalGetMat(D, mat);CHKERRQ(ierr);
+            ierr = MatNormalGetMat(C, mat + 1);CHKERRQ(ierr);
+            ierr = MatAXPY(mat[0], 1.0, mat[1], SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+          }
           ierr = MatPropagateSymmetryOptions(C, D);CHKERRQ(ierr);
           ierr = MatDestroy(&C);CHKERRQ(ierr);
           C = D;
@@ -1040,7 +1051,15 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       /* matrix pencil of the generalized eigenvalue problem on the overlap (GenEO) */
       if (!data->B) {
         ierr = MatDuplicate(sub[0], MAT_COPY_VALUES, &weighted);CHKERRQ(ierr);
-        ierr = MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)weighted, MATNORMAL, &flag);CHKERRQ(ierr);
+        if (!flag) {
+          ierr = MatDiagonalScale(weighted, data->levels[0]->D, data->levels[0]->D);CHKERRQ(ierr);
+        } else { /* MATNORMAL applies MatDiagonalScale() in a matrix-free fashion, not what is needed since this won't be passed to SLEPc during the eigensolve */
+          ierr = MatNormalGetMat(weighted, &data->B);CHKERRQ(ierr);
+          ierr = MatDiagonalScale(data->B, NULL, data->levels[0]->D);CHKERRQ(ierr);
+          data->B = NULL;
+          flag = PETSC_FALSE;
+        }
         /* neither MatDuplicate() nor MatDiagonaleScale() handles the symmetry options, so propagate the options explicitly */
         /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)       */
         ierr = MatPropagateSymmetryOptions(sub[0], weighted);CHKERRQ(ierr);

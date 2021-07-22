@@ -25,6 +25,7 @@ int main(int argc,char **args)
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     ierr = KSPHPDDMGetType(ksp,&type);CHKERRQ(ierr);
     if (type != KSP_HPDDM_TYPE_GCRODR) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"-ksp_hpddm_type gcrodr and KSPHPDDMType do not match: gcrodr != %s", KSPHPDDMTypes[type]);
+    ierr = KSPHPDDMSetType(ksp,KSP_HPDDM_TYPE_BGMRES);CHKERRQ(ierr);
 #endif
   }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
