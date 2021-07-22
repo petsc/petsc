@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# VTK high order: https://blog.kitware.com/modeling-arbitrary-order-lagrange-finite-elements-in-the-visualization-toolkit/
 import h5py
 import numpy as np
 import os, sys
