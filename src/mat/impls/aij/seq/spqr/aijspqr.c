@@ -228,7 +228,7 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F,Mat A,const MatFactorInfo *i
   ierr = PetscObjectTypeCompare((PetscObject)A,MATNORMAL,&flg);CHKERRQ(ierr);
   chol->normal = flg;
   ierr = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc,&valloc);CHKERRQ(ierr);
-  ierr = !SuiteSparseQR_C_numeric(SPQR_DEFAULT_TOL, &cholA, chol->spqrfact, chol->common);
+  ierr = !SuiteSparseQR_C_numeric(PETSC_SMALL, &cholA, chol->spqrfact, chol->common);
   if (ierr) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"SPQR factorization failed with status %d",chol->common->status);
 
   if (aijalloc) {ierr = PetscFree2(cholA.p,cholA.i);CHKERRQ(ierr);}
@@ -263,7 +263,7 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F,Mat A,IS perm,const M
   if (chol->spqrfact) {
     ierr = !SuiteSparseQR_C_free(&chol->spqrfact, chol->common);CHKERRQ(ierr);
   }
-  chol->spqrfact = SuiteSparseQR_C_symbolic(SPQR_ORDERING_FIXED, 0, &cholA, chol->common);
+  chol->spqrfact = SuiteSparseQR_C_symbolic(SPQR_ORDERING_DEFAULT, 1, &cholA, chol->common);
   if (!chol->spqrfact) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using internal ordering with status %d",chol->common->status);
 
   if (aijalloc) {ierr = PetscFree2(cholA.p,cholA.i);CHKERRQ(ierr);}
