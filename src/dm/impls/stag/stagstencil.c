@@ -193,6 +193,8 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMSta
 . ix - output array of n indices
 
   Notes:
+  The DMStagStencil objects in pos use global element indices.
+
   The .c fields in pos must always be set (even if to 0).
 
   Developer Notes:
