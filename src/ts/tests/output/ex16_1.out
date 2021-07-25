@@ -1,0 +1,9 @@
+TSEvent: iter 0 - Event 0 interval detected due to zero value (tol=1e-06) [1. - 1.1]
+TSEvent: iter 0 - Event 0 zero crossing located at time 1.1
+PostEvent -> step 11 time 1.1 value 1.1
+TSEvent: iter 0 - Event 1 interval detected due to zero value (tol=1e-06) [1.1 - 1.2]
+TSEvent: iter 0 - Event 1 zero crossing located at time 1.2
+PostEvent -> step 12 time 1.2 value 1.2
+TSEvent: iter 0 - Event 2 interval detected due to zero value (tol=1e-06) [1.2 - 1.3]
+TSEvent: iter 0 - Event 2 zero crossing located at time 1.3
+PostEvent -> step 13 time 1.3 value 1.3
