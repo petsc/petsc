@@ -444,15 +444,20 @@ PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer)
 PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
   const char           *topologydm_name;
+  const char           *pointsName, *coneSizesName, *conesName, *orientationsName;
   IS                    pointsIS, coneSizesIS, conesIS, orientationsIS;
-  const PetscInt       *gpoint;
   PetscInt             *points, *coneSizes, *cones, *orientations;
+  const PetscInt       *gpoint;
   PetscInt              dim, pStart, pEnd, p, nPoints = 0, conesSize = 0, c = 0, s = 0;
   DMPlexStorageVersion  version;
   char                  group[PETSC_MAX_PATH_LEN];
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
+  pointsName        = "order";
+  coneSizesName     = "cones";
+  conesName         = "cells";
+  orientationsName  = "orientation";
   ierr = DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version);CHKERRQ(ierr);
   ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
@@ -487,13 +492,13 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   PetscCheckFalse(s != nPoints,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of points %D != %D", s, nPoints);
   PetscCheckFalse(c != conesSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cone points %D != %D", c, conesSize);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), nPoints, points, PETSC_OWN_POINTER, &pointsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) pointsIS, "order");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) pointsIS, pointsName);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), nPoints, coneSizes, PETSC_OWN_POINTER, &coneSizesIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coneSizesIS, "cones");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coneSizesIS, coneSizesName);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, cones, PETSC_OWN_POINTER, &conesIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) conesIS, "cells");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) conesIS, conesName);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, orientations, PETSC_OWN_POINTER, &orientationsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) orientationsIS, "orientation");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) orientationsIS, orientationsName);CHKERRQ(ierr);
   if (version.major <= 1) {
     ierr = PetscStrcpy(group, "/topology");CHKERRQ(ierr);
   } else {
@@ -1368,6 +1373,7 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
 {
   MPI_Comm              comm;
   const char           *topologydm_name;
+  const char           *pointsName, *coneSizesName, *conesName, *orientationsName;
   IS                    pointsIS, coneSizesIS, conesIS, orientationsIS;
   const PetscInt       *points, *coneSizes, *cones, *orientations;
   PetscInt             *cone, *ornt;
@@ -1378,6 +1384,10 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
+  pointsName        = "order";
+  coneSizesName     = "cones";
+  conesName         = "cells";
+  orientationsName  = "orientation";
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
@@ -1390,28 +1400,28 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   }
   ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
   ierr = ISCreate(comm, &pointsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) pointsIS, "order");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) pointsIS, pointsName);CHKERRQ(ierr);
   ierr = ISCreate(comm, &coneSizesIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coneSizesIS, "cones");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coneSizesIS, coneSizesName);CHKERRQ(ierr);
   ierr = ISCreate(comm, &conesIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) conesIS, "cells");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) conesIS, conesName);CHKERRQ(ierr);
   ierr = ISCreate(comm, &orientationsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) orientationsIS, "orientation");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) orientationsIS, orientationsName);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadObjectAttribute(viewer, (PetscObject) conesIS, "cell_dim", PETSC_INT, NULL, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   {
     /* Force serial load */
-    ierr = PetscViewerHDF5ReadSizes(viewer, "order", NULL, &Np);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5ReadSizes(viewer, pointsName, NULL, &Np);CHKERRQ(ierr);
     ierr = PetscLayoutSetLocalSize(pointsIS->map, rank == 0 ? Np : 0);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(pointsIS->map, Np);CHKERRQ(ierr);
     pEnd = rank == 0 ? Np : 0;
-    ierr = PetscViewerHDF5ReadSizes(viewer, "cones", NULL, &Np);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5ReadSizes(viewer, coneSizesName, NULL, &Np);CHKERRQ(ierr);
     ierr = PetscLayoutSetLocalSize(coneSizesIS->map, rank == 0 ? Np : 0);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(coneSizesIS->map, Np);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5ReadSizes(viewer, "cells", NULL, &N);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5ReadSizes(viewer, conesName, NULL, &N);CHKERRQ(ierr);
     ierr = PetscLayoutSetLocalSize(conesIS->map, rank == 0 ? N : 0);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(conesIS->map, N);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5ReadSizes(viewer, "orientation", NULL, &N);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5ReadSizes(viewer, orientationsName, NULL, &N);CHKERRQ(ierr);
     ierr = PetscLayoutSetLocalSize(orientationsIS->map, rank == 0 ? N : 0);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(orientationsIS->map, N);CHKERRQ(ierr);
   }
