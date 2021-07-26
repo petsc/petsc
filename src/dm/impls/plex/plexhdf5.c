@@ -1456,7 +1456,7 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
     ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
     ierr = PetscFree(globalIndices);CHKERRQ(ierr);
   }
-  /*  */
+  /* Clean-up */
   ierr = ISRestoreIndices(orderIS, &order);CHKERRQ(ierr);
   ierr = ISRestoreIndices(conesIS, &cones);CHKERRQ(ierr);
   ierr = ISRestoreIndices(cellsIS, &cells);CHKERRQ(ierr);
@@ -1465,6 +1465,7 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   ierr = ISDestroy(&conesIS);CHKERRQ(ierr);
   ierr = ISDestroy(&cellsIS);CHKERRQ(ierr);
   ierr = ISDestroy(&orntsIS);CHKERRQ(ierr);
+  /* Fill in the rest of the topology structure */
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
