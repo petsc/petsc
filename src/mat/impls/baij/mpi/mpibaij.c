@@ -2322,11 +2322,11 @@ PetscErrorCode MatSOR_MPIBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetColumnNorms_MPIBAIJ(Mat A,NormType type,PetscReal *norms)
+PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A,ReductionType type,PetscReal *reductions)
 {
   PetscErrorCode ierr;
   Mat_MPIBAIJ    *aij = (Mat_MPIBAIJ*)A->data;
-  PetscInt       N,i,*garray = aij->garray;
+  PetscInt       m,N,i,*garray = aij->garray;
   PetscInt       ib,jb,bs = A->rmap->bs;
   Mat_SeqBAIJ    *a_aij = (Mat_SeqBAIJ*) aij->A->data;
   MatScalar      *a_val = a_aij->a;
@@ -2335,9 +2335,9 @@ PetscErrorCode MatGetColumnNorms_MPIBAIJ(Mat A,NormType type,PetscReal *norms)
   PetscReal      *work;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&m,&N);CHKERRQ(ierr);
   ierr = PetscCalloc1(N,&work);CHKERRQ(ierr);
-  if (type == NORM_2) {
+  if (type == REDUCTION_NORM_2) {
     for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
       for (jb=0; jb<bs; jb++) {
         for (ib=0; ib<bs; ib++) {
@@ -2354,7 +2354,7 @@ PetscErrorCode MatGetColumnNorms_MPIBAIJ(Mat A,NormType type,PetscReal *norms)
         }
       }
     }
-  } else if (type == NORM_1) {
+  } else if (type == REDUCTION_NORM_1) {
     for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
       for (jb=0; jb<bs; jb++) {
         for (ib=0; ib<bs; ib++) {
@@ -2371,7 +2371,7 @@ PetscErrorCode MatGetColumnNorms_MPIBAIJ(Mat A,NormType type,PetscReal *norms)
         }
       }
     }
-  } else if (type == NORM_INFINITY) {
+  } else if (type == REDUCTION_NORM_INFINITY) {
     for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
       for (jb=0; jb<bs; jb++) {
         for (ib=0; ib<bs; ib++) {
@@ -2390,15 +2390,34 @@ PetscErrorCode MatGetColumnNorms_MPIBAIJ(Mat A,NormType type,PetscReal *norms)
         }
       }
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown NormType");
-  if (type == NORM_INFINITY) {
-    ierr = MPIU_Allreduce(work,norms,N,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+  } else if (type == REDUCTION_SUM || REDUCTION_MEAN) {
+    for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += *a_val;
+          a_val++;
+        }
+      }
+    }
+    for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+       for (ib=0; ib<bs; ib++) {
+          work[garray[b_aij->j[i]] * bs + jb] += *b_val;
+          b_val++;
+        }
+      }
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown ReductionType");
+  if (type == REDUCTION_NORM_INFINITY) {
+    ierr = MPIU_Allreduce(work,reductions,N,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   } else {
-    ierr = MPIU_Allreduce(work,norms,N,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+    ierr = MPIU_Allreduce(work,reductions,N,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
-  if (type == NORM_2) {
-    for (i=0; i<N; i++) norms[i] = PetscSqrtReal(norms[i]);
+  if (type == REDUCTION_NORM_2) {
+    for (i=0; i<N; i++) reductions[i] = PetscSqrtReal(reductions[i]);
+  } else if (type == REDUCTION_MEAN) {
+    for (i=0; i<N; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);
 }
@@ -2584,7 +2603,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        NULL,
                                        MatGetMultiProcBlock_MPIBAIJ,
                                 /*124*/NULL,
-                                       MatGetColumnNorms_MPIBAIJ,
+                                       MatGetColumnReductions_MPIBAIJ,
                                        MatInvertBlockDiagonal_MPIBAIJ,
                                        NULL,
                                        NULL,

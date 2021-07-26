@@ -1022,30 +1022,36 @@ static PetscErrorCode MatGetColumnVector_MPIDense(Mat A,Vec v,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatGetColumnNorms_SeqDense(Mat,NormType,PetscReal*);
+PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat,ReductionType,PetscReal*);
 
-PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
+PetscErrorCode MatGetColumnReductions_MPIDense(Mat A,ReductionType type,PetscReal *reductions)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n;
+  PetscInt       i,m,n;
   Mat_MPIDense   *a = (Mat_MPIDense*) A->data;
   PetscReal      *work;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&work);CHKERRQ(ierr);
-  ierr = MatGetColumnNorms_SeqDense(a->A,type,work);CHKERRQ(ierr);
-  if (type == NORM_2) {
+  if (type == REDUCTION_MEAN) {
+    ierr = MatGetColumnReductions_SeqDense(a->A,REDUCTION_SUM,work);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetColumnReductions_SeqDense(a->A,type,work);CHKERRQ(ierr);
+  }
+  if (type == REDUCTION_NORM_2) {
     for (i=0; i<n; i++) work[i] *= work[i];
   }
-  if (type == NORM_INFINITY) {
-    ierr = MPIU_Allreduce(work,norms,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRMPI(ierr);
+  if (type == REDUCTION_NORM_INFINITY) {
+    ierr = MPIU_Allreduce(work,reductions,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRMPI(ierr);
   } else {
-    ierr = MPIU_Allreduce(work,norms,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRMPI(ierr);
+    ierr = MPIU_Allreduce(work,reductions,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRMPI(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
-  if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
+  if (type == REDUCTION_NORM_2) {
+    for (i=0; i<n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
+  } else if (type == REDUCTION_MEAN) {
+    for (i=0; i<n; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);
 }
@@ -1482,7 +1488,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         NULL,
                                         NULL,
                                 /*124*/ NULL,
-                                        MatGetColumnNorms_MPIDense,
+                                        MatGetColumnReductions_MPIDense,
                                         NULL,
                                         NULL,
                                         NULL,

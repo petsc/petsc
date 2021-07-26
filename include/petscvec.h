@@ -153,7 +153,12 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt,const Vec[],Vec*,IS*[]);
 
 .seealso: VecNorm(), VecNormBegin(), VecNormEnd(), MatNorm()
 E*/
-typedef enum {NORM_1=0,NORM_2=1,NORM_FROBENIUS=2,NORM_INFINITY=3,NORM_1_AND_2=4} NormType;
+typedef enum {NORM_1=0,
+              NORM_2=1,
+              NORM_FROBENIUS=2,
+              NORM_INFINITY=3,
+              NORM_1_AND_2=4
+              } NormType;
 PETSC_EXTERN const char *const NormTypes[];
 #define NORM_MAX NORM_INFINITY
 
@@ -211,6 +216,107 @@ M*/
      NORM_MAX - see NORM_INFINITY
 
    Level: beginner
+
+M*/
+
+/*E
+    ReductionType - determines what type of column reduction to compute
+
+    Level: beginner
+
+.seealso: MatGetColumnReductions(), MatGetColumnNorms(), NormType
+E*/
+/* NOTE: If a new norm type is added, a corresponding ReductionType entry should be added. */
+typedef enum {REDUCTION_NORM_1=0,
+              REDUCTION_NORM_2=1,
+              REDUCTION_NORM_FROBENIUS=2,
+              REDUCTION_NORM_INFINITY=3,
+              REDUCTION_NORM_1_AND_2=4,
+              REDUCTION_SUM=5,
+              REDUCTION_MEAN=6
+              } ReductionType;
+
+/*MC
+     REDUCTION_NORM_1 - corresponds to the NORM_1 NormType
+
+   Level: beginner
+
+.seealso:  ReductionType, NormType, MatGetColumnReductions(), MatGetColumnNorms(),
+           NORM_1, REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY,
+           REDUCTION_NORM_1_AND_2, REDUCTION_SUM, REDUCTION_MEAN
+
+M*/
+
+/*MC
+     REDUCTION_NORM_2 - corresponds to the NORM_2 NormType
+
+   Level: beginner
+
+.seealso:  ReductionType, NormType, MatGetColumnReductions(), MatGetColumnNorms(),
+           NORM_2, REDUCTION_NORM_1, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY,
+           REDUCTION_NORM_1_AND_2, REDUCTION_SUM, REDUCTION_MEAN
+
+M*/
+
+/*MC
+     REDUCTION_NORM_FROBENIUS - corresponds to the NORM_FROBENIUS NormType
+
+   Level: beginner
+
+.seealso:  ReductionType, NormType, MatGetColumnReductions(), MatGetColumnNorms(),
+           NORM_FROBENIUS, REDUCTION_NORM_1, REDUCTION_NORM_2, REDUCTION_NORM_INFINITY,
+           REDUCTION_NORM_1_AND_2, REDUCTION_SUM, REDUCTION_MEAN
+
+M*/
+
+/*MC
+     REDUCTION_NORM_INFINITY - corresponds to the NORM_INFINITY NormType
+
+   Level: beginner
+
+.seealso:  ReductionType, NormType, MatGetColumnReductions(), MatGetColumnNorms(),
+           NORM_INFINITY, REDUCTION_NORM_1, REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS,
+           REDUCTION_NORM_1_AND_2, REDUCTION_SUM, REDUCTION_MEAN
+
+M*/
+
+/*MC
+     REDUCTION_NORM_1_AND_2 - corresponds to the NORM_1_AND_2 NormType
+
+   Level: beginner
+
+.seealso:  ReductionType, NormType, MatGetColumnReductions(), MatGetColumnNorms(),
+           NORM_1_AND_2, REDUCTION_NORM_1, REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS,
+           REDUCTION_NORM_INFINITY, REDUCTION_SUM, REDUCTION_MEAN
+
+M*/
+
+/*MC
+     REDUCTION_NORM_MAX - see REDUCTION_NORM_INFINITY
+
+   Level: beginner
+
+.seealso:  REDUCTION_NORM_INFINITY
+
+M*/
+
+/*MC
+     REDUCTION_SUM - matrix column sum
+
+   Level: beginner
+
+.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_MEAN, REDUCTION_NORM_1,
+           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
+
+M*/
+
+/*MC
+     REDUCTION_MEAN - matrix column mean (arithmetic)
+
+   Level: beginner
+
+.seealso:  ReductionType, MatGetColumnReductions(), REDUCTION_SUM, REDUCTION_NORM_1,
+           REDUCTION_NORM_2, REDUCTION_NORM_FROBENIUS, REDUCTION_NORM_INFINITY
 
 M*/
 

@@ -176,54 +176,62 @@ PetscErrorCode MatFindZeroDiagonals_MPIAIJ(Mat M,IS *zrows)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
+PetscErrorCode MatGetColumnReductions_MPIAIJ(Mat A,ReductionType type,PetscReal *reductions)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)A->data;
-  PetscInt          i,n,*garray = aij->garray;
+  PetscInt          i,m,n,*garray = aij->garray;
   Mat_SeqAIJ        *a_aij = (Mat_SeqAIJ*) aij->A->data;
   Mat_SeqAIJ        *b_aij = (Mat_SeqAIJ*) aij->B->data;
   PetscReal         *work;
   const PetscScalar *dummy;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = PetscCalloc1(n,&work);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArrayRead(aij->A,&dummy);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArrayRead(aij->A,&dummy);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArrayRead(aij->B,&dummy);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArrayRead(aij->B,&dummy);CHKERRQ(ierr);
-  if (type == NORM_2) {
+  if (type == REDUCTION_NORM_2) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
       work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]*a_aij->a[i]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]*b_aij->a[i]);
     }
-  } else if (type == NORM_1) {
+  } else if (type == REDUCTION_NORM_1) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
       work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]);
     }
-  } else if (type == NORM_INFINITY) {
+  } else if (type == REDUCTION_NORM_INFINITY) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
       work[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->cmap->rstart + a_aij->j[i]]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]),work[garray[b_aij->j[i]]]);
     }
-
-  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown NormType");
-  if (type == NORM_INFINITY) {
-    ierr = MPIU_Allreduce(work,norms,n,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+  } else if (type == REDUCTION_SUM || type == REDUCTION_MEAN) {
+    for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
+      work[A->cmap->rstart + a_aij->j[i]] += a_aij->a[i];
+    }
+    for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
+      work[garray[b_aij->j[i]]] += b_aij->a[i];
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown ReductionType");
+  if (type == REDUCTION_NORM_INFINITY) {
+    ierr = MPIU_Allreduce(work,reductions,n,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   } else {
-    ierr = MPIU_Allreduce(work,norms,n,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+    ierr = MPIU_Allreduce(work,reductions,n,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
-  if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
+  if (type == REDUCTION_NORM_2) {
+    for (i=0; i<n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
+  } else if (type == REDUCTION_MEAN) {
+    for (i=0; i<n; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);
 }
@@ -2788,7 +2796,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        NULL,
                                        MatGetMultiProcBlock_MPIAIJ,
                                 /*124*/MatFindNonzeroRows_MPIAIJ,
-                                       MatGetColumnNorms_MPIAIJ,
+                                       MatGetColumnReductions_MPIAIJ,
                                        MatInvertBlockDiagonal_MPIAIJ,
                                        MatInvertVariableBlockDiagonal_MPIAIJ,
                                        MatCreateSubMatricesMPI_MPIAIJ,

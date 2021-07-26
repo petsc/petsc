@@ -7,7 +7,7 @@ int main(int argc,char **args)
 {
   Mat            A;
   PetscErrorCode ierr;
-  PetscReal      *norms;
+  PetscReal      *reductions;
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscViewer    fd;
@@ -25,27 +25,39 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&norms);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&reductions);CHKERRQ(ierr);
 
-  ierr = MatGetColumnNorms(A,NORM_2,norms);CHKERRQ(ierr);
+  ierr = MatGetColumnNorms(A,NORM_2,reductions);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_2:\n");CHKERRQ(ierr);
-    ierr = PetscRealView(n,norms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscRealView(n,reductions,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  ierr = MatGetColumnNorms(A,NORM_1,norms);CHKERRQ(ierr);
+  ierr = MatGetColumnNorms(A,NORM_1,reductions);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_1:\n");CHKERRQ(ierr);
-    ierr = PetscRealView(n,norms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscRealView(n,reductions,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  ierr = MatGetColumnNorms(A,NORM_INFINITY,norms);CHKERRQ(ierr);
+  ierr = MatGetColumnNorms(A,NORM_INFINITY,reductions);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_INFINITY:\n");CHKERRQ(ierr);
-    ierr = PetscRealView(n,norms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscRealView(n,reductions,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  ierr = PetscFree(norms);CHKERRQ(ierr);
+  ierr = MatGetColumnReductions(A,REDUCTION_SUM,reductions);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"REDUCTION_SUM:\n");CHKERRQ(ierr);
+    ierr = PetscRealView(n,reductions,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
+
+  ierr = MatGetColumnReductions(A,REDUCTION_MEAN,reductions);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"REDUCTION_MEAN:\n");CHKERRQ(ierr);
+    ierr = PetscRealView(n,reductions,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
+
+  ierr = PetscFree(reductions);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

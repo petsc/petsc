@@ -2797,7 +2797,7 @@ PetscErrorCode MatGetColumnVector_SeqDense(Mat A,Vec v,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
+PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A,ReductionType type,PetscReal *reductions)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,m,n;
@@ -2805,33 +2805,42 @@ PETSC_INTERN PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,Petsc
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = PetscArrayzero(norms,n);CHKERRQ(ierr);
+  ierr = PetscArrayzero(reductions,n);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(A,&a);CHKERRQ(ierr);
-  if (type == NORM_2) {
+  if (type == REDUCTION_NORM_2) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
-        norms[i] += PetscAbsScalar(a[j]*a[j]);
+        reductions[i] += PetscAbsScalar(a[j]*a[j]);
       }
       a += m;
     }
-  } else if (type == NORM_1) {
+  } else if (type == REDUCTION_NORM_1) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
-        norms[i] += PetscAbsScalar(a[j]);
+        reductions[i] += PetscAbsScalar(a[j]);
       }
       a += m;
     }
-  } else if (type == NORM_INFINITY) {
+  } else if (type == REDUCTION_NORM_INFINITY) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
-        norms[i] = PetscMax(PetscAbsScalar(a[j]),norms[i]);
+        reductions[i] = PetscMax(PetscAbsScalar(a[j]),reductions[i]);
       }
       a += m;
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  } else if (type == REDUCTION_SUM || type == REDUCTION_MEAN) {
+    for (i=0; i<n; i++) {
+      for (j=0; j<m; j++) {
+        reductions[i] += a[j];
+      }
+      a += m;
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown ReductionType");
   ierr = MatDenseRestoreArrayRead(A,&a);CHKERRQ(ierr);
-  if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
+  if (type == REDUCTION_NORM_2) {
+    for (i=0; i<n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
+  } else if (type == REDUCTION_MEAN) {
+    for (i=0; i<n; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);
 }
@@ -3010,7 +3019,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         NULL,
                                         NULL,
                                 /*124*/ NULL,
-                                        MatGetColumnNorms_SeqDense,
+                                        MatGetColumnReductions_SeqDense,
                                         NULL,
                                         NULL,
                                         NULL,
