@@ -225,7 +225,7 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,con
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     char   fpath[PETSC_MAX_PATH_LEN];
     char   fname[PETSC_MAX_PATH_LEN];
     FILE  *fd;

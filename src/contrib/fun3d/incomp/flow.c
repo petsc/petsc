@@ -197,7 +197,7 @@ int main(int argc,char **args)
 
   /* Write Tecplot solution file */
 #if 0
-  if (!rank)
+  if (rank == 0)
     f77TECFLO(&user.grid->nnodes,
               &user.grid->nnbound,&user.grid->nvbound,&user.grid->nfbound,
               &user.grid->nnfacet,&user.grid->nvfacet,&user.grid->nffacet,
@@ -215,7 +215,7 @@ int main(int argc,char **args)
 
   /* Write residual,lift,drag,and moment history file */
   /*
-    if (!rank) f77PLLAN(&user.grid->nnodes,&rank);
+    if (rank == 0) f77PLLAN(&user.grid->nnodes,&rank);
   */
 
   ierr = VecRestoreArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
@@ -601,7 +601,7 @@ int Update(SNES snes,void *ctx)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %g fnorm = %g\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"clift = %g cdrag = %g cmom = %g\n",clift,cdrag,cmom);CHKERRQ(ierr);
 
-  if (!rank && print_flag) fclose(fptr);
+  if (rank == 0 && print_flag) fclose(fptr);
   if (user->PreLoading) {
     tsCtx->fnorm_ini = 0.0;
     ierr             = PetscPrintf(PETSC_COMM_WORLD,"Preloading done ...\n");CHKERRQ(ierr);
@@ -681,7 +681,7 @@ int GetLocalOrdering(GRID *grid)
   PetscFunctionBegin;
   /* Read the integer grid parameters */
   ICALLOC(grid_param,&tmp);
-  if (!rank) {
+  if (rank == 0) {
     PetscBool exists;
     ierr = PetscOptionsGetString(NULL,NULL,"-mesh",mesh_file,sizeof(mesh_file),&flg);CHKERRQ(ierr);
     ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
@@ -732,7 +732,7 @@ int GetLocalOrdering(GRID *grid)
   for (i = 0; i < nnodes; i++) a2l[i] = -1;
   ierr = PetscTime(&time_ini);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     if (size == 1) {
       ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
     } else {
@@ -1088,7 +1088,7 @@ int GetLocalOrdering(GRID *grid)
       ICALLOC(nnodes, &loc2glo_glo);
       MPI_Gatherv(grid->loc2glo,nnodesLoc,MPI_INT,loc2glo_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
       MPI_Gatherv(partv_loc,nnodesLoc,MPI_INT,partv_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
-      if (!rank) {
+      if (rank == 0) {
         ierr = PetscSortIntWithArray(nnodes,loc2glo_glo,partv_glo);CHKERRQ(ierr);
         sprintf(part_file,"hyb_part_vec.%d",2*size);
         fp = fopen(part_file,"w");
@@ -1827,7 +1827,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
   if (n < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     size_t count;
     int    bytes;
     switch (dtype) {

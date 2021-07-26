@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 
   for (i=1; i<n; i++) {
     if (values[i] < values[i-1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Values not sorted");
-    if (values_view && !rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"%D %D\n",i,values[i]);CHKERRQ(ierr);}
+    if (values_view && rank == 0) {ierr = PetscPrintf(PETSC_COMM_SELF,"%D %D\n",i,values[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);

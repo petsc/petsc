@@ -3261,7 +3261,7 @@ static PetscErrorCode PCView_PATCH(PC pc, PetscViewer viewer)
     }
     if (patch->solver) {
       ierr = PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
         ierr = PetscObjectView(patch->solver[0], sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);

@@ -2728,7 +2728,7 @@ PetscErrorCode DMView_Network(DM dm,PetscViewer viewer)
     DM_Network     *network = (DM_Network*)dm->data;
 
     nsubnet = network->Nsubnet; /* num of subnetworks */
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  NSubnets: %D; NEdges: %D; NVertices: %D; NSharedVertices: %D.\n",nsubnet,network->NEdges,network->NVertices,network->Nsvtx);CHKERRQ(ierr);
     }
 

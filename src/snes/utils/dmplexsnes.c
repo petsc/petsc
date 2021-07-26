@@ -392,7 +392,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {
       if (!ignoreOutsideDomain) SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, (double)globalPoints[p*ctx->dim+0], (double)(ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0), (double)(ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0));
-      else if (!rank) ++ctx->n;
+      else if (rank == 0) ++ctx->n;
     } else if (globalProcs[p] == rank) ++ctx->n;
   }
   /* Create coordinates vector and array of owned cells */
@@ -410,7 +410,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
       ctx->cells[q] = foundCells[q].index;
       ++q;
     }
-    if (globalProcs[p] == size && !rank) {
+    if (globalProcs[p] == size && rank == 0) {
       PetscInt d;
 
       for (d = 0; d < ctx->dim; ++d, ++i) a[i] = 0.;

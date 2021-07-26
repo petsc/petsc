@@ -22,7 +22,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     for (i=0;i<size*PetscMin(m,n);i++) {
       ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -33,7 +33,7 @@ int main(int argc,char **args)
 
   ierr = MatCreateRedundantMatrix(A, nsubcomm, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B);CHKERRQ(ierr);
   if (nsubcomm==size) { /* B is a sequential matrix */
-    if (!rank) {
+    if (rank == 0) {
       ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
   } else {

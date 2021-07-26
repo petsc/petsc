@@ -204,7 +204,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
 
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)guess),&rank);CHKERRMPI(ierr);
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,pod->nen,pod->nen,pod->low,&L);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         ierr = MatView(L,NULL);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&L);CHKERRQ(ierr);

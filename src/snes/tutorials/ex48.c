@@ -869,7 +869,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
   ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
   ierr = MatGetSize(B,&m,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)B),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscScalar val0,val2;
     ierr = MatGetValue(B,0,0,&val0);CHKERRQ(ierr);
     ierr = MatGetValue(B,2,2,&val2);CHKERRQ(ierr);
@@ -1398,7 +1398,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
   ierr = MPI_Reduce(&nn,&nmax,1,MPI_INT,MPI_MAX,0,comm);CHKERRMPI(ierr);
   tag  = ((PetscObject) viewer)->tag;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscScalar *array;
     ierr = PetscMalloc1(nmax,&array);CHKERRQ(ierr);
     for (r=0; r<size; r++) {

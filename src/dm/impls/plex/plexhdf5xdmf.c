@@ -89,7 +89,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   if (seq) {
     ierr = PetscViewerHDF5ReadSizes(viewer, topo_name, NULL, &numCells);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(cells->map, numCells);CHKERRQ(ierr);
-    numCells = !rank ? numCells : 0;
+    numCells = rank == 0 ? numCells : 0;
     ierr = PetscLayoutSetLocalSize(cells->map, numCells);CHKERRQ(ierr);
   }
   ierr = ISLoad(cells, viewer);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   if (seq) {
     ierr = PetscViewerHDF5ReadSizes(viewer, geom_name, NULL, &numVertices);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(coordinates->map, numVertices);CHKERRQ(ierr);
-    numVertices = !rank ? numVertices : 0;
+    numVertices = rank == 0 ? numVertices : 0;
     ierr = PetscLayoutSetLocalSize(coordinates->map, numVertices);CHKERRQ(ierr);
   }
   ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);

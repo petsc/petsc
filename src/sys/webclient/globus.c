@@ -118,7 +118,7 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     if (!isatty(fileno(PETSC_STDOUT))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
     ierr = PetscPrintf(comm,"Enter globus username:");CHKERRQ(ierr);
     ptr  = fgets(buff, 1024, stdin);
@@ -181,7 +181,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscStrcpy(head,"Authorization : Globus-Goauthtoken ");CHKERRQ(ierr);
     if (access_token) {
       ierr = PetscStrcat(head,access_token);CHKERRQ(ierr);
@@ -233,7 +233,7 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscTestFile(filename,'r',&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to find file: %s",filename);
 

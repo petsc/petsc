@@ -375,7 +375,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_2D_Internal(DM dm, const
     markerLeft   = 4;
   }
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscInt e, ex, ey;
 
     ierr = DMPlexSetChart(dm, 0, numEdges+numVertices);CHKERRQ(ierr);
@@ -484,7 +484,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Tensor_3D_Internal(DM dm, const
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
   vertices[0] = faces[0]+1; vertices[1] = faces[1]+1; vertices[2] = faces[2]+1;
   numVertices = vertices[0]*vertices[1]*vertices[2];
-  if (!rank) {
+  if (rank == 0) {
     PetscInt f;
 
     ierr = DMPlexSetChart(dm, 0, numFaces+numVertices);CHKERRQ(ierr);
@@ -694,8 +694,8 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm,PetscInt segments,Pets
   ierr = DMCreateLabel(dm,"Face Sets");CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm),&rank);CHKERRMPI(ierr);
-  if (!rank) numCells = segments;
-  if (!rank) numVerts = segments + (wrap ? 0 : 1);
+  if (rank == 0) numCells = segments;
+  if (rank == 0) numVerts = segments + (wrap ? 0 : 1);
 
   numPoints[0] = numVerts ; numPoints[1] = numCells;
   ierr = PetscMalloc4(numCells+numVerts,&coneSize,numCells*2,&cones,numCells+numVerts,&coneOrientations,numVerts,&vertexCoords);CHKERRQ(ierr);
@@ -709,7 +709,7 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm,PetscInt segments,Pets
 
   ierr = PetscOptionsGetBool(((PetscObject)dm)->options,((PetscObject)dm)->prefix,"-dm_plex_separate_marker",&markerSeparate,NULL);CHKERRQ(ierr);
   if (markerSeparate) { markerLeft = faceMarkerLeft; markerRight = faceMarkerRight;}
-  if (!wrap && !rank) {
+  if (!wrap && rank == 0) {
     ierr = DMPlexGetHeightStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
     ierr = DMSetLabelValue(dm,"marker",fStart,markerLeft);CHKERRQ(ierr);
     ierr = DMSetLabelValue(dm,"marker",fEnd-1,markerRight);CHKERRQ(ierr);
@@ -797,12 +797,12 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
     markerLeft   = faceMarkerLeft;
   }
   {
-    const PetscInt numXEdges    = !rank ? edges[0] : 0;
-    const PetscInt numYEdges    = !rank ? edges[1] : 0;
-    const PetscInt numZEdges    = !rank ? edges[2] : 0;
-    const PetscInt numXVertices = !rank ? (bdX == DM_BOUNDARY_PERIODIC || bdX == DM_BOUNDARY_TWIST ? edges[0] : edges[0]+1) : 0;
-    const PetscInt numYVertices = !rank ? (bdY == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_TWIST ? edges[1] : edges[1]+1) : 0;
-    const PetscInt numZVertices = !rank ? (bdZ == DM_BOUNDARY_PERIODIC || bdZ == DM_BOUNDARY_TWIST ? edges[2] : edges[2]+1) : 0;
+    const PetscInt numXEdges    = rank == 0 ? edges[0] : 0;
+    const PetscInt numYEdges    = rank == 0 ? edges[1] : 0;
+    const PetscInt numZEdges    = rank == 0 ? edges[2] : 0;
+    const PetscInt numXVertices = rank == 0 ? (bdX == DM_BOUNDARY_PERIODIC || bdX == DM_BOUNDARY_TWIST ? edges[0] : edges[0]+1) : 0;
+    const PetscInt numYVertices = rank == 0 ? (bdY == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_TWIST ? edges[1] : edges[1]+1) : 0;
+    const PetscInt numZVertices = rank == 0 ? (bdZ == DM_BOUNDARY_PERIODIC || bdZ == DM_BOUNDARY_TWIST ? edges[2] : edges[2]+1) : 0;
     const PetscInt numCells     = numXEdges*numYEdges*numZEdges;
     const PetscInt numXFaces    = numYEdges*numZEdges;
     const PetscInt numYFaces    = numXEdges*numZEdges;
@@ -1645,16 +1645,16 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
   {
     PetscInt cone[8], c;
 
-    numCells    = !rank ?  5 : 0;
-    numVertices = !rank ? 16 : 0;
+    numCells    = rank == 0 ?  5 : 0;
+    numVertices = rank == 0 ? 16 : 0;
     if (periodicZ == DM_BOUNDARY_PERIODIC) {
       numCells   *= 3;
-      numVertices = !rank ? 24 : 0;
+      numVertices = rank == 0 ? 24 : 0;
     }
     ierr = DMPlexSetChart(dm, 0, numCells+numVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells; c++) {ierr = DMPlexSetConeSize(dm, c, 8);CHKERRQ(ierr);}
     ierr = DMSetUp(dm);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       if (periodicZ == DM_BOUNDARY_PERIODIC) {
         cone[0] = 15; cone[1] = 18; cone[2] = 17; cone[3] = 16;
         cone[4] = 31; cone[5] = 32; cone[6] = 33; cone[7] = 34;
@@ -1750,7 +1750,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
     ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
     ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       coords[0*dim+0] = -ds2; coords[0*dim+1] = -ds2; coords[0*dim+2] = 0.0;
       coords[1*dim+0] =  ds2; coords[1*dim+1] = -ds2; coords[1*dim+2] = 0.0;
       coords[2*dim+0] =  ds2; coords[2*dim+1] =  ds2; coords[2*dim+2] = 0.0;
@@ -1892,8 +1892,8 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
   {
     PetscInt cone[6], c;
 
-    numCells    = !rank ?        n : 0;
-    numVertices = !rank ?  2*(n+1) : 0;
+    numCells    = rank == 0 ?        n : 0;
+    numVertices = rank == 0 ?  2*(n+1) : 0;
     ierr = DMPlexSetChart(dm, 0, numCells+numVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells; c++) {ierr = DMPlexSetConeSize(dm, c, 6);CHKERRQ(ierr);}
     ierr = DMSetUp(dm);CHKERRQ(ierr);
@@ -1937,7 +1937,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
       coords[(c+0*n)*dim+0] = PetscCosReal(2.0*c*PETSC_PI/n); coords[(c+0*n)*dim+1] = PetscSinReal(2.0*c*PETSC_PI/n); coords[(c+0*n)*dim+2] = 1.0;
       coords[(c+1*n)*dim+0] = PetscCosReal(2.0*c*PETSC_PI/n); coords[(c+1*n)*dim+1] = PetscSinReal(2.0*c*PETSC_PI/n); coords[(c+1*n)*dim+2] = 0.0;
     }
-    if (!rank) {
+    if (rank == 0) {
       coords[(2*n+0)*dim+0] = 0.0; coords[(2*n+0)*dim+1] = 0.0; coords[(2*n+0)*dim+2] = 1.0;
       coords[(2*n+1)*dim+0] = 0.0; coords[(2*n+1)*dim+1] = 0.0; coords[(2*n+1)*dim+2] = 0.0;
     }
@@ -2037,8 +2037,8 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       PetscInt       *graph, p, i, j, k;
 
       vertex[0] *= R/radius; vertex[1] *= R/radius; vertex[2] *= R/radius;
-      numCells    = !rank ? 20 : 0;
-      numVerts    = !rank ? 12 : 0;
+      numCells    = rank == 0 ? 20 : 0;
+      numVerts    = rank == 0 ? 12 : 0;
       firstVertex = numCells;
       /* Use icosahedron, which for a R-sphere has coordinates which are all cyclic permutations of
 
@@ -2049,7 +2049,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       */
       /* Construct vertices */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         for (p = 0, i = 0; p < embedDim; ++p) {
           for (s[1] = -1; s[1] < 2; s[1] += 2) {
             for (s[2] = -1; s[2] < 2; s[2] += 2) {
@@ -2125,9 +2125,9 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
        */
       PetscInt cone[4], ornt[4];
 
-      numCells    = !rank ?  6 : 0;
-      numEdges    = !rank ? 12 : 0;
-      numVerts    = !rank ?  8 : 0;
+      numCells    = rank == 0 ?  6 : 0;
+      numEdges    = rank == 0 ? 12 : 0;
+      numVerts    = rank == 0 ?  8 : 0;
       firstVertex = numCells;
       firstEdge   = numCells + numVerts;
       /* Build Topology */
@@ -2139,7 +2139,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
         ierr = DMPlexSetConeSize(dm, e, 2);CHKERRQ(ierr);
       }
       ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-      if (!rank) {
+      if (rank == 0) {
         /* Cell 0 */
         cone[0] = 14; cone[1] = 15; cone[2] = 16; cone[3] = 17;
         ierr = DMPlexSetCone(dm, 0, cone);CHKERRQ(ierr);
@@ -2200,7 +2200,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       ierr = DMPlexStratify(dm);CHKERRQ(ierr);
       /* Build coordinates */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         coordsIn[0*embedDim+0] = -R; coordsIn[0*embedDim+1] =  R; coordsIn[0*embedDim+2] = -R;
         coordsIn[1*embedDim+0] =  R; coordsIn[1*embedDim+1] =  R; coordsIn[1*embedDim+2] = -R;
         coordsIn[2*embedDim+0] =  R; coordsIn[2*embedDim+1] = -R; coordsIn[2*embedDim+2] = -R;
@@ -2228,8 +2228,8 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       vertexA[0] *= R; vertexA[1] *= R; vertexA[2] *= R; vertexA[3] *= R;
       vertexB[0] *= R; vertexB[1] *= R; vertexB[2] *= R; vertexB[3] *= R;
       vertexC[0] *= R; vertexC[1] *= R; vertexC[2] *= R; vertexC[3] *= R;
-      numCells    = !rank ? 600 : 0;
-      numVerts    = !rank ? 120 : 0;
+      numCells    = rank == 0 ? 600 : 0;
+      numVerts    = rank == 0 ? 120 : 0;
       firstVertex = numCells;
       /* Use the 600-cell, which for a unit sphere has coordinates which are
 
@@ -2246,7 +2246,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       /* Construct vertices */
       ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
       i    = 0;
-      if (!rank) {
+      if (rank == 0) {
         for (s[0] = -1; s[0] < 2; s[0] += 2) {
           for (s[1] = -1; s[1] < 2; s[1] += 2) {
             for (s[2] = -1; s[2] < 2; s[2] += 2) {
@@ -2292,7 +2292,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
       }
       ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
       /* Cells */
-      if (!rank) {
+      if (rank == 0) {
         for (i = 0, c = 0; i < numVerts; ++i) {
           for (j = 0; j < i; ++j) {
             for (k = 0; k < j; ++k) {
@@ -4062,7 +4062,7 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING);CHKERRQ(ierr);
     snum = sscanf(line, "%d %d", &Nc, &Nv);
     if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
@@ -4075,7 +4075,7 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMSetCoordinateDim(*dm, cdim);CHKERRQ(ierr);
   /* Read topology */
-  if (!rank) {
+  if (rank == 0) {
     PetscInt cone[8], corners = 8;
     int      vbuf[8], v;
 
@@ -4114,7 +4114,7 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   ierr = VecSetBlockSize(coordinates, cdim);CHKERRQ(ierr);
   ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     double x[3];
     int    val;
 

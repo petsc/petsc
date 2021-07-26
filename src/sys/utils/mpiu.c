@@ -41,7 +41,7 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng
   if ((rank % ng) == ng - 1 || rank == size - 1) {
     ierr = MPI_Send(NULL,0,MPI_INT,(rank + 1) % size,tag,comm);CHKERRMPI(ierr);
   }
-  if (!rank) {
+  if (rank == 0) {
     ierr = MPI_Recv(NULL,0,MPI_INT,size-1,tag,comm,&status);CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);

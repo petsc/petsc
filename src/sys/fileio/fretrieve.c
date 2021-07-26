@@ -348,7 +348,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     *found = PETSC_FALSE;
 
     ierr = PetscStrstr(url,".gz",&par);CHKERRQ(ierr);

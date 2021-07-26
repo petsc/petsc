@@ -241,7 +241,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     FluentSection s;
     do {
       ierr = DMPlexCreateFluent_ReadSection(viewer, &s);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells + numVertices);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     if (numCells < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown number of cells in Fluent file");
     /* If no cell type was given we assume simplices */
     if (numCellVertices == PETSC_DETERMINE) numCellVertices = numFaceVertices + 1;
@@ -308,7 +308,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   }
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
 
-  if (!rank && faces) {
+  if (rank == 0 && faces) {
     /* Derive cell-vertex list from face-vertex and face-cell maps */
     ierr = PetscMalloc1(numCells*numCellVertices, &cellVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells*numCellVertices; c++) cellVertices[c] = -1;
@@ -355,7 +355,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     *dm  = idm;
   }
 
-  if (!rank && faces) {
+  if (rank == 0 && faces) {
     PetscInt fi, joinSize, meetSize, *fverts, cells[2];
     const PetscInt *join, *meet;
     ierr = PetscMalloc1(numFaceVertices, &fverts);CHKERRQ(ierr);
@@ -406,7 +406,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  if (!rank && coordsIn) {
+  if (rank == 0 && coordsIn) {
     for (v = 0; v < numVertices; ++v) {
       for (d = 0; d < dim; ++d) {
         coords[v*dim+d] = coordsIn[v*dim+d];
@@ -417,7 +417,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscFree(cellVertices);CHKERRQ(ierr);
     ierr = PetscFree(faces);CHKERRQ(ierr);
     ierr = PetscFree(faceZoneIDs);CHKERRQ(ierr);

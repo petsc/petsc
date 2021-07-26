@@ -97,7 +97,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     int i,j,dim,nopts;
     dim   = lg->dim;
     nopts = lg->nopts;
@@ -466,7 +466,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     int i,j,dim=lg->dim,nopts=lg->nopts,cl;
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
@@ -476,7 +476,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
       }
     }
   }
-  if (!rank && lg->legend) {
+  if (rank == 0 && lg->legend) {
     int       i,dim=lg->dim,cl;
     PetscReal xl,yl,xr,yr,tw,th;
     size_t    slen,len=0;

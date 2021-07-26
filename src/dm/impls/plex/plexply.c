@@ -36,7 +36,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = PetscViewerSetType(viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscBool isAscii, isBinaryBig, isBinaryLittle;
 
     /* Check for PLY file */
@@ -152,7 +152,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = VecSetBlockSize(coordinates, cdim);CHKERRQ(ierr);
   ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     float rbuf[1];
     int   ibuf[1];
 
@@ -177,7 +177,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   /* Read topology */
-  if (!rank) {
+  if (rank == 0) {
     char     ibuf[1];
     PetscInt vbuf[16], corners;
 

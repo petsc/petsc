@@ -50,7 +50,7 @@ int main(int argc,char **args)
   ierr = MatCreateSubMatrix(C,isrow,NULL,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
 
   /* Change C to test the case MAT_REUSE_MATRIX */
-  if (!rank) {
+  if (rank == 0) {
     i = 0; j = 0; v = 100;
     ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
   }

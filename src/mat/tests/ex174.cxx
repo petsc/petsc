@@ -77,7 +77,7 @@ int main(int argc,char **args)
        ierr = PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&isSbaij);CHKERRQ(ierr);
     }
 
-    if (!rank) {
+    if (rank == 0) {
       if (isDense) {
         printf(" Convert DENSE matrices A and B into Elemental matrix... \n");
       } else if (isAij) {

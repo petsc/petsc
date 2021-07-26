@@ -49,7 +49,7 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
   ierr = MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
   work = petsc_isend_ct + petsc_send_ct;
   ierr = MPI_Reduce(&work,&tsends,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  if (!rank && tsends != trecvs) {
+  if (rank == 0 && tsends != trecvs) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Total number sends %g not equal receives %g\n",tsends,trecvs);CHKERRQ(ierr);
     err  = fflush(fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");

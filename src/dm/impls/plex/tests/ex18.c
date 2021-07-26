@@ -884,7 +884,7 @@ static PetscErrorCode ViewVerticesFromCoords(DM dm, PetscInt npoints, PetscReal 
   ierr = DMPlexFindVertices(dm, npoints, coords, tol, points);CHKERRQ(ierr);
   for (i=0; i < npoints; i++) {
     ierr = coord2str(coordstr, sizeof(coordstr), dim, &coords[i*dim], tol);CHKERRQ(ierr);
-    if (!rank && i) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, "-----\n");CHKERRQ(ierr);}
+    if (rank == 0 && i) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, "-----\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %s --> points[%D] = %D\n", rank, coordstr, i, points[i]);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   }
@@ -905,7 +905,7 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
-  if (user->testExpandPointsEmpty && !rank) {
+  if (user->testExpandPointsEmpty && rank == 0) {
     ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_USE_POINTER, &is);CHKERRQ(ierr);
   } else {
     ierr = ISCreateGeneral(PETSC_COMM_SELF, user->nPointsToExpand, user->pointsToExpand, PETSC_USE_POINTER, &is);CHKERRQ(ierr);

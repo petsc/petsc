@@ -63,7 +63,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRMPI(ierr);
   ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   if (format == PETSC_VIEWER_ASCII_GLVIS) { rank = 0, len = 0; } /* no parallel distributed write support from GLVis */
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscMalloc1(len,&values);CHKERRQ(ierr);
     /*
         MATLAB format and ASCII format are very similar except
@@ -414,7 +414,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 #else
   values = (PetscReal*)xarray;
 #endif
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscMalloc2(N,&xx,N,&yy);CHKERRQ(ierr);
     for (i=0; i<N; i++) xx[i] = (PetscReal)i;
     ierr = PetscMalloc2(size,&lens,size,&disp);CHKERRQ(ierr);
@@ -432,7 +432,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
   ierr = PetscDrawLGSetDimension(lg,1);CHKERRQ(ierr);
   ierr = PetscDrawLGSetColors(lg,colors);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscDrawLGAddPoints(lg,N,&xx,&yy);CHKERRQ(ierr);
     ierr = PetscFree2(xx,yy);CHKERRQ(ierr);
   }
@@ -513,7 +513,7 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscMalloc1(N,&xx);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) lens[i] = xin->map->range[i+1] - xin->map->range[i];

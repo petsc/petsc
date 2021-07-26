@@ -1023,7 +1023,7 @@ PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Lumped preconditioner (just from rank 0)\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscViewerPushFormat(sviewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
       ierr = MatView(pc_ctx->S_j,sviewer);CHKERRQ(ierr);
@@ -1037,7 +1037,7 @@ PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP BDdelta: DB^t * (B D^-1 B^t)^-1 for deluxe scaling (just from rank 0)\n");CHKERRQ(ierr);
       ierr = MatShellGetContext(pc_ctx->B_Ddelta,&ctx);CHKERRQ(ierr);
       ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         PetscInt tl;
 
         ierr = PetscViewerASCIIGetTab(sviewer,&tl);CHKERRQ(ierr);

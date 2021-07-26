@@ -425,7 +425,7 @@ static PetscErrorCode PetscOptionsFilename(MPI_Comm comm,const char file[],char 
   if (!*yaml) { /* check file contents */
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       FILE *fh = fopen(filename,"r");
       if (fh) {
         char buf[6] = "";
@@ -459,7 +459,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
   PetscFunctionBegin;
   ierr = PetscMemzero(tokens,sizeof(tokens));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     char fpath[PETSC_MAX_PATH_LEN];
     char fname[PETSC_MAX_PATH_LEN];
 
@@ -870,7 +870,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
   {
     char   *eoptions = NULL;
     size_t len       = 0;
-    if (!rank) {
+    if (rank == 0) {
       eoptions = (char*)getenv("PETSC_OPTIONS");
       ierr = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
     }
@@ -888,7 +888,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options,int *argc,char ***args,co
   {
     char   *eoptions = NULL;
     size_t len       = 0;
-    if (!rank) {
+    if (rank == 0) {
       eoptions = (char*)getenv("PETSC_OPTIONS_YAML");
       ierr = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
     }

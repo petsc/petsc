@@ -1355,8 +1355,8 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     Mat A = NULL, Av;
     IS  isrow,iscol;
 
-    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),!rank ? mat->rmap->N : 0,0,1,&isrow);CHKERRQ(ierr);
-    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),!rank ? mat->cmap->N : 0,0,1,&iscol);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),rank == 0 ? mat->rmap->N : 0,0,1,&isrow);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),rank == 0 ? mat->cmap->N : 0,0,1,&iscol);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(mat,isrow,iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatMPIAIJGetSeqAIJ(A,&Av,NULL,NULL);CHKERRQ(ierr);
 /*  The commented code uses MatCreateSubMatrices instead */
@@ -1364,10 +1364,10 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     Mat *AA, A = NULL, Av;
     IS  isrow,iscol;
 
-    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),!rank ? mat->rmap->N : 0,0,1,&isrow);CHKERRQ(ierr);
-    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),!rank ? mat->cmap->N : 0,0,1,&iscol);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),rank == 0 ? mat->rmap->N : 0,0,1,&isrow);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),rank == 0 ? mat->cmap->N : 0,0,1,&iscol);CHKERRQ(ierr);
     ierr = MatCreateSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&AA);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
        ierr = PetscObjectReference((PetscObject)AA[0]);CHKERRQ(ierr);
        A    = AA[0];
        Av   = AA[0];
@@ -1381,7 +1381,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
        synchronized across all processors that share the PetscDraw object
     */
     ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       if (((PetscObject)mat)->name) {
         ierr = PetscObjectSetName((PetscObject)Av,((PetscObject)mat)->name);CHKERRQ(ierr);
       }

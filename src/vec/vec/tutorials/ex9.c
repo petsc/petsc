@@ -56,7 +56,7 @@ int main(int argc,char **argv)
 
   */
 
-  if (!rank) {
+  if (rank == 0) {
     ifrom[0] = 11; ifrom[1] = 6;
   } else {
     ifrom[0] = 0;  ifrom[1] = 5;
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
 
   /* Another test that sets ghost values and then accumulates onto the owning processors using MIN_VALUES */
   if (flg3) {
-    if (!rank){ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n");CHKERRQ(ierr);}
+    if (rank == 0){ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n");CHKERRQ(ierr);}
     ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
     ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
     for (i=0; i<nghost; i++) array[nlocal+i] = rank ? (PetscScalar)4 : (PetscScalar)8;

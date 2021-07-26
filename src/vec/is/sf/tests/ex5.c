@@ -30,12 +30,12 @@ int main(int argc, char **argv)
   m = 2*nl;
   k = nl;
 
-  nldataA = !rank ? n : 0;
+  nldataA = rank == 0 ? n : 0;
   nldataB = 3*nl;
 
   nrootsA  = m;
-  nleavesA = !rank ? size*m : 0;
-  nrootsB  = !rank ? n : 0;
+  nleavesA = rank == 0 ? size*m : 0;
+  nrootsB  = rank == 0 ? n : 0;
   nleavesB = k;
 
   ierr = PetscMalloc1(nleavesA, &ilocalA);CHKERRQ(ierr);

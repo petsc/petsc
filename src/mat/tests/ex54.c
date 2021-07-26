@@ -84,7 +84,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
   ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
 
-  if (!rank && test_nd0) nd = 0; /* test case */
+  if (rank == 0 && test_nd0) nd = 0; /* test case */
 
   for (i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);

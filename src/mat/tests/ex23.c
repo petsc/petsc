@@ -376,7 +376,7 @@ int main(int argc,char **args)
 
   /* test MatCreateSubMatrix */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatCreateSubMatrix\n");CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = ISCreateStride(PETSC_COMM_WORLD,1,1,1,&is);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_WORLD,2,0,1,&is2);CHKERRQ(ierr);
   } else if (rank == 1) {
@@ -418,7 +418,7 @@ int main(int argc,char **args)
 
   /* Create an IS required by MatZeroRows(): just rank zero provides the rows to be eliminated */
   if (size > 1) {
-    if (!rank) {
+    if (rank == 0) {
       PetscInt st,len;
 
       st   = (m+1)/2;

@@ -225,7 +225,7 @@ int main(int argc,char **args)
         /* Mix zerorows and zerorowscols */
         nr   = 0;
         idxs = NULL;
-        if (!rank) {
+        if (rank == 0) {
           nr   = 1;
           ierr = PetscMalloc1(nr,&idxs);CHKERRQ(ierr);
           if (test%2) {

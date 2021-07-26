@@ -443,7 +443,7 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
   }
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscStrcmp(mach,"server",&tflg);CHKERRQ(ierr);
     if (tflg) {
       int listenport;

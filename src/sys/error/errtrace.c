@@ -177,7 +177,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
 
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm,&rank);
 
-  if (!rank) {
+  if (rank == 0) {
     PetscBool  ismain;
     static int cnt = 1;
 

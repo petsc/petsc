@@ -253,7 +253,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
 
     /* local solvers */
     ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)pcbddc->ksp_D),&subviewer);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscViewerASCIIPrintf(subviewer,"--- Interior solver (rank 0)\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
       ierr = KSPView(pcbddc->ksp_D,subviewer);CHKERRQ(ierr);

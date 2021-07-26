@@ -319,7 +319,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
     }
     ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-    if (!rank) { /* Draw bins */
+    if (rank == 0) { /* Draw bins */
       binLeft  = xmin;
       binRight = xmax;
       ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[0],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
@@ -372,7 +372,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
     }
     ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-    if (!rank) { /* Draw bins */
+    if (rank == 0) { /* Draw bins */
       for (i = 0; i < numBins; i++) {
         binLeft  = xmin + binSize*i;
         binRight = xmin + binSize*(i+1);

@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   user.fine.my = user.ratio*(user.coarse.my-1)+1;
   user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
 
-  if (!rank) {
+  if (rank == 0) {
     if (!Test_3D) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"coarse grids: %D %D; fine grids: %D %D\n",user.coarse.mx,user.coarse.my,user.fine.mx,user.fine.my);CHKERRQ(ierr);
     } else {

@@ -50,13 +50,13 @@ int main(int argc,char **argv)
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
   if (flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,&flg);CHKERRQ(ierr);
-  if (!rank && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
+  if (rank == 0 && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   if (rank && flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
-  if (!rank && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
+  if (rank == 0 && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
   if (rank && flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
   ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,compute,&flg);CHKERRQ(ierr);
-  if (!rank && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
+  if (rank == 0 && !flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
   if (rank && flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
   /* we can override the computed values with ISSetInfo() */
   ierr = ISSetInfo(is,IS_PERMUTATION,IS_LOCAL,permanent,PETSC_TRUE);CHKERRQ(ierr);

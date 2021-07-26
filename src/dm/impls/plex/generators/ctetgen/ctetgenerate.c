@@ -116,7 +116,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
       ierr = DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     }
   }
-  if (!rank) {
+  if (rank == 0) {
     TetGenOpts t;
 
     ierr        = TetGenOptsInitialize(&t);CHKERRQ(ierr);
@@ -399,7 +399,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
     }
   }
 
-  if (!rank) {
+  if (rank == 0) {
     TetGenOpts t;
 
     ierr = TetGenOptsInitialize(&t);CHKERRQ(ierr);

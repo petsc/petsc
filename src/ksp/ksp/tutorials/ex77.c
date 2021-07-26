@@ -73,7 +73,7 @@ int main(int argc,char **args)
       if (rank > 3) {
         ierr = MatSetSizes(B,0,0,M,M);CHKERRQ(ierr);
       } else {
-        ierr = MatSetSizes(B,!rank?M-3*(M/4):M/4,!rank?M-3*(M/4):M/4,M,M);CHKERRQ(ierr);
+        ierr = MatSetSizes(B,rank == 0?M-3*(M/4):M/4,rank == 0?M-3*(M/4):M/4,M,M);CHKERRQ(ierr);
       }
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
       ierr = MatLoad(B,viewer);CHKERRQ(ierr);

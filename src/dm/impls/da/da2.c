@@ -78,7 +78,7 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
 
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     /* first processor draw all node lines */
-    if (!rank) {
+    if (rank == 0) {
       ymin = 0.0; ymax = dd->N - 1;
       for (xmin=0; xmin<dd->M; xmin++) {
         ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);

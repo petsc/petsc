@@ -201,13 +201,13 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     }
     piece.ncells++;
   }
-  if (!rank) {ierr = PetscMalloc1(size,&gpiece);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = PetscMalloc1(size,&gpiece);CHKERRQ(ierr);}
   ierr = MPI_Gather((PetscInt*)&piece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,(PetscInt*)gpiece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,0,comm);CHKERRMPI(ierr);
 
   /*
    * Write file header
    */
-  if (!rank) {
+  if (rank == 0) {
     PetscInt boffset = 0;
 
     for (r=0; r<size; r++) {
@@ -408,7 +408,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   ierr = PetscFPrintf(comm,fp,"  <AppendedData encoding=\"raw\">\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"_");CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     PetscInt maxsize = 0;
     for (r=0; r<size; r++) {
       maxsize = PetscMax(maxsize, (PetscInt) (gpiece[r].nvertices*3*sizeof(PetscVTUReal)));
@@ -741,7 +741,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr = PetscFree(y);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
       }
-    } else if (!rank) {
+    } else if (rank == 0) {
       PetscInt l;
 
       ierr = TransferWrite(comm,viewer,fp,r,0,NULL,buffer,gpiece[r].nvertices*3,MPIU_VTUREAL,tag);CHKERRQ(ierr); /* positions */

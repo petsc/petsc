@@ -224,7 +224,7 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   ierr = PetscDrawAxisDraw(bar->axis);CHKERRQ(ierr);
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) { /* Draw bins */
+  if (rank == 0) { /* Draw bins */
     for (i=0; i<nplot; i++) {
       idx = (bar->sort ? perm[numValues - i - 1] : i);
       binLeft  = xmin + i;

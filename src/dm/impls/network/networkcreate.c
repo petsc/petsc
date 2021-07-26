@@ -118,7 +118,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   ierr = MPI_Allreduce(&len_loc,&len,1,MPIU_INT,MPI_MAX,comm);CHKERRMPI(ierr);
   ierr = PetscCalloc1(len,&values);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);
   }
 
@@ -131,7 +131,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     ierr = DMNetworkGetLocalVecOffset(networkdm,e,ALL_COMPONENTS,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetGlobalEdgeIndex(networkdm,e,&id);CHKERRQ(ierr);
 
-    if (!rank) { /* print its own entries */
+    if (rank == 0) { /* print its own entries */
       ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",id);CHKERRQ(ierr);
       ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
     } else {
@@ -152,7 +152,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     ierr = DMNetworkGetLocalVecOffset(networkdm,v,ALL_COMPONENTS,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetGlobalVertexIndex(networkdm,v,&id);CHKERRQ(ierr);
 
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",id);CHKERRQ(ierr);
       ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
     } else {
@@ -163,7 +163,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     }
   }
 
-  if (!rank) {
+  if (rank == 0) {
     /* proc[0] receives and prints messages */
     for (j=1; j<size; j++) {
       ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j);CHKERRQ(ierr);

@@ -12,7 +12,7 @@ PetscErrorCode MatView_Binary_BlockSizes(Mat mat,PetscViewer viewer)
   ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
-  if (!rank && info) {
+  if (rank == 0 && info) {
     if (rbs != cbs) {ierr = PetscFPrintf(PETSC_COMM_SELF,info,"-matload_block_size %D,%D\n",rbs,cbs);CHKERRQ(ierr);}
     else            {ierr = PetscFPrintf(PETSC_COMM_SELF,info,"-matload_block_size %D\n",rbs);CHKERRQ(ierr);}
   }

@@ -1902,7 +1902,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&parentSection);CHKERRQ(ierr);
   ierr = DMPlexGetReferenceTree(dm,&K);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     /* compute the new charts */
     ierr = PetscMalloc5(dim+1,&pNewCount,dim+1,&pNewStart,dim+1,&pNewEnd,dim+1,&pOldStart,dim+1,&pOldEnd);CHKERRQ(ierr);
     offset = 0;

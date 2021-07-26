@@ -48,13 +48,13 @@ int main(int argc,char **args)
   switch (ipack) {
   case 1:
 #if defined(PETSC_HAVE_SUPERLU)
-    if (!rank) printf(" SUPERLU LU:\n");
+    if (rank == 0) printf(" SUPERLU LU:\n");
     ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
   case 2:
 #if defined(PETSC_HAVE_MUMPS)
-    if (!rank) printf(" MUMPS LU:\n");
+    if (rank == 0) printf(" MUMPS LU:\n");
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
       /* test mumps options */
@@ -64,7 +64,7 @@ int main(int argc,char **args)
     break;
 #endif
   default:
-    if (!rank) printf(" PETSC LU:\n");
+    if (rank == 0) printf(" PETSC LU:\n");
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
 
@@ -72,7 +72,7 @@ int main(int argc,char **args)
   ierr      = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 1; nfact++) {
-    if (!rank) printf(" %d-the LU numfactorization \n",nfact);
+    if (rank == 0) printf(" %d-the LU numfactorization \n",nfact);
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     /* Test MatSolve() */
@@ -84,7 +84,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
       if (norm > tol) {
-        if (!rank) {
+        if (rank == 0) {
           ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: rel residual %g/%g = %g, LU numfact %d\n",norm,Anorm,norm/Anorm,nfact);CHKERRQ(ierr);
         }
       }

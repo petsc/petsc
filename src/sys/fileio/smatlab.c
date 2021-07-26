@@ -40,7 +40,7 @@ PetscErrorCode  PetscStartMatlab(MPI_Comm comm,const char machine[],const char s
   /* check if MATLAB is not already running */
   ierr = PetscPOpen(comm,machine,"/usr/ucb/ps -ugxww | grep matlab | grep -v grep","r",&fd);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) found = fgets(buf,1024,fd);
+  if (rank == 0) found = fgets(buf,1024,fd);
   ierr = MPI_Bcast(&found,1,MPI_CHAR,0,comm);CHKERRMPI(ierr);
   ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
   if (found) PetscFunctionReturn(0);

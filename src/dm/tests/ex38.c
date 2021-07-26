@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   ierr = VecSet(local,-1);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  if (!rank) {ierr = VecView(local,0);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = VecView(local,0);CHKERRQ(ierr);}
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);

@@ -523,7 +523,7 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
     ierr = DMPlexComputeInjectorReferenceTree(refTree,&inj);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)inj,"Reference Tree Injector");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = MatView(inj,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&inj);CHKERRQ(ierr);

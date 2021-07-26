@@ -323,7 +323,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     int i,j,dim=sp->dim,nopts=sp->nopts;
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {

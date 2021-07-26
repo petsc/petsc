@@ -1375,7 +1375,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 
   /* Determine Gmsh file type (ASCII or binary) from file header */
-  if (!rank) {
+  if (rank == 0) {
     GmshFile    gmsh[1];
     char        line[PETSC_MAX_PATH_LEN];
     int         snum;
@@ -1476,7 +1476,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscViewerGetSubViewer(parentviewer, PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
   }
 
-  if (!rank) {
+  if (rank == 0) {
     GmshFile  gmsh[1];
     char      line[PETSC_MAX_PATH_LEN];
     PetscBool match;
@@ -1625,7 +1625,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   if (usemarker && !interpolate && dim > 1) SETERRQ(comm,PETSC_ERR_SUP,"Cannot create marker label without interpolation");
-  if (!rank && usemarker) {
+  if (rank == 0 && usemarker) {
     PetscInt f, fStart, fEnd;
 
     ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
@@ -1646,7 +1646,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     }
   }
 
-  if (!rank) {
+  if (rank == 0) {
     PetscInt vStart, vEnd;
 
     ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);

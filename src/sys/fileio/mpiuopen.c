@@ -40,7 +40,7 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscBool isstdout,isstderr;
     ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
     ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank && fd != PETSC_STDOUT && fd != PETSC_STDERR) {
+  if (rank == 0 && fd != PETSC_STDOUT && fd != PETSC_STDERR) {
     err = fclose(fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
@@ -122,7 +122,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     char buf[1024];
     while (fgets(buf,1024,fd)) ; /* wait till it prints everything */
     (void) pclose(fd);
@@ -197,7 +197,7 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
   ierr = PetscStrreplace(comm,command,commandt,1024);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscInfo1(NULL,"Running command :%s\n",commandt);CHKERRQ(ierr);
     if (!(fd = popen(commandt,mode))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot run command %s",commandt);
     if (fp) *fp = fd;
