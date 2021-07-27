@@ -165,42 +165,43 @@ class Configure(config.package.Package):
         try:
           (out, err, ret) = Configure.executeShellCommand(self.deviceQuery + ' | grep "CUDA Capability"',timeout = 60, log = self.log, threads = 1)
         except Exception as e:
-          self.log.write('deviceQuery failed '+str(e)+'\n')
+          self.log.write('NVIDIA utility deviceQuery failed '+str(e)+'\n')
         else:
           try:
             out = out.split('\n')[0]
             sm = out[-3:]
             self.gencodearch = str(int(10*float(sm)))
           except:
-            self.log.write('Unable to parse CUDA capability from NVIDIA deviceQuery() demo\n')
+            self.log.write('Unable to parse the CUDA Capability output from the NVIDIA utility deviceQuery\n')
 
     if not hasattr(self,'gencodearch') and not self.argDB['with-batch']:
-        includes = '#include <stdio.h>\n\
-                    #include <cuda_runtime.h>\n\
-                    #include <cuda_runtime_api.h>\n\
-                    #include <cuda_device_runtime_api.h>'
-        body = 'int cerr;\
-                cudaDeviceProp dp;\
-                cerr = cudaGetDeviceProperties(&dp, 0);\
-                if (cerr) printf("Error calling cudaGetDeviceProperties\\n");\
-                else printf("%d\\n",10*dp.major+dp.minor);\
-                return(0);'
+        includes = '''#include <stdio.h>
+                    #include <cuda_runtime.h>
+                    #include <cuda_runtime_api.h>
+                    #include <cuda_device_runtime_api.h>'''
+        body = '''int cerr;
+                cudaDeviceProp dp;
+                cerr = cudaGetDeviceProperties(&dp, 0);
+                if (cerr) printf("Error calling cudaGetDeviceProperties\\n");
+                else printf("%d\\n",10*dp.major+dp.minor);
+                return(cerr);'''
         self.pushLanguage('CUDA')
         try:
           (output,status) = self.outputRun(includes, body)
         except Exception as e:
-          self.log.write('outputRun failed for CUDA generation '+str(e)+'\n')
+          self.log.write('petsc-supplied CUDA device query test failed: '+str(e)+'\n')
           self.popLanguage()
         else:
           self.popLanguage()
-          self.log.write('outputRun output with CUDA generation '+output+' status '+str(status)+'\n')
-          try:
-            gen = int(output)
-          except:
-            pass
-          else:
-            self.log.write('outputRun produced valid CUDA generation '+str(gen)+'\n')
-            self.gencodearch = str(gen)
+          self.log.write('petsc-supplied CUDA device query test output: '+output+', status: '+str(status)+'\n')
+          if not status:
+            try:
+              gen = int(output)
+            except:
+              pass
+            else:
+              self.log.write('petsc-supplied CUDA device query test found the CUDA Capability is '+str(gen)+'\n')
+              self.gencodearch = str(gen)
 
     if not hasattr(self,'gencodearch'):
       for gen in reversed(genArches):
