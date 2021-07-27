@@ -106,6 +106,7 @@ Changes: Development
 -  Remove ``DMCopyBoundary()``
 -  Change interface for ``DMAddBoundary()``, ``PetscDSAddBoundary()``,
    ``PetscDSGetBoundary()``, ``PetscDSUpdateBoundary()``
+-  Add ``DMDAVecGetArrayDOFWrite()`` and ``DMDAVecRestoreArrayDOFWrite()``
 
 .. rubric:: DMSwarm:
 

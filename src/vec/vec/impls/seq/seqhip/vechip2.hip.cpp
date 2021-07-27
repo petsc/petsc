@@ -173,7 +173,7 @@ PetscErrorCode VecAYPX_SeqHIP(Vec yin,PetscScalar alpha,Vec xin)
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecHIPRestoreArray(yin,&yarray);CHKERRQ(ierr);
-  ierr = PetscLogCpuToGpu(sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscLogCpuToGpuScalar(sizeof(PetscScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -201,7 +201,7 @@ PetscErrorCode VecAXPY_SeqHIP(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecHIPRestoreArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(2.0*yin->map->n);CHKERRQ(ierr);
-    ierr = PetscLogCpuToGpu(sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogCpuToGpuScalar(sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
   }
@@ -269,7 +269,7 @@ PetscErrorCode VecWAXPY_SeqHIP(Vec win,PetscScalar alpha,Vec xin, Vec yin)
     ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecHIPRestoreArrayRead(yin,&yarray);CHKERRQ(ierr);
     ierr = VecHIPRestoreArrayWrite(win,&warray);CHKERRQ(ierr);
-    ierr = PetscLogCpuToGpu(sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogCpuToGpuScalar(sizeof(PetscScalar));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -286,7 +286,7 @@ PetscErrorCode VecMAXPY_SeqHIP(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec
 
   PetscFunctionBegin;
   ierr = PetscLogGpuFlops(nv*2.0*n);CHKERRQ(ierr);
-  ierr = PetscLogCpuToGpu(nv*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscLogCpuToGpuScalar(nv*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscHIPBLASGetHandle(&hipblasv2handle);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   ierr = VecHIPGetArray(xin,&xarray);CHKERRQ(ierr);
@@ -708,7 +708,7 @@ PetscErrorCode VecSet_SeqHIP(Vec xin,PetscScalar alpha)
     } catch (char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
-    ierr = PetscLogCpuToGpu(sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogCpuToGpuScalar(sizeof(PetscScalar));CHKERRQ(ierr);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArrayWrite(xin,&xarray);CHKERRQ(ierr);
@@ -772,7 +772,7 @@ PetscErrorCode VecScale_SeqHIP(Vec xin,PetscScalar alpha)
     hberr = hipblasXscal(hipblasv2handle,bn,&alpha,xarray,one);CHKERRHIPBLAS(hberr);
     ierr = VecHIPRestoreArray(xin,&xarray);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-    ierr = PetscLogCpuToGpu(sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogCpuToGpuScalar(sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -921,7 +921,7 @@ PetscErrorCode VecAXPBY_SeqHIP(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xi
     hberr = hipblasXscal(hipblasv2handle,bn,&alpha,yarray,one);CHKERRHIPBLAS(hberr);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(xin->map->n);CHKERRQ(ierr);
-    ierr = PetscLogCpuToGpu(sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogCpuToGpuScalar(sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecHIPRestoreArray(yin,&yarray);CHKERRQ(ierr);
   } else {
@@ -934,7 +934,7 @@ PetscErrorCode VecAXPBY_SeqHIP(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xi
     ierr = VecHIPRestoreArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = PetscLogGpuFlops(3.0*xin->map->n);CHKERRQ(ierr);
-    ierr = PetscLogCpuToGpu(2*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogCpuToGpuScalar(2*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

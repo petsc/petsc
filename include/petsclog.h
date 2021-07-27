@@ -283,6 +283,10 @@ PETSC_EXTERN PetscLogDouble petsc_ctog_ct;
 PETSC_EXTERN PetscLogDouble petsc_gtoc_ct;
 PETSC_EXTERN PetscLogDouble petsc_ctog_sz;
 PETSC_EXTERN PetscLogDouble petsc_gtoc_sz;
+PETSC_EXTERN PetscLogDouble petsc_ctog_ct_scalar;
+PETSC_EXTERN PetscLogDouble petsc_gtoc_ct_scalar;
+PETSC_EXTERN PetscLogDouble petsc_ctog_sz_scalar;
+PETSC_EXTERN PetscLogDouble petsc_gtoc_sz_scalar;
 PETSC_EXTERN PetscLogDouble petsc_gflops;
 PETSC_EXTERN PetscLogDouble petsc_gtime;
 #if defined(PETSC_USE_DEBUG)
@@ -302,6 +306,22 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpu(PetscLogDouble size)
   PetscFunctionBegin;
   petsc_gtoc_ct += 1;
   petsc_gtoc_sz += size;
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLogCpuToGpuScalar(PetscLogDouble size)
+{
+  PetscFunctionBegin;
+  petsc_ctog_ct_scalar += 1;
+  petsc_ctog_sz_scalar += size;
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
+{
+  PetscFunctionBegin;
+  petsc_gtoc_ct_scalar += 1;
+  petsc_gtoc_sz_scalar += size;
   PetscFunctionReturn(0);
 }
 
@@ -677,6 +697,8 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...);
 #if defined(PETSC_HAVE_DEVICE)
 #define PetscLogCpuToGpu(a)                0
 #define PetscLogGpuToCpu(a)                0
+#define PetscLogCpuToGpuScalar(a)          0
+#define PetscLogGpuToCpuScalar(a)          0
 #define PetscLogGpuFlops(a)                0
 #define PetscLogGpuTimeBegin()             0
 #define PetscLogGpuTimeEnd()               0
