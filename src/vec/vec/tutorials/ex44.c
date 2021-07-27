@@ -38,7 +38,7 @@ int main(int argc,char **args)
     ierr = VecAssemblyEnd(x[i]);CHKERRQ(ierr);
     ierr = PetscFree2(idx, vals);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Original X[%i] vector\n", i);CHKERRQ(ierr);
-    ierr = VecView(x[i], PETSC_VIEWER_STDOUT_WORLD);
+    ierr = VecView(x[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecCreate(PETSC_COMM_WORLD, &y);CHKERRQ(ierr);
   ierr = VecSetSizes(y, PETSC_DECIDE, y_size);CHKERRQ(ierr);

@@ -36,7 +36,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBoundedInt("-patch_size", "The patch size in each dimension", "ex1.c", patchSize, &patchSize, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-comm_size", "The comm size in each dimension", "ex1.c", commSize, &commSize, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-grid_size", "The grid size in each dimension", "ex1.c", gridSize, &gridSize, NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   options->patchSize.i = options->patchSize.j = options->patchSize.k = 1;
   options->commSize.i  = options->commSize.j  = options->commSize.k = 1;

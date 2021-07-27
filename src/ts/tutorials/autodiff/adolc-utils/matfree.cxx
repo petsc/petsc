@@ -168,7 +168,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
 
   /* a * dF/d(xdot) part */
   ierr = PetscLogEventBegin(mctx->event2,0,0,0,0);CHKERRQ(ierr);
-  ierr = VecAXPY(Y,mctx->shift,X);
+  ierr = VecAXPY(Y,mctx->shift,X);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(mctx->event2,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

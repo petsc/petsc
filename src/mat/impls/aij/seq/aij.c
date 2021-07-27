@@ -15,7 +15,7 @@ PetscErrorCode MatSeqAIJSetTypeFromOptions(Mat A)
   char                 type[256];
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)A);
+  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-mat_seqaij_type","Matrix SeqAIJ type","MatSeqAIJSetType",MatSeqAIJList,"seqaij",type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSeqAIJSetType(A,type);CHKERRQ(ierr);

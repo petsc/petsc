@@ -119,7 +119,7 @@ PetscErrorCode RegularizerObjectiveAndGradient2(Tao tao,Vec X,PetscReal *f_reg,V
   ierr   = VecDot(X,X,&temp);CHKERRQ(ierr);
   *f_reg = 0.5*user->lambda*temp;
   /* compute regularizer gradient = lambda*z */
-  ierr = VecCopy(X,G_reg);
+  ierr = VecCopy(X,G_reg);CHKERRQ(ierr);
   ierr = VecScale(G_reg,user->lambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

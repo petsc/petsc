@@ -84,7 +84,7 @@ int main(int argc,char **argv)
   ierr = DMSwarmRestoreCellSwarm(sw, 1, cellsw);CHKERRQ(ierr);
   ierr = DMDestroy(&sw);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&cellsw);
+  ierr = DMDestroy(&cellsw);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

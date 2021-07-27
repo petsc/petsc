@@ -3321,8 +3321,8 @@ PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
   if (M != rows || N != cols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different sizes (%D, %D) than the input matrix (%D, %D)",M,N,rows,cols);
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(mat->rmap,&rs,NULL);
-  ierr = PetscLayoutGetRange(mat->cmap,&cs,&ce);
+  ierr = PetscLayoutGetRange(mat->rmap,&rs,NULL);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(mat->cmap,&cs,&ce);CHKERRQ(ierr);
   mbs = m/bs; nbs = n/bs;
 
   /* read in row lengths and build row indices */
@@ -3663,7 +3663,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm,Mat inmat,
     ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
     mbs = m/bs; Nbs = N/cbs;
     if (n == PETSC_DECIDE) {
-      ierr = PetscSplitOwnershipBlock(comm,cbs,&n,&N);
+      ierr = PetscSplitOwnershipBlock(comm,cbs,&n,&N);CHKERRQ(ierr);
     }
     nbs = n/cbs;
 

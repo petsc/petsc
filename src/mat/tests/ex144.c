@@ -92,9 +92,9 @@ int main(int argc,char **args)
   fftw_execute(fplan);
   fftw_execute(bplan);
 
-  ierr = VecRestoreArray(fin,&x_arr);
-  ierr = VecRestoreArray(fout1,&z_arr);
-  ierr = VecRestoreArray(fout,&y_arr);
+  ierr = VecRestoreArray(fin,&x_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(fout1,&z_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(fout,&y_arr);CHKERRQ(ierr);
 
 /*    VecView(fin,PETSC_VIEWER_STDOUT_WORLD); */
   ierr = VecCreate(PETSC_COMM_WORLD,&ini);CHKERRQ(ierr);
@@ -110,10 +110,10 @@ int main(int argc,char **args)
     NM = N1+1;
   }
   /*printf("The Value of NM is %d",NM); */
-  ierr = VecGetOwnershipRange(fin,&low,NULL);
+  ierr = VecGetOwnershipRange(fin,&low,NULL);CHKERRQ(ierr);
   /*printf("The local index is %d from %d\n",low,rank); */
-  ierr = PetscMalloc1(local_n0*N1,&indx3);
-  ierr = PetscMalloc1(local_n0*N1,&indx4);
+  ierr = PetscMalloc1(local_n0*N1,&indx3);CHKERRQ(ierr);
+  ierr = PetscMalloc1(local_n0*N1,&indx4);CHKERRQ(ierr);
   for (i=0;i<local_n0;i++) {
     for (j=0;j<N1;j++) {
       tempindx  = i*N1 + j;
@@ -133,10 +133,10 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(ini);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ini);CHKERRQ(ierr);
 
-  ierr = VecGetValues(fout1,local_n0*N1,indx4,y_arr);
-  ierr = VecSetValues(final,local_n0*N1,indx3,y_arr,INSERT_VALUES);
-  ierr = VecAssemblyBegin(final);
-  ierr = VecAssemblyEnd(final);
+  ierr = VecGetValues(fout1,local_n0*N1,indx4,y_arr);CHKERRQ(ierr);
+  ierr = VecSetValues(final,local_n0*N1,indx3,y_arr,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(final);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(final);CHKERRQ(ierr);
   ierr = PetscFree2(x_arr,y_arr);CHKERRQ(ierr);
 
 /*

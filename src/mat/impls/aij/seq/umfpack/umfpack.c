@@ -128,8 +128,8 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     ierr = PetscMalloc1(5*A->rmap->n,&lu->W);CHKERRQ(ierr);
   }
 
-  ierr = VecGetArrayRead(b,&ba);
-  ierr = VecGetArray(x,&xa);
+  ierr = VecGetArrayRead(b,&ba);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
 #else

@@ -207,7 +207,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_MAT_SINGLE)
-  ierr = PetscMalloc1(A->rmap->bs,&atmp);
+  ierr = PetscMalloc1(A->rmap->bs,&atmp);CHKERRQ(ierr);
 #endif
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */

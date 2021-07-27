@@ -73,10 +73,10 @@ int main(int argc, char **argv)
 
   /* test partitioning an empty graph */
   ierr = PetscPartitionerPartition(p,nparts,0,NULL,NULL,vertexSection,targetSection,partSection,&partition);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)partSection,"NULL SECTION");
+  ierr = PetscObjectSetName((PetscObject)partSection,"NULL SECTION");CHKERRQ(ierr);
   ierr = PetscSectionView(partSection,NULL);CHKERRQ(ierr);
   ierr = ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)is,"NULL PARTITION");
+  ierr = PetscObjectSetName((PetscObject)is,"NULL PARTITION");CHKERRQ(ierr);
   ierr = ISView(is,NULL);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&partition);CHKERRQ(ierr);
@@ -90,10 +90,10 @@ int main(int argc, char **argv)
   } else {
     ierr = PetscPartitionerPartition(p,nparts,0,NULL,NULL,vertexSection,targetSection,partSection,&partition);CHKERRQ(ierr);
   }
-  ierr = PetscObjectSetName((PetscObject)partSection,"SEQ SECTION");
+  ierr = PetscObjectSetName((PetscObject)partSection,"SEQ SECTION");CHKERRQ(ierr);
   ierr = PetscSectionView(partSection,NULL);CHKERRQ(ierr);
   ierr = ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)is,"SEQ PARTITION");
+  ierr = PetscObjectSetName((PetscObject)is,"SEQ PARTITION");CHKERRQ(ierr);
   ierr = ISView(is,NULL);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&partition);CHKERRQ(ierr);
@@ -115,10 +115,10 @@ int main(int argc, char **argv)
     ierr = PetscPartitionerPartition(p,nparts,nv,vv,pvadj,NULL,targetSection,partSection,&partition);CHKERRQ(ierr);
     ierr = PetscFree(pvadj);CHKERRQ(ierr);
   }
-  ierr = PetscObjectSetName((PetscObject)partSection,"PARVOID SECTION");
+  ierr = PetscObjectSetName((PetscObject)partSection,"PARVOID SECTION");CHKERRQ(ierr);
   ierr = PetscSectionView(partSection,NULL);CHKERRQ(ierr);
   ierr = ISOnComm(partition,PETSC_COMM_WORLD,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)is,"PARVOID PARTITION");
+  ierr = PetscObjectSetName((PetscObject)is,"PARVOID PARTITION");CHKERRQ(ierr);
   ierr = ISView(is,NULL);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&partition);CHKERRQ(ierr);

@@ -311,7 +311,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->interpolate  = CREATE;
     options->distribute   = PETSC_FALSE;
   }
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1083,7 +1083,7 @@ static PetscErrorCode VecToPetscReal_Private(Vec vec, PetscReal *rvals[])
     for (i=0; i<n; i++) (*rvals)[i] = PetscRealPart(svals[i]);
   }
 #else
-  ierr = PetscMemcpy(*rvals, svals, n*sizeof(PetscReal));
+  ierr = PetscMemcpy(*rvals, svals, n*sizeof(PetscReal));CHKERRQ(ierr);
 #endif
   ierr = VecRestoreArrayRead(vec, &svals);CHKERRQ(ierr);
   PetscFunctionReturn(0);

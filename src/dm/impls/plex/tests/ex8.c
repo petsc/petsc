@@ -80,7 +80,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   } else if (options->runType == RUN_DISPLAY) {
     ierr = ReadMesh(PETSC_COMM_WORLD, options->filename, options, &options->dm);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (options->transform) {ierr = PetscPrintf(comm, "Using random transforms\n");CHKERRQ(ierr);}
   PetscFunctionReturn(0);

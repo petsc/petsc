@@ -4033,7 +4033,7 @@ static PetscErrorCode DMPlexCellRefinerCreateSF(DMPlexCellRefiner cr, DM rdm)
     ierr = PetscMalloc1(numNeighbors, &crRem);CHKERRQ(ierr);
     for (n = 0; n < numNeighbors; ++n) {
       ierr = DMPlexCellRefinerCreate(dm, &crRem[n]);CHKERRQ(ierr);
-      ierr = DMPlexCellRefinerSetStarts(crRem[n], &ctStartRem[n*ctSize], &ctStartNewRem[n*ctSize]);
+      ierr = DMPlexCellRefinerSetStarts(crRem[n], &ctStartRem[n*ctSize], &ctStartNewRem[n*ctSize]);CHKERRQ(ierr);
       ierr = DMPlexCellRefinerSetUp(crRem[n]);CHKERRQ(ierr);
     }
     ierr = PetscFree2(ctStartRem, ctStartNewRem);CHKERRQ(ierr);

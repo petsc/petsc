@@ -170,7 +170,7 @@ static PetscErrorCode DMPlexEGADSPrintModel(ego model)
         ierr = PetscPrintf(PETSC_COMM_SELF, "            EDGE ID: %d (%d)\n", id, e);CHKERRQ(ierr);
 
         ierr = EG_getRange(edge, range, &peri);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "  Range = %lf, %lf, %lf, %lf \n", range[0], range[1], range[2], range[3]);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "  Range = %lf, %lf, %lf, %lf \n", range[0], range[1], range[2], range[3]);CHKERRQ(ierr);
 
         /* Get NODE info which associated with the current EDGE */
         ierr = EG_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);CHKERRQ(ierr);
@@ -179,10 +179,10 @@ static PetscErrorCode DMPlexEGADSPrintModel(ego model)
         } else {
           params[0] = range[0];
           ierr = EG_evaluate(edge, params, result);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF, "   between (%lf, %lf, %lf)", result[0], result[1], result[2]);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "   between (%lf, %lf, %lf)", result[0], result[1], result[2]);CHKERRQ(ierr);
           params[0] = range[1];
           ierr = EG_evaluate(edge, params, result);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF, " and (%lf, %lf, %lf)\n", result[0], result[1], result[2]);
+          ierr = PetscPrintf(PETSC_COMM_SELF, " and (%lf, %lf, %lf)\n", result[0], result[1], result[2]);CHKERRQ(ierr);
         }
 
         for (v = 0; v < Nv; ++v) {
@@ -193,7 +193,7 @@ static PetscErrorCode DMPlexEGADSPrintModel(ego model)
           ierr = EG_getTopology(vertex, &geom, &oclass, &mtype, limits, &dummy, &mobjs, &senses);CHKERRQ(ierr);
           id   = EG_indexBodyTopo(body, vertex);
           ierr = PetscPrintf(PETSC_COMM_SELF, "              NODE ID: %d \n", id);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF, "                 (x, y, z) = (%lf, %lf, %lf) \n", limits[0], limits[1], limits[2]);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "                 (x, y, z) = (%lf, %lf, %lf) \n", limits[0], limits[1], limits[2]);CHKERRQ(ierr);
 
           point[0] = point[0] + limits[0];
           point[1] = point[1] + limits[1];

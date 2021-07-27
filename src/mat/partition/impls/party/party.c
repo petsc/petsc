@@ -115,7 +115,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   close(fd_pipe[0]);
   close(fd_pipe[1]);
   if (party->verbose) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),mesg_log);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),mesg_log);CHKERRQ(ierr);
   }
   ierr = PetscFree(mesg_log);CHKERRQ(ierr);
 #endif

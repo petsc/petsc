@@ -44,7 +44,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex3.cxx", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex3.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
   /* SetUp the data structures for DMMOAB */
   ierr = DMSetUp(user.dm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(DM)*(user.nlevels+1),&dmhierarchy);
+  ierr = PetscMalloc(sizeof(DM)*(user.nlevels+1),&dmhierarchy);CHKERRQ(ierr);
   for (i=0; i<=user.nlevels; i++) dmhierarchy[i] = NULL;
 
   // coarsest grid = 0

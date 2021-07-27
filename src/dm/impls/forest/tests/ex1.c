@@ -45,13 +45,13 @@ int main (int argc, char **argv)
   ierr = DMCreateGlobalVector(forest, &g);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) g, "g");CHKERRQ(ierr);
   ierr = VecSet(g, 1.0);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_WRITE, &viewer);
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
   ierr = VecView(g, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(forest, &g2);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) g2, "g");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_READ, &viewer);
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_READ, &viewer);CHKERRQ(ierr);
   ierr = VecLoad(g2, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 

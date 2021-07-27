@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   if (!rank) {
     ierr = DMCreateGlobalVector(sda,&sxy);CHKERRQ(ierr);
   } else {
-    ierr = VecCreateSeq(PETSC_COMM_SELF,0,&sxy);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,0,&sxy);CHKERRQ(ierr);
   }
   /*  A PetscSF can also be used as a VecScatter context */
   ierr = VecScatterBegin(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

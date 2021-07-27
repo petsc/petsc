@@ -197,20 +197,20 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     if (!auglag->P) {
       ierr = PetscMalloc1(2, &auglag->Parr);CHKERRQ(ierr);
       auglag->Parr[0] = auglag->Px; auglag->Parr[1] = auglag->Ps;
-      ierr = VecConcatenate(2, auglag->Parr, &auglag->P, &auglag->Pis);
+      ierr = VecConcatenate(2, auglag->Parr, &auglag->P, &auglag->Pis);CHKERRQ(ierr);
       ierr = PetscMalloc1(2, &auglag->Pscatter);CHKERRQ(ierr);
-      ierr = VecScatterCreate(auglag->P, auglag->Pis[0], auglag->Px, NULL, &auglag->Pscatter[0]);
-      ierr = VecScatterCreate(auglag->P, auglag->Pis[1], auglag->Ps, NULL, &auglag->Pscatter[1]);
+      ierr = VecScatterCreate(auglag->P, auglag->Pis[0], auglag->Px, NULL, &auglag->Pscatter[0]);CHKERRQ(ierr);
+      ierr = VecScatterCreate(auglag->P, auglag->Pis[1], auglag->Ps, NULL, &auglag->Pscatter[1]);CHKERRQ(ierr);
     }
     if (tao->eq_constrained) {
       /* create vector for combined dual space and the associated communication objects */
       if (!auglag->Y) {
         ierr = PetscMalloc1(2, &auglag->Yarr);CHKERRQ(ierr);
         auglag->Yarr[0] = auglag->Ye; auglag->Yarr[1] = auglag->Yi;
-        ierr = VecConcatenate(2, auglag->Yarr, &auglag->Y, &auglag->Yis);
+        ierr = VecConcatenate(2, auglag->Yarr, &auglag->Y, &auglag->Yis);CHKERRQ(ierr);
         ierr = PetscMalloc1(2, &auglag->Yscatter);CHKERRQ(ierr);
-        ierr = VecScatterCreate(auglag->Y, auglag->Yis[0], auglag->Ye, NULL, &auglag->Yscatter[0]);
-        ierr = VecScatterCreate(auglag->Y, auglag->Yis[1], auglag->Yi, NULL, &auglag->Yscatter[1]);
+        ierr = VecScatterCreate(auglag->Y, auglag->Yis[0], auglag->Ye, NULL, &auglag->Yscatter[0]);CHKERRQ(ierr);
+        ierr = VecScatterCreate(auglag->Y, auglag->Yis[1], auglag->Yi, NULL, &auglag->Yscatter[1]);CHKERRQ(ierr);
       }
       if (!auglag->C) {
         ierr = VecDuplicate(auglag->Y, &auglag->C);CHKERRQ(ierr);
@@ -568,7 +568,7 @@ static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao)
   PetscFunctionBegin;
   /* if bounded, project the gradient */
   if (tao->bounded) {
-    ierr = VecBoundGradientProjection(auglag->LgradX, auglag->Px, tao->XL, tao->XU, auglag->LgradX);
+    ierr = VecBoundGradientProjection(auglag->LgradX, auglag->Px, tao->XL, tao->XU, auglag->LgradX);CHKERRQ(ierr);
   }
   if (auglag->type == TAO_ALMM_PHR) {
     ierr = VecNorm(auglag->LgradX, NORM_INFINITY, &auglag->gnorm);CHKERRQ(ierr);

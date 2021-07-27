@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 
   if (user.nlevels) {
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(DM) * (user.nlevels + 1), &dmhierarchy);
+    ierr = PetscMalloc(sizeof(DM) * (user.nlevels + 1), &dmhierarchy);CHKERRQ(ierr);
     for (k = 0; k <= user.nlevels; k++) dmhierarchy[k] = NULL;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of mesh hierarchy levels: %d\n", user.nlevels);CHKERRQ(ierr);
@@ -406,7 +406,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
        compute the basis functions and the derivatives wrt x, y and z directions */
     ierr = DMMoabFEMComputeBasis(user->dim, nconn, vpos, quadratureObj, phypts, jxw, phi, dphi);CHKERRQ(ierr);
 
-    ierr = PetscArrayzero(array, nconn * nconn);
+    ierr = PetscArrayzero(array, nconn * nconn);CHKERRQ(ierr);
 
     /* Compute function over the locally owned part of the grid */
     for (q = 0; q < npoints; ++q) {
@@ -554,7 +554,7 @@ PetscErrorCode InitializeOptions(UserContext* user)
   user->error  = PETSC_FALSE;
   bc           = (PetscInt)DIRICHLET;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex36.cxx");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex36.cxx");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-problem", "The type of problem being solved (controls forcing function)", "ex36.cxx", user->problem, &user->problem, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-n", "The elements in each direction", "ex36.cxx", user->n, &user->n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-levels", "Number of levels in the multigrid hierarchy", "ex36.cxx", user->nlevels, &user->nlevels, NULL);CHKERRQ(ierr);
@@ -572,7 +572,7 @@ PetscErrorCode InitializeOptions(UserContext* user)
   ierr = PetscOptionsBool("-error", "Compute the discrete L_2 and L_inf errors of the solution", "ex36.cxx", user->error, &user->error, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-bc", "Type of boundary condition", "ex36.cxx", bcTypes, 2, bcTypes[0], &bc, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-file", "The mesh file for the problem", "ex36.cxx", "", user->filename, sizeof(user->filename), &user->use_extfile);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (user->problem < 1 || user->problem > 2) user->problem = 1;
   user->bcType = (BCType)bc;

@@ -916,7 +916,7 @@ PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace sp, PetscSecti
     }
   }
   ierr = DMLabelDestroy(&boundary);CHKERRQ(ierr);
-  ierr = PetscSectionSetUp(section);
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

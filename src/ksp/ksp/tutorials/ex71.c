@@ -124,7 +124,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-use_composite_pc","Multiplicative composite with BDDC + Richardson/Jacobi",__FILE__,options->use_composite_pc,&options->use_composite_pc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-random_initial_guess","Solve A x = 0 with random initial guess, instead of A x = b with random b",__FILE__,options->random_initial_guess,&options->random_initial_guess,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-random_real","Use real-valued b (or x, if -random_initial_guess) instead of default scalar type",__FILE__,options->random_real,&options->random_real,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   for (n=options->dim;n<3;n++) options->cells[n] = 0;
   if (options->per[0]) options->dirbc = PETSC_FALSE;

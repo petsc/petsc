@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   ierr = MatProductSymbolic(C);CHKERRQ(ierr);
   ierr = MatProductNumeric(C);CHKERRQ(ierr);
   ierr = MatMatMultEqual(S,B,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatMatMult\n"); }
+  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatMatMult\n");CHKERRQ(ierr); }
 
   /* test MatTransposeMatMult */
   ierr = MatProductCreateWithMat(S,B,NULL,C);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ int main(int argc,char **argv)
   ierr = MatProductSymbolic(C);CHKERRQ(ierr);
   ierr = MatProductNumeric(C);CHKERRQ(ierr);
   ierr = MatTransposeMatMultEqual(S,B,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatTransposeMatMult\n"); }
+  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatTransposeMatMult\n");CHKERRQ(ierr); }
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);

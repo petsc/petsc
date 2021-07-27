@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");CHKERRQ(ierr);
   user.mu      = 1e0;
   ierr = PetscOptionsReal("-eps","Stiffness controller","",user.mu,&user.mu,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

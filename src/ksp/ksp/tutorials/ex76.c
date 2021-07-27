@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatLoad(aux,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_ksp",&flg,NULL);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_ksp",&flg,NULL);CHKERRQ(ierr);
   if (flg) { /* PETSc LU/Cholesky is struggling numerically for bs > 1          */
              /* only set the proper bs for the geneo_share_* tests, 1 otherwise */
     ierr = MatSetBlockSizesFromMats(aux,A,A);CHKERRQ(ierr);

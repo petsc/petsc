@@ -37,7 +37,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-redistribute", "Redistribute the mesh", EX, options->redistribute, &options->redistribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-heterogeneous", "Test save on N / load on M", EX, options->heterogeneous, &options->heterogeneous, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ntimes", "How many times do the cycle", EX, options->ntimes, &options->ntimes, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 };
 
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
       /* We just test/demonstrate DM is indeed distributed - unneeded in the application code */
       ierr = DMPlexIsDistributed(dm, &flg);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm, "Loaded mesh distributed? %s\n", PetscBools[flg]);
+      ierr = PetscPrintf(comm, "Loaded mesh distributed? %s\n", PetscBools[flg]);CHKERRQ(ierr);
 
       /* Interpolate */
       //TODO we want to be able to do this from options in DMSetFromOptions() probably

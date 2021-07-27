@@ -418,7 +418,7 @@ static PetscErrorCode DMCreateMatrix_Swarm(DM sw, Mat* m)
   ierr = DMRestoreGlobalVector(sw, &field);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, m);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*m);CHKERRQ(ierr);
-  ierr = MatSetSizes(*m, PETSC_DECIDE, PETSC_DECIDE, size, size);
+  ierr = MatSetSizes(*m, PETSC_DECIDE, PETSC_DECIDE, size, size);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*m, 1, NULL);CHKERRQ(ierr);
   ierr = MatZeroEntries(*m);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*m, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1697,11 +1697,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cells
   ierr = DMSetDimension(cellswarm, dim);CHKERRQ(ierr);
   ierr = DMSwarmSetType(cellswarm, DMSWARM_PIC);CHKERRQ(ierr);
   /* Destroy the unused, unconfigured data bucket to prevent stragglers in memory */
-  ierr = DMSwarmDataBucketDestroy(&((DM_Swarm*)cellswarm->data)->db);
+  ierr = DMSwarmDataBucketDestroy(&((DM_Swarm*)cellswarm->data)->db);CHKERRQ(ierr);
   ierr = DMSwarmSortGetAccess(sw);CHKERRQ(ierr);
   ierr = DMSwarmSortGetNumberOfPointsPerCell(sw, cellID, &particles);CHKERRQ(ierr);
   ierr = DMSwarmSortGetPointsPerCell(sw, cellID, &particles, &pids);CHKERRQ(ierr);
-  ierr = DMSwarmDataBucketCreateFromSubset(original->db, particles, pids, &((DM_Swarm*)cellswarm->data)->db);
+  ierr = DMSwarmDataBucketCreateFromSubset(original->db, particles, pids, &((DM_Swarm*)cellswarm->data)->db);CHKERRQ(ierr);
   ierr = DMSwarmSortRestoreAccess(sw);CHKERRQ(ierr);
   ierr = PetscFree(pids);CHKERRQ(ierr);
   ierr = DMSwarmGetCellDM(sw, &dmc);CHKERRQ(ierr);
@@ -1709,8 +1709,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cells
   ierr = DMAddLabel(dmc, label);CHKERRQ(ierr);
   ierr = DMLabelSetValue(label, cellID, 1);CHKERRQ(ierr);
   ierr = DMPlexFilter(dmc, label, 1, &subdmc);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(cellswarm, subdmc);
-  ierr = DMLabelDestroy(&label);
+  ierr = DMSwarmSetCellDM(cellswarm, subdmc);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1745,8 +1745,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM c
     ierr = DMSwarmDataBucketCopyPoint(((DM_Swarm*)cellswarm->data)->db,pids[p],((DM_Swarm*)sw->data)->db,pids[p]);CHKERRQ(ierr);
   }
   /* Free memory, destroy cell dm */
-  ierr = DMSwarmGetCellDM(cellswarm, &dmc);
-  ierr = DMDestroy(&dmc);
+  ierr = DMSwarmGetCellDM(cellswarm, &dmc);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmc);CHKERRQ(ierr);
   ierr = PetscFree(pids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
