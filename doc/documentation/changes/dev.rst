@@ -162,6 +162,10 @@ Changes: Development
 
 -  Add ``DMNetworkCreateIS()`` and ``DMNetworkCreateLocalIS()``
 
+.. rubric:: DMStag:
+
+-  Add ``DMStagStencilToIndexLocal()``
+
 .. rubric:: DT:
 
 -  Add ``PetscWeakFormCopy()``, ``PetscWeakFormClear()``, ``PetscWeakFormRewriteKeys()`` and ``PetscWeakFormClearIndex()``
