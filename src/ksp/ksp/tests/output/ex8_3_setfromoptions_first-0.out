@@ -1,0 +1,18 @@
+INERTIA=0
+NOT Solving the intermediate KSP
+Setting B
+INERTIA=0
+  0 KSP resid norm 6.164414002969e+00
+  1 KSP resid norm 2.890145528597e+00 normal eq resid norm 5.257520564995e+00 matrix norm 2.439262183530e+00
+  2 KSP resid norm 1.910317320642e+00 normal eq resid norm 3.272213010794e+00 matrix norm 3.571972919309e+00
+  3 KSP resid norm 1.390192801639e+00 normal eq resid norm 1.949418591694e+00 matrix norm 4.612230611579e+00
+  4 KSP resid norm 1.138492270658e+00 normal eq resid norm 1.376677022692e+00 matrix norm 5.427446023113e+00
+  5 KSP resid norm 9.364972960533e-01 normal eq resid norm 1.410409555890e+00 matrix norm 6.079199069267e+00
+  6 KSP resid norm 5.720486744664e-01 normal eq resid norm 1.317769959247e+00 matrix norm 6.732084019910e+00
+  7 KSP resid norm 2.238028543516e-01 normal eq resid norm 4.612263040694e-01 matrix norm 7.398990461302e+00
+  8 KSP resid norm 9.444699316100e-02 normal eq resid norm 1.983333805910e-01 matrix norm 7.789739193239e+00
+  9 KSP resid norm 4.550316737813e-02 normal eq resid norm 1.090992724861e-01 matrix norm 8.208428997450e+00
+ 10 KSP resid norm 1.442839260564e-02 normal eq resid norm 4.174176595309e-02 matrix norm 8.689485805117e+00
+ 11 KSP resid norm 4.042841222400e-03 normal eq resid norm 1.056612704749e-02 matrix norm 9.247997758451e+00
+ 12 KSP resid norm 1.067761155151e-03 normal eq resid norm 2.704423977810e-03 matrix norm 9.666965740178e+00
+ 13 KSP resid norm 6.605764869278e-05 normal eq resid norm 1.924073279585e-04 matrix norm 1.001853182120e+01
