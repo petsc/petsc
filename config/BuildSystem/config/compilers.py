@@ -725,7 +725,7 @@ class Configure(config.base.Configure):
             break
 
     for dlct in dialects[:maxDialect]:
-      self.addDefine('HAVE_{lng}_DIALECT_CXX{ver}'.format(lng=LANG,ver=dialectNum),1)
+      self.addDefine('HAVE_{lng}_DIALECT_CXX{ver}'.format(lng=LANG,ver=dlct['num'][3:]),1)
     setattr(self,lang+'dialect',dialects[maxDialect-1]['num'].upper()) # record the result
     return
 
