@@ -9,7 +9,7 @@ class Configure(config.package.CMakePackage):
     self.liblist           = [['libparmetis.a']]
     self.hastests          = 1
     self.cxx               = 1
-    self.requirescxx11     = 1
+    self.minCxxVersion     = 'c++11'
     self.downloaddirnames  = ['CombBLAS']
 
 

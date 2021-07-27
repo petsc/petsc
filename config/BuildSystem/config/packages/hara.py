@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.precisions             = ['single','double']
     self.skippackagewithoptions = 1
     self.cxx                    = 1
-    self.requirescxx11          = 1
+    self.minCxxVersion          = 'c++11'
     self.liblist                = [['libhara.a']]
     self.includes               = ['hara.h']
     self.complex                = 0

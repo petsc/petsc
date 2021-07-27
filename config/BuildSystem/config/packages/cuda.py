@@ -257,9 +257,11 @@ to set the right generation for your hardware.')
 
       # TODO: How to handle MPI compiler wrapper as opposed to its underlying compiler
       if out == self.compilers.CC or out == self.compilers.CXX:
-        # nvcc will say it is using gcc as its compiler, it pass a flag when using to treat it as a C++ compiler
-        self.setCompilers.CUDA_CXXFLAGS = self.setCompilers.CPPFLAGS+' '+self.setCompilers.CFLAGS
-        self.setCompilers.CUDA_CXXFLAGS += self.setCompilers.CXXPPFLAGS+' '+self.setCompilers.CXXFLAGS
+        # nvcc will say it is using gcc as its compiler, it pass a flag when using to
+        # treat it as a C++ compiler
+        newFlags = self.setCompilers.CPPFLAGS.split()+self.setCompilers.CFLAGS.split()+self.setCompilers.CXXPPFLAGS.split()+self.setCompilers.CXXFLAGS.split()
+        # need to remove the std flag from the list, nvcc will already have its own flag set
+        self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++'))])
       else:
         # only add any -I arguments since compiler arguments may not work
         flags = self.setCompilers.CPPFLAGS.split(' ')+self.setCompilers.CFLAGS.split(' ')+self.setCompilers.CXXFLAGS.split(' ')

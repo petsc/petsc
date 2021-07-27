@@ -13,6 +13,7 @@ class Configure(config.package.GNUPackage):
     self.includes          = ['moab/Core.hpp']
     self.liblist           = [['libiMesh.a', 'libMOAB.a'],['libMOAB.a']]
     self.cxx               = 1
+    self.maxCxxVersion     = 'c++14'
     self.precisions        = ['single','double']
     self.hastests          = 1
     self.useddirectly      = 0

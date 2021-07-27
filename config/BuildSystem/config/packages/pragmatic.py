@@ -9,7 +9,7 @@ class Configure(config.package.CMakePackage):
     self.functions         = ['pragmatic_2d_init']
     self.includes          = ['pragmatic/pragmatic.h']
     self.liblist           = [['libpragmatic.a']]
-    self.requirescxx11     = 1
+    self.minCxxVersion     = 'c++11'
     return
 
   def setupDependencies(self, framework):

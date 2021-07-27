@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.includes      = ['codi/adjointInterface.hpp']
     self.liblist       = []
     self.cxx           = 1
-    self.requirescxx11 = 1
+    self.minCxxVersion = 'c++11'
     return
 
   def setupDependencies(self, framework):
