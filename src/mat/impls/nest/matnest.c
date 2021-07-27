@@ -2112,17 +2112,11 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(A,&cstart,&cend);CHKERRQ(ierr);
-  switch (reuse) {
-  case MAT_INITIAL_MATRIX:
-    ierr    = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
-    ierr    = MatSetType(C,newtype);CHKERRQ(ierr);
-    ierr    = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
-    *newmat = C;
-    break;
-  case MAT_REUSE_MATRIX:
-    C = *newmat;
-    break;
-  default: SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatReuse");
+  if (reuse == MAT_REUSE_MATRIX) C = *newmat;
+  else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
+    ierr = MatSetType(C,newtype);CHKERRQ(ierr);
+    ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(2*m,&dnnz);CHKERRQ(ierr);
   onnz = dnnz + m;
@@ -2205,6 +2199,9 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
   ierr = MatMPIAIJSetPreallocation(C,0,dnnz,0,onnz);CHKERRQ(ierr);
   ierr = PetscFree(dnnz);CHKERRQ(ierr);
   ierr = MatAXPY_Dense_Nest(C,1.0,A);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&C);CHKERRQ(ierr);
+  } else *newmat = C;
   PetscFunctionReturn(0);
 }
 
