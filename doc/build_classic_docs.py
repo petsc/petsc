@@ -8,15 +8,12 @@ import shutil
 import argparse
 
 CLASSIC_DOCS_LOC = os.path.join(os.getcwd(), '_build_classic')
-HTML_EXTRA_DIR = os.path.join('generated', 'html_extra')
 
 def main():
     """ Operations to provide data from the 'classic' PETSc docs system. """
     petsc_dir = os.path.abspath('..')
     petsc_arch = _configure_minimal_petsc(petsc_dir)
     _build_classic_docs_subset(petsc_dir, petsc_arch)
-    _populate_html_extra_from_classic_docs()
-    return HTML_EXTRA_DIR
 
 
 def clean():
@@ -24,7 +21,7 @@ def clean():
 
         Does not remove the configuration of PETSc.
     """
-    for directory in [CLASSIC_DOCS_LOC, HTML_EXTRA_DIR]:
+    for directory in [CLASSIC_DOCS_LOC]:
         print('Removing %s' % directory)
         if os.path.isdir(directory):
             shutil.rmtree(directory)
@@ -86,11 +83,10 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch):
         subprocess.run(command, cwd=petsc_dir, check=True)
 
 
-def _populate_html_extra_from_classic_docs():
-    _mkdir_p(HTML_EXTRA_DIR)
+def copy_classic_docs(outdir):
     subdirs = ['docs', 'include', 'src']
     for subdir in subdirs:
-        target = os.path.join(HTML_EXTRA_DIR, subdir)
+        target = os.path.join(outdir, subdir)
         if os.path.isdir(target):
             shutil.rmtree(target)
         source = os.path.join(CLASSIC_DOCS_LOC, subdir)
