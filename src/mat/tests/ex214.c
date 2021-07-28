@@ -126,7 +126,7 @@ int main(int argc,char **args)
 
     ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
     if (displ) {
-      if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(2) first %D columns of inv(A) with dense RHS:\n",nrhs);}
+      if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(2) first %D columns of inv(A) with dense RHS:\n",nrhs);CHKERRQ(ierr);}
       ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 
@@ -166,7 +166,7 @@ int main(int argc,char **args)
     ierr = MatMatTransposeSolve(F,spRHST,X);CHKERRQ(ierr);
 
     if (displ) {
-      if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(3) first %D columns of inv(A) with sparse RHS:\n",nrhs);}
+      if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(3) first %D columns of inv(A) with sparse RHS:\n",nrhs);CHKERRQ(ierr);}
       ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 

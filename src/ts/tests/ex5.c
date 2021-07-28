@@ -720,7 +720,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 
   if (step%user->interval == 0) {
     ierr = VecGetArrayRead(T,&array);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"step %D, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"step %D, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(T,&array);CHKERRQ(ierr);
   }
 

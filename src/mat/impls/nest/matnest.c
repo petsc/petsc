@@ -2027,7 +2027,7 @@ PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat Y,PetscScalar a,Mat X)
         ierr = PetscFree(cols);CHKERRQ(ierr);
       }
       if (D) {
-        ierr = MatDestroy(&D);
+        ierr = MatDestroy(&D);CHKERRQ(ierr);
       }
       ierr = ISRestoreIndices(nest->isglobal.row[i],&bmindices);CHKERRQ(ierr);
     }

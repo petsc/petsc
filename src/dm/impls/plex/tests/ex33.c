@@ -64,7 +64,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   ierr = PetscOptionsReal("-volume", "The analytical volume of the mesh", "ex33.c", options->volume, &options->volume, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tol", "The tolerance for the volume check", "ex33.c", options->tol, &options->tol, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -234,7 +234,7 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *ctx)
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
   ierr = PetscFESetName(fe, "scalar");CHKERRQ(ierr);
-  ierr = DMAddField(dm, NULL, (PetscObject) fe);
+  ierr = DMAddField(dm, NULL, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = DMCreateDS(dm);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);

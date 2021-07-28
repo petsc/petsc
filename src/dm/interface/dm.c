@@ -9606,7 +9606,7 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
     }
     ierr = DMCreateDS(edm);CHKERRQ(ierr);
 
-    ierr = DMCreateGlobalVector(edm, errorVec);
+    ierr = DMCreateGlobalVector(edm, errorVec);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *errorVec, "Error");CHKERRQ(ierr);
     ierr = DMPlexComputeL2DiffVec(dm, time, exactSol, ctxs, sol, *errorVec);CHKERRQ(ierr);
     ierr = DMDestroy(&edm);CHKERRQ(ierr);

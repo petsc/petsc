@@ -64,7 +64,7 @@ PetscErrorCode TestMPIDerivedDataType()
     ierr = MPI_Recv(buffer, 6, rtype2, 0, 123, MPI_COMM_WORLD, &status);CHKERRMPI(ierr);
     for (i=0; i<4; i++) {
       for (j=0; j<6; j++) {
-        ierr = PetscPrintf(MPI_COMM_SELF,"  %g", (double)PetscRealPart(buffer[i+j*4]));
+        ierr = PetscPrintf(MPI_COMM_SELF,"  %g", (double)PetscRealPart(buffer[i+j*4]));CHKERRQ(ierr);
       }
       ierr = PetscPrintf(MPI_COMM_SELF,"\n");CHKERRQ(ierr);
     }

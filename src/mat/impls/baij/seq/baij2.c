@@ -3208,19 +3208,19 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
   switch (bs) {
   case 1:
-    ierr = MatMatMult_SeqBAIJ_1_Private(A, b, bm, c, cm, cn);
+    ierr = MatMatMult_SeqBAIJ_1_Private(A, b, bm, c, cm, cn);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = MatMatMult_SeqBAIJ_2_Private(A, b, bm, c, cm, cn);
+    ierr = MatMatMult_SeqBAIJ_2_Private(A, b, bm, c, cm, cn);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = MatMatMult_SeqBAIJ_3_Private(A, b, bm, c, cm, cn);
+    ierr = MatMatMult_SeqBAIJ_3_Private(A, b, bm, c, cm, cn);CHKERRQ(ierr);
     break;
   case 4:
-    ierr = MatMatMult_SeqBAIJ_4_Private(A, b, bm, c, cm, cn);
+    ierr = MatMatMult_SeqBAIJ_4_Private(A, b, bm, c, cm, cn);CHKERRQ(ierr);
     break;
   case 5:
-    ierr = MatMatMult_SeqBAIJ_5_Private(A, b, bm, c, cm, cn);
+    ierr = MatMatMult_SeqBAIJ_5_Private(A, b, bm, c, cm, cn);CHKERRQ(ierr);
     break;
   default: /* block sizes larger than 5 by 5 are handled by BLAS */
     ierr = PetscBLASIntCast(bs,&bbs);CHKERRQ(ierr);

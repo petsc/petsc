@@ -334,7 +334,7 @@ int main (int argc, char **argv)
   ierr = PetscOptionsRangeInt("-tensor", "(0) simplex (1) hypercube (2) wedge","ex1.c",tensorCell,&tensorCell,NULL,0,2);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-continuous", "Whether the dual space has continuity","ex1.c",continuous,&continuous,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-trimmed", "Whether the dual space matches a trimmed polynomial space","ex1.c",trimmed,&trimmed,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscHashLagCreate(&lagTable);CHKERRQ(ierr);
 
   if (tensorCell < 2) {

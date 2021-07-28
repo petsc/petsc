@@ -295,8 +295,8 @@ static PetscErrorCode TaoSetFromOptions_BRGN(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsBool("-tao_brgn_mat_explicit","switches the Hessian construction to be an explicit matrix rather than MATSHELL","",gn->mat_explicit,&gn->mat_explicit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_regularizer_weight","regularizer weight (default 1e-4)","",gn->lambda,&gn->lambda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_l1_smooth_epsilon","L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)","",gn->epsilon,&gn->epsilon,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_brgn_lm_downhill_lambda_change","Factor to decrease trust region by on downhill steps","",gn->downhill_lambda_change,&gn->downhill_lambda_change,NULL);
-  ierr = PetscOptionsReal("-tao_brgn_lm_uphill_lambda_change","Factor to increase trust region by on uphill steps","",gn->uphill_lambda_change,&gn->uphill_lambda_change,NULL);
+  ierr = PetscOptionsReal("-tao_brgn_lm_downhill_lambda_change","Factor to decrease trust region by on downhill steps","",gn->downhill_lambda_change,&gn->downhill_lambda_change,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_brgn_lm_uphill_lambda_change","Factor to increase trust region by on uphill steps","",gn->uphill_lambda_change,&gn->uphill_lambda_change,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_brgn_regularization_type","regularization type", "",BRGN_REGULARIZATION_TABLE,BRGN_REGULARIZATION_TYPES,BRGN_REGULARIZATION_TABLE[gn->reg_type],&gn->reg_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set unit line search direction as the default when using the lm regularizer */
@@ -378,14 +378,14 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     /* Hessian setup */
     if (gn->mat_explicit) {
       ierr = TaoComputeResidualJacobian(tao,tao->solution,tao->ls_jac,tao->ls_jac_pre);CHKERRQ(ierr);
-      ierr = MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &gn->H);
+      ierr = MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &gn->H);CHKERRQ(ierr);
     } else {
       ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
       ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
       ierr = MatCreate(PetscObjectComm((PetscObject)tao),&gn->H);CHKERRQ(ierr);
       ierr = MatSetSizes(gn->H,n,n,N,N);CHKERRQ(ierr);
       ierr = MatSetType(gn->H,MATSHELL);CHKERRQ(ierr);
-      ierr = MatSetOption(gn->H, MAT_SYMMETRIC, PETSC_TRUE);
+      ierr = MatSetOption(gn->H, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
       ierr = MatShellSetOperation(gn->H,MATOP_MULT,(void (*)(void))GNHessianProd);CHKERRQ(ierr);
       ierr = MatShellSetContext(gn->H,(void*)gn);CHKERRQ(ierr);
     }

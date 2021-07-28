@@ -169,7 +169,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
 
   ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
   ierr = PetscStrlcat(filename,"Aeq",sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);
+  ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
   if (ierr) {
     user->Aeq = NULL;
     user->me  = 0;

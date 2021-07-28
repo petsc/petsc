@@ -80,9 +80,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(Asp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   percent=(PetscReal)nnzA*100/(m*n);
-  ierr   = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix A local size %d,%d; nnzA %d, %g percent; No. of zero rows: %d\n",rank,m,n,nnzA,percent,nrows);
+  ierr   = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix A local size %d,%d; nnzA %d, %g percent; No. of zero rows: %d\n",rank,m,n,nnzA,percent,nrows);CHKERRQ(ierr);
   percent=(PetscReal)nnzAsp*100/(m*n);
-  ierr   = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix Asp nnzAsp %d, %g percent\n",rank,nnzAsp,percent);
+  ierr   = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix Asp nnzAsp %d, %g percent\n",rank,nnzAsp,percent);CHKERRQ(ierr);
 
   /* investigate matcoloring for Asp */
   PetscBool Asp_coloring = PETSC_FALSE;
@@ -91,7 +91,7 @@ int main(int argc,char **args)
     MatColoring   mc;
     ISColoring    iscoloring;
     MatFDColoring matfdcoloring;
-    ierr = PetscPrintf(PETSC_COMM_WORLD," Create coloring of Asp...\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD," Create coloring of Asp...\n");CHKERRQ(ierr);
     ierr = MatColoringCreate(Asp,&mc);CHKERRQ(ierr);
     ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
     ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
@@ -110,7 +110,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(NULL,NULL,"-Asp_write",&Asp_write);CHKERRQ(ierr);
   if (Asp_write) {
     PetscViewer viewer;
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Write Asp into file Asp.dat ...\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Write Asp into file Asp.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"Asp.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = MatView(Asp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

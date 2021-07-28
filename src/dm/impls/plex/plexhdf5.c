@@ -1019,10 +1019,10 @@ static herr_t ReadLabelStratumHDF5_Static(hid_t g_id, const char *name, const H5
   char            group[PETSC_MAX_PATH_LEN];
   PetscErrorCode  ierr;
 
-  ierr = PetscOptionsStringToInt(name, &value);
-  ierr = ISCreate(PetscObjectComm((PetscObject) viewer), &stratumIS);
-  ierr = PetscObjectSetName((PetscObject) stratumIS, "indices");
-  ierr = PetscObjectGetName((PetscObject) label, &lname);
+  ierr = PetscOptionsStringToInt(name, &value);CHKERRQ(ierr);
+  ierr = ISCreate(PetscObjectComm((PetscObject) viewer), &stratumIS);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) stratumIS, "indices");CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) label, &lname);CHKERRQ(ierr);
   ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s/%s", lname, name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
   {
@@ -1031,13 +1031,13 @@ static herr_t ReadLabelStratumHDF5_Static(hid_t g_id, const char *name, const H5
     ierr = PetscLayoutSetLocalSize(stratumIS->map, !((LabelCtx *) op_data)->rank ? N : 0);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(stratumIS->map, N);CHKERRQ(ierr);
   }
-  ierr = ISLoad(stratumIS, viewer);
+  ierr = ISLoad(stratumIS, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(stratumIS, &N);
-  ierr = ISGetIndices(stratumIS, &ind);
-  for (i = 0; i < N; ++i) {ierr = DMLabelSetValue(label, ind[i], value);}
-  ierr = ISRestoreIndices(stratumIS, &ind);
-  ierr = ISDestroy(&stratumIS);
+  ierr = ISGetLocalSize(stratumIS, &N);CHKERRQ(ierr);
+  ierr = ISGetIndices(stratumIS, &ind);CHKERRQ(ierr);
+  for (i = 0; i < N; ++i) {ierr = DMLabelSetValue(label, ind[i], value);CHKERRQ(ierr);}
+  ierr = ISRestoreIndices(stratumIS, &ind);CHKERRQ(ierr);
+  ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
   return 0;
 }
 

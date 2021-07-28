@@ -127,7 +127,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   if ((ksp->rnorm > 0.0) && (PetscAbsReal(res-ksp->rnorm) > gmres->breakdowntol*gmres->rnorm0)) {
       if (ksp->errorifnotconverged) SETERRQ3(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0);
       else {
-        ierr = PetscInfo3(ksp,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0);
+        ierr = PetscInfo3(ksp,"Residual norm computed by GMRES recursion formula %g is far from the computed residual norm %g at restart, residual norm at start of cycle %g",(double)ksp->rnorm,(double)res,(double)gmres->rnorm0);CHKERRQ(ierr);
         ksp->reason =  KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
       }

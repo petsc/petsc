@@ -36,7 +36,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   pt   = options->pointType;
   ierr = PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL);CHKERRQ(ierr);
   options->pointType = (PointType) pt;
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

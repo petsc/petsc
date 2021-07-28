@@ -1154,8 +1154,8 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
   if (flg) {
     ierr = PCGetOperators(ksp->pc, &A, NULL);CHKERRQ(ierr);
     ierr = MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &R);CHKERRQ(ierr);
-    ierr = MatAYPX(R, -1.0, B, SAME_NONZERO_PATTERN);
-    ierr = MatGetSize(R, NULL, &N);
+    ierr = MatAYPX(R, -1.0, B, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatGetSize(R, NULL, &N);CHKERRQ(ierr);
     ierr = PetscMalloc1(N, &norms);CHKERRQ(ierr);
     ierr = MatGetColumnNorms(R, NORM_2, norms);CHKERRQ(ierr);
     ierr = MatDestroy(&R);CHKERRQ(ierr);

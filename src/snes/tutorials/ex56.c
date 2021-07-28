@@ -337,7 +337,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg) {
     DM newdm;
     ierr = DMConvert(dm,convType,&newdm);CHKERRQ(ierr);

@@ -33,7 +33,7 @@ static PetscErrorCode CreateFE(DM dm)
 
   PetscFunctionBeginUser;
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetField(cdm, 0, NULL, (PetscObject*) &fe);
+  ierr = DMGetField(cdm, 0, NULL, (PetscObject*) &fe);CHKERRQ(ierr);
   ierr = PetscFEGetBasisSpace(fe, &P);CHKERRQ(ierr);
   ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDM(Q,&K);CHKERRQ(ierr);

@@ -1306,7 +1306,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
         HYPRE_Int hnc = (HYPRE_Int)nzc;
 
         if ((PetscInt)hnc != nzc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hypre overflow! number of columns %D for row %D",nzc,rows[i]);
-        for (j=0;j<nzc;j++) { ierr = PetscHYPREScalarCast(vals[cscr[1][j]],&sscr[j]); }
+        for (j=0;j<nzc;j++) { ierr = PetscHYPREScalarCast(vals[cscr[1][j]],&sscr[j]);CHKERRQ(ierr); }
         PetscStackCallStandard(HYPRE_IJMatrixAddToValues,(hA->ij,1,&hnc,(HYPRE_BigInt*)(rows+i),(HYPRE_BigInt*)cscr[0],sscr));
       }
       vals += nc;
@@ -1321,7 +1321,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
         HYPRE_Int hnc = (HYPRE_Int)nzc;
 
         if ((PetscInt)hnc != nzc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hypre overflow! number of columns %D for row %D",nzc,rows[i]);
-        for (j=0;j<nzc;j++) { ierr = PetscHYPREScalarCast(vals[cscr[1][j]],&sscr[j]); }
+        for (j=0;j<nzc;j++) { ierr = PetscHYPREScalarCast(vals[cscr[1][j]],&sscr[j]);CHKERRQ(ierr); }
         /* nonlocal values */
         if (rows[i] < rst || rows[i] >= ren) { ierr = MatStashValuesRow_Private(&A->stash,rows[i],nzc,cscr[0],(PetscScalar*)sscr,PETSC_FALSE);CHKERRQ(ierr); }
         /* local values */
@@ -1955,7 +1955,7 @@ static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
     ierr = MatHYPREGetParCSR_HYPRE(A,&acsr);CHKERRQ(ierr);
     ierr = MatHYPREGetParCSR_HYPRE(B,&bcsr);CHKERRQ(ierr);
     PetscStackCallStandard(hypre_ParCSRMatrixCopy,(acsr,bcsr,1));
-    ierr = MatSetOption(B,MAT_SORTED_FULL,PETSC_TRUE); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
+    ierr = MatSetOption(B,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {

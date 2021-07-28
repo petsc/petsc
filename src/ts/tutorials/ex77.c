@@ -354,7 +354,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   n    = 3;
   ierr = PetscOptionsRealArray("-part_upper", "The upper right corner of the particle box", "ex77.c", options->partUpper, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-Npb", "The initial number of particles per box dimension", "ex77.c", options->Npb, &options->Npb, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -983,7 +983,7 @@ int main(int argc, char **argv)
   ierr = TSSetComputeInitialCondition(sts, SetInitialParticleConditions);CHKERRQ(ierr);
   adv.ti = t;
   adv.uf = u;
-  ierr = VecDuplicate(adv.uf, &adv.ui);
+  ierr = VecDuplicate(adv.uf, &adv.ui);CHKERRQ(ierr);
   ierr = VecCopy(u, adv.ui);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(sts, NULL, FreeStreaming, &adv);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts, AdvectParticles);CHKERRQ(ierr);

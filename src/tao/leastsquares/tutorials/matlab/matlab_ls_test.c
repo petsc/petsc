@@ -135,7 +135,7 @@ int main(int argc, char **argv)
   }
 
   for (i = i0; i <= imax; ++i) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",i);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",i);CHKERRQ(ierr);
       ierr = PetscMatlabEngineEvaluate(user.mengine,"np = %d; ProblemInitialize",i);CHKERRQ(ierr);
       ierr = PetscMatlabEngineGetArray(user.mengine,1,1,&tmp,"n");CHKERRQ(ierr);
       user.n = (int)tmp;

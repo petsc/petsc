@@ -2907,7 +2907,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm,Mat inmat
     ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
     mbs = m/bs; Nbs = N/cbs;
     if (n == PETSC_DECIDE) {
-      ierr = PetscSplitOwnershipBlock(comm,cbs,&n,&N);
+      ierr = PetscSplitOwnershipBlock(comm,cbs,&n,&N);CHKERRQ(ierr);
     }
     nbs = n/cbs;
 

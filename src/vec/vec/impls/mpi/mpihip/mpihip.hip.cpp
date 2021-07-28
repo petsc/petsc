@@ -55,7 +55,7 @@ PetscErrorCode VecNorm_MPIHIP(Vec xin,NormType type,PetscReal *z)
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    ierr  = VecNorm_SeqHIP(xin,NORM_2,&work);
+    ierr  = VecNorm_SeqHIP(xin,NORM_2,&work);CHKERRQ(ierr);
     work *= work;
     ierr  = MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
     *z    = PetscSqrtReal(sum);

@@ -26,7 +26,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBoundedInt("-num_strata", "The number of label values", "ex6.c", options->numStrata, &options->numStrata, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-pend", "The label point limit", "ex6.c", options->pEnd, &options->pEnd, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-fill", "The percentage of label chart to set", "ex6.c", options->fill, &options->fill, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

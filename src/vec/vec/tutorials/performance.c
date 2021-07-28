@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
   /* send v to GPU */
   ierr = PetscBarrier(NULL);CHKERRQ(ierr);
-  ierr = VecNorm(v,NORM_1,&norm1);
+  ierr = VecNorm(v,NORM_1,&norm1);CHKERRQ(ierr);
 
   /* register a stage work on GPU */
   ierr = PetscLogStageRegister("Work on GPU", &stage);CHKERRQ(ierr);

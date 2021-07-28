@@ -2509,7 +2509,7 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
   PetscValidPointer(expandedPoints, 3);
   ierr = DMPlexGetConeRecursive(dm, points, &depth, &expandedPointsAll, NULL);CHKERRQ(ierr);
   *expandedPoints = expandedPointsAll[0];
-  ierr = PetscObjectReference((PetscObject)expandedPointsAll[0]);
+  ierr = PetscObjectReference((PetscObject)expandedPointsAll[0]);CHKERRQ(ierr);
   ierr = DMPlexRestoreConeRecursive(dm, points, &depth, &expandedPointsAll, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -8423,7 +8423,7 @@ PetscErrorCode DMPlexCheckPointSF(DM dm)
   if (!distributed) PetscFunctionReturn(0);
   ierr = DMPlexGetOverlap(dm, &overlap);CHKERRQ(ierr);
   if (overlap) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Warning: DMPlexCheckPointSF() is currently not implemented for meshes with partition overlapping");
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Warning: DMPlexCheckPointSF() is currently not implemented for meshes with partition overlapping");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (!pointSF) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but does not have PointSF attached");

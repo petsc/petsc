@@ -490,7 +490,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   if (D) {
     ierr = MatGetLocalSize(D, &m, &n);CHKERRQ(ierr);
     ierr = MatGetSize(D, &M, &N);CHKERRQ(ierr);
-    ierr = MatCreateDense(PetscObjectComm((PetscObject)A), m, n, M, N, NULL, S);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)A), m, n, M, N, NULL, S);CHKERRQ(ierr);
   }
   ierr = MatMatMult(C, AinvBd, D ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DEFAULT, S);CHKERRQ(ierr);
   ierr = MatDestroy(&AinvBd);CHKERRQ(ierr);

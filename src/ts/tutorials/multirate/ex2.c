@@ -180,7 +180,7 @@ int main(int argc,char **argv)
   ierr = TSGetTime(ts,&tt);CHKERRQ(ierr);
   ierr = sol_true(tt,Utrue,&ctx);CHKERRQ(ierr);
   ierr = VecAXPY(Utrue,-1.0,U);CHKERRQ(ierr);
-  ierr = VecNorm(Utrue,NORM_2,&error);
+  ierr = VecNorm(Utrue,NORM_2,&error);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Print norm2 error

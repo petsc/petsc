@@ -23,7 +23,7 @@ PetscErrorCode DMPlexGetCeedRestriction(DM dm, CeedElemRestriction *ERestrict)
     ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
     if (simplex) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "LibCEED does not work with simplices");
     ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-    ierr = PetscDSGetNumFields(ds, &Nf);
+    ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
     if (Nf != 1) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "LibCEED only works with one field right now");
     ierr = PetscDSGetComponents(ds, &Nc);CHKERRQ(ierr);
     ierr = PetscDSGetDiscretization(ds, 0, (PetscObject *) &fe);CHKERRQ(ierr);

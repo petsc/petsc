@@ -17,7 +17,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->test = 0;
   ierr = PetscOptionsBegin(comm, "", "Zero-sized DMPlexGetCellFields Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-test", "Test to run", FILENAME, options->test, &options->test, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

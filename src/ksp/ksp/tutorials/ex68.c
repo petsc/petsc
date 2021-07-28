@@ -83,7 +83,7 @@ int main(int argc,char **args)
        compute GLL node and weight values
     */
     ierr = PetscMalloc2(n,&nodes,n,&weights);CHKERRQ(ierr);
-    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights);
+    ierr = PetscDTGaussLobattoLegendreQuadrature(n,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights);CHKERRQ(ierr);
     /*
        Creates the element stiffness matrix for the given gll
     */

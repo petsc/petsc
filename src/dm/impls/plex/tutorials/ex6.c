@@ -31,7 +31,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     ierr = PetscOptionsIntArray("-order", "The spectral order per field", "ex6.c", options->k, &len, &flg);CHKERRQ(ierr);
     if (flg && (len != options->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of order array is %d should be %d", len, options->Nf);
   }
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -692,12 +692,12 @@ int main(int argc, char **argv)
     ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
     ierr = VecDuplicate(X,&vec);CHKERRQ(ierr);
     ierr = VecCopy(X,vec);CHKERRQ(ierr);
-    ierr = TSGetMaxSteps(ts,&nsteps);
+    ierr = TSGetMaxSteps(ts,&nsteps);CHKERRQ(ierr);
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-    ierr = TSSetMaxSteps(ts,1);
+    ierr = TSSetMaxSteps(ts,1);CHKERRQ(ierr);
     ierr = TSSetSolution(ts,vec);CHKERRQ(ierr);
     ierr = TSSolve(ts,vec);CHKERRQ(ierr);
-    ierr = TSSetMaxSteps(ts,nsteps);
+    ierr = TSSetMaxSteps(ts,nsteps);CHKERRQ(ierr);
     ierr = TSSetStepNumber(ts,0);CHKERRQ(ierr);
     ierr = TSSetTime(ts,0);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);

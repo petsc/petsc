@@ -97,10 +97,10 @@ int main(int argc,char **args)
   if (N2%2==0) NM=N2+2;
   else NM=N2+1;
 
-  ierr = VecGetOwnershipRange(fin,&low,NULL);
+  ierr = VecGetOwnershipRange(fin,&low,NULL);CHKERRQ(ierr);
   printf("The local index is %d from %d\n",low,rank);
-  ierr = PetscMalloc1(local_n0*N1*N2,&indx3);
-  ierr = PetscMalloc1(local_n0*N1*N2,&indx4);
+  ierr = PetscMalloc1(local_n0*N1*N2,&indx3);CHKERRQ(ierr);
+  ierr = PetscMalloc1(local_n0*N1*N2,&indx4);CHKERRQ(ierr);
   for (i=0; i<local_n0; i++) {
     for (j=0;j<N1;j++) {
       for (k=0;k<N2;k++) {

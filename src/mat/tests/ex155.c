@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(input,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(input);CHKERRQ(ierr);
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
-  ierr = VecDuplicate(input,&output);
+  ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
 
   DIM  = 2; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
