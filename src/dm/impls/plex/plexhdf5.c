@@ -448,7 +448,8 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   IS                    pointsIS, coneSizesIS, conesIS, orientationsIS;
   PetscInt             *points, *coneSizes, *cones, *orientations;
   const PetscInt       *gpoint;
-  PetscInt              dim, pStart, pEnd, p, nPoints = 0, conesSize = 0, c = 0, s = 0;
+  PetscInt              pStart, pEnd, nPoints = 0, conesSize = 0;
+  PetscInt              p, c, s;
   DMPlexStorageVersion  version;
   char                  group[PETSC_MAX_PATH_LEN];
   PetscErrorCode        ierr;
@@ -459,10 +460,15 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   conesName         = "cells";
   orientationsName  = "orientation";
   ierr = DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version);CHKERRQ(ierr);
-  ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (version.major <= 1) {
+    ierr = PetscStrcpy(group, "/topology");CHKERRQ(ierr);
+  } else {
+    ierr = PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     if (gpoint[p] >= 0) {
       PetscInt coneSize;
@@ -476,7 +482,7 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   ierr = PetscMalloc1(nPoints, &coneSizes);CHKERRQ(ierr);
   ierr = PetscMalloc1(conesSize, &cones);CHKERRQ(ierr);
   ierr = PetscMalloc1(conesSize, &orientations);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
+  for (p = pStart, c = 0, s = 0; p < pEnd; ++p) {
     if (gpoint[p] >= 0) {
       const PetscInt *cone, *ornt;
       PetscInt        coneSize, cp;
@@ -484,38 +490,41 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
       ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, p, &ornt);CHKERRQ(ierr);
-      points[s]   = gpoint[p];
-      coneSizes[s++] = coneSize;
-      for (cp = 0; cp < coneSize; ++cp, ++c) {cones[c] = gpoint[cone[cp]] < 0 ? -(gpoint[cone[cp]]+1) : gpoint[cone[cp]]; orientations[c] = ornt[cp];}
+      points[s]    = gpoint[p];
+      coneSizes[s] = coneSize;
+      for (cp = 0; cp < coneSize; ++cp, ++c) {
+        cones[c] = gpoint[cone[cp]] < 0 ? -(gpoint[cone[cp]]+1) : gpoint[cone[cp]];
+        orientations[c] = ornt[cp];
+      }
+      ++s;
     }
   }
   PetscCheckFalse(s != nPoints,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of points %D != %D", s, nPoints);
   PetscCheckFalse(c != conesSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cone points %D != %D", c, conesSize);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), nPoints, points, PETSC_OWN_POINTER, &pointsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) pointsIS, pointsName);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), nPoints, coneSizes, PETSC_OWN_POINTER, &coneSizesIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coneSizesIS, coneSizesName);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, cones, PETSC_OWN_POINTER, &conesIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) conesIS, conesName);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, orientations, PETSC_OWN_POINTER, &orientationsIS);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) pointsIS, pointsName);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coneSizesIS, coneSizesName);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) conesIS, conesName);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) orientationsIS, orientationsName);CHKERRQ(ierr);
-  if (version.major <= 1) {
-    ierr = PetscStrcpy(group, "/topology");CHKERRQ(ierr);
-  } else {
-    ierr = PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
   ierr = ISView(pointsIS, viewer);CHKERRQ(ierr);
   ierr = ISView(coneSizesIS, viewer);CHKERRQ(ierr);
   ierr = ISView(conesIS, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject) conesIS, "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
   ierr = ISView(orientationsIS, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = ISDestroy(&pointsIS);CHKERRQ(ierr);
   ierr = ISDestroy(&coneSizesIS);CHKERRQ(ierr);
   ierr = ISDestroy(&conesIS);CHKERRQ(ierr);
   ierr = ISDestroy(&orientationsIS);CHKERRQ(ierr);
   ierr = ISRestoreIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
+  {
+    PetscInt dim;
+
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5WriteAttribute(viewer, conesName, "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1443,7 +1452,10 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   ierr = ISGetIndices(orientationsIS, &orientations);CHKERRQ(ierr);
   ierr = PetscMalloc2(maxConeSize,&cone,maxConeSize,&ornt);CHKERRQ(ierr);
   for (p = 0, q = 0; p < pEnd; ++p) {
-    for (c = 0; c < coneSizes[p]; ++c, ++q) {cone[c] = cones[q]; ornt[c] = orientations[q];}
+    for (c = 0; c < coneSizes[p]; ++c, ++q) {
+      cone[c] = cones[q];
+      ornt[c] = orientations[q];
+    }
     ierr = DMPlexSetCone(dm, points[p], cone);CHKERRQ(ierr);
     ierr = DMPlexSetConeOrientation(dm, points[p], ornt);CHKERRQ(ierr);
   }
