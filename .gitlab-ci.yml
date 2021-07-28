@@ -169,7 +169,7 @@ checksource:
     - make check_petsc4py_rst
 
 pause-for-approval:
-  extends: .test-basic
+  extends: .test
   stage: .pre
   tags:
     - stage1
