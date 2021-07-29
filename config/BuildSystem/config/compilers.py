@@ -660,7 +660,7 @@ class Configure(config.base.Configure):
     startDialect = dialects[maxDialect-1]['num']
     self.logPrint('checkCxxDialect: user has {expl} selected {lang} dialect {dlct}'.format(expl='explicitly' if explicit else 'NOT explicitly',lang=LANG,dlct=startDialect))
     try:
-      maxPackDlct = min(self.cxxDialectPackageRanges[1].keys()).lower().lower()
+      maxPackDlct = min(self.cxxDialectPackageRanges[1].keys()).lower()
     except ValueError:
       # ValueError: min() arg is an empty sequence
       maxPackDlct = startDialect
@@ -679,9 +679,9 @@ class Configure(config.base.Configure):
         maxDialect -= 1
         assert maxDialect
 
-    endDialect = dialects[0]['num'] # always c++03 but we set it programmatically for posterity
+    endDialect = with_lang_dialect.lower() if explicit else dialects[0]['num']
     try:
-      minPackDlct = max(self.cxxDialectPackageRanges[0].keys())
+      minPackDlct = max(self.cxxDialectPackageRanges[0].keys()).lower()
     except ValueError:
       # ValueError: max() arg is an empty sequence
       minPackDlct = endDialect
