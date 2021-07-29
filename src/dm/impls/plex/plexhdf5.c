@@ -589,19 +589,30 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPoin
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, PetscViewer viewer)
+static PetscErrorCode DMPlexTopologyView_HDF5_Legacy_Private(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
-  const char          *pointsName, *coneSizesName, *conesName, *orientationsName;
-  DMPlexStorageVersion version;
-  const char          *topologydm_name;
-  char                 group[PETSC_MAX_PATH_LEN];
-  PetscInt             pStart, pEnd;
+  const char *pointsName, *coneSizesName, *conesName, *orientationsName;
+  PetscInt    pStart, pEnd, dim;
 
   PetscFunctionBegin;
   pointsName       = "order";
   coneSizesName    = "cones";
   conesName        = "cells";
   orientationsName = "orientation";
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMPlexTopologyView_HDF5_Inner_Private(dm, globalPointNumbers, viewer, pStart, pEnd, pointsName, coneSizesName, conesName, orientationsName));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(PetscViewerHDF5WriteAttribute(viewer, conesName, "cell_dim", PETSC_INT, (void *)&dim));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, PetscViewer viewer)
+{
+  DMPlexStorageVersion version;
+  const char          *topologydm_name;
+  char                 group[PETSC_MAX_PATH_LEN];
+
+  PetscFunctionBegin;
   PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   if (version.major < 2) {
@@ -611,14 +622,7 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
-  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  PetscCall(DMPlexTopologyView_HDF5_Inner_Private(dm, globalPointNumbers, viewer, pStart, pEnd, pointsName, coneSizesName, conesName, orientationsName));
-  {
-    PetscInt dim;
-
-    PetscCall(DMGetDimension(dm, &dim));
-    PetscCall(PetscViewerHDF5WriteAttribute(viewer, conesName, "cell_dim", PETSC_INT, (void *)&dim));
-  }
+  PetscCall(DMPlexTopologyView_HDF5_Legacy_Private(dm, globalPointNumbers, viewer));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(DMPlexDistributionView_HDF5_Static(dm, globalPointNumbers, viewer));
   PetscFunctionReturn(0);
