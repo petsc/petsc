@@ -42,7 +42,7 @@ Main Topics
    Download <download/index>
    Installation <install/index>
    FAQ <faq/index>
-   Documentation <documentation/index>
+   Documentation <docs/index>
    Tutorials <tutorials/guide_to_examples>
    Community <community/index>
    Developers <developers/index>

@@ -84,16 +84,27 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch):
 
 
 def copy_classic_docs(outdir):
-    subdirs = ['docs', 'include', 'src']
+    subdirs = [
+            os.path.join('docs', 'manualpages'),
+            'include',
+            'src',
+            ]
     for subdir in subdirs:
-        target = os.path.join(outdir, subdir)
-        if os.path.isdir(target):
-            shutil.rmtree(target)
-        source = os.path.join(CLASSIC_DOCS_LOC, subdir)
+        source_dir = os.path.join(CLASSIC_DOCS_LOC, subdir)
+        target_dir = os.path.join(outdir, subdir)
         print('============================================')
-        print('Copying directory %s from %s to %s' % (subdir, source, target))
+        print('Copying directory %s to %s' % (source_dir, target_dir))
         print('============================================')
-        shutil.copytree(source, target)
+        _mkdir_p(target_dir)
+        for file in os.listdir(source_dir):
+            source = os.path.join(source_dir, file)
+            target = os.path.join(target_dir, file)
+            if os.path.isdir(source):
+                if os.path.isdir(target):
+                    shutil.rmtree(target)
+                shutil.copytree(source, target)
+            else:
+                shutil.copy(source, target)
 
 
 def _get_classic_build_dir():

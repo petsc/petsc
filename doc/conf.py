@@ -109,15 +109,15 @@ latex_engine = 'xelatex'
 
 # How to arrange the documents into LaTeX files, building only the manual.
 latex_documents = [
-        ('documentation/manual/index', 'manual.tex', 'PETSc/TAO Users Manual', author, 'manual', False)
+        ('docs/manual/index', 'manual.tex', 'PETSc/TAO Users Manual', author, 'manual', False)
         ]
 
 latex_additional_files = [
-    'documentation/manual/anl_tech_report/ArgonneLogo.pdf',
-    'documentation/manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
-    'documentation/manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
-    'documentation/manual/anl_tech_report/first.inc',
-    'documentation/manual/anl_tech_report/last.inc',
+    'docs/manual/anl_tech_report/ArgonneLogo.pdf',
+    'docs/manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
+    'docs/manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
+    'docs/manual/anl_tech_report/first.inc',
+    'docs/manual/anl_tech_report/last.inc',
 ]
 
 latex_elements = {
