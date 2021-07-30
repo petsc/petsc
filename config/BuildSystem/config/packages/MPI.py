@@ -321,7 +321,6 @@ Perhaps you have VPN running whose network settings may not work with mpiexec or
 Unable to run hostname to check the network')
           self.logPrintDivider()
 
-
     # check that mpiexec runs an MPI program correctly
     error_message = 'Unable to run MPI program with '+self.mpiexec+'\n\
     (1) make sure this is the correct program to run MPI jobs\n\

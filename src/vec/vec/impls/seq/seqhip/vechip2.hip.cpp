@@ -557,7 +557,7 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z
 
 #if !defined(PETSC_USE_COMPLEX)
   // allocate scratchpad memory for the results of individual work groups:
-  hip_ierr = hipMalloc((void**)&group_results_gpu, sizeof(PetscScalar) * MDOT_WORKGROUP_NUM * 8);CHKERRHIP(hip_ierr);
+  hip_ierr = hipMalloc((void**)&group_results_gpu, nv1*sizeof(PetscScalar)*MDOT_WORKGROUP_NUM);CHKERRHIP(hip_ierr);
   ierr = PetscMalloc1(nv1*MDOT_WORKGROUP_NUM,&group_results_cpu);CHKERRQ(ierr);
 #endif
   ierr = VecHIPGetArrayRead(xin,&xptr);CHKERRQ(ierr);
@@ -581,7 +581,7 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z
         hberr = hipblasXdot(hipblasv2handle,bn,y2ptr,one,xptr,one,&z[current_y_index+2]);CHKERRHIPBLAS(hberr);
         hberr = hipblasXdot(hipblasv2handle,bn,y3ptr,one,xptr,one,&z[current_y_index+3]);CHKERRHIPBLAS(hberr);
 #else
-        hipLaunchKernelGGL(VecMDot_SeqHIP_kernel4, dim3(MDOT_WORKGROUP_NUM), dim3(MDOT_WORKGROUP_SIZE), 0, 0, xptr,y0ptr,y1ptr,y2ptr,y3ptr,n,group_results_gpu);
+        hipLaunchKernelGGL(VecMDot_SeqHIP_kernel4, dim3(MDOT_WORKGROUP_NUM), dim3(MDOT_WORKGROUP_SIZE), 0, 0, xptr,y0ptr,y1ptr,y2ptr,y3ptr,n,group_results_gpu+current_y_index*MDOT_WORKGROUP_NUM);
 #endif
         ierr = VecHIPRestoreArrayRead(yin[current_y_index  ],&y0ptr);CHKERRQ(ierr);
         ierr = VecHIPRestoreArrayRead(yin[current_y_index+1],&y1ptr);CHKERRQ(ierr);
@@ -600,7 +600,7 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z
         hberr = hipblasXdot(hipblasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRHIPBLAS(hberr);
         hberr = hipblasXdot(hipblasv2handle,bn,y2ptr,one,xptr,one,&z[current_y_index+2]);CHKERRHIPBLAS(hberr);
 #else
-        hipLaunchKernelGGL(VecMDot_SeqHIP_kernel3, dim3(MDOT_WORKGROUP_NUM), dim3(MDOT_WORKGROUP_SIZE), 0, 0, xptr,y0ptr,y1ptr,y2ptr,n,group_results_gpu);
+        hipLaunchKernelGGL(VecMDot_SeqHIP_kernel3, dim3(MDOT_WORKGROUP_NUM), dim3(MDOT_WORKGROUP_SIZE), 0, 0, xptr,y0ptr,y1ptr,y2ptr,n,group_results_gpu+current_y_index*MDOT_WORKGROUP_NUM);
 #endif
         ierr = VecHIPRestoreArrayRead(yin[current_y_index  ],&y0ptr);CHKERRQ(ierr);
         ierr = VecHIPRestoreArrayRead(yin[current_y_index+1],&y1ptr);CHKERRQ(ierr);
@@ -615,7 +615,7 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z
         hberr = hipblasXdot(hipblasv2handle,bn,y0ptr,one,xptr,one,&z[current_y_index]);CHKERRHIPBLAS(hberr);
         hberr = hipblasXdot(hipblasv2handle,bn,y1ptr,one,xptr,one,&z[current_y_index+1]);CHKERRHIPBLAS(hberr);
 #else
-        hipLaunchKernelGGL(VecMDot_SeqHIP_kernel2, dim3(MDOT_WORKGROUP_NUM), dim3(MDOT_WORKGROUP_SIZE), 0, 0, xptr,y0ptr,y1ptr,n,group_results_gpu);
+        hipLaunchKernelGGL(VecMDot_SeqHIP_kernel2, dim3(MDOT_WORKGROUP_NUM), dim3(MDOT_WORKGROUP_SIZE), 0, 0, xptr,y0ptr,y1ptr,n,group_results_gpu+current_y_index*MDOT_WORKGROUP_NUM);
 #endif
         ierr = VecHIPRestoreArrayRead(yin[current_y_index],&y0ptr);CHKERRQ(ierr);
         ierr = VecHIPRestoreArrayRead(yin[current_y_index+1],&y1ptr);CHKERRQ(ierr);
@@ -648,7 +648,7 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z
         hberr = hipblasXdot(hipblasv2handle,bn,y6ptr,one,xptr,one,&z[current_y_index+6]);CHKERRHIPBLAS(hberr);
         hberr = hipblasXdot(hipblasv2handle,bn,y7ptr,one,xptr,one,&z[current_y_index+7]);CHKERRHIPBLAS(hberr);
 #else
-        hipLaunchKernelGGL(VecMDot_SeqHIP_kernel8, dim3(MDOT_WORKGROUP_NUM), dim3(MDOT_WORKGROUP_SIZE), 0, 0, xptr,y0ptr,y1ptr,y2ptr,y3ptr,y4ptr,y5ptr,y6ptr,y7ptr,n,group_results_gpu);
+        hipLaunchKernelGGL(VecMDot_SeqHIP_kernel8, dim3(MDOT_WORKGROUP_NUM), dim3(MDOT_WORKGROUP_SIZE), 0, 0, xptr,y0ptr,y1ptr,y2ptr,y3ptr,y4ptr,y5ptr,y6ptr,y7ptr,n,group_results_gpu+current_y_index*MDOT_WORKGROUP_NUM);
 #endif
         ierr = VecHIPRestoreArrayRead(yin[current_y_index  ],&y0ptr);CHKERRQ(ierr);
         ierr = VecHIPRestoreArrayRead(yin[current_y_index+1],&y1ptr);CHKERRQ(ierr);
