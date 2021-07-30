@@ -3,14 +3,15 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai-3.0-p1.tar.gz']
-    self.functions  = ['bspai']
-    self.includes   = ['spai.h']
-    self.liblist    = [['libspai.a']]
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai-3.0-p1.tar.gz']
+    self.functions        = ['bspai']
+    self.includes         = ['spai.h']
+    self.liblist          = [['libspai.a']]
     # SPAI include files are in the lib directory
-    self.precisions = ['double']
-    self.complex    = 0
-    self.hastests   = 1
+    self.precisions       = ['double']
+    self.requires32bitint = 1
+    self.complex          = 0
+    self.hastests         = 1
     return
 
   def setupDependencies(self, framework):
