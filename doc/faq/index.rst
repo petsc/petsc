@@ -134,12 +134,13 @@ See licensing :ref:`documentation <doc_license>`
 Why Is PETSc Written In C, Instead Of Fortran Or C++?
 -----------------------------------------------------
 
-C enables us to build data structures for storing sparse matrices, solver information,
-etc. in ways that Fortran simply does not allow. ANSI C is a complete standard that all
-modern C compilers support. The language is identical on all machines. C++ is still
-evolving and compilers on different machines are not identical. Using C function pointers
-to provide data encapsulation and polymorphism allows us to get many of the advantages of
-C++ without using such a large and more complicated language. It would be natural and
+When this decision was made, in the early 1990s, C enabled us to build data structures
+for storing sparse matrices, solver information,
+etc. in ways that Fortran simply did not allow. ANSI C was a complete standard that all
+modern C compilers supported. The language was identical on all machines. C++ was still
+evolving and compilers on different machines were not identical. Using C function pointers
+to provide data encapsulation and polymorphism allowed us to get many of the advantages of
+C++ without using such a large and more complicated language. It would have been natural and
 reasonable to have coded PETSc in C++; we opted to use C instead.
 
 Does All The PETSc Error Checking And Logging Reduce PETSc's Efficiency?
