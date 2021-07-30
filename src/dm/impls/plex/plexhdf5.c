@@ -665,6 +665,114 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Legacy_Private(DM dm, IS globalPoi
   PetscFunctionReturn(0);
 }
 
+//TODO get this numbering right away without needing this function
+/* Renumber global point numbers so that they are 0-based per stratum */
+static PetscErrorCode RenumberGlobalPointNumbersPerStratum_Private(DM dm, IS globalPointNumbers, IS *newGlobalPointNumbers, IS *strataPermutation)
+{
+  PetscInt        d, depth, p, n;
+  PetscInt       *offsets;
+  const PetscInt *gpn;
+  PetscInt       *ngpn;
+  MPI_Comm        comm;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(ISGetLocalSize(globalPointNumbers, &n));
+  PetscCall(ISGetIndices(globalPointNumbers, &gpn));
+  PetscCall(PetscMalloc1(n, &ngpn));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  PetscCall(PetscMalloc1(depth + 1, &offsets));
+  for (d = 0; d <= depth; d++) {
+    PetscInt pStart, pEnd;
+
+    PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
+    offsets[d] = PETSC_MAX_INT;
+    for (p = pStart; p < pEnd; p++) {
+      if (gpn[p] >= 0 && gpn[p] < offsets[d]) offsets[d] = gpn[p];
+    }
+  }
+  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, offsets, depth + 1, MPIU_INT, MPI_MIN, comm));
+  for (d = 0; d <= depth; d++) {
+    PetscInt pStart, pEnd;
+
+    PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
+    for (p = pStart; p < pEnd; p++) ngpn[p] = gpn[p] - PetscSign(gpn[p]) * offsets[d];
+  }
+  PetscCall(ISRestoreIndices(globalPointNumbers, &gpn));
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)globalPointNumbers), n, ngpn, PETSC_OWN_POINTER, newGlobalPointNumbers));
+  {
+    PetscInt *perm;
+
+    PetscCall(PetscMalloc1(depth + 1, &perm));
+    for (d = 0; d <= depth; d++) perm[d] = d;
+    PetscCall(PetscSortIntWithPermutation(depth + 1, offsets, perm));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, depth + 1, perm, PETSC_OWN_POINTER, strataPermutation));
+  }
+  PetscCall(PetscFree(offsets));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexTopologyView_HDF5_Private(DM dm, IS globalPointNumbers, PetscViewer viewer)
+{
+  IS          globalPointNumbers0, strataPermutation;
+  const char *coneSizesName, *conesName, *orientationsName;
+  PetscInt    depth, d;
+  MPI_Comm    comm;
+
+  PetscFunctionBegin;
+  coneSizesName    = "cone_sizes";
+  conesName        = "cones";
+  orientationsName = "orientations";
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  {
+    PetscInt dim;
+
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "cell_dim", PETSC_INT, &dim));
+    PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "depth", PETSC_INT, &depth));
+  }
+
+  PetscCall(RenumberGlobalPointNumbersPerStratum_Private(dm, globalPointNumbers, &globalPointNumbers0, &strataPermutation));
+  /* TODO dirty trick to save serial IS using the same parallel viewer */
+  {
+    IS              spOnComm;
+    PetscInt        n   = 0, N;
+    const PetscInt *idx = NULL;
+    const PetscInt *old;
+    PetscMPIInt     rank;
+
+    PetscCallMPI(MPI_Comm_rank(comm, &rank));
+    PetscCall(ISGetLocalSize(strataPermutation, &N));
+    PetscCall(ISGetIndices(strataPermutation, &old));
+    if (!rank) {
+      n   = N;
+      idx = old;
+    }
+    PetscCall(ISCreateGeneral(comm, n, idx, PETSC_COPY_VALUES, &spOnComm));
+    PetscCall(ISRestoreIndices(strataPermutation, &old));
+    PetscCall(ISDestroy(&strataPermutation));
+    strataPermutation = spOnComm;
+  }
+  PetscCall(PetscObjectSetName((PetscObject)strataPermutation, "permutation"));
+  PetscCall(ISView(strataPermutation, viewer));
+  PetscCall(PetscViewerHDF5PushGroup(viewer, "strata"));
+  for (d = 0; d <= depth; d++) {
+    PetscInt pStart, pEnd;
+    char     group[128];
+
+    PetscCall(PetscSNPrintf(group, sizeof(group), "%D", d));
+    PetscCall(PetscViewerHDF5PushGroup(viewer, group));
+    PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
+    PetscCall(DMPlexTopologyView_HDF5_Inner_Private(dm, globalPointNumbers0, viewer, pStart, pEnd, NULL, coneSizesName, conesName, orientationsName));
+    PetscCall(PetscViewerHDF5PopGroup(viewer));
+  }
+  PetscCall(PetscViewerHDF5PopGroup(viewer)); /* strata */
+  PetscCall(ISDestroy(&globalPointNumbers0));
+  PetscCall(ISDestroy(&strataPermutation));
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
   DMPlexStorageVersion version;
@@ -682,7 +790,12 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
 
   PetscCall(PetscViewerHDF5PushGroup(viewer, "topology"));
-  PetscCall(DMPlexTopologyView_HDF5_Legacy_Private(dm, globalPointNumbers, viewer));
+  if (version->major < 3) {
+    PetscCall(DMPlexTopologyView_HDF5_Legacy_Private(dm, globalPointNumbers, viewer));
+  } else {
+    /* since DMPlexStorageVersion 3.0.0 */
+    PetscCall(DMPlexTopologyView_HDF5_Private(dm, globalPointNumbers, viewer));
+  }
   PetscCall(PetscViewerHDF5PopGroup(viewer)); /* "topology" */
 
   if (DMPlexStorageVersionGE(version, 2, 1, 0)) {
