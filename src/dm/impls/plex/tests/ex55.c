@@ -190,8 +190,7 @@ int main(int argc, char **argv)
   testset:
     # the same data and settings as dm_impls_plex_tests-ex18_9%
     requires: hdf5 !complex datafilespath
-    #TODO DMPlexCheckPointSF() fails for nsize 4
-    nsize: {{1 2}}
+    nsize: {{1 2 4}}
     args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
     args: -format hdf5_xdmf -second_write_read -compare

@@ -1,5 +1,3 @@
-.. include:: <isonum.txt>
-
 .. _doc_windows:
 
 *************************************
@@ -91,8 +89,8 @@ interface to Microsoft/Intel compilers).
    ``cl foo.c or ``ifort foo.f`` works from this shell. For example - if using VS2005 C
    and Intel 10 Fortran one can do:
 
-   #. Start |rarr| Programs |rarr| Intel Software Development Tools |rarr| Intel Fortran
-      Compiler 10 |rarr| Visual Fortran Build Enviornment (32bit or 64bit depending on
+   #. Start > Programs > Intel Software Development Tools > Intel Fortran
+      Compiler 10 > Visual Fortran Build Enviornment (32bit or 64bit depending on
       your usage). This should start a "dos cmd" shell.
 
    #. Within this shell - run Cygwin terminal/bash-shell ``mintty.exe`` as:
