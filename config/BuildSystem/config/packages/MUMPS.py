@@ -3,13 +3,13 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.4.0'
+    self.version          = '5.4.1'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
     self.requiresversion  = 1
-    self.download         = ['http://mumps.enseeiht.fr/MUMPS_'+self.version+'.tar.gz',
-                             'https://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_'+self.version+'.tar.gz']
-    self.download_darwin  = ['https://bitbucket.org/petsc/pkg-mumps/get/v5.2.1-p2.tar.gz']
+    self.gitcommit        = 'v'+self.version+'-p1'
+    self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
+                             'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps','MUMPS']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
@@ -40,12 +40,13 @@ class Configure(config.package.Package):
     self.parmetis         = framework.require('config.packages.parmetis',self)
     self.ptscotch         = framework.require('config.packages.PTScotch',self)
     self.scalapack        = framework.require('config.packages.scalapack',self)
+    self.hwloc            = framework.require('config.packages.hwloc',self)
     if self.argDB['with-mumps-serial']:
       self.deps           = [self.blasLapack,self.flibs]
       self.odeps          = [self.metis]
     else:
       self.deps           = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
-      self.odeps          = [self.metis,self.parmetis,self.ptscotch]
+      self.odeps          = [self.metis,self.parmetis,self.ptscotch,self.hwloc]
     self.openmp           = framework.require('config.packages.openmp',self)
     return
 
@@ -110,7 +111,7 @@ class Configure(config.package.Package):
     g.write('RM = /bin/rm -f\n')
     self.pushLanguage('C')
     g.write('CC = '+self.getCompiler()+'\n')
-    g.write('OPTC    = ' + self.updatePackageCFlags(self.getCompilerFlags())+'\n')
+    g.write('OPTC    = '+self.updatePackageCFlags(self.getCompilerFlags())+'\n')
     g.write('OUTC = -o \n')
     self.popLanguage()
     if not self.fortran.fortranIsF90:
@@ -122,7 +123,7 @@ class Configure(config.package.Package):
     if self.openmp.found:
       g.write('OPTF   += -DBLR_MT\n')
     if self.blasLapack.checkForRoutine('dgemmt'):
-      g.write('OPTF   += -DGEMMT_AVAILABLE \n')
+      g.write('OPTF   += -DGEMMT_AVAILABLE\n')
     g.write('OUTF = -o \n')
     self.popLanguage()
 
@@ -155,6 +156,10 @@ class Configure(config.package.Package):
       g.write('LIBS = $(LIBSEQ)\n')
     else:
       g.write('LIBSEQNEEDED =\n')
+      if self.openmp.found and self.hwloc.found:
+        g.write('LIBS += '+self.libraries.toString(self.hwloc.lib)+'\n')
+        g.write('OPTF += -DUSE_LIBHWLOC\n')
+        g.write('OPTC += -DUSE_LIBHWLOC\n')
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:
@@ -163,13 +168,8 @@ class Configure(config.package.Package):
         pass
       try:
         self.logPrintBox('Compiling Mumps; this may take several minutes')
-        if self.setCompilers.isDarwin(self.log):
-          output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp+' alllib', cwd=self.packageDir, timeout=2500, log = self.log)
-          output3 = ''
-          err3 = ''
-        else:
-          output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp+' prerequisites', cwd=self.packageDir, timeout=2500, log = self.log)
-          output3,err3,ret3 = config.package.Package.executeShellCommand(self.make.make_jnp+' all', cwd=os.path.join(self.packageDir,'src'), timeout=2500, log = self.log)
+        output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp+' prerequisites', cwd=self.packageDir, timeout=2500, log = self.log)
+        output3,err3,ret3 = config.package.Package.executeShellCommand(self.make.make_jnp+' all', cwd=os.path.join(self.packageDir,'src'), timeout=2500, log = self.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing Mumps; this may take several minutes')
