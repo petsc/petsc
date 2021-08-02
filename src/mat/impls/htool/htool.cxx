@@ -299,7 +299,8 @@ static PetscErrorCode MatView_Htool(Mat A,PetscViewer pv)
     ierr = PetscViewerASCIIPrintf(pv,"minimum source depth: %D\n",a->depth[1]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"compressor: %s\n",MatHtoolCompressorTypes[a->compressor]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"clustering: %s\n",MatHtoolClusteringTypes[a->clustering]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"compression: %s\n",a->hmatrix->get_infos("Compression").c_str());CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"compression ratio: %s\n",a->hmatrix->get_infos("Compression_ratio").c_str());CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"space saving: %s\n",a->hmatrix->get_infos("Space_saving").c_str());CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"number of dense (resp. low rank) matrices: %s (resp. %s)\n",a->hmatrix->get_infos("Number_of_dmat").c_str(),a->hmatrix->get_infos("Number_of_lrmat").c_str());CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"(minimum, mean, maximum) dense block sizes: (%s, %s, %s)\n",a->hmatrix->get_infos("Dense_block_size_min").c_str(),a->hmatrix->get_infos("Dense_block_size_mean").c_str(),a->hmatrix->get_infos("Dense_block_size_max").c_str());CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"(minimum, mean, maximum) low rank block sizes: (%s, %s, %s)\n",a->hmatrix->get_infos("Low_rank_block_size_min").c_str(),a->hmatrix->get_infos("Low_rank_block_size_mean").c_str(),a->hmatrix->get_infos("Low_rank_block_size_max").c_str());CHKERRQ(ierr);
@@ -335,7 +336,7 @@ static PetscErrorCode MatGetRow_Htool(Mat A,PetscInt row,PetscInt *nz,PetscInt *
   if (v) {
     ierr = PetscMalloc1(A->cmap->N,v);CHKERRQ(ierr);
     if (a->wrapper) a->wrapper->copy_submatrix(1,A->cmap->N,&row,idxc,*v);
-    else reinterpret_cast<htool::IMatrix<PetscScalar>*>(a->kernelctx)->copy_submatrix(1,A->cmap->N,&row,idxc,*v);
+    else reinterpret_cast<htool::VirtualGenerator<PetscScalar>*>(a->kernelctx)->copy_submatrix(1,A->cmap->N,&row,idxc,*v);
     ierr = PetscBLASIntCast(A->cmap->N,&bn);CHKERRQ(ierr);
     PetscStackCallBLAS("BLASscal",BLASscal_(&bn,&a->s,*v,&one));
   }
@@ -392,7 +393,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A,MatAssemblyType type)
   PetscInt                               *offset;
   PetscMPIInt                            size;
   char                                   S = PetscDefined(USE_COMPLEX) && A->hermitian ? 'H' : (A->symmetric ? 'S' : 'N'),uplo = S == 'N' ? 'N' : 'U';
-  htool::IMatrix<PetscScalar>            *generator = nullptr;
+  htool::VirtualGenerator<PetscScalar>   *generator = nullptr;
   std::shared_ptr<htool::VirtualCluster> t,s = nullptr;
   PetscErrorCode                         ierr;
 
@@ -425,7 +426,7 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A,MatAssemblyType type)
   if (a->kernel) a->wrapper = new WrapperHtool(A->rmap->N,A->cmap->N,a->dim,a->kernel,a->kernelctx);
   else {
     a->wrapper = NULL;
-    generator = reinterpret_cast<htool::IMatrix<PetscScalar>*>(a->kernelctx);
+    generator = reinterpret_cast<htool::VirtualGenerator<PetscScalar>*>(a->kernelctx);
   }
   if (a->gcoords_target != a->gcoords_source) {
     ierr = MatGetOwnershipRangesColumn(A,&ranges);CHKERRQ(ierr);
@@ -590,7 +591,7 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A,MatHtoolKernel kernel,void *
    Input Parameters:
 +     A - hierarchical matrix
 .     kernel - computational kernel (or NULL)
--     kernelctx - kernel context (if kernel is NULL, the pointer must be of type htool::IMatrix<PetscScalar>*)
+-     kernelctx - kernel context (if kernel is NULL, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
 
    Level: advanced
 
@@ -830,7 +831,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A,MatReuse reuse,Mat *B)
 .     coords_target - coordinates of the target
 .     coords_source - coordinates of the source
 .     kernel - computational kernel (or NULL)
--     kernelctx - kernel context (if kernel is NULL, the pointer must be of type htool::IMatrix<PetscScalar>*)
+-     kernelctx - kernel context (if kernel is NULL, the pointer must be of type htool::VirtualGenerator<PetscScalar>*)
 
    Output Parameter:
 .     B - matrix
