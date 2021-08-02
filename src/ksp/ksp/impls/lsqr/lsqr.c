@@ -125,7 +125,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   beta = rnorm;
   ierr = VecScale(U,1.0/beta);CHKERRQ(ierr);
-  ierr = KSP_MatMultTranspose(ksp,Amat,U,V);CHKERRQ(ierr);
+  ierr = KSP_MatMultHermitianTranspose(ksp,Amat,U,V);CHKERRQ(ierr);
   if (nopreconditioner) {
     ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
     KSPCheckNorm(ksp,rnorm);
@@ -172,7 +172,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       }
     }
 
-    ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
+    ierr = KSP_MatMultHermitianTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
     ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
     if (nopreconditioner) {
       ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
@@ -629,15 +629,15 @@ PetscErrorCode  KSPLSQRConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
    Notes:
      Supports non-square (rectangular) matrices.
 
-     This varient, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
-     due to inexact arithematic, it can converge differently. Hence when no preconditioner is used (PCType PCNONE) it automatically reverts to the original algorithm.
+     This variant, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
+     due to inexact arithmetic, it can converge differently. Hence when no preconditioner is used (PCType PCNONE) it automatically reverts to the original algorithm.
 
      With the PETSc built-in preconditioners, such as ICC, one should call KSPSetOperators(ksp,A,A'*A)) since the preconditioner needs to work
      for the normal equations A'*A.
 
      Supports only left preconditioning.
 
-     For least squares problems wit nonzero residual A*x - b, there are additional convergence tests for the residual of the normal equations, A'*(b - Ax), see KSPLSQRConvergedDefault().
+     For least squares problems with nonzero residual A*x - b, there are additional convergence tests for the residual of the normal equations, A'*(b - Ax), see KSPLSQRConvergedDefault().
 
    References:
 .  1. - The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, 1982.

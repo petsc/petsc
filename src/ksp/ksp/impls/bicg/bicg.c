@@ -46,10 +46,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   }
   ierr = VecCopy(Rr,Rl);CHKERRQ(ierr);
   ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);     /*     z <- Br         */
-  ierr = VecConjugate(Rl);CHKERRQ(ierr);
-  ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
-  ierr = VecConjugate(Rl);CHKERRQ(ierr);
-  ierr = VecConjugate(Zl);CHKERRQ(ierr);
+  ierr = KSP_PCApplyHermitianTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
   if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
   } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
@@ -85,10 +82,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
     }
     betaold = beta;
     ierr    = KSP_MatMult(ksp,Amat,Pr,Zr);CHKERRQ(ierr); /*     z <- Kp         */
-    ierr    = VecConjugate(Pl);CHKERRQ(ierr);
-    ierr    = KSP_MatMultTranspose(ksp,Amat,Pl,Zl);CHKERRQ(ierr);
-    ierr    = VecConjugate(Pl);CHKERRQ(ierr);
-    ierr    = VecConjugate(Zl);CHKERRQ(ierr);
+    ierr    = KSP_MatMultHermitianTranspose(ksp,Amat,Pl,Zl);CHKERRQ(ierr);
     ierr    = VecDot(Zr,Pl,&dpi);CHKERRQ(ierr);            /*     dpi <- z'p      */
     KSPCheckDot(ksp,dpi);
     a       = beta/dpi;                           /*     a = beta/p'z    */
@@ -99,10 +93,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
     ierr    = VecAXPY(Rl,ma,Zl);CHKERRQ(ierr);
     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
-      ierr = VecConjugate(Rl);CHKERRQ(ierr);
-      ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
-      ierr = VecConjugate(Rl);CHKERRQ(ierr);
-      ierr = VecConjugate(Zl);CHKERRQ(ierr);
+      ierr = KSP_PCApplyHermitianTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
       ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
@@ -119,10 +110,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
     if (ksp->reason) break;
     if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
-      ierr = VecConjugate(Rl);CHKERRQ(ierr);
-      ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
-      ierr = VecConjugate(Rl);CHKERRQ(ierr);
-      ierr = VecConjugate(Zl);CHKERRQ(ierr);
+      ierr = KSP_PCApplyHermitianTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
     }
     i++;
   } while (i<ksp->max_it);

@@ -195,8 +195,8 @@ int main(int argc,char **args)
   */
   PetscPreLoadStage("KSPSetUp");
 
-  ierr = MatCreateNormal(A,&N);CHKERRQ(ierr);
-  ierr = MatMultTranspose(A,b,Ab);CHKERRQ(ierr);
+  ierr = MatCreateNormalHermitian(A,&N);CHKERRQ(ierr);
+  ierr = MatMultHermitianTranspose(A,b,Ab);CHKERRQ(ierr);
 
   /*
      Create linear solver; set operators; set runtime options.
@@ -394,5 +394,18 @@ int main(int argc,char **args)
      test:
        suffix: 7b
        args: -ksp_type lsqr -pc_type none
+
+   # Test complex matrices
+   testset:
+     requires: double complex !define(PETSC_USE_64BIT_INDICES)
+     args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64
+     output_file: output/ex27_8.out
+     filter: grep -v "KSP type"
+     test:
+       suffix: 8
+       args: -solve_normal 0 -ksp_type {{lsqr cgls}}
+     test:
+       suffix: 8_normal
+       args: -solve_normal 1 -ksp_type {{cg bicg}}
 
 TEST*/
