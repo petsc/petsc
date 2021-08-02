@@ -799,8 +799,8 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexTopologyLoad(self.dm, viewer.vwr, &sf.sf))
         return sf
 
-    def coordinatesLoad(self, Viewer viewer):
-        CHKERR( DMPlexCoordinatesLoad(self.dm, viewer.vwr))
+    def coordinatesLoad(self, Viewer viewer, SF sfxc):
+        CHKERR( DMPlexCoordinatesLoad(self.dm, viewer.vwr, sfxc.sf))
 
     def labelsLoad(self, Viewer viewer):
         CHKERR( DMPlexLabelsLoad(self.dm, viewer.vwr))
