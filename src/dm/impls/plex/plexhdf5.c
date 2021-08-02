@@ -1644,19 +1644,16 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Static(DM dm, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF *sf)
+static PetscErrorCode DMPlexTopologyLoad_HDF5_Legacy_Private(DM dm, PetscViewer viewer, PetscSF *sf)
 {
-  MPI_Comm             comm;
-  PetscSF              sfwork;
-  const char          *topologydm_name;
-  const char          *pointsName, *coneSizesName, *conesName, *orientationsName;
-  IS                   pointsIS, coneSizesIS, conesIS, orientationsIS;
-  const PetscInt      *points, *coneSizes, *cones, *orientations;
-  PetscInt            *cone, *ornt;
-  PetscInt             dim, N, Np, pEnd, p, q, maxConeSize = 0, c;
-  PetscMPIInt          size, rank;
-  char                 group[PETSC_MAX_PATH_LEN];
-  DMPlexStorageVersion version;
+  MPI_Comm        comm;
+  PetscSF         sfwork;
+  const char     *pointsName, *coneSizesName, *conesName, *orientationsName;
+  IS              pointsIS, coneSizesIS, conesIS, orientationsIS;
+  const PetscInt *points, *coneSizes, *cones, *orientations;
+  PetscInt       *cone, *ornt;
+  PetscInt        dim, N, Np, pEnd, p, q, maxConeSize = 0, c;
+  PetscMPIInt     size, rank;
 
   PetscFunctionBegin;
   pointsName       = "order";
@@ -1666,15 +1663,6 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-  if (version.major < 2) {
-    PetscCall(PetscStrcpy(group, "/topology"));
-  } else {
-    /* since DMPlexStorageVersion 2.0.0 */
-    PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name));
-  }
-  PetscCall(PetscViewerHDF5PushGroup(viewer, group));
   PetscCall(ISCreate(comm, &pointsIS));
   PetscCall(PetscObjectSetName((PetscObject)pointsIS, pointsName));
   PetscCall(ISCreate(comm, &coneSizesIS));
@@ -1705,7 +1693,6 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscCall(ISLoad(coneSizesIS, viewer));
   PetscCall(ISLoad(conesIS, viewer));
   PetscCall(ISLoad(orientationsIS, viewer));
-  PetscCall(PetscViewerHDF5PopGroup(viewer));
   /* Create Plex */
   PetscCall(DMPlexSetChart(dm, 0, pEnd));
   PetscCall(ISGetIndices(pointsIS, &points));
@@ -1773,6 +1760,27 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   } else {
     PetscCall(PetscSFDestroy(&sfwork));
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF *sfXC)
+{
+  DMPlexStorageVersion version;
+  const char          *topologydm_name;
+  char                 group[PETSC_MAX_PATH_LEN];
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
+  PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
+  if (version.major < 2) {
+    PetscCall(PetscStrcpy(group, "/topology"));
+  } else {
+    /* since DMPlexStorageVersion 2.0.0 */
+    PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name));
+  }
+  PetscCall(PetscViewerHDF5PushGroup(viewer, group));
+  PetscCall(DMPlexTopologyLoad_HDF5_Legacy_Private(dm, viewer, sfXC));
+  PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscFunctionReturn(0);
 }
 
