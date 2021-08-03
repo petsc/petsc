@@ -18,12 +18,12 @@ static PetscErrorCode GenEntries(PetscInt sdim,PetscInt M,PetscInt N,const Petsc
   }
   PetscFunctionReturn(0);
 }
-class MyIMatrix : public htool::IMatrix<PetscScalar> {
+class MyIMatrix : public htool::VirtualGenerator<PetscScalar> {
   private:
   PetscReal *coords;
   PetscInt  sdim;
   public:
-  MyIMatrix(PetscInt M,PetscInt N,PetscInt spacedim,PetscReal* gcoords) : htool::IMatrix<PetscScalar>(M,N),coords(gcoords),sdim(spacedim) { }
+  MyIMatrix(PetscInt M,PetscInt N,PetscInt spacedim,PetscReal* gcoords) : htool::VirtualGenerator<PetscScalar>(M,N),coords(gcoords),sdim(spacedim) { }
 
   void copy_submatrix(PetscInt M,PetscInt N,const PetscInt *J,const PetscInt *K,PetscScalar *ptr) const override
   {

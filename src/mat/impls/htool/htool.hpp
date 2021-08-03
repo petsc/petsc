@@ -1,13 +1,13 @@
 #include <petsc/private/matimpl.h>
 #include <htool/misc/petsc.hpp>
 
-class WrapperHtool : public htool::IMatrix<PetscScalar> {
+class WrapperHtool : public htool::VirtualGenerator<PetscScalar> {
   PetscInt        dim;
   MatHtoolKernel& kernel;
   void*           ctx;
 
   public:
-  WrapperHtool(PetscInt M,PetscInt N,PetscInt sdim,MatHtoolKernel& g,void* kernelctx) : IMatrix(M,N), dim(sdim), kernel(g), ctx(kernelctx) { }
+  WrapperHtool(PetscInt M,PetscInt N,PetscInt sdim,MatHtoolKernel& g,void* kernelctx) : VirtualGenerator(M,N), dim(sdim), kernel(g), ctx(kernelctx) { }
   void copy_submatrix(PetscInt M, PetscInt N, const PetscInt *rows, const PetscInt *cols, PetscScalar *ptr) const {
     PetscErrorCode ierr;
 
