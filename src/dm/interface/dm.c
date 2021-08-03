@@ -835,6 +835,7 @@ PetscErrorCode  DMSetUp(DM dm)
     DMPLEX Specific creation options
 + -dm_plex_filename <str>           - File containing a mesh
 . -dm_plex_boundary_filename <str>  - File containing a mesh boundary
+. -dm_plex_name <str>               - Name of the mesh in the file
 . -dm_plex_shape <shape>            - The domain shape, such as DM_SHAPE_BOX, DM_SHAPE_SPHERE, etc.
 . -dm_plex_cell <ct>                - Cell shape
 . -dm_plex_reference_cell_domain <bool> - Use a reference cell domain
@@ -947,9 +948,14 @@ PetscErrorCode  DMViewFromOptions(DM dm,PetscObject obj,const char name[])
 +   dm - the DM object to view
 -   v - the viewer
 
+    Notes:
+    Using PETSCVIEWERHDF5 type with PETSC_VIEWER_HDF5_PETSC format, one can save multiple DMPlex
+    meshes in a single HDF5 file. This in turn requires one to name the DMPlex object with PetscObjectSetName()
+    before saving it with DMView() and before loading it with DMLoad() for identification of the mesh object.
+
     Level: beginner
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMLoad(), PetscObjectSetName()
 
 @*/
 PetscErrorCode  DMView(DM dm,PetscViewer v)
@@ -4021,7 +4027,11 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
    Level: intermediate
 
   Notes:
-   The type is determined by the data in the file, any type set into the DM before this call is ignored.
+  The type is determined by the data in the file, any type set into the DM before this call is ignored.
+
+  Using PETSCVIEWERHDF5 type with PETSC_VIEWER_HDF5_PETSC format, one can save multiple DMPlex
+  meshes in a single HDF5 file. This in turn requires one to name the DMPlex object with PetscObjectSetName()
+  before saving it with DMView() and before loading it with DMLoad() for identification of the mesh object.
 
   Notes for advanced users:
   Most users should not need to know the details of the binary storage

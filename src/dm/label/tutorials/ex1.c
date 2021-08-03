@@ -134,7 +134,7 @@ PetscErrorCode CreateMesh(const char name[], DM *newdm)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* create and distribute DM */
-  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, interpolate, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, filename, "ex1_plex", interpolate, &dm);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);

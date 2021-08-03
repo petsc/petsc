@@ -931,13 +931,15 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
   PetscErrorCode ierr;
   size_t         len;
   char           fname[128] = ""; /* we can add a file if we want, for each grid */
+  char           plex_name[128] = ""; /* name of the mesh in the file */
 
   PetscFunctionBegin;
   /* create DM */
   ierr = PetscStrlen(fname, &len);CHKERRQ(ierr);
   if (len) { // not used, need to loop over grids
     PetscInt dim2;
-    ierr = DMPlexCreateFromFile(comm_self, fname, ctx->interpolate, pack);CHKERRQ(ierr);
+
+    ierr = DMPlexCreateFromFile(comm_self, fname, plex_name, ctx->interpolate, pack);CHKERRQ(ierr);
     ierr = DMGetDimension(*pack, &dim2);CHKERRQ(ierr);
     if (LANDAU_DIM != dim2) SETERRQ2(comm_self, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim2,LANDAU_DIM);
   } else { /* p4est, quads */

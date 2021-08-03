@@ -77,7 +77,7 @@ cdef extern from * nogil:
     #int DMPlexCreateDoublet(MPI_Comm,PetscInt,PetscBool,PetscBool,PetscBool,PetscReal,PetscDM*)
     int DMPlexCreateBoxMesh(MPI_Comm,PetscInt,PetscBool,PetscInt[],PetscReal[],PetscReal[],PetscDMBoundaryType[],PetscBool,PetscDM*)
     int DMPlexCreateBoxSurfaceMesh(MPI_Comm,PetscInt,PetscInt[],PetscReal[],PetscReal[],PetscBool,PetscDM*)
-    int DMPlexCreateFromFile(MPI_Comm,const char[],PetscBool,PetscDM*)
+    int DMPlexCreateFromFile(MPI_Comm,const char[],const char[],PetscBool,PetscDM*)
     int DMPlexCreateCGNS(MPI_Comm,PetscInt,PetscBool,PetscDM*)
     int DMPlexCreateCGNSFromFile(MPI_Comm,const char[],PetscBool,PetscDM*)
     int DMPlexCreateExodus(MPI_Comm,PetscInt,PetscBool,PetscDM*)

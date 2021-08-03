@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 
       /* Load data from XDMF into dm in parallel */
       /* We could also use
-          ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
+          ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, "ex5_plex", PETSC_TRUE, &dm);CHKERRQ(ierr);
         This currently support a few more formats than DMLoad().
       */
       ierr = PetscViewerHDF5Open(comm, infilename, FILE_MODE_READ, &v);CHKERRQ(ierr);

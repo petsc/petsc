@@ -140,7 +140,7 @@ int main(int argc, char **argv)
   ierr = PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp);CHKERRQ(ierr);
   ierr = PetscPClose(PETSC_COMM_SELF, fp);CHKERRQ(ierr);
 
-  ierr = DMPlexCreateFromFile(PETSC_COMM_SELF, out, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(PETSC_COMM_SELF, out, "ex99_plex", PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = PetscSNPrintf(tag, sizeof(tag), "mesh-%s", mshlist[msh]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)dm, tag);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);

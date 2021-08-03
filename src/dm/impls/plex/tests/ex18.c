@@ -692,14 +692,14 @@ static PetscErrorCode CreateMeshFromFile(MPI_Comm comm, AppCtx *user, DM *dm, DM
   *serialDM = NULL;
   if (testHeavy && interpCreate) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_FALSE);CHKERRQ(ierr);}
   ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(comm, filename, interpCreate, dm);CHKERRQ(ierr); /* with DMPlexOrientInterface_Internal() call skipped so that PointSF issues are left to DMPlexCheckPointSFHeavy() */
+  ierr = DMPlexCreateFromFile(comm, filename, "ex18_plex", interpCreate, dm);CHKERRQ(ierr); /* with DMPlexOrientInterface_Internal() call skipped so that PointSF issues are left to DMPlexCheckPointSFHeavy() */
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   if (testHeavy && interpCreate) {ierr = DMPlexSetOrientInterface_Private(NULL, PETSC_TRUE);CHKERRQ(ierr);}
   ierr = DMPlexIsDistributed(*dm, &distributed);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "DMPlexCreateFromFile produced %s mesh.\n", distributed ? "distributed" : "serial");CHKERRQ(ierr);
   if (testHeavy && distributed) {
     ierr = PetscOptionsSetValue(NULL, "-dm_plex_hdf5_force_sequential", NULL);CHKERRQ(ierr);
-    ierr = DMPlexCreateFromFile(comm, filename, interpCreate, serialDM);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(comm, filename, "ex18_plex", interpCreate, serialDM);CHKERRQ(ierr);
     ierr = DMPlexIsDistributed(*serialDM, &distributed);CHKERRQ(ierr);
     if (distributed) SETERRQ(comm, PETSC_ERR_PLIB, "unable to create a serial DM from file");
   }

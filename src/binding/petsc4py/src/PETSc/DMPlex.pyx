@@ -83,13 +83,15 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def createFromFile(self, filename, interpolate=True, comm=None):
+    def createFromFile(self, filename, plexname="unnamed", interpolate=True, comm=None):
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
         cdef const char *cfile = NULL
+        cdef const char *pname = NULL
         filename = str2bytes(filename, &cfile)
-        CHKERR( DMPlexCreateFromFile(ccomm, cfile, interp, &newdm) )
+        plexname = str2bytes(plexname, &pname)
+        CHKERR( DMPlexCreateFromFile(ccomm, cfile, pname, interp, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 

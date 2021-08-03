@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.interpolate, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, "ex55_plex", user.interpolate, &dm);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dm,"orig_");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 

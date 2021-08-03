@@ -412,6 +412,7 @@ class BaseTestPlexHDF5(object):
                 # Save redistributed dm to XDMF in parallel
                 vwr.create(self.outfile(), mode='w', comm=comm)
                 vwr.pushFormat(format=self.outformat())
+                plex.setName("DMPlex Object")
                 plex.view(viewer=vwr)
                 vwr.popFormat()
                 vwr.destroy()

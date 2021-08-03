@@ -1213,7 +1213,7 @@ int main(int argc, char **argv)
     test:
       args: -dm_view hdf5:sol.h5 -vec_view hdf5:sol.h5::append
     test:
-      args: -dm_plex_filename sol.h5 -restart
+      args: -dm_plex_filename sol.h5 -dm_plex_name box -restart
 
   # Periodicity
   test:
