@@ -1338,6 +1338,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_is_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqdense_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaij_seqaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJKron_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4276,6 +4277,95 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
   PetscFunctionReturn(0);
 }
 
+/*@
+   MatSeqAIJKron - Computes C, the Kronecker product of A and B.
+
+   Input Parameters:
++  A - left-hand side matrix
+.  B - right-hand side matrix
+-  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.  C - Kronecker product of A and B
+
+   Level: intermediate
+
+   Notes:
+      MAT_REUSE_MATRIX can only be used when the nonzero structure of the product matrix has not changed from that last call to MatSeqAIJKron().
+
+.seealso: MatCreateSeqAIJ(), MATSEQAIJ, MATKAIJ, MatReuse
+@*/
+PetscErrorCode MatSeqAIJKron(Mat A,Mat B,MatReuse reuse,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidType(B,2);
+  PetscValidPointer(C,4);
+  if (reuse == MAT_REUSE_MATRIX) {
+    PetscValidHeaderSpecific(*C,MAT_CLASSID,4);
+    PetscValidType(*C,4);
+  }
+  ierr = PetscTryMethod(A,"MatSeqAIJKron_C",(Mat,Mat,MatReuse,Mat*),(A,B,reuse,C));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSeqAIJKron_SeqAIJ(Mat A,Mat B,MatReuse reuse,Mat *C)
+{
+  Mat            newmat;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
+  PetscScalar    *v;
+  PetscInt       *i,*j,m,n,p,q,nnz = 0,am = A->rmap->n,bm = B->rmap->n,an = A->cmap->n, bn = B->cmap->n;
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!B->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatType %s",((PetscObject)B)->type_name);
+  if (reuse != MAT_INITIAL_MATRIX && reuse != MAT_REUSE_MATRIX) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatReuse %d",(int)reuse);
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = PetscMalloc2(am*bm+1,&i,a->i[am]*b->i[bm],&j);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_SELF,&newmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(newmat,am*bm,an*bn,am*bm,an*bn);CHKERRQ(ierr);
+    ierr = MatSetType(newmat,MATAIJ);CHKERRQ(ierr);
+    i[0] = 0;
+    for (m = 0; m < am; ++m) {
+      for (p = 0; p < bm; ++p) {
+        i[m*bm + p + 1] = i[m*bm + p] + (a->i[m+1] - a->i[m]) * (b->i[p+1] - b->i[p]);
+        for (n = a->i[m]; n < a->i[m+1]; ++n) {
+          for (q = b->i[p]; q < b->i[p+1]; ++q) {
+            j[nnz++] = a->j[n]*bn + b->j[q];
+          }
+        }
+      }
+    }
+    ierr = MatSeqAIJSetPreallocationCSR(newmat,i,j,NULL);CHKERRQ(ierr);
+    *C = newmat;
+    ierr = PetscFree2(i,j);CHKERRQ(ierr);
+    nnz = 0;
+  }
+  ierr = MatSeqAIJGetArray(*C,&v);CHKERRQ(ierr);
+  for (m = 0; m < am; ++m) {
+    for (p = 0; p < bm; ++p) {
+      for (n = a->i[m]; n < a->i[m+1]; ++n) {
+        for (q = b->i[p]; q < b->i[p+1]; ++q) {
+          v[nnz++] = a->a[n] * b->a[q];
+        }
+      }
+    }
+  }
+  ierr = MatSeqAIJRestoreArray(*C,&v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petsc/private/kernels/petscaxpy.h>
 
@@ -4660,6 +4750,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_is_seqaij_C",MatProductSetFromOptions_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqdense_seqaij_C",MatProductSetFromOptions_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqaij_seqaij_C",MatProductSetFromOptions_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJKron_C",MatSeqAIJKron_SeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate_SeqAIJ_Inode(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetTypeFromOptions(B);CHKERRQ(ierr);  /* this allows changing the matrix subtype to say MATSEQAIJPERM */
