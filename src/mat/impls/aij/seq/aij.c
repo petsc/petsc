@@ -4313,7 +4313,7 @@ PetscErrorCode MatSeqAIJKron(Mat A,Mat B,MatReuse reuse,Mat *C)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  MatSeqAIJKron_SeqAIJ(Mat A,Mat B,MatReuse reuse,Mat *C)
+PetscErrorCode MatSeqAIJKron_SeqAIJ(Mat A,Mat B,MatReuse reuse,Mat *C)
 {
   Mat            newmat;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;

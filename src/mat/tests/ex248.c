@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatSetAIJKron.\n\n";
+static char help[] = "Tests MatSeqAIJKron.\n\n";
 
 #include <petscmat.h>
 
