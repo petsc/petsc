@@ -13,7 +13,7 @@ class Configure(config.package.Package):
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
     self.cxx                    = 1
-    self.requirescxx11          = 1
+    self.minCxxVersion          = 'c++11'
     self.skippackagewithoptions = 1
     self.builtafterpetsc        = 1
     self.noMPIUni               = 1

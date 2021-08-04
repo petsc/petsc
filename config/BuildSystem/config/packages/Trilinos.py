@@ -11,7 +11,7 @@ class Configure(config.package.CMakePackage):
     self.includes         = ['Trilinos_version.h']
     self.functions        = ['Zoltan_Create']   # one of the very few C routines in Trilinos
     self.cxx              = 1
-    self.requirescxx11    = 1
+    self.minCxxVersion    = 'c++11'
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1

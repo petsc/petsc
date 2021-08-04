@@ -18,7 +18,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-adapt", "Flag for adaptation of the surface mesh", "ex10.c", options->adapt, &options->adapt, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-extrude", "Flag for extrusion of the surface mesh", "ex10.c", options->extrude, &options->extrude, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -124,7 +124,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
     if (nAdapt[0]) {
       ierr = PetscInfo2(dmCur, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nAdapt[0], nAdapt[1]);CHKERRQ(ierr);
       ierr = DMAdaptLabel(dmCur, adaptLabel, &dmAdapt);CHKERRQ(ierr);
-      ierr = DMDestroy(&dmCur);
+      ierr = DMDestroy(&dmCur);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dmAdapt, NULL, "-adapt_dm_view");CHKERRQ(ierr);
       dmCur = dmAdapt;
       adapt = PETSC_TRUE;

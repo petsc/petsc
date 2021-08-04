@@ -10,7 +10,7 @@ class Configure(config.package.CMakePackage):
     self.includes          = []
     self.functions         = []
     self.cxx               = 1
-    self.requirescxx11     = 1
+    self.minCxxVersion     = 'c++11'
     self.downloadonWindows = 0
     self.hastests          = 1
     self.linkedbypetsc     = 0

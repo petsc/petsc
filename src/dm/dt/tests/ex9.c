@@ -192,7 +192,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-dim", "Dimension of the simplex","ex9.c",dim,&dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-degree", "The degree of the polynomial space","ex9.c",deg,&deg,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-k", "The number of derivatives to use in the taylor test","ex9.c",k,&k,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = testOrthogonality(dim, deg);CHKERRQ(ierr);
   ierr = testDerivativesLegendre(dim, deg, k);CHKERRQ(ierr);
   ierr = PetscFinalize();

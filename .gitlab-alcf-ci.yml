@@ -35,7 +35,7 @@ variables:
     when: always
     paths:
     - ${TEST_ARCH}/lib/petsc/conf/*.log
-    - ${TEST_ARCH}/lib/pkgconfig/PETSc.pc
+    - ${TEST_ARCH}/lib/pkgconfig/petsc.pc
     - core*
     expire_in: 4 days
 

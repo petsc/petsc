@@ -429,8 +429,8 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
   ierr = MatGetSize(B,NULL,(PetscInt*)&mat_mkl_cpardiso->nrhs);CHKERRQ(ierr);
 
   if (mat_mkl_cpardiso->nrhs > 0) {
-    ierr = MatDenseGetArrayRead(B,&barray);
-    ierr = MatDenseGetArray(X,&xarray);
+    ierr = MatDenseGetArrayRead(B,&barray);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(X,&xarray);CHKERRQ(ierr);
 
     if (barray == xarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
 
@@ -456,8 +456,8 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
       (PetscInt*)&mat_mkl_cpardiso->err);
     if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
-    ierr = MatDenseRestoreArrayRead(B,&barray);
-    ierr = MatDenseRestoreArray(X,&xarray);
+    ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(X,&xarray);CHKERRQ(ierr);
 
   }
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;

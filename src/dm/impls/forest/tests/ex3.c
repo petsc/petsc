@@ -118,7 +118,7 @@ int main (int argc, char **argv)
   ierr = VecDestroy(&l);CHKERRQ(ierr);
 
   /*  Save a vector*/
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_WRITE, &viewer);
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
   ierr = VecView(g, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
@@ -128,7 +128,7 @@ int main (int argc, char **argv)
   ierr = VecZeroEntries(g2);CHKERRQ(ierr);
 
   /*  Load a vector*/
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_READ, &viewer);
+  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forestHDF.h5", FILE_MODE_READ, &viewer);CHKERRQ(ierr);
   ierr = VecLoad(g2, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 

@@ -538,19 +538,19 @@ int main(int argc,char **argv)
   ierr = TSComputeInitialCondition(ts, u);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   if (user.monitorhg) {
-    ierr = PetscDrawSave(user.draw);
+    ierr = PetscDrawSave(user.draw);CHKERRQ(ierr);
     ierr = PetscDrawHGDestroy(&user.drawhg);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&user.draw);
+    ierr = PetscDrawDestroy(&user.draw);CHKERRQ(ierr);
   }
   if (user.monitorsp) {
-    ierr = PetscDrawSave(user.draw);
+    ierr = PetscDrawSave(user.draw);CHKERRQ(ierr);
     ierr = PetscDrawSPDestroy(&user.drawsp);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&user.draw);
+    ierr = PetscDrawDestroy(&user.draw);CHKERRQ(ierr);
   }
   if (user.monitorks) {
-    ierr = PetscDrawSave(user.draw);
+    ierr = PetscDrawSave(user.draw);CHKERRQ(ierr);
     ierr = PetscDrawSPDestroy(&user.drawks);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&user.draw);
+    ierr = PetscDrawDestroy(&user.draw);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);

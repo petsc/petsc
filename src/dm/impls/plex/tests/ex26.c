@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     */
     /* set the mesh order */
     ierr = PetscViewerExodusIISetOrder(viewer,order);CHKERRQ(ierr);
-    ierr = PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD);
+    ierr = PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /*
       Notice how the exodus file is actually NOT open at this point (exoid is -1)
       Since we are overwritting the file (mode is FILE_MODE_WRITE), we are going to have to
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 
     /* Save the geometry to the file, erasing all previous content */
     ierr = DMView(dm,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD);
+    ierr = PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /*
       Note how the exodus file is now open
     */
@@ -461,7 +461,7 @@ int main(int argc, char **argv) {
     ierr = PetscObjectSetName((PetscObject) tmpVec, "Sigma");CHKERRQ(ierr);
     ierr = VecLoad(tmpVec,viewer);CHKERRQ(ierr);
     ierr = VecAXPY(S, -1.0, tmpVec);CHKERRQ(ierr);
-    ierr = VecNorm(S, NORM_INFINITY, &norm);
+    ierr = VecNorm(S, NORM_INFINITY, &norm);CHKERRQ(ierr);
     if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g\n", (double) norm);
     ierr = DMRestoreGlobalVector(dmS, &tmpVec);CHKERRQ(ierr);
   }

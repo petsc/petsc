@@ -156,6 +156,18 @@ be printed with ``(*PetscErrorPrintf)()``. You can direct all error
 messages to ``stderr``, instead of the default ``stdout``, with the
 command line option ``-erroroutputstderr``.
 
+C++ Exceptions
+~~~~~~~~~~~~~~
+
+In PETSc code, when one calls C++ functions that do not return with an error code but might
+instead throw C++ exceptions, one can use ``CHKERRCXX(func)``, which catches the exceptions
+in *func* and then calls ``SETERRQ1()``.  The macro ``CHKERRCXX(func)`` is given by
+
+.. literalinclude:: /../include/petscerror.h
+   :language: c
+   :start-at: #define CHKERRCXX
+   :end-at: #define CHKERRCXX
+
 Memory Management
 -----------------
 

@@ -252,7 +252,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
       aij->a = ml_vals;
     } else {
       /* sort ml_cols and ml_vals */
-      ierr = PetscMalloc1(m+1,&nnz);
+      ierr = PetscMalloc1(m+1,&nnz);CHKERRQ(ierr);
       for (i=0; i<m; i++) nnz[i] = ml_rowptr[i+1] - ml_rowptr[i];
       aj = ml_cols; aa = ml_vals;
       for (i=0; i<m; i++) {
@@ -368,7 +368,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
       nnzB[row] = nnz[i] - nnzA[row];
     }
     ierr = MatMPIAIJSetPreallocation(A,0,nnzA,0,nnzB);CHKERRQ(ierr);
-    ierr = PetscFree3(nnzA,nnzB,nnz);
+    ierr = PetscFree3(nnzA,nnzB,nnz);CHKERRQ(ierr);
   }
   for (i=0; i<m; i++) {
     PetscInt ncols;

@@ -1221,9 +1221,9 @@ static PetscErrorCode MatSolve_SeqAIJKokkos(Mat A,Vec b,Vec x)
   ierr = VecGetKokkosView(x,&xv);CHKERRQ(ierr);
   ierr = VecGetKokkosView(b,&bv);CHKERRQ(ierr);
   /* Solve L tmpv = b */
-  KokkosSparse::Experimental::sptrsv_solve(&factors->khL,factors->iL_d,factors->jL_d,factors->aL_d,bv,factors->workVector);
+  CHKERRCXX(KokkosSparse::Experimental::sptrsv_solve(&factors->khL,factors->iL_d,factors->jL_d,factors->aL_d,bv,factors->workVector));
   /* Solve Ux = tmpv */
-  KokkosSparse::Experimental::sptrsv_solve(&factors->khU,factors->iU_d,factors->jU_d,factors->aU_d,factors->workVector,xv);
+  CHKERRCXX(KokkosSparse::Experimental::sptrsv_solve(&factors->khU,factors->iU_d,factors->jU_d,factors->aU_d,factors->workVector,xv));
   ierr = VecRestoreKokkosView(x,&xv);CHKERRQ(ierr);
   ierr = VecRestoreKokkosView(b,&bv);CHKERRQ(ierr);
   PetscFunctionReturn(0);

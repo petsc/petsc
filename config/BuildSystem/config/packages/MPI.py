@@ -321,7 +321,6 @@ Perhaps you have VPN running whose network settings may not work with mpiexec or
 Unable to run hostname to check the network')
           self.logPrintDivider()
 
-
     # check that mpiexec runs an MPI program correctly
     error_message = 'Unable to run MPI program with '+self.mpiexec+'\n\
     (1) make sure this is the correct program to run MPI jobs\n\
@@ -638,25 +637,29 @@ Unable to run hostname to check the network')
     return
 
   def findMPIIncludeAndLib(self):
-    '''Find MPI include paths and libraries from "mpicxx -show" and save.'''
+    '''Find MPI include paths and libraries from "mpicc -show" or Cray "cc --cray-print-opts=cflags/libs" and save.'''
     '''When the underlying C++ compiler used by CUDA or HIP is not the same'''
-    '''as the MPICXX compiler. The includes are needed for for compiling with'''
-    '''the CUDA or HIP compiler or the Kokkos compiler. The libraries are needed'''
+    '''as the MPICXX compiler (if any), the includes are needed for for compiling with'''
+    '''the CUDA or HIP compiler or the Kokkos compiler, and the libraries are needed'''
     '''when the Kokkos compiler wrapper is linking a Kokkos application.'''
     needed=False
     if hasattr(self.compilers, 'CUDAC') and self.cuda.found: needed = True
     if hasattr(self.compilers, 'HIPC') and self.hip.found: needed = True
     if not needed: return
     import re
-    output = ''
-    try:
-      output   = self.executeShellCommand(self.compilers.CXX + ' -show', log = self.log)[0]
-      compiler = output.split(' ')[0]
-    except:
-      pass
+
+    cflagsOutput = ''
+    libsOutput   = ''
+    if config.setCompilers.Configure.isCrayPEWrapper(self.setCompilers.CC, self.log):
+      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' --cray-print-opts=cflags', log = self.log)[0]
+      libsOutput   = self.executeShellCommand(self.compilers.CC + ' --cray-print-opts=libs', log = self.log)[0]
+    else:
+      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' -show', log = self.log)[0]
+      libsOutput   = cflagsOutput # same output as -show
+
     # find include paths
     self.includepaths = ''
-    argIter = iter(output.split())
+    argIter = iter(cflagsOutput.split())
     try:
       while 1:
         arg = next(argIter)
@@ -671,7 +674,7 @@ Unable to run hostname to check the network')
     # find libraries
     self.libpaths = ''
     self.mpilibs = ''
-    argIter = iter(output.split())
+    argIter = iter(libsOutput.split())
     try:
       while 1:
         arg = next(argIter)

@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
 /*  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  ierr = VecDuplicate(input,&output);
+  ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
 
   DIM    = 4;
   dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;

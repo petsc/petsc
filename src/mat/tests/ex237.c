@@ -244,7 +244,7 @@ int main(int argc, char** argv)
           if (!mkl) {
             if (!maij) {
               ierr = MatProductNumeric(D);CHKERRQ(ierr);
-              ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with A %s %Dx%D and B %s %Dx%D\n", MatProductTypes[MATPRODUCT_AB], Atype, AM, AN, Ctype, CM, CN);
+              ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with A %s %Dx%D and B %s %Dx%D\n", MatProductTypes[MATPRODUCT_AB], Atype, AM, AN, Ctype, CM, CN);CHKERRQ(ierr);
               ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
               for (t = 0; t < trial; ++t) {
                 ierr = MatProductNumeric(D);CHKERRQ(ierr);
@@ -265,7 +265,7 @@ int main(int argc, char** argv)
               ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, AM * N[k], PETSC_DECIDE, c_ptr, &cC);CHKERRQ(ierr);
               ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, AM * N[k], PETSC_DECIDE, d_ptr, &cD);CHKERRQ(ierr);
               ierr = MatMult(E, cC, cD);CHKERRQ(ierr);
-              ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMult: with A %s %Dx%D and B %s %Dx%D\n", MATMAIJ, AM, AN, VECMPI, AM * N[k], 1);
+              ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMult: with A %s %Dx%D and B %s %Dx%D\n", MATMAIJ, AM, AN, VECMPI, AM * N[k], 1);CHKERRQ(ierr);
               ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
               for (t = 0; t < trial; ++t) {
                 ierr = MatMult(E, cC, cD);CHKERRQ(ierr);
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
             ierr = MatDenseGetArrayRead(C, &c_ptr);CHKERRQ(ierr);
             ierr = MatDenseGetArrayWrite(D, &d_ptr);CHKERRQ(ierr);
             PetscStackCallMKLSparse(mkl_sparse_d_mm,(SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
-            ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (COLUMN_MAJOR): with A %s %Dx%D and B %s %Dx%D\n", Atype, AM, AN, Ctype, CM, CN);
+            ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (COLUMN_MAJOR): with A %s %Dx%D and B %s %Dx%D\n", Atype, AM, AN, Ctype, CM, CN);CHKERRQ(ierr);
             ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
             for (t = 0; t < trial; ++t) {
               PetscStackCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
@@ -305,7 +305,7 @@ int main(int argc, char** argv)
           ierr = MatDenseGetColumnVecRead(C, 0, &cC);CHKERRQ(ierr);
           ierr = MatDenseGetColumnVecWrite(D, 0, &cD);CHKERRQ(ierr);
           ierr = MatMult(A, cC, cD);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMult: with A %s %Dx%D\n", Atype, AM, AN);
+          ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatMult: with A %s %Dx%D\n", Atype, AM, AN);CHKERRQ(ierr);
           ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
           for (t = 0; t < trial; ++t) {
             ierr = MatMult(A, cC, cD);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ int main(int argc, char** argv)
 
           ierr = MatDenseGetArrayRead(C, &c_ptr);CHKERRQ(ierr);
           ierr = MatDenseGetArrayWrite(D, &d_ptr);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mv: with A %s %Dx%D\n", Atype, AM, AN);
+          ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mv: with A %s %Dx%D\n", Atype, AM, AN);CHKERRQ(ierr);
           PetscStackCallMKLSparse(mkl_sparse_d_mv, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr));
           ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
           for (t = 0; t < trial; ++t) {
@@ -353,7 +353,7 @@ int main(int argc, char** argv)
               ierr = MatProductSetFromOptions(D);CHKERRQ(ierr);
               ierr = MatProductSymbolic(D);CHKERRQ(ierr);
               ierr = MatProductNumeric(D);CHKERRQ(ierr);
-              ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with A %s %Dx%D and Bt %s %Dx%D\n", MatProductTypes[MATPRODUCT_ABt], Atype, AM, AN, Ctype, CM, CN);
+              ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking MatProduct %s: with A %s %Dx%D and Bt %s %Dx%D\n", MatProductTypes[MATPRODUCT_ABt], Atype, AM, AN, Ctype, CM, CN);CHKERRQ(ierr);
               ierr = PetscLogStagePush(tstage);CHKERRQ(ierr);
               for (t = 0; t < trial; ++t) {
                 ierr = MatProductNumeric(D);CHKERRQ(ierr);
@@ -367,7 +367,7 @@ int main(int argc, char** argv)
               PetscStackCallMKLSparse(mkl_sparse_optimize, (spr));
               ierr = MatDenseGetArrayRead(C, &c_ptr);CHKERRQ(ierr);
               ierr = MatDenseGetArrayWrite(D, &d_ptr);CHKERRQ(ierr);
-              ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (ROW_MAJOR): with A %s %Dx%D and B %s %Dx%D\n", Atype, AM, AN, Ctype, CM, CN);
+              ierr = PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (ROW_MAJOR): with A %s %Dx%D and B %s %Dx%D\n", Atype, AM, AN, Ctype, CM, CN);CHKERRQ(ierr);
               PetscStackCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
               ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
               for (t = 0; t < trial; ++t) {

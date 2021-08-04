@@ -221,7 +221,7 @@ int main(int argc, char **argv)
   ierr = DMDASetUniformCoordinates(dm, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Dynamic Friction Options", "");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Dynamic Friction Options", "");CHKERRQ(ierr);
   {
     user.epsilon    = 0.1;
     user.gamma      = 0.5;

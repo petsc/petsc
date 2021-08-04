@@ -66,7 +66,7 @@ int main(int argc,char **args)
       PetscInt  rows[2];
       PetscBool test_offproc = PETSC_FALSE;
 
-      ierr = PetscOptionsGetBool(NULL,NULL,"-test_offproc",&test_offproc,NULL);
+      ierr = PetscOptionsGetBool(NULL,NULL,"-test_offproc",&test_offproc,NULL);CHKERRQ(ierr);
       if (test_offproc) {
         const PetscInt *ranges;
         PetscMPIInt    rank;

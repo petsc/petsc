@@ -11,12 +11,11 @@ typedef struct {
   PointType pointType; /* Point generation mechanism */
 } AppCtx;
 
-static PetscInt Nc = 3;
-
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt d, c;
 
+  if (Nc != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %D", Nc);
   for (c = 0; c < Nc; ++c) {
     u[c] = 0.0;
     for (d = 0; d < dim; ++d) u[c] += x[d];
@@ -37,7 +36,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   pt   = options->pointType;
   ierr = PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL);CHKERRQ(ierr);
   options->pointType = (PointType) pt;
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -208,7 +207,7 @@ int main(int argc, char **argv)
   const PetscScalar  *ivals, *vcoords;
   PetscReal          *pcoords;
   PetscBool           simplex, pointsAllProcs=PETSC_TRUE;
-  PetscInt            dim, spaceDim, c, Np, p;
+  PetscInt            dim, spaceDim, Nc, c, Np, p;
   PetscMPIInt         rank, size;
   PetscViewer         selfviewer;
   PetscErrorCode      ierr;
@@ -234,6 +233,7 @@ int main(int argc, char **argv)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
   ierr = VecView(interpolator->coords, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Setup Discretization */
+  Nc   = dim;
   ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, Nc, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
 #else
       const PetscReal *vcoordsReal = &vcoords[p*spaceDim];
 #endif
-      (*funcs[c])(dim, 0.0, vcoordsReal, 1, vals, NULL);
+      (*funcs[c])(dim, 0.0, vcoordsReal, Nc, vals, NULL);
       if (PetscAbsScalar(ivals[p*Nc+c] - vals[c]) > PETSC_SQRT_MACHINE_EPSILON)
         SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%D, %D)", (double) PetscRealPart(ivals[p*Nc+c]), (double) PetscRealPart(vals[c]), p, c);
     }

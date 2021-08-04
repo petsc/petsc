@@ -18,7 +18,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The spatial dimension","ex1.c",dim,&dim,NULL,0,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tensor", "Whether the cell is a tensor product cell or a simplex","ex1.c",tensorCell,&tensorCell,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscDualSpaceCreate(PETSC_COMM_WORLD, &dsp);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)dsp, "Lagrange dual space");CHKERRQ(ierr);

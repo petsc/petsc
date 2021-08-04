@@ -91,7 +91,7 @@ PetscErrorCode TaoSolve_BQNK(Tao tao)
       }
     }
     flg = PETSC_FALSE;
-    ierr = PetscObjectTypeCompareAny((PetscObject)bqnk->B, &flg, MATLMVMSYMBROYDEN, MATLMVMSYMBADBROYDEN, MATLMVMBFGS, MATLMVMDFP, "");
+    ierr = PetscObjectTypeCompareAny((PetscObject)bqnk->B, &flg, MATLMVMSYMBROYDEN, MATLMVMSYMBADBROYDEN, MATLMVMBFGS, MATLMVMDFP, "");CHKERRQ(ierr);
     if (flg) {
       diag_ctx = (Mat_SymBrdn*)lmvm->ctx;
       J0 = (Mat_LMVM*)diag_ctx->D->data;

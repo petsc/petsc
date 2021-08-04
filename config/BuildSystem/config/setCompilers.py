@@ -414,6 +414,25 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isCrayPEWrapper(compiler, log):
+    '''Returns true if the compiler is a Cray Programming Environment (PE) wrapper compiler'''
+    # Note with Cray module PrgEnv-gnu, cc is a Cray PE wrapper around gcc, but not a Cray compiler on its own.
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      output = output + error
+      # On OLCF Spock, with PrgEnv-cray
+      #     $ cc --help |& grep "\-craype\-"
+      #     Use --craype-help for CrayPE specific options.
+      # with PrgEnv-gnu, the output is
+      #     -craype-verbose    Print the command which is forwarded
+      #     ...
+      if output.find('-craype-') >= 0:
+        if log: log.write('Detected Cray PE wrapper compiler\n')
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
   def isCrayVector(compiler, log):
     '''Returns true if the compiler is a Cray compiler for a Cray Vector system'''
     try:
@@ -1339,7 +1358,6 @@ class Configure(config.base.Configure):
       # outside this ctx manager then the flags and languages are still reset
       if lang:
         oldLang = self.popLanguage()
-        assert oldLang == lang, "Popped language '%s' is not the same as pushed language '%s'" % (oldLang,lang)
       setattr(self,flagsArg,oldCompilerFlags)
 
   def checkPragma(self):

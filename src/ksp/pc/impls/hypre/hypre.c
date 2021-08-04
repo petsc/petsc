@@ -274,7 +274,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
         ierr = MatCreateVecs(pc->pmat,&jac->hmnull_constant,NULL);CHKERRQ(ierr);
         ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->hmnull_constant);CHKERRQ(ierr);
         ierr = VecSet(jac->hmnull_constant,1);CHKERRQ(ierr);
-        ierr = VecNormalize(jac->hmnull_constant,NULL);
+        ierr = VecNormalize(jac->hmnull_constant,NULL);CHKERRQ(ierr);
         ierr = VecHYPRE_IJVectorCreate(jac->hmnull_constant,&jac->hmnull[nvec]);CHKERRQ(ierr);
         ierr = VecGetArrayRead(jac->hmnull_constant,(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
         VecHYPRE_ParVectorReplacePointer(jac->hmnull[nvec],petscvecarray,jac->hmnull_hypre_data_array[nvec]);
@@ -794,7 +794,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   }
 
   /* Smooth type */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_smooth_type","Enable more complex smoothers","None",HYPREBoomerAMGSmoothType,ALEN(HYPREBoomerAMGSmoothType),HYPREBoomerAMGSmoothType[0],&indx,&flg);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_smooth_type","Enable more complex smoothers","None",HYPREBoomerAMGSmoothType,ALEN(HYPREBoomerAMGSmoothType),HYPREBoomerAMGSmoothType[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->smoothtype = indx;
     PetscStackCallStandard(HYPRE_BoomerAMGSetSmoothType,(jac->hsolver,indx+6));

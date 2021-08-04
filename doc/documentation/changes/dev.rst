@@ -24,6 +24,7 @@ Changes: Development
 -  Remove ``WaitForCUDA()`` and ``WaitForHIP()`` before ``PetscLogGpuTimeEnd()``
 -  Add MPIU_REAL_INT and MPIU_SCALAR_INT datatypes to be used for reduction operations
 -  Add MPIU_MAXLOC and MPIU_MINLOC operations
+-  Add ``CHKERRCXX()`` to catch C++ exceptions and return a PETSc error code
 
 .. rubric:: PetscViewer:
 
@@ -80,6 +81,7 @@ Changes: Development
    centering matrix
 -  Remove -mat_mumps_icntl_7 1 option, use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
 -  Add ``MATSOLVERSPQR`` - interface to SuiteSparse QR factorization
+-  Add ``MatSeqAIJKron()`` - Kronecker product of two ``MatSeqAIJ``
 
 .. rubric:: PC:
 -  Add ``PCQR`` - interface to SuiteSparse QR factorization
@@ -106,6 +108,7 @@ Changes: Development
 -  Remove ``DMCopyBoundary()``
 -  Change interface for ``DMAddBoundary()``, ``PetscDSAddBoundary()``,
    ``PetscDSGetBoundary()``, ``PetscDSUpdateBoundary()``
+-  Add ``DMDAVecGetArrayDOFWrite()`` and ``DMDAVecRestoreArrayDOFWrite()``
 
 .. rubric:: DMSwarm:
 
@@ -148,6 +151,7 @@ Changes: Development
 - Add ``DMSetLabel()``
 - Replace ``DMPlexComputeJacobianAction()`` with ``DMSNESComputeJacobianAction()``
 - Add ``DMSNESCreateJacobianMF()``
+- Change ``DMPlexComputeBdResidualSingle()`` to take ``PetscFormKey`` instead of explicit label/value/field arguments
 
 .. rubric:: FE/FV:
 
@@ -159,6 +163,10 @@ Changes: Development
 .. rubric:: DMNetwork:
 
 -  Add ``DMNetworkCreateIS()`` and ``DMNetworkCreateLocalIS()``
+
+.. rubric:: DMStag:
+
+-  Add ``DMStagStencilToIndexLocal()``
 
 .. rubric:: DT:
 

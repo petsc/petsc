@@ -1404,7 +1404,7 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr);
   /* ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL);CHKERRQ(ierr);*/
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = TestMonitor(dm,filename,X,time);
+  ierr = TestMonitor(dm,filename,X,time);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

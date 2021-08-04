@@ -254,7 +254,7 @@ PETSC_INTERN PetscErrorCode  MatQRFactorSymbolic_SPQR(Mat F,Mat A,IS perm,const 
   if (aijalloc) {ierr = PetscFree2(cholA.p,cholA.i);CHKERRQ(ierr);}
   if (valloc) {ierr = PetscFree(cholA.x);CHKERRQ(ierr);}
 
-  ierr = PetscObjectComposeFunction((PetscObject)F,"MatQRFactorNumeric_C", MatQRFactorNumeric_SPQR);
+  ierr = PetscObjectComposeFunction((PetscObject)F,"MatQRFactorNumeric_C", MatQRFactorNumeric_SPQR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -304,7 +304,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat A,MatFactorType ftype,M
   B->ops->destroy = MatDestroy_CHOLMOD;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_SPQR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatQRFactorSymbolic_C", MatQRFactorSymbolic_SPQR);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatQRFactorSymbolic_C", MatQRFactorSymbolic_SPQR);CHKERRQ(ierr);
 
   B->factortype   = MAT_FACTOR_QR;
   B->assembled    = PETSC_TRUE;

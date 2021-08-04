@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   ierr = ISView(isrow,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() column permutation\n");CHKERRQ(ierr);
   ierr = ISView(iscol,viewer);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,4,0,1,&identity);CHKERRQ(ierr);

@@ -51,7 +51,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     ierr = PetscOptionsReal("-u", "The x component of the convective coefficient", "advection_DMPLEX.c", options->u, &options->u, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-v", "The y component of the convective coefficient", "advection_DMPLEX.c", options->v, &options->v, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsScalar("-diffus", "The diffusive coefficient", "advection_DMPLEX.c", options->diffusion, &options->diffusion, NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
@@ -261,7 +261,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx)
            and computing the RHS time derivative f[.] */
         f[cell] = -(flux_centre + flux_east + flux_west + flux_north + flux_south);
     }
-    ierr = PetscFVDestroy(&fvm);
+    ierr = PetscFVDestroy(&fvm);CHKERRQ(ierr);
     ierr = VecRestoreArray(localX, &x);CHKERRQ(ierr);
     ierr = VecRestoreArray(F, &f);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da, &localX);CHKERRQ(ierr);

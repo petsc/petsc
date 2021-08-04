@@ -162,7 +162,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
    * and allgather them */
   for (i = 0; i < keys_per[rank]; i++) pivots[i] = pivots[my_first + i * non_empty];
   for (i = keys_per[rank]; i < max_keys_per; i++) pivots[i] = PETSC_MAX_INT;
-  ierr = MPI_Allgather(pivots, max_keys_per, MPIU_INT, finalpivots, max_keys_per, MPIU_INT, mapin->comm);
+  ierr = MPI_Allgather(pivots, max_keys_per, MPIU_INT, finalpivots, max_keys_per, MPIU_INT, mapin->comm);CHKERRMPI(ierr);
   for (i = 0, count = 0; i < size; i++) {
     PetscInt j;
 

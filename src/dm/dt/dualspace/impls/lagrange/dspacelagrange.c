@@ -205,7 +205,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   /* map from unit simplex to biunit simplex */
   for (k = 0; k < npoints * dim; k++) points[k] = points[k] * 2. - 1.;
   ierr = PetscFree2(nodework, tupwork);CHKERRQ(ierr);
-  ierr = PetscFree(tup);
+  ierr = PetscFree(tup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -878,7 +878,7 @@ static PetscErrorCode PetscLagNodeIndicesGetPermutation(PetscLagNodeIndices ni, 
     ierr = PetscMalloc1(m, &prm);CHKERRQ(ierr);
     for (i = 0; i < m; i++) prm[i] = sorter[(nodeIdxDim + 2) * i + 1];
     ni->perm = prm;
-    ierr = PetscFree(sorter);
+    ierr = PetscFree(sorter);CHKERRQ(ierr);
   }
   *perm = ni->perm;
   PetscFunctionReturn(0);

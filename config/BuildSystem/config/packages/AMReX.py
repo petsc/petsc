@@ -15,7 +15,7 @@ class Configure(config.package.CMakePackage):
     self.hastestsdatafiles = 1
     self.precisions        = ['double']
     self.cxx               = 1
-    self.requirescxx14     = 1
+    self.minCxxVersion     = 'c++14'
     self.builtafterpetsc   = 1
     return
 
