@@ -52,6 +52,7 @@ typedef struct {
   cholmod_common               *common;
   SuiteSparseQR_C_factorization *spqrfact;
   PetscBool                    pack;
+  PetscBool                    normal;
 } Mat_CHOLMOD;
 
 PETSC_INTERN PetscErrorCode CholmodStart(Mat);
