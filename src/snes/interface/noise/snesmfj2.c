@@ -33,7 +33,7 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
   MFCtx_Private  *ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void**)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->w);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);
   if (ctx->jorge || ctx->compute_err) {ierr = SNESDiffParameterDestroy_More(ctx->data);CHKERRQ(ierr);}
@@ -51,7 +51,7 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J,(void**)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J,&ctx);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
@@ -94,7 +94,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = PetscLogEventBegin(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MatShellGetContext(mat,(void**)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   snes = ctx->snes;
   w    = ctx->w;
   umin = ctx->umin;
@@ -304,7 +304,7 @@ PetscErrorCode  SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void**)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   if (ctx) {
     if (error != PETSC_DEFAULT) ctx->error_rel = error;
     if (umin  != PETSC_DEFAULT) ctx->umin = umin;
@@ -324,7 +324,7 @@ PetscErrorCode  SNESUnSetMatrixFreeParameter(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESGetJacobian(snes,&mat,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatShellGetContext(mat,(void**)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   if (ctx) ctx->need_h = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

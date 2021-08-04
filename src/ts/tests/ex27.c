@@ -80,7 +80,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rndv);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rndv, -1., 1.);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rndv);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(sw, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(sw, &user);CHKERRQ(ierr);
   Np   = user->N;
   ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
   ierr = DMSwarmGetCellDM(sw, &dm);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(u, &n);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dmSw, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dmSw, &user);CHKERRQ(ierr);
   Np   = user->N;
   ierr = DMSwarmGetCellDM(dmSw, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -418,7 +418,7 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &user);CHKERRQ(ierr);
   ierr = SetInitialCoordinates(dm);CHKERRQ(ierr);
   ierr = SetInitialConditions(dm, u);CHKERRQ(ierr);
   PetscFunctionReturn(0);

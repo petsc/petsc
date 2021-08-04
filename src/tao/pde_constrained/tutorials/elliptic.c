@@ -162,12 +162,12 @@ int main(int argc, char **argv)
 
   /* Set solution vector with an initial guess */
   ierr = TaoSetInitialVector(tao,user.x);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveRoutine(tao, FormFunction, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetGradientRoutine(tao, FormGradient, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveRoutine(tao, FormFunction, &user);CHKERRQ(ierr);
+  ierr = TaoSetGradientRoutine(tao, FormGradient, &user);CHKERRQ(ierr);
+  ierr = TaoSetConstraintsRoutine(tao, user.c, FormConstraints, &user);CHKERRQ(ierr);
 
-  ierr = TaoSetJacobianStateRoutine(tao, user.Js, NULL, user.JsInv, FormJacobianState, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianStateRoutine(tao, user.Js, NULL, user.JsInv, FormJacobianState, &user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, &user);CHKERRQ(ierr);
 
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ PetscErrorCode StateBlockMatMult(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   ierr = MatMult(user->DSG,X,Y);CHKERRQ(ierr);
   ierr = VecSum(X,&sum);CHKERRQ(ierr);
   sum /= user->ndesign;
@@ -323,7 +323,7 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   if (user->ns == 1) {
     ierr = MatMult(user->JsBlock,X,Y);CHKERRQ(ierr);
   } else {
@@ -344,7 +344,7 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG);CHKERRQ(ierr);
   if (Y == user->ytrue) {
     /* First solve is done using true solution to set up problem */
@@ -375,7 +375,7 @@ PetscErrorCode QMatMult(Mat J_shell, Vec X, Vec Y)
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   if (user->ns == 1) {
     ierr = MatMult(user->Q,X,Y);CHKERRQ(ierr);
   } else {
@@ -396,7 +396,7 @@ PetscErrorCode QMatMultTranspose(Mat J_shell, Vec X, Vec Y)
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   if (user->ns == 1) {
     ierr = MatMultTranspose(user->Q,X,Y);CHKERRQ(ierr);
   } else {
@@ -417,7 +417,7 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
 
   /* sdiag(1./v) */
   ierr = VecSet(user->uwork,0);CHKERRQ(ierr);
@@ -465,7 +465,7 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   ierr = VecZeroEntries(Y);CHKERRQ(ierr);
 
   /* Sdiag = 1./((Av*(1./v)).^2) */

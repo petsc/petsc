@@ -25,7 +25,7 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
   npoints = n/bs;
 
   ierr = PetscMalloc1(npoints,&cellidx);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm,(void**)&dmregular);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&dmregular);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dmregular,&si,&sj,NULL,&milocal,&mjlocal,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dmregular,NULL,&mx,&my,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
@@ -96,7 +96,7 @@ PetscErrorCode DMGetNeighbors_DMDARegular(DM dm,PetscInt *nneighbors,const Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(dm,(void**)&dmregular);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&dmregular);CHKERRQ(ierr);
   ierr = DMGetNeighbors(dmregular,nneighbors,neighbors);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -158,7 +158,7 @@ PetscErrorCode ex3_1(void)
 
   /* Create a DMShell for point location purposes */
   ierr = DMShellCreate(PETSC_COMM_WORLD,&dmcell);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dmcell,(void*)dmregular);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(dmcell,dmregular);CHKERRQ(ierr);
   dmcell->ops->locatepoints = DMLocatePoints_DMDARegular;
   dmcell->ops->getneighbors = DMGetNeighbors_DMDARegular;
 

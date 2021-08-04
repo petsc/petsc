@@ -192,11 +192,11 @@ int main(int argc, char **argv)
 
   /* Set solution vector with an initial guess */
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveRoutine(tao, FormFunction, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetGradientRoutine(tao, FormGradient, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveRoutine(tao, FormFunction, &user);CHKERRQ(ierr);
+  ierr = TaoSetGradientRoutine(tao, FormGradient, &user);CHKERRQ(ierr);
+  ierr = TaoSetConstraintsRoutine(tao, user.c, FormConstraints, &user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, &user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, &user);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is);CHKERRQ(ierr);
 
@@ -360,7 +360,7 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   ierr = Scatter_yi(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
   user->block_index = 0;
   ierr = MatMult(user->JsBlock,user->yi[0],user->yiwork[0]);CHKERRQ(ierr);
@@ -382,7 +382,7 @@ PetscErrorCode StateMatMultTranspose(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   ierr = Scatter_yi(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
 
   for (i=0; i<user->nt-1; i++) {
@@ -406,7 +406,7 @@ PetscErrorCode StateMatBlockMult(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   i = user->block_index;
   ierr = VecPointwiseMult(user->uxiwork[i],X,user->uxi[i]);CHKERRQ(ierr);
   ierr = VecPointwiseMult(user->uyiwork[i],X,user->uyi[i]);CHKERRQ(ierr);
@@ -423,7 +423,7 @@ PetscErrorCode StateMatBlockMultTranspose(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   i = user->block_index;
   ierr = MatMult(user->Grad,X,user->uiwork[i]);CHKERRQ(ierr);
   ierr = Scatter(user->uiwork[i],user->uxiwork[i],user->ux_scatter[i],user->uyiwork[i],user->uy_scatter[i]);CHKERRQ(ierr);
@@ -441,7 +441,7 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   ierr = Scatter_yi(user->y,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
   ierr = Scatter_uxi_uyi(X,user->uxiwork,user->uxi_scatter,user->uyiwork,user->uyi_scatter,user->nt);CHKERRQ(ierr);
   for (i=0; i<user->nt; i++) {
@@ -462,7 +462,7 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   ierr = Scatter_yi(user->y,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
   ierr = Scatter_yi(X,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
   for (i=0; i<user->nt; i++) {
@@ -484,7 +484,7 @@ PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(PC_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = PCShellGetContext(PC_shell,&user);CHKERRQ(ierr);
   i = user->block_index;
   if (user->c_formed) {
     ierr = MatSOR(user->C[i],X,1.0,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y);CHKERRQ(ierr);
@@ -499,7 +499,7 @@ PetscErrorCode StateMatBlockPrecMultTranspose(PC PC_shell, Vec X, Vec Y)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(PC_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = PCShellGetContext(PC_shell,&user);CHKERRQ(ierr);
 
   i = user->block_index;
   if (user->c_formed) {
@@ -515,7 +515,7 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   PetscInt       its,i;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
 
   if (Y == user->ytrue) {
     /* First solve is done using true solution to set up problem */
@@ -552,7 +552,7 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
   PetscInt       its,i;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
 
   ierr = Scatter_yi(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
   ierr = Scatter_yi(Y,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
@@ -584,7 +584,7 @@ PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_s
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
 
   ierr = MatCreateShell(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,user->m,user->m,user,new_shell);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*new_shell,MATOP_MULT,(void(*)(void))StateMatMult);CHKERRQ(ierr);
@@ -600,7 +600,7 @@ PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
   AppCtx         *user;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J_shell,&user);CHKERRQ(ierr);
   ierr =  VecCopy(user->js_diag,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

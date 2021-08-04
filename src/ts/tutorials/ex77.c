@@ -820,7 +820,7 @@ static PetscErrorCode ComputeParticleError(TS ts, Vec u, Vec e)
 
   PetscFunctionBeginUser;
   ierr = TSGetTime(ts, &time);CHKERRQ(ierr);
-  ierr = TSGetApplicationContext(ts, (void **) &adv);CHKERRQ(ierr);
+  ierr = TSGetApplicationContext(ts, &adv);CHKERRQ(ierr);
   ierr = PetscBagGetData(adv->ctx->bag, (void **) &param);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
   ierr = TSGetDM(ts, &sdm);CHKERRQ(ierr);

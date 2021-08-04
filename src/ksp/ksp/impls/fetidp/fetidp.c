@@ -293,7 +293,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   ierr = MatView(F,viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,2);CHKERRQ(ierr);
-  ierr = MatShellGetContext(F,(void**)&fetidpmat_ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(F,&fetidpmat_ctx);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"----------FETI-DP TESTS--------------\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"All tests should return zero!\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"FETIDP MAT context in the ");CHKERRQ(ierr);

@@ -1364,7 +1364,7 @@ to set this data structure and
 
 ::
 
-   PCShellGetContext(PC pc,void **ctx);
+   PCShellGetContext(PC pc,void *ctx);
 
 to retrieve it in ``apply``. The three routine arguments of ``apply()``
 are the ``PC``, the input vector, and the output vector, respectively.

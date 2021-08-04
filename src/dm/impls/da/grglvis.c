@@ -47,7 +47,7 @@ static PetscErrorCode DMDAGetNumElementsGhosted(DM da, PetscInt *nex, PetscInt *
   if (ney) *ney = -1;
   if (nez) *nez = -1;
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&ien,&jen,&ken);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(da,(void**)&dactx);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(da,&dactx);CHKERRQ(ierr);
   if (dactx->ll) {
     PetscInt dim;
 
@@ -105,7 +105,7 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
   PetscFunctionBegin;
   ierr = VecGetDM(ctx->xlocal,&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PetscObjectComm(oX),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
-  ierr = DMGetApplicationContext(da,(void**)&dactx);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(da,&dactx);CHKERRQ(ierr);
   ierr = VecGetBlockSize(ctx->xlocal,&bs);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,(Vec)oX,INSERT_VALUES,ctx->xlocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,(Vec)oX,INSERT_VALUES,ctx->xlocal);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     PetscBool                 bsset;
 
     ierr = DMDAGetInfo(daview,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-    ierr = DMGetApplicationContext(daview,(void**)&dactx);CHKERRQ(ierr);
+    ierr = DMGetApplicationContext(daview,&dactx);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(daview,&xlocal);CHKERRQ(ierr);
     ierr = DMDAGetFieldNames(da,(const char * const **)&dafieldname);CHKERRQ(ierr);
     ierr = DMDAGetNumVerticesGhosted(daview,&M,&N,&P);CHKERRQ(ierr);
@@ -474,7 +474,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
     } else {
       DMDAGhostedGLVisViewerCtx *dactx;
 
-      ierr = DMGetApplicationContext(da,(void**)&dactx);CHKERRQ(ierr);
+      ierr = DMGetApplicationContext(da,&dactx);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%D\n",sdim);CHKERRQ(ierr);
       cdof = sdim;
       ierr = DMDAGetCorners(da,&sx,&sy,&sz,NULL,NULL,NULL);CHKERRQ(ierr);

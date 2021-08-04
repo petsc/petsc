@@ -70,7 +70,7 @@ PetscErrorCode MatSMFResetRowColumn(Mat mat,IS Rows,IS Cols)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = ISDestroy(&ctx->Rows);CHKERRQ(ierr);
   ierr = ISDestroy(&ctx->Cols);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)Rows);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode MatMult_SMF(Mat mat,Vec a,Vec y)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = VecCopy(a,ctx->VR);CHKERRQ(ierr);
   ierr = VecISSet(ctx->VR,ctx->Cols,0.0);CHKERRQ(ierr);
   ierr = MatMult(ctx->A,ctx->VR,y);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ PetscErrorCode MatMultTranspose_SMF(Mat mat,Vec a,Vec y)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = VecCopy(a,ctx->VC);CHKERRQ(ierr);
   ierr = VecISSet(ctx->VC,ctx->Rows,0.0);CHKERRQ(ierr);
   ierr = MatMultTranspose(ctx->A,ctx->VC,y);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ PetscErrorCode MatDiagonalSet_SMF(Mat M, Vec D,InsertMode is)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(M,&ctx);CHKERRQ(ierr);
   ierr = MatDiagonalSet(ctx->A,D,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -125,7 +125,7 @@ PetscErrorCode MatDestroy_SMF(Mat mat)
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatDestroy(&ctx->A);CHKERRQ(ierr);
   ierr = ISDestroy(&ctx->Rows);CHKERRQ(ierr);
   ierr = ISDestroy(&ctx->Cols);CHKERRQ(ierr);
@@ -140,7 +140,7 @@ PetscErrorCode MatView_SMF(Mat mat,PetscViewer viewer)
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatView(ctx->A,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -151,7 +151,7 @@ PetscErrorCode MatShift_SMF(Mat Y, PetscReal a)
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(Y,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(Y,&ctx);CHKERRQ(ierr);
   ierr = MatShift(ctx->A,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -162,7 +162,7 @@ PetscErrorCode MatDuplicate_SMF(Mat mat,MatDuplicateOption op,Mat *M)
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatCreateSubMatrixFree(ctx->A,ctx->Rows,ctx->Cols,M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -174,8 +174,8 @@ PetscErrorCode MatEqual_SMF(Mat A,Mat B,PetscBool *flg)
   PetscBool         flg1,flg2,flg3;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,(void **)&ctx1);CHKERRQ(ierr);
-  ierr = MatShellGetContext(B,(void **)&ctx2);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A,&ctx1);CHKERRQ(ierr);
+  ierr = MatShellGetContext(B,&ctx2);CHKERRQ(ierr);
   ierr = ISEqual(ctx1->Rows,ctx2->Rows,&flg2);CHKERRQ(ierr);
   ierr = ISEqual(ctx1->Cols,ctx2->Cols,&flg3);CHKERRQ(ierr);
   if (flg2==PETSC_FALSE || flg3==PETSC_FALSE) {
@@ -194,7 +194,7 @@ PetscErrorCode MatScale_SMF(Mat mat, PetscReal a)
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatScale(ctx->A,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -211,7 +211,7 @@ PetscErrorCode MatGetDiagonal_SMF(Mat mat,Vec v)
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatGetDiagonal(ctx->A,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -222,7 +222,7 @@ PetscErrorCode MatGetRowMax_SMF(Mat M, Vec D)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(M,&ctx);CHKERRQ(ierr);
   ierr = MatGetRowMax(ctx->A,D,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -250,7 +250,7 @@ PetscErrorCode MatCreateSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   if (newmat) {
     ierr = MatDestroy(&*newmat);CHKERRQ(ierr);
   }
@@ -264,7 +264,7 @@ PetscErrorCode MatGetRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatGetRow(ctx->A,row,ncols,cols,vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -275,7 +275,7 @@ PetscErrorCode MatRestoreRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const Pets
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatRestoreRow(ctx->A,row,ncols,cols,vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -286,7 +286,7 @@ PetscErrorCode MatGetColumnVector_SMF(Mat mat,Vec Y, PetscInt col)
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatGetColumnVector(ctx->A,Y,col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -297,7 +297,7 @@ PetscErrorCode MatNorm_SMF(Mat mat,NormType type,PetscReal *norm)
   MatSubMatFreeCtx  ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   if (type == NORM_FROBENIUS) {
     *norm = 1.0;
   } else if (type == NORM_1 || type == NORM_INFINITY) {

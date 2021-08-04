@@ -2222,11 +2222,11 @@ PetscErrorCode  KSPMonitorCancel(KSP ksp)
 
 .seealso: KSPMonitorResidual(), KSP
 @*/
-PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
+PetscErrorCode  KSPGetMonitorContext(KSP ksp,void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  *ctx =      (ksp->monitorcontext[0]);
+  *(void**)ctx = ksp->monitorcontext[0];
   PetscFunctionReturn(0);
 }
 
@@ -2620,11 +2620,11 @@ PetscErrorCode  KSPGetAndClearConvergenceTest(KSP ksp,PetscErrorCode (**converge
 
 .seealso: KSPConvergedDefault(), KSPSetConvergenceTest(), KSP
 @*/
-PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
+PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  *ctx = ksp->cnvP;
+  *(void**)ctx = ksp->cnvP;
   PetscFunctionReturn(0);
 }
 

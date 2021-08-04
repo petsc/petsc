@@ -45,7 +45,7 @@ static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
   ierr = TaoGetADMMParentTao(tao,&admm_tao);CHKERRQ(ierr);
   ierr = TaoADMMGetMisfitSubsolver(admm_tao, &misfit);CHKERRQ(ierr);
   ierr = TaoADMMGetSpectralPenalty(admm_tao,&mu);CHKERRQ(ierr);
-  ierr = TaoShellGetContext(tao, (void**) &user);CHKERRQ(ierr);
+  ierr = TaoShellGetContext(tao,&user);CHKERRQ(ierr);
 
   lambda = user->lambda;
   work   = user->workN;

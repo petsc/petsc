@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   shell.N = n;
   PetscMalloc((n+2)*(n+2)*(n+2)*sizeof(PetscScalar),&shell.F);
   PetscMemzero(shell.F, (n+2)*(n+2)*(n+2)*sizeof(PetscScalar));
-  MatShellSetContext(A, (void**)&shell);
+  MatShellSetContext(A, &shell);
   MatShellSetOperation(A, MATOP_MULT,           DEL2MAT_MULT);
   MatShellSetOperation(A, MATOP_MULT_TRANSPOSE, DEL2MAT_MULT);
   MatShellSetOperation(A, MATOP_GET_DIAGONAL,   DEL2MAT_DIAG);
