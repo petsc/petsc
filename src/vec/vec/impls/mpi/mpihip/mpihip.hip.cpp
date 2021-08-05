@@ -218,6 +218,41 @@ PetscErrorCode VecCreate_HIP(Vec v)
   PetscFunctionReturn(0);
 }
 
+/*@
+ VecCreateMPIHIP - Creates a standard, parallel array-style vector for HIP devices.
+
+ Collective
+
+ Input Parameters:
+ +  comm - the MPI communicator to use
+ .  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
+ -  N - global vector length (or PETSC_DETERMINE to have calculated if n is given)
+
+    Output Parameter:
+ .  v - the vector
+
+    Notes:
+    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+    same type as an existing vector.
+
+    Level: intermediate
+
+ .seealso: VecCreateMPIHIPWithArray(), VecCreateMPIHIPWithArrays(), VecCreateSeqHIP(), VecCreateSeq(),
+           VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
+           VecCreateMPIWithArray(), VecCreateGhostWithArray(), VecMPISetGhost()
+
+ @*/
+ PetscErrorCode VecCreateMPIHIP(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
+ {
+   PetscErrorCode ierr;
+
+   PetscFunctionBegin;
+   ierr = VecCreate(comm,v);CHKERRQ(ierr);
+   ierr = VecSetSizes(*v,n,N);CHKERRQ(ierr);
+   ierr = VecSetType(*v,VECMPIHIP);CHKERRQ(ierr);
+   PetscFunctionReturn(0);
+ }
+
 /*@C
    VecCreateMPIHIPWithArray - Creates a parallel, array-style vector,
    where the user provides the GPU array space to store the vector values.

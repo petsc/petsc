@@ -83,6 +83,7 @@ Changes: Development
 -  Add ``MATSOLVERSPQR`` - interface to SuiteSparse QR factorization
 -  Add ``MatSeqAIJKron()`` - Kronecker product of two ``MatSeqAIJ``
 -  Add ``MatNormalGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMAL``
+-  Add ``VecCreateMPICUDA()`` and ``VecCreateMPIHIP()`` to create MPI device vectors
 
 .. rubric:: PC:
 
