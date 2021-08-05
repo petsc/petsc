@@ -630,7 +630,7 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
 }
 
 /*MC
-   MATAIJCUSPARSE - MATMPIAIJCUSPARSE = "aijcusparse" = "mpiaijcusparse" - A matrix type to be used for sparse matrices.
+   MATAIJCUSPARSE - A matrix type to be used for sparse matrices; it is as same as MATMPIAIJCUSPARSE.
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices can be in either
    CSR, ELL, or Hybrid format. The ELL and HYB formats require CUDA 4.2 or later.
@@ -650,8 +650,15 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
 
   Level: beginner
 
- .seealso: MatCreateAIJCUSPARSE(), MATSEQAIJCUSPARSE, MatCreateSeqAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
-M
+ .seealso: MatCreateAIJCUSPARSE(), MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, MatCreateSeqAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
+M*/
+
+/*MC
+   MATMPIAIJCUSPARSE - A matrix type to be used for sparse matrices; it is as same as MATAIJCUSPARSE.
+
+  Level: beginner
+
+ .seealso: MATAIJCUSPARSE, MATSEQAIJCUSPARSE
 M*/
 
 // get GPU pointer to stripped down Mat. For both Seq and MPI Mat.
