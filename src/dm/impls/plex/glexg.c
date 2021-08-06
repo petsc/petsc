@@ -1,4 +1,5 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petscdmplextransform.h>
 
 PetscBool DMPlexGenerateRegisterAllCalled = PETSC_FALSE;
 
@@ -40,6 +41,6 @@ PetscErrorCode  DMPlexGenerateRegisterAll(void)
 #if defined(PETSC_HAVE_TETGEN)
   ierr = DMPlexGenerateRegister("tetgen",DMPlexGenerate_Tetgen,DMPlexRefine_Tetgen,NULL,2);CHKERRQ(ierr);
 #endif
-  ierr = DMPlexGenerateRegister("cellrefiner",NULL,NULL,DMPlexCellRefinerAdaptLabel,-1);CHKERRQ(ierr);
+  ierr = DMPlexGenerateRegister("cellrefiner",NULL,NULL,DMPlexTransformAdaptLabel,-1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

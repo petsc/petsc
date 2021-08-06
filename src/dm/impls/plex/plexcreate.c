@@ -2863,7 +2863,6 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOption
   /* Projection behavior */
   ierr = PetscOptionsBoundedInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-dm_plex_cell_refiner", "Strategy for cell refinment", "", DMPlexCellRefinerTypes, (PetscEnum) mesh->cellRefiner, (PetscEnum *) &mesh->cellRefiner, NULL);CHKERRQ(ierr);
   /* Checking structure */
   {
     PetscBool   flg = PETSC_FALSE, flg2 = PETSC_FALSE, all = PETSC_FALSE;

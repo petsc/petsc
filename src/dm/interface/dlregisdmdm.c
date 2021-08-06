@@ -3,6 +3,7 @@
 #include <petsc/private/dmlabelimpl.h>
 #include <petsc/private/dmfieldimpl.h>
 #include <petsc/private/dmpleximpl.h>
+#include <petsc/private/dmplextransformimpl.h>
 #include <petsc/private/petscdsimpl.h>
 #include <petsc/private/petscfeimpl.h>
 #include <petsc/private/petscfvimpl.h>
@@ -56,6 +57,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DM Label",&DMLABEL_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Quadrature",&PETSCQUADRATURE_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Mesh Transform",&DMPLEXTRANSFORM_CLASSID);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_HYPRE)
   ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
@@ -140,6 +142,8 @@ PetscErrorCode  DMInitializePackage(void)
 
   ierr = DMPlexGenerateRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(DMPlexGenerateRegisterDestroy);CHKERRQ(ierr);
+  ierr = DMPlexTransformRegisterAll();CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(DMPlexTransformRegisterDestroy);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

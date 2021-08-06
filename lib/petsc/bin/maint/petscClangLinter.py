@@ -94,7 +94,7 @@ classIdMap = {
   "_p_DMField *"                : "DMFIELD_CLASSID",
   "_p_DMKSP *"                  : "DMKSP_CLASSID",
   "_p_DMLabel *"                : "DMLABEL_CLASSID",
-  "_p_DMPlexCellRefiner *"      : "DM_CLASSID",
+  "_p_DMPlexTransform *"        : "DMPLEXTRANSFORM_CLASSID",
   "_p_DMSNES *"                 : "DMSNES_CLASSID",
   "_p_DMTS *"                   : "DMTS_CLASSID",
   "_p_IS *"                     : "IS_CLASSID",

@@ -1027,5 +1027,6 @@ PETSC_EXTERN PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType, const Pet
 PETSC_EXTERN PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType, const PetscInt[], const PetscInt[], PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType, const PetscInt[], const PetscInt[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType, const PetscInt[], const PetscInt[], PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPolytopeInCellTest(DMPolytopeType, const PetscReal[], PetscBool *);
 
 #endif

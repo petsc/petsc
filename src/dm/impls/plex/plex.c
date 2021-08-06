@@ -6,6 +6,7 @@
 #include <petscds.h>
 #include <petscdraw.h>
 #include <petscdmfield.h>
+#include <petscdmplextransform.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Symmetrize, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh, DMPLEX_RebalanceSharedPoints, DMPLEX_PartSelf, DMPLEX_PartLabelInvert, DMPLEX_PartLabelCreateSF, DMPLEX_PartStratSF, DMPLEX_CreatePointSF,DMPLEX_LocatePoints;
@@ -2228,6 +2229,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscFree(mesh->facesTmp);CHKERRQ(ierr);
   ierr = PetscFree(mesh->tetgenOpts);CHKERRQ(ierr);
   ierr = PetscFree(mesh->triangleOpts);CHKERRQ(ierr);
+  ierr = PetscFree(mesh->transformType);CHKERRQ(ierr);
   ierr = PetscPartitionerDestroy(&mesh->partitioner);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&mesh->subpointMap);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->subpointIS);CHKERRQ(ierr);
@@ -3230,7 +3232,7 @@ PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Static(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
+static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt p, PetscInt ornt, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
 {
   DMPolytopeType  ct = DM_POLYTOPE_UNKNOWN;
   PetscInt       *closure;
@@ -3361,7 +3363,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   PetscFunctionBeginHot;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   if (depth == 1) {
-    ierr = DMPlexGetTransitiveClosure_Depth1_Static(dm, p, ornt, useCone, numPoints, points);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure_Depth1_Private(dm, p, ornt, useCone, numPoints, points);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
@@ -7551,10 +7553,15 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   /* Row indices */
   ierr = DMPlexGetCellType(dmc, point, &ct);CHKERRQ(ierr);
   {
-    DMPlexCellRefiner cr;
-    ierr = DMPlexCellRefinerCreate(dmc, &cr);CHKERRQ(ierr);
-    ierr = DMPlexCellRefinerGetAffineTransforms(cr, ct, &numSubcells, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
+    DMPlexTransform tr;
+    DMPolytopeType *rct;
+    PetscInt       *rsize, *rcone, *rornt, Nt;
+
+    ierr = DMPlexTransformCreate(PETSC_COMM_SELF, &tr);CHKERRQ(ierr);
+    ierr = DMPlexTransformSetType(tr, DMPLEXREFINEREGULAR);CHKERRQ(ierr);
+    ierr = DMPlexTransformCellTransform(tr, ct, point, NULL, &Nt, &rct, &rsize, &rcone, &rornt);CHKERRQ(ierr);
+    numSubcells = rsize[Nt-1];
+    ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
   }
   ierr = DMGetWorkArray(dmf, maxFPoints*2*numSubcells, MPIU_INT, &ftotpoints);CHKERRQ(ierr);
   for (r = 0, q = 0; r < numSubcells; ++r) {
@@ -7709,10 +7716,15 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   /* Row indices */
   ierr = DMPlexGetCellType(dmc, point, &ct);CHKERRQ(ierr);
   {
-    DMPlexCellRefiner cr;
-    ierr = DMPlexCellRefinerCreate(dmc, &cr);CHKERRQ(ierr);
-    ierr = DMPlexCellRefinerGetAffineTransforms(cr, ct, &numSubcells, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
+    DMPlexTransform tr;
+    DMPolytopeType *rct;
+    PetscInt       *rsize, *rcone, *rornt, Nt;
+
+    ierr = DMPlexTransformCreate(PETSC_COMM_SELF, &tr);CHKERRQ(ierr);
+    ierr = DMPlexTransformSetType(tr, DMPLEXREFINEREGULAR);CHKERRQ(ierr);
+    ierr = DMPlexTransformCellTransform(tr, ct, point, NULL, &Nt, &rct, &rsize, &rcone, &rornt);CHKERRQ(ierr);
+    numSubcells = rsize[Nt-1];
+    ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
   }
   ierr = DMGetWorkArray(dmf, maxFPoints*2*numSubcells, MPIU_INT, &ftotpoints);CHKERRQ(ierr);
   for (r = 0, q = 0; r < numSubcells; ++r) {
@@ -9185,47 +9197,6 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ((DM_Plex *) dm->data)->regularRefinement = regular;
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexGetCellRefinerType - Get the strategy for refining a cell
-
-  Input Parameter:
-. dm - The DMPlex object
-
-  Output Parameter:
-. cr - The strategy number
-
-  Level: intermediate
-
-.seealso: DMPlexSetCellRefinerType(), DMPlexSetRegularRefinement()
-@*/
-PetscErrorCode DMPlexGetCellRefinerType(DM dm, DMPlexCellRefinerType *cr)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(cr, 2);
-  *cr = ((DM_Plex *) dm->data)->cellRefiner;
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexSetCellRefinerType - Set the strategy for refining a cell
-
-  Input Parameters:
-+ dm - The DMPlex object
-- cr - The strategy number
-
-  Level: intermediate
-
-.seealso: DMPlexGetCellRefinerType(), DMPlexGetRegularRefinement()
-@*/
-PetscErrorCode DMPlexSetCellRefinerType(DM dm, DMPlexCellRefinerType cr)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ((DM_Plex *) dm->data)->cellRefiner = cr;
   PetscFunctionReturn(0);
 }
 

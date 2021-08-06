@@ -9,6 +9,5 @@
 #include "petsc/finclude/petscdmlabel.h"
 
 #define DMPlexInterpolatedFlag PetscEnum
-#define DMPlexCellRefinerType PetscEnum
 
 #endif

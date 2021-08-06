@@ -250,6 +250,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       DM refTree, ncdm = NULL;
 
       ierr = DMPlexCreateDefaultReferenceTree(comm,dim,simplex,&refTree);CHKERRQ(ierr);
+      ierr = DMViewFromOptions(refTree,NULL,"-reftree_dm_view");CHKERRQ(ierr);
       ierr = DMPlexSetReferenceTree(*dm,refTree);CHKERRQ(ierr);
       ierr = DMDestroy(&refTree);CHKERRQ(ierr);
       ierr = DMPlexTreeRefineCell(*dm,user->treeCell,&ncdm);CHKERRQ(ierr);
@@ -258,7 +259,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         *dm = ncdm;
         ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
       }
-      ierr = DMViewFromOptions(*dm,NULL,"-tree_dm_view");CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "tree_");CHKERRQ(ierr);
+      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+      ierr = DMViewFromOptions(*dm,NULL,"-dm_view");CHKERRQ(ierr);
     } else {
       ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
     }
