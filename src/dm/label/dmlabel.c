@@ -1051,6 +1051,36 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 }
 
 /*@
+  DMLabelGetValueIndex - Get the index of a given value in the list of values for the DMlabel, or -1 if it is not present
+
+  Not collective
+
+  Input Parameters:
++ label - the DMLabel
+= value - the value
+
+  Output Paramater:
+. index - the index of value in the list of values
+
+  Level: intermediate
+
+.seealso: DMLabelGetValueIS(), DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
+PetscErrorCode DMLabelGetValueIndex(DMLabel label, PetscInt value, PetscInt *index)
+{
+  PetscInt v;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  PetscValidPointer(index, 3);
+  /* Do not assume they are sorted */
+  for (v = 0; v < label->numStrata; ++v) if (label->stratumValues[v] == value) break;
+  if (v >= label->numStrata) *index = -1;
+  else                       *index = v;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMLabelHasStratum - Determine whether points exist with the given value
 
   Not collective
@@ -1303,6 +1333,42 @@ PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt p
   ierr = ISCreateStride(PETSC_COMM_SELF, pEnd - pStart, pStart, 1, &pIS);CHKERRQ(ierr);
   ierr = DMLabelSetStratumIS(label, value, pIS);CHKERRQ(ierr);
   ierr = ISDestroy(&pIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMLabelGetStratumPointIndex - Get the index of a point in a given stratum
+
+  Not collective
+
+  Input Parameters:
++ label  - The DMLabel
+. value  - The label value
+- p      - A point with this value
+
+  Output Parameter:
+. index  - The index of this point in the stratum, or -1 if the point is not in the stratum or the stratum does not exist
+
+  Level: intermediate
+
+.seealso: DMLabelGetValueIndex(), DMLabelGetStratumIS(), DMLabelCreate()
+@*/
+PetscErrorCode DMLabelGetStratumPointIndex(DMLabel label, PetscInt value, PetscInt p, PetscInt *index)
+{
+  const PetscInt *indices;
+  PetscInt        v;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  PetscValidPointer(index, 4);
+  *index = -1;
+  ierr = DMLabelLookupStratum(label, value, &v);CHKERRQ(ierr);
+  if (v < 0) PetscFunctionReturn(0);
+  ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
+  ierr = ISGetIndices(label->points[v], &indices);CHKERRQ(ierr);
+  ierr = PetscFindInt(p, label->stratumSizes[v], indices, index);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(label->points[v], &indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
