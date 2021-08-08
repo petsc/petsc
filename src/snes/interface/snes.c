@@ -30,7 +30,7 @@ PetscLogEvent SNES_Solve, SNES_Setup, SNES_FunctionEval, SNES_JacobianEval, SNES
     Normally PETSc continues if a linear solver fails to converge, you can call SNESGetConvergedReason() after a SNESSolve()
     to determine if it has converged.
 
-.seealso: SNESGetErrorIfNotConverged(), KSPGetErrorIfNotConverged(), KSPSetErrorIFNotConverged()
+.seealso: SNESGetErrorIfNotConverged(), KSPGetErrorIfNotConverged(), KSPSetErrorIfNotConverged()
 @*/
 PetscErrorCode  SNESSetErrorIfNotConverged(SNES snes,PetscBool flg)
 {
@@ -54,7 +54,7 @@ PetscErrorCode  SNESSetErrorIfNotConverged(SNES snes,PetscBool flg)
 
    Level: intermediate
 
-.seealso:  SNESSetErrorIfNotConverged(), KSPGetErrorIfNotConverged(), KSPSetErrorIFNotConverged()
+.seealso:  SNESSetErrorIfNotConverged(), KSPGetErrorIfNotConverged(), KSPSetErrorIfNotConverged()
 @*/
 PetscErrorCode  SNESGetErrorIfNotConverged(SNES snes,PetscBool  *flag)
 {
