@@ -279,7 +279,7 @@ PetscErrorCode DMShellSetContext(DM dm,void *ctx)
 
 .seealso: DMCreateMatrix(), DMShellSetContext()
 @*/
-PetscErrorCode DMShellGetContext(DM dm,void **ctx)
+PetscErrorCode DMShellGetContext(DM dm,void *ctx)
 {
   DM_Shell       *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
@@ -289,7 +289,7 @@ PetscErrorCode DMShellGetContext(DM dm,void **ctx)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only use with DMSHELL type DMs");
-  *ctx = shell->ctx;
+  *(void**)ctx = shell->ctx;
   PetscFunctionReturn(0);
 }
 

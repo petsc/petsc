@@ -264,7 +264,7 @@ PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
   Vec            diag;
   PetscErrorCode ierr;
 
-  ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc,&shell);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pmat,diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
   SampleShellPC  *shell;
   PetscErrorCode ierr;
 
-  ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc,&shell);CHKERRQ(ierr);
   ierr = VecPointwiseMult(y,x,shell->diag);CHKERRQ(ierr);
 
   return 0;
@@ -312,7 +312,7 @@ PetscErrorCode SampleShellPCDestroy(PC pc)
   SampleShellPC  *shell;
   PetscErrorCode ierr;
 
-  ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc,&shell);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->diag);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr);
 

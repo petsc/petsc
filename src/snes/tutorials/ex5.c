@@ -671,7 +671,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
   ierr    = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
   ierr    = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr    = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
+  ierr    = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 

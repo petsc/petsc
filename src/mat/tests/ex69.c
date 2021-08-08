@@ -8,7 +8,7 @@ static PetscErrorCode MatMult_S(Mat S,Vec x,Vec y)
   Mat            A;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(S,(void**)&A);CHKERRQ(ierr);
+  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -21,7 +21,7 @@ static PetscErrorCode MatMultTranspose_S(Mat S,Vec x,Vec y)
   Mat            A;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(S,(void**)&A);CHKERRQ(ierr);
+  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
 
   /* alternate transgen true and false to test code logic */

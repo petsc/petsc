@@ -416,7 +416,7 @@ PetscErrorCode IJacobianMatFree(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   DM                da;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(A_shell,(void **)&mctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
 
   mctx->time  = t;
   mctx->shift = a;

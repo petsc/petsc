@@ -21,7 +21,7 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
   PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void**)&pc);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&pc);CHKERRQ(ierr);
   eis  = (PC_Eisenstat*)pc->data;
   ierr = MatSOR(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,1,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -168,7 +168,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     ierr = MatSetSizes(eis->shell,m,n,M,N);CHKERRQ(ierr);
     ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(eis->shell);CHKERRQ(ierr);
-    ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
+    ierr = MatShellSetContext(eis->shell,pc);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->shell);CHKERRQ(ierr);
     ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void (*)(void))PCMult_Eisenstat);CHKERRQ(ierr);
   }
@@ -409,7 +409,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   pc->ops->view            = PCView_Eisenstat;
   pc->ops->setup           = PCSetUp_Eisenstat;
 
-  pc->data     = (void*)eis;
+  pc->data     = eis;
   eis->omega   = 1.0;
   eis->b[0]    = NULL;
   eis->b[1]    = NULL;

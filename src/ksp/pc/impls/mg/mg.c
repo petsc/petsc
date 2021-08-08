@@ -291,7 +291,7 @@ static PetscErrorCode CRSetup_Private(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PCShellGetContext(pc, (void **) &ctx);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
   ierr = PCMGGetInjection(ctx->mg, ctx->l, &It);CHKERRQ(ierr);
   if (!It) SETERRQ(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONGSTATE, "CR requires that injection be defined for this PCMG");
   ierr = MatCreateTranspose(It, &ctx->Inj);CHKERRQ(ierr);
@@ -307,7 +307,7 @@ static PetscErrorCode CRApply_Private(PC pc, Vec x, Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PCShellGetContext(pc, (void **) &ctx);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
   ierr = MatMult(ctx->S, x, y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -318,7 +318,7 @@ static PetscErrorCode CRDestroy_Private(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PCShellGetContext(pc, (void **) &ctx);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
   ierr = MatDestroy(&ctx->Inj);CHKERRQ(ierr);
   ierr = MatDestroy(&ctx->S);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
@@ -1903,7 +1903,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
 
   PetscFunctionBegin;
   ierr         = PetscNewLog(pc,&mg);CHKERRQ(ierr);
-  pc->data     = (void*)mg;
+  pc->data     = mg;
   mg->nlevels  = -1;
   mg->am       = PC_MG_MULTIPLICATIVE;
   mg->galerkin = PC_MG_GALERKIN_NONE;

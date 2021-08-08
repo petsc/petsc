@@ -363,14 +363,14 @@ PetscErrorCode DMCreateMatrix_ShellDA(DM dm,Mat *A)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm,&da);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = DMCreateMatrix(da,A);CHKERRQ(ierr);
   ierr = MatGetSize(*A,&M,&N);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA (%D x %D)\n",(PetscInt)size,M,N);CHKERRQ(ierr);
 
-  ierr = DMGetApplicationContext(dm,(void*)&ctx);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
   if (ctx->bcType == NEUMANN) {
     MatNullSpace nullspace = NULL;
     ierr = PetscPrintf(comm,"[size %D] DMCreateMatrix_ShellDA: using neumann bcs\n",(PetscInt)size);CHKERRQ(ierr);
@@ -393,7 +393,7 @@ PetscErrorCode DMCreateGlobalVector_ShellDA(DM dm,Vec *x)
   DM             da;
   PetscErrorCode ierr;
   PetscFunctionBeginUser;
-  ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,x);CHKERRQ(ierr);
   ierr = VecSetDM(*x,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -404,7 +404,7 @@ PetscErrorCode DMCreateLocalVector_ShellDA(DM dm,Vec *x)
   DM             da;
   PetscErrorCode ierr;
   PetscFunctionBeginUser;
-  ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm,&da);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,x);CHKERRQ(ierr);
   ierr = VecSetDM(*x,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -429,8 +429,8 @@ PetscErrorCode DMCreateInterpolation_ShellDA(DM dm1,DM dm2,Mat *mat,Vec *vec)
   DM             da1,da2;
   PetscErrorCode ierr;
   PetscFunctionBeginUser;
-  ierr = DMShellGetContext(dm1,(void**)&da1);CHKERRQ(ierr);
-  ierr = DMShellGetContext(dm2,(void**)&da2);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm1,&da1);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm2,&da2);CHKERRQ(ierr);
   ierr = DMCreateInterpolation(da1,da2,mat,vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -442,9 +442,9 @@ PetscErrorCode DMShellDASetUp_TelescopeDMScatter(DM dmf_shell,DM dmc_shell)
   DM             dmf = NULL,dmc = NULL;
 
   PetscFunctionBeginUser;
-  ierr = DMShellGetContext(dmf_shell,(void**)&dmf);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dmf_shell,&dmf);CHKERRQ(ierr);
   if (dmc_shell) {
-    ierr = DMShellGetContext(dmc_shell,(void**)&dmc);CHKERRQ(ierr);
+    ierr = DMShellGetContext(dmc_shell,&dmc);CHKERRQ(ierr);
   }
   ierr = DMDACreatePermutation_2d(dmc,dmf,&P);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)dmf,"P",(PetscObject)P);CHKERRQ(ierr);
@@ -539,9 +539,9 @@ PetscErrorCode DMFieldScatter_ShellDA(DM dmf_shell,Vec x,ScatterMode mode,DM dmc
   DM             dmf = NULL,dmc = NULL;
 
   PetscFunctionBeginUser;
-  ierr = DMShellGetContext(dmf_shell,(void**)&dmf);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dmf_shell,&dmf);CHKERRQ(ierr);
   if (dmc_shell) {
-    ierr = DMShellGetContext(dmc_shell,(void**)&dmc);CHKERRQ(ierr);
+    ierr = DMShellGetContext(dmc_shell,&dmc);CHKERRQ(ierr);
   }
   if (mode == SCATTER_FORWARD) {
     ierr = DMShellDAFieldScatter_Forward(dmf,x,dmc,xc);CHKERRQ(ierr);
@@ -573,7 +573,7 @@ PetscErrorCode DMShellCreate_ShellDA(DM da,DM *dms)
   PetscFunctionBeginUser;
   if (da) {
     ierr = DMShellCreate(PetscObjectComm((PetscObject)da),dms);CHKERRQ(ierr);
-    ierr = DMShellSetContext(*dms,(void*)da);CHKERRQ(ierr);
+    ierr = DMShellSetContext(*dms,da);CHKERRQ(ierr);
     ierr = DMShellSetCreateGlobalVector(*dms,DMCreateGlobalVector_ShellDA);CHKERRQ(ierr);
     ierr = DMShellSetCreateLocalVector(*dms,DMCreateLocalVector_ShellDA);CHKERRQ(ierr);
     ierr = DMShellSetCreateMatrix(*dms,DMCreateMatrix_ShellDA);CHKERRQ(ierr);
@@ -595,7 +595,7 @@ PetscErrorCode DMDestroyShellDMDA(DM *_dm)
   dm = *_dm;
   if (!dm) PetscFunctionReturn(0);
 
-  ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm,&da);CHKERRQ(ierr);
   if (da) {
     Vec        vec;
     VecScatter scatter = NULL;
@@ -640,7 +640,7 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f,DM *dm_c,UserContext *ctx)
   ierr = DMDASetUniformCoordinates(dm,0,1,0,1,0,0);CHKERRQ(ierr);
   ierr = DMDASetFieldName(dm,0,"Pressure");CHKERRQ(ierr);
   ierr = DMShellCreate_ShellDA(dm,&dm_shell);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dm_shell,(void*)ctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(dm_shell,ctx);CHKERRQ(ierr);
 
   dmc = NULL;
   dmc_shell = NULL;
@@ -651,7 +651,7 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f,DM *dm_c,UserContext *ctx)
     ierr = DMDASetUniformCoordinates(dmc,0,1,0,1,0,0);CHKERRQ(ierr);
     ierr = DMDASetFieldName(dmc,0,"Pressure");CHKERRQ(ierr);
     ierr = DMShellCreate_ShellDA(dmc,&dmc_shell);CHKERRQ(ierr);
-    ierr = DMSetApplicationContext(dmc_shell,(void*)ctx);CHKERRQ(ierr);
+    ierr = DMSetApplicationContext(dmc_shell,ctx);CHKERRQ(ierr);
   }
 
   ierr = DMSetCoarseDM(dm_shell,dmc_shell);CHKERRQ(ierr);
@@ -765,7 +765,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
       ierr = UserContextCreate(commlist[d],&ctx);CHKERRQ(ierr);
       for (k=0; k<levelrefs; k++) {
         ierr = DMShellCreate_ShellDA(dalist[d*levelrefs + k],&dmlist[d*levelrefs + k]);CHKERRQ(ierr);
-        ierr = DMSetApplicationContext(dmlist[d*levelrefs + k],(void*)ctx);CHKERRQ(ierr);
+        ierr = DMSetApplicationContext(dmlist[d*levelrefs + k],ctx);CHKERRQ(ierr);
         ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"level%D-decomp-%D",k,d);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject)dmlist[d*levelrefs + k],name);CHKERRQ(ierr);
       }
@@ -847,7 +847,7 @@ PetscErrorCode test_hierarchy(void)
     if (first) {
       UserContext *ctx = NULL;
 
-      ierr = DMGetApplicationContext(first,(void*)&ctx);CHKERRQ(ierr);
+      ierr = DMGetApplicationContext(first,&ctx);CHKERRQ(ierr);
       if (ctx) { ierr = PetscFree(ctx);CHKERRQ(ierr); }
       ierr = DMSetApplicationContext(first,NULL);CHKERRQ(ierr);
     }
@@ -890,7 +890,7 @@ PetscErrorCode test_basic(void)
   PetscFunctionBeginUser;
   ierr = UserContextCreate(PETSC_COMM_WORLD,&user);CHKERRQ(ierr);
   ierr = HierarchyCreate_Basic(&dmF,&dmC,user);CHKERRQ(ierr);
-  ierr = DMShellGetContext(dmF,(void**)&dmdaF);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dmF,&dmdaF);CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(dmF,&A);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmF,&x);CHKERRQ(ierr);
@@ -898,7 +898,7 @@ PetscErrorCode test_basic(void)
   ierr = ComputeRHS_DMDA(dmdaF,b,user);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetComputeOperators(ksp,ComputeMatrix_ShellDA,(void*)user);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix_ShellDA,user);CHKERRQ(ierr);
   /*ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);*/
   ierr = KSPSetDM(ksp,dmF);CHKERRQ(ierr);
   ierr = KSPSetDMActive(ksp,PETSC_TRUE);CHKERRQ(ierr);
@@ -935,8 +935,8 @@ PetscErrorCode test_mg(void)
   ierr = HierarchyCreate(&nd,&nref,&comms,&dms);CHKERRQ(ierr);
   dmF = dms[nd*nref-1];
 
-  ierr = DMShellGetContext(dmF,(void**)&dmdaF);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dmF,(void*)&user);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dmF,&dmdaF);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dmF,&user);CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(dmF,&A);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmF,&x);CHKERRQ(ierr);
@@ -944,7 +944,7 @@ PetscErrorCode test_mg(void)
   ierr = ComputeRHS_DMDA(dmdaF,b,user);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetComputeOperators(ksp,ComputeMatrix_ShellDA,(void*)user);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix_ShellDA,user);CHKERRQ(ierr);
   /*ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);*/
   ierr = KSPSetDM(ksp,dmF);CHKERRQ(ierr);
   ierr = KSPSetDMActive(ksp,PETSC_TRUE);CHKERRQ(ierr);
@@ -958,7 +958,7 @@ PetscErrorCode test_mg(void)
     if (first) {
       UserContext *ctx = NULL;
 
-      ierr = DMGetApplicationContext(first,(void*)&ctx);CHKERRQ(ierr);
+      ierr = DMGetApplicationContext(first,&ctx);CHKERRQ(ierr);
       if (ctx) { ierr = PetscFree(ctx);CHKERRQ(ierr); }
       ierr = DMSetApplicationContext(first,NULL);CHKERRQ(ierr);
     }
@@ -1138,7 +1138,7 @@ PetscErrorCode ComputeMatrix_ShellDA(KSP ksp,Mat J,Mat jac,void *ctx)
   DM             dm,da;
   PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
-  ierr = DMShellGetContext(dm,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm,&da);CHKERRQ(ierr);
   ierr = ComputeMatrix_DMDA(da,J,jac,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -510,7 +510,7 @@ PETSC_EXTERN PetscErrorCode SNESNGSGetTolerances(SNES,PetscReal*,PetscReal*,Pets
 PETSC_EXTERN PetscErrorCode SNESSetAlwaysComputesFinalResidual(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode SNESShellGetContext(SNES,void**);
+PETSC_EXTERN PetscErrorCode SNESShellGetContext(SNES,void*);
 PETSC_EXTERN PetscErrorCode SNESShellSetContext(SNES,void*);
 PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec));
 

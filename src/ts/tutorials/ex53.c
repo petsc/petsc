@@ -2122,7 +2122,7 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
     void            *ctxs[3];
     AppCtx          *ctx;
 
-    ierr = DMGetApplicationContext(dm, (void **) &ctx);CHKERRQ(ierr);
+    ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
     switch (ctx->solType) {
       case SOL_TERZAGHI:
         funcs[0] = terzaghi_initial_u;         ctxs[0] = ctx;
@@ -2244,7 +2244,7 @@ static PetscErrorCode TSAdaptChoose_Terzaghi(TSAdapt adapt, TS ts, PetscReal h, 
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, (void **) &ctx);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts, &step);CHKERRQ(ierr);
   dtInitial = ctx->dtInitial < 0.0 ? 1.0e-4*ctx->t_r : ctx->dtInitial;
   if (!step) {

@@ -700,7 +700,7 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
         PetscObjectState axpy_state;
         MatStructure     str = DIFFERENT_NONZERO_PATTERN; /* not sure it is safe to ever use SUBSET_NONZERO_PATTERN */
 
-        ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
+        ierr = MatShellGetContext(shell->axpy,&X);CHKERRQ(ierr);
         ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
         if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
         if (!mdata->axpy) {
@@ -1077,7 +1077,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
     Mat              X;
     PetscObjectState axpy_state;
 
-    ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
+    ierr = MatShellGetContext(shell->axpy,&X);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
     if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
 
@@ -1132,7 +1132,7 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
     Mat              X;
     PetscObjectState axpy_state;
 
-    ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
+    ierr = MatShellGetContext(shell->axpy,&X);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
     if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
     ierr = MatCreateVecs(shell->axpy,shell->axpy_right ? NULL : &shell->axpy_right,shell->axpy_left ? NULL : &shell->axpy_left);CHKERRQ(ierr);
@@ -1187,7 +1187,7 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
     Mat              X;
     PetscObjectState axpy_state;
 
-    ierr = MatShellGetContext(shell->axpy,(void *)&X);CHKERRQ(ierr);
+    ierr = MatShellGetContext(shell->axpy,&X);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)X,&axpy_state);CHKERRQ(ierr);
     if (shell->axpy_state != axpy_state) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
     ierr = MatCreateVecs(shell->axpy,NULL,shell->axpy_left ? NULL : &shell->axpy_left);CHKERRQ(ierr);

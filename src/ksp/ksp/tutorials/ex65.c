@@ -84,7 +84,7 @@ static PetscErrorCode CreateMatrix(DM shell,Mat *A)
   PetscErrorCode ierr;
   DM             da;
 
-  ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(shell,&da);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,A);CHKERRQ(ierr);
   return 0;
 }
@@ -94,8 +94,8 @@ static PetscErrorCode CreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   DM             da1,da2;
   PetscErrorCode ierr;
 
-  ierr = DMShellGetContext(dm1,(void**)&da1);CHKERRQ(ierr);
-  ierr = DMShellGetContext(dm2,(void**)&da2);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm1,&da1);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm2,&da2);CHKERRQ(ierr);
   ierr = DMCreateInterpolation(da1,da2,mat,vec);CHKERRQ(ierr);
   return 0;
 }
@@ -106,8 +106,8 @@ static PetscErrorCode CreateRestriction(DM dm1,DM dm2,Mat *mat)
   PetscErrorCode ierr;
   Mat            tmat;
 
-  ierr = DMShellGetContext(dm1,(void**)&da1);CHKERRQ(ierr);
-  ierr = DMShellGetContext(dm2,(void**)&da2);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm1,&da1);CHKERRQ(ierr);
+  ierr = DMShellGetContext(dm2,&da2);CHKERRQ(ierr);
   ierr = DMCreateInterpolation(da1,da2,&tmat,NULL);CHKERRQ(ierr);
   ierr = MatTranspose(tmat,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&tmat);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ static PetscErrorCode CreateGlobalVector(DM shell,Vec *x)
   PetscErrorCode ierr;
   DM             da;
 
-  ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(shell,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,x);CHKERRQ(ierr);
   ierr = VecSetDM(*x,shell);CHKERRQ(ierr);
   return 0;
@@ -130,7 +130,7 @@ static PetscErrorCode CreateLocalVector(DM shell,Vec *x)
   PetscErrorCode ierr;
   DM             da;
 
-  ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(shell,&da);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,x);CHKERRQ(ierr);
   ierr = VecSetDM(*x,shell);CHKERRQ(ierr);
   return 0;
@@ -141,7 +141,7 @@ static PetscErrorCode Refine(DM shell,MPI_Comm comm,DM *dmnew)
   PetscErrorCode ierr;
   DM             da,dafine;
 
-  ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(shell,&da);CHKERRQ(ierr);
   ierr = DMRefine(da,comm,&dafine);CHKERRQ(ierr);
   ierr = MyDMShellCreate(PetscObjectComm((PetscObject)shell),dafine,dmnew);CHKERRQ(ierr);
   return 0;
@@ -152,7 +152,7 @@ static PetscErrorCode Coarsen(DM shell,MPI_Comm comm,DM *dmnew)
   PetscErrorCode ierr;
   DM             da,dacoarse;
 
-  ierr = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(shell,&da);CHKERRQ(ierr);
   ierr = DMCoarsen(da,comm,&dacoarse);CHKERRQ(ierr);
   ierr = MyDMShellCreate(PetscObjectComm((PetscObject)shell),dacoarse,dmnew);CHKERRQ(ierr);
   /* discard an "extra" reference count to dacoarse */
@@ -169,7 +169,7 @@ static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
   PetscFunctionBeginUser;
   ierr   = KSPGetDM(ksp,&shell);CHKERRQ(ierr);
-  ierr   = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
+  ierr   = DMShellGetContext(shell,&da);CHKERRQ(ierr);
   ierr   = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h      = 1.0/((mx-1));
   ierr   = VecSet(b,h);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&shell);CHKERRQ(ierr);
-  ierr   = DMShellGetContext(shell,(void**)&da);CHKERRQ(ierr);
+  ierr = DMShellGetContext(shell,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   h    = 1.0/(mx-1);

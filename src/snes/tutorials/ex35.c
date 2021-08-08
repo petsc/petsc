@@ -256,7 +256,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
 
   PetscFunctionBeginUser;
   ierr = SNESGetTolerances(snes,NULL,NULL,NULL,&its,NULL);CHKERRQ(ierr);
-  ierr = SNESShellGetContext(snes,(void**)&da);CHKERRQ(ierr);
+  ierr = SNESShellGetContext(snes,&da);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 

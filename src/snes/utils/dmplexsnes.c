@@ -711,8 +711,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
     ierr = DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     if (4*2 != coordSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %D should be %d", coordSize, 4*2);
     ierr   = DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
-    ierr   = SNESSetFunction(snes, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
-    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
+    ierr   = SNESSetFunction(snes, NULL, NULL, vertices);CHKERRQ(ierr);
+    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, vertices);CHKERRQ(ierr);
     ierr   = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0]  = coords[p*ctx->dim+0];
     xi[1]  = coords[p*ctx->dim+1];
@@ -939,8 +939,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
     if (8*3 != coordSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %D should be %d", coordSize, 8*3);
     ierr = DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
     if (8*ctx->dof != xSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %D should be %D", xSize, 8*ctx->dof);
-    ierr   = SNESSetFunction(snes, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
-    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
+    ierr   = SNESSetFunction(snes, NULL, NULL, vertices);CHKERRQ(ierr);
+    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, vertices);CHKERRQ(ierr);
     ierr   = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0]  = coords[p*ctx->dim+0];
     xi[1]  = coords[p*ctx->dim+1];
@@ -1504,7 +1504,7 @@ static PetscErrorCode DMSNESJacobianMF_Destroy_Private(Mat A)
   PetscErrorCode               ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A, (void **) &ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A, &ctx);CHKERRQ(ierr);
   ierr = MatShellSetContext(A, NULL);CHKERRQ(ierr);
   ierr = DMDestroy(&ctx->dm);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->X);CHKERRQ(ierr);
@@ -1518,7 +1518,7 @@ static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
   PetscErrorCode               ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A, (void **) &ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A, &ctx);CHKERRQ(ierr);
   ierr = DMSNESComputeJacobianAction(ctx->dm, ctx->X, Y, Z, ctx->ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

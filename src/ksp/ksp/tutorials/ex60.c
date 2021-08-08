@@ -49,7 +49,7 @@ PetscErrorCode PCApply_Noise(PC pc,Vec xin,Vec xout)
   PetscReal      nrmin, nrmnoise;
 
   PetscFunctionBeginUser;
-  ierr = PCShellGetContext(pc,(void**)&ctx);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc,&ctx);CHKERRQ(ierr);
 
   /* xout is ||xin|| * ctx->eta*  f, where f is a pseudorandom unit vector
     (Note that this should always be combined additively with another PC) */
@@ -66,7 +66,7 @@ PetscErrorCode PCSetup_Noise(PC pc)
   PCNoise_Ctx    *ctx;
 
   PetscFunctionBeginUser;
-  ierr = PCShellGetContext(pc,(void**)&ctx);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc,&ctx);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ctx->random);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(ctx->random,-1.0,1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -78,7 +78,7 @@ PetscErrorCode PCDestroy_Noise(PC pc)
   PCNoise_Ctx    *ctx;
 
   PetscFunctionBeginUser;
-  ierr = PCShellGetContext(pc,(void**)&ctx);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc,&ctx);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&ctx->random);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
