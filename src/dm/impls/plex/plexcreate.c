@@ -4175,36 +4175,6 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   PetscFunctionReturn(0);
 }
 
-/*@
-  DMPlexCreateFromCellListParallel - Deprecated, use DMPlexCreateFromCellListParallelPetsc()
-
-  Level: deprecated
-
-.seealso: DMPlexCreateFromCellListParallelPetsc()
-@*/
-PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, DM *dm)
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscInt       *pintCells;
-
-  PetscFunctionBegin;
-  PetscCheckFalse(sizeof(int) > sizeof(PetscInt),comm, PETSC_ERR_ARG_SIZ, "Size of int %zd greater than size of PetscInt %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(int), sizeof(PetscInt));
-  if (sizeof(int) == sizeof(PetscInt)) {
-    pintCells = (PetscInt *) cells;
-  } else {
-    ierr = PetscMalloc1(numCells*numCorners, &pintCells);CHKERRQ(ierr);
-    for (i = 0; i < numCells*numCorners; i++) {
-      pintCells[i] = (PetscInt) cells[i];
-    }
-  }
-  ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCells, numVertices, PETSC_DECIDE, numCorners, interpolate, pintCells, spaceDim, vertexCoords, vertexSF, NULL, dm);CHKERRQ(ierr);
-  if (sizeof(int) != sizeof(PetscInt)) {
-    ierr = PetscFree(pintCells);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 /*@C
   DMPlexBuildFromCellList - Build DMPLEX topology from a list of vertices for each cell (common mesh generator output)
 
@@ -4398,49 +4368,6 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   }
   if (!rank) {ierr = DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, vertexCoords);CHKERRQ(ierr);}
   else       {ierr = DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, NULL);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexCreateFromCellList - Deprecated, use DMPlexCreateFromCellListPetsc()
-
-  Level: deprecated
-
-.seealso: DMPlexCreateFromCellListPetsc()
-@*/
-PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const double vertexCoords[], DM *dm)
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscInt       *pintCells;
-  PetscReal      *prealVC;
-
-  PetscFunctionBegin;
-  PetscCheckFalse(sizeof(int) > sizeof(PetscInt),comm, PETSC_ERR_ARG_SIZ, "Size of int %zd greater than size of PetscInt %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(int), sizeof(PetscInt));
-  if (sizeof(int) == sizeof(PetscInt)) {
-    pintCells = (PetscInt *) cells;
-  } else {
-    ierr = PetscMalloc1(numCells*numCorners, &pintCells);CHKERRQ(ierr);
-    for (i = 0; i < numCells*numCorners; i++) {
-      pintCells[i] = (PetscInt) cells[i];
-    }
-  }
-  PetscCheckFalse(sizeof(double) > sizeof(PetscReal),comm, PETSC_ERR_ARG_SIZ, "Size of double %zd greater than size of PetscReal %zd. Reconfigure PETSc --with-precision=<higher precision>.", sizeof(double), sizeof(PetscReal));
-  if (sizeof(double) == sizeof(PetscReal)) {
-    prealVC = (PetscReal *) vertexCoords;
-  } else {
-    ierr = PetscMalloc1(numVertices*spaceDim, &prealVC);CHKERRQ(ierr);
-    for (i = 0; i < numVertices*spaceDim; i++) {
-      prealVC[i] = (PetscReal) vertexCoords[i];
-    }
-  }
-  ierr = DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, numCorners, interpolate, pintCells, spaceDim, prealVC, dm);CHKERRQ(ierr);
-  if (sizeof(int) != sizeof(PetscInt)) {
-    ierr = PetscFree(pintCells);CHKERRQ(ierr);
-  }
-  if (sizeof(double) != sizeof(PetscReal)) {
-    ierr = PetscFree(prealVC);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

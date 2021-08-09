@@ -246,6 +246,7 @@ Changes: Development
 - Add meshing of the Schwarz-P and Gyroid triply periodic minimal surface (see ``DMPlexCreateTPSMesh()``). These meshes can be automatically generated using ``-dm_plex_shape schwarz_p`` or ``-dm_plex_shape gyroid``, with optional levels of refinement and extrusion to 3D solids with prescribed thickness.
 - Add ``DMCreateFEDefault()`` as a convenience method for creating the right element on a mesh
 - Add ``DMPlexCreateReferenceCell()``
+- Remove deprecated ``DMPlexCreateFromCellList()`` and ``DMPlexCreateFromCellListParallel()``
 
 .. rubric:: DMPlexLandau:
 
