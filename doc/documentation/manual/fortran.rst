@@ -17,7 +17,7 @@ At the beginning of every function and module definition you need something like
   #include "petsc/finclude/petscXXX.h"
            use petscXXX
 
-You can declare PETSc variables using either of the following:
+You can declare PETSc object variables using either of the following:
 
 .. code-block:: fortran
 
@@ -37,6 +37,8 @@ For example,
 
       Vec b
       type(tVec) x
+
+PETSc types like ``PetscInt`` and ``PetscReal`` are simply aliases for basic Fortran types and cannot be written as ``type(tPetscInt)``
 
 C vs. Fortran Interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~~
