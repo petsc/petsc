@@ -17,15 +17,11 @@ static PetscErrorCode PetscCUPMValidate(void)
 
   PetscFunctionBegin;
   if (use_gpu_aware_mpi) {
-#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT
-    /* Trust OpenMPI's compile time gpu query interface */
-    mpi_gpu_awareness = PETSC_TRUE;
-#else
-    /* For other MPI implementations without gpu query API, we do a GPU MPI call to see if it segfaults.
-      Note that Spectrum MPI sets OMPI_MAJOR_VERSION and is CUDA-aware, but does not have MPIX_CUDA_AWARE_SUPPORT.
+    /* For OpenMPI, we could do a compile time check with "defined(PETSC_HAVE_OMPI_MAJOR_VERSION) && defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT"
+       to see if it is CUDA-aware. However, recent versions of IBM Spectrum MPI (e.g., 10.3.1) on Summit meet above conditions, but one has to use
+       jsrun --smpiargs=-gpu to really enable GPU-aware MPI. So we do the check at runtime with a code that works only with GPU-aware MPI.
     */
     mpi_gpu_awareness = PetscMPICUPMAwarenessCheck();
-#endif
     if (!mpi_gpu_awareness) {
       (*PetscErrorPrintf)("PETSc is configured with GPU support, but your MPI is not GPU-aware. For better performance, please use a GPU-aware MPI.\n");
       (*PetscErrorPrintf)("If you do not care, add option -use_gpu_aware_mpi 0. To not see the message again, add the option to your .petscrc, OR add it to the env var PETSC_OPTIONS.\n");
