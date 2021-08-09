@@ -121,7 +121,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,ec*sizeof(PetscInt));CHKERRQ(ierr);
   aij->garray = garray;
 
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
