@@ -11,7 +11,8 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ     *B   = (Mat_SeqAIJ*)(aij->B->data);
   PetscErrorCode ierr;
-  PetscInt       i,j,*aj = B->j,ec = 0,*garray;
+  PetscInt       i,j,*aj = B->j,*garray;
+  PetscInt       ec = 0; /* Number of nonzero external columns */
   IS             from,to;
   Vec            gvec;
 #if defined(PETSC_USE_CTABLE)
@@ -39,7 +40,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
       }
     }
     /* form array of columns we need */
-    ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
     ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
     while (tpos) {
       ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
@@ -67,7 +68,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 #else
     /* Make an array as long as the number of columns */
     /* mark those columns that are in aij->B */
-    ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
+    ierr = PetscCalloc1(N,&indices);CHKERRQ(ierr);
     for (i=0; i<aij->B->rmap->n; i++) {
       for (j=0; j<B->ilen[i]; j++) {
         if (!indices[aj[B->i[i] + j]]) ec++;
@@ -76,7 +77,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
 
     /* form array of columns we need */
-    ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
     ec   = 0;
     for (i=0; i<N; i++) {
       if (indices[i]) garray[ec++] = i;

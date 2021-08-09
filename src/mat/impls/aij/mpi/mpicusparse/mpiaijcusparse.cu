@@ -731,7 +731,7 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
       int        *colmap;
       PetscInt   ii,n = aij->B->cmap->n,N = A->cmap->N;
 
-      if (!aij->garray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
+      if (n && !aij->garray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
 
       ierr = PetscCalloc1(N+1,&colmap);CHKERRQ(ierr);
       for (ii=0; ii<n; ii++) colmap[aij->garray[ii]] = (int)(ii+1);

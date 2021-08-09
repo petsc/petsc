@@ -37,7 +37,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   }
   /* form array of columns we need */
-  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
   while (tpos) {
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 #else
   /* Make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
-  ierr = PetscCalloc1(Nbs+1,&indices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(Nbs,&indices);CHKERRQ(ierr);
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++;
@@ -74,7 +74,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
   ec   = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
