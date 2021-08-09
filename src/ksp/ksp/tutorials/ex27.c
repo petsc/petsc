@@ -210,7 +210,7 @@ int main(int argc,char **args)
     ierr = KSPSetType(ksp,KSPLSQR);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A,N);CHKERRQ(ierr);
   }
   ierr = KSPSetInitialGuessNonzero(ksp,nonzero_guess);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -384,16 +384,10 @@ int main(int argc,char **args)
    # Test correct handling of local dimensions in PCApply
    testset:
      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-     requires: mumps hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+     requires: hdf5 define(PETSC_HDF5_HAVE_ZLIB)
      nsize: 3
-     args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -hdf5
-     args: -test_custom_layout 1
-     test:
-       suffix: 7a
-       args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps
-     test:
-       suffix: 7b
-       args: -ksp_type lsqr -pc_type none
+     suffix: 7
+     args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -hdf5 -test_custom_layout 1 -ksp_type lsqr -pc_type jacobi
 
    # Test complex matrices
    testset:
@@ -407,5 +401,19 @@ int main(int argc,char **args)
      test:
        suffix: 8_normal
        args: -solve_normal 1 -ksp_type {{cg bicg}}
+
+   testset:
+     requires: double suitesparse !define(PETSC_USE_64BIT_INDICES)
+     args: -solve_normal {{0 1}shared output} -pc_type qr
+     output_file: output/ex27_9.out
+     filter: grep -v "KSP type"
+     test:
+       suffix: 9_real
+       requires: !complex
+       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64
+     test:
+       suffix: 9_complex
+       requires: complex
+       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64
 
 TEST*/

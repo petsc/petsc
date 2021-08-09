@@ -80,7 +80,7 @@ int main(int argc, char** argv)
   ierr = fill(Q, v);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(Q, &a, NULL);CHKERRQ(ierr);
-  ierr = MatCreateNormal(Q, &C);CHKERRQ(ierr);
+  ierr = MatCreateNormalHermitian(Q, &C);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD, &QRsolver);CHKERRQ(ierr);
   ierr = KSPGetPC(QRsolver, &pc);CHKERRQ(ierr);
   ierr = PCSetType(pc, PCNONE);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     ierr = KSPDestroy(&QRsolver);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = MatConvert(Q, MATAIJ, MAT_INPLACE_MATRIX, &Q);CHKERRQ(ierr);
-    ierr = MatCreateNormal(Q, &C);CHKERRQ(ierr);
+    ierr = MatCreateNormalHermitian(Q, &C);CHKERRQ(ierr);
     ierr = KSPCreate(PETSC_COMM_WORLD, &QRsolver);CHKERRQ(ierr);
     ierr = KSPGetPC(QRsolver, &pc);CHKERRQ(ierr);
     ierr = PCSetType(pc, PCQR);CHKERRQ(ierr);
@@ -117,7 +117,14 @@ int main(int argc, char** argv)
     ierr = KSPView(QRsolver, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PCSetType(pc, PCCHOLESKY);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = MatTransposeMatMult(Q, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
+    if (!PetscDefined(USE_COMPLEX)) {
+      ierr = MatTransposeMatMult(Q, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
+    } else {
+      Mat Qc;
+      ierr = MatHermitianTranspose(Q, MAT_INITIAL_MATRIX, &Qc);CHKERRQ(ierr);
+      ierr = MatMatMult(Qc, Q, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
+      ierr = MatDestroy(&Qc);CHKERRQ(ierr);
+    }
     ierr = KSPSetOperators(QRsolver, Q, C);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(QRsolver);CHKERRQ(ierr);
     ierr = VecDuplicate(a, &b);CHKERRQ(ierr);
