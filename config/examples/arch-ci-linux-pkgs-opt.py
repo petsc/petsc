@@ -34,6 +34,7 @@ configure_options = [
   '--download-saws',
   '--download-concurrencykit=1',
   '--download-revolve=1',
+  '--download-cams=1',
   '--download-p4est=1',
   '--with-zlib=1',
   '--download-mfem=1',
