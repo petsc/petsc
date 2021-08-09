@@ -145,7 +145,7 @@ static PetscErrorCode TurnBackward(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ElementCreate(TS ts,Stack *stack,StackElement *e,PetscInt cptype)
+static PetscErrorCode ElementCreate(TS ts,CheckpointType cptype,Stack *stack,StackElement *e)
 {
   Vec            X;
   Vec            *Y;
@@ -163,7 +163,9 @@ static PetscErrorCode ElementCreate(TS ts,Stack *stack,StackElement *e,PetscInt 
     }
     if (HaveStages(cptype) && !(*e)->Y) {
       ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-      ierr = VecDuplicateVecs(Y[0],stack->numY,&(*e)->Y);CHKERRQ(ierr);
+      if (stack->numY) {
+        ierr = VecDuplicateVecs(Y[0],stack->numY,&(*e)->Y);CHKERRQ(ierr);
+      }
     }
     if (cptype==0 && (*e)->Y) {
       ierr = VecDestroyVecs(stack->numY,&(*e)->Y);CHKERRQ(ierr);
@@ -181,7 +183,9 @@ static PetscErrorCode ElementCreate(TS ts,Stack *stack,StackElement *e,PetscInt 
   }
   if (HaveStages(cptype)) {
     ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
-    ierr = VecDuplicateVecs(Y[0],stack->numY,&(*e)->Y);CHKERRQ(ierr);
+    if (stack->numY) {
+      ierr = VecDuplicateVecs(Y[0],stack->numY,&(*e)->Y);CHKERRQ(ierr);
+    }
   }
   if (stack->use_dram) {
     ierr = PetscMallocResetDRAM();CHKERRQ(ierr);
@@ -319,32 +323,40 @@ static PetscErrorCode StackFind(Stack *stack,StackElement *e,PetscInt index)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode WriteToDisk(PetscInt stepnum,PetscReal time,PetscReal timeprev,Vec X,Vec *Y,PetscInt numY,PetscBool solution_only,PetscViewer viewer)
+static PetscErrorCode WriteToDisk(PetscInt stepnum,PetscReal time,PetscReal timeprev,Vec X,Vec *Y,PetscInt numY,CheckpointType cptype,PetscViewer viewer)
 {
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerBinaryWrite(viewer,&stepnum,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
-  for (i=0;!solution_only && i<numY;i++) {
-    ierr = VecView(Y[i],viewer);CHKERRQ(ierr);
+  if (HaveSolution(cptype)) {
+    ierr = VecView(X,viewer);CHKERRQ(ierr);
+  }
+  if (HaveStages(cptype)) {
+    for (i=0;i<numY;i++) {
+      ierr = VecView(Y[i],viewer);CHKERRQ(ierr);
+    }
   }
   ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryWrite(viewer,&timeprev,1,PETSC_REAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ReadFromDisk(PetscInt *stepnum,PetscReal *time,PetscReal *timeprev,Vec X,Vec *Y,PetscInt numY,PetscBool solution_only,PetscViewer viewer)
+static PetscErrorCode ReadFromDisk(PetscInt *stepnum,PetscReal *time,PetscReal *timeprev,Vec X,Vec *Y,PetscInt numY,CheckpointType cptype,PetscViewer viewer)
 {
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerBinaryRead(viewer,stepnum,1,NULL,PETSC_INT);CHKERRQ(ierr);
-  ierr = VecLoad(X,viewer);CHKERRQ(ierr);
-  for (i=0;!solution_only && i<numY;i++) {
-    ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
+  if (HaveSolution(cptype)) {
+    ierr = VecLoad(X,viewer);CHKERRQ(ierr);
+  }
+  if (HaveStages(cptype)) {
+    for (i=0;i<numY;i++) {
+      ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
+    }
   }
   ierr = PetscViewerBinaryRead(viewer,time,1,NULL,PETSC_REAL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,timeprev,1,NULL,PETSC_REAL);CHKERRQ(ierr);
@@ -354,7 +366,7 @@ static PetscErrorCode ReadFromDisk(PetscInt *stepnum,PetscReal *time,PetscReal *
 static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 {
   Vec            *Y;
-  PetscInt       i;
+  PetscInt       i,ndumped,cptype_int;
   StackElement   e = NULL;
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
   char           filename[PETSC_MAX_PATH_LEN];
@@ -371,37 +383,37 @@ static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   ierr = PetscSNPrintf(filename,sizeof(filename),"%s/TS-STACK%06d.bin",tj->dirname,id);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(tjsch->viewer,filename);CHKERRQ(ierr);
   ierr = PetscViewerSetUp(tjsch->viewer);CHKERRQ(ierr);
-  for (i=0;i<stack->stacksize;i++) {
+  ndumped = stack->top+1;
+  ierr = PetscViewerBinaryWrite(tjsch->viewer,&ndumped,1,PETSC_INT);CHKERRQ(ierr);
+  for (i=0;i<ndumped;i++) {
     e = stack->container[i];
+    cptype_int = (PetscInt)e->cptype;
+    ierr = PetscViewerBinaryWrite(tjsch->viewer,&cptype_int,1,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
-    ierr = WriteToDisk(e->stepnum,e->time,e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,tjsch->viewer);CHKERRQ(ierr);
+    ierr = WriteToDisk(e->stepnum,e->time,e->timeprev,e->X,e->Y,stack->numY,e->cptype,tjsch->viewer);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
     ts->trajectory->diskwrites++;
+    ierr = StackPop(stack,&e);CHKERRQ(ierr);
   }
   /* save the last step for restart, the last step is in memory when using single level schemes, but not necessarily the case for multi level schemes */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = WriteToDisk(ts->steps,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,tjsch->viewer);CHKERRQ(ierr);
+  ierr = WriteToDisk(ts->steps,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,SOLUTION_STAGES,tjsch->viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskwrites++;
-  for (i=0;i<stack->stacksize;i++) {
-    ierr = StackPop(stack,&e);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 {
   Vec            *Y;
-  PetscInt       i;
+  PetscInt       i,nloaded,cptype_int;
   StackElement   e;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
-  CheckpointType cptype;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES;
   if (tj->monitor) {
     ierr = PetscViewerASCIIAddTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Load stack from file\n");CHKERRQ(ierr);
@@ -411,18 +423,20 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj),filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinarySetSkipInfo(viewer,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-  for (i=0;i<stack->stacksize;i++) {
-    ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&nloaded,1,NULL,PETSC_INT);CHKERRQ(ierr);
+  for (i=0;i<nloaded;i++) {
+    ierr = PetscViewerBinaryRead(viewer,&cptype_int,1,NULL,PETSC_INT);CHKERRQ(ierr);
+    ierr = ElementCreate(ts,(CheckpointType)cptype_int,stack,&e);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
-    ierr = ReadFromDisk(&e->stepnum,&e->time,&e->timeprev,e->X,e->Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+    ierr = ReadFromDisk(&e->stepnum,&e->time,&e->timeprev,e->X,e->Y,stack->numY,e->cptype,viewer);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
     ts->trajectory->diskreads++;
   }
   /* load the last step into TS */
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+  ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,SOLUTION_STAGES,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
   ierr = TurnBackward(ts);CHKERRQ(ierr);
@@ -473,7 +487,7 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
 #endif
   /* load the last step into TS */
   ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+  ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,SOLUTION_STAGES,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -505,7 +519,7 @@ static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = WriteToDisk(stepnum,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,tjsch->viewer);CHKERRQ(ierr);
+  ierr = WriteToDisk(stepnum,ts->ptime,ts->ptime_prev,ts->vec_sol,Y,stack->numY,SOLUTION_STAGES,tjsch->viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskWrite,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskwrites++;
   PetscFunctionReturn(0);
@@ -530,7 +544,7 @@ static PetscErrorCode LoadSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
-  ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,stack->solution_only,viewer);CHKERRQ(ierr);
+  ierr = ReadFromDisk(&ts->steps,&ts->ptime,&ts->ptime_prev,ts->vec_sol,Y,stack->numY,SOLUTION_STAGES,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_DiskRead,tj,ts,0,0);CHKERRQ(ierr);
   ts->trajectory->diskreads++;
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -680,7 +694,7 @@ static PetscErrorCode SetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscRe
     SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
   }
   cptype = stack->solution_only ? SOLUTIONONLY : STAGESONLY;
-  ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+  ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
   ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
   ierr = StackPush(stack,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -704,7 +718,7 @@ static PetscErrorCode SetTrajN_2(TS ts,TJScheduler *tjsch,PetscInt stepnum,Petsc
   }
   if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
   cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES; /* Always include solution in a checkpoint in non-adjoint mode */
-  ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+  ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
   ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
   ierr = StackPush(stack,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -776,7 +790,7 @@ static PetscErrorCode SetTrajTLNR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
   if (stack->solution_only && localstepnum == tjsch->stride-1) PetscFunctionReturn(0); /* skip last step in each stride at recompute stage or last stride */
 
   cptype = stack->solution_only ? SOLUTIONONLY : STAGESONLY;
-  ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+  ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
   ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
   ierr = StackPush(stack,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -831,7 +845,7 @@ static PetscErrorCode GetTrajTLNR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
         ierr = StackLoadAll(tj,ts,stack,id);CHKERRQ(ierr);
       } else {
         ierr = LoadSingle(tj,ts,stack,id);CHKERRQ(ierr);
-        ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+        ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
         ierr = ElementSet(ts,stack,&e,(id-1)*tjsch->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = StackPush(stack,e);CHKERRQ(ierr);
         ierr = TurnForward(ts);CHKERRQ(ierr);
@@ -1034,7 +1048,7 @@ static PetscErrorCode SetTrajROF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   if (store == 1) {
     if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES;
-    ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+    ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
     ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1123,7 +1137,7 @@ static PetscErrorCode SetTrajRON(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     } else {
       if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
       cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES;
-      ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+      ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
       ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
       ierr = StackPush(stack,e);CHKERRQ(ierr);
     }
@@ -1219,7 +1233,7 @@ static PetscErrorCode SetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   if (store == 1) {
     if (localstepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES;
-    ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+    ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
     ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1300,7 +1314,7 @@ static PetscErrorCode GetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
           ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
         }
         cptype = SOLUTION_STAGES;
-        ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+        ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
         ierr = ElementSet(ts,stack,&e,(stridenum-1)*tjsch->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = StackPush(stack,e);CHKERRQ(ierr);
         ierr = TurnForward(ts);CHKERRQ(ierr);
@@ -1385,7 +1399,7 @@ static PetscErrorCode SetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
     CheckpointType cptype;
     if (localstepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES;
-    ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+    ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
     ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   }
@@ -1497,7 +1511,7 @@ static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
             ierr = PetscViewerASCIIPrintf(tj->monitor,"Skip the step from %D to %D (stage values already checkpointed)\n",(restoredstridenum-1)*tjsch->stride,(restoredstridenum-1)*tjsch->stride+1);CHKERRQ(ierr);
             ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
           }
-          ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+          ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
           ierr = ElementSet(ts,stack,&e,(restoredstridenum-1)*tjsch->stride+1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
           ierr = StackPush(stack,e);CHKERRQ(ierr);
         }
@@ -1573,7 +1587,7 @@ static PetscErrorCode SetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
     CheckpointType cptype;
     if (stepnum < stack->top) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_MEMC,"Illegal modification of a non-top stack element");
     cptype = stack->solution_only ? SOLUTIONONLY : SOLUTION_STAGES;
-    ierr = ElementCreate(ts,stack,&e,cptype);CHKERRQ(ierr);
+    ierr = ElementCreate(ts,cptype,stack,&e);CHKERRQ(ierr);
     ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     ierr = StackPush(stack,e);CHKERRQ(ierr);
   } else if (store == 2) {
@@ -1650,12 +1664,14 @@ static PetscErrorCode SetTrajAOF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (stepnum == 0) {
+  /* skip if no checkpoint to use. This also avoids an error when num_units_avail=0  */
+  if (tjsch->actx->nextcheckpointstep == -1) PetscFunctionReturn(0);
+  if (stepnum == 0) { /* When placing the first checkpoint, no need to change the units available */
     if (stack->solution_only) {
-      ierr = offline_ca(-1,tjsch->actx->num_units_avail,tjsch->actx->endstep,&tjsch->actx->nextcheckpointstep);CHKERRQ(ierr);
+      ierr = offline_ca(tjsch->actx->lastcheckpointstep,tjsch->actx->num_units_avail,tjsch->actx->endstep,&tjsch->actx->nextcheckpointstep);CHKERRQ(ierr);
     } else {
       /* First two arguments must be -1 when first time calling cams */
-      ierr = offline_cams(-1,-1,tjsch->actx->num_units_avail,tjsch->actx->endstep,tjsch->actx->num_stages,&tjsch->actx->nextcheckpointstep,&tjsch->actx->nextcheckpointtype);CHKERRQ(ierr);
+      ierr = offline_cams(tjsch->actx->lastcheckpointstep,tjsch->actx->lastcheckpointtype,tjsch->actx->num_units_avail,tjsch->actx->endstep,tjsch->actx->num_stages,&tjsch->actx->nextcheckpointstep,&tjsch->actx->nextcheckpointtype);CHKERRQ(ierr);
     }
   }
 
@@ -1668,21 +1684,21 @@ static PetscErrorCode SetTrajAOF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
       if (tj->monitor) {
         ierr = PetscViewerASCIIPrintf(tj->monitor,"Store in checkpoint number %D with stage values and solution (located in RAM)\n",stepnum);CHKERRQ(ierr);
       }
-      ierr = ElementCreate(ts,stack,&e,SOLUTION_STAGES);CHKERRQ(ierr);
+      ierr = ElementCreate(ts,SOLUTION_STAGES,stack,&e);CHKERRQ(ierr);
       ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     }
     if (tjsch->actx->nextcheckpointtype == 1) {
       if (tj->monitor) {
         ierr = PetscViewerASCIIPrintf(tj->monitor,"Store in checkpoint number %D with stage values (located in RAM)\n",stepnum);CHKERRQ(ierr);
       }
-      ierr = ElementCreate(ts,stack,&e,STAGESONLY);CHKERRQ(ierr);
+      ierr = ElementCreate(ts,STAGESONLY,stack,&e);CHKERRQ(ierr);
       ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     }
     if (tjsch->actx->nextcheckpointtype == 0) { /* solution only */
       if (tj->monitor) {
         ierr = PetscViewerASCIIPrintf(tj->monitor,"Store in checkpoint number %D (located in RAM)\n",stepnum);CHKERRQ(ierr);
       }
-      ierr = ElementCreate(ts,stack,&e,SOLUTIONONLY);CHKERRQ(ierr);
+      ierr = ElementCreate(ts,SOLUTIONONLY,stack,&e);CHKERRQ(ierr);
       ierr = ElementSet(ts,stack,&e,stepnum,time,X);CHKERRQ(ierr);
     }
     ierr = StackPush(stack,e);CHKERRQ(ierr);
@@ -1959,7 +1975,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj,PetscB
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   TSTrajectorySetMaxCpsRAM - Set maximum number of checkpoints in RAM
 
   Logically collective
@@ -1983,7 +1999,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj,PetscInt max_cps_ram)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   TSTrajectorySetMaxCpsDisk - Set maximum number of checkpoints on disk
 
   Logically collective
@@ -1996,7 +2012,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj,PetscInt max_cps_ram)
 
   Level: intermediate
 
-.seealso: TSTrajectorySetMaxUnitsDisk()
+.seealso: TSTrajectorySetMaxUnitsDisk(), TSTrajectorySetMaxUnitsRAM()
 @*/
 PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj,PetscInt max_cps_disk)
 {
@@ -2007,7 +2023,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj,PetscInt max_cps_disk)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   TSTrajectorySetMaxUnitsRAM - Set maximum number of checkpointing units in RAM
 
   Logically collective
@@ -2031,7 +2047,7 @@ PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj,PetscInt max_units_ram
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   TSTrajectorySetMaxUnitsDisk - Set maximum number of checkpointing units on disk
 
   Logically collective
@@ -2065,23 +2081,23 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscO
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Memory based TS trajectory options");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsInt("-ts_trajectory_max_cps_ram","Maximum number of checkpoints in RAM","TSTrajectorySetMaxCpsRAM_Memory",tjsch->max_cps_ram,&max_cps_ram,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_trajectory_max_cps_ram","Maximum number of checkpoints in RAM","TSTrajectorySetMaxCpsRAM",tjsch->max_cps_ram,&max_cps_ram,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSTrajectorySetMaxCpsRAM(tj,max_cps_ram);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsInt("-ts_trajectory_max_cps_disk","Maximum number of checkpoints on disk","TSTrajectorySetMaxCpsDisk_Memory",tjsch->max_cps_disk,&max_cps_disk,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_trajectory_max_cps_disk","Maximum number of checkpoints on disk","TSTrajectorySetMaxCpsDisk",tjsch->max_cps_disk,&max_cps_disk,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSTrajectorySetMaxCpsDisk(tj,max_cps_disk);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsInt("-ts_trajectory_max_units_ram","Maximum number of checkpointing units in RAM","TSTrajectorySetMaxUnitsRAM_Memory",tjsch->max_units_ram,&max_units_ram,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_trajectory_max_units_ram","Maximum number of checkpointing units in RAM","TSTrajectorySetMaxUnitsRAM",tjsch->max_units_ram,&max_units_ram,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSTrajectorySetMaxUnitsRAM(tj,max_units_ram);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsInt("-ts_trajectory_max_units_disk","Maximum number of checkpointing units on disk","TSTrajectorySetMaxUnitsDisk_Memory",tjsch->max_units_disk,&max_units_disk,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_trajectory_max_units_disk","Maximum number of checkpointing units on disk","TSTrajectorySetMaxUnitsDisk",tjsch->max_units_disk,&max_units_disk,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSTrajectorySetMaxUnitsDisk(tj,max_units_disk);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsInt("-ts_trajectory_stride","Stride to save checkpoints to file","TSTrajectorySetStride_Memory",tjsch->stride,&tjsch->stride,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_trajectory_stride","Stride to save checkpoints to file","TSTrajectorySetStride",tjsch->stride,&tjsch->stride,NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_REVOLVE)
     ierr = PetscOptionsBool("-ts_trajectory_revolve_online","Trick TS trajectory into using online mode of revolve","TSTrajectorySetRevolveOnline",tjsch->use_online,&tjsch->use_online,NULL);CHKERRQ(ierr);
 #endif
@@ -2150,8 +2166,8 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 #if defined(PETSC_HAVE_REVOLVE)
     if (tjsch->use_online) tjsch->stype = REVOLVE_ONLINE; /* trick into online (for testing purpose only) */
 #endif
+    if (tjsch->stype != NONE && tjsch->max_cps_ram < 1 && tjsch->max_cps_disk < 1) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"The specified storage capacity is insufficient for one checkpoint, which is the minimum");
   }
-  if (tjsch->stype != NONE && tjsch->max_cps_ram < 1 && tjsch->max_cps_disk < 1) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"The specified storage capacity is insufficient for one checkpoint, which is the minimum");
   if (tjsch->stype >= CAMS_OFFLINE) {
 #ifndef PETSC_HAVE_CAMS
     SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"CAMS is needed when there is not enough memory to checkpoint all time steps according to the user's settings, please reconfigure with the additional option --download-cams.");
@@ -2165,7 +2181,8 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
       offline_cams_create(tjsch->total_steps,tjsch->max_units_ram,ns,ts->stifflyaccurate);
     }
     ierr = PetscNew(&actx);CHKERRQ(ierr);
-    actx->lastcheckpointstep    = 0;
+    actx->lastcheckpointstep    = -1; /* -1 can trigger the initialization of CAMS */
+    actx->lastcheckpointtype    = -1; /* -1 can trigger the initialization of CAMS */
     actx->endstep               = tjsch->total_steps;
     actx->num_units_avail       = tjsch->max_units_ram;
     actx->num_stages            = ns;
