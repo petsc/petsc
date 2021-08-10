@@ -20,9 +20,14 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A,PetscBool values,cholmod_
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A, MATNORMALHERMITIAN, &flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatNormalGetMat(A, &A);CHKERRQ(ierr);
+    ierr = MatNormalHermitianGetMat(A, &A);CHKERRQ(ierr);
+  } else if (!PetscDefined(USE_COMPLEX)) {
+    ierr = PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatNormalGetMat(A, &A);CHKERRQ(ierr);
+    }
   }
   /* cholmod_sparse is compressed sparse column */
   ierr = MatGetOption(A, MAT_SYMMETRIC, &flg);CHKERRQ(ierr);
@@ -221,12 +226,14 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F,Mat A,const MatFactorInfo *i
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
   cholmod_sparse cholA;
-  PetscBool      aijalloc,valloc,flg;
+  PetscBool      aijalloc,valloc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATNORMAL,&flg);CHKERRQ(ierr);
-  chol->normal = flg;
+  ierr = PetscObjectTypeCompare((PetscObject)A, MATNORMALHERMITIAN, &chol->normal);CHKERRQ(ierr);
+  if (!chol->normal && !PetscDefined(USE_COMPLEX)) {
+    ierr = PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &chol->normal);CHKERRQ(ierr);
+  }
   ierr = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc,&valloc);CHKERRQ(ierr);
   ierr = !SuiteSparseQR_C_numeric(PETSC_SMALL, &cholA, chol->spqrfact, chol->common);
   if (ierr) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"SPQR factorization failed with status %d",chol->common->status);
@@ -251,11 +258,13 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F,Mat A,IS perm,const M
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->data;
   PetscErrorCode ierr;
   cholmod_sparse cholA;
-  PetscBool      aijalloc,valloc,flg;
+  PetscBool      aijalloc,valloc;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATNORMAL,&flg);CHKERRQ(ierr);
-  chol->normal = flg;
+  ierr = PetscObjectTypeCompare((PetscObject)A, MATNORMALHERMITIAN, &chol->normal);CHKERRQ(ierr);
+  if (!chol->normal && !PetscDefined(USE_COMPLEX)) {
+    ierr = PetscObjectTypeCompare((PetscObject)A, MATNORMAL, &chol->normal);CHKERRQ(ierr);
+  }
   ierr = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc,&valloc);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG)) {
     ierr = !cholmod_l_check_sparse(&cholA, chol->common);CHKERRQ(ierr);

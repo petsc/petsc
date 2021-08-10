@@ -83,12 +83,13 @@ Changes: Development
 -  Add ``MATSOLVERSPQR`` - interface to SuiteSparse QR factorization
 -  Add ``MatSeqAIJKron()`` - Kronecker product of two ``MatSeqAIJ``
 -  Add ``MatNormalGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMAL``
+-  Add ``MatNormalHermitianGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMALHERMITIAN``
 -  Add ``VecCreateMPICUDA()`` and ``VecCreateMPIHIP()`` to create MPI device vectors
 
 .. rubric:: PC:
 
--  Add ``PCQR`` - interface to SuiteSparse QR factorization for ``MatSeqAIJ`` and
-   ``MATNORMAL``
+-  Add ``PCQR`` - interface to SuiteSparse QR factorization for ``MatSeqAIJ``,
+   ``MATNORMAL``, and ``MATNORMALHERMITIAN``
 -  Add support for ``MATNORMAL`` in ``PCASM`` and ``PCHPDDM``
 -  ``PCShellGetContext()`` now takes ``void*`` as return argument
 

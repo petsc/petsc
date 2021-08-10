@@ -26,7 +26,7 @@ PC Object: 1 MPI processes
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
   Mat Object: 1 MPI processes
-    type: normal
+    type: normalh
     rows=3, cols=3
 KSP Object: 1 MPI processes
   type: lsqr

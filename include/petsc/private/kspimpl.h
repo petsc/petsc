@@ -357,6 +357,23 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec 
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultHermitianTranspose(KSP ksp,Mat A,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!ksp->transpose_solve) {ierr = MatMultHermitianTranspose(A,x,y);CHKERRQ(ierr);}
+  else                       {
+    Vec w;
+    ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
+    ierr = VecCopy(x,w);CHKERRQ(ierr);
+    ierr = VecConjugate(w);CHKERRQ(ierr);
+    ierr = MatMult(A,w,y);CHKERRQ(ierr);
+    ierr = VecDestroy(&w);CHKERRQ(ierr);
+    ierr = VecConjugate(y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -382,6 +399,17 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
     ierr = PCApply(ksp->pc,x,y);CHKERRQ(ierr);
     ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = VecConjugate(x);CHKERRQ(ierr);
+  ierr = KSP_PCApplyTranspose(ksp,x,y);CHKERRQ(ierr);
+  ierr = VecConjugate(x);CHKERRQ(ierr);
+  ierr = VecConjugate(y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

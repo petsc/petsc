@@ -11,13 +11,16 @@ KSP Object: 2 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
   type: none
-  linear system matrix = precond matrix:
+  linear system matrix followed by preconditioner matrix:
   Mat Object: A 2 MPI processes
     type: mpiaij
     rows=4, cols=4
     total: nonzeros=10, allocated nonzeros=10
     total number of mallocs used during MatSetValues calls=0
       using I-node (on process 0) routines: found 1 nodes, limit used is 5
+  Mat Object: 2 MPI processes
+    type: normalh
+    rows=4, cols=4
 KSP type: cg
 Number of iterations =   2
 Residual norm 0.
