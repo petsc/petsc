@@ -48,6 +48,8 @@ configure_options = [
   '--download-mmg=1',
   '--download-parmmg=1',
   '--download-htool=1',
+  '--download-egads=1',
+  '--download-opencascade=1',
   ]
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+ EGADS WARNING: OpenCASCADE 7.5.0 NOT an Authorized Release!
  Number of BODIES (nbodies): 1 
    Number of SHELLS: 1 
    Number of FACES: 8 
@@ -548,3 +549,4 @@ Label 'EGADS Edge ID':
 [0]: 92 (18)
 DM CAD Surface: Surface Area = 6.969261e-01 Volume = 6.721143e-03
 DM CAD Mesh: Surface Area = 7.701278e-03 Volume = 6.224181e-05
+ EGADS Info: 105 Objects, 150 Reference in Use (of 255) at Close!

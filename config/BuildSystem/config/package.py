@@ -1814,6 +1814,10 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
     return args
 
+  def updateControlFiles(self):
+    # Override to change build control files
+    return
+
   def Install(self):
     import os
     args = self.formCMakeConfigureArgs()
@@ -1829,6 +1833,8 @@ class CMakePackage(Package):
 
       if not self.cmake.found:
         raise RuntimeError('CMake not found, needed to build '+self.PACKAGE+'. Rerun configure with --download-cmake.')
+
+      self.updateControlFiles()
 
       # effectively, this is 'make clean'
       folder = os.path.join(self.packageDir, self.cmakelistsdir, 'petsc-build')
