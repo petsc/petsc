@@ -569,7 +569,7 @@ $  layout           : [0 1]        [2]          [3]
 $  leafIndices      : [0]          [2]          [0 3]
 $  leafLocalOffset  : 400          500          600
 $
-would build the following SF:
+would build the following SF
 $
 $  [0] 400 <- (0,101)
 $  [1] 500 <- (0,102)
@@ -585,7 +585,7 @@ $  layout           : [0 1]           [2]             [3]
 $  leafIndices      : rootIndices     rootIndices     rootIndices
 $  leafLocalOffset  : rootLocalOffset rootLocalOffset rootLocalOffset
 $
-would build the following SF:
+would build the following SF
 $
 $  [1] 200 <- (2,300)
 $
@@ -602,7 +602,7 @@ $  numLeafIndices   : 1            1            2
 $  leafIndices      : [0]          [2]          [0 3]
 $  leafLocalOffset  : 400          500          600
 $
-would build the following SF:
+would build the following SF
 $
 $  [0] 400 <- (0,100)
 $  [1] 500 <- (0,101)
