@@ -3826,21 +3826,23 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
 }
 
 /*@
-  DMPlexCreateFromCellListPetsc - Create DMPLEX from a list of vertices for each cell (common mesh generator output)
+  DMPlexCreateFromCellListPetsc - Create DMPLEX from a list of vertices for each cell (common mesh generator output), but only process 0 takes in the input
+
+  Collective on comm
 
   Input Parameters:
 + comm - The communicator
 . dim - The topological dimension of the mesh
-. numCells - The number of cells
-. numVertices - The number of vertices owned by this process, or PETSC_DECIDE
-. numCorners - The number of vertices for each cell
+. numCells - The number of cells, only on process 0
+. numVertices - The number of vertices owned by this process, or PETSC_DECIDE, only on process 0
+. numCorners - The number of vertices for each cell, only on process 0
 . interpolate - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
-. cells - An array of numCells*numCorners numbers, the vertices for each cell
+. cells - An array of numCells*numCorners numbers, the vertices for each cell, only on process 0
 . spaceDim - The spatial dimension used for coordinates
-- vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
+- vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex, only on process 0
 
   Output Parameter:
-. dm - The DM
+. dm - The DM, which only has points on process 0
 
   Notes:
   This function is just a convenient sequence of DMCreate(), DMSetType(), DMSetDimension(), DMPlexBuildFromCellList(),
@@ -3848,6 +3850,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
 
   See DMPlexBuildFromCellList() for an example and details about the topology-related parameters.
   See DMPlexBuildCoordinatesFromCellList() for details about the geometry-related parameters.
+  See DMPlexCreateFromCellListParallelPetsc() for parallel input
 
   Level: intermediate
 
@@ -3855,14 +3858,17 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
 @*/
 PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], DM *dm)
 {
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!dim) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "This is not appropriate for 0-dimensional meshes. Consider either creating the DM using DMPlexCreateFromDAG(), by hand, or using DMSwarm.");
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexBuildFromCellList(*dm, numCells, numVertices, numCorners, cells);CHKERRQ(ierr);
+  if (!rank) {ierr = DMPlexBuildFromCellList(*dm, numCells, numVertices, numCorners, cells);CHKERRQ(ierr);}
+  else       {ierr = DMPlexBuildFromCellList(*dm, 0, 0, 0, NULL);CHKERRQ(ierr);}
   if (interpolate) {
     DM idm;
 
@@ -3870,7 +3876,8 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
-  ierr = DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, vertexCoords);CHKERRQ(ierr);
+  if (!rank) {ierr = DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, vertexCoords);CHKERRQ(ierr);}
+  else       {ierr = DMPlexBuildCoordinatesFromCellList(*dm, spaceDim, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
