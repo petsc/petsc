@@ -1333,6 +1333,10 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
 
     Level: beginner
 
+
+    Options Database Keys:
+. -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
+
     Notes:
     This properly preallocates the number of nonzeros in the sparse matrix so you
        do not need to do it yourself.
@@ -1403,6 +1407,10 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
 - only - PETSC_TRUE if only want preallocation
 
   Level: developer
+
+  Options Database Keys:
+. -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
+
 .seealso DMCreateMatrix(), DMSetMatrixStructureOnly()
 @*/
 PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
@@ -2048,7 +2056,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
   Output Parameter:
 . dmf - the refined DM, or NULL
 
-  Options Dtabase Keys:
+  Options Database Keys:
 . -dm_plex_cell_refiner <strategy> - chooses the refinement strategy, e.g. regular, tohex
 
   Note: If no refinement was done, the return value is NULL
