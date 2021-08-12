@@ -8,11 +8,11 @@
 
    Input Arguments:
 +  sf - star forest
-.  layout - PetscLayout defining the global space
+.  layout - PetscLayout defining the global space for roots
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
 .  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
 .  localmode - copy mode for ilocal
--  iremote - remote locations of root vertices for each leaf on the current process
+-  iremote - remote locations (in global indices) of root vertices for each leaf on the current process
 
    Level: intermediate
 
