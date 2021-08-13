@@ -1381,7 +1381,6 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
 
     Level: beginner
 
-
     Options Database Keys:
 . -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
 
