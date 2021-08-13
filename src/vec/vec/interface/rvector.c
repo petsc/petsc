@@ -2029,9 +2029,10 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 }
 
 /*@C
-   VecGetArrayAndMemType - Like VecGetArray(), but if this is a GPU vector and it is currently offloaded to GPU,
-   the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
-   vector data. Otherwise, it functions as VecGetArray().
+   VecGetArrayAndMemType - Like VecGetArray(), but if this is a device vector (e.g., VECCUDA) and the device has up-to-date data,
+   the returned pointer will be a device pointer to the device memory that contains this processor's portion of the vector data.
+   Otherwise, when this is a host vector (e.g., VECMPI), or a device vector with the host having newer data than device,
+   it functions as VecGetArray() and returns a host pointer.
 
    Logically Collective on Vec
 

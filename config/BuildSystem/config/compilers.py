@@ -38,7 +38,7 @@ class Configure(config.base.Configure):
     if len(self.skipdefaultpaths):
       return self.skipdefaultpaths
     else:
-      self.skipdefaultpaths = ['/usr/lib','/lib','/usr/lib64','/lib64']
+      self.skipdefaultpaths = ['/usr/lib','/lib','/usr/lib64','/lib64','/usr/lib/x86_64-linux-gnu','/lib/x86_64-linux-gnu']
       conda_sysrt = os.getenv('CONDA_BUILD_SYSROOT')
       if conda_sysrt:
         conda_sysrt = os.path.abspath(conda_sysrt)

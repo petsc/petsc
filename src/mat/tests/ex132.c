@@ -225,7 +225,7 @@ int main(int argc,char **args)
      requires: kokkos_kernels
      suffix: 2_par_kokkos
      filter: grep -v " type:" | grep -v "Mat Object"
-     args: -view -mat_type aijkokkos -mat_nonsym
+     args: -view -mat_type aijkokkos -mat_nonsym -use_gpu_aware_mpi {{0 1}}
      diff_args: -j
 
 TEST*/
