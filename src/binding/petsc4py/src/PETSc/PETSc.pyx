@@ -217,7 +217,7 @@ cdef int traceback(MPI_Comm       comm,
     cdef object tbl = tracebacklist
     fun = bytes2str(cfun)
     fnm = bytes2str(cfile)
-    m = "%s() line %d in %s" % (fun, line, fnm)
+    m = "%s() at %s:%d" % (fun, fnm, line)
     tbl.insert(0, m)
     if p != PETSC_ERROR_INITIAL:
         return n

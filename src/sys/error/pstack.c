@@ -158,7 +158,7 @@ PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
   int i;
 
   if (!sint) return(0);
-  for (i=sint->currentsize-2; i>=0; i--) fprintf(fp,"      [%d]  %s() line %d in %s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->file[i]);
+  for (i=sint->currentsize-2; i>=0; i--) fprintf(fp,"      [%d]  %s() at %s:%d\n",PetscGlobalRank,sint->function[i],sint->file[i],sint->line[i]);
   return 0;
 }
 
