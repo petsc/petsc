@@ -566,7 +566,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
     ierr = PetscIntMultError((M/PETSC_BITS_PER_BYTE+1),imax, &M_BPB_imax);CHKERRQ(ierr);
     ierr = PetscMalloc1(imax,&table_data);CHKERRQ(ierr);
     for (i=0; i<imax; i++) {
-      ierr = PetscTableCreate(n[i]+1,M+1,&table_data[i]);CHKERRQ(ierr);
+      ierr = PetscTableCreate(n[i],M,&table_data[i]);CHKERRQ(ierr);
     }
     ierr = PetscCalloc4(imax,&table, imax,&data, imax,&isz, M_BPB_imax,&t_p);CHKERRQ(ierr);
     for (i=0; i<imax; i++) {
@@ -1493,7 +1493,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
     /* create column map (cmap): global col of C -> local col of submat */
 #if defined(PETSC_USE_CTABLE)
     if (!allcolumns) {
-      ierr = PetscTableCreate(ncol+1,C->cmap->N+1,&cmap);CHKERRQ(ierr);
+      ierr = PetscTableCreate(ncol,C->cmap->N,&cmap);CHKERRQ(ierr);
       ierr = PetscCalloc1(C->cmap->n,&cmap_loc);CHKERRQ(ierr);
       for (j=0; j<ncol; j++) { /* use array cmap_loc[] for local col indices */
         if (icol[j] >= cstart && icol[j] <cend) {
@@ -1560,7 +1560,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
 
     /* Create row map (rmap): global row of C -> local row of submat */
 #if defined(PETSC_USE_CTABLE)
-    ierr = PetscTableCreate(nrow+1,C->rmap->N+1,&rmap);CHKERRQ(ierr);
+    ierr = PetscTableCreate(nrow,C->rmap->N,&rmap);CHKERRQ(ierr);
     for (j=0; j<nrow; j++) {
       row  = irow[j];
       proc = row2proc[j];
@@ -2422,7 +2422,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
 #if defined(PETSC_USE_CTABLE)
       for (i=0; i<ismax; i++) {
         if (!allcolumns[i]) {
-          ierr = PetscTableCreate(ncol[i]+1,C->cmap->N+1,&cmap[i]);CHKERRQ(ierr);
+          ierr = PetscTableCreate(ncol[i],C->cmap->N,&cmap[i]);CHKERRQ(ierr);
 
           jmax   = ncol[i];
           icol_i = icol[i];
@@ -2488,7 +2488,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
     /* Create row map: global row of C -> local row of submatrices */
 #if defined(PETSC_USE_CTABLE)
     for (i=0; i<ismax; i++) {
-      ierr   = PetscTableCreate(nrow[i]+1,C->rmap->N+1,&rmap[i]);CHKERRQ(ierr);
+      ierr   = PetscTableCreate(nrow[i],C->rmap->N,&rmap[i]);CHKERRQ(ierr);
       irow_i = irow[i];
       jmax   = nrow[i];
       for (j=0; j<jmax; j++) {
