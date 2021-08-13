@@ -845,12 +845,12 @@ PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec v,PetscScalar** a,PetscMemTyp
   Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
-  if (veckok->v_dual.need_sync_device()) {
-   /* Host has newer data than device */
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value || veckok->v_dual.need_sync_device()) {
+    /* When there is no device or host has newer data than device */
     *a = veckok->v_dual.view_host().data();
     if (mtype) *mtype = PETSC_MEMTYPE_HOST;
   } else {
-    /* Device has newer or same data as host. We prefer returning devcie data*/
+    /* When device has newer or same data as host, we always return device data */
     *a = veckok->v_dual.view_device().data();
     if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
   }
@@ -862,7 +862,7 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec v,PetscScalar** a)
   Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
-  if (veckok->v_dual.need_sync_device()) { /* Host has newer data than device */
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value || veckok->v_dual.need_sync_device()) {
     veckok->v_dual.modify_host();
   } else {
     veckok->v_dual.modify_device();
