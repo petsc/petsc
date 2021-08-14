@@ -201,7 +201,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
 
   sell->garray = garray;
 
-  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);

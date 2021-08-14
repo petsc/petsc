@@ -105,7 +105,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   /* create two temporary index sets for building scatter-gather */
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(ec+1,&stmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) stmp[i] = i;
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
 
@@ -121,7 +121,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 
   baij->garray = garray;
 
-  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
