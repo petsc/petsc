@@ -105,8 +105,8 @@ struct _n_SplitCSRMat {
 
 #if defined(PETSC_USE_DEBUG)
 #define SETERR {                                                                                 \
-   printf("[%d] ERROR in %s() line %d in %s: Location (%ld,%ld) not found!\n",     \
-          d_mat->rank,__func__,__LINE__,__FILE__,(long int)im[i],(long int)in[j]); \
+   printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found!\n",     \
+          d_mat->rank,__func__,__FILE__,__LINE__,(long int)im[i],(long int)in[j]); \
    return PETSC_ERR_ARG_OUTOFRANGE;                                                              \
 }
 #else
