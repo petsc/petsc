@@ -189,7 +189,7 @@ then gradually learn more details according to their needs. The current
 version of TAO and the most recent help concerning installation and
 usage can be found at https://www.petsc.org .
 
-See :doc:`/documentation/manual/index` and :doc:`/install/index` for how to
+See :doc:`/docs/manual/index` and :doc:`/install/index` for how to
 install and start using PETSc/TAO.
 
 Writing Application Codes with TAO
@@ -199,7 +199,7 @@ Examples throughout the library demonstrate the software usage and can
 serve as templates for developing custom applications. We suggest that
 new TAO users examine programs in ``${PETSC_DIR}/src/tao/<unconstrained,bound,..>/tutorials``
 
-The :doc:`manual pages </documentation/manualpages/index>`
+The :doc:`manual pages </docs/manualpages/index>`
 provide indices (organized by both routine names and concepts) to the
 tutorial examples.
 
@@ -329,7 +329,7 @@ TAO relies heavily on PETSc not only for its vectors, matrices, and
 linear solvers but also for its programming utilities such as command
 line option handling, error handling, and compiling system. We provide
 here a quick overview of some of these PETSc features. Please refer to
-the :doc:`/documentation/manual/index` for a more in-depth
+the :doc:`/docs/manual/index` for a more in-depth
 discussion of PETSc.
 
 Vectors
@@ -365,7 +365,7 @@ respectively set all the components of a vector to a particular scalar
 value and assign a different value to each component. More detailed
 information about PETSc vectors, including their basic operations,
 scattering/gathering, index sets, and distributed arrays, may be found
-in the :doc:`/documentation/manual/index`.
+in the :doc:`/docs/manual/index`.
 
 Matrices
 ^^^^^^^^
@@ -398,7 +398,7 @@ processed with the pair of commands
       ierr = MatAssemblyBegin(Mat H,MAT_FINAL_ASSEMBLY);
       ierr = MatAssemblyEnd(Mat H,MAT_FINAL_ASSEMBLY);
 
-The :doc:`/documentation/manual/index` discusses
+The :doc:`/docs/manual/index` discusses
 various matrix formats as well as the details of some basic matrix
 manipulation routines.
 
@@ -421,7 +421,7 @@ read this option with the following line of code:
 
 If the command line option is present, the variable ``nx`` is set
 accordingly; otherwise, ``nx`` remains unchanged. A complete description
-of the options database may be found in the :doc:`/documentation/manual/index`.
+of the options database may be found in the :doc:`/docs/manual/index`.
 
 
 Error Checking
@@ -442,7 +442,7 @@ the routine ``MatMult()`` and was caused by failure to assemble the
 matrix in the Hessian evaluation routine. The ``MatMult()`` routine was
 called from the ``TaoSolve_NLS()`` routine, which was in turn called on
 line 154 of ``TaoSolve()`` from the ``main()`` routine in the program
-``rosenbrock1.c``. The :doc:`/documentation/manual/index` provides further details regarding
+``rosenbrock1.c``. The :doc:`/docs/manual/index` provides further details regarding
 error checking, including information about error handling in Fortran.
 
 .. code-block:: console
@@ -861,7 +861,7 @@ preconditioning (``PCNONE`` or ``-pc_type none``), a user-provided
 preconditioner matrix, or a user-provided preconditioner shell
 (``PCSHELL``). In other words, matrix-free methods cannot be used if a
 direct solver is to be employed. Details about using matrix-free methods
-are provided in the :doc:`/documentation/manual/index`.
+are provided in the :doc:`/docs/manual/index`.
 
 .. _sec_bounds:
 
@@ -3330,7 +3330,7 @@ access the linear solver with the
 
 command. With access to the KSP object, users can customize it for their
 application to achieve improved performance. Additional details on the
-KSP options in PETSc can be found in the :doc:`/documentation/manual/index`.
+KSP options in PETSc can be found in the :doc:`/docs/manual/index`.
 
 Monitors
 ~~~~~~~~

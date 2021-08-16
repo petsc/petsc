@@ -8,15 +8,12 @@ import shutil
 import argparse
 
 CLASSIC_DOCS_LOC = os.path.join(os.getcwd(), '_build_classic')
-HTML_EXTRA_DIR = os.path.join('generated', 'html_extra')
 
 def main():
     """ Operations to provide data from the 'classic' PETSc docs system. """
     petsc_dir = os.path.abspath('..')
     petsc_arch = _configure_minimal_petsc(petsc_dir)
     _build_classic_docs_subset(petsc_dir, petsc_arch)
-    _populate_html_extra_from_classic_docs()
-    return HTML_EXTRA_DIR
 
 
 def clean():
@@ -24,7 +21,7 @@ def clean():
 
         Does not remove the configuration of PETSc.
     """
-    for directory in [CLASSIC_DOCS_LOC, HTML_EXTRA_DIR]:
+    for directory in [CLASSIC_DOCS_LOC]:
         print('Removing %s' % directory)
         if os.path.isdir(directory):
             shutil.rmtree(directory)
@@ -86,18 +83,28 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch):
         subprocess.run(command, cwd=petsc_dir, check=True)
 
 
-def _populate_html_extra_from_classic_docs():
-    _mkdir_p(HTML_EXTRA_DIR)
-    subdirs = ['docs', 'include', 'src']
+def copy_classic_docs(outdir):
+    subdirs = [
+            os.path.join('docs', 'manualpages'),
+            'include',
+            'src',
+            ]
     for subdir in subdirs:
-        target = os.path.join(HTML_EXTRA_DIR, subdir)
-        if os.path.isdir(target):
-            shutil.rmtree(target)
-        source = os.path.join(CLASSIC_DOCS_LOC, subdir)
+        source_dir = os.path.join(CLASSIC_DOCS_LOC, subdir)
+        target_dir = os.path.join(outdir, subdir)
         print('============================================')
-        print('Copying directory %s from %s to %s' % (subdir, source, target))
+        print('Copying directory %s to %s' % (source_dir, target_dir))
         print('============================================')
-        shutil.copytree(source, target)
+        _mkdir_p(target_dir)
+        for file in os.listdir(source_dir):
+            source = os.path.join(source_dir, file)
+            target = os.path.join(target_dir, file)
+            if os.path.isdir(source):
+                if os.path.isdir(target):
+                    shutil.rmtree(target)
+                shutil.copytree(source, target)
+            else:
+                shutil.copy(source, target)
 
 
 def _get_classic_build_dir():
