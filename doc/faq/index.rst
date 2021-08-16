@@ -1843,7 +1843,7 @@ explicitly, not with a \*.
 How do I debug if ``-start_in_debugger`` does not work on my machine?
 ---------------------------------------------------------------------
 
-The script https://github.com/Azrael3000/tmpi can be used with OpenMPI to run multiple MPI
+The script https://github.com/Azrael3000/tmpi can be used to run multiple MPI
 ranks in the debugger using tmux.
 
 On newer macOS machines - one has to be in admin group to be able to use debugger.
