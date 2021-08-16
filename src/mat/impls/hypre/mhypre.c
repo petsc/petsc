@@ -664,8 +664,10 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
     col_starts = A->cmap->range;
   }
   tA = hypre_ParCSRMatrixCreate(comm,A->rmap->N,A->cmap->N,(HYPRE_BigInt*)row_starts,(HYPRE_BigInt*)col_starts,noffd,dnnz,onnz);
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
   hypre_ParCSRMatrixSetRowStartsOwner(tA,0);
   hypre_ParCSRMatrixSetColStartsOwner(tA,0);
+#endif
 
   /* set diagonal part */
   hdiag = hypre_ParCSRMatrixDiag(tA);
@@ -754,18 +756,24 @@ static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA
    for boomerAMGBuildCoarseOperator to work */
 static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMatrix *hA,hypre_ParCSRMatrix *hP, hypre_ParCSRMatrix **hRAP)
 {
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
   HYPRE_Int P_owns_col_starts,R_owns_row_starts;
+#endif
 
   PetscFunctionBegin;
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
   P_owns_col_starts = hypre_ParCSRMatrixOwnsColStarts(hP);
   R_owns_row_starts = hypre_ParCSRMatrixOwnsRowStarts(hR);
+#endif
   PetscStackCallStandard(hypre_BoomerAMGBuildCoarseOperator,(hR,hA,hP,hRAP));
   PetscStackCallStandard(hypre_ParCSRMatrixSetNumNonzeros,(*hRAP));
   /* hypre_BoomerAMGBuildCoarseOperator steals the col_starts from P and the row_starts from R */
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
   hypre_ParCSRMatrixSetRowStartsOwner(*hRAP,0);
   hypre_ParCSRMatrixSetColStartsOwner(*hRAP,0);
   if (P_owns_col_starts) hypre_ParCSRMatrixSetColStartsOwner(hP,1);
   if (R_owns_row_starts) hypre_ParCSRMatrixSetRowStartsOwner(hR,1);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1545,6 +1553,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
     if (HYPRE_AssumedPartitionCheck()) {
       ierr = MPI_Comm_rank(comm,&myid);CHKERRMPI(ierr);
     }
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
     if (!hypre_ParCSRMatrixOwnsColStarts(parcsr)) {
       PetscLayout map;
 
@@ -1559,6 +1568,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
       ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
       hypre_ParCSRMatrixRowStarts(parcsr) = (HYPRE_BigInt*)(map->range + myid);
     }
+#endif
     /* prevent from freeing the pointer */
     if (copymode == PETSC_USE_POINTER) hA->inner_free = PETSC_FALSE;
     *A   = T;
