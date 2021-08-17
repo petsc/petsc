@@ -50,14 +50,5 @@ class Make(maker.Make):
     self.buildCygwinPath(builder)
     return
 
-  def t_updateWebsite(self):
-    build.framework.Framework.t_updateWebsite(self)
-    self.cpWebsite('docs/website/index.html')
-    self.cpWebsite('install/bootstrap.py', 'bootstrap.sh')
-    self.cpWebsite('docs/tutorials/*.ppt')
-    self.cpWebsite('docs/website/faq.html')
-    self.cpWebsite('docs/website/projects.html')
-    return
-
 if __name__ == '__main__':
   Make().run()
