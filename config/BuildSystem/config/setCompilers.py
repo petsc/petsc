@@ -603,7 +603,7 @@ class Configure(config.base.Configure):
       if not self.checkRun(linkLanguage=linkLanguage):
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
         if self.isIntel(self.getCompiler(), self.log):
-          msg = msg + 'See https://www.mcs.anl.gov/petsc/documentation/faq.html#libimf'
+          msg = msg + 'See https://petsc.org/release/faq/#error-libimf'
         self.popLanguage()
         raise OSError(msg)
     self.popLanguage()
@@ -686,7 +686,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin cannot be found or do not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin cannot be found or do not work. See https://petsc.org/release/faq/#invalid-mpi-compilers')
     else:
       if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
       # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
@@ -996,7 +996,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpic++')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiCC')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
-      raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('bin/<mpiCC,mpicxx,hcp,mpCC_r> you provided with -with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work. See https://petsc.org/release/faq/#invalid-mpi-compilers')
     else:
       if self.usedMPICompilers:
         # TODO: Should only look for the MPI CXX compiler related to the found MPI C compiler
@@ -1137,7 +1137,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf90_r')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
       if os.path.isfile(os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')):
-        raise RuntimeError('bin/mpif90 you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
+        raise RuntimeError('bin/mpif90 you provided with --with-mpi-dir='+self.argDB['with-mpi-dir']+' cannot be found or does not work.\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran. See https://petsc.org/release/faq/#invalid-mpi-compilers')
     else:
       if self.usedMPICompilers:
         # TODO: Should only look for the MPI Fortran compiler related to the found MPI C compiler

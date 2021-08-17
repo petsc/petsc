@@ -98,7 +98,7 @@ extremely useful for exploring the PETSc source code. Details of these
 feature are provided in :any:`sec-emacs`.
 
 The complete PETSc distribution, manual pages, and additional information are available via the
-`PETSc home page <https://www.mcs.anl.gov/petsc>`__. The PETSc
+`PETSc home page <https://petsc.org/>`__. The PETSc
 home page also contains details regarding installation, new features and
 changes in recent versions of PETSc, machines that we currently support,
 and a frequently asked questions (FAQ) list.
@@ -498,7 +498,7 @@ etc). The macro ``CHKMEMQ`` can be called anywhere in the code to check
 the current status of the memory for corruption. By putting several (or
 many) of these macros into your code you can usually easily track down
 in what small segment of your code the corruption has occured. One can
-also use Valgrind to track down memory errors; see the `FAQ <https://www.mcs.anl.gov/petsc/documentation/faq.html>`__.
+also use Valgrind to track down memory errors; see the `FAQ <https://petsc.org/release/faq/>`__.
 
 .. _sec_parallel:
 
@@ -565,7 +565,7 @@ machines will have compilation commands as determined by the
 configuration process. See :any:`sec_writing_application_codes` for
 a discussion about how to compile your PETSc programs. Users who are
 experiencing difficulties linking PETSc programs should refer to the FAQ
-on the PETSc website https://www.mcs.anl.gov/petsc or given in the file
+on the PETSc website https://petsc.org/ or given in the file
 ``$PETSC_DIR/docs/faq.html``.
 
 .. code-block:: none
@@ -661,7 +661,7 @@ that new PETSc users examine programs in the directories
 of the PETSc libraries (listed in the following section), such as
 ``SNES`` or ``KSP`` or ``TS``. The manual pages located at
 ``$PETSC_DIR/docs/index.htm`` or
-https://www.mcs.anl.gov/petsc/documentation/ provide links (organized by
+https://petsc.org/release/documentation/ provide links (organized by
 both routine names and concepts) to the tutorial examples.
 
 To write a new application program using PETSc, we suggest the following

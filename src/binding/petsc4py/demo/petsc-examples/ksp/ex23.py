@@ -1,7 +1,7 @@
 
 '''
 Ex23 from PETSc example files implemented for PETSc4py.
-https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex23.c.html
+https://petsc.org/release/src/ksp/ksp/tutorials/ex23.c.html
 By: Miguel Arriaga
 
 Solves a tridiagonal linear system.
@@ -32,7 +32,7 @@ tol = 1E-11 # Tolerance of Result. tol=1000.*PETSC_MACHINE_EPSILON;
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Compute the matrix and right-hand-side vector that define
     the linear system, Ax = b.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 Create vectors.  Note that we form 1 vector from scratch and
 then duplicate as needed. For this simple case let PETSc decide how
@@ -112,7 +112,7 @@ A.assemblyEnd(A.AssemblyType.FINAL)
 u.set(1.0)
 b = A(u)
 
-''' 
+'''
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         Create the linear solver and set various options
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - '''
@@ -149,7 +149,7 @@ routines.
 '''
 ksp.setFromOptions()
 
-''' 
+'''
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Solve the linear system
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - '''
@@ -163,7 +163,7 @@ print this info to the screen at the conclusion of KSPSolve().
 '''
 # ksp.view()
 
-''' 
+'''
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Check solution and clean up
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - '''

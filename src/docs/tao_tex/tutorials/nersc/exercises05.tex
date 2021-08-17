@@ -11,7 +11,7 @@
 \begin{center}
 {\bf
 TAO - Toolkit for Advanced Optimization
-        
+
 Tutorial and Exercises
 
 \vspace{0.25in}
@@ -27,14 +27,13 @@ National Energy Research Scientific Computing Center
 
 \begin{enumerate}
 
-\item Locate the TAO and PETSc documentation at 
+\item Locate the TAO and PETSc documentation at
 \begin{alltt}
-https://www.mcs.anl.gov/research/projects/tao/
-https://www.mcs.anl.gov/petsc
+https://petsc.org/
 \end{alltt}
 
 \item On seaborg, set the environmental variables
-\texttt{TAO\_DIR}, \texttt{PETSC\_DIR}, \texttt{PETSC\_ARCH} 
+\texttt{TAO\_DIR}, \texttt{PETSC\_DIR}, \texttt{PETSC\_ARCH}
 using the commands:
 \begin{alltt}
 % module load tao/1.7
@@ -52,15 +51,15 @@ command:
 There should be a \texttt{makefile} and several examples ending in \texttt{.c} and \texttt{.f}.
 
 \item Run an example with TAO.
-We are going to use TAO to minimize the function 
+We are going to use TAO to minimize the function
 \[
-    f(x_1,x_2) = 99*(x_2-{x_1}^2)^2 + (1-x_1)^2 
+    f(x_1,x_2) = 99*(x_2-{x_1}^2)^2 + (1-x_1)^2
 \]
 on a single processor.
 \begin{itemize}
 
  \item Compile the program using \\
-  \quad \texttt{ \% make BOPT=O\_c++ rosenbrock1} 
+  \quad \texttt{ \% make BOPT=O\_c++ rosenbrock1}
   (or \texttt{ \% make BOPT=O\_c++ rosenbrock1f})
 
  \item Execute the program with \\
@@ -68,8 +67,8 @@ on a single processor.
   \texttt{ \% poe ./rosenbrock1f -nprocs 1 -tao\_monitor -tao\_view -retry 30})
 
   What method was used to solve the problem?
-  What is the function value at the final iterate? 
-  How many iterates were used to reach the solution?  
+  What is the function value at the final iterate?
+  How many iterates were used to reach the solution?
   How many function evaluations?
 
  \newpage
@@ -84,7 +83,7 @@ two-dimensional domain in accordance with some boundary conditions.
 
 \item
 Compile and execute the \texttt{minsurf2} example using
-    
+
 \texttt{\% make BOPT=O\_c++ minsurf2}
 
 \texttt{\% poe ./minsurf2 -procs 1 -tao\_monitor -tao\_view}
@@ -92,8 +91,8 @@ Compile and execute the \texttt{minsurf2} example using
 \item
 This problem uses the variables {\tt mx} and {\tt my} to determine
 the discretization of the grid.  By default, these values are set to
-$4$ ($4 \times 4 = 16$ variables). Increase the discretization of the 
-domain by using the command 
+$4$ ($4 \times 4 = 16$ variables). Increase the discretization of the
+domain by using the command
 
 \texttt{\% poe ./minsurf2 -procs 1 -tao\_monitor -tao\_view -mx 20 -my 20}
 
@@ -105,11 +104,11 @@ How many iterations do the following solvers require to solve the problem?
 
 
 \item
-Execute the programs from the last step again, but this time use the command line option 
+Execute the programs from the last step again, but this time use the command line option
 \texttt{-log\_summary} to get detailed performance information.
 
 Look under the PETSc Performance Summary section and determine how long
-each algorithm takes to solve the problem. How many floating point operations (flops) are required? 
+each algorithm takes to solve the problem. How many floating point operations (flops) are required?
 
 
 \item
@@ -119,25 +118,25 @@ Run the problem \texttt{minsurf2.c} on two processors and view the output.
 
 \end{itemize}
 
-\item 
+\item
   Locate \texttt{minsurf2.c} in the TAO documentation on its web site.  Browse through
   the online version this example and follow the links for
   \texttt{TaoCreate()} and other routines.  Read the online documentation for these routines.
 
 \begin{itemize}
-  \item 
-  Run \texttt{minsurf2} again using other unconstrained minimization 
-  methods.    You can change the solver by modifying the arguments of 
+  \item
+  Run \texttt{minsurf2} again using other unconstrained minimization
+  methods.    You can change the solver by modifying the arguments of
   \texttt{TaoCreate()} or using the runtime option \texttt{-tao\_method <solver>}.
- 
+
   What is the function value at the final iterate?
   How many iterates were used to reach
   the solution?  What was the final residual value? What does the residual represent?
 
- \item 
-  Change the starting vector \texttt{x} by editing the file \texttt{minsurf2.c}.  
+ \item
+  Change the starting vector \texttt{x} by editing the file \texttt{minsurf2.c}.
   Use the PETSc method {\tt VecSet()}
-  to set the vector components to a constant, or {\tt VecSetValue()} to set 
+  to set the vector components to a constant, or {\tt VecSetValue()} to set
   an individual elements (remember to follow any {\tt VecSetValue()} calls
   with {\tt VecAssemblyBegin()} and {\tt VecAssemblyEnd()}).  Compile the program again and run it.
   How did the starting point affect the convergence?
@@ -147,5 +146,3 @@ Run the problem \texttt{minsurf2.c} on two processors and view the output.
 
 \end{enumerate}
 \end{document}
-
-
