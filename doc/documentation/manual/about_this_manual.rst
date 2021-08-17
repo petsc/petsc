@@ -33,7 +33,7 @@ of many application codes simpler than “rolling them” yourself.
    is not intended for the classes of problems for which effective
    MATLAB code can be written.
 
--  There are several packages (listed on https://www.mcs.anl.gov/petsc),
+-  There are several packages (listed on https://petsc.org/),
    built on PETSc, that may satisfy your needs without requiring
    directly using PETSc. We recommend reviewing these packages
    functionality before starting to code directly with PETSc.

@@ -1,7 +1,7 @@
 
 '''
 Ex2 from PETSc example files implemented for PETSc4py.
-https://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex2.c.html
+https://petsc.org/release/src/ksp/ksp/tutorials/ex2.c.html
 By: Miguel Arriaga
 
 
@@ -17,9 +17,9 @@ Concepts: KSP^Laplacian, 2d
 Concepts: Laplacian, 2d
 Processors: n
 
-Vec            x,b,u;    # approx solution, RHS, exact solution 
-Mat            A;        # linear system matrix 
-KSP            ksp;      # linear solver context 
+Vec            x,b,u;    # approx solution, RHS, exact solution
+Mat            A;        # linear system matrix
+KSP            ksp;      # linear solver context
 PetscReal      norm;     # norm of solution error
 '''
 import sys
@@ -55,7 +55,7 @@ n  = OptDB.getInt('n', 7)
 A = PETSc.Mat().create(comm=comm)
 A.setSizes((m*n,m*n))
 A.setFromOptions()
-A.setPreallocationNNZ((5,5)) 
+A.setPreallocationNNZ((5,5))
 
 '''
     Currently, all PETSc parallel matrix formats are partitioned by
@@ -138,7 +138,7 @@ x = b.duplicate()
 '''
     Set exact solution; then compute right-hand-side vector.
     By default we use an exact solution of a vector with all
-    elements of 1.0;  
+    elements of 1.0;
 '''
 u.set(1.0)
 b = A(u)

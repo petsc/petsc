@@ -63,7 +63,7 @@ info:
 	-@echo "printed out below when reporting problems.  Please check the"
 	-@echo "mailing list archives and consider subscribing."
 	-@echo " "
-	-@echo "  http://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html"
+	-@echo "  https://petsc.org/release/community/mailing/"
 	-@echo " "
 	-@echo "=========================================="
 	-@echo Starting make run on `hostname` at `date +'%a, %d %b %Y %H:%M:%S %z'`

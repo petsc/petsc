@@ -4,7 +4,6 @@ FFLAGS           =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/tutorials/
-DIRS             = network
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                    ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex18.c ex21.c ex23.c \
                    ex25.c ex27.c ex28.c ex29.c ex32.c ex34.c \
@@ -18,7 +17,7 @@ EXAMPLESF        = ex1f.F90 ex2f.F90 ex6f.F90 ex11f.F90 ex13f90.F90 ex14f.F90 ex
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
-DIRS             = amrex
+DIRS             = network amrex
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

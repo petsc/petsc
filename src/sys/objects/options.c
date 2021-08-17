@@ -567,7 +567,7 @@ destroy:
   counts[0] = acnt;
   counts[1] = cnt;
   err = MPI_Bcast(counts,2,MPI_INT,0,comm);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in first MPI collective call, could be caused by using an incorrect mpiexec or a network problem, it can be caused by having VPN running: see https://www.mcs.anl.gov/petsc/documentation/faq.html");
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in first MPI collective call, could be caused by using an incorrect mpiexec or a network problem, it can be caused by having VPN running: see https://petsc.org/release/faq/");
   acnt = counts[0];
   cnt = counts[1];
   if (rank) {

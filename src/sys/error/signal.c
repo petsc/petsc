@@ -141,7 +141,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   else (*PetscErrorPrintf)("Caught signal\n");
 
   (*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
-  (*PetscErrorPrintf)("or see https://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind\n");
+  (*PetscErrorPrintf)("or see https://petsc.org/release/faq/#valgrind\n");
   (*PetscErrorPrintf)("or try http://valgrind.org on GNU/linux and Apple Mac OS X to find memory corruption errors\n");
 #if defined(PETSC_HAVE_CUDA)
   (*PetscErrorPrintf)("or try https://docs.nvidia.com/cuda/cuda-memcheck/index.html on NVIDIA CUDA systems  to find memory corruption errors\n");

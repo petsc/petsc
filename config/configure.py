@@ -318,7 +318,7 @@ def check_cray_modules():
    print('*       module load intel ; module load PrgEnv-intel')
    print('*   or  module load PrgEnv-cray')
    print('*   or  module load PrgEnv-gnu')
-   print('* See https://www.mcs.anl.gov/petsc/documentation/installation.html#doemachines')
+   print('* See https://petsc.org/release/install/install/#installing-on-large-scale-doe-systems')
    print('************************************************************************')
    sys.exit(4)
 
@@ -560,4 +560,3 @@ def petsc_configure(configure_options):
 
 if __name__ == '__main__':
   petsc_configure([])
-

@@ -11,14 +11,14 @@ Host the PETSc numerical library package. http://www.mcs.anl.gov/petsc
 
 ### Contribution guidelines ###
 
-* See the file CONTRIBUTING
+* See the file [CONTRIBUTING](./CONTRIBUTING)
 
 ### Who do I talk to? ###
 
 * https://gitlab.com/petsc/petsc/-/issues
 * petsc-maint@mcs.anl.gov
-* http://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html
+* https://petsc.org/release/community/mailing/
 
 ### Code of Conduct ###
 
-* See the file CODE_OF_CONDUCT.md
+* See the file [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)

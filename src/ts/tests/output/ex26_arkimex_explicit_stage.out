@@ -1,4 +1,4 @@
 [0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
 [0]PETSC ERROR: Arguments are incompatible
 [0]PETSC ERROR: This scheme requires an identity mass matrix, however the TSIFunction you provide does not utilize an identity mass matrix
-[0]PETSC ERROR: See https://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.

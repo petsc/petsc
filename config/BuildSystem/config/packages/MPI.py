@@ -317,7 +317,7 @@ Unable to run hostname to check the network')
     # check that mpiexec runs an MPI program correctly
     error_message = 'Unable to run MPI program with '+self.mpiexec+'\n\
     (1) make sure this is the correct program to run MPI jobs\n\
-    (2) your network may be misconfigured; see https://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-network-misconfigure\n\
+    (2) your network may be misconfigured; see https://petsc.org/release/faq/#mpi-network-misconfigure\n\
     (3) you may have VPN running whose network settings may not play nice with MPI\n'
 
     includes = '#include <mpi.h>'
