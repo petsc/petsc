@@ -402,6 +402,8 @@ complete free implementations. Thus, one does not have to rely on the technical 
 one particular group to provide the message-passing libraries. Today, MPI is the only
 practical, portable approach to writing efficient parallel numerical software.
 
+.. _invalid-mpi-compilers:
+
 What do I do if my MPI compiler wrappers are invalid?
 -----------------------------------------------------
 
@@ -414,6 +416,8 @@ these compilers may be incompatible with the particular MPI build. If this fix d
 work, run with ``--with-cc=[your_c_compiler]`` where you know ``your_c_compiler`` works
 with this particular MPI, and likewise for C++ (``--with-cxx=[your_cxx_compiler]``) and Fortran
 (``--with-fc=[your_fortran_compiler]``).
+
+.. _64-bit-indices:
 
 When should/can I use the ``configure`` option ``--with-64-bit-indices``?
 -------------------------------------------------------------------------
@@ -453,6 +457,8 @@ How do I enable Python bindings (petsc4py) with PETSc?
 
 #. set ``PYTHONPATH=$PETSC_DIR/$PETSC_ARCH/lib``
 
+.. _macos-gfortran:
+
 What Fortran compiler do you recommend on macOS?
 ------------------------------------------------
 
@@ -483,6 +489,8 @@ This happens for generally one of two reasons:
      > rm -rf $PETSC_DIR/$PETSC_ARCH
      > ./configure --your-args
 
+.. _mpi-network-misconfigure:
+
 What does it mean when ``make check`` errors on ``PetscOptionsInsertFile()``?
 -----------------------------------------------------------------------------
 
@@ -491,7 +499,7 @@ For example:
 .. code-block:: none
 
    Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes
-   See https://www.mcs.anl.gov/petsc/documentation/faq.html
+   See https://petsc.org/release/faq/
    [0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
    [0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
    [0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
@@ -1843,7 +1851,7 @@ explicitly, not with a \*.
 How do I debug if ``-start_in_debugger`` does not work on my machine?
 ---------------------------------------------------------------------
 
-The script https://github.com/Azrael3000/tmpi can be used with OpenMPI to run multiple MPI
+The script https://github.com/Azrael3000/tmpi can be used to run multiple MPI
 ranks in the debugger using tmux.
 
 On newer macOS machines - one has to be in admin group to be able to use debugger.
@@ -1914,6 +1922,8 @@ function in which the error occurred, but not the line or the type of exception.
 ``-fp_trap`` is not supported on your architecture, consult the documentation for your
 debugger since there is likely a way to have it catch exceptions.
 
+.. _error-libimf:
+
 Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory
 ----------------------------------------------------------------------------------------------------------
 
@@ -1939,6 +1949,8 @@ And in my ``.profile`` I have
    source /opt/intel/cc/10.1.012/bin/iccvars.sh
    source /opt/intel/fc/10.1.012/bin/ifortvars.sh
    source /opt/intel/idb/10.1.012/bin/idbvars.sh
+
+.. _object-type-not-set:
 
 What does "Object Type Not Set: Argument # N" Mean?
 ---------------------------------------------------
@@ -1968,6 +1980,8 @@ will not work. You must add ``MatSetType()`` or ``MatSetFromOptions()`` before t
 
    ierr = MatSetValues(A,....);CHKERRQ(ierr);
 
+.. _split-ownership:
+
 What does error detected in PetscSplitOwnership() about "sum of local lengths ...": mean?
 -----------------------------------------------------------------------------------------
 
@@ -1976,6 +1990,8 @@ In a previous call to ``VecSetSizes()``, ``MatSetSizes()``, ``VecCreateXXX()`` o
 correct number of processors. For example if you pass in a local size of 2 and a global
 size of 100 and run on two processors, this cannot work since the sum of the local sizes
 is 4, not 100.
+
+.. _valgrind:
 
 What does "corrupt argument" or "caught signal" Or "SEGV" Or "segmentation violation" Or "bus error" mean? Can I use Valgrind or CUDA-Memcheck to debug memory corruption issues?
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2043,6 +2059,8 @@ use `valgrind <http://valgrind.org>`__. Follow the below instructions:
 
 You might also consider using http://drmemory.org which has support for GNU/Linux, Apple
 Mac OS and Microsoft Windows machines. (Note we haven't tried this ourselves).
+
+.. _zeropivot:
 
 What does "detected zero pivot in LU factorization" mean?
 ---------------------------------------------------------

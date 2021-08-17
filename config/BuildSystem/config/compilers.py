@@ -1084,7 +1084,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         break
     else:
       if self.setCompilers.isDarwin(self.log):
-        mess = '  See https://www.mcs.anl.gov/petsc/documentation/faq.html#gfortran'
+        mess = '  See https://petsc.org/release/faq/#macos-gfortran'
       else:
         mess = ''
       raise RuntimeError('Unknown Fortran name mangling: Are you sure the C and Fortran compilers are compatible?\n  Perhaps one is 64 bit and one is 32 bit?\n'+mess)

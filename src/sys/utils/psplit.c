@@ -74,7 +74,7 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
-  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://www.mcs.anl.gov/petsc/documentation/faq.html#split");
+  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://petsc.org/release/faq/#split-ownership");
   if (PetscDefined(USE_DEBUG)) {
     PetscMPIInt l[2],g[2];
     l[0] = (*n == PETSC_DECIDE) ? 1 : 0;
@@ -97,7 +97,7 @@ PetscErrorCode  PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
   } else if (PetscDefined(USE_DEBUG)) {
     PetscInt tmp;
     ierr = MPIU_Allreduce(n,&tmp,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
-    if (tmp != *N) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %D does not equal global length %D, my local length %D\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://www.mcs.anl.gov/petsc/documentation/faq.html#split",tmp,*N,*n);
+    if (tmp != *N) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Sum of local lengths %D does not equal global length %D, my local length %D\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://petsc.org/release/faq/#split-ownership",tmp,*N,*n);
   }
   PetscFunctionReturn(0);
 }
@@ -167,4 +167,3 @@ PetscErrorCode  PetscSplitOwnershipEqual(MPI_Comm comm,PetscInt *n,PetscInt *N)
   }
   PetscFunctionReturn(0);
 }
-

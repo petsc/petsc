@@ -7,7 +7,7 @@
 \begin{center}
 {\bf
 TAO - Toolkit for Advanced Optimization
-        
+
 Tutorial and Exercises
 
 \vspace{0.25in}
@@ -23,10 +23,9 @@ National Energy Research Scientific Computing Center
 
 \begin{enumerate}
 
-\item Locate the TAO and PETSc documentation at 
+\item Locate the TAO and PETSc documentation at
 \begin{alltt}
-https://www.mcs.anl.gov/research/projects/tao/docs/
-https://www.mcs.anl.gov/petsc/docs/
+https://petsc.org/release/documentation/
 \end{alltt}
 
 \item Set the environmental variables
@@ -42,7 +41,7 @@ https://www.mcs.anl.gov/petsc/docs/
 \begin{alltt}
 $TAO_DIR/src/unconstrained/tutorials/minsurf1.c
 $TAO_DIR/src/unconstrained/tutorials/minsurf2.c
-$TAO_DIR/src/unconstrained/tutorials/makefile 
+$TAO_DIR/src/unconstrained/tutorials/makefile
 \end{alltt}
 
 \item
@@ -52,7 +51,7 @@ and note that these examples are linked with the TAO documentation.
 Read the documentation for \texttt{TaoCreate()}.
 
 \item Run a simple example with \texttt{minsurf1}. You first need
-to make the program using 
+to make the program using
 
 \quad \texttt{ make BOPT=O\_c++ minsurf1}
 
@@ -60,11 +59,11 @@ and then execute the program with
 
 \qquad \texttt{mpiexec -n 1 minsurf1 -tao\_monitor}
 
-What is the funtion value at the final iterate? 
-How many iterates were used to reach the solution? 
+What is the funtion value at the final iterate?
+How many iterates were used to reach the solution?
 Use the runtime option \texttt{-tao\_view}
 to determine the solver.
-\item 
+\item
 Run \texttt{minsurf1} again but using other solvers.
 You can change the solver by modifying the arguments of \texttt{TaoCreate()}
 or by using the runtime option \texttt{-tao\_method}.
@@ -72,14 +71,14 @@ What is the function value at the final iterate?
 How many iterates were used to reach
 the solution?  What was the final accuracy?
 
-\item 
+\item
 Change the starting vector \texttt{x}.  The routine {\tt
 MSA\_InitialPoint()} calculates a starting point, so after this
 routine, and before the {\tt TaoSetInitialVector()} routine, set the
 vector {\tt x} equal to zero with the PETSc routine {\tt VecSet()}.
 How did the starting point affect the convergence?
 
-\item 
+\item
 Use \texttt{VecView(x,PETSC\_VIEWER\_STDOUT\_WORLD)} to view the solution
 vector.
 
@@ -91,31 +90,31 @@ bounds equal to $1.0$ and the vector of lower bounds to $0.0$.  Use
 {\tt TaoSetVariablesBounds()} to set the bounds on the problem.  Be
 sure to destroy these vectors after you are finished using them.
 
-\item Solve the bound constrained problem using 
+\item Solve the bound constrained problem using
 \texttt{tao\_blmvm} and \texttt{tao\_tron}.
-Did these bounds affect the solution? 
+Did these bounds affect the solution?
 
 \item Run the problem {\tt minsurf2.c} on two processors and view the
 output.
 
 
-%  \item Write a program that finds the minimum of the function 
-%  \[ 
+%  \item Write a program that finds the minimum of the function
+%  \[
 %   f(x,y)=(1.5-x(1-y))^2+(2.25-x(1-y^2))^2+(2.625-x(1-y^3))^2.
 %  \]
 %  Can you find the global solution at $(3,0.5)$?
 
 \item Write a program that finds the minimum of the function
 \[
- f(x,y,z) =  x^2 - x y  + 0.75 y^2 + 0.5 z^2 + 4 x - 4 y - 2 z 
+ f(x,y,z) =  x^2 - x y  + 0.75 y^2 + 0.5 z^2 + 4 x - 4 y - 2 z
 \]
 Where is the minimum?  Answer: $(-1, 2, 2)$
 
 Now minimize the same function subject to the constraint that
-$x \geq 0$.  
+$x \geq 0$.
 Where is the minimum? Answer: $(0, 8/3, 2)$.
 
 
 \end{enumerate}
 
-\end{document}  
+\end{document}

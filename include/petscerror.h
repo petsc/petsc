@@ -650,7 +650,7 @@ M*/
   Level: beginner
 
    Notes:
-    We highly recommend using valgrind https://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind or for NVIDIA CUDA systems
+    We highly recommend using Valgrind https://petsc.org/release/faq/#valgrind or for NVIDIA CUDA systems
     https://docs.nvidia.com/cuda/cuda-memcheck/index.html for finding memory problems. The ``CHKMEMQ`` macro is useful on systems that
     do not have valgrind, but is not as good as valgrind or cuda-memcheck.
 

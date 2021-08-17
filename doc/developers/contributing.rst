@@ -43,7 +43,7 @@ Obtaining the development version of PETSc
   > cd petsc
 
 PETSc can now be configured in the usual way, specified on the
-`Installation page <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__
+`Installation page <https://petsc.org/release/install/>`__
 
 To update your copy of PETSc
 

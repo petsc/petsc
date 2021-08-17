@@ -558,15 +558,17 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[
 
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;
-    else if (pos == ismax) max_no = 0;
+    else if (pos >= ismax) max_no = 0;
     else                   max_no = ismax-pos;
 
     ierr = MatCreateSubMatrices_MPIBAIJ_local(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
-    if (!max_no && scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
-      smat = (Mat_SubSppt*)(*submat)[pos]->data;
-      smat->nstages = nstages;
-    }
-    pos += max_no;
+    if (!max_no) {
+      if (scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
+        smat = (Mat_SubSppt*)(*submat)[pos]->data;
+        smat->nstages = nstages;
+      }
+      pos++; /* advance to next dummy matrix if any */
+    } else pos += max_no;
   }
 
   if (scall == MAT_INITIAL_MATRIX && ismax) {
