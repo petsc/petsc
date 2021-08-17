@@ -15,6 +15,7 @@ import datetime
 sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
+import add_version_header
 import genteamtable
 import build_classic_docs
 import make_links_relative
@@ -159,6 +160,14 @@ def builder_init_handler(app):
     _build_classic_docs(app)
 
 
+def _add_version_header(app, exception):
+    if exception is None and app.builder.name.endswith('html'):
+        print("============================================")
+        print("    Adding version to classic man pages, from conf.py")
+        print("============================================")
+        add_version_header.add_version_header(os.path.join(app.outdir, "docs", "manualpages"), release)
+
+
 def _copy_classic_docs(app, exception):
     if exception is None and app.builder.name.endswith('html'):
         print("============================================")
@@ -178,6 +187,7 @@ def _fix_links(app, exception):
 def build_finished_handler(app, exception):
     _fix_links(app, exception)
     _copy_classic_docs(app, exception)
+    _add_version_header(app, exception)
 
 
 def setup(app):
