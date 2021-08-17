@@ -132,20 +132,21 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
+static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
 {
   PetscViewerFormat  format;
   const PetscScalar *constants;
-  PetscInt           numConstants, f;
+  PetscInt           Nf, numConstants, f;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Discrete System with %d fields\n", prob->Nf);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Discrete System with %d fields\n", Nf);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "  cell total dim %D total comp %D\n", prob->totDim, prob->totComp);CHKERRQ(ierr);
-  if (prob->isHybrid) {ierr = PetscViewerASCIIPrintf(viewer, "  hybrid cell\n");CHKERRQ(ierr);}
-  for (f = 0; f < prob->Nf; ++f) {
+  ierr = PetscViewerASCIIPrintf(viewer, "  cell total dim %D total comp %D\n", ds->totDim, ds->totComp);CHKERRQ(ierr);
+  if (ds->isCohesive) {ierr = PetscViewerASCIIPrintf(viewer, "  cohesive cell\n");CHKERRQ(ierr);}
+  for (f = 0; f < Nf; ++f) {
     DSBoundary      b;
     PetscObject     obj;
     PetscClassId    id;
@@ -153,7 +154,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
     const char     *name;
     PetscInt        Nc, Nq, Nqc;
 
-    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(ds, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     ierr = PetscObjectGetName(obj, &name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Field %s", name ? name : "<unknown>");CHKERRQ(ierr);
@@ -167,16 +168,16 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       ierr = PetscFVGetQuadrature((PetscFV) obj, &q);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, " FVM");CHKERRQ(ierr);
     }
-    else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+    else SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
     if (Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, " %D components", Nc);CHKERRQ(ierr);}
     else        {ierr = PetscViewerASCIIPrintf(viewer, " %D component ", Nc);CHKERRQ(ierr);}
-    if (prob->implicit[f]) {ierr = PetscViewerASCIIPrintf(viewer, " (implicit)");CHKERRQ(ierr);}
-    else                   {ierr = PetscViewerASCIIPrintf(viewer, " (explicit)");CHKERRQ(ierr);}
+    if (ds->implicit[f]) {ierr = PetscViewerASCIIPrintf(viewer, " (implicit)");CHKERRQ(ierr);}
+    else                 {ierr = PetscViewerASCIIPrintf(viewer, " (explicit)");CHKERRQ(ierr);}
     if (q) {
       ierr = PetscQuadratureGetData(q, NULL, &Nqc, &Nq, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, " (Nq %D Nqc %D)", Nq, Nqc);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, " %D-jet", prob->jetDegree[f]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, " %D-jet", ds->jetDegree[f]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -184,7 +185,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
     else if (id == PETSCFV_CLASSID) {ierr = PetscFVView((PetscFV) obj, viewer);CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
 
-    for (b = prob->boundary; b; b = b->next) {
+    for (b = ds->boundary; b; b = b->next) {
       char     *name;
       PetscInt  c, i;
 
@@ -227,14 +228,14 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
-  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(ds, &numConstants, &constants);CHKERRQ(ierr);
   if (numConstants) {
     ierr = PetscViewerASCIIPrintf(viewer, "%D constants\n", numConstants);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (f = 0; f < numConstants; ++f) {ierr = PetscViewerASCIIPrintf(viewer, "%g\n", (double) PetscRealPart(constants[f]));CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscWeakFormView(prob->wf, viewer);CHKERRQ(ierr);
+  ierr = PetscWeakFormView(ds->wf, viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -439,11 +440,11 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     NcMax          = PetscMax(NcMax, Nc);
     prob->totDim  += Nb;
     prob->totComp += Nc;
-    /* There are two faces for all fields but the cohesive field on a hybrid cell */
-    if (prob->isHybrid && (f < Nf-1)) prob->totDim += Nb;
+    /* There are two faces for all fields on a cohesive cell, except for cohesive fields */
+    if (prob->isCohesive && !prob->cohesive[f]) prob->totDim += Nb;
   }
   /* Allocate works space */
-  NsMax = 2; /* Even non-hybrid discretizations can be used in a hybrid integration, so we need this extra workspace */
+  NsMax = 2; /* A non-cohesive discretizations can be used on a cohesive cell, so we need this extra workspace for all DS */
   ierr = PetscMalloc3(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed + (hasH ? NsMax*prob->totComp*dimEmbed*dimEmbed : 0),&prob->u_x);CHKERRQ(ierr);
   ierr = PetscMalloc5(dimEmbed,&prob->x,NbMax*NcMax,&prob->basisReal,NbMax*NcMax*dimEmbed,&prob->basisDerReal,NbMax*NcMax,&prob->testReal,NbMax*NcMax*dimEmbed,&prob->testDerReal);CHKERRQ(ierr);
   ierr = PetscMalloc6(NsMax*NqMax*NcMax,&prob->f0,NsMax*NqMax*NcMax*dimEmbed,&prob->f1,
@@ -473,6 +474,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscObject      *tmpd;
   PetscBool        *tmpi;
   PetscInt         *tmpk;
+  PetscBool        *tmpc;
   PetscPointFunc   *tmpup;
   PetscSimplePointFunc *tmpexactSol,  *tmpexactSol_t;
   void                **tmpexactCtx, **tmpexactCtx_t;
@@ -484,14 +486,15 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   if (Nf >= NfNew) PetscFunctionReturn(0);
   prob->setup = PETSC_FALSE;
   ierr = PetscDSDestroyStructs_Static(prob);CHKERRQ(ierr);
-  ierr = PetscMalloc3(NfNew, &tmpd, NfNew, &tmpi, NfNew, &tmpk);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpi[f] = prob->implicit[f]; tmpk[f] = prob->jetDegree[f];}
-  for (f = Nf; f < NfNew; ++f) {tmpd[f] = NULL; tmpi[f] = PETSC_TRUE; tmpk[f] = 1;}
-  ierr = PetscFree3(prob->disc, prob->implicit, prob->jetDegree);CHKERRQ(ierr);
+  ierr = PetscMalloc4(NfNew, &tmpd, NfNew, &tmpi, NfNew, &tmpc, NfNew, &tmpk);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpi[f] = prob->implicit[f]; tmpc[f] = prob->cohesive[f]; tmpk[f] = prob->jetDegree[f];}
+  for (f = Nf; f < NfNew; ++f) {tmpd[f] = NULL; tmpi[f] = PETSC_TRUE, tmpc[f] = PETSC_FALSE; tmpk[f] = 1;}
+  ierr = PetscFree4(prob->disc, prob->implicit, prob->cohesive, prob->jetDegree);CHKERRQ(ierr);
   ierr = PetscWeakFormSetNumFields(prob->wf, NfNew);CHKERRQ(ierr);
   prob->Nf        = NfNew;
   prob->disc      = tmpd;
   prob->implicit  = tmpi;
+  prob->cohesive  = tmpc;
   prob->jetDegree = tmpk;
   ierr = PetscCalloc2(NfNew, &tmpup, NfNew, &tmpctx);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpup[f] = prob->update[f];
@@ -552,7 +555,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   for (f = 0; f < (*ds)->Nf; ++f) {
     ierr = PetscObjectDereference((*ds)->disc[f]);CHKERRQ(ierr);
   }
-  ierr = PetscFree3((*ds)->disc, (*ds)->implicit, (*ds)->jetDegree);CHKERRQ(ierr);
+  ierr = PetscFree4((*ds)->disc, (*ds)->implicit, (*ds)->cohesive, (*ds)->jetDegree);CHKERRQ(ierr);
   ierr = PetscWeakFormDestroy(&(*ds)->wf);CHKERRQ(ierr);
   ierr = PetscFree2((*ds)->update,(*ds)->ctx);CHKERRQ(ierr);
   ierr = PetscFree4((*ds)->exactSol,(*ds)->exactCtx,(*ds)->exactSol_t,(*ds)->exactCtx_t);CHKERRQ(ierr);
@@ -712,47 +715,106 @@ PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
 }
 
 /*@
-  PetscDSGetHybrid - Returns the flag for a hybrid (cohesive) cell
+  PetscDSIsCohesive - Returns the flag indicating that this DS is for a cohesive cell
 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. ds - The PetscDS object
 
   Output Parameter:
-. isHybrid - The flag
+. isCohesive - The flag
 
   Level: developer
 
-.seealso: PetscDSSetHybrid(), PetscDSCreate()
+.seealso: PetscDSGetNumCohesive(), PetscDSGetCohesive(), PetscDSSetCohesive(), PetscDSCreate()
 @*/
-PetscErrorCode PetscDSGetHybrid(PetscDS prob, PetscBool *isHybrid)
+PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(isHybrid, 2);
-  *isHybrid = prob->isHybrid;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(isCohesive, 2);
+  *isCohesive = ds->isCohesive;
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscDSSetHybrid - Set the flag for a hybrid (cohesive) cell
+  PetscDSGetNumCohesive - Returns the numer of cohesive fields, meaning those defined on the interior of a cohesive cell
+
+  Not collective
+
+  Input Parameter:
+. ds - The PetscDS object
+
+  Output Parameter:
+. numCohesive - The number of cohesive fields
+
+  Level: developer
+
+.seealso: PetscDSSetCohesive(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive)
+{
+  PetscInt f;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(numCohesive, 2);
+  *numCohesive = 0;
+  for (f = 0;  f < ds->Nf; ++f) *numCohesive += ds->cohesive[f] ? 1 : 0;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSGetCohesive - Returns the flag indicating that a field is cohesive, meaning it is defined on the interior of a cohesive cell
+
+  Not collective
+
+  Input Parameter:
++ ds - The PetscDS object
+- f  - The field index
+
+  Output Parameter:
+. isCohesive - The flag
+
+  Level: developer
+
+.seealso: PetscDSSetCohesive(), PetscDSIsCohesive(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(isCohesive, 3);
+  if ((f < 0) || (f >= ds->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  *isCohesive = ds->cohesive[f];
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSSetCohesive - Set the flag indicating that a field is cohesive, meaning it is defined on the interior of a cohesive cell
 
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
-- isHybrid - The flag
++ ds - The PetscDS object
+. f  - The field index
+- isCohesive - The flag for a cohesive field
 
   Level: developer
 
-.seealso: PetscDSGetHybrid(), PetscDSCreate()
+.seealso: PetscDSGetCohesive(), PetscDSIsCohesive(), PetscDSCreate()
 @*/
-PetscErrorCode PetscDSSetHybrid(PetscDS prob, PetscBool isHybrid)
+PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive)
 {
+  PetscInt i;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  prob->isHybrid = isHybrid;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= ds->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  ds->cohesive[f] = isCohesive;
+  ds->isCohesive = PETSC_FALSE;
+  for (i = 0; i < ds->Nf; ++i) ds->isCohesive = ds->isCohesive || ds->cohesive[f] ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2882,6 +2944,42 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
   for (g = 0; g < f; ++g) {
     ierr = PetscDSGetFieldSize(prob, g, &size);CHKERRQ(ierr);
     *off += size;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSGetFieldOffsetCohesive - Returns the offset of the given field in the full space basis on a cohesive cell
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. off - The offset
+
+  Level: beginner
+
+.seealso: PetscDSGetFieldSize(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *off)
+{
+  PetscInt       size, g;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(off, 3);
+  if ((f < 0) || (f >= ds->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  *off = 0;
+  for (g = 0; g < f; ++g) {
+    PetscBool cohesive;
+
+    ierr = PetscDSGetCohesive(ds, g, &cohesive);CHKERRQ(ierr);
+    ierr = PetscDSGetFieldSize(ds, g, &size);CHKERRQ(ierr);
+    *off += cohesive ? size : size*2;
   }
   PetscFunctionReturn(0);
 }
