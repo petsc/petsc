@@ -8,7 +8,7 @@ static PetscErrorCode MatMult_S(Mat S,Vec x,Vec y)
   Mat            A;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(S,(void**)&A);CHKERRQ(ierr);
+  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -21,7 +21,7 @@ static PetscErrorCode MatMultTranspose_S(Mat S,Vec x,Vec y)
   Mat            A;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(S,(void**)&A);CHKERRQ(ierr);
+  ierr = MatShellGetContext(S,&A);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
 
   /* alternate transgen true and false to test code logic */
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   ierr = MatProductSymbolic(C);CHKERRQ(ierr);
   ierr = MatProductNumeric(C);CHKERRQ(ierr);
   ierr = MatMatMultEqual(S,B,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatMatMult\n"); }
+  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatMatMult\n");CHKERRQ(ierr); }
 
   /* test MatTransposeMatMult */
   ierr = MatProductCreateWithMat(S,B,NULL,C);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ int main(int argc,char **argv)
   ierr = MatProductSymbolic(C);CHKERRQ(ierr);
   ierr = MatProductNumeric(C);CHKERRQ(ierr);
   ierr = MatTransposeMatMultEqual(S,B,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatTransposeMatMult\n"); }
+  if (!flg) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error MatTransposeMatMult\n");CHKERRQ(ierr); }
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);

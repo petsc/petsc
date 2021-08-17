@@ -220,6 +220,19 @@
                  (x, y, z) = (0.000000, 0.025400, 0.000000) 
               NODE ID: 1 
                  (x, y, z) = (0.000000, 0.000000, 0.025400) 
+DM Object: CAD Surface (sur_) 1 MPI processes
+  type: plex
+CAD Surface in 2 dimensions:
+  0-cells: 18
+  1-cells: 48
+  2-cells: 32
+Labels:
+  celltype: 3 strata with value/size (0 (18), 3 (32), 1 (48))
+  depth: 3 strata with value/size (0 (18), 1 (48), 2 (32))
+  EGADS Body ID: 1 strata with value/size (0 (98))
+  EGADS Face ID: 8 strata with value/size (1 (19), 2 (19), 3 (19), 4 (19), 5 (19), 6 (19), 7 (19), 8 (19))
+  EGADS Edge ID: 12 strata with value/size (2 (5), 3 (5), 4 (5), 6 (5), 7 (5), 9 (5), 10 (5), 11 (5), 13 (5), 14 (5), 16 (5), 18 (5))
+  EGADS Vertex ID: 0 strata with value/size ()
 Label 'EGADS Body ID':
 [0]: 0 (0)
 [0]: 1 (0)
@@ -533,15 +546,5 @@ Label 'EGADS Edge ID':
 [0]: 49 (18)
 [0]: 90 (18)
 [0]: 92 (18)
-DM Object: DM__0 1 MPI processes
-  type: plex
-DM__0 in 2 dimensions:
-  0-cells: 66
-  1-cells: 192
-  2-cells: 128
-Labels:
-  celltype: 3 strata with value/size (1 (192), 3 (128), 0 (66))
-  depth: 3 strata with value/size (0 (66), 1 (192), 2 (128))
-  EGADS Body ID: 1 strata with value/size (0 (386))
-  EGADS Face ID: 8 strata with value/size (1 (61), 2 (61), 3 (61), 4 (61), 5 (61), 6 (61), 7 (61), 8 (61))
-  EGADS Edge ID: 12 strata with value/size (2 (9), 3 (9), 4 (9), 6 (9), 7 (9), 9 (9), 10 (9), 11 (9), 13 (9), 14 (9), 16 (9), 18 (9))
+DM CAD Surface: Surface Area = 6.969261e-01 Volume = 6.721143e-03
+DM CAD Mesh: Surface Area = 7.701278e-03 Volume = 6.224181e-05

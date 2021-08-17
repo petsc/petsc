@@ -318,7 +318,7 @@ def check_cray_modules():
    print('*       module load intel ; module load PrgEnv-intel')
    print('*   or  module load PrgEnv-cray')
    print('*   or  module load PrgEnv-gnu')
-   print('* See https://www.mcs.anl.gov/petsc/documentation/installation.html#doemachines')
+   print('* See https://petsc.org/release/install/install/#installing-on-large-scale-doe-systems')
    print('************************************************************************')
    sys.exit(4)
 
@@ -379,7 +379,7 @@ def petsc_configure(configure_options):
     petscdir = os.environ['PETSC_DIR']
     if petscdir.find(' ') > -1:
       raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
-    if not os.path.abspath(petscdir) == petscdir:
+    if not os.path.isabs(petscdir):
       raise RuntimeError('PETSC_DIR ("'+petscdir+'") is set as a relative path. It must be set as an absolute path.')
 
     try:
@@ -560,4 +560,3 @@ def petsc_configure(configure_options):
 
 if __name__ == '__main__':
   petsc_configure([])
-

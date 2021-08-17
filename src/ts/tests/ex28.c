@@ -75,7 +75,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
   ierr = PetscRandomSetInterval(rnd, -1.0, 1.0);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
-  ierr = DMGetApplicationContext(sw, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(sw, &user);CHKERRQ(ierr);
   Np   = user->particlesPerCell;
   ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
   ierr = DMSwarmGetCellDM(sw, &dm);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(u, &n);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dmSw, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dmSw, &user);CHKERRQ(ierr);
   Np   = user->particlesPerCell;
   ierr = DMSwarmGetCellDM(dmSw, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -479,7 +479,7 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &user);CHKERRQ(ierr);
   ierr = SetInitialCoordinates(dm);CHKERRQ(ierr);
   ierr = SetInitialConditions(dm, u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -538,19 +538,19 @@ int main(int argc,char **argv)
   ierr = TSComputeInitialCondition(ts, u);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   if (user.monitorhg) {
-    ierr = PetscDrawSave(user.draw);
+    ierr = PetscDrawSave(user.draw);CHKERRQ(ierr);
     ierr = PetscDrawHGDestroy(&user.drawhg);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&user.draw);
+    ierr = PetscDrawDestroy(&user.draw);CHKERRQ(ierr);
   }
   if (user.monitorsp) {
-    ierr = PetscDrawSave(user.draw);
+    ierr = PetscDrawSave(user.draw);CHKERRQ(ierr);
     ierr = PetscDrawSPDestroy(&user.drawsp);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&user.draw);
+    ierr = PetscDrawDestroy(&user.draw);CHKERRQ(ierr);
   }
   if (user.monitorks) {
-    ierr = PetscDrawSave(user.draw);
+    ierr = PetscDrawSave(user.draw);CHKERRQ(ierr);
     ierr = PetscDrawSPDestroy(&user.drawks);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&user.draw);
+    ierr = PetscDrawDestroy(&user.draw);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);

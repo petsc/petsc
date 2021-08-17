@@ -50,9 +50,9 @@ typedef struct {
 
 extern PetscErrorCode FormBoundaryConditions(SNES,AppCtx**);
 extern PetscErrorCode DestroyBoundaryConditions(AppCtx**);
-extern PetscErrorCode ComputeInitialGuess(SNES, Vec,void*);
-extern PetscErrorCode FormGradient(SNES, Vec, Vec, void*);
-extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void*);
+extern PetscErrorCode ComputeInitialGuess(SNES,Vec,void*);
+extern PetscErrorCode FormGradient(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormBounds(SNES,Vec,Vec);
 
 int main(int argc, char **argv)
@@ -160,7 +160,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 
   PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
+  ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx   = 1.0/(mx+1);hy=1.0/(my+1); hydhx=hy/hx; hxdhy=hx/hy;
 
@@ -289,7 +289,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 
   PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
+  ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx   = 1.0/(mx+1); hy=1.0/(my+1); hydhx=hy/hx; hxdhy=hx/hy;
 
@@ -563,7 +563,7 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
 
   PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
+  ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);

@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(input,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(input);CHKERRQ(ierr);
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
-  ierr = VecDuplicate(input,&output);
+  ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
 /*  ierr = VecGetSize(input,&vsize);CHKERRQ(ierr); */
 /*  printf("Size of the input Vector is %d\n",vsize); */
 

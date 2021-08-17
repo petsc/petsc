@@ -172,7 +172,7 @@ static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType
 
   PetscFunctionBegin;
   ierr = DMFieldGetNumComponents(field, &Nc);CHKERRQ(ierr);
-  ierr = DMFieldShellGetContext(field, (void *) &ctxVec);CHKERRQ(ierr);
+  ierr = DMFieldShellGetContext(field, &ctxVec);CHKERRQ(ierr);
   ierr = VecGetBlockSize(points, &dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(points, &n);CHKERRQ(ierr);
   n /= Nc;
@@ -218,7 +218,7 @@ static PetscErrorCode TestShellDestroy(DMField field)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMFieldShellGetContext(field, (void *) &ctxVec);CHKERRQ(ierr);
+  ierr = DMFieldShellGetContext(field, &ctxVec);CHKERRQ(ierr);
   ierr = VecDestroy(&ctxVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

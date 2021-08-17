@@ -40,7 +40,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = VecView(u,viewer);
+  ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
@@ -49,7 +49,7 @@ int main(int argc,char **args)
 
   /* Create vectors that are compatible with parallel layout of A - must call MatCreateVecs()! */
   ierr = MatCreateVecsFFTW(A,&u,&u_,&H);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&slice_rid);
+  ierr = VecDuplicate(u,&slice_rid);CHKERRQ(ierr);
 
   /* Load refractive index from file */
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"ex50tmp.h5",FILE_MODE_READ,&viewer);CHKERRQ(ierr);

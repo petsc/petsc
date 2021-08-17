@@ -55,7 +55,7 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   ksp->rnorm = 0;
   ierr = MatMult(A,x,r);CHKERRQ(ierr);
   ierr = VecAYPX(r,-1,b);CHKERRQ(ierr);         /* r_0 = b - A * x_0  */
-  ierr = MatMultTranspose(A,r,p);CHKERRQ(ierr); /* p_0 = A^T * r_0    */
+  ierr = KSP_MatMultHermitianTranspose(ksp,A,r,p);CHKERRQ(ierr); /* p_0 = A^T * r_0    */
   ierr = VecCopy(p,ss);CHKERRQ(ierr);           /* s_0 = p_0          */
   ierr = VecNorm(ss,NORM_2,&gamma);CHKERRQ(ierr);
   KSPCheckNorm(ksp,gamma);
@@ -72,7 +72,7 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
     alpha = gamma / alpha;                         /* alpha = gamma / alpha   */
     ierr = VecAXPY(x,alpha,p);CHKERRQ(ierr);       /* x += alpha * p          */
     ierr = VecAXPY(r,-alpha,q);CHKERRQ(ierr);      /* r -= alpha * q          */
-    ierr = MatMultTranspose(A,r,ss);CHKERRQ(ierr); /* ss = A^T * r            */
+    ierr = KSP_MatMultHermitianTranspose(ksp,A,r,ss);CHKERRQ(ierr); /* ss = A^T * r            */
     oldgamma = gamma;                              /* oldgamma = gamma        */
     ierr = VecNorm(ss,NORM_2,&gamma);CHKERRQ(ierr);
     KSPCheckNorm(ksp,gamma);
@@ -138,9 +138,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"This is not supported for complex numbers");
-#else
   PetscFunctionReturn(0);
-#endif
 }

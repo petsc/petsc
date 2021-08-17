@@ -20,7 +20,7 @@ static PetscErrorCode MatMult_ADA(Mat mat,Vec a,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatMult(ctx->A,a,ctx->W);CHKERRQ(ierr);
   if (ctx->D1) {
     ierr = VecPointwiseMult(ctx->W,ctx->D1,ctx->W);CHKERRQ(ierr);
@@ -50,7 +50,7 @@ static PetscErrorCode MatDiagonalSet_ADA(Mat M,Vec D, InsertMode mode)
 
   PetscFunctionBegin;
   if (mode == INSERT_VALUES) SETERRQ(PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"Cannot insert diagonal entries of this matrix type, can only add");
-  ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(M,&ctx);CHKERRQ(ierr);
   if (!ctx->D2) {
     ierr = VecDuplicate(D,&ctx->D2);CHKERRQ(ierr);
     ierr = VecSet(ctx->D2, zero);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ static PetscErrorCode MatDestroy_ADA(Mat mat)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->W);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->W2);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->ADADiag);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ static PetscErrorCode MatShift_ADA(Mat Y, PetscReal a)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(Y,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(Y,&ctx);CHKERRQ(ierr);
   ierr = VecShift(ctx->D2,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -101,7 +101,7 @@ static PetscErrorCode MatDuplicate_ADA(Mat mat,MatDuplicateOption op,Mat *M)
   Vec               D1b=NULL,D2b;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatDuplicate(ctx->A,op,&A2);CHKERRQ(ierr);
   if (ctx->D1) {
     ierr = VecDuplicate(ctx->D1,&D1b);CHKERRQ(ierr);
@@ -124,8 +124,8 @@ static PetscErrorCode MatEqual_ADA(Mat A,Mat B,PetscBool *flg)
   TaoMatADACtx   ctx1,ctx2;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,(void **)&ctx1);CHKERRQ(ierr);
-  ierr = MatShellGetContext(B,(void **)&ctx2);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A,&ctx1);CHKERRQ(ierr);
+  ierr = MatShellGetContext(B,&ctx2);CHKERRQ(ierr);
   ierr = VecEqual(ctx1->D2,ctx2->D2,flg);CHKERRQ(ierr);
   if (*flg==PETSC_TRUE) {
     ierr = VecEqual(ctx1->D1,ctx2->D1,flg);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ static PetscErrorCode MatScale_ADA(Mat mat, PetscReal a)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = VecScale(ctx->D1,a);CHKERRQ(ierr);
   if (ctx->D2) {
     ierr = VecScale(ctx->D2,a);CHKERRQ(ierr);
@@ -156,7 +156,7 @@ static PetscErrorCode MatTranspose_ADA(Mat mat,MatReuse reuse,Mat *B)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(mat,MAT_COPY_VALUES,B);CHKERRQ(ierr);
   } else if (reuse == MAT_REUSE_MATRIX) {
@@ -173,7 +173,7 @@ static PetscErrorCode MatADAComputeDiagonal(Mat mat)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat, &low, &high);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 
@@ -203,7 +203,7 @@ static PetscErrorCode MatGetDiagonal_ADA(Mat mat,Vec v)
   TaoMatADACtx    ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MatADAComputeDiagonal(mat);CHKERRQ(ierr);
   ierr = VecCopy(ctx->ADADiag,v);CHKERRQ(ierr);
   if (ctx->D2) {
@@ -225,7 +225,7 @@ static PetscErrorCode MatCreateSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse 
   PetscFunctionBegin;
   ierr = ISEqual(isrow,iscol,&isequal);CHKERRQ(ierr);
   if (!isequal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for identical column and row indices");
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),high-low,low,1,&ISrow);CHKERRQ(ierr);
@@ -251,7 +251,7 @@ static PetscErrorCode MatCreateSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse 
   }
 
   ierr = MatCreateADA(Atemp,D1,D2,newmat);CHKERRQ(ierr);
-  ierr = MatShellGetContext(*newmat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(*newmat,&ctx);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject)Atemp);CHKERRQ(ierr);
   if (ctx->D1) {
     ierr = PetscObjectDereference((PetscObject)D1);CHKERRQ(ierr);
@@ -303,7 +303,7 @@ PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRMPI(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
   TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
   if (type == NORM_FROBENIUS) {
     *norm = 1.0;
   } else if (type == NORM_1 || type == NORM_INFINITY) {

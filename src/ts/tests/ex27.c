@@ -80,7 +80,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject) sw), &rndv);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rndv, -1., 1.);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rndv);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(sw, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(sw, &user);CHKERRQ(ierr);
   Np   = user->N;
   ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
   ierr = DMSwarmGetCellDM(sw, &dm);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
       for (d = 0; d < dim; ++d) {
         PetscReal v_val;
 
-        ierr = PetscRandomGetValueReal(rndv, &v_val);
+        ierr = PetscRandomGetValueReal(rndv, &v_val);CHKERRQ(ierr);
         velocity[p*dim+d] = v_val;
       }
     }
@@ -147,7 +147,7 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(u, &n);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dmSw, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dmSw, &user);CHKERRQ(ierr);
   Np   = user->N;
   ierr = DMSwarmGetCellDM(dmSw, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -350,12 +350,12 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
   PetscFunctionBeginUser;
   ierr = VecZeroEntries(R);CHKERRQ(ierr);
   ierr = TSGetDM(ts, &sw);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = DMGetDimension(sw, &dim);
+  ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
   ierr = TSGetSolution(ts, &sol);CHKERRQ(ierr);
-  ierr = VecGetArray(sol, &velocity);
-  ierr = VecGetArray(R, &r);
-  ierr = VecGetArrayRead(U, &u);
+  ierr = VecGetArray(sol, &velocity);CHKERRQ(ierr);
+  ierr = VecGetArray(R, &r);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
   Np  /= dim;
   if (dbg) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Part  ppr     x        y\n");CHKERRQ(ierr);}
   for (p = 0; p < Np; ++p) {
@@ -403,7 +403,7 @@ static PetscErrorCode UpdateSwarm(TS ts)
   ierr = DMSwarmGetField(sw, "velocity", NULL, NULL, (void **) &velocity);CHKERRQ(ierr);
   ierr = TSGetSolution(ts, &sol);CHKERRQ(ierr);
   ierr = VecGetArrayRead(sol, &u);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(sol, &n);
+  ierr = VecGetLocalSize(sol, &n);CHKERRQ(ierr);
   for (idx = 0; idx < n; ++idx) velocity[idx] = u[idx];
   ierr = VecRestoreArrayRead(sol, &u);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **) &velocity);CHKERRQ(ierr);
@@ -418,7 +418,7 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &user);CHKERRQ(ierr);
   ierr = SetInitialCoordinates(dm);CHKERRQ(ierr);
   ierr = SetInitialConditions(dm, u);CHKERRQ(ierr);
   PetscFunctionReturn(0);

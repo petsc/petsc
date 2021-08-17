@@ -138,7 +138,7 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
     if (!compatible) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method");
   }
   if (!compatible) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method");
-  ierr = PetscObjectReference((PetscObject)subsolver);
+  ierr = PetscObjectReference((PetscObject)subsolver);CHKERRQ(ierr);
   ierr = TaoDestroy(&auglag->subsolver);CHKERRQ(ierr);
   auglag->subsolver = subsolver;
   if (tao->setupcalled) {
@@ -236,20 +236,20 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
   if (Y == auglag->Y) PetscFunctionReturn(0);
   /* make sure vector type is same as equality and inequality constraints */
   if (tao->eq_constrained) {
-    ierr = VecGetType(tao->constraints_equality, &Ytype);
+    ierr = VecGetType(tao->constraints_equality, &Ytype);CHKERRQ(ierr);
   } else {
-    ierr = VecGetType(tao->constraints_inequality, &Ytype);
+    ierr = VecGetType(tao->constraints_inequality, &Ytype);CHKERRQ(ierr);
   }
-  ierr = PetscObjectTypeCompare((PetscObject)Y, Ytype, &same);
+  ierr = PetscObjectTypeCompare((PetscObject)Y, Ytype, &same);CHKERRQ(ierr);
   if (!same) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector for multipliers is not the same type as constraint vectors");
   /* make sure global size matches sum of equality and inequality */
   if (tao->eq_constrained) {
-    ierr = VecGetSize(tao->constraints_equality, &Neq);
+    ierr = VecGetSize(tao->constraints_equality, &Neq);CHKERRQ(ierr);
   } else {
     Neq = 0;
   }
   if (tao->ineq_constrained) {
-    ierr = VecGetSize(tao->constraints_inequality, &Nineq);
+    ierr = VecGetSize(tao->constraints_inequality, &Nineq);CHKERRQ(ierr);
   } else {
     Nineq = 0;
   }

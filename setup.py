@@ -299,7 +299,7 @@ setup(name='petsc',
       platforms=['POSIX'],
       license='BSD',
 
-      url='https://www.mcs.anl.gov/petsc/',
+      url='https://petsc.org/',
       download_url=tarball(),
 
       author='PETSc Team',

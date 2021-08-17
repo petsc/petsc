@@ -156,7 +156,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   close(fd_pipe[0]);
   close(fd_pipe[1]);
   if (chaco->verbose) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),mesg_log);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),mesg_log);CHKERRQ(ierr);
   }
   ierr = PetscFree(mesg_log);CHKERRQ(ierr);
 #endif

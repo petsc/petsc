@@ -57,12 +57,12 @@ int main(int argc,char **argv)
   ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
 
   /* Write the Vec without one extra dimension for BS */
-  ierr = PetscViewerHDF5SetBaseDimension2(viewer, PETSC_FALSE);
+  ierr = PetscViewerHDF5SetBaseDimension2(viewer, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) global, "noBsDim");CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 
   /* Write the Vec with one extra, 1-sized, dimension for BS */
-  ierr = PetscViewerHDF5SetBaseDimension2(viewer, PETSC_TRUE);
+  ierr = PetscViewerHDF5SetBaseDimension2(viewer, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) global, "bsDim");CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 

@@ -584,7 +584,7 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscValidType(x,3);
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,3,y,1);
-  VecCheckSameSize(x,1,y,3);
+  VecCheckSameSize(x,3,y,1);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
@@ -1249,17 +1249,17 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
 
   if ((*X)->ops->concatenate) {
     /* use the dedicated concatenation function if available */
-    ierr = (*(*X)->ops->concatenate)(nx,X,Y,x_is);
+    ierr = (*(*X)->ops->concatenate)(nx,X,Y,x_is);CHKERRQ(ierr);
   } else {
     /* loop over vectors and start creating IS */
     comm = PetscObjectComm((PetscObject)(*X));
     ierr = VecGetType(*X, &vec_type);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nx, &is_tmp);
+    ierr = PetscMalloc1(nx, &is_tmp);CHKERRQ(ierr);
     for (i=0; i<nx; i++) {
       ierr = VecGetSize(X[i], &Xng);CHKERRQ(ierr);
       ierr = VecGetLocalSize(X[i], &Xnl);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(X[i], &Xbegin, NULL);CHKERRQ(ierr);
-      ierr = ISCreateStride(comm, Xnl, shift + Xbegin, 1, &is_tmp[i]);
+      ierr = ISCreateStride(comm, Xnl, shift + Xbegin, 1, &is_tmp[i]);CHKERRQ(ierr);
       shift += Xng;
     }
     /* create the concatenated vector */
@@ -2029,9 +2029,10 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 }
 
 /*@C
-   VecGetArrayAndMemType - Like VecGetArray(), but if this is a GPU vector and it is currently offloaded to GPU,
-   the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
-   vector data. Otherwise, it functions as VecGetArray().
+   VecGetArrayAndMemType - Like VecGetArray(), but if this is a device vector (e.g., VECCUDA) and the device has up-to-date data,
+   the returned pointer will be a device pointer to the device memory that contains this processor's portion of the vector data.
+   Otherwise, when this is a host vector (e.g., VECMPI), or a device vector with the host having newer data than device,
+   it functions as VecGetArray() and returns a host pointer.
 
    Logically Collective on Vec
 

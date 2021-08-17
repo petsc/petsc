@@ -42,7 +42,7 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   PetscFunctionBegin;
   ierr = PetscNew(&user);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","ex35.cxx");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","ex35.cxx");CHKERRQ(ierr);
   {
     user->nvars  = 2;
     user->A      = 1;

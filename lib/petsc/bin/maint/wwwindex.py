@@ -94,7 +94,7 @@ def printindex(outfilename,headfilename,levels,titles,tables):
                   if tables[i].index(filename) % 3 == 2 : fd.write('<TR>\n')
       fd.write('</TABLE>\n')
       # Add HTML tail info here
-      fd.write('<BR><A HREF="../../../documentation/manualpages/index.html">Table of Contents</A>\n')
+      fd.write('<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents</A>\n')
       fd.close()
 
 # This routine takes in as input a dictionary, which contains the
@@ -202,7 +202,7 @@ def modifylevel(filename,secname):
       tmpbuf = re_loc.sub('.cxx.html#',tmpbuf)
 
       re_loc = re.compile('</BODY></HTML>')
-      outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../../../documentation/manualpages/index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
+      outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
 
       re_loc = re.compile(r' (http://[A-Za-z09_\(\)\./]*)[ \n]')
       outbuf = re_loc.sub(' <a href="\\1">\\1 </a> ',outbuf)

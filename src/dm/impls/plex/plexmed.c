@@ -76,8 +76,8 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
     spaceDim = medSpaceDim;
     meshDim  = medMeshDim;
   }
-  ierr = PetscFree(axisname);
-  ierr = PetscFree(unitname);
+  ierr = PetscFree(axisname);CHKERRQ(ierr);
+  ierr = PetscFree(unitname);CHKERRQ(ierr);
   /* Partition mesh coordinates */
   numVertices = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_NODE, MED_NO_GEOTYPE,
                                MED_COORDINATE, MED_NO_CMODE,&coordinatechangement, &geotransformation);
@@ -189,7 +189,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       for (i = 0; i < numFacetsLocal*numFacetCorners; i++) {
         facetList[i] = ((PetscInt) medFacetList[i]) - 1 ; /* Correct entity counting */
       }
-      ierr = PetscFree(medFacetList);
+      ierr = PetscFree(medFacetList);CHKERRQ(ierr);
     }
 
     /* Read facet IDs */
@@ -279,10 +279,10 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
           const PetscInt vertex = facetListRendezvous[f*numFacetCorners+c];
           if (vrange[rank] <= vertex && vertex < vrange[rank+1]) {
             /* Flip facet connectivities and IDs to a vertex-wise layout */
-            ierr = PetscSectionGetOffset(facetSectionVertices, vertex-vrange[rank], &offset);
+            ierr = PetscSectionGetOffset(facetSectionVertices, vertex-vrange[rank], &offset);CHKERRQ(ierr);
             offset += vertexIdx[vertex-vrange[rank]] * numFacetCorners;
             ierr = PetscArraycpy(&(vertexFacets[offset]), &(facetListRendezvous[f*numFacetCorners]), numFacetCorners);CHKERRQ(ierr);
-            ierr = PetscSectionGetOffset(facetSectionIDs, vertex-vrange[rank], &offset);
+            ierr = PetscSectionGetOffset(facetSectionIDs, vertex-vrange[rank], &offset);CHKERRQ(ierr);
             offset += vertexIdx[vertex-vrange[rank]];
             vertexFacetIDs[offset] = facetIDsRendezvous[f];
             vertexIdx[vertex-vrange[rank]]++;
@@ -291,17 +291,17 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       }
       /* Distribute the vertex-wise facet connectivities over the vertexSF */
       ierr = PetscSectionCreate(comm, &facetSectionRemote);CHKERRQ(ierr);
-      ierr = DMPlexDistributeData(*dm, sfVertices, facetSectionVertices, MPIU_INT, vertexFacets, facetSectionRemote, (void**) &facetListRemote);
+      ierr = DMPlexDistributeData(*dm, sfVertices, facetSectionVertices, MPIU_INT, vertexFacets, facetSectionRemote, (void**) &facetListRemote);CHKERRQ(ierr);
       ierr = PetscSectionCreate(comm, &facetSectionIDsRemote);CHKERRQ(ierr);
-      ierr = DMPlexDistributeData(*dm, sfVertices, facetSectionIDs, MPIU_INT, vertexFacetIDs, facetSectionIDsRemote, (void**) &facetIDsRemote);
+      ierr = DMPlexDistributeData(*dm, sfVertices, facetSectionIDs, MPIU_INT, vertexFacetIDs, facetSectionIDsRemote, (void**) &facetIDsRemote);CHKERRQ(ierr);
       /* Convert facet connectivities to local vertex numbering */
       ierr = PetscSectionGetStorageSize(facetSectionRemote, &sizeVertexFacets);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreateSF(sfVertices, vrange[rank], &ltogVertexNumbering);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApplyBlock(ltogVertexNumbering, IS_GTOLM_MASK, sizeVertexFacets, facetListRemote, NULL, facetListRemote);CHKERRQ(ierr);
       /* Clean up */
-      ierr = PetscFree(vertexFacets);
-      ierr = PetscFree(vertexIdx);
-      ierr = PetscFree(vertexFacetIDs);
+      ierr = PetscFree(vertexFacets);CHKERRQ(ierr);
+      ierr = PetscFree(vertexIdx);CHKERRQ(ierr);
+      ierr = PetscFree(vertexFacetIDs);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&facetSectionVertices);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&facetSectionIDs);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&ltogVertexNumbering);CHKERRQ(ierr);
@@ -314,10 +314,10 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       ierr = DMCreateLabel(*dm, "Face Sets");CHKERRQ(ierr);
       ierr = DMGetLabel(*dm, "Face Sets", &lblFaceSets);CHKERRQ(ierr);
       /* We need to set a new default value here, since -1 is a legitimate facet ID */
-      ierr = DMLabelSetDefaultValue(lblFaceSets, -666666666);
+      ierr = DMLabelSetDefaultValue(lblFaceSets, -666666666);CHKERRQ(ierr);
       for (v = 0; v < numVerticesLocal; v++) {
-        ierr = PetscSectionGetOffset(facetSectionRemote, v, &offset);
-        ierr = PetscSectionGetDof(facetSectionRemote, v, &dof);
+        ierr = PetscSectionGetOffset(facetSectionRemote, v, &offset);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(facetSectionRemote, v, &dof);CHKERRQ(ierr);
         for (f = 0; f < dof; f += numFacetCorners) {
           for (verticesLocal = PETSC_TRUE, c = 0; c < numFacetCorners; ++c) {
             if (facetListRemote[offset+f+c] < 0) {verticesLocal = PETSC_FALSE; break;}

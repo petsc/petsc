@@ -29,7 +29,7 @@ PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y)
   PetscScalar *yy;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A,&ctx);CHKERRQ(ierr);
   /* get raw vector arrays */
   ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);

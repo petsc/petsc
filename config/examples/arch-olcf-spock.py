@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # Needed by MPICH:
     # ld.lld: error: /opt/cray/pe/mpich/8.1.4/gtl/lib/libmpi_gtl_hsa.so: undefined reference to hsa_amd_memory_pool_allocate
     # and many others
-    '--LDFLAGS=-L'+os.environ['ROCM_PATH'],+'lib -lhsa-runtime64',
+    '--LDFLAGS=-L'+os.environ['ROCM_PATH']+'lib -lhsa-runtime64',
     '--PETSC_ARCH=arch-spock-debug',
     '--download-magma=1',
     '--with-64-bit-indices=0',

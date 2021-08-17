@@ -664,8 +664,10 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
     col_starts = A->cmap->range;
   }
   tA = hypre_ParCSRMatrixCreate(comm,A->rmap->N,A->cmap->N,(HYPRE_BigInt*)row_starts,(HYPRE_BigInt*)col_starts,noffd,dnnz,onnz);
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
   hypre_ParCSRMatrixSetRowStartsOwner(tA,0);
   hypre_ParCSRMatrixSetColStartsOwner(tA,0);
+#endif
 
   /* set diagonal part */
   hdiag = hypre_ParCSRMatrixDiag(tA);
@@ -754,18 +756,24 @@ static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA
    for boomerAMGBuildCoarseOperator to work */
 static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMatrix *hA,hypre_ParCSRMatrix *hP, hypre_ParCSRMatrix **hRAP)
 {
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
   HYPRE_Int P_owns_col_starts,R_owns_row_starts;
+#endif
 
   PetscFunctionBegin;
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
   P_owns_col_starts = hypre_ParCSRMatrixOwnsColStarts(hP);
   R_owns_row_starts = hypre_ParCSRMatrixOwnsRowStarts(hR);
+#endif
   PetscStackCallStandard(hypre_BoomerAMGBuildCoarseOperator,(hR,hA,hP,hRAP));
   PetscStackCallStandard(hypre_ParCSRMatrixSetNumNonzeros,(*hRAP));
   /* hypre_BoomerAMGBuildCoarseOperator steals the col_starts from P and the row_starts from R */
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
   hypre_ParCSRMatrixSetRowStartsOwner(*hRAP,0);
   hypre_ParCSRMatrixSetColStartsOwner(*hRAP,0);
   if (P_owns_col_starts) hypre_ParCSRMatrixSetColStartsOwner(hP,1);
   if (R_owns_row_starts) hypre_ParCSRMatrixSetRowStartsOwner(hR,1);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1306,7 +1314,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
         HYPRE_Int hnc = (HYPRE_Int)nzc;
 
         if ((PetscInt)hnc != nzc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hypre overflow! number of columns %D for row %D",nzc,rows[i]);
-        for (j=0;j<nzc;j++) { ierr = PetscHYPREScalarCast(vals[cscr[1][j]],&sscr[j]); }
+        for (j=0;j<nzc;j++) { ierr = PetscHYPREScalarCast(vals[cscr[1][j]],&sscr[j]);CHKERRQ(ierr); }
         PetscStackCallStandard(HYPRE_IJMatrixAddToValues,(hA->ij,1,&hnc,(HYPRE_BigInt*)(rows+i),(HYPRE_BigInt*)cscr[0],sscr));
       }
       vals += nc;
@@ -1321,7 +1329,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
         HYPRE_Int hnc = (HYPRE_Int)nzc;
 
         if ((PetscInt)hnc != nzc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hypre overflow! number of columns %D for row %D",nzc,rows[i]);
-        for (j=0;j<nzc;j++) { ierr = PetscHYPREScalarCast(vals[cscr[1][j]],&sscr[j]); }
+        for (j=0;j<nzc;j++) { ierr = PetscHYPREScalarCast(vals[cscr[1][j]],&sscr[j]);CHKERRQ(ierr); }
         /* nonlocal values */
         if (rows[i] < rst || rows[i] >= ren) { ierr = MatStashValuesRow_Private(&A->stash,rows[i],nzc,cscr[0],(PetscScalar*)sscr,PETSC_FALSE);CHKERRQ(ierr); }
         /* local values */
@@ -1545,6 +1553,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
     if (HYPRE_AssumedPartitionCheck()) {
       ierr = MPI_Comm_rank(comm,&myid);CHKERRMPI(ierr);
     }
+#if defined(hypre_ParCSRMatrixOwnsRowStarts)
     if (!hypre_ParCSRMatrixOwnsColStarts(parcsr)) {
       PetscLayout map;
 
@@ -1559,6 +1568,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
       ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
       hypre_ParCSRMatrixRowStarts(parcsr) = (HYPRE_BigInt*)(map->range + myid);
     }
+#endif
     /* prevent from freeing the pointer */
     if (copymode == PETSC_USE_POINTER) hA->inner_free = PETSC_FALSE;
     *A   = T;
@@ -1955,7 +1965,7 @@ static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
     ierr = MatHYPREGetParCSR_HYPRE(A,&acsr);CHKERRQ(ierr);
     ierr = MatHYPREGetParCSR_HYPRE(B,&bcsr);CHKERRQ(ierr);
     PetscStackCallStandard(hypre_ParCSRMatrixCopy,(acsr,bcsr,1));
-    ierr = MatSetOption(B,MAT_SORTED_FULL,PETSC_TRUE); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
+    ierr = MatSetOption(B,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr); /* "perfect" preallocation, so no need for hypre_AuxParCSRMatrixNeedAux */
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {

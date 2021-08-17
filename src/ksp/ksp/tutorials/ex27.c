@@ -56,7 +56,7 @@ int main(int argc,char **args)
   PetscInt       its,n,m;
   PetscReal      norm;
   PetscBool      nonzero_guess=PETSC_TRUE;
-  PetscBool      solve_normal=PETSC_TRUE;
+  PetscBool      solve_normal=PETSC_FALSE;
   PetscBool      hdf5=PETSC_FALSE;
   PetscBool      test_custom_layout=PETSC_FALSE;
   PetscMPIInt    rank,size;
@@ -129,12 +129,12 @@ int main(int argc,char **args)
   ierr = PetscObjectSetName((PetscObject)A,A_name);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  if (test_custom_layout) {
+  if (test_custom_layout && size > 1) {
     /* Perturb the local sizes and create the matrix anew */
     PetscInt m1,n1;
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     m = rank ? m-1 : m+size-1;
-    n = rank ? n-1 : n+size-1;
+    n = (rank == size-1) ? n+size-1 : n-1;
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)A,A_name);CHKERRQ(ierr);
@@ -142,16 +142,15 @@ int main(int argc,char **args)
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m1,&n1);CHKERRQ(ierr);
-    if (m1 != m || n1 != n) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_SUP,"resulting sizes differ from demanded ones: %D %D != %D %D",m1,n1,m,n);
+    if (m1 != m || n1 != n) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"resulting sizes differ from demanded ones: %D %D != %D %D",m1,n1,m,n);
   }
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
 
   /*
      Load the RHS vector if it is present in the file, otherwise use a vector of all ones.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, &x, &b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,b_name);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecLoadIfExists_Private(b,fd,&has);CHKERRQ(ierr);
   if (!has) {
@@ -164,9 +163,7 @@ int main(int argc,char **args)
   /*
      Load the initial guess vector if it is present in the file, otherwise use a vector of all zeros.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,x0_name);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   /* load file_x0 if it is specified, otherwise try to reuse file */
   if (file_x0[0]) {
@@ -198,8 +195,8 @@ int main(int argc,char **args)
   */
   PetscPreLoadStage("KSPSetUp");
 
-  ierr = MatCreateNormal(A,&N);CHKERRQ(ierr);
-  ierr = MatMultTranspose(A,b,Ab);CHKERRQ(ierr);
+  ierr = MatCreateNormalHermitian(A,&N);CHKERRQ(ierr);
+  ierr = MatMultHermitianTranspose(A,b,Ab);CHKERRQ(ierr);
 
   /*
      Create linear solver; set operators; set runtime options.
@@ -213,7 +210,7 @@ int main(int argc,char **args)
     ierr = KSPSetType(ksp,KSPLSQR);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A,N);CHKERRQ(ierr);
   }
   ierr = KSPSetInitialGuessNonzero(ksp,nonzero_guess);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -290,13 +287,13 @@ int main(int argc,char **args)
    test:
       suffix: 1
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/medium -ksp_view -ksp_monitor_short -ksp_max_it 100
+      args: -f ${DATAFILESPATH}/matrices/medium -ksp_view -ksp_monitor_short -ksp_max_it 100 -solve_normal
 
    test:
       suffix: 2
       nsize: 2
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100 -solve_normal
 
    # Test handling failing VecLoad without abort
    testset:
@@ -331,18 +328,18 @@ int main(int argc,char **args)
         suffix: 4
         nsize: {{1 2 4}}
         args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
-        args: -solve_normal 1 -ksp_type cg
+        args: -solve_normal -ksp_type cg
      test:
         suffix: 4a
         nsize: {{1 2 4}}
         args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
-        args: -solve_normal 0 -ksp_type {{cgls lsqr}separate output}
+        args: -ksp_type {{cgls lsqr}separate output}
      test:
         # Test KSPLSQR-specific options
         suffix: 4b
         nsize: 2
         args: -ksp_converged_reason -ksp_rtol 1e-3 -ksp_max_it 200 -ksp_view
-        args: -solve_normal 0 -ksp_type lsqr -ksp_convergence_test lsqr -ksp_lsqr_monitor -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
+        args: -ksp_type lsqr -ksp_convergence_test lsqr -ksp_lsqr_monitor -ksp_lsqr_compute_standard_error -ksp_lsqr_exact_mat_norm {{0 1}separate output}
 
    test:
       # Load rectangular matrix from HDF5 (Version 7.3 MAT-File)
@@ -351,7 +348,7 @@ int main(int argc,char **args)
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/rectangular_ultrasound_4889x841.mat -hdf5
       args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
-      args: -solve_normal 0 -ksp_type lsqr
+      args: -ksp_type lsqr
       args: -test_custom_layout {{0 1}}
 
    # Test for correct cgls convergence reason
@@ -361,14 +358,14 @@ int main(int argc,char **args)
       requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
       args: -ksp_converged_reason -ksp_rtol 1e-2 -ksp_max_it 100
-      args: -solve_normal 0 -ksp_type cgls
+      args: -ksp_type cgls
 
    # Load a matrix, RHS and solution from HDF5 (Version 7.3 MAT-File). Test immediate convergence.
    testset:
      nsize: {{1 2 4 8}}
      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 10
-     args: -solve_normal 0 -ksp_type lsqr
+     args: -ksp_type lsqr
      args: -test_custom_layout {{0 1}}
      args: -hdf5 -x0_name x
      test:
@@ -383,5 +380,40 @@ int main(int argc,char **args)
      test:
         suffix: 6_hdf5_rect_dense
         args: -f ${DATAFILESPATH}/matrices/matlab/small_rect_dense.mat -mat_type dense
+
+   # Test correct handling of local dimensions in PCApply
+   testset:
+     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+     nsize: 3
+     suffix: 7
+     args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -hdf5 -test_custom_layout 1 -ksp_type lsqr -pc_type jacobi
+
+   # Test complex matrices
+   testset:
+     requires: double complex !define(PETSC_USE_64BIT_INDICES)
+     args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64
+     output_file: output/ex27_8.out
+     filter: grep -v "KSP type"
+     test:
+       suffix: 8
+       args: -solve_normal 0 -ksp_type {{lsqr cgls}}
+     test:
+       suffix: 8_normal
+       args: -solve_normal 1 -ksp_type {{cg bicg}}
+
+   testset:
+     requires: double suitesparse !define(PETSC_USE_64BIT_INDICES)
+     args: -solve_normal {{0 1}shared output} -pc_type qr
+     output_file: output/ex27_9.out
+     filter: grep -v "KSP type"
+     test:
+       suffix: 9_real
+       requires: !complex
+       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64
+     test:
+       suffix: 9_complex
+       requires: complex
+       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64
 
 TEST*/

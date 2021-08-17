@@ -124,6 +124,9 @@ PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayRead(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOFRead(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOFRead(DM,Vec,void *);
 
+PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOFWrite(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOFWrite(DM,Vec,void *);
+
 PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*,PetscBool);
 
 /*MC

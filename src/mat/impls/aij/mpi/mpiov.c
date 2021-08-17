@@ -2050,11 +2050,13 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[]
     else                   max_no = ismax-pos;
 
     ierr = MatCreateSubMatrices_MPIAIJ_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
-    if (!max_no && scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
-      smat = (Mat_SubSppt*)(*submat)[pos]->data; pos++;
-      smat->nstages = nstages;
-    }
-    pos += max_no;
+    if (!max_no) {
+      if (scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
+        smat = (Mat_SubSppt*)(*submat)[pos]->data;
+        smat->nstages = nstages;
+      }
+      pos++; /* advance to next dummy matrix if any */
+    } else pos += max_no;
   }
 
   if (ismax && scall == MAT_INITIAL_MATRIX) {

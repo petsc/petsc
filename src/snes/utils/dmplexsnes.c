@@ -711,8 +711,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
     ierr = DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
     if (4*2 != coordSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %D should be %d", coordSize, 4*2);
     ierr   = DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
-    ierr   = SNESSetFunction(snes, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
-    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
+    ierr   = SNESSetFunction(snes, NULL, NULL, vertices);CHKERRQ(ierr);
+    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, vertices);CHKERRQ(ierr);
     ierr   = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0]  = coords[p*ctx->dim+0];
     xi[1]  = coords[p*ctx->dim+1];
@@ -939,8 +939,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
     if (8*3 != coordSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %D should be %d", coordSize, 8*3);
     ierr = DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
     if (8*ctx->dof != xSize) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %D should be %D", xSize, 8*ctx->dof);
-    ierr   = SNESSetFunction(snes, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
-    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, (void*) vertices);CHKERRQ(ierr);
+    ierr   = SNESSetFunction(snes, NULL, NULL, vertices);CHKERRQ(ierr);
+    ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, vertices);CHKERRQ(ierr);
     ierr   = VecGetArray(real, &xi);CHKERRQ(ierr);
     xi[0]  = coords[p*ctx->dim+0];
     xi[1]  = coords[p*ctx->dim+1];
@@ -996,7 +996,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
 @*/
 PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Vec v)
 {
-  PetscInt       n;
+  PetscDS        ds;
+  PetscInt       n, p, Nf, field;
+  PetscBool      useDS = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1005,74 +1007,77 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
   PetscValidHeaderSpecific(v, VEC_CLASSID, 4);
   ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
   if (n != ctx->n*ctx->dof) SETERRQ2(ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid input vector size %D should be %D", n, ctx->n*ctx->dof);
-  if (n) {
-    PetscDS        ds;
-    DMPolytopeType ct;
-    PetscBool      done = PETSC_FALSE;
+  if (!n) PetscFunctionReturn(0);
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  if (ds) {
+    useDS = PETSC_TRUE;
+    ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+    for (field = 0; field < Nf; ++field) {
+      PetscObject  obj;
+      PetscClassId id;
 
-    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-    if (ds) {
-      const PetscScalar *coords;
-      PetscScalar       *interpolant;
-      PetscInt           cdim, d, p, Nf, field, c = 0;
+      ierr = PetscDSGetDiscretization(ds, field, &obj);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id != PETSCFE_CLASSID) {useDS = PETSC_FALSE; break;}
+    }
+  }
+  if (useDS) {
+    const PetscScalar *coords;
+    PetscScalar       *interpolant;
+    PetscInt           cdim, d;
 
-      ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
-      ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
+    ierr = VecGetArrayWrite(v, &interpolant);CHKERRQ(ierr);
+    for (p = 0; p < ctx->n; ++p) {
+      PetscReal    pcoords[3], xi[3];
+      PetscScalar *xa   = NULL;
+      PetscInt     coff = 0, foff = 0, clSize;
+
+      if (ctx->cells[p] < 0) continue;
+      for (d = 0; d < cdim; ++d) pcoords[d] = PetscRealPart(coords[p*cdim+d]);
+      ierr = DMPlexCoordinatesToReference(dm, ctx->cells[p], 1, pcoords, xi);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(dm, NULL, x, ctx->cells[p], &clSize, &xa);CHKERRQ(ierr);
       for (field = 0; field < Nf; ++field) {
         PetscTabulation T;
         PetscFE         fe;
-        PetscClassId    id;
-        PetscReal       xi[3];
-        PetscInt        Nc, f, fc;
 
         ierr = PetscDSGetDiscretization(ds, field, (PetscObject *) &fe);CHKERRQ(ierr);
-        ierr = PetscObjectGetClassId((PetscObject) fe, &id);CHKERRQ(ierr);
-        if (id != PETSCFE_CLASSID) break;
-        ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-        ierr = VecGetArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
-        ierr = VecGetArrayWrite(v, &interpolant);CHKERRQ(ierr);
-        for (p = 0; p < ctx->n; ++p) {
-          PetscScalar *xa = NULL;
-          PetscReal    pcoords[3];
+        ierr = PetscFECreateTabulation(fe, 1, 1, xi, 0, &T);CHKERRQ(ierr);
+        {
+          const PetscReal *basis = T->T[0];
+          const PetscInt   Nb    = T->Nb;
+          const PetscInt   Nc    = T->Nc;
+          PetscInt         f, fc;
 
-          if (ctx->cells[p] < 0) continue;
-          for (d = 0; d < cdim; ++d) pcoords[d] = PetscRealPart(coords[p*cdim+d]);
-          ierr = DMPlexCoordinatesToReference(dm, ctx->cells[p], 1, pcoords, xi);CHKERRQ(ierr);
-          ierr = DMPlexVecGetClosure(dm, NULL, x, ctx->cells[p], NULL, &xa);CHKERRQ(ierr);
-          ierr = PetscFECreateTabulation(fe, 1, 1, xi, 0, &T);CHKERRQ(ierr);
-          {
-            const PetscReal *basis = T->T[0];
-            const PetscInt   Nb    = T->Nb;
-            const PetscInt   Nc    = T->Nc;
-            for (fc = 0; fc < Nc; ++fc) {
-              interpolant[p*ctx->dof+c+fc] = 0.0;
-              for (f = 0; f < Nb; ++f) {
-                interpolant[p*ctx->dof+c+fc] += xa[f]*basis[(0*Nb + f)*Nc + fc];
-              }
+          for (fc = 0; fc < Nc; ++fc) {
+            interpolant[p*ctx->dof+coff+fc] = 0.0;
+            for (f = 0; f < Nb; ++f) {
+              interpolant[p*ctx->dof+coff+fc] += xa[foff+f]*basis[(0*Nb + f)*Nc + fc];
             }
           }
-          ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);
-          ierr = DMPlexVecRestoreClosure(dm, NULL, x, ctx->cells[p], NULL, &xa);CHKERRQ(ierr);
+          coff += Nc;
+          foff += Nb;
         }
-        ierr = VecRestoreArrayWrite(v, &interpolant);CHKERRQ(ierr);
-        ierr = VecRestoreArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
-        c += Nc;
+        ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);
       }
-      if (field == Nf) {
-        done = PETSC_TRUE;
-        if (c != ctx->dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total components %D != %D dof specified for interpolation", c, ctx->dof);
-      }
+      ierr = DMPlexVecRestoreClosure(dm, NULL, x, ctx->cells[p], &clSize, &xa);CHKERRQ(ierr);
+      if (coff != ctx->dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total components %D != %D dof specified for interpolation", coff, ctx->dof);
+      if (foff != clSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total FE space size %D != %D closure size", foff, clSize);
     }
-    if (!done) {
-      /* TODO Check each cell individually */
-      ierr = DMPlexGetCellType(dm, ctx->cells[0], &ct);CHKERRQ(ierr);
-      switch (ct) {
-        case DM_POLYTOPE_TRIANGLE:      ierr = DMInterpolate_Triangle_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
-        case DM_POLYTOPE_QUADRILATERAL: ierr = DMInterpolate_Quad_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
-        case DM_POLYTOPE_TETRAHEDRON:   ierr = DMInterpolate_Tetrahedron_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
-        case DM_POLYTOPE_HEXAHEDRON:    ierr = DMInterpolate_Hex_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
-        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support fpr cell type %s", DMPolytopeTypes[ct]);
-      }
+    ierr = VecRestoreArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
+    ierr = VecRestoreArrayWrite(v, &interpolant);CHKERRQ(ierr);
+  } else {
+    DMPolytopeType ct;
+
+    /* TODO Check each cell individually */
+    ierr = DMPlexGetCellType(dm, ctx->cells[0], &ct);CHKERRQ(ierr);
+    switch (ct) {
+      case DM_POLYTOPE_TRIANGLE:      ierr = DMInterpolate_Triangle_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
+      case DM_POLYTOPE_QUADRILATERAL: ierr = DMInterpolate_Quad_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
+      case DM_POLYTOPE_TETRAHEDRON:   ierr = DMInterpolate_Tetrahedron_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
+      case DM_POLYTOPE_HEXAHEDRON:    ierr = DMInterpolate_Hex_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
+      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for cell type %s", DMPolytopeTypes[ct]);
     }
   }
   PetscFunctionReturn(0);
@@ -1499,7 +1504,7 @@ static PetscErrorCode DMSNESJacobianMF_Destroy_Private(Mat A)
   PetscErrorCode               ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A, (void **) &ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A, &ctx);CHKERRQ(ierr);
   ierr = MatShellSetContext(A, NULL);CHKERRQ(ierr);
   ierr = DMDestroy(&ctx->dm);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->X);CHKERRQ(ierr);
@@ -1513,7 +1518,7 @@ static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
   PetscErrorCode               ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A, (void **) &ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A, &ctx);CHKERRQ(ierr);
   ierr = DMSNESComputeJacobianAction(ctx->dm, ctx->X, Y, Z, ctx->ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -36,7 +36,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
   /* Initialize user application context */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Allen-Cahn equation","");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Allen-Cahn equation","");CHKERRQ(ierr);
   user.param = 9e-4;
   user.xleft = -1.;
   user.xright = 2.;

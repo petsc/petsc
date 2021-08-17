@@ -1382,6 +1382,15 @@ cdef class Mat(Object):
         CHKERR( MatPtAP(self.mat, P.mat, reuse, cfill, &result.mat) )
         return result
 
+    def kron(self, Mat mat, Mat result=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        if result is None:
+            result = Mat()
+        elif result.mat != NULL:
+            reuse = MAT_REUSE_MATRIX
+        CHKERR( MatSeqAIJKron(self.mat, mat.mat, reuse, &result.mat) )
+        return result
+
     # XXX factorization
 
     def getOrdering(self, ord_type):

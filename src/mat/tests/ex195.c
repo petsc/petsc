@@ -83,6 +83,9 @@ int main(int argc,char **args)
   ierr = MatProductNumeric(B);CHKERRQ(ierr);
   ierr = MatMatMultEqual(nest,C,B,10,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in B != nest*C_dense");
+  ierr = MatConvert(nest,MATAIJ,MAT_INPLACE_MATRIX,&nest);CHKERRQ(ierr);
+  ierr = MatEqual(nest,aij,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in aij != nest");
   ierr = MatDestroy(&nest);CHKERRQ(ierr);
 
   if (size > 1) { /* Do not know why this test fails for size = 1 */

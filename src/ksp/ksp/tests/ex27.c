@@ -101,7 +101,7 @@ int main(int argc,char **args)
 
   /* Now, set X=inv(A) as a preconditioner */
   ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
-  ierr = PCShellSetContext(pc,(void*)X);CHKERRQ(ierr);
+  ierr = PCShellSetContext(pc,X);CHKERRQ(ierr);
   ierr = PCShellSetApply(pc,PCShellApply_Matinv);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -131,7 +131,7 @@ PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
   Mat            X;
 
   PetscFunctionBeginUser;
-  ierr = PCShellGetContext(pc,(void**)&X);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc,&X);CHKERRQ(ierr);
   ierr = MatMult(X,xin,xout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

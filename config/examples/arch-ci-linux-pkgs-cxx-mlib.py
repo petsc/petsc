@@ -38,7 +38,6 @@ configure_options = [
   '--with-petsc4py=1',
   '--download-mpi4py=1',
   '--download-saws',
-  '--download-egads',
   '--package-prefix-hash='+petsc_hash_pkgs,
   '--download-adolc',
   '--download-colpack',

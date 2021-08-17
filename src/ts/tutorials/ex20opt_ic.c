@@ -404,7 +404,7 @@ static PetscErrorCode HessianProductMat(Mat mat,Vec svec,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MatShellGetContext(mat,(void*)&user_ptr);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,&user_ptr);CHKERRQ(ierr);
   ierr = VecCopy(svec,user_ptr->Dir);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_ptr);CHKERRQ(ierr);
   ierr = Adjoint2(user_ptr->U,y_ptr,user_ptr);CHKERRQ(ierr);

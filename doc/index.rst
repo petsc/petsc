@@ -42,7 +42,7 @@ Main Topics
    Download <download/index>
    Installation <install/index>
    FAQ <faq/index>
-   Documentation <documentation/index>
+   Documentation <docs/index>
    Tutorials <tutorials/guide_to_examples>
    Community <community/index>
    Developers <developers/index>
@@ -129,7 +129,7 @@ When citing PETSc in a publication please cite the following:
       and Lois Curfman McInnes and Richard Tran Mills and Todd Munson and Karl Rupp
       and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
       Title  = "{PETS}c {W}eb page",
-      Note   = "https://www.mcs.anl.gov/petsc",
+      Note   = "https://petsc.org/",
       Year   = "2021"}
 
    @TechReport{petsc-user-ref,

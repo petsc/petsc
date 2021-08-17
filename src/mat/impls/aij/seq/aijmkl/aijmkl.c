@@ -938,7 +938,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A,Mat P,Mat 
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MatIsSymmetricKnown(A,&set,&flag);
+  ierr = MatIsSymmetricKnown(A,&set,&flag);CHKERRQ(ierr);
   if (!set || (set && !flag)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal() called on matrix A not marked as symmetric");
 
   ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
@@ -1167,7 +1167,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   if (!aijmkl->no_SpMV2) {
-    ierr = PetscInfo(B,"User requested use of MKL SpMV2 routines, but MKL version does not support mkl_sparse_optimize();  defaulting to non-SpMV2 routines.\n");
+    ierr = PetscInfo(B,"User requested use of MKL SpMV2 routines, but MKL version does not support mkl_sparse_optimize();  defaulting to non-SpMV2 routines.\n");CHKERRQ(ierr);
     aijmkl->no_SpMV2 = PETSC_TRUE;
   }
 #endif

@@ -11,7 +11,6 @@ class Configure(config.package.CMakePackage):
     self.liblist          = [['libmstk.a']]
     self.functions        = []
     self.cxx              = 1
-    self.requirescxx11    = 0
     self.downloadonWindows= 0
     self.hastests         = 1
     return

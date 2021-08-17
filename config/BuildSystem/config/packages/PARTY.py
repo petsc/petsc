@@ -12,6 +12,7 @@ class Configure(config.package.Package):
     self.includes          = ['party_lib.h']
     self.liblist           = [['libparty.a']]
     self.license           = 'http://www2.cs.uni-paderborn.de/cs/robsy/party.html'
+    self.requires32bitint  = 1
     return
 
   def versionToStandardForm(self,ver):

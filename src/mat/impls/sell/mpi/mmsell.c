@@ -116,7 +116,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
   while (tpos) {
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
 #else
   /* Make an array as long as the number of columns */
-  ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(N,&indices);CHKERRQ(ierr);
   /* mark those columns that are in sell->B */
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=B->sliidx[i]; j<B->sliidx[i+1]; j++) {
@@ -160,7 +160,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc1(ec+1,&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
   ec   = 0;
   for (i=0; i<N; i++) {
     if (indices[i]) garray[ec++] = i;
@@ -201,7 +201,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
 
   sell->garray = garray;
 
-  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 Failed to load initial guess, so use a vector of all zeros.
-  0 KSP Residual norm 25.4951 
-  1 KSP Residual norm 0.749856 
+  0 KSP Residual norm 7.07107 
+  1 KSP Residual norm 0.392837 
   2 KSP Residual norm < 1.e-11
 Linear solve converged due to CONVERGED_RTOL iterations 2
 KSP Object: 1 MPI processes
@@ -11,10 +11,16 @@ KSP Object: 1 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
   type: none
-  linear system matrix = precond matrix:
+  linear system matrix followed by preconditioner matrix:
+  Mat Object: A 1 MPI processes
+    type: seqaij
+    rows=4, cols=4
+    total: nonzeros=10, allocated nonzeros=10
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
   Mat Object: 1 MPI processes
-    type: normal
+    type: normalh
     rows=4, cols=4
 KSP type: cg
 Number of iterations =   2
-Residual norm 3.55271e-15
+Residual norm 4.44089e-16

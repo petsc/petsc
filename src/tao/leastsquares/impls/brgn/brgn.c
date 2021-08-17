@@ -295,8 +295,8 @@ static PetscErrorCode TaoSetFromOptions_BRGN(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsBool("-tao_brgn_mat_explicit","switches the Hessian construction to be an explicit matrix rather than MATSHELL","",gn->mat_explicit,&gn->mat_explicit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_regularizer_weight","regularizer weight (default 1e-4)","",gn->lambda,&gn->lambda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_brgn_l1_smooth_epsilon","L1-norm smooth approximation parameter: ||x||_1 = sum(sqrt(x.^2+epsilon^2)-epsilon) (default 1e-6)","",gn->epsilon,&gn->epsilon,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_brgn_lm_downhill_lambda_change","Factor to decrease trust region by on downhill steps","",gn->downhill_lambda_change,&gn->downhill_lambda_change,NULL);
-  ierr = PetscOptionsReal("-tao_brgn_lm_uphill_lambda_change","Factor to increase trust region by on uphill steps","",gn->uphill_lambda_change,&gn->uphill_lambda_change,NULL);
+  ierr = PetscOptionsReal("-tao_brgn_lm_downhill_lambda_change","Factor to decrease trust region by on downhill steps","",gn->downhill_lambda_change,&gn->downhill_lambda_change,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_brgn_lm_uphill_lambda_change","Factor to increase trust region by on uphill steps","",gn->uphill_lambda_change,&gn->uphill_lambda_change,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_brgn_regularization_type","regularization type", "",BRGN_REGULARIZATION_TABLE,BRGN_REGULARIZATION_TYPES,BRGN_REGULARIZATION_TABLE[gn->reg_type],&gn->reg_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set unit line search direction as the default when using the lm regularizer */
@@ -348,17 +348,14 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   }
 
   if (BRGN_REGULARIZATION_L1DICT == gn->reg_type) {
-    if (gn->D) {
-      ierr = MatGetSize(gn->D,&K,&N);CHKERRQ(ierr); /* Shell matrices still must have sizes defined. K = N for identity matrix, K=N-1 or N for gradient matrix */
-    } else {
-      ierr = VecGetSize(tao->solution,&K);CHKERRQ(ierr); /* If user does not setup dict matrix, use identiy matrix, K=N */
-    }
     if (!gn->y) {
-      ierr = VecCreate(PETSC_COMM_SELF,&gn->y);CHKERRQ(ierr);
-      ierr = VecSetSizes(gn->y,PETSC_DECIDE,K);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(gn->y);CHKERRQ(ierr);
+      if (gn->D) {
+        ierr = MatGetSize(gn->D,&K,&N);CHKERRQ(ierr); /* Shell matrices still must have sizes defined. K = N for identity matrix, K=N-1 or N for gradient matrix */
+        ierr = MatCreateVecs(gn->D,NULL,&gn->y);CHKERRQ(ierr);
+      } else {
+        ierr = VecDuplicate(tao->solution,&gn->y);CHKERRQ(ierr); /* If user does not setup dict matrix, use identiy matrix, K=N */
+      }
       ierr = VecSet(gn->y,0.0);CHKERRQ(ierr);
-
     }
     if (!gn->y_work) {
       ierr = VecDuplicate(gn->y,&gn->y_work);CHKERRQ(ierr);
@@ -381,28 +378,28 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     /* Hessian setup */
     if (gn->mat_explicit) {
       ierr = TaoComputeResidualJacobian(tao,tao->solution,tao->ls_jac,tao->ls_jac_pre);CHKERRQ(ierr);
-      ierr = MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &gn->H);
+      ierr = MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &gn->H);CHKERRQ(ierr);
     } else {
       ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
       ierr = VecGetSize(tao->solution,&N);CHKERRQ(ierr);
       ierr = MatCreate(PetscObjectComm((PetscObject)tao),&gn->H);CHKERRQ(ierr);
       ierr = MatSetSizes(gn->H,n,n,N,N);CHKERRQ(ierr);
       ierr = MatSetType(gn->H,MATSHELL);CHKERRQ(ierr);
-      ierr = MatSetOption(gn->H, MAT_SYMMETRIC, PETSC_TRUE);
+      ierr = MatSetOption(gn->H, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
       ierr = MatShellSetOperation(gn->H,MATOP_MULT,(void (*)(void))GNHessianProd);CHKERRQ(ierr);
-      ierr = MatShellSetContext(gn->H,(void*)gn);CHKERRQ(ierr);
+      ierr = MatShellSetContext(gn->H,gn);CHKERRQ(ierr);
     }
     ierr = MatSetUp(gn->H);CHKERRQ(ierr);
     /* Subsolver setup,include initial vector and dicttionary D */
-    ierr = TaoSetUpdate(gn->subsolver,GNHookFunction,(void*)gn);CHKERRQ(ierr);
+    ierr = TaoSetUpdate(gn->subsolver,GNHookFunction,gn);CHKERRQ(ierr);
     ierr = TaoSetInitialVector(gn->subsolver,tao->solution);CHKERRQ(ierr);
     if (tao->bounded) {
       ierr = TaoSetVariableBounds(gn->subsolver,tao->XL,tao->XU);CHKERRQ(ierr);
     }
     ierr = TaoSetResidualRoutine(gn->subsolver,tao->ls_res,tao->ops->computeresidual,tao->user_lsresP);CHKERRQ(ierr);
     ierr = TaoSetJacobianResidualRoutine(gn->subsolver,tao->ls_jac,tao->ls_jac,tao->ops->computeresidualjacobian,tao->user_lsjacP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(gn->subsolver,GNObjectiveGradientEval,(void*)gn);CHKERRQ(ierr);
-    ierr = TaoSetHessianRoutine(gn->subsolver,gn->H,gn->H,GNComputeHessian,(void*)gn);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradientRoutine(gn->subsolver,GNObjectiveGradientEval,gn);CHKERRQ(ierr);
+    ierr = TaoSetHessianRoutine(gn->subsolver,gn->H,gn->H,GNComputeHessian,gn);CHKERRQ(ierr);
     /* Propagate some options down */
     ierr = TaoSetTolerances(gn->subsolver,tao->gatol,tao->grtol,tao->gttol);CHKERRQ(ierr);
     ierr = TaoSetMaximumIterations(gn->subsolver,tao->max_it);CHKERRQ(ierr);
@@ -474,7 +471,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   tao->ops->view = TaoView_BRGN;
   tao->ops->solve = TaoSolve_BRGN;
 
-  tao->data = (void*)gn;
+  tao->data = gn;
   gn->reg_type = BRGN_REGULARIZATION_L2PROX;
   gn->lambda = 1e-4;
   gn->epsilon = 1e-6;

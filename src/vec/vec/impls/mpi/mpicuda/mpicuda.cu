@@ -55,7 +55,7 @@ PetscErrorCode VecNorm_MPICUDA(Vec xin,NormType type,PetscReal *z)
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    ierr  = VecNorm_SeqCUDA(xin,NORM_2,&work);
+    ierr  = VecNorm_SeqCUDA(xin,NORM_2,&work);CHKERRQ(ierr);
     work *= work;
     ierr  = MPIU_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
     *z    = PetscSqrtReal(sum);
@@ -218,6 +218,41 @@ PetscErrorCode VecCreate_CUDA(Vec v)
   PetscFunctionReturn(0);
 }
 
+/*@
+ VecCreateMPICUDA - Creates a standard, parallel array-style vector for CUDA devices.
+
+ Collective
+
+ Input Parameters:
+ +  comm - the MPI communicator to use
+ .  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
+ -  N - global vector length (or PETSC_DETERMINE to have calculated if n is given)
+
+    Output Parameter:
+ .  v - the vector
+
+    Notes:
+    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+    same type as an existing vector.
+
+    Level: intermediate
+
+ .seealso: VecCreateMPICUDAWithArray(), VecCreateMPICUDAWithArrays(), VecCreateSeqCUDA(), VecCreateSeq(),
+           VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
+           VecCreateMPIWithArray(), VecCreateGhostWithArray(), VecMPISetGhost()
+
+ @*/
+ PetscErrorCode VecCreateMPICUDA(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
+ {
+   PetscErrorCode ierr;
+
+   PetscFunctionBegin;
+   ierr = VecCreate(comm,v);CHKERRQ(ierr);
+   ierr = VecSetSizes(*v,n,N);CHKERRQ(ierr);
+   ierr = VecSetType(*v,VECMPICUDA);CHKERRQ(ierr);
+   PetscFunctionReturn(0);
+ }
+
 /*@C
    VecCreateMPICUDAWithArray - Creates a parallel, array-style vector,
    where the user provides the GPU array space to store the vector values.
@@ -246,7 +281,7 @@ PetscErrorCode VecCreate_CUDA(Vec v)
 
    Level: intermediate
 
-.seealso: VecCreateSeqCUDAWithArray(), VecCreateMPIWithArray(), VecCreateSeqWithArray(),
+.seealso: VecCreateMPICUDA(), VecCreateSeqCUDAWithArray(), VecCreateMPIWithArray(), VecCreateSeqWithArray(),
           VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 

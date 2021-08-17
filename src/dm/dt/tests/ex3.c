@@ -140,7 +140,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-digits", "The number of significant digits for the integral","ex3.c",digits,&digits,NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Integrate each function */
   for (f = 0; f < 14; ++f) {

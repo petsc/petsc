@@ -18,12 +18,14 @@ Changes: Development
 .. rubric:: Configure/Build:
 -  Remove --with-kokkos-cuda-arch. One can use -with-cuda-gencodearch to specify the cuda arch for Kokkos. Usually not needed since PETSc auto detects that
 -  For --download-hdf5, disable --download-hdf5-fortran-bindings by default
+-  Add OpenCascade package to PETSc and allow --download-opencascade
 
 .. rubric:: Sys:
 -  Add GPU event timers to capture kernel execution time accurately.
 -  Remove ``WaitForCUDA()`` and ``WaitForHIP()`` before ``PetscLogGpuTimeEnd()``
 -  Add MPIU_REAL_INT and MPIU_SCALAR_INT datatypes to be used for reduction operations
 -  Add MPIU_MAXLOC and MPIU_MINLOC operations
+-  Add ``CHKERRCXX()`` to catch C++ exceptions and return a PETSc error code
 
 .. rubric:: PetscViewer:
 
@@ -80,22 +82,41 @@ Changes: Development
    centering matrix
 -  Remove -mat_mumps_icntl_7 1 option, use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
 -  Add ``MATSOLVERSPQR`` - interface to SuiteSparse QR factorization
+-  Add ``MatSeqAIJKron()`` - Kronecker product of two ``MatSeqAIJ``
+-  Add ``MatNormalGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMAL``
+-  Add ``MatNormalHermitianGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMALHERMITIAN``
+-  Add ``VecCreateMPICUDA()`` and ``VecCreateMPIHIP()`` to create MPI device vectors
 
 .. rubric:: PC:
--  Add ``PCQR`` - interface to SuiteSparse QR factorization
+
+-  Add ``PCQR`` - interface to SuiteSparse QR factorization for ``MatSeqAIJ``,
+   ``MATNORMAL``, and ``MATNORMALHERMITIAN``
+-  Add support for ``MATNORMAL`` in ``PCASM`` and ``PCHPDDM``
+-  ``PCShellGetContext()`` now takes ``void*`` as return argument
 
 .. rubric:: KSP:
+
+-  ``KSPGetMonitorContext()`` now takes ``void*`` as return argument
+-  ``KSPGetConvergenceContext()`` now takes ``void*`` as return argument
 
 .. rubric:: SNES:
 
 -  Add ``SNESSetComputeMFFunction()``
--  Add support for ``-snes_mf_operator`` for use with ``SNESSetPicard``
+
+-  Add support for ``-snes_mf_operator`` for use with ``SNESSetPicard()``
+-  ``SNESShellGetContext()`` now takes ``void*`` as return argument
 
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
 
+-  Add ``TSTrajectory`` interface to the CAMS library for optimal offline checkpointing for multistage time stepping schemes
+-  Add option ``-ts_trajectory_memory_type <revolve | cams | petsc>`` to switch checkpointing schedule software
+-  Add option ``-ts_trajectory_max_units_ram`` to specify the maximum number of allowed checkpointing units
+
 .. rubric:: TAO:
+
+-  ``TaoShellGetContext()`` now takes ``void*`` as return argument
 
 .. rubric:: DM/DA:
 
@@ -106,6 +127,8 @@ Changes: Development
 -  Remove ``DMCopyBoundary()``
 -  Change interface for ``DMAddBoundary()``, ``PetscDSAddBoundary()``,
    ``PetscDSGetBoundary()``, ``PetscDSUpdateBoundary()``
+-  Add ``DMDAVecGetArrayDOFWrite()`` and ``DMDAVecRestoreArrayDOFWrite()``
+-  ``DMShellGetContext()`` now takes ``void*`` as return argument
 
 .. rubric:: DMSwarm:
 
@@ -148,6 +171,9 @@ Changes: Development
 - Add ``DMSetLabel()``
 - Replace ``DMPlexComputeJacobianAction()`` with ``DMSNESComputeJacobianAction()``
 - Add ``DMSNESCreateJacobianMF()``
+- Change ``DMPlexComputeBdResidualSingle()`` to take ``PetscFormKey`` instead of explicit label/value/field arguments
+- Add ``DMPlexInflateToGeomModel()`` which pushes refined points out to a geometric boundary
+- Separate EGADS and EGADSLite functionality, add ``DMPlexCreateEGADSLiteFromFile()``
 
 .. rubric:: FE/FV:
 
@@ -160,10 +186,15 @@ Changes: Development
 
 -  Add ``DMNetworkCreateIS()`` and ``DMNetworkCreateLocalIS()``
 
+.. rubric:: DMStag:
+
+-  Add ``DMStagStencilToIndexLocal()``
+
 .. rubric:: DT:
 
 -  Add ``PetscWeakFormCopy()``, ``PetscWeakFormClear()``, ``PetscWeakFormRewriteKeys()`` and ``PetscWeakFormClearIndex()``
 -  Add ``PetscDSDestroyBoundary()`` and ``PetscDSCopyExactSolutions()``
+-  ``PetscDSGetContext()`` now takes ``void*`` as return argument
 
 .. rubric:: Fortran:
 

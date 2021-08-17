@@ -1,0 +1,20 @@
+ EGADS WARNING: OpenCASCADE 7.5.0 NOT an Authorized Release!
+[32;1mTotal number of loaded entities 140.
+[0m
+ EGADS Info: Import Model has 2 C0 Edges & 0 C0 Faces!
+DM Object: CAD Surface (sur_) 1 MPI processes
+  type: plex
+CAD Surface in 2 dimensions:
+  0-cells: 202
+  1-cells: 600
+  2-cells: 400
+Labels:
+  celltype: 3 strata with value/size (1 (600), 3 (400), 0 (202))
+  depth: 3 strata with value/size (0 (202), 1 (600), 2 (400))
+  EGADS Body ID: 1 strata with value/size (0 (1202))
+  EGADS Face ID: 14 strata with value/size (1 (33), 2 (113), 3 (113), 4 (113), 5 (113), 6 (113), 7 (113), 8 (113), 9 (113), 10 (33), 11 (113), 12 (113), 13 (113), 14 (113))
+  EGADS Edge ID: 26 strata with value/size (1 (9), 2 (9), 5 (9), 4 (9), 3 (9), 6 (9), 7 (9), 8 (9), 9 (9), 10 (9), 11 (9), 12 (9), 13 (9), 16 (9), 15 (9), 14 (9), 17 (9), 18 (9), 19 (9), 20 (9), 21 (9), 22 (9), 23 (9), 26 (9), 25 (9), 24 (9))
+  EGADS Vertex ID: 0 strata with value/size ()
+DM CAD Surface: Surface Area = 8.232357e+03 Volume = 7.441638e+04
+DM CAD Mesh: Surface Area = 7.441638e+04 Volume = 1.344565e+06
+ EGADS Info: 159 Objects, 234 Reference in Use (of 393) at Close!

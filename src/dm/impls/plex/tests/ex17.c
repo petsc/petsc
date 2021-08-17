@@ -42,8 +42,8 @@ static PetscErrorCode TestLocation(DM dm)
     ierr = DMLocatePoints(dm, v, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(cellSF,NULL,&n,NULL,&cells);CHKERRQ(ierr);
-    if (n        != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Found %d cells instead %d", n, 1);
-    if (cells[0].index != c) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %d, instead found %d", c, cells[0].index);
+    if (n              != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D: Found %d cells instead of 1", c, n);
+    if (cells[0].index != c) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %D, instead found %D", c, cells[0].index);
     ierr = PetscSFDestroy(&cellSF);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -65,8 +65,25 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
-    suffix: 0
+    suffix: seg
+    args: -dm_plex_dim 1 -dm_plex_box_faces 10
+
+  test:
+    suffix: tri
     requires: triangle
-    args: -dm_coord_space 0 -dm_view ascii::ascii_info_detail
+    args: -dm_coord_space 0 -dm_plex_box_faces 5,5
+
+  test:
+    suffix: quad
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 5,5
+
+  test:
+    suffix: tet
+    requires: ctetgen
+    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3
+
+  test:
+    suffix: hex
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 3,3,3
 
 TEST*/

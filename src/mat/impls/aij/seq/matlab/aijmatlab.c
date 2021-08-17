@@ -246,7 +246,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-      ierr = MatView_Info_Matlab(A,viewer);
+      ierr = MatView_Info_Matlab(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

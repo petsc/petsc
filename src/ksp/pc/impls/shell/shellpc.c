@@ -47,7 +47,7 @@ typedef struct {
 
 .seealso: PCShellSetContext()
 @*/
-PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
+PetscErrorCode  PCShellGetContext(PC pc,void *ctx)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -56,8 +56,8 @@ PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ctx,2);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
-  if (!flg) *ctx = NULL;
-  else      *ctx = ((PC_Shell*)(pc->data))->ctx;
+  if (!flg) *(void**)ctx = NULL;
+  else      *(void**)ctx = ((PC_Shell*)(pc->data))->ctx;
   PetscFunctionReturn(0);
 }
 

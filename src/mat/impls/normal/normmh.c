@@ -156,6 +156,7 @@ PetscErrorCode MatDestroyHermitian_Normal(Mat N)
   ierr = VecDestroy(&Na->leftwork);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->rightwork);CHKERRQ(ierr);
   ierr = PetscFree(N->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)N,"MatNormalGetMatHermitian_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -194,6 +195,43 @@ PetscErrorCode MatGetDiagonalHermitian_Normal(Mat N,Vec v)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatNormalGetMatHermitian_Normal(Mat A,Mat *M)
+{
+  Mat_Normal *Aa = (Mat_Normal*)A->data;
+
+  PetscFunctionBegin;
+  *M = Aa->A;
+  PetscFunctionReturn(0);
+}
+
+/*@
+      MatNormalHermitianGetMat - Gets the Mat object stored inside a MATNORMALHERMITIAN
+
+   Logically collective on Mat
+
+   Input Parameter:
+.   A  - the MATNORMALHERMITIAN matrix
+
+   Output Parameter:
+.   M - the matrix object stored inside A
+
+   Level: intermediate
+
+.seealso: MatCreateNormalHermitian()
+
+@*/
+PetscErrorCode MatNormalHermitianGetMat(Mat A,Mat *M)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscValidPointer(M,2);
+  ierr = PetscUseMethod(A,"MatNormalGetMatHermitian_C",(Mat,Mat*),(A,M));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
       MatCreateNormalHermitian - Creates a new matrix object that behaves like (A*)'*A.
 
@@ -217,12 +255,15 @@ PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
   PetscErrorCode ierr;
   PetscInt       m,n;
   Mat_Normal     *Na;
+  VecType        vtype;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMALHERMITIAN);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->cmap,&(*N)->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->cmap,&(*N)->cmap);CHKERRQ(ierr);
 
   ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
@@ -230,7 +271,7 @@ PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
   Na->A      = A;
   Na->scale  = 1.0;
 
-  ierr = VecCreateMPI(PetscObjectComm((PetscObject)A),m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,NULL,&Na->w);CHKERRQ(ierr);
 
   (*N)->ops->destroy          = MatDestroyHermitian_Normal;
   (*N)->ops->mult             = MatMultHermitian_Normal;
@@ -241,12 +282,15 @@ PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
   (*N)->ops->scale            = MatScaleHermitian_Normal;
   (*N)->ops->diagonalscale    = MatDiagonalScaleHermitian_Normal;
   (*N)->assembled             = PETSC_TRUE;
-  (*N)->cmap->N               = A->cmap->N;
-  (*N)->rmap->N               = A->cmap->N;
-  (*N)->cmap->n               = A->cmap->n;
-  (*N)->rmap->n               = A->cmap->n;
+  (*N)->preallocated          = PETSC_TRUE;
 
+  ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatNormalGetMatHermitian_C",MatNormalGetMatHermitian_Normal);CHKERRQ(ierr);
   ierr = MatSetOption(*N,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatGetVecType(A,&vtype);CHKERRQ(ierr);
+  ierr = MatSetVecType(*N,vtype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_DEVICE)
+  ierr = MatBindToCPU(*N,A->boundtocpu);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

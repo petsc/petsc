@@ -1058,7 +1058,7 @@ However, this does not mean it need be done in a separate, sequential
 program; rather, it should be done before one sets up the parallel grid
 data structures in the actual program. PETSc provides an interface to
 the ParMETIS (developed by George Karypis; see
-`the PETSc installation instructions <https://www.mcs.anl.gov/petsc/documentation/installation.html>`__.
+`the PETSc installation instructions <https://petsc.org/release/install/>`__.
 for directions on installing PETSc to use ParMETIS) to allow the
 partitioning to be done in parallel. PETSc does not currently provide
 directly support for dynamic repartitioning, load balancing by migrating

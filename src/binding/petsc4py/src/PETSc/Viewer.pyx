@@ -376,6 +376,12 @@ cdef class ViewerHDF5(Viewer):
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         return self
 
+    def pushTimestepping(self):
+        CHKERR( PetscViewerHDF5PushTimestepping(self.vwr) )
+
+    def popTimestepping(self):
+        CHKERR( PetscViewerHDF5PopTimestepping(self.vwr) )
+
     def getTimestep(self):
         cdef PetscInt ctimestep = 0
         CHKERR( PetscViewerHDF5GetTimestep(self.vwr, &ctimestep) )

@@ -1196,7 +1196,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   sol = options->solType;
   ierr = PetscOptionsEList("-sol_type", "The solution type", "ex76.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolType) sol;
-  ierr = PetscOptionsEnd();
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1541,7 +1541,7 @@ static PetscErrorCode RemoveDiscretePressureNullspace_Private(TS ts, Vec u)
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &user);CHKERRQ(ierr);
   if (!user->hasNullSpace) PetscFunctionReturn(0);
   ierr = CreatePressureNullSpace(dm, 1, 1, &nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceRemove(nullsp, u);CHKERRQ(ierr);
@@ -1572,7 +1572,7 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
   ierr = DMComputeExactSolution(dm, t, u, NULL);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &user);CHKERRQ(ierr);
   ierr = RemoveDiscretePressureNullspace_Private(ts, u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

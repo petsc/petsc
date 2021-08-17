@@ -125,6 +125,23 @@ static PetscErrorCode DMPlexGetLineIntersection_2D_Internal(const PetscReal segm
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexLocatePoint_Simplex_1D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
+{
+  const PetscReal eps = PETSC_SQRT_MACHINE_EPSILON;
+  const PetscReal x   = PetscRealPart(point[0]);
+  PetscReal       v0, J, invJ, detJ;
+  PetscReal       xi;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ);CHKERRQ(ierr);
+  xi   = invJ*(x - v0);
+
+  if ((xi >= -eps) && (xi <= 2.+eps)) *cell = c;
+  else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
   const PetscInt  embedDim = 2;
@@ -450,6 +467,8 @@ PetscErrorCode DMPlexLocatePoint_Internal(DM dm, PetscInt dim, const PetscScalar
   PetscFunctionBegin;
   ierr = DMPlexGetCellType(dm, cellStart, &ct);CHKERRQ(ierr);
   switch (ct) {
+    case DM_POLYTOPE_SEGMENT:
+    ierr = DMPlexLocatePoint_Simplex_1D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
     case DM_POLYTOPE_TRIANGLE:
     ierr = DMPlexLocatePoint_Simplex_2D_Internal(dm, point, cellStart, cell);CHKERRQ(ierr);break;
     case DM_POLYTOPE_QUADRILATERAL:

@@ -1154,8 +1154,8 @@ static PetscErrorCode KSPViewFinalMatResidual_Internal(KSP ksp, Mat B, Mat X, Pe
   if (flg) {
     ierr = PCGetOperators(ksp->pc, &A, NULL);CHKERRQ(ierr);
     ierr = MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &R);CHKERRQ(ierr);
-    ierr = MatAYPX(R, -1.0, B, SAME_NONZERO_PATTERN);
-    ierr = MatGetSize(R, NULL, &N);
+    ierr = MatAYPX(R, -1.0, B, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatGetSize(R, NULL, &N);CHKERRQ(ierr);
     ierr = PetscMalloc1(N, &norms);CHKERRQ(ierr);
     ierr = MatGetColumnNorms(R, NORM_2, norms);CHKERRQ(ierr);
     ierr = MatDestroy(&R);CHKERRQ(ierr);
@@ -1188,7 +1188,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 {
   Mat            A, P, vB, vX;
   Vec            cb, cx;
-  PetscInt       m1, M1, m2, M2, n1, N1, n2, N2, Bbn = PETSC_DECIDE;
+  PetscInt       n1, N1, n2, N2, Bbn = PETSC_DECIDE;
   PetscBool      match;
   PetscErrorCode ierr;
 
@@ -1207,14 +1207,11 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   }
   if (B == X) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_IDN, "B and X must be different matrices");
   ierr = KSPGetOperators(ksp, &A, &P);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A, &m1, NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(B, &m2, &n2);CHKERRQ(ierr);
-  ierr = MatGetSize(A, &M1, NULL);CHKERRQ(ierr);
-  ierr = MatGetSize(B, &M2, &N2);CHKERRQ(ierr);
-  if (m1 != m2 || M1 != M2) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot use a block of right-hand sides with (m2,M2) = (%D,%D) for a linear system with (m1,M1) = (%D,%D)", m2, M2, m1, M1);
-  ierr = MatGetLocalSize(X, &m1, &n1);CHKERRQ(ierr);
-  ierr = MatGetSize(X, &M1, &N1);CHKERRQ(ierr);
-  if (m1 != m2 || M1 != M2 || n1 != n2 || N1 != N2) SETERRQ8(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible block of right-hand sides (m2,M2)x(n2,N2) = (%D,%D)x(%D,%D) and solutions (m1,M1)x(n1,N1) = (%D,%D)x(%D,%D)", m2, M2, n2, N2, m1, M1, n1, N1);
+  ierr = MatGetLocalSize(B, NULL, &n2);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(X, NULL, &n1);CHKERRQ(ierr);
+  ierr = MatGetSize(B, NULL, &N2);CHKERRQ(ierr);
+  ierr = MatGetSize(X, NULL, &N1);CHKERRQ(ierr);
+  if (n1 != n2 || N1 != N2) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of right-hand sides (n,N) = (%D,%D) and block of solutions (n,N) = (%D,%D)", n2, N2, n1, N1);
   ierr = PetscObjectBaseTypeCompareAny((PetscObject)B, &match, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
   if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of right-hand sides not stored in a dense Mat");
   ierr = PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
@@ -2225,11 +2222,11 @@ PetscErrorCode  KSPMonitorCancel(KSP ksp)
 
 .seealso: KSPMonitorResidual(), KSP
 @*/
-PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
+PetscErrorCode  KSPGetMonitorContext(KSP ksp,void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  *ctx =      (ksp->monitorcontext[0]);
+  *(void**)ctx = ksp->monitorcontext[0];
   PetscFunctionReturn(0);
 }
 
@@ -2623,11 +2620,11 @@ PetscErrorCode  KSPGetAndClearConvergenceTest(KSP ksp,PetscErrorCode (**converge
 
 .seealso: KSPConvergedDefault(), KSPSetConvergenceTest(), KSP
 @*/
-PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
+PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  *ctx = ksp->cnvP;
+  *(void**)ctx = ksp->cnvP;
   PetscFunctionReturn(0);
 }
 

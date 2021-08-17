@@ -41,7 +41,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell,Vec X,Vec Y)
   PetscFunctionBegin;
 
   /* Get matrix-free context info */
-  ierr = MatShellGetContext(A_shell,(void**)&mctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
   m = mctx->m;
   n = mctx->n;
 
@@ -127,7 +127,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
   PetscFunctionBegin;
 
   /* Get matrix-free context info */
-  ierr = MatShellGetContext(A_shell,(void**)&mctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
   m = mctx->m;
   n = mctx->n;
 
@@ -168,7 +168,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell,Vec X,Vec Y)
 
   /* a * dF/d(xdot) part */
   ierr = PetscLogEventBegin(mctx->event2,0,0,0,0);CHKERRQ(ierr);
-  ierr = VecAXPY(Y,mctx->shift,X);
+  ierr = VecAXPY(Y,mctx->shift,X);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(mctx->event2,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -199,7 +199,7 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell,Vec Y,Vec X
   PetscFunctionBegin;
 
   /* Get matrix-free context info */
-  ierr = MatShellGetContext(A_shell,(void**)&mctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
   m = mctx->m;
   n = mctx->n;
 
@@ -290,7 +290,7 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell,Vec Y
   PetscFunctionBegin;
 
   /* Get matrix-free context info */
-  ierr = MatShellGetContext(A_shell,(void**)&mctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A_shell,&mctx);CHKERRQ(ierr);
   m = mctx->m;
   n = mctx->n;
 
