@@ -354,6 +354,7 @@ PETSC_EXTERN PetscErrorCode PetscLayoutMapLocal(PetscLayout,PetscInt,const Petsc
 
 PETSC_EXTERN PetscErrorCode PetscParallelSortInt(PetscLayout, PetscLayout, PetscInt*, PetscInt*);
 
-PETSC_EXTERN PetscErrorCode ISGetLayout(IS, PetscLayout *);
+PETSC_EXTERN PetscErrorCode ISGetLayout(IS,PetscLayout*);
+PETSC_EXTERN PetscErrorCode ISSetLayout(IS,PetscLayout);
 
 #endif
