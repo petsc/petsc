@@ -105,7 +105,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   PetscErrorCode         ierr;
   PetscInt               *jj;
   size_t                 noff = 0;
-  THRUSTINTARRAY         d_i(n);
+  THRUSTINTARRAY         d_i(n); /* on device, storing partitioned coo_i with diagonal first, and off-diag next */
   THRUSTINTARRAY         d_j(n);
   ISLocalToGlobalMapping l2g;
   cudaError_t            cerr;
@@ -148,16 +148,16 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
   /* copy offdiag column indices to map on the CPU */
-  ierr = PetscMalloc1(cusp->coo_no,&jj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cusp->coo_no,&jj);CHKERRQ(ierr); /* jj[] will store compacted col ids of the offdiag part */
   cerr = cudaMemcpy(jj,d_j.data().get()+cusp->coo_nd,cusp->coo_no*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
   auto o_j = d_j.begin();
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-  thrust::advance(o_j,cusp->coo_nd);
+  thrust::advance(o_j,cusp->coo_nd); /* sort and unique offdiag col ids */
   thrust::sort(thrust::device,o_j,d_j.end());
-  auto wit = thrust::unique(thrust::device,o_j,d_j.end());
+  auto wit = thrust::unique(thrust::device,o_j,d_j.end()); /* return end iter of the unique range */
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   noff = thrust::distance(o_j,wit);
-  ierr = PetscMalloc1(noff+1,&b->garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(noff,&b->garray);CHKERRQ(ierr);
   cerr = cudaMemcpy(b->garray,d_j.data().get()+cusp->coo_nd,noff*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
   ierr = PetscLogGpuToCpu((noff+cusp->coo_no)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,noff,b->garray,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);

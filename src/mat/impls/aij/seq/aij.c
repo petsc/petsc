@@ -3736,9 +3736,9 @@ PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
 }
 
 /*
- * When a sparse matrix has many zero columns, we should compact them out to save the space
- * This happens in MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable()
- * */
+ * Given a sparse matrix with global column indices, compact it by using a local column space.
+ * The result matrix helps saving memory in other algorithms, such as MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable()
+ */
 PetscErrorCode  MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMapping *mapping)
 {
   Mat_SeqAIJ         *aij = (Mat_SeqAIJ*)mat->data;
