@@ -4,6 +4,7 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
 #define petscsetmoduleblock_          PETSCSETMODULEBLOCK
+#define petscsetmoduleblockmpi_       PETSCSETMODULEBLOCKMPI
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define petsc_null_function_          PETSC_NULL_FUNCTION
 #define petscsetmoduleblocknumeric_   PETSCSETMODULEBLOCKNUMERIC
@@ -11,6 +12,7 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitializefortran_       petscinitializefortran
 #define petscsetmoduleblock_          petscsetmoduleblock
+#define petscsetmoduleblockmpi_       petscsetmoduleblockmpi
 #define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define petsc_null_function_          petsc_null_function
 #define petscsetmoduleblocknumeric_   petscsetmoduleblocknumeric
@@ -22,7 +24,7 @@
 #endif
 
 PETSC_EXTERN void petscsetmoduleblock_();
-PETSC_EXTERN void petscsetmoduleblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void petscsetmoduleblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*,MPI_Fint*);
 PETSC_EXTERN void petscsetmoduleblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 PETSC_EXTERN void petscsetcomm_(MPI_Fint*,MPI_Fint*);
 
@@ -54,15 +56,14 @@ PetscErrorCode PetscInitializeFortran(void)
   petscsetmoduleblock_();
   petscsetcomm_(&c1,&c2);
 
-#if defined(PETSC_USE_REAL___FLOAT128)
   {
-    MPI_Fint freal,fscalar,fsum;
+    MPI_Fint freal,fscalar,fsum,fint;
     freal   = MPI_Type_c2f(MPIU_REAL);
     fscalar = MPI_Type_c2f(MPIU_SCALAR);
     fsum    = MPI_Op_c2f(MPIU_SUM);
-    petscsetmoduleblockmpi_(&freal,&fscalar,&fsum);
+    fint    = MPI_Type_c2f(MPIU_INT);
+    petscsetmoduleblockmpi_(&freal,&fscalar,&fsum,&fint);
   }
-#endif
 
   {
     PetscReal pi = PETSC_PI;
