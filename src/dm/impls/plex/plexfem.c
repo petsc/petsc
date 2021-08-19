@@ -3394,6 +3394,9 @@ PetscErrorCode DMPlexRestoreCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, V
   PetscFunctionReturn(0);
 }
 
+/*
+  Get the auxiliary field vectors for the negative side (s = 0) and positive side (s = 1) of the interfaace
+*/
 static PetscErrorCode DMPlexGetHybridAuxFields(DM dm, DM dmAux[], PetscDS dsAux[], IS cellIS, Vec locA[], PetscScalar *a[])
 {
   DM              plexA[2];
@@ -3434,7 +3437,7 @@ static PetscErrorCode DMPlexGetHybridAuxFields(DM dm, DM dmAux[], PetscDS dsAux[
       const PetscInt tdA = totDimAux[s];
       PetscInt       subface, Na, i;
 
-      ierr = DMGetEnclosurePoint(plexA[s], dm, encAux[s], cone[0], &subface);CHKERRQ(ierr);
+      ierr = DMGetEnclosurePoint(plexA[s], dm, encAux[s], cone[s], &subface);CHKERRQ(ierr);
       ierr = DMPlexVecGetClosure(plexA[s], sectionAux[s], locA[s], subface, &Na, &x);CHKERRQ(ierr);
       for (i = 0; i < Na; ++i) al[cind*tdA+i] = x[i];
       ierr = DMPlexVecRestoreClosure(plexA[s], sectionAux[s], locA[s], subface, &Na, &x);CHKERRQ(ierr);
