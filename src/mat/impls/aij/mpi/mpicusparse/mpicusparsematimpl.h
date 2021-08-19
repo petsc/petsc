@@ -11,9 +11,9 @@ typedef struct {
   cudaStream_t               stream;
   cusparseHandle_t           handle;
   PetscSplitCSRDataStructure deviceMat;
-  PetscInt                   coo_nd,coo_no;
-  THRUSTINTARRAY             *coo_p;
-  THRUSTARRAY                *coo_pw;
+  PetscInt                   coo_nd,coo_no; /* number of nonzero entries in coo for the diag/offdiag part */
+  THRUSTINTARRAY             *coo_p; /* the permutation array that partitions the coo array into diag/offdiag parts */
+  THRUSTARRAY                *coo_pw; /* the work array that stores the partitioned coo scalar values */
 } Mat_MPIAIJCUSPARSE;
 
 PETSC_INTERN PetscErrorCode MatCUSPARSESetStream(Mat, const cudaStream_t stream);

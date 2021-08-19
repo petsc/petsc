@@ -1856,15 +1856,15 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
   ierr = MPI_Comm_size(mumps->petsc_comm,&mumps->petsc_size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(mumps->petsc_comm,&mumps->myid);CHKERRMPI(ierr);/* "if (!myid)" still works even if mumps_comm is different */
 
-  ierr = PetscOptionsHasName(NULL,NULL,"-mat_mumps_use_omp_threads",&mumps->use_petsc_omp_support);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,((PetscObject)A)->prefix,"-mat_mumps_use_omp_threads",&mumps->use_petsc_omp_support);CHKERRQ(ierr);
   if (mumps->use_petsc_omp_support) nthreads = -1; /* -1 will let PetscOmpCtrlCreate() guess a proper value when user did not supply one */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_mumps_use_omp_threads",&nthreads,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,((PetscObject)A)->prefix,"-mat_mumps_use_omp_threads",&nthreads,NULL);CHKERRQ(ierr);
   if (mumps->use_petsc_omp_support) {
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
     ierr = PetscOmpCtrlCreate(mumps->petsc_comm,nthreads,&mumps->omp_ctrl);CHKERRQ(ierr);
     ierr = PetscOmpCtrlGetOmpComms(mumps->omp_ctrl,&mumps->omp_comm,&mumps->mumps_comm,&mumps->is_omp_master);CHKERRQ(ierr);
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"the system does not have PETSc OpenMP support but you added the -mat_mumps_use_omp_threads option. Configure PETSc with --with-openmp --download-hwloc (or --with-hwloc) to enable it, see more in MATSOLVERMUMPS manual\n");
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"the system does not have PETSc OpenMP support but you added the -%smat_mumps_use_omp_threads option. Configure PETSc with --with-openmp --download-hwloc (or --with-hwloc) to enable it, see more in MATSOLVERMUMPS manual\n",((PetscObject)A)->prefix?((PetscObject)A)->prefix:"");
 #endif
   } else {
     mumps->omp_comm      = PETSC_COMM_SELF;
@@ -2986,7 +2986,7 @@ $     if a compute node has 32 cores and you run on two nodes, you may use "mpir
 +   1. - Heroux, Michael A., R. Brightwell, and Michael M. Wolf. "Bi-modal MPI and MPI+ threads computing on scalable multicore systems." IJHPCA (Submitted) (2011).
 -   2. - Gutierrez, Samuel K., et al. "Accommodating Thread-Level Heterogeneity in Coupled Parallel Applications." Parallel and Distributed Processing Symposium (IPDPS), 2017 IEEE International. IEEE, 2017.
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType, MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(), PCGetFactor(), PCFactorGetMatrix()
+.seealso: PCFactorSetMatSolverType(), MatSolverType, MatMumpsSetIcntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(),  PCFactorGetMatrix()
 
 M*/
 

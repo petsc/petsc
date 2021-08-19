@@ -3748,18 +3748,23 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
   }
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   if (imode == ADD_VALUES) { /* ADD VALUES means add to existing ones */
-    if (cusp->cooPerm_a) {
+    if (cusp->cooPerm_a) { /* there are repeated entries in d_v[], and we need to add these them */
       THRUSTARRAY *cooPerm_w = new THRUSTARRAY(matrix->values->size());
       auto vbit = thrust::make_permutation_iterator(d_v,cusp->cooPerm->begin());
+      /* thrust::reduce_by_key(keys_first,keys_last,values_first,keys_output,values_output)
+        cooPerm_a = [0,0,1,2,3,4]. The length is n, number of nonozeros in d_v[].
+        cooPerm_a is ordered. d_v[i] is the cooPerm_a[i]-th unique nonzero.
+      */
       thrust::reduce_by_key(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),vbit,thrust::make_discard_iterator(),cooPerm_w->begin(),thrust::equal_to<PetscInt>(),thrust::plus<PetscScalar>());
       thrust::transform(cooPerm_w->begin(),cooPerm_w->end(),matrix->values->begin(),matrix->values->begin(),thrust::plus<PetscScalar>());
       delete cooPerm_w;
     } else {
+      /* all nonzeros in d_v[] are unique entries */
       auto zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(d_v,cusp->cooPerm->begin()),
                                                                 matrix->values->begin()));
       auto zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(d_v,cusp->cooPerm->end()),
                                                                 matrix->values->end()));
-      thrust::for_each(zibit,zieit,VecCUDAPlusEquals());
+      thrust::for_each(zibit,zieit,VecCUDAPlusEquals()); /* values[i] += d_v[cooPerm[i]]  */
     }
   } else {
     if (cusp->cooPerm_a) { /* repeated entries in COO, with INSERT_VALUES -> reduce */
@@ -3837,31 +3842,50 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
     ierr = PetscLogCpuToGpu(2.*n*sizeof(PetscInt));CHKERRQ(ierr);
     d_i.assign(coo_i,coo_i+n);
     d_j.assign(coo_j,coo_j+n);
+
+    /* Ex.
+      n = 6
+      coo_i = [3,3,1,4,1,4]
+      coo_j = [3,2,2,5,2,6]
+    */
     auto fkey = thrust::make_zip_iterator(thrust::make_tuple(d_i.begin(),d_j.begin()));
     auto ekey = thrust::make_zip_iterator(thrust::make_tuple(d_i.end(),d_j.end()));
 
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     thrust::sequence(thrust::device, cusp->cooPerm->begin(), cusp->cooPerm->end(), 0);
-    thrust::sort_by_key(fkey, ekey, cusp->cooPerm->begin(), IJCompare());
-    *cusp->cooPerm_a = d_i;
+    thrust::sort_by_key(fkey, ekey, cusp->cooPerm->begin(), IJCompare()); /* sort by row, then by col */
+    *cusp->cooPerm_a = d_i; /* copy the sorted array */
     THRUSTINTARRAY w = d_j;
 
-    auto nekey = thrust::unique(fkey, ekey, IJEqual());
+    /*
+      d_i     = [1,1,3,3,4,4]
+      d_j     = [2,2,2,3,5,6]
+      cooPerm = [2,4,1,0,3,5]
+    */
+    auto nekey = thrust::unique(fkey, ekey, IJEqual()); /* unique (d_i, d_j) */
+
+    /*
+      d_i     = [1,3,3,4,4,x]
+                            ^ekey
+      d_j     = [2,2,3,5,6,x]
+                           ^nekye
+    */
     if (nekey == ekey) { /* all entries are unique */
       delete cusp->cooPerm_a;
       cusp->cooPerm_a = NULL;
-    } else { /* I couldn't come up with a more elegant algorithm */
-      adjacent_difference(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),cusp->cooPerm_a->begin(),IJDiff());
-      adjacent_difference(w.begin(),w.end(),w.begin(),IJDiff());
-      (*cusp->cooPerm_a)[0] = 0;
+    } else { /* Stefano: I couldn't come up with a more elegant algorithm */
+      /* idea: any change in i or j in the (i,j) sequence implies a new nonzero */
+      adjacent_difference(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),cusp->cooPerm_a->begin(),IJDiff()); /* cooPerm_a: [1,1,3,3,4,4] => [1,0,1,0,1,0]*/
+      adjacent_difference(w.begin(),w.end(),w.begin(),IJDiff());                                              /* w:         [2,2,2,3,5,6] => [2,0,0,1,1,1]*/
+      (*cusp->cooPerm_a)[0] = 0; /* clear the first entry, though accessing an entry on device implies a cudaMemcpy */
       w[0] = 0;
-      thrust::transform(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),w.begin(),cusp->cooPerm_a->begin(),IJSum());
-      thrust::inclusive_scan(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),cusp->cooPerm_a->begin(),thrust::plus<PetscInt>());
+      thrust::transform(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),w.begin(),cusp->cooPerm_a->begin(),IJSum()); /* cooPerm_a =          [0,0,1,1,1,1]*/
+      thrust::inclusive_scan(cusp->cooPerm_a->begin(),cusp->cooPerm_a->end(),cusp->cooPerm_a->begin(),thrust::plus<PetscInt>()); /*cooPerm_a=[0,0,1,2,3,4]*/
     }
     thrust::counting_iterator<PetscInt> search_begin(0);
-    thrust::upper_bound(d_i.begin(), nekey.get_iterator_tuple().get<0>(),
-                        search_begin, search_begin + A->rmap->n,
-                        ii.begin());
+    thrust::upper_bound(d_i.begin(), nekey.get_iterator_tuple().get<0>(), /* binary search entries of [0,1,2,3,4,5,6) in ordered array d_i = [1,3,3,4,4], supposing A->rmap->n = 6. */
+                        search_begin, search_begin + A->rmap->n,  /* return in ii[] the index of last position in d_i[] where value could be inserted without violating the ordering */
+                        ii.begin()); /* ii = [0,1,1,3,5,5]. A leading 0 will be added later */
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
 
     ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
@@ -3869,7 +3893,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
     a->free_a       = PETSC_TRUE;
     a->free_ij      = PETSC_TRUE;
     ierr = PetscMalloc1(A->rmap->n+1,&a->i);CHKERRQ(ierr);
-    a->i[0] = 0;
+    a->i[0] = 0; /* a->i = [0,0,1,1,3,5,5] */
     cerr = cudaMemcpy(a->i+1,ii.data().get(),A->rmap->n*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     a->nz = a->maxnz = a->i[A->rmap->n];
     a->rmax = 0;
@@ -4026,7 +4050,7 @@ struct Shift
   }
 };
 
-/* merges to SeqAIJCUSPARSE matrices, [A';B']' operation in matlab notation */
+/* merges two SeqAIJCUSPARSE matrices A, B by concatenating their rows. [A';B']' operation in matlab notation */
 PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
 {
   PetscErrorCode               ierr;

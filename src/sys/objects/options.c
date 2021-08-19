@@ -1630,8 +1630,8 @@ PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions options,PetscBool 
 }
 
 /*@C
-   PetscOptionsHasName - Determines whether a certain option is given in the database. This returns true whether the option is a number, string or boolean, even
-                      its value is set to false.
+   PetscOptionsHasName - Determines whether a certain option is given in the database. This returns true whether the option is a number, string or Boolean, even
+                      if its value is set to false.
 
    Not Collective
 
