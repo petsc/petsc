@@ -218,6 +218,10 @@ PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin)
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
+  if (xin->boundtocpu || yin->boundtocpu) {
+    ierr = VecPointwiseDivide_Seq(win,xin,yin);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = VecHIPGetArrayWrite(win,&warray);CHKERRQ(ierr);
   ierr = VecHIPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecHIPGetArrayRead(yin,&yarray);CHKERRQ(ierr);
@@ -970,6 +974,10 @@ PetscErrorCode VecPointwiseMult_SeqHIP(Vec win,Vec xin,Vec yin)
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
+  if (xin->boundtocpu || yin->boundtocpu) {
+    ierr = VecPointwiseMult_Seq(win,xin,yin);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = VecHIPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecHIPGetArrayRead(yin,&yarray);CHKERRQ(ierr);
   ierr = VecHIPGetArrayWrite(win,&warray);CHKERRQ(ierr);
