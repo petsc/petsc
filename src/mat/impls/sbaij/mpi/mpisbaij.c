@@ -2238,7 +2238,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 
   Level: beginner
 
-.seealso: MatCreateMPISBAIJ, MATSEQSBAIJ, MATMPISBAIJ
+.seealso: MatCreateSBAIJ, MATSEQSBAIJ, MATMPISBAIJ
 M*/
 
 /*@C

@@ -111,7 +111,7 @@
        end interface
 
         Interface
-        subroutine MatCreateMPIAIJ(a,b,c,d,e,f,g,h,i,j,z)
+        subroutine MatCreateAIJ(a,b,c,d,e,f,g,h,i,j,z)
           import tMat
           MPI_Comm a
           PetscInt b
