@@ -796,6 +796,73 @@ static PetscErrorCode PCHPDDMSetUpNeumannOverlap_Private(PC pc)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, const IS*, const IS*, MatReuse scall, Mat *submat[])
+{
+  Mat            A;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (n != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "MatCreateSubMatrices() called to extract %D submatrices, which is different than 1", n);
+  /* previously composed Mat */
+  ierr = PetscObjectQuery((PetscObject)mat, "_PCHPDDM_SubMatrices", (PetscObject*)&A);CHKERRQ(ierr);
+  if (!A) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "SubMatrices not found in Mat");
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscCalloc1(1, submat);CHKERRQ(ierr);
+    ierr = MatDuplicate(A, MAT_COPY_VALUES, *submat);CHKERRQ(ierr);
+  } else {
+    ierr = MatCopy(A, (*submat)[0], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in_C, Mat *out_C)
+{
+  IS                           perm;
+  const PetscInt               *ptr;
+  PetscInt                     *concatenate, size, n;
+  std::map<PetscInt, PetscInt> order;
+  PetscBool                    sorted;
+  PetscErrorCode               ierr;
+
+  PetscFunctionBegin;
+  ierr = ISSorted(is, &sorted);CHKERRQ(ierr);
+  if (!sorted) {
+    ierr = ISGetLocalSize(is, &size);CHKERRQ(ierr);
+    ierr = ISGetIndices(is, &ptr);CHKERRQ(ierr);
+    /* MatCreateSubMatrices(), called by PCASM, follows the global numbering of Pmat */
+    for (n = 0; n < size; ++n)
+      order.insert(std::make_pair(ptr[n], n));
+    ierr = ISRestoreIndices(is, &ptr);CHKERRQ(ierr);
+    if (out_C) {
+      ierr = PetscMalloc1(size, &concatenate);CHKERRQ(ierr);
+      for (const std::pair<const PetscInt, PetscInt>& i : order)
+        *concatenate++ = i.second;
+      concatenate -= size;
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)in_C), size, concatenate, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
+      ierr = ISSetPermutation(perm);CHKERRQ(ierr);
+      /* permute user-provided Mat so that it matches with MatCreateSubMatrices() numbering */
+      ierr = MatPermute(in_C, perm, perm, out_C);CHKERRQ(ierr);
+      ierr = ISDestroy(&perm);CHKERRQ(ierr);
+    }
+    if (out_is) {
+      ierr = PetscMalloc1(size, &concatenate);CHKERRQ(ierr);
+      for (const std::pair<const PetscInt, PetscInt>& i : order)
+        *concatenate++ = i.first;
+      concatenate -= size;
+      /* permute user-provided IS so that it matches with MatCreateSubMatrices() numbering */
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)in_is), size, concatenate, PETSC_OWN_POINTER, out_is);CHKERRQ(ierr);
+    }
+  } else { /* input IS is sorted, nothing to permute, simply duplicate inputs when needed */
+    if (out_C) {
+      ierr = MatDuplicate(in_C, MAT_COPY_VALUES, out_C);CHKERRQ(ierr);
+    }
+    if (out_is) {
+      ierr = ISDuplicate(in_is, out_is);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCSetUp_HPDDM(PC pc)
 {
   PC_HPDDM                 *data = (PC_HPDDM*)pc->data;
@@ -1000,32 +1067,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       }
       /* it is possible to share the PC only given specific conditions, otherwise there is not warranty that the matrices have the same nonzero pattern */
       if (!ismatis && sub == &data->aux && !data->B && subdomains && data->share) {
-        IS             perm;
-        PetscInt       size;
-        const PetscInt *ptr;
-        PetscInt       *concatenate;
-        ierr = ISGetLocalSize(*is, &size);CHKERRQ(ierr);
-        ierr = ISGetIndices(*is, &ptr);CHKERRQ(ierr);
-        std::map<PetscInt, PetscInt> order;
-        /* MatCreateSubMatrices(), called by PCASM, follows the global numbering of Pmat */
-        for (n = 0; n < size; ++n)
-            order.insert(std::make_pair(ptr[n], n));
-        ierr = ISRestoreIndices(*is, &ptr);CHKERRQ(ierr);
-        ierr = PetscMalloc1(size, &concatenate);CHKERRQ(ierr);
-        for (const std::pair<const PetscInt, PetscInt>& i : order)
-          *concatenate++ = i.second;
-        concatenate -= size;
-        ierr = ISCreateGeneral(PETSC_COMM_SELF, size, concatenate, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
-        ierr = ISSetPermutation(perm);CHKERRQ(ierr);
-        /* permute user-provided Mat so that it matches with MatCreateSubMatrices() numbering */
-        ierr = MatPermute(data->aux, perm, perm, &C);CHKERRQ(ierr);
-        ierr = ISDestroy(&perm);CHKERRQ(ierr);
-        ierr = PetscMalloc1(size, &concatenate);CHKERRQ(ierr);
-        for (const std::pair<const PetscInt, PetscInt>& i : order)
-          *concatenate++ = i.first;
-        concatenate -= size;
-        /* permute user-provided IS so that it matches with MatCreateSubMatrices() numbering */
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)data->is), size, concatenate, PETSC_OWN_POINTER, &uis);CHKERRQ(ierr);
+        PetscInt size = -1;
+        ierr = PCHPDDMPermute_Private(*is, data->is, &uis, data->aux, &C);CHKERRQ(ierr);
         if (!data->levels[0]->pc) {
           ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : "");CHKERRQ(ierr);
           ierr = PCCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->pc);CHKERRQ(ierr);
@@ -1038,7 +1081,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         }
         ierr = PCSetFromOptions(data->levels[0]->pc);CHKERRQ(ierr);
         ierr = PCSetUp(data->levels[0]->pc);CHKERRQ(ierr);
-        size = -1;
         ierr = PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt*, PetscInt*, KSP**), (data->levels[0]->pc, &size, NULL, &ksp));CHKERRQ(ierr);
         if (size != 1) {
           ierr = PCDestroy(&data->levels[0]->pc);CHKERRQ(ierr);
@@ -1158,7 +1200,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           data->levels[n]->P->setBuffer();
           data->levels[n]->P->super::start();
         }
-      if (!data->Neumann) {
+      if (!data->Neumann && (ismatis || !subdomains)) {
         ierr = MatDestroySubMatrices(1, &sub);CHKERRQ(ierr);
       }
       if (ismatis) data->is = NULL;
@@ -1194,7 +1236,19 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = PCSetType(inner, PCASM);CHKERRQ(ierr);
         if (!inner->setupcalled) {
           ierr = PCASMSetLocalSubdomains(inner, 1, is, &loc);CHKERRQ(ierr);
+          if (!data->Neumann) { /* subdomain matrices are already created for the eigenproblem, reuse them for the fine-level PC */
+            ierr = PCHPDDMPermute_Private(*is, NULL, NULL, sub[0], &C);CHKERRQ(ierr);
+            ierr = PetscObjectCompose((PetscObject)inner->pmat, "_PCHPDDM_SubMatrices", (PetscObject)C);CHKERRQ(ierr);
+            ierr = MatSetOperation(inner->pmat, MATOP_CREATE_SUBMATRICES, (void(*)(void))PCHPDDMCreateSubMatrices_Private);CHKERRQ(ierr);
+            ierr = PCSetUp(inner);CHKERRQ(ierr);
+            ierr = MatSetOperation(inner->pmat, MATOP_CREATE_SUBMATRICES, (void(*)(void))MatCreateSubMatrices);CHKERRQ(ierr);
+            ierr = MatDestroy(&C);CHKERRQ(ierr);
+            ierr = PetscObjectCompose((PetscObject)inner->pmat, "_PCHPDDM_SubMatrices", NULL);CHKERRQ(ierr);
+          }
         }
+      }
+      if (!data->Neumann) {
+        ierr = MatDestroySubMatrices(1, &sub);CHKERRQ(ierr);
       }
     }
     ierr = ISDestroy(&loc);CHKERRQ(ierr);
