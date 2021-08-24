@@ -1,6 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 #include <petsc/private/dtimpl.h> /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
+#include <petscdmplextransform.h>
 
 static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
 {
@@ -18,7 +19,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   DM                 K;
   DMPolytopeType     ct;
-  DMPlexCellRefiner  cr;
+  DMPlexTransform    tr;
   PetscReal         *subpoint;
   PetscBLASInt      *pivots;
   PetscBLASInt       n, info;
@@ -32,9 +33,10 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &K);CHKERRQ(ierr);
   ierr = DMGetDimension(K, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetCellType(K, 0, &ct);CHKERRQ(ierr);
-  ierr = DMPlexCellRefinerCreate(K, &cr);CHKERRQ(ierr);
-  ierr = DMPlexCellRefinerGetAffineTransforms(cr, ct, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac);CHKERRQ(ierr);
-  ierr = DMPlexCellRefinerDestroy(&cr);CHKERRQ(ierr);
+  ierr = DMPlexTransformCreate(PETSC_COMM_SELF, &tr);CHKERRQ(ierr);
+  ierr = DMPlexTransformSetType(tr, DMPLEXREFINEREGULAR);CHKERRQ(ierr);
+  ierr = DMPlexRefineRegularGetAffineTransforms(tr, ct, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac);CHKERRQ(ierr);
+  ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
   /* Determine dof embedding into subelements */
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscSpaceGetDimension(fem->basisSpace, &spdim);CHKERRQ(ierr);
@@ -135,7 +137,7 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
         subpoint[d] = -1.0;
         for (e = 0; e < dim; ++e) subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(points[p*dim+e] - cmp->v0[s*dim+e]);
       }
-      ierr = CellRefinerInCellTest_Internal(ct, subpoint, &inside);CHKERRQ(ierr);
+      ierr = DMPolytopeInCellTest(ct, subpoint, &inside);CHKERRQ(ierr);
       if (inside) {subpoints[p] = s; break;}
     }
     if (s >= cmp->numSubelements) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d was not found in any subelement", p);

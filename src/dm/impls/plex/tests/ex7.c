@@ -142,7 +142,6 @@ typedef struct {
   PetscInt  dim;          /* The topological mesh dimension */
   PetscBool simplex;      /* Use simplices or hexes */
   PetscBool useGenerator; /* Construct mesh with a mesh generator */
-  PetscBool femGeometry;  /* Flag to compute FEM geometry */
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -154,14 +153,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim          = 2;
   options->simplex      = PETSC_TRUE;
   options->useGenerator = PETSC_FALSE;
-  options->femGeometry  = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-testnum", "The mesh to create", "ex7.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex7.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", "ex7.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex7.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-fem_geometry", "Flag to compute FEM geometry", "ex7.c", options->femGeometry, &options->femGeometry, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -198,6 +195,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
     PetscInt numPoints[2] = {0, 0};
 
     ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm, "marker");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -234,6 +232,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
     PetscInt numPoints[2] = {0, 0};
 
     ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm, "marker");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -285,6 +284,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
     PetscInt numPoints[2] = {0, 0};
 
     ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm, "marker");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -323,63 +323,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
     PetscInt numPoints[2] = {0, 0};
 
     ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode CheckMesh(DM dm, AppCtx *user)
-{
-  PetscReal      detJ, J[9], refVol = 1.0;
-  PetscReal      vol;
-  PetscInt       dim, depth, d, cStart, cEnd, c;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) {
-    refVol *= 2.0;
-  }
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    if (user->femGeometry) {
-      ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
-      if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, |J| = %g", c, (double) detJ);
-      ierr = PetscInfo1(dm, "FEM Volume: %g\n", (double) detJ*refVol);CHKERRQ(ierr);
-    }
-    if (depth > 1) {
-      ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
-      if (vol <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted, vol = %g", c, (double) vol);
-      ierr = PetscInfo1(dm, "FVM Volume: %g\n", (double) vol);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode CompareCones(DM dm, DM idm)
-{
-  PetscInt       cStart, cEnd, c, vStart, vEnd, v;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    const PetscInt *cone;
-    PetscInt       *points = NULL, numPoints, p, numVertices = 0, coneSize;
-
-    ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetTransitiveClosure(idm, c, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
-    for (p = 0; p < numPoints*2; p += 2) {
-      const PetscInt point = points[p];
-      if ((point >= vStart) && (point < vEnd)) points[numVertices++] = point;
-    }
-    if (numVertices != coneSize) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In cell %d, cone size %d != %d vertices in closure", c, coneSize, numVertices);
-    for (v = 0; v < numVertices; ++v) {
-      if (cone[v] != points[v]) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In cell %d, cone point %d is %d != %d vertex in closure", c, v, cone[v], points[v]);
-    }
-    ierr = DMPlexRestoreTransitiveClosure(idm, c, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm, "marker");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -392,9 +336,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   PetscFunctionBegin;
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  if (useGenerator) {
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  } else {
+  if (!useGenerator) {
     PetscInt  dim     = user->dim;
     PetscBool simplex = user->simplex;
 
@@ -418,42 +360,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
       SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
     }
   }
-  {
-    DMPlexInterpolatedFlag interpolated;
-
-    ierr = CheckMesh(*dm, user);CHKERRQ(ierr);
-    ierr = DMPlexIsInterpolated(*dm, &interpolated);CHKERRQ(ierr);
-    if (interpolated == DMPLEX_INTERPOLATED_FULL) {
-      DM udm;
-
-      ierr = DMPlexUninterpolate(*dm, &udm);CHKERRQ(ierr);
-      ierr = CompareCones(udm, *dm);CHKERRQ(ierr);
-      ierr = DMDestroy(&udm);CHKERRQ(ierr);
-    } else {
-      DM idm;
-
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = CompareCones(*dm, idm);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = idm;
-    }
-  }
-  {
-    DM               distributedMesh = NULL;
-    PetscPartitioner part;
-
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-    if (distributedMesh) {
-      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = distributedMesh;
-    }
-  }
-  ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -467,64 +375,69 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &dm);CHKERRQ(ierr);
-  ierr = CheckMesh(dm, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
 
 /*TEST
+  testset:
+    args: -dm_plex_interpolate_pre -dm_plex_check_all
 
-  # Two cell test meshes 0-7
-  test:
-    suffix: 0
-    args: -dim 2 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 1
-    nsize: 2
-    args: -petscpartitioner_type simple -dim 2 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 2
-    args: -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 3
-    nsize: 2
-    args: -petscpartitioner_type simple -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 4
-    args: -dim 3 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 5
-    nsize: 2
-    args: -petscpartitioner_type simple -dim 3 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 6
-    args: -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
-  test:
-    suffix: 7
-    nsize: 2
-    args: -petscpartitioner_type simple -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
-  # 2D Hybrid Mesh 8
-  test:
-    suffix: 8
-    args: -dim 2 -simplex 0 -testnum 1 -dm_view ascii::ascii_info_detail
-  # Reference cells
-  test:
-    suffix: 12
-    args: -use_generator -dm_plex_reference_cell_domain -dm_plex_cell pyramid -fem_geometry 0 -dm_plex_check_all
-  # TetGen meshes 9-10
-  test:
-    suffix: 9
-    requires: triangle
-    args: -use_generator -dm_view ascii::ascii_info_detail -dm_coord_space 0
-  test:
-    suffix: 10
-    requires: ctetgen
-    args: -use_generator -dm_plex_dim 3 -dm_view ascii::ascii_info_detail -dm_coord_space 0
-  # Cubit meshes 11
-  test:
-    suffix: 11
-    requires: exodusii
-    args: -use_generator -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -dm_view ascii::ascii_info_detail -dm_coord_space 0
+    # Two cell test meshes 0-7
+    test:
+      suffix: 0
+      args: -dim 2 -dm_plex_interpolate -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 1
+      nsize: 2
+      args: -dm_distribute -petscpartitioner_type simple -dim 2 -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 2
+      args: -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 3
+      nsize: 2
+      args: -dm_distribute -petscpartitioner_type simple -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 4
+      args: -dim 3 -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 5
+      nsize: 2
+      args: -dm_distribute -petscpartitioner_type simple -dim 3 -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 6
+      args: -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
+    test:
+      suffix: 7
+      nsize: 2
+      args: -dm_distribute -petscpartitioner_type simple -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
+    # 2D Hybrid Mesh 8
+    test:
+      suffix: 8
+      args: -dim 2 -simplex 0 -testnum 1 -dm_view ascii::ascii_info_detail
+
+  testset:
+    args: -dm_plex_check_all
+
+    # Reference cells
+    test:
+      suffix: 12
+      args: -use_generator -dm_plex_reference_cell_domain -dm_plex_cell pyramid -dm_plex_check_all
+    # TetGen meshes 9-10
+    test:
+      suffix: 9
+      requires: triangle
+      args: -use_generator -dm_view ascii::ascii_info_detail -dm_coord_space 0
+    test:
+      suffix: 10
+      requires: ctetgen
+      args: -use_generator -dm_plex_dim 3 -dm_view ascii::ascii_info_detail -dm_coord_space 0
+    # Cubit meshes 11
+    test:
+      suffix: 11
+      requires: exodusii
+      args: -use_generator -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -dm_view ascii::ascii_info_detail -dm_coord_space 0
 
 TEST*/

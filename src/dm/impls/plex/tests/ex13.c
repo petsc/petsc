@@ -107,7 +107,7 @@ static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user)
   ierr = DMPlexGetHeightStratum(dm, h, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     /* Could use PetscRand instead */
-    if (c%2) {ierr = DMPlexReverseCell(dm, c);CHKERRQ(ierr);}
+    if (c%2) {ierr = DMPlexOrientPoint(dm, c, -1);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

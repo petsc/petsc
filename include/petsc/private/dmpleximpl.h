@@ -46,19 +46,6 @@ PETSC_EXTERN PetscLogEvent DMPLEX_BuildFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_BuildCoordinatesFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_LocatePoints;
 
-typedef struct _DMPlexCellRefinerOps *DMPlexCellRefinerOps;
-struct _DMPlexCellRefinerOps {
-  PetscErrorCode (*refine)(DMPlexCellRefiner, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
-  PetscErrorCode (*mapsubcells)(DMPlexCellRefiner, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
-  PetscErrorCode (*getaffinetransforms)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
-  PetscErrorCode (*getaffinefacetransforms)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);
-  PetscErrorCode (*getcellvertices)(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[]);
-  PetscErrorCode (*getsubcellvertices)(DMPlexCellRefiner, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt *, PetscInt *[]);
-  PetscErrorCode (*mapcoords)(DMPlexCellRefiner, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*setup)(DMPlexCellRefiner);
-  PetscErrorCode (*destroy)(DMPlexCellRefiner);
-};
-
 typedef struct _n_PlexGeneratorFunctionList *PlexGeneratorFunctionList;
 struct _n_PlexGeneratorFunctionList {
   PetscErrorCode    (*generate)(DM, PetscBool, DM*);
@@ -67,23 +54,6 @@ struct _n_PlexGeneratorFunctionList {
   char              *name;
   PetscInt          dim;
   PlexGeneratorFunctionList next;
-};
-
-struct _p_DMPlexCellRefiner {
-  PETSCHEADER(struct _DMPlexCellRefinerOps);
-  DM                    dm;          /* The original DM */
-  PetscBool             setupcalled;
-  DMPlexCellRefinerType type;
-  DMLabel               refineType;  /* The refinement type of each point, since there are multiple ways to refine a cell */
-  PetscInt              *ctOrder;    /* [i] = ct: An array with cell types in depth order */
-  PetscInt              *ctOrderInv; /* [ct] = i: An array with the ordinal numbers for each cell type */
-  PetscInt              *ctStart;    /* [ct]: The number for the first cell of each polytope type in the original mesh */
-  PetscInt              *ctStartNew; /* [ctNew]: The number for the first cell of each polytope type in the new mesh */
-  PetscInt              *offset;     /* [ct/rt][ctNew]: The offset in the new point numbering of a point of type ctNew produced from an old point of type ct or refine type rt */
-  PetscFE               *coordFE;    /* Finite element for each cell type, used for localized coordinate interpolation */
-  PetscFEGeom           **refGeom;   /* Geometry of the reference cell for each cell type */
-  DMLabel               adaptLabel;  /* Optional label indicating cells to be refined */
-  void                  *data;       /* refiner private data */
 };
 
 /* Utility struct to store the contents of a Fluent file in memory */
@@ -132,6 +102,7 @@ typedef struct {
   PetscInt             maxSupportSize;    /* Cached for fast lookup */
   PetscInt            *supports;          /* Cone for each point */
   PetscBool            refinementUniform; /* Flag for uniform cell refinement */
+  char                *transformType;     /* Type of transform for uniform cell refinement */
   PetscReal            refinementLimit;   /* Maximum volume for refined cell */
   PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
   PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
@@ -141,8 +112,7 @@ typedef struct {
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
   /* Hierarchy */
-  DMPlexCellRefinerType cellRefiner;       /* Strategy for refining cells */
-  PetscBool             regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
+  PetscBool            regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
 
   /* Generation */
   char                *tetgenOpts;
@@ -287,8 +257,6 @@ PETSC_INTERN PetscErrorCode DMPlexVTKGetCellType_Internal(DM,PetscInt,PetscInt,P
 PETSC_INTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
 PETSC_INTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,DMPolytopeType,const PetscInt[],PetscInt*,const DMPolytopeType*[],const PetscInt*[],const PetscInt*[]);
 PETSC_INTERN PetscErrorCode DMPlexRestoreRawFaces_Internal(DM,DMPolytopeType,const PetscInt[],PetscInt*,const DMPolytopeType*[],const PetscInt*[],const PetscInt*[]);
-PETSC_INTERN PetscErrorCode CellRefinerInCellTest_Internal(DMPolytopeType, const PetscReal[], PetscBool *);
-PETSC_INTERN PetscErrorCode DMPlexCellRefinerAdaptLabel(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexComputeCellType_Internal(DM, PetscInt, PetscInt, DMPolytopeType *);
 PETSC_INTERN PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DMPolytopeType, PetscInt *[], PetscInt *[]);
 PETSC_INTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, PetscInt, const PetscInt[], DMLabel, PetscInt, const PetscScalar[], InsertMode);
@@ -302,7 +270,6 @@ PETSC_EXTERN PetscErrorCode indicesPoint_private(PetscSection,PetscInt,PetscInt,
 PETSC_EXTERN PetscErrorCode indicesPointFields_private(PetscSection,PetscInt,PetscInt,PetscInt [],PetscBool,PetscInt,PetscInt []);
 PETSC_INTERN PetscErrorCode DMPlexLocatePoint_Internal(DM,PetscInt,const PetscScalar [],PetscInt,PetscInt *);
 /* these two are PETSC_EXTERN just because of src/dm/impls/plex/tests/ex18.c */
-PETSC_EXTERN PetscErrorCode DMPlexOrientCell_Internal(DM,PetscInt,PetscInt,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
 
 /* Applications may use this function */
@@ -316,17 +283,12 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);
 
 PETSC_INTERN PetscErrorCode DMPlexGetOverlap_Plex(DM, PetscInt *);
 
-/* invert dihedral symmetry: return a^-1,
- * using the representation described in
- * DMPlexGetConeOrientation() */
+#if 1
 PETSC_STATIC_INLINE PetscInt DihedralInvert(PetscInt N, PetscInt a)
 {
   return (a <= 0) ? a : (N - a);
 }
 
-/* invert dihedral symmetry: return b * a,
- * using the representation described in
- * DMPlexGetConeOrientation() */
 PETSC_STATIC_INLINE PetscInt DihedralCompose(PetscInt N, PetscInt a, PetscInt b)
 {
   if (!N) return 0;
@@ -335,13 +297,63 @@ PETSC_STATIC_INLINE PetscInt DihedralCompose(PetscInt N, PetscInt a, PetscInt b)
          ((b >= 0) ? -(((N - b - a - 1) % N) + 1) : ((N + b - a) % N));
 }
 
+PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
+{
+  return DihedralCompose(N,DihedralInvert(N,a),b);
+}
+#else
+/* TODO
+   This is a reimplementation of the tensor dihedral symmetries using the new orientations.
+   These should be turned on when we convert to new-style orientations in p4est.
+*/
+/* invert dihedral symmetry: return a^-1,
+ * using the representation described in
+ * DMPlexGetConeOrientation() */
+PETSC_STATIC_INLINE PetscInt DihedralInvert(PetscInt N, PetscInt a)
+{
+  switch (N) {
+    case 0: return 0;
+    case 2: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_SEGMENT, 0, a);
+    case 4: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_QUADRILATERAL, 0, a);
+    case 8: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_HEXAHEDRON, 0, a);
+    default: SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid celltype for DihedralInvert()");
+  }
+  return 0;
+}
+
+/* compose dihedral symmetry: return b * a,
+ * using the representation described in
+ * DMPlexGetConeOrientation() */
+PETSC_STATIC_INLINE PetscInt DihedralCompose(PetscInt N, PetscInt a, PetscInt b)
+{
+  switch (N) {
+    case 0: return 0;
+    case 2: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_SEGMENT, b, a);
+    case 4: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_QUADRILATERAL, b, a);
+    case 8: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_HEXAHEDRON, b, a);
+    default: SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid celltype for DihedralCompose()");
+  }
+  return 0;
+}
+
 /* swap dihedral symmetries: return b * a^-1,
  * using the representation described in
  * DMPlexGetConeOrientation() */
 PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
 {
-  return DihedralCompose(N,DihedralInvert(N,a),b);
+  switch (N) {
+    case 0: return 0;
+    case 2: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_SEGMENT, b, a);
+    case 4: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_QUADRILATERAL, b, a);
+    case 8: return DMPolytopeTypeComposeOrientationInv(DM_POLYTOPE_HEXAHEDRON, b, a);
+    default: SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid celltype for DihedralCompose()");
+  }
+  return 0;
 }
+#endif
+PETSC_EXTERN PetscInt       DMPolytopeConvertNewOrientation_Internal(DMPolytopeType, PetscInt);
+PETSC_EXTERN PetscInt       DMPolytopeConvertOldOrientation_Internal(DMPolytopeType, PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexConvertOldOrientations_Internal(DM);
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscFormKey, IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
@@ -658,50 +670,10 @@ PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscRea
 
 PETSC_STATIC_INLINE PetscReal DMPlex_DistD_Internal(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(PetscConj(x[d] - y[d])*(x[d] - y[d])); return PetscSqrtReal(sum);}
 
-PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Translate_Private(PetscInt ornt, PetscInt *start, PetscBool *reverse)
-{
-  PetscFunctionBegin;
-  *reverse = (ornt < 0) ? PETSC_TRUE : PETSC_FALSE;
-  *start = *reverse ? -(ornt+1) : ornt;
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Combine_Private(PetscInt coneSize, PetscInt origStart, PetscBool origReverse, PetscInt rotateStart, PetscBool rotateReverse, PetscInt *newStart, PetscBool *newReverse)
-{
-  PetscFunctionBegin;
-  *newReverse = (origReverse == rotateReverse) ? PETSC_FALSE : PETSC_TRUE;
-  *newStart = rotateReverse ? (coneSize + rotateStart - origStart) : (coneSize + origStart - rotateStart);
-  *newStart %= coneSize;
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_TranslateBack_Private(PetscInt coneSize, PetscInt start, PetscBool reverse, PetscInt *ornt)
-{
-  PetscFunctionBegin;
-  if (coneSize < 3) {
-    /* edges just get flipped if start == 1 regardless direction */
-    *ornt = start ? -2 : 0;
-  } else {
-    *ornt = reverse ? -(start+1) : start;
-  }
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscErrorCode DMPlexFixFaceOrientations_Permute_Private(PetscInt n, const PetscInt arr[], PetscInt start, PetscBool reverse, PetscInt newarr[])
-{
-  PetscInt i;
-
-  PetscFunctionBegin;
-  if (reverse) {for (i=0; i<n; i++) newarr[i] = arr[(n+start-i)%n];}
-  else         {for (i=0; i<n; i++) newarr[i] = arr[(start+i)%n];}
-  PetscFunctionReturn(0);
-}
-
 PETSC_INTERN PetscErrorCode DMPlexGetPointDualSpaceFEM(DM,PetscInt,PetscInt,PetscDualSpace *);
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection,PetscBool,PetscInt,PetscInt,PetscInt *,PetscBool,const PetscInt[],const PetscInt[],PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection,PetscBool,PetscInt,PetscInt,PetscInt[],PetscBool,const PetscInt***,PetscInt,const PetscInt[],PetscInt[]);
-PETSC_INTERN PetscErrorCode DMPlexGetCompressedClosure(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscSection *, IS *, const PetscInt **);
-PETSC_INTERN PetscErrorCode DMPlexRestoreCompressedClosure(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscSection *, IS *, const PetscInt **);
+PETSC_INTERN PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM, PetscInt, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetAllCells_Internal(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMSNESGetFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);

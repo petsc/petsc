@@ -2781,7 +2781,12 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
 
     ierr = DMPlexGetChart(sp->dm, &pStart, &pEnd);CHKERRQ(ierr);
     numPoints = pEnd - pStart;
-    ierr = DMPlexGetConeSize(sp->dm, 0, &numFaces);CHKERRQ(ierr);
+    {
+      DMPolytopeType ct;
+      /* The number of arrangements is no longer based on the number of faces */
+      ierr = DMPlexGetCellType(sp->dm, 0, &ct);CHKERRQ(ierr);
+      numFaces = DMPolytopeTypeGetNumArrangments(ct) / 2;
+    }
     ierr = PetscCalloc1(numPoints,&symperms);CHKERRQ(ierr);
     ierr = PetscCalloc1(numPoints,&symflips);CHKERRQ(ierr);
     spintdim = sp->spintdim;

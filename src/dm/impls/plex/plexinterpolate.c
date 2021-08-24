@@ -525,52 +525,15 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       ierr = DMPlexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
       ierr = DMPlexGetCone(idm, f, &fcone);CHKERRQ(ierr);
       if (fcone[0] < 0) {ierr = DMPlexSetCone(idm, f, face);CHKERRQ(ierr);}
-      /* TODO This should be unnecessary since we have autoamtic orientation */
       {
-        /* when matching hybrid faces in 3D, only few cases are possible.
-           Face traversal however can no longer follow the usual convention, this seems a serious issue to me */
-        PetscInt        tquad_map[4][4] = { {PETSC_MIN_INT,            0,PETSC_MIN_INT,PETSC_MIN_INT},
-                                            {           -1,PETSC_MIN_INT,PETSC_MIN_INT,PETSC_MIN_INT},
-                                            {PETSC_MIN_INT,PETSC_MIN_INT,PETSC_MIN_INT,            1},
-                                            {PETSC_MIN_INT,PETSC_MIN_INT,           -2,PETSC_MIN_INT} };
-        PetscInt        i, i2, j;
         const PetscInt *cone;
         PetscInt        coneSize, ornt;
 
-        /* Orient face: Do not allow reverse orientation at the first vertex */
         ierr = DMPlexGetConeSize(idm, f, &coneSize);CHKERRQ(ierr);
         ierr = DMPlexGetCone(idm, f, &cone);CHKERRQ(ierr);
         if (coneSize != faceSize) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %D for face %D should be %D", coneSize, f, faceSize);
-        /* - First find the initial vertex */
-        for (i = 0; i < faceSize; ++i) if (face[0] == cone[i]) break;
-        /* If we want to compare tensor faces to regular faces, we have to flip them and take the else branch here */
-        if (faceType == DM_POLYTOPE_SEG_PRISM_TENSOR) {
-          /* find the second vertex */
-          for (i2 = 0; i2 < faceSize; ++i2) if (face[1] == cone[i2]) break;
-          switch (faceSize) {
-          case 2:
-            ornt = i ? -2 : 0;
-            break;
-          case 4:
-            ornt = tquad_map[i][i2];
-            break;
-          default: SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unhandled face size %D for face %D in cell %D", faceSize, f, c);
-          }
-        } else {
-          /* Try forward comparison */
-          for (j = 0; j < faceSize; ++j) if (face[j] != cone[(i+j)%faceSize]) break;
-          if (j == faceSize) {
-            if ((faceSize == 2) && (i == 1)) ornt = -2;
-            else                             ornt = i;
-          } else {
-            /* Try backward comparison */
-            for (j = 0; j < faceSize; ++j) if (face[j] != cone[(i+faceSize-j)%faceSize]) break;
-            if (j == faceSize) {
-              if (i == 0) ornt = -faceSize;
-              else        ornt = -i;
-            } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine orientation of face %D in cell %D", f, c);
-          }
-        }
+        /* Notice that we have to use vertices here because the lower dimensional faces have not been created yet */
+        ierr = DMPolytopeGetVertexOrientation(faceType, cone, face, &ornt);CHKERRQ(ierr);
         ierr = DMPlexInsertConeOrientation(idm, c, cf, ornt);CHKERRQ(ierr);
       }
     }
@@ -609,110 +572,136 @@ static PetscErrorCode SortRmineRremoteByRemote_Private(PetscSF sf, PetscInt *rmi
 
 PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
 {
-  /* Here we only compare first 2 points of the cone. Full cone size would lead to stronger self-checking. */
-  PetscInt          mainCone[2];
-  PetscInt          (*roots)[2], (*leaves)[2];
-  PetscMPIInt       (*rootsRanks)[2], (*leavesRanks)[2];
-
-  PetscSF           sf=NULL;
-  const PetscInt    *locals=NULL;
-  const PetscSFNode *remotes=NULL;
-  PetscInt           nroots, nleaves, p, c;
-  PetscInt           nranks, n, o, r;
-  const PetscMPIInt *ranks=NULL;
-  const PetscInt    *roffset=NULL;
-  PetscInt          *rmine1=NULL, *rremote1=NULL; /* rmine and rremote copies simultaneously sorted by rank and rremote */
-  const PetscInt    *cone=NULL;
-  PetscInt           coneSize, ind0;
+  PetscSF            sf;
+  const PetscInt    *locals;
+  const PetscSFNode *remotes;
+  const PetscMPIInt *ranks;
+  const PetscInt    *roffset;
+  PetscInt          *rmine1, *rremote1; /* rmine and rremote copies simultaneously sorted by rank and rremote */
+  PetscInt           nroots, p, nleaves, nranks, r, maxConeSize = 0;
+  PetscInt         (*roots)[4],      (*leaves)[4], mainCone[4];
+  PetscMPIInt      (*rootsRanks)[4], (*leavesRanks)[4];
   MPI_Comm           comm;
-  PetscMPIInt        rank,size;
+  PetscMPIInt        rank, size;
   PetscInt           debug = 0;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes);CHKERRQ(ierr);
-  if (nroots < 0) PetscFunctionReturn(0);
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
-  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-before_fix_dm_view");CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG)) {ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);}
-  ierr = SortRmineRremoteByRemote_Private(sf, &rmine1, &rremote1);CHKERRQ(ierr);
-  ierr = PetscMalloc4(nroots, &roots, nroots, &leaves, nroots, &rootsRanks, nroots, &leavesRanks);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-before_orient_interface_dm_view");CHKERRQ(ierr);
+  if (PetscDefined(USE_DEBUG)) {ierr = DMPlexCheckPointSF(dm);CHKERRQ(ierr);}
+  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &locals, &remotes);CHKERRQ(ierr);
+  if (nroots < 0) PetscFunctionReturn(0);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = SortRmineRremoteByRemote_Private(sf, &rmine1, &rremote1);CHKERRQ(ierr);
+  for (p = 0; p < nleaves; ++p) {
+    PetscInt coneSize;
+    ierr = DMPlexGetConeSize(dm, locals[p], &coneSize);CHKERRQ(ierr);
+    maxConeSize = PetscMax(maxConeSize, coneSize);
+  }
+  if (maxConeSize > 4) SETERRQ1(comm, PETSC_ERR_SUP, "This method does not support cones of size %D", maxConeSize);
+  ierr = PetscMalloc4(nroots, &roots, nroots, &leaves, nroots, &rootsRanks, nroots, &leavesRanks);CHKERRQ(ierr);
   for (p = 0; p < nroots; ++p) {
+    const PetscInt *cone;
+    PetscInt        coneSize, c, ind0;
+
     ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    /* Ignore vertices */
     if (coneSize < 2) {
-      for (c = 0; c < 2; c++) {
-        roots[p][c] = -1;
+      for (c = 0; c < 4; c++) {
+        roots[p][c]      = -1;
         rootsRanks[p][c] = -1;
       }
       continue;
     }
     /* Translate all points to root numbering */
-    for (c = 0; c < 2; c++) {
+    for (c = 0; c < PetscMin(coneSize, 4); c++) {
       ierr = PetscFindInt(cone[c], nleaves, locals, &ind0);CHKERRQ(ierr);
       if (ind0 < 0) {
-        roots[p][c] = cone[c];
+        roots[p][c]      = cone[c];
         rootsRanks[p][c] = rank;
       } else {
-        roots[p][c] = remotes[ind0].index;
+        roots[p][c]      = remotes[ind0].index;
         rootsRanks[p][c] = remotes[ind0].rank;
       }
     }
+    for (c = coneSize; c < 4; c++) {
+      roots[p][c]      = -1;
+      rootsRanks[p][c] = -1;
+    }
   }
   for (p = 0; p < nroots; ++p) {
-    for (c = 0; c < 2; c++) {
-      leaves[p][c] = -2;
+    PetscInt c;
+    for (c = 0; c < 4; c++) {
+      leaves[p][c]      = -2;
       leavesRanks[p][c] = -2;
     }
   }
-  ierr = PetscSFBcastBegin(sf, MPIU_2INT, roots, leaves,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf, MPI_2INT, rootsRanks, leavesRanks,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPIU_2INT, roots, leaves,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPI_2INT, rootsRanks, leavesRanks,MPI_REPLACE);CHKERRQ(ierr);
-  if (debug) {ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);}
-  if (debug && rank == 0) {ierr = PetscSynchronizedPrintf(comm, "Referenced roots\n");CHKERRQ(ierr);}
+  ierr = PetscSFBcastBegin(sf, MPIU_4INT, roots, leaves, MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf, MPI_4INT, rootsRanks, leavesRanks, MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_4INT, roots, leaves, MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPI_4INT, rootsRanks, leavesRanks, MPI_REPLACE);CHKERRQ(ierr);
+  if (debug) {
+    ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
+    if (!rank) {ierr = PetscSynchronizedPrintf(comm, "Referenced roots\n");CHKERRQ(ierr);}
+  }
+  ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL);CHKERRQ(ierr);
   for (p = 0; p < nroots; ++p) {
-    if (leaves[p][0] < 0) continue;
+    DMPolytopeType  ct;
+    const PetscInt *cone;
+    PetscInt        coneSize, c, ind0, o;
+
+    if (leaves[p][0] < 0) continue; /* Ignore vertices */
+    ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-    if (debug) {ierr = PetscSynchronizedPrintf(comm, "[%d]  %4D: cone=[%4D %4D] roots=[(%d,%4D) (%d,%4D)] leaves=[(%d,%4D) (%d,%4D)]", rank, p, cone[0], cone[1], rootsRanks[p][0], roots[p][0], rootsRanks[p][1], roots[p][1], leavesRanks[p][0], leaves[p][0], leavesRanks[p][1], leaves[p][1]);CHKERRQ(ierr);}
-    if ((leaves[p][0] != roots[p][0]) || (leaves[p][1] != roots[p][1]) || (leavesRanks[p][0] != rootsRanks[p][0]) || (leavesRanks[p][1] != rootsRanks[p][1])) {
-      /* Translate these two leaves to my cone points; mainCone means desired order p's cone points */
-      for (c = 0; c < 2; c++) {
+    if (debug) {
+      ierr = PetscSynchronizedPrintf(comm, "[%d]  %4D: cone=[%4D %4D %4D %4D] roots=[(%d,%4D) (%d,%4D) (%d,%4D) (%d,%4D)] leaves=[(%d,%4D) (%d,%4D) (%d,%4D) (%d,%4D)]",
+       rank, p, cone[0], cone[1], cone[2], cone[3],
+       rootsRanks[p][0], roots[p][0], rootsRanks[p][1], roots[p][1], rootsRanks[p][2], roots[p][2], rootsRanks[p][3], roots[p][3],
+       leavesRanks[p][0], leaves[p][0], leavesRanks[p][1], leaves[p][1], leavesRanks[p][2], leaves[p][2], leavesRanks[p][3], leaves[p][3]);CHKERRQ(ierr);
+    }
+    if (leavesRanks[p][0] != rootsRanks[p][0] || leaves[p][0] != roots[p][0] ||
+        leavesRanks[p][1] != rootsRanks[p][1] || leaves[p][1] != roots[p][1] ||
+        leavesRanks[p][2] != rootsRanks[p][2] || leaves[p][2] != roots[p][2] ||
+        leavesRanks[p][3] != rootsRanks[p][3] || leaves[p][3] != roots[p][3]) {
+      /* Translate these leaves to my cone points; mainCone means desired order p's cone points */
+      for (c = 0; c < PetscMin(coneSize, 4); ++c) {
+        PetscInt rS, rN;
+
         if (leavesRanks[p][c] == rank) {
-          /* A local leave is just taken as it is */
+          /* A local leaf is just taken as it is */
           mainCone[c] = leaves[p][c];
           continue;
         }
         /* Find index of rank leavesRanks[p][c] among remote ranks */
         /* No need for PetscMPIIntCast because these integers were originally cast from PetscMPIInt. */
-        ierr = PetscFindMPIInt((PetscMPIInt)leavesRanks[p][c], nranks, ranks, &r);CHKERRQ(ierr);
-        if (PetscUnlikely(r < 0)) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leave (%d,%D): leave rank not found among remote ranks",p,c,cone[c],rootsRanks[p][c],roots[p][c],leavesRanks[p][c],leaves[p][c]);
-        if (PetscUnlikely(ranks[r] < 0 || ranks[r] >= size)) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "p=%D c=%D commsize=%d: ranks[%D] = %d makes no sense",p,c,size,r,ranks[r]);
+        ierr = PetscFindMPIInt((PetscMPIInt) leavesRanks[p][c], nranks, ranks, &r);CHKERRQ(ierr);
+        if (PetscUnlikely(r < 0)) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leaf (%d,%D): leaf rank not found among remote ranks", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
+        if (PetscUnlikely(ranks[r] < 0 || ranks[r] >= size)) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "p=%D c=%D commsize=%d: ranks[%D] = %d makes no sense", p, c, size, r, ranks[r]);
         /* Find point leaves[p][c] among remote points aimed at rank leavesRanks[p][c] */
-        o = roffset[r];
-        n = roffset[r+1] - o;
-        ierr = PetscFindInt(leaves[p][c], n, &rremote1[o], &ind0);CHKERRQ(ierr);
-        if (PetscUnlikely(ind0 < 0)) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leave (%d,%D): corresponding remote point not found - it seems there is missing connection in point SF!",p,c,cone[c],rootsRanks[p][c],roots[p][c],leavesRanks[p][c],leaves[p][c]);
+        rS = roffset[r];
+        rN = roffset[r+1] - rS;
+        ierr = PetscFindInt(leaves[p][c], rN, &rremote1[rS], &ind0);CHKERRQ(ierr);
+        if (PetscUnlikely(ind0 < 0)) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leave (%d,%D): corresponding remote point not found - it seems there is missing connection in point SF!", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
         /* Get the corresponding local point */
-        mainCone[c] = rmine1[o+ind0];CHKERRQ(ierr);
+        mainCone[c] = rmine1[rS + ind0];CHKERRQ(ierr);
       }
-      if (debug) {ierr = PetscSynchronizedPrintf(comm, " mainCone=[%4D %4D]\n", mainCone[0], mainCone[1]);CHKERRQ(ierr);}
+      if (debug) {ierr = PetscSynchronizedPrintf(comm, " mainCone=[%4D %4D %4D %4D]\n", mainCone[0], mainCone[1], mainCone[2], mainCone[3]);CHKERRQ(ierr);}
       /* Set the desired order of p's cone points and fix orientations accordingly */
-      /* Vaclav's note: Here we only compare first 2 points of the cone. Full cone size would lead to stronger self-checking. */
-      ierr = DMPlexOrientCell(dm, p, 2, mainCone);CHKERRQ(ierr);
+      ierr = DMPolytopeGetOrientation(ct, cone, mainCone, &o);CHKERRQ(ierr);
+      ierr = DMPlexOrientPoint(dm, p, o);CHKERRQ(ierr);
     } else if (debug) {ierr = PetscSynchronizedPrintf(comm, " ==\n");CHKERRQ(ierr);}
   }
   if (debug) {
     ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
   }
-  ierr = DMViewFromOptions(dm, NULL, "-after_fix_dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-after_orient_interface_dm_view");CHKERRQ(ierr);
   ierr = PetscFree4(roots, leaves, rootsRanks, leavesRanks);CHKERRQ(ierr);
   ierr = PetscFree2(rmine1, rremote1);CHKERRQ(ierr);
   PetscFunctionReturn(0);

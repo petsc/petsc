@@ -62,7 +62,12 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
               if (perms) perms0 = perms[0];
               if (flips) flips0 = flips[0];
               if (!(perms0 || flips0)) continue;
-              ierr = DMPlexGetConeSize(K,kStart,&kConeSize);CHKERRQ(ierr);
+              {
+                DMPolytopeType ct;
+                /* The number of arrangements is no longer based on the number of faces */
+                ierr = DMPlexGetCellType(K, kStart, &ct);CHKERRQ(ierr);
+                kConeSize = DMPolytopeTypeGetNumArrangments(ct) / 2;
+              }
               ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numDof[depth - h],-kConeSize,kConeSize,PETSC_USE_POINTER,perms0 ? &perms0[-kConeSize] : NULL,flips0 ? &flips0[-kConeSize] : NULL);CHKERRQ(ierr);
             }
             ierr = PetscSectionSetFieldSym(*section,f,sym);CHKERRQ(ierr);

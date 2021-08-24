@@ -293,10 +293,15 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
       }
     }
     if (dim <= 2 && spintdim) {
-      PetscInt coneSize, o;
+      PetscInt numFaces, o;
 
-      ierr = DMPlexGetConeSize(K, 0, &coneSize);CHKERRQ(ierr);
-      for (o = -coneSize; o < coneSize; o++) {
+      {
+        DMPolytopeType ct;
+        /* The number of arrangements is no longer based on the number of faces */
+        ierr = DMPlexGetCellType(K, 0, &ct);CHKERRQ(ierr);
+        numFaces = DMPolytopeTypeGetNumArrangments(ct) / 2;
+      }
+      for (o = -numFaces; o < numFaces; ++o) {
         Mat symMat;
 
         ierr = PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(sp, o, &symMat);CHKERRQ(ierr);
