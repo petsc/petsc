@@ -157,6 +157,10 @@ cdef class TS(Object):
         ts_type = str2bytes(ts_type, &cval)
         CHKERR( TSARKIMEXSetType(self.ts, cval) )
 
+    def setARKIMEXFullyImplicit(self, flag):
+        cdef PetscBool bval = asBool(flag)
+        CHKERR( TSARKIMEXSetFullyImplicit(self.ts, bval) )
+
     def getType(self):
         cdef PetscTSType cval = NULL
         CHKERR( TSGetType(self.ts, &cval) )
