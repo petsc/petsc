@@ -590,6 +590,10 @@ cdef class SNES(Object):
         CHKERR( SNESGetIterationNumber(self.snes, &ival) )
         return toInt(ival)
 
+    def setForceIteration(self, force):
+        cdef PetscBool bval = asBool(force)
+        CHKERR( SNESSetForceIteration(self.snes, bval) )
+
     def setFunctionNorm(self, norm):
         cdef PetscReal rval = asReal(norm)
         CHKERR( SNESSetFunctionNorm(self.snes, rval) )
