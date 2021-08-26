@@ -14,10 +14,10 @@ exit 127
 
 import sys, os
 
-if sys.version_info < (2,6) or (sys.version_info >= (3,0) and sys.version_info < (3,4)):
+if sys.version_info < (2,7) or (sys.version_info >= (3,0) and sys.version_info < (3,4)):
   print('************************************************************************')
-  print('*      Python version 2.6+ or 3.4+ is required to run ./configure      *')
-  print('*         Try: "python2.7 ./configure" or "python3 ./configure"        *')
+  print('*      Python version 2.7 or 3.4+ is required to run ./configure      *')
+  print('*         Try: "python3 ./configure" or "python2.7 ./configure"        *')
   print('************************************************************************')
   sys.exit(4)
 

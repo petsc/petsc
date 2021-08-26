@@ -16,6 +16,7 @@ Changes: Development
 -  Add support for ESSL 5.2 and later; drop support for ESSL <=5.1.
 
 .. rubric:: Configure/Build:
+-  Configure requires Python-2.7 or Python-3.4+.
 -  Remove --with-kokkos-cuda-arch. One can use -with-cuda-gencodearch to specify the cuda arch for Kokkos. Usually not needed since PETSc auto detects that
 -  For --download-hdf5, disable --download-hdf5-fortran-bindings by default
 -  Add OpenCascade package to PETSc and allow --download-opencascade
