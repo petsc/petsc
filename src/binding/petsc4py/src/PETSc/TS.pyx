@@ -734,6 +734,21 @@ cdef class TS(Object):
         cdef PetscReal rval = asReal(t)
         CHKERR( TSInterpolate(self.ts, rval, u.vec) )
 
+    def setStepLimits(self, hmin, hmax):
+        cdef PetscTSAdapt tsadapt = NULL
+        cdef PetscReal hminr = toReal(hmin)
+        cdef PetscReal hmaxr = toReal(hmax)
+        TSGetAdapt(self.ts, &tsadapt)
+        CHKERR( TSAdaptSetStepLimits(tsadapt, hminr, hmaxr) )
+
+    def getStepLimits(self):
+        cdef PetscTSAdapt tsadapt = NULL
+        cdef PetscReal hminr = 0.
+        cdef PetscReal hmaxr = 0.
+        TSGetAdapt(self.ts, &tsadapt)
+        CHKERR( TSAdaptGetStepLimits(tsadapt, &hminr, &hmaxr) )
+        return (asReal(hminr), asReal(hmaxr))
+
     # --- Adjoint methods ---
 
     def setSaveTrajectory(self):

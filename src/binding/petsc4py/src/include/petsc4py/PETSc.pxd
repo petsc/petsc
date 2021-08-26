@@ -89,6 +89,8 @@ cdef extern from "petsc.h":
     struct _p_PetscPartitioner
     ctypedef _p_PetscPartitioner* PetscPartitioner "PetscPartitioner"
 
+    struct _p_TSAdapt
+    ctypedef _p_TSAdapt* PetscTSAdapt "TSAdapt"
 # --------------------------------------------------------------------
 
 ctypedef public api class Comm [
