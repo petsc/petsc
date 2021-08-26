@@ -517,6 +517,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
         lines = [s for s in lines if not self.warningRE.search(s)]
+      #Intel
+      lines = [s for s in lines if s.find(": command line warning #10121: overriding") < 0]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
