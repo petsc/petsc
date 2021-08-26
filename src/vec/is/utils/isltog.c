@@ -431,12 +431,15 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 
     Input Parameters:
 +   sf - star forest mapping contiguous local indices to (rank, offset)
--   start - first global index on this process
+-   start - first global index on this process, or PETSC_DECIDE to compute contiguous global numbering automatically
 
     Output Parameter:
 .   mapping - new mapping data structure
 
     Level: advanced
+
+    Notes:
+    If any processor calls this with start = PETSC_DECIDE then all processors must, otherwise the program will hang.
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions()
 @*/
@@ -453,6 +456,10 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
 
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
+  if (start == PETSC_DECIDE) {
+    start = 0;
+    ierr = MPI_Exscan(&nroots,&start,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
+  } else if (start < 0) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "start must be nonnegative or PETSC_DECIDE");
   if (ilocal) {
     for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,ilocal[i]+1);
   }

@@ -22,6 +22,7 @@ Changes: Development
 .. rubric:: AO:
 
 .. rubric:: IS:
+-  ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
 
 .. rubric:: VecScatter / PetscSF:
 
