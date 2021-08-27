@@ -2292,6 +2292,7 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
   if (petsc_gtime_inuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeEnd()?");
   petsc_gtime_inuse = PETSC_TRUE;
 #endif
+  if (!PetscLogPLB) PetscFunctionReturn(0);
 #if defined(PETSC_HAVE_CUDA)
   cerr = cudaEventRecord(petsc_gputimer_begin,PetscDefaultCudaStream);CHKERRCUDA(cerr);
 #elif defined(PETSC_HAVE_HIP)
@@ -2325,6 +2326,7 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
   if (!petsc_gtime_inuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeBegin()?");
   petsc_gtime_inuse = PETSC_FALSE;
 #endif
+  if (!PetscLogPLE) PetscFunctionReturn(0);
 #if defined(PETSC_HAVE_CUDA)
   cerr = cudaEventRecord(petsc_gputimer_end,PetscDefaultCudaStream);CHKERRCUDA(cerr);
   cerr = cudaEventSynchronize(petsc_gputimer_end);CHKERRCUDA(cerr);
