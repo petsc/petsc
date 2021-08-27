@@ -215,7 +215,6 @@ M*/
 
           Complex numbers are automatically available if PETSc was able to find a working complex implementation
 
-
     Petsc has a 'fix' for complex numbers to support expressions such as std::complex<PetscReal> + PetscInt, which are not supported by the standard
     C++ library, but are convenient for petsc users. If the C++ compiler is able to compile code in petsccxxcomplexfix.h (This is checked by
     configure), we include petsccxxcomplexfix.h to provide this convenience.
@@ -678,32 +677,4 @@ S*/
 typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 
 typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
-
-/*E
-  PetscMemType - Memory type of a pointer
-
-  Level: beginner
-
-  Developer Note:
-   Encoding of the bitmask in binary: xxxxyyyz
-   z = 0:                Host memory
-   z = 1:                Device memory
-   yyy = 000:            CUDA-related memory
-   yyy = 001:            HIP-related memory
-   xxxxyyy1 = 0000,0001: CUDA memory
-   xxxxyyy1 = 0001,0001: CUDA NVSHMEM memory
-   xxxxyyy1 = 0000,0011: HIP memory
-
-  Other types of memory, e.g., CUDA managed memory, can be added when needed.
-
-.seealso: VecGetArrayAndMemType(), PetscSFBcastWithMemTypeBegin(), PetscSFReduceWithMemTypeBegin()
-E*/
-typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=0x01, PETSC_MEMTYPE_CUDA=0x01, PETSC_MEMTYPE_NVSHMEM=0x11,PETSC_MEMTYPE_HIP=0x03} PetscMemType;
-
-#define PetscMemTypeHost(m)    (((m) & 0x1) == PETSC_MEMTYPE_HOST)
-#define PetscMemTypeDevice(m)  (((m) & 0x1) == PETSC_MEMTYPE_DEVICE)
-#define PetscMemTypeCUDA(m)    (((m) & 0xF) == PETSC_MEMTYPE_CUDA)
-#define PetscMemTypeHIP(m)     (((m) & 0xF) == PETSC_MEMTYPE_HIP)
-#define PetscMemTypeNVSHMEM(m) ((m) == PETSC_MEMTYPE_NVSHMEM)
-
 #endif

@@ -20,6 +20,10 @@ if __name__ == '__main__':
     '--download-superlu',
     '--download-mumps',
     '--with-mumps-serial',
+    # need to pin c++14 since nvcc uses gcc 8 (with std=c++14), petsc uses gcc 9 (with
+    # std=c++17), and interleaving this specific compiler and version combination seems to
+    # break linkage of static constexpr member variables
+    '--with-cxx-dialect=c++14',
     '--with-shared-libraries=1',
   ]
   configure.petsc_configure(configure_options)

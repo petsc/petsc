@@ -23,6 +23,8 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 
 /src/sys/classes/viewer/  @petsc/integrators @haplav
 
+/src/sys/objects/device/  @Jfaibussowitsch
+
 /src/vec/is/sf/           @jedbrown @jczhang07
 /src/vec/vscat/           @jczhang07 @BarrySmith
 

@@ -9,7 +9,7 @@
 
 #include <petscsys.h>
 #include <petsc/private/petscimpl.h>
-#include <petschipblas.h>
+#include <petscdevice.h>
 
 static hipblasHandle_t     hipblasv2handle   = NULL;
 static hipsolverHandle_t   hipsolverhandle = NULL;

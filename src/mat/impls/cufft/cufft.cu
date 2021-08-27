@@ -4,12 +4,8 @@
     Testing examples can be found in ~src/mat/tests
 */
 
+#include <petscdevice.h>
 #include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
-EXTERN_C_BEGIN
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <cufft.h>
-EXTERN_C_END
 
 typedef struct {
   PetscInt     ndim;
@@ -25,6 +21,7 @@ PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscInt       ndim      = cufft->ndim, *dim = cufft->dim;
   PetscScalar    *x_array, *y_array;
   cufftResult    result;
+  cudaError_t    cerr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -35,24 +32,24 @@ PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
     /* create a plan, then execute it */
     switch (ndim) {
     case 1:
-      result = cufftPlan1d(&cufft->p_forward, dim[0], CUFFT_C2C, 1);CHKERRQ(result != CUFFT_SUCCESS);
+      result = cufftPlan1d(&cufft->p_forward, dim[0], CUFFT_C2C, 1);CHKERRCUFFT(result);
       break;
     case 2:
-      result = cufftPlan2d(&cufft->p_forward, dim[0], dim[1], CUFFT_C2C);CHKERRQ(result != CUFFT_SUCCESS);
+      result = cufftPlan2d(&cufft->p_forward, dim[0], dim[1], CUFFT_C2C);CHKERRCUFFT(result);
       break;
     case 3:
-      result = cufftPlan3d(&cufft->p_forward, dim[0], dim[1], dim[2], CUFFT_C2C);CHKERRQ(result != CUFFT_SUCCESS);
+      result = cufftPlan3d(&cufft->p_forward, dim[0], dim[1], dim[2], CUFFT_C2C);CHKERRCUFFT(result);
       break;
     default:
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot create plan for %d-dimensional transform", ndim);
     }
   }
   /* transfer to GPU memory */
-  cudaMemcpy(devArray, x_array, sizeof(cufftComplex)*dim[ndim], cudaMemcpyHostToDevice);
+  cerr = cudaMemcpy(devArray, x_array, sizeof(cufftComplex)*dim[ndim], cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
   /* execute transform */
-  result = cufftExecC2C(cufft->p_forward, devArray, devArray, CUFFT_FORWARD);CHKERRQ(result != CUFFT_SUCCESS);
+  result = cufftExecC2C(cufft->p_forward, devArray, devArray, CUFFT_FORWARD);CHKERRCUFFT(result);
   /* transfer from GPU memory */
-  cudaMemcpy(y_array, devArray, sizeof(cufftComplex)*dim[ndim], cudaMemcpyDeviceToHost);
+  cerr = cudaMemcpy(y_array, devArray, sizeof(cufftComplex)*dim[ndim], cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
   ierr = VecRestoreArray(y, &y_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x, &x_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -65,6 +62,7 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscInt       ndim      = cufft->ndim, *dim = cufft->dim;
   PetscScalar    *x_array, *y_array;
   cufftResult    result;
+  cudaError_t    cerr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -74,24 +72,24 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
     /* create a plan, then execute it */
     switch (ndim) {
     case 1:
-      result = cufftPlan1d(&cufft->p_backward, dim[0], CUFFT_C2C, 1);CHKERRQ(result != CUFFT_SUCCESS);
+      result = cufftPlan1d(&cufft->p_backward, dim[0], CUFFT_C2C, 1);CHKERRCUFFT(result);
       break;
     case 2:
-      result = cufftPlan2d(&cufft->p_backward, dim[0], dim[1], CUFFT_C2C);CHKERRQ(result != CUFFT_SUCCESS);
+      result = cufftPlan2d(&cufft->p_backward, dim[0], dim[1], CUFFT_C2C);CHKERRCUFFT(result);
       break;
     case 3:
-      result = cufftPlan3d(&cufft->p_backward, dim[0], dim[1], dim[2], CUFFT_C2C);CHKERRQ(result != CUFFT_SUCCESS);
+      result = cufftPlan3d(&cufft->p_backward, dim[0], dim[1], dim[2], CUFFT_C2C);CHKERRCUFFT(result);
       break;
     default:
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot create plan for %d-dimensional transform", ndim);
     }
   }
   /* transfer to GPU memory */
-  cudaMemcpy(devArray, x_array, sizeof(cufftComplex)*dim[ndim], cudaMemcpyHostToDevice);
+  cerr = cudaMemcpy(devArray, x_array, sizeof(cufftComplex)*dim[ndim], cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
   /* execute transform */
-  result = cufftExecC2C(cufft->p_forward, devArray, devArray, CUFFT_INVERSE);CHKERRQ(result != CUFFT_SUCCESS);
+  result = cufftExecC2C(cufft->p_forward, devArray, devArray, CUFFT_INVERSE);CHKERRCUFFT(result);
   /* transfer from GPU memory */
-  cudaMemcpy(y_array, devArray, sizeof(cufftComplex)*dim[ndim], cudaMemcpyDeviceToHost);
+  cerr = cudaMemcpy(y_array, devArray, sizeof(cufftComplex)*dim[ndim], cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
   ierr = VecRestoreArray(y, &y_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x, &x_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -101,13 +99,14 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 {
   Mat_CUFFT      *cufft = (Mat_CUFFT*) A->data;
   cufftResult    result;
+  cudaError_t    cerr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(cufft->dim);CHKERRQ(ierr);
-  if (cufft->p_forward)  {result = cufftDestroy(cufft->p_forward);CHKERRQ(result != CUFFT_SUCCESS);}
-  if (cufft->p_backward) {result = cufftDestroy(cufft->p_backward);CHKERRQ(result != CUFFT_SUCCESS);}
-  cudaFree(cufft->devArray);
+  if (cufft->p_forward)  {result = cufftDestroy(cufft->p_forward);CHKERRCUFFT(result);}
+  if (cufft->p_backward) {result = cufftDestroy(cufft->p_backward);CHKERRCUFFT(result);}
+  cerr = cudaFree(cufft->devArray);CHKERRCUDA(cerr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -136,6 +135,7 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   Mat_CUFFT      *cufft;
   PetscInt       m, d;
   PetscErrorCode ierr;
+  cudaError_t    cerr;
 
   PetscFunctionBegin;
   if (ndim < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER, "ndim %d must be > 0", ndim);
@@ -159,7 +159,7 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   cufft->dim[ndim]  = m;
 
   /* GPU memory allocation */
-  cudaMalloc((void**) &cufft->devArray, sizeof(cufftComplex)*m);
+  cerr = cudaMalloc((void**) &cufft->devArray, sizeof(cufftComplex)*m);CHKERRCUDA(cerr);
 
   (*A)->ops->mult          = MatMult_SeqCUFFT;
   (*A)->ops->multtranspose = MatMultTranspose_SeqCUFFT;

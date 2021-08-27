@@ -242,8 +242,11 @@ class PetscCursor(object):
           # wasn't a pure array, so we try pointer
           pointees = [c for c in cursor.walk_preorder() if c.type.kind == clx.TypeKind.POINTER]
       pointees = list({p.spelling: p for p in pointees}.values())
+      if len(pointees) > 1:
+        # sometimes array subscripts can creep in
+        pointees = [c for c in pointees if c.kind not in mathCursors]
       if len(pointees) == 1:
-          name = PetscCursor.getNameFromCursor(pointees[0])
+        name = PetscCursor.getNameFromCursor(pointees[0])
     if not name:
       # Catchall last attempt, we become the very thing we swore to destroy and parse the
       # tokens ourselves
@@ -1577,31 +1580,35 @@ def checkPetscValidLogicalCollectiveEnum(linter,func,parent):
 
 
 checkFunctionMap = {
-  "PetscValidHeaderSpecificType"      : checkPetscValidHeaderSpecificType,
-  "PetscValidHeaderSpecific"          : checkPetscValidHeaderSpecific,
-  "PetscValidHeader"                  : checkObjIdxGenericN,
-  "PetscValidPointer"                 : checkObjIdxGenericN,
-  "PetscValidCharPointer"             : checkPetscValidCharPointer,
-  "PetscValidIntPointer"              : checkPetscValidIntPointer,
-  "PetscValidBoolPointer"             : checkPetscValidBoolPointer,
-  "PetscValidScalarPointer"           : checkPetscValidScalarPointer,
-  "PetscValidRealPointer"             : checkPetscValidRealPointer,
-  "PetscCheckSameType"                : checkObjIdxGenericN,
-  "PetscValidType"                    : checkObjIdxGenericN,
-  "PetscCheckSameComm"                : checkObjIdxGenericN,
-  "PetscCheckSameTypeAndComm"         : checkObjIdxGenericN,
-  "PetscValidLogicalCollectiveScalar" : checkPetscValidLogicalCollectiveScalar,
-  "PetscValidLogicalCollectiveReal"   : checkPetscValidLogicalCollectiveReal,
-  "PetscValidLogicalCollectiveInt"    : checkPetscValidLogicalCollectiveInt,
-  "PetscValidLogicalCollectiveMPIInt" : checkPetscValidLogicalCollectiveMPIInt,
-  "PetscValidLogicalCollectiveBool"   : checkPetscValidLogicalCollectiveBool,
-  "PetscValidLogicalCollectiveEnum"   : checkPetscValidLogicalCollectiveEnum,
-  "VecNestCheckCompatible2"           : checkObjIdxGenericN,
-  "VecNestCheckCompatible3"           : checkObjIdxGenericN,
-  "MatCheckPreallocated"              : checkObjIdxGenericN,
-  "MatCheckProduect"                  : checkObjIdxGenericN,
-  "MatCheckSameLocalSize"             : checkObjIdxGenericN,
-  "MatCheckSameSize"                  : checkObjIdxGenericN,
+  "PetscValidHeaderSpecificType"       : checkPetscValidHeaderSpecificType,
+  "PetscValidHeaderSpecific"           : checkPetscValidHeaderSpecific,
+  "PetscValidHeader"                   : checkObjIdxGenericN,
+  "PetscValidPointer"                  : checkObjIdxGenericN,
+  "PetscValidCharPointer"              : checkPetscValidCharPointer,
+  "PetscValidIntPointer"               : checkPetscValidIntPointer,
+  "PetscValidBoolPointer"              : checkPetscValidBoolPointer,
+  "PetscValidScalarPointer"            : checkPetscValidScalarPointer,
+  "PetscValidRealPointer"              : checkPetscValidRealPointer,
+  "PetscCheckSameType"                 : checkObjIdxGenericN,
+  "PetscValidType"                     : checkObjIdxGenericN,
+  "PetscCheckSameComm"                 : checkObjIdxGenericN,
+  "PetscCheckSameTypeAndComm"          : checkObjIdxGenericN,
+  "PetscValidLogicalCollectiveScalar"  : checkPetscValidLogicalCollectiveScalar,
+  "PetscValidLogicalCollectiveReal"    : checkPetscValidLogicalCollectiveReal,
+  "PetscValidLogicalCollectiveInt"     : checkPetscValidLogicalCollectiveInt,
+  "PetscValidLogicalCollectiveMPIInt"  : checkPetscValidLogicalCollectiveMPIInt,
+  "PetscValidLogicalCollectiveBool"    : checkPetscValidLogicalCollectiveBool,
+  "PetscValidLogicalCollectiveEnum"    : checkPetscValidLogicalCollectiveEnum,
+  "VecNestCheckCompatible2"            : checkObjIdxGenericN,
+  "VecNestCheckCompatible3"            : checkObjIdxGenericN,
+  "MatCheckPreallocated"               : checkObjIdxGenericN,
+  "MatCheckProduect"                   : checkObjIdxGenericN,
+  "MatCheckSameLocalSize"              : checkObjIdxGenericN,
+  "MatCheckSameSize"                   : checkObjIdxGenericN,
+  "PetscValidDevice"                   : checkObjIdxGenericN,
+  "PetscCheckCompatibleDevices"        : checkObjIdxGenericN,
+  "PetscValidDeviceContext"            : checkObjIdxGenericN,
+  "PetscCheckCompatibleDeviceContexts" : checkObjIdxGenericN,
 }
 
 """Utility and pre-check setup"""
@@ -1709,22 +1716,29 @@ def getPetscExtraIncludes(petscDir,petscArch):
   # a bug report for python believing that cdll.load() was not deterministic...
   petscIncludes = []
   mpiIncludes   = []
+  cxxflags      = []
   with open(os.path.join(petscDir,petscArch,"lib","petsc","conf","petscvariables"),"r") as pv:
     ccinc  = re.compile("^PETSC_CC_INCLUDES\s*=")
     mpiinc = re.compile("^MPI_INCLUDE\s*=")
     shoinc = re.compile("^MPICC_SHOW\s*=")
+    cxxflg = re.compile("^CXX_FLAGS\s*=")
     line   = pv.readline()
     while line:
       if ccinc.search(line):
         petscIncludes.append(line.split("=",1)[1])
       elif mpiinc.search(line) or shoinc.search(line):
         mpiIncludes.append(line.split("=",1)[1])
+      elif cxxflg.search(line):
+        cxxflags.append(line.split("=",1)[1])
       line = pv.readline()
+  cxxflags      = [l.strip().split(" ") for l in cxxflags if l]
+  cxxflags      = [flag for flags in cxxflags for flag in flags if flag.startswith("-std=")]
+  cxxflags      = [cxxflags[-1]] if cxxflags else [] # take only the last one
   extraIncludes = [l.strip().split(" ") for l in petscIncludes+mpiIncludes if l]
   extraIncludes = [item for sublist in extraIncludes for item in sublist if item.startswith("-I")]
   seen          = set()
   extraIncludes = [item for item in extraIncludes if not item in seen and not seen.add(item)]
-  return extraIncludes
+  return cxxflags+extraIncludes
 
 def getClangSysIncludes():
   __doc__="""

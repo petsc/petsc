@@ -10,13 +10,13 @@
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-#include <petsccublas.h>
+#include <petsc/private/deviceimpl.h>
 PETSC_EXTERN cudaEvent_t petsc_gputimer_begin;
 PETSC_EXTERN cudaEvent_t petsc_gputimer_end;
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-#include <petschipblas.h>
+#include <petsc/private/deviceimpl.h>
 PETSC_EXTERN hipEvent_t petsc_gputimer_begin;
 PETSC_EXTERN hipEvent_t petsc_gputimer_end;
 #endif
@@ -1172,6 +1172,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING: Running valgrind with the MacOS native BLAS and LAPACK can fail. If it fails suggest configuring with --download-fblaslapack or --download-f2cblaslapack");CHKERRQ(ierr);
     }
 #endif
+#endif
+
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+  ierr = PetscDeviceInitializeDefaultDevices_Internal();CHKERRQ(ierr);
+  ierr = PetscDeviceContextInitializeRootContext_Internal(PETSC_COMM_WORLD,NULL);CHKERRQ(ierr);
 #endif
 
   /*
