@@ -960,6 +960,7 @@ docs-review:
     - .test-basic
   script:
     - sphinx-build -T -E -b html -D language=en -j auto . ../public
+    - make latexpdf && cp _build/latex/manual.pdf ../public/docs/manual/
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/index.html
@@ -979,9 +980,9 @@ pages:  # this job name has special meaning to GitLab
   script:
     - mkdir -p ../public/ && cp public/* ../public/
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
-    - git checkout origin/main && make website-deploy BUILDDIR="../public/main"
+    - git checkout origin/main && make website-deploy BUILDDIR="../public/main" && make latexpdf && cp _build/latex/manual.pdf ../public/main/docs/manual/
     - make clean BUILDDIR="../public/release"
-    - git checkout origin/release && make website-deploy BUILDDIR="../public/release"
+    - git checkout origin/release && make website-deploy BUILDDIR="../public/release" && make latexpdf && cp _build/latex/manual.pdf ../public/release/docs/manual/
   only:
     variables:
       - $PETSC_CI_SCHEDULED == "yes"
