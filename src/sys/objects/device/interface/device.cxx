@@ -71,7 +71,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceKind kind, PetscDevice *device)
 . device - The PetscDevice to Configure
 
   Developer Notes:
-  Currently a no-op
+  Currently just sets the active device (i.e. by calling cudaSetDevice() for example)
 
   Level: developer
 
