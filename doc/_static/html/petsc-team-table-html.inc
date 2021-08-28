@@ -6,23 +6,23 @@
      img.avatar {border-radius: 10px;width: 60px;height: 60px;}
    </style>
     <div>
-    <a href='https://gitlab.com/abhyshr'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/4214304/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/abhyshr'><img src='https://gitlab.com/uploads/-/system/user/avatar/4214304/avatar.png' class='avatar' /></a> <br />
     <p>Shrirang Abhyankar</p>
     </div>
     <div>
-    <a href='https://gitlab.com/markadams4'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/524115/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/markadams4'><img src='https://gitlab.com/uploads/-/system/user/avatar/524115/avatar.png' class='avatar' /></a> <br />
     <p>Mark Adams</p>
     </div>
     <div>
-    <a href='https://gitlab.com/sbalay'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/3919065/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/sbalay'><img src='https://gitlab.com/uploads/-/system/user/avatar/3919065/avatar.png' class='avatar' /></a> <br />
     <p>Satish Balay</p>
     </div>
     <div>
-    <a href='https://gitlab.com/blaisebourdin'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/4484951/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/blaisebourdin'><img src='https://gitlab.com/uploads/-/system/user/avatar/4484951/avatar.png' class='avatar' /></a> <br />
     <p>Blaise Bourdin</p>
     </div>
     <div>
-    <a href='https://gitlab.com/jedbrown'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/500187/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/jedbrown'><img src='https://gitlab.com/uploads/-/system/user/avatar/500187/avatar.png' class='avatar' /></a> <br />
     <p>Jed Brown</p>
     </div>
     <div>
@@ -30,23 +30,23 @@
     <p>Lisandro Dalcin</p>
     </div>
     <div>
-    <a href='https://gitlab.com/adener'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/3899183/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/adener'><img src='https://gitlab.com/uploads/-/system/user/avatar/3899183/avatar.png' class='avatar' /></a> <br />
     <p>Alp Dener</p>
     </div>
     <div>
-    <a href='https://gitlab.com/Jfaibussowitsch'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/4473654/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/Jfaibussowitsch'><img src='https://gitlab.com/uploads/-/system/user/avatar/4473654/avatar.png' class='avatar' /></a> <br />
     <p>Jacob Faibussowitsch</p>
     </div>
     <div>
-    <a href='https://gitlab.com/ghammond'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/2700309/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/ghammond'><img src='https://gitlab.com/uploads/-/system/user/avatar/2700309/avatar.png' class='avatar' /></a> <br />
     <p>Glenn Hammond</p>
     </div>
     <div>
-    <a href='https://gitlab.com/haplav'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/1614413/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/haplav'><img src='https://gitlab.com/uploads/-/system/user/avatar/1614413/avatar.png' class='avatar' /></a> <br />
     <p>Vaclav Hapla</p>
     </div>
     <div>
-    <a href='https://gitlab.com/tisaac'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/1230244/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/tisaac'><img src='https://gitlab.com/uploads/-/system/user/avatar/1230244/avatar.png' class='avatar' /></a> <br />
     <p>Toby Isaac</p>
     </div>
     <div>
@@ -58,7 +58,7 @@
     <p>Matthew Knepley</p>
     </div>
     <div>
-    <a href='https://gitlab.com/fdkong'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/4470976/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/fdkong'><img src='https://gitlab.com/uploads/-/system/user/avatar/4470976/avatar.png' class='avatar' /></a> <br />
     <p>Fande Kong</p>
     </div>
     <div>
@@ -78,7 +78,7 @@
     <p>Lois Curfman McInnes</p>
     </div>
     <div>
-    <a href='https://gitlab.com/rtmills'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/1189493/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/rtmills'><img src='https://gitlab.com/uploads/-/system/user/avatar/1189493/avatar.png' class='avatar' /></a> <br />
     <p>Richard Tran Mills</p>
     </div>
     <div>
@@ -86,7 +86,7 @@
     <p>Lawrence Mitchell</p>
     </div>
     <div>
-    <a href='https://gitlab.com/hannah_mairs'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/141407/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/hannah_mairs'><img src='https://gitlab.com/uploads/-/system/user/avatar/141407/avatar.png' class='avatar' /></a> <br />
     <p>Hannah Morgan</p>
     </div>
     <div>
@@ -98,15 +98,15 @@
     <p>Jose E. Roman</p>
     </div>
     <div>
-    <a href='https://gitlab.com/karlrupp'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/4331259/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/karlrupp'><img src='https://gitlab.com/uploads/-/system/user/avatar/4331259/avatar.png' class='avatar' /></a> <br />
     <p>Karl Rupp</p>
     </div>
     <div>
-    <a href='https://gitlab.com/psanan'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/1651691/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/psanan'><img src='https://gitlab.com/uploads/-/system/user/avatar/1651691/avatar.png' class='avatar' /></a> <br />
     <p>Patrick Sanan</p>
     </div>
     <div>
-    <a href='https://gitlab.com/BarrySmith'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/3972971/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/BarrySmith'><img src='https://gitlab.com/uploads/-/system/user/avatar/3972971/avatar.png' class='avatar' /></a> <br />
     <p>Barry Smith</p>
     </div>
     <div>
@@ -114,19 +114,19 @@
     <p>Brandon Whitchurch</p>
     </div>
     <div>
-    <a href='https://gitlab.com/stefanozampini'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/3718257/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/stefanozampini'><img src='https://gitlab.com/uploads/-/system/user/avatar/3718257/avatar.png' class='avatar' /></a> <br />
     <p>Stefano Zampini</p>
     </div>
     <div>
-    <a href='https://gitlab.com/hongzhangsun'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/4067501/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/hongzhangsun'><img src='https://gitlab.com/uploads/-/system/user/avatar/4067501/avatar.png' class='avatar' /></a> <br />
     <p>Hong Zhang</p>
     </div>
     <div>
-    <a href='https://gitlab.com/caidao22'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/4458631/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/caidao22'><img src='https://gitlab.com/uploads/-/system/user/avatar/4458631/avatar.png' class='avatar' /></a> <br />
     <p>Hong Zhang</p>
     </div>
     <div>
-    <a href='https://gitlab.com/jczhang07'><img src='https://assets.gitlab-static.net/uploads/-/system/user/avatar/4331267/avatar.png' class='avatar' /></a> <br />
+    <a href='https://gitlab.com/jczhang07'><img src='https://gitlab.com/uploads/-/system/user/avatar/4331267/avatar.png' class='avatar' /></a> <br />
     <p>Junchao Zhang</p>
     </div>
     </div>

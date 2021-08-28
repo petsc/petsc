@@ -198,7 +198,7 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
   PetscErrorCode ierr;
   MPI_Comm       comm,subcomm;
   Mat            Bred,B;
-  PetscInt       nr,nc;
+  PetscInt       nr,nc,bs;
   IS             isrow,iscol;
   Mat            Blocal,*_Blocal;
 
@@ -211,6 +211,8 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
   isrow = sred->isin;
   ierr = ISCreateStride(PETSC_COMM_SELF,nc,0,1,&iscol);CHKERRQ(ierr);
   ierr = ISSetIdentity(iscol);CHKERRQ(ierr);
+  ierr = MatGetBlockSizes(B,NULL,&bs);CHKERRQ(ierr);
+  ierr = ISSetBlockSize(iscol,bs);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_SUBMAT_SINGLEIS,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatCreateSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
