@@ -1,5 +1,4 @@
 #define LANDAU_INVSQRT(q) (1./PetscSqrtReal(q))
-#define LANDAU_SQRT(q) PetscSqrtReal(q)
 
 #if defined(__CUDA_ARCH__)
 #define PETSC_DEVICE_FUNC_DECL __device__
@@ -175,7 +174,7 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor2D(const PetscReal x[], const PetscReal 
   s = mask*2*r*rp/l; /* mask for vectorization */
   tt = 1./(1+s);
   pi4pow = 4*PETSC_PI*LANDAU_INVSQRT(PetscSqr(l)*l);
-  sqrt_1s = LANDAU_SQRT(1.+s);
+  sqrt_1s = PetscSqrtReal(1.+s);
   /* sp.ellipe(2.*s/(1.+s)) */
   ellipticE(2*s*tt,&es); /* 44 flops * 2 + 75 = 163 flops including 2 logs, 1 sqrt, 1 pow, 21 mult */
   /* sp.ellipk(2.*s/(1.+s)) */
@@ -206,11 +205,67 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal
     norm2 += dx[d] * dx[d];
   }
   inorm2 = mask/norm2;
-  inorm = LANDAU_SQRT(inorm2);
+  inorm = PetscSqrtReal(inorm2);
   inorm3 = inorm2*inorm;
   for (d = 0; d < 3; ++d) U[d][d] = -(inorm - inorm3 * dx[d] * dx[d]);
   U[1][0] = U[0][1] = inorm3 * dx[0] * dx[1];
   U[1][2] = U[2][1] = inorm3 * dx[2] * dx[1];
   U[2][0] = U[0][2] = inorm3 * dx[0] * dx[2];
 }
+/* Relativistic form */
+#define GAMMA3(_x,_c02) PetscSqrtReal(1.0 + ((_x[0]*_x[0]) + (_x[1]*_x[1]) + (_x[2]*_x[2]))/(_c02))
+PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask, PetscReal c0)
+{
+  const PetscReal x2[3] = {xp,yp,zp}, x1[3] = {a_x1[0],a_x1[1],a_x1[2]}, c02 = c0*c0, g1 = GAMMA3(x1,c02), g2 = GAMMA3(x2,c02), g1_eps = g1 - 1., g2_eps = g2 - 1., gg_eps = g1_eps + g2_eps + g1_eps*g2_eps;
+  PetscReal       fact, u1u2, diff[3], udiff2,u12,u22,wsq,rsq, tt;
+  PetscInt        i,j;
+
+  if (mask==0.0) {
+    for (i = 0; i < 3; ++i) {
+      for (j = 0; j < 3; ++j) {
+        U[i][j] = 0;
+      }
+    }
+  } else {
+    for (i = 0, u1u2 = u12 = u22 = udiff2 = 0; i < 3; ++i) {
+      diff[i] = x1[i] - x2[i];
+      udiff2 += diff[i] * diff[i];
+      u12 += x1[i]*x1[i];
+      u22 += x2[i]*x2[i];
+      u1u2 += x1[i]*x2[i];
+    }
+    tt = 2.*u1u2*(1.-g1*g2) + (u12*u22 + u1u2*u1u2)/c02; // these two terms are about the same with opposite sign
+    wsq = udiff2 + tt;
+    //wsq = udiff2 + 2.*u1u2*(1.-g1*g2) + (u12*u22 + u1u2*u1u2)/c02;
+    rsq = 1.+wsq/c02;
+    fact = -rsq/(g1*g2*PetscSqrtReal(wsq)); /* flip sign. papers use du/dt = C, PETSc uses form G(u) = du/dt - C(u) = 0 */
+    for (i = 0; i < 3; ++i) {
+      for (j = 0; j < 3; ++j) {
+        U[i][j] = fact * ( -diff[i]*diff[j]/wsq + (PetscSqrtReal(rsq)-1.)*(x1[i]*x2[j] + x1[j]*x2[i])/wsq);
+      }
+      U[i][i] += fact;
+    }
+#if defined(PETSC_USE_DEBUG)
+    {
+      PetscReal diff_g[3], udiff = sqrt(udiff2), err, err2;
+      for (i = 0; i < 3; ++i) diff_g[i] = x1[i]/g1 - x2[i]/g2;
+      for (i = 0, err = 0; i < 3; ++i) {
+        double tmp=0;
+        for (j = 0; j < 3; ++j) {
+          tmp += U[i][j]*diff_g[j];
+        }
+        err += tmp * tmp;
+      }
+      err = sqrt(err);
+      err2 = udiff2*(err)/(g1*g2);
+#if defined(PETSC_USE_REAL_SINGLE)
+      if (err>1.e-6 || err!=err) exit(11);
+#else
+      if (err>1.e-13 || err!=err) exit(12);
+#endif
+    }
+#endif
+  }
+}
+
 #endif
