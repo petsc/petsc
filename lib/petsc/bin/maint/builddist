@@ -112,6 +112,7 @@ source $VENV/bin/activate
 cd $PETSC_DIR/doc
 python3 -m pip install -r requirements.txt
 sphinx-build -T -E -b html -D language=en -j auto . ../docs
+make latexpdf && cp _build/latex/manual.pdf ../docs/
 
 # petsc4py docs and tarball
 cd $PETSC_DIR
