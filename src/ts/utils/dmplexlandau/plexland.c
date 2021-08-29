@@ -5,10 +5,11 @@
 /* Landau collision operator */
 
 /* relativistic terms */
-#define SPEED_OF_LIGHT 299792458
 #if defined(PETSC_USE_REAL_SINGLE)
+#define SPEED_OF_LIGHT 2997924
 #define C_0(v0) (SPEED_OF_LIGHT/v0) /* needed for relativistic tensor on all architectures */
 #else
+#define SPEED_OF_LIGHT 299792458
 #define C_0(v0) (SPEED_OF_LIGHT/v0) /* needed for relativistic tensor on all architectures */
 #endif
 
