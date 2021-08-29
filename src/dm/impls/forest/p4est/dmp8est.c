@@ -1,6 +1,12 @@
 #include <petscsys.h>
+#if defined(PETSC_HAVE_MPIUNI)
+#undef MPI_SUCCESS
+#endif
 #if defined(PETSC_HAVE_P4EST)
 #include <p4est_to_p8est.h>
+#endif
+#if defined(PETSC_HAVE_MPIUNI)
+#define MPI_SUCCESS 0
 #endif
 
 static const PetscInt PetscFaceToP4estFace[6] = {4, 5, 2, 3, 1, 0};

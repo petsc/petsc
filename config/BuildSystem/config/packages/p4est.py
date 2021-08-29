@@ -24,14 +24,18 @@ class Configure(config.package.GNUPackage):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.zlib       = framework.require('config.packages.zlib',self)
     self.memalign   = framework.argDB['with-memalign']
-    self.deps       = [self.mpi,self.blasLapack,self.zlib]
+    self.deps       = [self.blasLapack,self.zlib]
+    self.odeps      = [self.mpi]
     return
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     if self.argDB['with-p4est-debugging']:
       args.append('--enable-debug')
-    args.append('--enable-mpi')
+    if not self.mpi.usingMPIUni:
+      args.append('--enable-mpi')
+    else:
+      args.append('--disable-mpi')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     args.append('LIBS="'+self.libraries.toString(self.dlib)+'"')
     args.append('--enable-memalign='+self.memalign)
