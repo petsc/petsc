@@ -1,5 +1,4 @@
 #include "../src/dm/impls/forest/p4est/petsc_p4est_package.h"
-#include <p4est_base.h>
 
 static char help[] = "Test interaction with p4est/libsc error and logging routines\n";
 
