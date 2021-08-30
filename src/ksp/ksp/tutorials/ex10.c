@@ -287,7 +287,7 @@ int main(int argc,char **args)
       suffix: 1
       nsize: 4
       output_file: output/ex10_1.out
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -matload_block_size 3 -pc_type bjacobi
 
    test:
@@ -295,12 +295,12 @@ int main(int argc,char **args)
       suffix: 2
       nsize: 4
       output_file: output/ex10_2.out
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -matload_block_size 3 -pc_type bjacobi -trans
 
    test:
       suffix: 3
-      requires: double complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64 -ksp_type bicg
 
 TEST*/

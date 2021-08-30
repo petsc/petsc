@@ -258,7 +258,7 @@ int main(int argc,char **args)
    test:
       suffix: 3
       nsize: 12
-      requires: define(PETSC_HAVE_MPIIO)
+      requires: defined(PETSC_HAVE_MPIIO)
       args: -usempiio
 
 TEST*/

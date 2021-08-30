@@ -96,7 +96,7 @@ int main(int argc,char **argv)
 /*TEST
 
       build:
-         requires: hdf5 !define(PETSC_USE_CXXCOMPLEX)
+         requires: hdf5 !defined(PETSC_USE_CXXCOMPLEX)
 
       test:
          nsize: 4

@@ -230,7 +230,7 @@ Basic examples.  Note the the use of glob style matching is also accepted in the
 
        - Example: ``ptmake print-test query='suffix' queryval='basic_1'``
        - Example: ``ptmake print-test query='requires' queryval='cuda'``
-       - Example: ``ptmake print-test query='requires' queryval='define(PETSC_HAVE_MPI_GPU_AWARE)'``
+       - Example: ``ptmake print-test query='requires' queryval='defined(PETSC_HAVE_MPI_GPU_AWARE)'``
        - Example: ``ptmake print-test query='requires' queryval='*GPU_AWARE*'``
 
 Using the ``name`` field is equivalent to the search above:

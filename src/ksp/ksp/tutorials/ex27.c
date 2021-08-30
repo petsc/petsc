@@ -286,18 +286,18 @@ int main(int argc,char **args)
 
    test:
       suffix: 1
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/medium -ksp_view -ksp_monitor_short -ksp_max_it 100 -solve_normal
 
    test:
       suffix: 2
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100 -solve_normal
 
    # Test handling failing VecLoad without abort
    testset:
-     requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
      args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
      test:
         suffix: 3
@@ -316,13 +316,13 @@ int main(int argc,char **args)
      test:
         # Load square matrix, RHS and initial guess from HDF5 (Version 7.3 MAT-File)
         suffix: 3b_hdf5
-        requires: hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+        requires: hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
         nsize: {{1 2}separate output}
         args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0.mat -hdf5
 
    # Test least-square algorithms
    testset:
-     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
      args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
      test:
         suffix: 4
@@ -345,7 +345,7 @@ int main(int argc,char **args)
       # Load rectangular matrix from HDF5 (Version 7.3 MAT-File)
       suffix: 4a_lsqr_hdf5
       nsize: {{1 2 4 8}}
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/rectangular_ultrasound_4889x841.mat -hdf5
       args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
       args: -ksp_type lsqr
@@ -355,7 +355,7 @@ int main(int argc,char **args)
    test:
       suffix: 5
       nsize: 1
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/rectangular_ultrasound_4889x841
       args: -ksp_converged_reason -ksp_rtol 1e-2 -ksp_max_it 100
       args: -ksp_type cgls
@@ -363,7 +363,7 @@ int main(int argc,char **args)
    # Load a matrix, RHS and solution from HDF5 (Version 7.3 MAT-File). Test immediate convergence.
    testset:
      nsize: {{1 2 4 8}}
-     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+     requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 10
      args: -ksp_type lsqr
      args: -test_custom_layout {{0 1}}
@@ -383,15 +383,15 @@ int main(int argc,char **args)
 
    # Test correct handling of local dimensions in PCApply
    testset:
-     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
-     requires: hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+     requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
+     requires: hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
      nsize: 3
      suffix: 7
      args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -hdf5 -test_custom_layout 1 -ksp_type lsqr -pc_type jacobi
 
    # Test complex matrices
    testset:
-     requires: double complex !define(PETSC_USE_64BIT_INDICES)
+     requires: double complex !defined(PETSC_USE_64BIT_INDICES)
      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64
      output_file: output/ex27_8.out
      filter: grep -v "KSP type"
@@ -403,7 +403,7 @@ int main(int argc,char **args)
        args: -solve_normal 1 -ksp_type {{cg bicg}}
 
    testset:
-     requires: double suitesparse !define(PETSC_USE_64BIT_INDICES)
+     requires: double suitesparse !defined(PETSC_USE_64BIT_INDICES)
      args: -solve_normal {{0 1}shared output} -pc_type qr
      output_file: output/ex27_9.out
      filter: grep -v "KSP type"

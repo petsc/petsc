@@ -159,7 +159,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-      requires:  !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires:  !complex double !defined(PETSC_USE_64BIT_INDICES)
       depends: ex72mmio.c
 
    test:

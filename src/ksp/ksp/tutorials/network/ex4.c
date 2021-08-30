@@ -142,7 +142,7 @@ int main(int argc,char ** argv)
 /*TEST
 
    build:
-      requires: !single double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+      requires: !single double defined(PETSC_HAVE_ATTRIBUTEALIGNED)
 
    test:
       args:

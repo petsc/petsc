@@ -169,6 +169,6 @@ int main(int argc,char **argv)
    test:
       nsize: 4
       args:
-      requires: double define(PETSC_USE_LOG)
+      requires: double defined(PETSC_USE_LOG)
 
 TEST*/

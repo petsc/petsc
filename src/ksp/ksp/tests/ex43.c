@@ -74,16 +74,16 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
+      requires: cuda datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
       args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format ell -vec_type cuda -pc_type ilu
 
    test:
       suffix: 2
-      requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
+      requires: cuda datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format hyb -vec_type cuda -ksp_type cg -pc_type icc
 
    testset:
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -ksp_type bicg -pc_type ilu
 
       test:
@@ -102,7 +102,7 @@ int main(int argc,char **argv)
 
    testset:
       nsize: 2
-      requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
+      requires: cuda datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type cuda
       test:
         suffix: 5
@@ -113,12 +113,12 @@ int main(int argc,char **argv)
 
    test:
       suffix: 6
-      requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: cuda datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -pc_type none -vec_type cuda
 
    testset:
       nsize: 2
-      requires: cuda datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: cuda datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -pc_type none -vec_type cuda
 
       test:
@@ -130,21 +130,21 @@ int main(int argc,char **argv)
 
    test:
       suffix: 8
-      requires: viennacl datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: viennacl datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijviennacl -pc_type none -vec_type viennacl
       output_file: output/ex43_6.out
 
    test:
       suffix: 9
       nsize: 2
-      requires: viennacl datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: viennacl datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijviennacl -pc_type none -vec_type viennacl
       output_file: output/ex43_7.out
 
    test:
       suffix: 10
       nsize: 2
-      requires: kokkos_kernels datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: kokkos_kernels datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type aijkokkos -vec_type kokkos
 
 TEST*/

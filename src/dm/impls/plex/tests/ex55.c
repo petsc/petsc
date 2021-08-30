@@ -142,7 +142,7 @@ int main(int argc, char **argv)
     args: -format hdf5_petsc -compare
   test:
     suffix: 1
-    requires: exodusii parmetis !define(PETSC_USE_64BIT_INDICES) broken
+    requires: exodusii parmetis !defined(PETSC_USE_64BIT_INDICES) broken
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -petscpartitioner_type parmetis

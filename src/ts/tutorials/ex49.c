@@ -160,7 +160,7 @@ int main(int argc,char **argv)
 /*TEST
 
     build:
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES) radau5
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES) radau5
 
     test:
       args: -ts_monitor_solution -ts_type radau5

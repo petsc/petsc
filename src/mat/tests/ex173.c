@@ -38,6 +38,6 @@ int main(int argc,char **args)
 
    test:
       args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64
-      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
 TEST*/

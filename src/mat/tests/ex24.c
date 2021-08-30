@@ -69,19 +69,19 @@ int main(int argc, char *argv[])
 
    test:
       suffix: sl
-      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -mat_coloring_type sl
       output_file: output/ex24_1.out
 
    test:
       suffix: lf
-      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -mat_coloring_type lf
       output_file: output/ex24_1.out
 
    test:
       suffix: id
-      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -mat_coloring_type id
       output_file: output/ex24_1.out
 

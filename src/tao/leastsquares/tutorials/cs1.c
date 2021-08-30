@@ -257,7 +257,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 /*TEST
 
    build:
-      requires: !complex !single !quad !define(PETSC_USE_64BIT_INDICES)
+      requires: !complex !single !quad !defined(PETSC_USE_64BIT_INDICES)
 
    test:
       localrunfiles: cs1Data_A_b_xGT

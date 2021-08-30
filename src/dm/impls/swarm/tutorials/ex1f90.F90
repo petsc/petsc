@@ -111,7 +111,7 @@
 
 !/*TEST
 !  build:
-!    requires: define(PETSC_USING_F90FREEFORM) double !complex
+!    requires: defined(PETSC_USING_F90FREEFORM) double !complex
 !
 !  test:
 !    suffix: 0

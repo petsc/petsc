@@ -122,7 +122,7 @@ int main(int argc,char **argv)
         suffix: 1_cuda_aware_mpi
         # sf_backend cuda is not needed if compiling only with cuda
         args: -vec_type cuda -sf_backend cuda -vecscatter_packongpu false
-        requires: cuda define(PETSC_HAVE_MPI_GPU_AWARE)
+        requires: cuda defined(PETSC_HAVE_MPI_GPU_AWARE)
 
    testset:
       # N=10 is not divisible by nsize, to trigger Allgatherv/Gatherv in SF
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
       test:
         suffix: 2_cuda_aware_mpi
         args: -vec_type cuda -vecscatter_packongpu false
-        requires: cuda define(PETSC_HAVE_MPI_GPU_AWARE)
+        requires: cuda defined(PETSC_HAVE_MPI_GPU_AWARE)
 
 TEST*/
 

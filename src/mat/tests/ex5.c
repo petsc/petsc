@@ -208,7 +208,7 @@ int main(int argc,char **args)
       args: -mat_type mpiaijcusparse -vec_type cuda
       args: -sf_type {{basic neighbor}}
       output_file: output/ex5_23.out
-      requires: cuda define(PETSC_HAVE_MPI_GPU_AWARE)
+      requires: cuda defined(PETSC_HAVE_MPI_GPU_AWARE)
 
    test:
       suffix: 31

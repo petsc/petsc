@@ -87,7 +87,7 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 TEST*/
