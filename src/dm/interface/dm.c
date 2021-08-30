@@ -5878,16 +5878,19 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
     PetscInt Nbd, bd;
 
     ierr = DMGetRegionNumDS(dm, s, &label, &fields, &ds);CHKERRQ(ierr);
+    /* TODO: We need to change all keys from labels in the old DM to labels in the new DM */
     ierr = DMTransferDS_Internal(newdm, label, fields, ds);CHKERRQ(ierr);
     /* Commplete new labels in the new DS */
     ierr = DMGetRegionDS(newdm, label, NULL, &newds);CHKERRQ(ierr);
     ierr = PetscDSGetNumBoundary(newds, &Nbd);CHKERRQ(ierr);
     for (bd = 0; bd < Nbd; ++bd) {
-      DMLabel  label;
-      PetscInt field;
+      PetscWeakForm wf;
+      DMLabel       label;
+      PetscInt      field;
 
-      ierr = PetscDSGetBoundary(newds, bd, NULL, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(newds, bd, &wf, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = DMCompleteBoundaryLabel_Internal(newdm, newds, field, bd, label);CHKERRQ(ierr);
+      ierr = PetscWeakFormReplaceLabel(wf, label);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
