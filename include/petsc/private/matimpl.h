@@ -181,7 +181,7 @@ struct _MatOps {
   PetscErrorCode (*getmultiprocblock)(Mat,MPI_Comm,MatReuse,Mat*);
   /*124*/
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
-  PetscErrorCode (*getcolumnreductions)(Mat,ReductionType,PetscReal*);
+  PetscErrorCode (*getcolumnreductions)(Mat,PetscInt,PetscReal*);
   PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
   PetscErrorCode (*invertvariableblockdiagonal)(Mat,PetscInt,const PetscInt*,PetscScalar*);
   PetscErrorCode (*createsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);

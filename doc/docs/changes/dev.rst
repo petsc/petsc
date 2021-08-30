@@ -99,6 +99,9 @@ Changes: Development
 -  Add ``MatNormalHermitianGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMALHERMITIAN``
 -  Add ``VecCreateMPICUDA()`` and ``VecCreateMPIHIP()`` to create MPI device vectors
 -  ``MatPreallocatorPreallocate`` performance `significantly improved <https://gitlab.com/petsc/petsc/-/merge_requests/4273>`_
+-  Add ``MatGetColumnReductions()`` developer routine to calculate reductions over columns of a matrix
+-  Add ``MatGetColumnSums()``, ``MatGetColumnSumsRealPart()``, ``MatGetColumnSumsImaginaryPart()`` to compute sums over matrix columns
+-  Add ``MatGetColumnMeans()``, ``MatGetColumnMeansRealPart()``, ``MatGetColumnMeansImaginaryPart()`` to compute arithmetic means over matrix columns
 
 .. rubric:: PC:
 

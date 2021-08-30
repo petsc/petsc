@@ -176,7 +176,7 @@ PetscErrorCode MatFindZeroDiagonals_MPIAIJ(Mat M,IS *zrows)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetColumnReductions_MPIAIJ(Mat A,ReductionType type,PetscReal *reductions)
+PetscErrorCode MatGetColumnReductions_MPIAIJ(Mat A,PetscInt type,PetscReal *reductions)
 {
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)A->data;
@@ -193,44 +193,51 @@ PetscErrorCode MatGetColumnReductions_MPIAIJ(Mat A,ReductionType type,PetscReal 
   ierr = MatSeqAIJRestoreArrayRead(aij->A,&dummy);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArrayRead(aij->B,&dummy);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArrayRead(aij->B,&dummy);CHKERRQ(ierr);
-  if (type == REDUCTION_NORM_2) {
+  if (type == NORM_2) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
       work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]*a_aij->a[i]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]*b_aij->a[i]);
     }
-  } else if (type == REDUCTION_NORM_1) {
+  } else if (type == NORM_1) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
       work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]);
     }
-  } else if (type == REDUCTION_NORM_INFINITY) {
+  } else if (type == NORM_INFINITY) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
       work[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->cmap->rstart + a_aij->j[i]]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
       work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]),work[garray[b_aij->j[i]]]);
     }
-  } else if (type == REDUCTION_SUM || type == REDUCTION_MEAN) {
+  } else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
-      work[A->cmap->rstart + a_aij->j[i]] += a_aij->a[i];
+      work[A->cmap->rstart + a_aij->j[i]] += PetscRealPart(a_aij->a[i]);
     }
     for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
-      work[garray[b_aij->j[i]]] += b_aij->a[i];
+      work[garray[b_aij->j[i]]] += PetscRealPart(b_aij->a[i]);
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown ReductionType");
-  if (type == REDUCTION_NORM_INFINITY) {
+  } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+    for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
+      work[A->cmap->rstart + a_aij->j[i]] += PetscImaginaryPart(a_aij->a[i]);
+    }
+    for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
+      work[garray[b_aij->j[i]]] += PetscImaginaryPart(b_aij->a[i]);
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown reduction type");
+  if (type == NORM_INFINITY) {
     ierr = MPIU_Allreduce(work,reductions,n,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   } else {
     ierr = MPIU_Allreduce(work,reductions,n,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
-  if (type == REDUCTION_NORM_2) {
+  if (type == NORM_2) {
     for (i=0; i<n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
-  } else if (type == REDUCTION_MEAN) {
+  } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
     for (i=0; i<n; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);

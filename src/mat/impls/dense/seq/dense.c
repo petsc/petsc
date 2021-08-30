@@ -2797,7 +2797,7 @@ PetscErrorCode MatGetColumnVector_SeqDense(Mat A,Vec v,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A,ReductionType type,PetscReal *reductions)
+PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A,PetscInt type,PetscReal *reductions)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,m,n;
@@ -2807,39 +2807,46 @@ PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A,ReductionType 
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = PetscArrayzero(reductions,n);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(A,&a);CHKERRQ(ierr);
-  if (type == REDUCTION_NORM_2) {
+  if (type == NORM_2) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
         reductions[i] += PetscAbsScalar(a[j]*a[j]);
       }
       a += m;
     }
-  } else if (type == REDUCTION_NORM_1) {
+  } else if (type == NORM_1) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
         reductions[i] += PetscAbsScalar(a[j]);
       }
       a += m;
     }
-  } else if (type == REDUCTION_NORM_INFINITY) {
+  } else if (type == NORM_INFINITY) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
         reductions[i] = PetscMax(PetscAbsScalar(a[j]),reductions[i]);
       }
       a += m;
     }
-  } else if (type == REDUCTION_SUM || type == REDUCTION_MEAN) {
+  } else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
-        reductions[i] += a[j];
+        reductions[i] += PetscRealPart(a[j]);
       }
       a += m;
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown ReductionType");
+  } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+    for (i=0; i<n; i++) {
+      for (j=0; j<m; j++) {
+        reductions[i] += PetscImaginaryPart(a[j]);
+      }
+      a += m;
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown reduction type");
   ierr = MatDenseRestoreArrayRead(A,&a);CHKERRQ(ierr);
-  if (type == REDUCTION_NORM_2) {
+  if (type == NORM_2) {
     for (i=0; i<n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
-  } else if (type == REDUCTION_MEAN) {
+  } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
     for (i=0; i<n; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);

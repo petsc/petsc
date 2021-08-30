@@ -2322,7 +2322,7 @@ PetscErrorCode MatSOR_MPIBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A,ReductionType type,PetscReal *reductions)
+PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A,PetscInt type,PetscReal *reductions)
 {
   PetscErrorCode ierr;
   Mat_MPIBAIJ    *aij = (Mat_MPIBAIJ*)A->data;
@@ -2337,7 +2337,7 @@ PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A,ReductionType type,PetscReal
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&N);CHKERRQ(ierr);
   ierr = PetscCalloc1(N,&work);CHKERRQ(ierr);
-  if (type == REDUCTION_NORM_2) {
+  if (type == NORM_2) {
     for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
       for (jb=0; jb<bs; jb++) {
         for (ib=0; ib<bs; ib++) {
@@ -2354,7 +2354,7 @@ PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A,ReductionType type,PetscReal
         }
       }
     }
-  } else if (type == REDUCTION_NORM_1) {
+  } else if (type == NORM_1) {
     for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
       for (jb=0; jb<bs; jb++) {
         for (ib=0; ib<bs; ib++) {
@@ -2371,7 +2371,7 @@ PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A,ReductionType type,PetscReal
         }
       }
     }
-  } else if (type == REDUCTION_NORM_INFINITY) {
+  } else if (type == NORM_INFINITY) {
     for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
       for (jb=0; jb<bs; jb++) {
         for (ib=0; ib<bs; ib++) {
@@ -2390,11 +2390,11 @@ PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A,ReductionType type,PetscReal
         }
       }
     }
-  } else if (type == REDUCTION_SUM || REDUCTION_MEAN) {
+  } else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) {
     for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
       for (jb=0; jb<bs; jb++) {
         for (ib=0; ib<bs; ib++) {
-          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += *a_val;
+          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscRealPart(*a_val);
           a_val++;
         }
       }
@@ -2402,21 +2402,38 @@ PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A,ReductionType type,PetscReal
     for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
       for (jb=0; jb<bs; jb++) {
        for (ib=0; ib<bs; ib++) {
-          work[garray[b_aij->j[i]] * bs + jb] += *b_val;
+          work[garray[b_aij->j[i]] * bs + jb] += PetscRealPart(*b_val);
           b_val++;
         }
       }
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown ReductionType");
-  if (type == REDUCTION_NORM_INFINITY) {
+  } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+    for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscImaginaryPart(*a_val);
+          a_val++;
+        }
+      }
+    }
+    for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+       for (ib=0; ib<bs; ib++) {
+          work[garray[b_aij->j[i]] * bs + jb] += PetscImaginaryPart(*b_val);
+          b_val++;
+        }
+      }
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown reduction type");
+  if (type == NORM_INFINITY) {
     ierr = MPIU_Allreduce(work,reductions,N,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   } else {
     ierr = MPIU_Allreduce(work,reductions,N,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
-  if (type == REDUCTION_NORM_2) {
+  if (type == NORM_2) {
     for (i=0; i<N; i++) reductions[i] = PetscSqrtReal(reductions[i]);
-  } else if (type == REDUCTION_MEAN) {
+  } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
     for (i=0; i<N; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);

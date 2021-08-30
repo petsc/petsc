@@ -1022,9 +1022,9 @@ static PetscErrorCode MatGetColumnVector_MPIDense(Mat A,Vec v,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat,ReductionType,PetscReal*);
+PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat,PetscInt,PetscReal*);
 
-PetscErrorCode MatGetColumnReductions_MPIDense(Mat A,ReductionType type,PetscReal *reductions)
+PetscErrorCode MatGetColumnReductions_MPIDense(Mat A,PetscInt type,PetscReal *reductions)
 {
   PetscErrorCode ierr;
   PetscInt       i,m,n;
@@ -1034,23 +1034,25 @@ PetscErrorCode MatGetColumnReductions_MPIDense(Mat A,ReductionType type,PetscRea
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&work);CHKERRQ(ierr);
-  if (type == REDUCTION_MEAN) {
-    ierr = MatGetColumnReductions_SeqDense(a->A,REDUCTION_SUM,work);CHKERRQ(ierr);
+  if (type == REDUCTION_MEAN_REALPART) {
+    ierr = MatGetColumnReductions_SeqDense(a->A,(PetscInt)REDUCTION_SUM_REALPART,work);CHKERRQ(ierr);
+  } else if (type == REDUCTION_MEAN_IMAGINARYPART) {
+    ierr = MatGetColumnReductions_SeqDense(a->A,(PetscInt)REDUCTION_SUM_IMAGINARYPART,work);CHKERRQ(ierr);
   } else {
     ierr = MatGetColumnReductions_SeqDense(a->A,type,work);CHKERRQ(ierr);
   }
-  if (type == REDUCTION_NORM_2) {
+  if (type == NORM_2) {
     for (i=0; i<n; i++) work[i] *= work[i];
   }
-  if (type == REDUCTION_NORM_INFINITY) {
+  if (type == NORM_INFINITY) {
     ierr = MPIU_Allreduce(work,reductions,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRMPI(ierr);
   } else {
     ierr = MPIU_Allreduce(work,reductions,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRMPI(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
-  if (type == REDUCTION_NORM_2) {
+  if (type == NORM_2) {
     for (i=0; i<n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
-  } else if (type == REDUCTION_MEAN) {
+  } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
     for (i=0; i<n; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);
