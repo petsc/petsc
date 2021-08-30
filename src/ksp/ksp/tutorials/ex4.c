@@ -94,6 +94,7 @@ int main(int argc,char **args)
   }
 
   ierr = MatCreateVecs(A,&u,NULL);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
@@ -240,5 +241,12 @@ int main(int argc,char **args)
       nsize: {{1 2}}
       requires: hypre defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -mat_type hypre -ksp_converged_reason -pc_type hypre -m 13 -n 17
+
+   test:
+      suffix: hypre_device_cusparse
+      output_file: output/ex4_hypre_device.out
+      nsize: {{1 2}}
+      requires: hypre cuda defined(PETSC_HAVE_HYPRE_DEVICE)
+      args: -mat_type {{aij aijcusparse}} -vec_type cuda -ksp_converged_reason -pc_type hypre -m 13 -n 17
 
 TEST*/
