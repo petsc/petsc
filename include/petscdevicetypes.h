@@ -57,22 +57,22 @@ $ PETSC_DEVICE_MAX     - Always 1 greater than the largest valid PetscDeviceKInd
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceGetDevice()
+.seealso: PetscDevice, PetscDeviceCreate()
 E*/
 typedef enum {
   PETSC_DEVICE_INVALID = 0,
   PETSC_DEVICE_CUDA    = 1,
   PETSC_DEVICE_HIP     = 2,
-#if PetscDefined(HAVE_HIP)
-  PETSC_DEVICE_DEFAULT = PETSC_DEVICE_HIP,
-#elif PetscDefined(HAVE_CUDA)
-  PETSC_DEVICE_DEFAULT = PETSC_DEVICE_CUDA,
-#else
-  PETSC_DEVICE_DEFAULT = PETSC_DEVICE_INVALID,
-#endif
   PETSC_DEVICE_MAX     = 3
 } PetscDeviceKind;
 PETSC_EXTERN const char *const PetscDeviceKinds[];
+#if PetscDefined(HAVE_HIP)
+#  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_HIP
+#elif PetscDefined(HAVE_CUDA)
+#  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_CUDA
+#else
+#  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_INVALID
+#endif
 
 /*S
   PetscDevice - Handle to an accelerator "device" (usually a GPU)
@@ -83,7 +83,7 @@ PETSC_EXTERN const char *const PetscDeviceKinds[];
 
   Level: beginner
 
-.seealso: PetscDeviceKind, PetscDeviceGetDevice(), PetscDeviceDestroy(), PetscDeviceDestroy(), PetscDeviceContext, PetscDeviceContextSetDevice()
+.seealso: PetscDeviceKind, PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceDestroy(), PetscDeviceContext, PetscDeviceContextSetDevice(), PetscDeviceContextGetDevice()
 S*/
 typedef struct _n_PetscDevice *PetscDevice;
 

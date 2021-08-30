@@ -75,8 +75,8 @@ static Petsc::ObjectPool<PetscDeviceContext,PetscDeviceContextAllocator> context
   Level: beginner
 
 .seealso: PetscDeviceContextDuplicate(), PetscDeviceContextSetDevice(),
-PetscDeviceContextSetStreamType(), PetscDeviceContextSetUp(), PetscDeviceContextDestroy(),
-PetscDeviceContextSetFromOptions()
+PetscDeviceContextSetStreamType(), PetscDeviceContextSetUp(),
+PetscDeviceContextSetFromOptions(), PetscDeviceContextDestroy()
 @*/
 PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
 {
@@ -138,8 +138,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
 
   Level: intermediate
 
-.seealso: PetscDeviceContextCreate(), PetscDeviceContextSetDevice(),
-PetscDeviceContextGetStreamType(), PetscDeviceContextSetUp(), PetscDeviceContextSetFromOptions()
+.seealso: PetscDeviceContextGetStreamType(), PetscDeviceContextCreate(), PetscDeviceContextSetUp(), PetscDeviceContextSetFromOptions()
 @*/
 PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStreamType type)
 {
@@ -173,8 +172,7 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
 
   Level: intermediate
 
-.seealso: PetscDeviceContextCreate(), PetscDeviceContextSetDevice(),
-PetscDeviceContextSetStreamType(), PetscDeviceContextSetFromOptions()
+.seealso: PetscDeviceContextSetStreamType(), PetscDeviceContextCreate(), PetscDeviceContextSetFromOptions()
 @*/
 PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStreamType *type)
 {
@@ -200,9 +198,11 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
   not stricly necessary to set a contexts device to enable usage, any created device
   contexts will always come equipped with the "default" device.
 
+  This routine may initialize the backend device and incur synchronization.
+
   Level: intermediate
 
-.seealso: PetscDeviceCreate(), PetscDeviceContextGetDevice()
+.seealso: PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceContextGetDevice()
 @*/
 PetscErrorCode PetscDeviceContextSetDevice(PetscDeviceContext dctx, PetscDevice device)
 {
@@ -259,8 +259,7 @@ PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice 
 
   Level: beginner
 
-.seealso: PetscDeviceContextTypes, PetscDeviceContextCreate(),
-PetscDeviceContextSetDevice(), PetscDeviceContextDestroy(), PetscDeviceContextSetFromOptions()
+.seealso: PetscDeviceContextCreate(), PetscDeviceContextSetDevice(), PetscDeviceContextDestroy(), PetscDeviceContextSetFromOptions()
 @*/
 PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx)
 {
@@ -483,7 +482,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
 }
 
 /*@C
-  PetscDeviceContextJoin() - Converge a set of child contexts
+  PetscDeviceContextJoin - Converge a set of child contexts
 
   Not Collective, Asynchronous
 
@@ -610,7 +609,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
 }
 
 /*@C
-  PetscDeviceContextSynchronize() - Block the host until all work queued on or associated with a PetscDeviceContext has finished
+  PetscDeviceContextSynchronize - Block the host until all work queued on or associated with a PetscDeviceContext has finished
 
   Not Collective, Synchronous
 
@@ -670,7 +669,7 @@ PetscErrorCode PetscDeviceContextInitializeRootContext_Internal(MPI_Comm comm, c
 }
 
 /*@C
-  PetscDeviceContextGetCurrentContext() - Get the current active PetscDeviceContext
+  PetscDeviceContextGetCurrentContext - Get the current active PetscDeviceContext
 
   Not Collective, Asynchronous
 
@@ -708,7 +707,7 @@ PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx)
 }
 
 /*@C
-  PetscDeviceContextSetCurrentContext() - Set the current active PetscDeviceContext
+  PetscDeviceContextSetCurrentContext - Set the current active PetscDeviceContext
 
   Not Collective, Asynchronous
 
@@ -750,13 +749,13 @@ PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx)
 . dctx - The PetscDeviceContext
 
   Options Database:
-. -device_context_device_kind - the kind of PetscDevice to attach by default
+. -device_context_device_kind - the kind of PetscDevice to attach by default - PetscDeviceKind
 . -device_context_stream_type - type of stream to create inside the PetscDeviceContext -
   PetscDeviceContextSetStreamType()
 
   Level: beginner
 
-.seealso: PetscDeviceContextSetStreamType()
+.seealso: PetscDeviceContextSetStreamType(), PetscDeviceContextSetDevice()
 @*/
 PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, const char prefix[], PetscDeviceContext dctx)
 {

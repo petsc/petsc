@@ -166,6 +166,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextValidateIdle_Internal(Petsc
   }
   PetscFunctionReturn(0);
 }
+
 #if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext);
 #endif
