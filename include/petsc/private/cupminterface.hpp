@@ -66,10 +66,10 @@ struct CUPMInterface<CUPMDeviceKind::CUDA>
   PETSC_ALIAS_FUNCTION(static constexpr cupmGetErrorString,cudaGetErrorString);
 
   // values
-  static constexpr auto cupmSuccess                 = cudaSuccess;
-  static constexpr auto cupmErrorNotReady           = cudaErrorNotReady;
-  static constexpr auto cupmStreamNonBlocking       = cudaStreamNonBlocking;
-  static constexpr auto cupmErrorDeviceAlreadyInUse = cudaErrorDeviceAlreadyInUse;
+  static const auto cupmSuccess                 = cudaSuccess;
+  static const auto cupmErrorNotReady           = cudaErrorNotReady;
+  static const auto cupmStreamNonBlocking       = cudaStreamNonBlocking;
+  static const auto cupmErrorDeviceAlreadyInUse = cudaErrorDeviceAlreadyInUse;
 
   // regular functions
   PETSC_ALIAS_FUNCTION(static constexpr cupmGetDeviceCount,cudaGetDeviceCount);
@@ -203,11 +203,11 @@ struct CUPMInterface<CUPMDeviceKind::HIP>
   PETSC_ALIAS_FUNCTION(static constexpr cupmGetErrorString,hipGetErrorString);
 
   // values
-  static constexpr auto cupmSuccess                 = hipSuccess;
-  static constexpr auto cupmErrorNotReady           = hipErrorNotReady;
-  static constexpr auto cupmStreamNonBlocking       = hipStreamNonBlocking;
+  static const auto cupmSuccess                 = hipSuccess;
+  static const auto cupmErrorNotReady           = hipErrorNotReady;
+  static const auto cupmStreamNonBlocking       = hipStreamNonBlocking;
   // as of HIP v4.2 cudaErrorDeviceAlreadyInUse has no HIP equivalent
-  static constexpr auto cupmErrorDeviceAlreadyInUse = hipSuccess;
+  static const auto cupmErrorDeviceAlreadyInUse = hipSuccess;
 
   // regular functions
   PETSC_ALIAS_FUNCTION(static constexpr cupmGetDeviceCount,hipGetDeviceCount);
