@@ -324,7 +324,7 @@
 !/*TEST
 !
 !   build:
-!      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+!      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
 !
 !   test:
 !      output_file: output/ex61f_1.out

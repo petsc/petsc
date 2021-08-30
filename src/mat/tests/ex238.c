@@ -64,7 +64,7 @@ int main(int argc,char **args)
 /*TEST
 
    testset:
-     requires: define(PETSC_USING_64BIT_PTR)
+     requires: defined(PETSC_USING_64BIT_PTR)
      output_file: output/ex238_1.out
      test:
        suffix: 1

@@ -141,32 +141,32 @@ int main(int argc,char **args)
 
     test:
       args: -ksp_type preonly  -pc_type lu -options_left no  -f ${DATAFILESPATH}/matrices/arco1
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:
       suffix: 2
       args: -sub_pc_type ilu -options_left no  -f ${DATAFILESPATH}/matrices/arco1 -ksp_gmres_restart 100 -ksp_gmres_cgs_refinement_type refine_always -sub_ksp_type preonly -pc_type bjacobi -pc_bjacobi_blocks 8 -sub_pc_factor_in_place -ksp_monitor_short
-      requires: datafilespath double  !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double  !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:
       suffix: 7
       args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6  -ksp_monitor_short
-      requires: datafilespath double  !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double  !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
       suffix: 3
       filter: sed -e "s/CONVERGED_RTOL/CONVERGED_ATOL/g"
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr lsqr qcg bicg minres symmlq lcd gcr pipegcr cgls}} -ksp_max_it 20 -ksp_error_if_not_converged -ksp_converged_reason -test_residual
 
     test:
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
       suffix: 3_maxits
       output_file: output/ex6_maxits.out
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr qcg bicg minres symmlq lcd gcr pipegcr cgls richardson}} -ksp_max_it 4 -ksp_error_if_not_converged -ksp_converged_maxits -ksp_converged_reason -test_residual -ksp_norm_type none
 
     testset:
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
       output_file: output/ex6_skip.out
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_max_it 8 -ksp_error_if_not_converged -ksp_convergence_test skip -ksp_converged_reason -test_residual
       #SYMMLQ converges in 4 iterations and then generate nans
@@ -179,7 +179,7 @@ int main(int argc,char **args)
         args: -ksp_type pipefgmres
       #PIPEGCR generates nans on linux-knl
       test:
-        requires: !define(PETSC_USE_AVX512_KERNELS)
+        requires: !defined(PETSC_USE_AVX512_KERNELS)
         suffix: 3_skip_pipegcr
         args: -ksp_type pipegcr
       test:
@@ -188,7 +188,7 @@ int main(int argc,char **args)
         args: -ksp_type hpddm -ksp_hpddm_type {{cg gmres bgmres bcg bfbcg gcrodr bgcrodr}}
 
     test:
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES) hpddm
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES) hpddm
       suffix: 3_hpddm
       output_file: output/ex6_3.out
       filter: sed -e "s/CONVERGED_RTOL/CONVERGED_ATOL/g"
@@ -198,6 +198,6 @@ int main(int argc,char **args)
     test:
       suffix: 4
       args: -ksp_converged_reason -ksp_max_it 20 -ksp_converged_maxits -ksp_type {{cg pipecg groppcg}} -ksp_norm_type {{preconditioned unpreconditioned natural}separate output} -pc_type {{bjacobi none}separate output} -f ${DATAFILESPATH}/matrices/poisson_2d13p -b_in_f 0 -test_residual
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
 TEST*/

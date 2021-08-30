@@ -144,7 +144,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -mat_type {{aij sbaij}shared output}
       test:
          suffix: 1
@@ -165,13 +165,13 @@ int main(int argc,char **args)
 
    test:
       nsize: 1
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       suffix: preonly
       args: -N 6 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -pc_type lu -ksp_type hpddm -ksp_hpddm_type preonly
 
    testset:
       nsize: 1
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -N 3 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_type hpddm -breakdown
       test:
          suffix: breakdown_wo_deflation
@@ -185,19 +185,19 @@ int main(int argc,char **args)
 
    test:
       nsize: 2
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -N 12 -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -mat_type kaij -pc_type pbjacobi -ksp_type hpddm -ksp_hpddm_type {{gmres bgmres}separate output}
 
    test:
       nsize: 3
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       suffix: kaij_zero
       output_file: output/ex77_ksp_hpddm_type-bgmres.out
       args: -N 12 -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -mat_type kaij -pc_type pbjacobi -ksp_type hpddm -ksp_hpddm_type bgmres
 
    test:
       nsize: 4
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: 4_slepc
       output_file: output/ex77_4.out
       filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
@@ -205,7 +205,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 4
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       filter: sed "/^ksp_hpddm_recycle_ Linear eigensolve converged/d"
       args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_batch_size 5 -ksp_hpddm_recycle_redistribute 2 -ksp_hpddm_recycle_eps_converged_reason
       test:
@@ -226,7 +226,7 @@ int main(int argc,char **args)
 
    test:
       nsize: 5
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       suffix: 4_zero
       output_file: output/ex77_4.out
       args: -ksp_converged_reason -ksp_max_it 500 -f ${DATAFILESPATH}/matrices/hpddm/GCRODR/A_400.dat -ksp_rtol 1e-4 -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr -ksp_view_final_residual -N 12 -ksp_matsolve_batch_size 5

@@ -291,7 +291,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 /*TEST
 
    build:
-      requires: !complex !single !__float128 !define(PETSC_USE_64BIT_INDICES)
+      requires: !complex !single !__float128 !defined(PETSC_USE_64BIT_INDICES)
 
    test:
       localrunfiles: tomographyData_A_b_xGT

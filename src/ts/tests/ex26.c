@@ -91,7 +91,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscReal shift,Mat A,
 
     test:
       suffix: arkimex_explicit_stage
-      requires: define(PETSC_USE_DEBUG)
+      requires: defined(PETSC_USE_DEBUG)
       args: -ts_type arkimex -error_output_stdout
       filter:  egrep -v "(Petsc|on a| at |Configure)"
 

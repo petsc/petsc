@@ -156,7 +156,7 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-      requires:  !define(PETSC_USE_64BIT_INDICES) double !complex
+      requires:  !defined(PETSC_USE_64BIT_INDICES) double !complex
 
    test:
       requires: datafilespath

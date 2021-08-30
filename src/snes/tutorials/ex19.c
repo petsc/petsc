@@ -1104,13 +1104,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: seqbaijmkl
       nsize: 1
-      requires: define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+      requires: defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
       args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
 
    test:
       suffix: mpibaijmkl
       nsize: 2
-      requires:  define(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+      requires:  defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
       args: -dm_mat_type baij -snes_monitor -ksp_monitor -snes_view
 
    test:
@@ -1121,7 +1121,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 
    test:
      suffix: logviewmemory
-     requires: define(PETSC_USE_LOG) !define(PETSCTEST_VALGRIND)
+     requires: defined(PETSC_USE_LOG) !defined(PETSCTEST_VALGRIND)
      args: -log_view -log_view_memory -da_refine 4
      filter: grep MatFDColorSetUp | wc -w | xargs  -I % sh -c "expr % \> 21"
 
@@ -1136,19 +1136,19 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: euclid
       nsize: 2
-      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_MIXEDINT)
       args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid
 
    test:
       suffix: euclid_bj
       nsize: 2
-      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_MIXEDINT)
       args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid -pc_hypre_euclid_bj
 
    test:
       suffix: euclid_droptolerance
       nsize: 1
-      requires: hypre !single !complex !define(PETSC_HAVE_HYPRE_MIXEDINT)
+      requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_MIXEDINT)
       args: -da_refine 2 -ksp_monitor -snes_monitor -snes_view -pc_type hypre -pc_hypre_type euclid -pc_hypre_euclid_droptolerance .1
 
 TEST*/

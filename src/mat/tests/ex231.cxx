@@ -156,7 +156,7 @@ int main (int argc, char** argv)
 }
 /*TEST
    build:
-      requires: !define(PETSC_HAVE_SUN_CXX)
+      requires: !defined(PETSC_HAVE_SUN_CXX)
 
    test:
       nsize: 2

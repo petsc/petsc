@@ -54,7 +54,7 @@ program newnonzero
 !       filter: Error:
 !
 !     test:
-!       requires: define(PETSC_USE_INFO)
+!       requires: defined(PETSC_USE_INFO)
 !       suffix: 2
 !       nsize: 2
 !       args: -info

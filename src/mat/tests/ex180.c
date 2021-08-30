@@ -33,65 +33,65 @@ int main(int argc,char **args)
       test:
          args: -mat_type aij -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 2
          nsize: 2
          args: -mat_type aij -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 3
          args: -mat_type baij -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 4more
          nsize: 2
          args: -mat_type baij -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 5
          args: -mat_type sbaij -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 6
          nsize: 2
          args: -mat_type sbaij -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 7
          args: -mat_type sbaij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 8
          nsize: 2
          args: -mat_type sbaij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 9
          args: -mat_type baij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
       test:
          suffix: 10
          nsize: 2
          args: -mat_type baij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
-         requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+         requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
 
 TEST*/

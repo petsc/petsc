@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
-    requires: hdf5 double !complex !define(PETSC_USE_64BIT_INDICES)
+    requires: hdf5 double !complex !defined(PETSC_USE_64BIT_INDICES)
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/barycentricallyrefinedcube.h5 -dm_view ascii::ASCII_INFO_DETAIL -ref_dm_refine 1 -ref_dm_view ascii::ASCII_INFO_DETAIL
 
 TEST*/

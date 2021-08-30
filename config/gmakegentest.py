@@ -761,7 +761,7 @@ class generateExamples(Petsc):
           testDict['SKIP'].append("Requires DATAFILESPATH")
           continue
         # Defines -- not sure I have comments matching
-        if "define(" in requirement.lower():
+        if "defined(" in requirement.lower():
           reqdef=requirement.split("(")[1].split(")")[0]
           if reqdef in self.conf:
             if isNull:

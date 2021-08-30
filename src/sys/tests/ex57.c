@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 /*TEST
 
   build:
-    requires: define(PETSC_HAVE_CXX_DIALECT_CXX11)
+    requires: defined(PETSC_HAVE_CXX_DIALECT_CXX11)
 
   test:
     requires: cuda

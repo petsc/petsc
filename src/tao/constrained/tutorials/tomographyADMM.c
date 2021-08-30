@@ -390,7 +390,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-      requires: !complex !single !__float128 !define(PETSC_USE_64BIT_INDICES)
+      requires: !complex !single !__float128 !defined(PETSC_USE_64BIT_INDICES)
 
    test:
       suffix: 1

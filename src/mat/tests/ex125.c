@@ -293,50 +293,50 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 10
       output_file: output/ex125.out
 
    test:
       suffix: mkl_pardiso
-      requires: mkl_pardiso datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: mkl_pardiso datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 3
 
    test:
       suffix: mumps
-      requires: mumps datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 2
       output_file: output/ex125_mumps_seq.out
 
    test:
       suffix: mumps_2
       nsize: 3
-      requires: mumps datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: mumps datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 2
       output_file: output/ex125_mumps_par.out
 
    test:
       suffix: superlu_dist
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES) superlu_dist
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1 -mat_superlu_dist_rowperm NOROWPERM
 
    test:
       suffix: superlu_dist_2
       nsize: 3
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES) superlu_dist
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1 -mat_superlu_dist_rowperm NOROWPERM
       output_file: output/ex125_superlu_dist.out
 
    test:
       suffix: superlu_dist_complex
       nsize: 3
-      requires: datafilespath superlu_dist complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath superlu_dist complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_type 1
       output_file: output/ex125_superlu_dist_complex.out
 
    test:
       suffix: cusparse
-      requires: cuda datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: cuda datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type 4 -cholesky {{0 1}separate output}
 
 TEST*/

@@ -1177,7 +1177,7 @@ int main(int argc,char ** argv)
 /*TEST
 
    build:
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
 
    test:
       args: -ts_monitor -snes_converged_reason -alg_snes_converged_reason

@@ -519,7 +519,7 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh
     test:
       suffix: gmsh_3d_binary_v41_32_mpiio
-      requires: define(PETSC_HAVE_MPIIO)
+      requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
   testset:  # 32bit mesh, parallel
     args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all
@@ -533,7 +533,7 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh
     test:
       suffix: gmsh_3d_binary_v41_32_np2_mpiio
-      requires: define(PETSC_HAVE_MPIIO)
+      requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
   testset: # 64bit mesh, sequential
     args: -dm_coord_space 0 -dm_view ::ascii_info_detail -dm_plex_check_all
@@ -546,7 +546,7 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh
     test:
       suffix: gmsh_3d_binary_v41_64_mpiio
-      requires: define(PETSC_HAVE_MPIIO)
+      requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh -viewer_binary_mpiio
   testset:  # 64bit mesh, parallel
     args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all
@@ -560,7 +560,7 @@ int main(int argc, char **argv)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh
     test:
       suffix: gmsh_3d_binary_v41_64_np2_mpiio
-      requires: define(PETSC_HAVE_MPIIO)
+      requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh -viewer_binary_mpiio
 
   # Fluent mesh reader tests

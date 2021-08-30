@@ -140,7 +140,7 @@ PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
 
     test:
       args: -f ${DATAFILESPATH}/matrices/small
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       output_file: output/ex27.out
 
 TEST*/
