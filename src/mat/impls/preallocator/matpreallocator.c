@@ -155,16 +155,33 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
     PetscHashIter  hi;
     PetscHashIJKey key;
     PetscScalar    *zeros;
+    PetscInt       n,maxrow=1,*rows,*cols;
 
-    ierr = PetscCalloc1(bs*bs,&zeros);CHKERRQ(ierr);
-
+    ierr = PetscHSetIJGetSize(p->ht,&n);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n,&rows,n,&cols);CHKERRQ(ierr);
     PetscHashIterBegin(p->ht,hi);
-    while (!PetscHashIterAtEnd(p->ht,hi)) {
+    for (PetscInt i=0; !PetscHashIterAtEnd(p->ht,hi); i++) {
       PetscHashIterGetKey(p->ht,hi,key);
+      rows[i] = key.i;
+      cols[i] = key.j;
       PetscHashIterNext(p->ht,hi);
-      ierr = MatSetValuesBlocked(A,1,&key.i,1,&key.j,zeros,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = PetscHSetIJDestroy(&p->ht);CHKERRQ(ierr);
+
+    ierr = PetscCalloc1(maxrow*bs*bs,&zeros);CHKERRQ(ierr);
+    ierr = PetscSortIntWithArray(n,rows,cols);CHKERRQ(ierr);
+    for (PetscInt start=0,end=1; start<n; start=end,end++) {
+      while (end < n && rows[end] == rows[start]) end++;
+      ierr = PetscSortInt(end-start,&cols[start]);CHKERRQ(ierr);
+      if (maxrow < end-start) {
+        maxrow = 2*(end - start);
+        ierr = PetscRealloc(maxrow*bs*bs*sizeof(zeros[0]),&zeros);CHKERRQ(ierr);
+        ierr = PetscMemzero(zeros, maxrow*bs*bs*sizeof(zeros[0]));CHKERRQ(ierr);
+      }
+      ierr = MatSetValuesBlocked(A, 1, &rows[start], end-start, &cols[start], zeros, INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = PetscFree(zeros);CHKERRQ(ierr);
+    ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
 
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
