@@ -527,8 +527,8 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Static(DM dm, IS globalPointNu
 
 static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPointNumbers, PetscViewer viewer, PetscInt pStart, PetscInt pEnd, const char pointsName[], const char coneSizesName[], const char conesName[], const char orientationsName[])
 {
-  IS              pointsIS, coneSizesIS, conesIS, orientationsIS;
-  PetscInt       *points, *coneSizes, *cones, *orientations;
+  IS              coneSizesIS, conesIS, orientationsIS;
+  PetscInt       *coneSizes, *cones, *orientations;
   const PetscInt *gpoint;
   PetscInt        nPoints = 0, conesSize = 0;
   PetscInt        p, c, s;
@@ -546,7 +546,6 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPoin
       conesSize += coneSize;
     }
   }
-  PetscCall(PetscMalloc1(nPoints, &points));
   PetscCall(PetscMalloc1(nPoints, &coneSizes));
   PetscCall(PetscMalloc1(conesSize, &cones));
   PetscCall(PetscMalloc1(conesSize, &orientations));
@@ -558,7 +557,6 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPoin
       PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
       PetscCall(DMPlexGetCone(dm, p, &cone));
       PetscCall(DMPlexGetConeOrientation(dm, p, &ornt));
-      points[s]    = gpoint[p];
       coneSizes[s] = coneSize;
       for (cp = 0; cp < coneSize; ++cp, ++c) {
         cones[c]        = gpoint[cone[cp]] < 0 ? -(gpoint[cone[cp]] + 1) : gpoint[cone[cp]];
@@ -569,22 +567,34 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPoin
   }
   PetscCheck(s == nPoints, PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of points %" PetscInt_FMT " != %" PetscInt_FMT, s, nPoints);
   PetscCheck(c == conesSize, PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cone points %" PetscInt_FMT " != %" PetscInt_FMT, c, conesSize);
-  PetscCall(ISCreateGeneral(comm, nPoints, points, PETSC_OWN_POINTER, &pointsIS));
   PetscCall(ISCreateGeneral(comm, nPoints, coneSizes, PETSC_OWN_POINTER, &coneSizesIS));
   PetscCall(ISCreateGeneral(comm, conesSize, cones, PETSC_OWN_POINTER, &conesIS));
   PetscCall(ISCreateGeneral(comm, conesSize, orientations, PETSC_OWN_POINTER, &orientationsIS));
-  PetscCall(PetscObjectSetName((PetscObject)pointsIS, pointsName));
   PetscCall(PetscObjectSetName((PetscObject)coneSizesIS, coneSizesName));
   PetscCall(PetscObjectSetName((PetscObject)conesIS, conesName));
   PetscCall(PetscObjectSetName((PetscObject)orientationsIS, orientationsName));
-  PetscCall(ISView(pointsIS, viewer));
   PetscCall(ISView(coneSizesIS, viewer));
   PetscCall(ISView(conesIS, viewer));
   PetscCall(ISView(orientationsIS, viewer));
-  PetscCall(ISDestroy(&pointsIS));
   PetscCall(ISDestroy(&coneSizesIS));
   PetscCall(ISDestroy(&conesIS));
   PetscCall(ISDestroy(&orientationsIS));
+  if (pointsName) {
+    IS        pointsIS;
+    PetscInt *points;
+
+    PetscCall(PetscMalloc1(nPoints, &points));
+    for (p = pStart, c = 0, s = 0; p < pEnd; ++p) {
+      if (gpoint[p] >= 0) {
+        points[s] = gpoint[p];
+        ++s;
+      }
+    }
+    PetscCall(ISCreateGeneral(comm, nPoints, points, PETSC_OWN_POINTER, &pointsIS));
+    PetscCall(PetscObjectSetName((PetscObject)pointsIS, pointsName));
+    PetscCall(ISView(pointsIS, viewer));
+    PetscCall(ISDestroy(&pointsIS));
+  }
   PetscCall(ISRestoreIndices(globalPointNumbers, &gpoint));
   PetscFunctionReturn(0);
 }
