@@ -1010,7 +1010,6 @@ int main(int argc,char **argv)
       break;
   default:
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"-tid must be 0,1,2");
-      break;
   }
   ierr = PetscFinalize();
   return ierr;

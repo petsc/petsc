@@ -2050,7 +2050,6 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 
   jac->hypre_type = NULL;
   SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are euclid, pilut, parasails, boomeramg, ams",name);
-  PetscFunctionReturn(0);
 }
 
 /*

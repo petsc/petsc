@@ -696,7 +696,6 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
           break;
         case VEL_SHEAR:
           exactFuncs[0] = shear_bc; break;
-          break;
         default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
       }
       break;

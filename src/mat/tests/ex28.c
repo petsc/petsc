@@ -86,7 +86,6 @@ int main(int argc,char **args)
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s\n",factortype);
-    break;
   }
 
   /* Compute numeric factors using same F, then solve */
@@ -102,7 +101,6 @@ int main(int argc,char **args)
       break;
     default:
       SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s\n",factortype);
-      break;
     }
 
     /* Solve A[k] * x = b */

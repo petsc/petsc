@@ -598,7 +598,6 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown PetscDeviceContextJoinMode given");
-    break;
   }
 
 #if defined(PETSC_USE_DEBUG) && defined(PETSC_USE_INFO)
