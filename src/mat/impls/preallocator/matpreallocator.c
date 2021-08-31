@@ -146,6 +146,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (!fill) {ierr = PetscHSetIJDestroy(&p->ht);CHKERRQ(ierr);}
   ierr = MatGetBlockSize(mat, &bs);CHKERRQ(ierr);
   ierr = MatXAIJSetPreallocation(A, bs, p->dnz, p->onz, p->dnzu, p->onzu);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
@@ -155,33 +156,40 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
     PetscHashIter  hi;
     PetscHashIJKey key;
     PetscScalar    *zeros;
-    PetscInt       n,maxrow=1,*rows,*cols;
+    PetscInt       n,maxrow=1,*cols,rStart,rEnd,*rowstarts;
 
+    ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
+    // Ownership range is in terms of scalar entries, but we deal with blocks
+    rStart /= bs;
+    rEnd /= bs;
     ierr = PetscHSetIJGetSize(p->ht,&n);CHKERRQ(ierr);
-    ierr = PetscMalloc2(n,&rows,n,&cols);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n,&cols,rEnd-rStart+1,&rowstarts);CHKERRQ(ierr);
+    rowstarts[0] = 0;
+    for (PetscInt i=0; i<rEnd-rStart; i++) {
+      rowstarts[i+1] = rowstarts[i] + p->dnz[i] + p->onz[i];
+      maxrow = PetscMax(maxrow, p->dnz[i] + p->onz[i]);
+    }
+    if (rowstarts[rEnd-rStart] != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash claims %D entries, but dnz+onz counts %D",n,rowstarts[rEnd-rStart]);
+
     PetscHashIterBegin(p->ht,hi);
     for (PetscInt i=0; !PetscHashIterAtEnd(p->ht,hi); i++) {
       PetscHashIterGetKey(p->ht,hi,key);
-      rows[i] = key.i;
-      cols[i] = key.j;
+      PetscInt lrow = key.i - rStart;
+      cols[rowstarts[lrow]] = key.j;
+      rowstarts[lrow]++;
       PetscHashIterNext(p->ht,hi);
     }
     ierr = PetscHSetIJDestroy(&p->ht);CHKERRQ(ierr);
 
     ierr = PetscCalloc1(maxrow*bs*bs,&zeros);CHKERRQ(ierr);
-    ierr = PetscSortIntWithArray(n,rows,cols);CHKERRQ(ierr);
-    for (PetscInt start=0,end=1; start<n; start=end,end++) {
-      while (end < n && rows[end] == rows[start]) end++;
+    for (PetscInt i=0; i<rEnd-rStart; i++) {
+      PetscInt grow = rStart + i;
+      PetscInt end = rowstarts[i], start = end - p->dnz[i] - p->onz[i];
       ierr = PetscSortInt(end-start,&cols[start]);CHKERRQ(ierr);
-      if (maxrow < end-start) {
-        maxrow = 2*(end - start);
-        ierr = PetscRealloc(maxrow*bs*bs*sizeof(zeros[0]),&zeros);CHKERRQ(ierr);
-        ierr = PetscMemzero(zeros, maxrow*bs*bs*sizeof(zeros[0]));CHKERRQ(ierr);
-      }
-      ierr = MatSetValuesBlocked(A, 1, &rows[start], end-start, &cols[start], zeros, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(A, 1, &grow, end-start, &cols[start], zeros, INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = PetscFree(zeros);CHKERRQ(ierr);
-    ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
+    ierr = PetscFree2(cols,rowstarts);CHKERRQ(ierr);
 
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
