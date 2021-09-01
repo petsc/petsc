@@ -301,6 +301,7 @@ cdef extern from * nogil:
 
     int TSARKIMEXGetType(PetscTS ts,PetscTSRKType*)
     int TSARKIMEXSetType(PetscTS ts,PetscTSRKType)
+    int TSARKIMEXSetFullyImplicit(PetscTS ts,PetscBool)
 
 cdef extern from "custom.h" nogil:
     int TSSetTimeStepNumber(PetscTS,PetscInt)
