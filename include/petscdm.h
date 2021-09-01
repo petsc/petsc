@@ -451,14 +451,14 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
 /* An arrangement is a face order combined with an orientation for each face */
 PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o)
 {
-  static PetscInt pntArr[1*2] = {0, 0};
+  static const PetscInt pntArr[1*2] = {0, 0};
   /* a: swap */
-  static PetscInt segArr[2*2*2] = {
+  static const PetscInt segArr[2*2*2] = {
     1, 0,  0, 0, /* -1: a */
     0, 0,  1, 0, /*  0: e */};
   /* a: swap first two
      b: swap last two */
-  static PetscInt triArr[6*3*2] = {
+  static const PetscInt triArr[6*3*2] = {
     0, -1,  2, -1,  1, -1, /* -3: b */
     2, -1,  1, -1,  0, -1, /* -2: aba */
     1, -1,  0, -1,  2, -1, /* -1: a */
@@ -467,7 +467,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
     2,  0,  0,  0,  1,  0, /*  2: ab */};
   /* a: forward cyclic permutation
      b: swap first and last pairs */
-  static PetscInt quadArr[8*4*2] = {
+  static const PetscInt quadArr[8*4*2] = {
     1, -1,  0, -1,  3, -1,  2, -1, /* -4: b */
     0, -1,  3, -1,  2, -1,  1, -1, /* -3: b a^3 = a b */
     3, -1,  2, -1,  1, -1,  0, -1, /* -2: b a^2 = a^2 b */
@@ -478,13 +478,13 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
     3,  0,  0,  0,  1,  0,  2,  0, /*  3: a^3 */};
   /* r: rotate 180
      b: swap top and bottom segments */
-  static PetscInt tsegArr[4*4*2] = {
+  static const PetscInt tsegArr[4*4*2] = {
     1, -1,  0, -1,  3, -1,  2, -1, /* -2: r b */
     0, -1,  1, -1,  3,  0,  2,  0, /* -1: r */
     0,  0,  1,  0,  2,  0,  3,  0, /*  0: identity */
     1,  0,  0,  0,  2, -1,  3, -1, /*  1: b */};
   /* https://en.wikiversity.org/wiki/Symmetric_group_S4 */
-  static PetscInt tetArr[24*4*2] = {
+  static const PetscInt tetArr[24*4*2] = {
     3, -2,  2, -3,  0, -1,  1, -1, /* -12: (1324)   p22 */
     3, -1,  1, -3,  2, -1,  0, -1, /* -11: (14)     p21 */
     3, -3,  0, -3,  1, -1,  2, -1, /* -10: (1234)   p18 */
@@ -510,7 +510,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
     3,  0,  0,  2,  2,  1,  1,  1, /*  10: (134)    p19 */
     3,  1,  1,  2,  0,  1,  2,  1  /*  11: (124)    p20 */};
   /* Each rotation determines a permutation of the four diagonals, and this defines the isomorphism with S_4 */
-  static PetscInt hexArr[48*6*2] = {
+  static const PetscInt hexArr[48*6*2] = {
     2, -3,  3, -2,  4, -2,  5, -3,  1, -3,  0, -1, /* -24: reflect bottom and use -3 on top */
     4, -2,  5, -2,  0, -1,  1, -4,  3, -2,  2, -3, /* -23: reflect bottom and use -3 on top */
     5, -3,  4, -1,  1, -2,  0, -3,  3, -4,  2, -1, /* -22: reflect bottom and use -3 on top */
@@ -560,7 +560,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
     4,  1,  5,  3,  0,  2,  1,  1,  2,  1,  3,  0, /*  22: 120 rotation about x-y-z (v7v3) */
     2,  2,  3,  3,  4,  3,  5,  0,  0,  3,  1,  1, /*  23: 240 rotation about x-y-z (v7v3) */
   };
-  static PetscInt tripArr[12*5*2] = {
+  static const PetscInt tripArr[12*5*2] = {
     1, -3,  0, -1,  3, -1,  4, -1,  2, -1, /* -6: reflect bottom and top */
     1, -1,  0, -3,  4, -1,  2, -1,  3, -1, /* -5: reflect bottom and top */
     1, -2,  0, -2,  2, -1,  3, -1,  4, -1, /* -4: reflect bottom and top */
@@ -577,7 +577,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
   /* a: rotate 120 about z
      b: swap top and bottom segments
      r: reflect */
-  static PetscInt ttriArr[12*5*2] = {
+  static const PetscInt ttriArr[12*5*2] = {
     1, -3,  0, -3,  2, -2,  4, -2,  3, -2, /* -6: r b a^2 */
     1, -2,  0, -2,  4, -2,  3, -2,  2, -2, /* -5: r b a */
     1, -1,  0, -1,  3, -2,  2, -2,  4, -2, /* -4: r b */
@@ -594,7 +594,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
   /* a: rotate 90 about z
      b: swap top and bottom segments
      r: reflect */
-  static PetscInt tquadArr[16*6*2] = {
+  static const PetscInt tquadArr[16*6*2] = {
     1, -4,  0, -4,  3, -2,  2, -2,  5, -2,  4, -2, /* -8: r b a^3 */
     1, -3,  0, -3,  2, -2,  5, -2,  4, -2,  3, -2, /* -7: r b a^2 */
     1, -2,  0, -2,  5, -2,  4, -2,  3, -2,  2, -2, /* -6: r b a */
@@ -612,7 +612,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
     1,  2,  0,  2,  4,  1,  5,  1,  2,  1,  3,  1, /*  6: b a^2 */
     1,  3,  0,  3,  5,  1,  2,  1,  3,  1,  4,  1, /*  7: b a^3 */
   };
-  static PetscInt pyrArr[8*5*2] = {
+  static const PetscInt pyrArr[8*5*2] = {
     0, -4,  2, -3,  1, -3,  4, -3,  3, -3, /* -4: Reflect bottom face */
     0, -3,  3, -3,  2, -3,  1, -3,  4, -3, /* -3: Reflect bottom face */
     0, -2,  4, -3,  3, -3,  2, -3,  1, -3, /* -2: Reflect bottom face */
@@ -642,18 +642,18 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
 /* A vertex arrangment is a vertex order */
 PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
 {
-  static PetscInt pntVerts[1]    = {0};
-  static PetscInt segVerts[2*2]  = {
+  static const PetscInt pntVerts[1]    = {0};
+  static const PetscInt segVerts[2*2]  = {
     1, 0,
     0, 1};
-  static PetscInt triVerts[6*3]  = {
+  static const PetscInt triVerts[6*3]  = {
     1, 0, 2,
     0, 2, 1,
     2, 1, 0,
     0, 1, 2,
     1, 2, 0,
     2, 0, 1};
-  static PetscInt quadVerts[8*4]  = {
+  static const PetscInt quadVerts[8*4]  = {
     2, 1, 0, 3,
     1, 0, 3, 2,
     0, 3, 2, 1,
@@ -662,12 +662,12 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
     1, 2, 3, 0,
     2, 3, 0, 1,
     3, 0, 1, 2};
-  static PetscInt tsegVerts[4*4]  = {
+  static const PetscInt tsegVerts[4*4]  = {
     3, 2, 1, 0,
     1, 0, 3, 2,
     0, 1, 2, 3,
     2, 3, 0, 1};
-  static PetscInt tetVerts[24*4] = {
+  static const PetscInt tetVerts[24*4] = {
     2, 3, 1, 0, /* -12: (1324)   p22 */
     3, 1, 2, 0, /* -11: (14)     p21 */
     1, 2, 3, 0, /* -10: (1234)   p18 */
@@ -692,7 +692,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
     3, 2, 1, 0, /*   9: (14)(23) p23 */
     2, 1, 3, 0, /*  10: (134)    p19 */
     1, 3, 2, 0  /*  11: (124)    p20 */};
-  static PetscInt hexVerts[48*8] = {
+  static const PetscInt hexVerts[48*8] = {
     3,  0,  4,  5,  2,  6,  7,  1, /* -24: reflected 23 */
     3,  5,  6,  2,  0,  1,  7,  4, /* -23: reflected 22 */
     4,  0,  1,  7,  5,  6,  2,  3, /* -22: reflected 21 */
@@ -742,7 +742,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
     2,  6,  5,  3,  1,  0,  4,  7, /*  22: 120 rotation about x-y-z (v7v3) */
     5,  4,  0,  3,  6,  2,  1,  7, /*  23: 240 rotation about x-y-z (v7v3) */
   };
-  static PetscInt tripVerts[12*6] = {
+  static const PetscInt tripVerts[12*6] = {
     4,  3,  5,  2,  1,  0, /* -6: reflect bottom and top */
     5,  4,  3,  1,  0,  2, /* -5: reflect bottom and top */
     3,  5,  4,  0,  2,  1, /* -4: reflect bottom and top */
@@ -756,7 +756,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
     3,  4,  5,  0,  1,  2, /*  4: 180 rotation about y of 1 */
     5,  3,  4,  1,  2,  0, /*  5: 180 rotation about y of 2 */
   };
-  static PetscInt ttriVerts[12*6] = {
+  static const PetscInt ttriVerts[12*6] = {
     4,  3,  5,  1,  0,  2, /* -6: r b a^2 */
     3,  5,  4,  0,  2,  1, /* -5: r b a */
     5,  4,  3,  2,  1,  0, /* -4: r b */
@@ -773,7 +773,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
   /* a: rotate 90 about z
      b: swap top and bottom segments
      r: reflect */
-  static PetscInt tquadVerts[16*8] = {
+  static const PetscInt tquadVerts[16*8] = {
     6,  5,  4,  7,  2,  1,  0,  3, /* -8: r b a^3 */
     5,  4,  7,  6,  1,  0,  3,  2, /* -7: r b a^2 */
     4,  7,  6,  5,  0,  3,  2,  1, /* -6: r b a */
@@ -791,7 +791,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
     6,  7,  4,  5,  2,  3,  0,  1, /*  6: b a^2 */
     7,  4,  5,  6,  3,  0,  1,  2, /*  7: b a^3 */
   };
-  static PetscInt pyrVerts[8*5] = {
+  static const PetscInt pyrVerts[8*5] = {
     2,  1,  0,  3,  4, /* -4: Reflect bottom face */
     1,  0,  3,  2,  4, /* -3: Reflect bottom face */
     0,  3,  2,  1,  4, /* -2: Reflect bottom face */
@@ -821,17 +821,17 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
 /* This is orientation o1 acting on orientation o2 */
 PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct, PetscInt o1, PetscInt o2)
 {
-  PetscInt segMult[2*2] = {
+  static const PetscInt segMult[2*2] = {
      0, -1,
     -1,  0};
-  PetscInt triMult[6*6] = {
+  static const PetscInt triMult[6*6] = {
      0,  2,  1, -3, -1, -2,
      1,  0,  2, -2, -3, -1,
      2,  1,  0, -1, -2, -3,
     -3, -2, -1,  0,  1,  2,
     -2, -1, -3,  1,  2,  0,
     -1, -3, -2,  2,  0,  1};
-  PetscInt quadMult[8*8] = {
+  static const PetscInt quadMult[8*8] = {
      0,  3,  2,  1, -4, -1, -2, -3,
      1,  0,  3,  2, -3, -4, -1, -2,
      2,  1,  0,  3, -2, -3, -4, -1,
@@ -840,12 +840,12 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
     -3, -2, -1, -4,  1,  2,  3,  0,
     -2, -1, -4, -3,  2,  3,  0,  1,
     -1, -4, -3, -2,  3,  0,  1,  2};
-  PetscInt tsegMult[4*4] = {
+  static const PetscInt tsegMult[4*4] = {
      0,  1, -2, -1,
      1,  0, -1, -2,
     -2, -1,  0,  1,
     -1, -2,  1,  0};
-  PetscInt tetMult[24*24] = {
+  static const PetscInt tetMult[24*24] = {
     3, 2, 7, 0, 5, 10, 9, 8, 1, 6, 11, 4, -12, -7, -5, -9, -10, -2, -6, -1, -11, -3, -4, -8,
     4, 0, 8, 1, 3, 11, 10, 6, 2, 7, 9, 5, -11, -9, -4, -8, -12, -1, -5, -3, -10, -2, -6, -7,
     5, 1, 6, 2, 4, 9, 11, 7, 0, 8, 10, 3, -10, -8, -6, -7, -11, -3, -4, -2, -12, -1, -5, -9,
@@ -871,7 +871,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
     -5, -1, -9, -2, -4, -12, -11, -7, -3, -8, -10, -6, 10, 8, 3, 7, 11, 0, 4, 2, 9, 1, 5, 6,
     -4, -3, -8, -1, -6, -11, -10, -9, -2, -7, -12, -5, 11, 6, 4, 8, 9, 1, 5, 0, 10, 2, 3, 7,
     };
-  PetscInt hexMult[48*48] = {
+  static const PetscInt hexMult[48*48] = {
     18, 2, 5, 22, 21, 8, 16, 0, 13, 6, 11, 3, 15, 9, 4, 23, 12, 1, 19, 10, 7, 20, 14, 17, -24, -10, -20, -16, -12, -21, -4, -5, -18, -13, -15, -8, -2, -11, -14, -7, -3, -22, -6, -17, -19, -9, -1, -23,
     8, 20, 19, 2, 5, 23, 0, 17, 11, 1, 15, 7, 13, 4, 10, 18, 3, 14, 21, 9, 12, 22, 6, 16, -23, -13, -17, -7, -8, -19, -16, -12, -22, -2, -14, -5, -10, -15, -11, -4, -20, -9, -21, -3, -6, -18, -24, -1,
     2, 17, 23, 8, 0, 19, 5, 20, 1, 11, 9, 14, 12, 6, 3, 16, 10, 7, 22, 15, 13, 21, 4, 18, -22, -14, -19, -5, -15, -17, -10, -2, -23, -12, -13, -7, -16, -8, -4, -11, -24, -3, -18, -9, -1, -21, -20, -6,
@@ -921,7 +921,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
     -9, -21, -20, -3, -6, -24, -1, -18, -12, -2, -16, -8, -14, -5, -11, -19, -4, -15, -22, -10, -13, -23, -7, -17, 22, 12, 16, 6, 7, 18, 15, 11, 21, 1, 13, 4, 9, 14, 10, 3, 19, 8, 20, 2, 5, 17, 23, 0,
     -19, -3, -6, -23, -22, -9, -17, -1, -14, -7, -12, -4, -16, -10, -5, -24, -13, -2, -20, -11, -8, -21, -15, -18, 23, 9, 19, 15, 11, 20, 3, 4, 17, 12, 14, 7, 1, 10, 13, 6, 2, 21, 5, 16, 18, 8, 0, 22,
     };
-  PetscInt tripMult[12*12] = {
+  static const PetscInt tripMult[12*12] = {
     1, 0, 2, 3, 5, 4, -6, -4, -5, -2, -3, -1,
     0, 2, 1, 4, 3, 5, -5, -6, -4, -3, -1, -2,
     2, 1, 0, 5, 4, 3, -4, -5, -6, -1, -2, -3,
@@ -935,7 +935,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
     -1, -3, -2, -5, -4, -6, 4, 5, 3, 2, 0, 1,
     -2, -1, -3, -4, -6, -5, 5, 3, 4, 1, 2, 0,
   };
-  PetscInt ttriMult[12*12] = {
+  static const PetscInt ttriMult[12*12] = {
     0, 2, 1, 3, 5, 4, -6, -4, -5, -3, -1, -2,
     1, 0, 2, 4, 3, 5, -5, -6, -4, -2, -3, -1,
     2, 1, 0, 5, 4, 3, -4, -5, -6, -1, -2, -3,
@@ -949,7 +949,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
     -2, -1, -3, -5, -4, -6, 4, 5, 3, 1, 2, 0,
     -1, -3, -2, -4, -6, -5, 5, 3, 4, 2, 0, 1,
   };
-  PetscInt tquadMult[16*16] = {
+  static const PetscInt tquadMult[16*16] = {
     0, 3, 2, 1, 4, 7, 6, 5, -8, -5, -6, -7, -4, -1, -2, -3,
     1, 0, 3, 2, 5, 4, 7, 6, -7, -8, -5, -6, -3, -4, -1, -2,
     2, 1, 0, 3, 6, 5, 4, 7, -6, -7, -8, -5, -2, -3, -4, -1,
@@ -967,7 +967,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
     -2, -1, -4, -3, -6, -5, -8, -7, 6, 7, 4, 5, 2, 3, 0, 1,
     -1, -4, -3, -2, -5, -8, -7, -6, 7, 4, 5, 6, 3, 0, 1, 2,
   };
-  PetscInt pyrMult[8*8] = {
+  static const PetscInt pyrMult[8*8] = {
     0, 3, 2, 1, -4, -1, -2, -3,
     1, 0, 3, 2, -3, -4, -1, -2,
     2, 1, 0, 3, -2, -3, -4, -1,
@@ -997,15 +997,15 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
 /* This is orientation o1 acting on orientation o2^{-1} */
 PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientationInv(DMPolytopeType ct, PetscInt o1, PetscInt o2)
 {
-  PetscInt triInv[6]    = {-3, -2, -1, 0, 2, 1};
-  PetscInt quadInv[8]   = {-4, -3, -2, -1, 0, 3, 2, 1};
-  PetscInt tetInv[24]   = {-9, -11, -4, -12, -5, -7, -6, -8, -10, -3, -2, -1, 0, 2, 1, 3, 8, 10, 6, 11, 4, 9, 5, 7};
-  PetscInt hexInv[48]   = {-17, -18, -20, -19, -22, -21, -23, -24, -15, -16, -14, -13, -11, -12, -10, -9, -8, -5, -6, -7, -4, -3, -2, -1,
-                             0,   3,   2,   1,   6,   5,   4,   9,   8,   7,  10,  11,  12,  13,  14, 15, 17, 16, 19, 18, 21, 20, 23, 22};
-  PetscInt tripInv[12]  = {-5, -6, -4, -3, -2, -1, 0, 2, 1, 3, 4, 5};
-  PetscInt ttriInv[12]  = {-6, -5, -4, -3, -2, -1, 0, 2, 1, 3, 5, 4};
-  PetscInt tquadInv[16] = {-8, -7, -6, -5, -4, -3, -2, -1, 0, 3, 2, 1, 4, 7, 6, 5};
-  PetscInt pyrInv[8]    = {-4, -3, -2, -1, 0, 3, 2, 1};
+  static const PetscInt triInv[6]    = {-3, -2, -1, 0, 2, 1};
+  static const PetscInt quadInv[8]   = {-4, -3, -2, -1, 0, 3, 2, 1};
+  static const PetscInt tetInv[24]   = {-9, -11, -4, -12, -5, -7, -6, -8, -10, -3, -2, -1, 0, 2, 1, 3, 8, 10, 6, 11, 4, 9, 5, 7};
+  static const PetscInt hexInv[48]   = {-17, -18, -20, -19, -22, -21, -23, -24, -15, -16, -14, -13, -11, -12, -10, -9, -8, -5, -6, -7, -4, -3, -2, -1,
+                                          0,   3,   2,   1,   6,   5,   4,   9,   8,   7,  10,  11,  12,  13,  14, 15, 17, 16, 19, 18, 21, 20, 23, 22};
+  static const PetscInt tripInv[12]  = {-5, -6, -4, -3, -2, -1, 0, 2, 1, 3, 4, 5};
+  static const PetscInt ttriInv[12]  = {-6, -5, -4, -3, -2, -1, 0, 2, 1, 3, 5, 4};
+  static const PetscInt tquadInv[16] = {-8, -7, -6, -5, -4, -3, -2, -1, 0, 3, 2, 1, 4, 7, 6, 5};
+  static const PetscInt pyrInv[8]    = {-4, -3, -2, -1, 0, 3, 2, 1};
   switch (ct) {
     case DM_POLYTOPE_POINT:              return 0;
     case DM_POLYTOPE_SEGMENT:
