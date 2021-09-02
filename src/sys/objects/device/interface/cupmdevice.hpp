@@ -13,7 +13,7 @@ class CUPMDevice : CUPMInterface<T>
 {
 public:
   typedef PetscErrorCode (*createContextFunc_t)(PetscDeviceContext);
-  PETSC_INHERIT_CUPM_INTERFACE_TYPEDEFS_USING(cupmInterface_t,T);
+  PETSC_INHERIT_CUPM_INTERFACE_TYPEDEFS_USING(cupmInterface_t,T)
 
   // default constructor
   explicit CUPMDevice(createContextFunc_t func) : _create{func} {}
