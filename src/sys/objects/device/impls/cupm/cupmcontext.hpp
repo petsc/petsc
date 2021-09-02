@@ -17,7 +17,7 @@ template <CUPMDeviceKind T>
 class CUPMContext : CUPMInterface<T>
 {
 public:
-  PETSC_INHERIT_CUPM_INTERFACE_TYPEDEFS_USING(cupmInterface_t,T);
+  PETSC_INHERIT_CUPM_INTERFACE_TYPEDEFS_USING(cupmInterface_t,T)
 
   // This is the canonical PETSc "impls" struct that normally resides in a standalone impls
   // header, but since we are using the power of templates it must be declared part of
