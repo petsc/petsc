@@ -97,6 +97,7 @@ Changes: Development
 -  Add ``MatNormalGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMAL``
 -  Add ``MatNormalHermitianGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMALHERMITIAN``
 -  Add ``VecCreateMPICUDA()`` and ``VecCreateMPIHIP()`` to create MPI device vectors
+-  ``MatPreallocatorPreallocate`` performance `significantly improved <https://gitlab.com/petsc/petsc/-/merge_requests/4273>`_
 
 .. rubric:: PC:
 
