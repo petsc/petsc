@@ -1,0 +1,7 @@
+Timestep: 0000 time = 0        	 L_2 Error: [0.00716, 3.44e-17, 0.0143] ||div u||: 1.3e-15
+Timestep: 0001 time = 1e+10    	 L_2 Error: [0.00751, 0.0236, 0.0145] ||div u||: 0.0442
+Timestep: 0000 time = 0        	 L_2 Error: [0.000916, 1.85e-17, 0.00183] ||div u||: 1.3e-15
+Timestep: 0001 time = 1e+10    	 L_2 Error: [0.000937, 0.00287, 0.00183] ||div u||: 0.0191
+L_2 convergence rate: [2.9, 4.1, 2.7]
+Timestep: 0000 time = 0        	 L_2 Error: [0.00716, 3.44e-17, 0.0143] ||div u||: 1.3e-15
+Timestep: 0001 time = 1e+10    	 L_2 Error: [0.00751, 0.0236, 0.0145] ||div u||: 0.0442

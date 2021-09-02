@@ -3760,6 +3760,7 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
 @*/
 PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
 {
+  PetscWeakForm  wf, newwf;
   PetscInt       Nf, Ng;
   PetscErrorCode ierr;
 
@@ -3769,7 +3770,9 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(newprob, &Ng);CHKERRQ(ierr);
   if (Nf != Ng) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %D != %D", Nf, Ng);
-  ierr = PetscDSSelectEquations(prob, Nf, NULL, newprob);CHKERRQ(ierr);
+  ierr = PetscDSGetWeakForm(prob, &wf);CHKERRQ(ierr);
+  ierr = PetscDSGetWeakForm(newprob, &newwf);CHKERRQ(ierr);
+  ierr = PetscWeakFormCopy(wf, newwf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

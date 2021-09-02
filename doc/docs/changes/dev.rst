@@ -209,6 +209,7 @@ Changes: Development
 -  Add ``PetscWeakFormCopy()``, ``PetscWeakFormClear()``, ``PetscWeakFormRewriteKeys()`` and ``PetscWeakFormClearIndex()``
 -  Add ``PetscDSDestroyBoundary()`` and ``PetscDSCopyExactSolutions()``
 -  ``PetscDSGetContext()`` now takes ``void*`` as return argument
+-  Add ``PetscWeakFormReplaceLabel()`` to change labels after mesh modification
 
 .. rubric:: Fortran:
 

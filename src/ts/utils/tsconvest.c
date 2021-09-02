@@ -147,8 +147,18 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
 #endif
     ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
     if (r > 0) {
-      ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
-      ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
+      if (!ce->noRefine) {
+        ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
+        ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
+      } else {
+        DM cdm, rcdm;
+
+        ierr = DMClone(dm[r-1], &dm[r]);CHKERRQ(ierr);
+        ierr = DMCopyDisc(dm[r-1], dm[r]);CHKERRQ(ierr);
+        ierr = DMGetCoordinateDM(dm[r-1], &cdm);CHKERRQ(ierr);
+        ierr = DMGetCoordinateDM(dm[r],   &rcdm);CHKERRQ(ierr);
+        ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
+      }
       ierr = DMCopyTransform(ce->idm, dm[r]);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);
