@@ -1174,7 +1174,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 #endif
 
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if (defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)) && defined(PETSC_EXPERIMENTAL)
   ierr = PetscDeviceInitializeDefaultDevices_Internal();CHKERRQ(ierr);
   ierr = PetscDeviceContextInitializeRootContext_Internal(PETSC_COMM_WORLD,NULL);CHKERRQ(ierr);
 #endif
