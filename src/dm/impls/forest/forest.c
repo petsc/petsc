@@ -800,7 +800,7 @@ PetscErrorCode DMForestSetInitialRefinement(DM dm, PetscInt initRefinement)
   Input Parameter:
 . dm - the forest
 
-  Output Paramater:
+  Output Parameter:
 . initRefinement - default PETSC_DEFAULT (interpreted by the subtype of DMForest)
 
   Level: intermediate

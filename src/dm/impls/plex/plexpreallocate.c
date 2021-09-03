@@ -699,7 +699,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 . onzu - An array to hold the number of nonzeros in the upper triangle of the off-diagonal block
 - fillMatrix - If PETSC_TRUE, fill the matrix with zeros
 
-  Ouput Argument:
+  Output Argument:
 . A - The preallocated matrix
 
   Level: advanced

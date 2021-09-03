@@ -16,7 +16,7 @@ PetscLogEvent IS_Load;
 
    Collective on IS
 
-   Input Parmeters:
+   Input Parameters:
 +  subset - the index set
 -  subset_mult - the multiplcity of each entry in subset (optional, can be NULL)
 
@@ -177,7 +177,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 
    Collective on IS
 
-   Input Parmeters:
+   Input Parameters:
 +  is - the index set
 -  comps - which components we will extract from is
 
@@ -817,7 +817,7 @@ static PetscErrorCode ISCopyInfo(IS source, IS dest)
 
    Collective on IS
 
-   Input Parmeters:
+   Input Parameters:
 .  is - the index set
 
    Output Parameters:
@@ -849,7 +849,7 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 
    Logically Collective on IS
 
-   Input Parmeters:
+   Input Parameter:
 .  is - the index set
 
    Level: intermediate
@@ -875,7 +875,7 @@ PetscErrorCode  ISSetIdentity(IS is)
 
    Not Collective
 
-   Input Parmeters:
+   Input Parameters:
 +  is - the index set
 .  gstart - global start
 -  gend - global end
@@ -910,10 +910,10 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
 
    Logically Collective on IS
 
-   Input Parmeters:
+   Input Parameter:
 .  is - the index set
 
-   Output Parameters:
+   Output Parameter:
 .  perm - PETSC_TRUE if a permutation, else PETSC_FALSE
 
    Level: intermediate
@@ -942,7 +942,7 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
 
    Logically Collective on IS
 
-   Input Parmeters:
+   Input Parameter:
 .  is - the index set
 
    Level: intermediate
@@ -1768,10 +1768,10 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 
    Collective on IS
 
-   Input Parmeters:
+   Input Parameter:
 .  is - the index set
 
-   Output Parameters:
+   Output Parameter:
 .  isnew - the copy of the index set
 
    Level: beginner
@@ -1795,10 +1795,10 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
 
    Collective on IS
 
-   Input Parmeters:
+   Input Parameter:
 .  is - the index set
 
-   Output Parameters:
+   Output Parameter:
 .  isy - the copy of the index set
 
    Level: beginner

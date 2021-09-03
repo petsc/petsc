@@ -525,7 +525,7 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
 
   Collective on TaoLineSearch
 
-  Input Paremeter:
+  Input Parameter:
 . ls - the TaoLineSearch context
 
   Options Database Keys:

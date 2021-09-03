@@ -20,7 +20,7 @@
 
    Not Collective
 
-   Intput Parameter:
+   Input Parameter:
 .  r  - the random number generator context
 
    Output Parameter:
@@ -72,7 +72,7 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 
    Not Collective
 
-   Intput Parameter:
+   Input Parameter:
 .  r  - the random number generator context
 
    Output Parameter:
@@ -117,7 +117,7 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 
    Not Collective
 
-   Intput Parameter:
+   Input Parameters:
 +  r  - the random number generator context
 -  n  - number of random numbers to generate
 
@@ -160,7 +160,7 @@ PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val
 
    Not Collective
 
-   Intput Parameter:
+   Input Parameters:
 +  r  - the random number generator context
 -  n  - number of random numbers to generate
 

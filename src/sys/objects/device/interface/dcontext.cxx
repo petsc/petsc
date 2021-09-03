@@ -63,7 +63,7 @@ static Petsc::ObjectPool<PetscDeviceContext,PetscDeviceContextAllocator> context
 
   Not Collective, Asynchronous
 
-  Ouput Paramemters:
+  Output Paramemter:
 . dctx - The PetscDeviceContext
 
   Notes:
@@ -127,7 +127,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
 
   Not Collective, Asynchronous
 
-  Input Paramaters:
+  Input Parameters:
 + dctx - The PetscDeviceContext
 - type - The PetscStreamType
 
@@ -161,7 +161,7 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
 
   Not Collective, Asynchronous
 
-  Input Paramater:
+  Input Parameter:
 . dctx - The PetscDeviceContext
 
   Output Parameter:
@@ -188,7 +188,7 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
 
   Not Collective, Possibly Synchronous
 
-  Input Paramaters:
+  Input Parameters:
 + dctx   - The PetscDeviceContext
 - device - The PetscDevice
 
@@ -250,7 +250,7 @@ PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice 
 
   Not Collective, Asynchronous
 
-  Intput Parameter:
+  Input Parameter:
 . dctx - The PetscDeviceContext
 
   Developer Notes:
