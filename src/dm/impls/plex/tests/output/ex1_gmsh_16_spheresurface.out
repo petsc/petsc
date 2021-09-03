@@ -1,6 +1,6 @@
-DM Object: Simplicial Mesh 4 MPI processes
+DM Object: Generated Mesh 4 MPI processes
   type: plex
-Simplicial Mesh in 2 dimensions:
+Generated Mesh in 2 dimensions:
   0-cells: 61 69 68 63
   1-cells: 160 167 167 160
   2-cells: 99 99 99 99

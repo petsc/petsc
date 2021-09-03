@@ -1,6 +1,6 @@
-DM Object: Simplicial Mesh 1 MPI processes
+DM Object: Generated Mesh 1 MPI processes
   type: plex
-Simplicial Mesh in 1 dimension:
+Generated Mesh in 1 dimension:
 Supports:
 [0] Max support size: 1
 [0]: 1 ----> 0

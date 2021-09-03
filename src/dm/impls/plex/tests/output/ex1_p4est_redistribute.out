@@ -1,5 +1,5 @@
 Minimum number of neighbors: 2
-DM Object: Simplicial Mesh 3 MPI processes
+DM Object: Generated Mesh 3 MPI processes
   type: plex
   Cell balance: 1.03 (max 37, min 36, empty 0)
   Edge Cut: 56 (on node 0.000)

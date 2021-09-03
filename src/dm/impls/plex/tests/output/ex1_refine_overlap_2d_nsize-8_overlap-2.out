@@ -1,7 +1,7 @@
 Overlap: 2
-DM Object: Simplicial Mesh 8 MPI processes
+DM Object: Generated Mesh 8 MPI processes
   type: plex
-Simplicial Mesh in 2 dimensions:
+Generated Mesh in 2 dimensions:
   0-cells: 15 22 22 22 22 15 22 22
   1-cells: 30 49 49 49 49 30 49 49
   2-cells: 16 28 28 28 28 16 28 28

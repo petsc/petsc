@@ -215,9 +215,9 @@ PetscSF Object: 8 MPI processes
   [6] 6 <- (7,5)
   [7] Number of roots=7, leaves=0, remote ranks=0
   MultiSF sort=rank-order
-DM Object: Simplicial Mesh 8 MPI processes
+DM Object: Generated Mesh 8 MPI processes
   type: plex
-Simplicial Mesh in 2 dimensions:
+Generated Mesh in 2 dimensions:
 Supports:
 [0] Max support size: 4
 [0]: 4 ----> 13
