@@ -139,7 +139,7 @@ When citing PETSc in a publication please cite the following:
       and Lois Curfman McInnes and Richard Tran Mills and Todd Munson and Karl Rupp
       and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
       Title       = "{PETS}c Users Manual",
-      Number      = "ANL-95/11 - Revision 3.15",
+      Number      = "ANL-21/39 - Revision 3.16",
       Institution = "Argonne National Laboratory",
       Year        = "2021"}
 
