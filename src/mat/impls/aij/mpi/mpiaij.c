@@ -6139,10 +6139,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 .  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
 .   i - row indices for "diagonal" portion of matrix; that is i[0] = 0, i[row] = i[row-1] + number of elements in that row of the matrix
-.   j - column indices
+.   j - column indices, which must be local, i.e., based off the start column of the diagonal portion
 .   a - matrix values
 .   oi - row indices for "off-diagonal" portion of matrix; that is oi[0] = 0, oi[row] = oi[row-1] + number of elements in that row of the matrix
-.   oj - column indices
+.   oj - column indices, which must be global, representing global columns in the MPIAIJ matrix
 -   oa - matrix values
 
    Output Parameter:
