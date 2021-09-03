@@ -646,6 +646,46 @@ PETSC_UNUSED static PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer 
   PetscFunctionReturn(0);
 }
 
+typedef enum {CS_CARTESIAN, CS_POLAR, CS_CYLINDRICAL, CS_SPHERICAL} CoordSystem;
+const char *CoordSystems[] = {"cartesian", "polar", "cylindrical", "spherical", "CoordSystem", "CS_", NULL};
+
+static PetscErrorCode DMPlexView_Ascii_Coordinates(PetscViewer viewer, CoordSystem cs, PetscInt dim, const PetscScalar x[])
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dim > 3) {
+    for (i = 0; i < dim; ++i) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double) PetscRealPart(x[i]));CHKERRQ(ierr);}
+  } else {
+    PetscReal coords[3], trcoords[3];
+
+    for (i = 0; i < dim; ++i) coords[i] = PetscRealPart(x[i]);
+    switch (cs) {
+      case CS_CARTESIAN: for (i = 0; i < dim; ++i) trcoords[i] = coords[i];break;
+      case CS_POLAR:
+        if (dim != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Polar coordinates are for 2 dimension, not %D", dim);
+        trcoords[0] = PetscSqrtReal(PetscSqr(coords[0]) + PetscSqr(coords[1]));
+        trcoords[1] = PetscAtan2Real(coords[1], coords[0]);
+        break;
+      case CS_CYLINDRICAL:
+        if (dim != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cylindrical coordinates are for 3 dimension, not %D", dim);
+        trcoords[0] = PetscSqrtReal(PetscSqr(coords[0]) + PetscSqr(coords[1]));
+        trcoords[1] = PetscAtan2Real(coords[1], coords[0]);
+        trcoords[2] = coords[2];
+        break;
+      case CS_SPHERICAL:
+        if (dim != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Spherical coordinates are for 3 dimension, not %D", dim);
+        trcoords[0] = PetscSqrtReal(PetscSqr(coords[0]) + PetscSqr(coords[1]) + PetscSqr(coords[2]));
+        trcoords[1] = PetscAtan2Real(PetscSqrtReal(PetscSqr(coords[0]) + PetscSqr(coords[1])), coords[2]);
+        trcoords[2] = PetscAtan2Real(coords[1], coords[0]);
+        break;
+    }
+    for (i = 0; i < dim; ++i) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double) trcoords[i]);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 {
   DM_Plex          *mesh = (DM_Plex*) dm->data;
@@ -703,7 +743,38 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     if (coordSection && coordinates) {
-      ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);
+      CoordSystem        cs = CS_CARTESIAN;
+      const PetscScalar *array;
+      PetscInt           Nf, Nc, pStart, pEnd, p;
+      PetscMPIInt        rank;
+      const char        *name;
+
+      ierr = PetscOptionsGetEnum(((PetscObject) viewer)->options, ((PetscObject) viewer)->prefix, "-dm_plex_view_coord_system", CoordSystems, (PetscEnum *) &cs, NULL);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRMPI(ierr);
+      ierr = PetscSectionGetNumFields(coordSection, &Nf);CHKERRQ(ierr);
+      if (Nf != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate section should have 1 field, not %D", Nf);
+      ierr = PetscSectionGetFieldComponents(coordSection, 0, &Nc);CHKERRQ(ierr);
+      ierr = PetscSectionGetChart(coordSection, &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) coordinates, &name);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%s with %D fields\n", name, Nf);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  field %D with %D components\n", 0, Nc);CHKERRQ(ierr);
+      if (cs != CS_CARTESIAN) {ierr = PetscViewerASCIIPrintf(viewer, "  output coordinate system: %s\n", CoordSystems[cs]);CHKERRQ(ierr);}
+
+      ierr = VecGetArrayRead(coordinates, &array);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; ++p) {
+        PetscInt dof, off;
+
+        ierr = PetscSectionGetDof(coordSection, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(coordSection, p, &off);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4D) dim %2D offset %3D", p, dof, off);CHKERRQ(ierr);
+        ierr = DMPlexView_Ascii_Coordinates(viewer, cs, dof, &array[off]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(coordinates, &array);CHKERRQ(ierr);
     }
     ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
