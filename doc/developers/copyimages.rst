@@ -2,79 +2,79 @@
 Dummy file for Sphinx
 =====================
 
-This is a dummy file that only exists so that Sphinx knows about the files in images/ that are
+This is a dummy file that only exists so that Sphinx knows about the files in /images/developers/ that are
 used in raw rst commands which means that Sphinx does not copy them to the install directory.
 This will be removed once a better way is determined.
 
 
-.. image:: images/git-push-mr.png
+.. image:: /images/developers/git-push-mr.png
 
-.. image:: images/mr-select-branch.png
-.. image:: images/mr-select-target.png
+.. image:: /images/developers/mr-select-branch.png
+.. image:: /images/developers/mr-select-target.png
 
-.. image:: images/mr-select-labels.png
+.. image:: /images/developers/mr-select-labels.png
 
-.. image:: images/label-subscribe.png
+.. image:: /images/developers/label-subscribe.png
 
-.. image:: images/pipeline-from-MR.png
+.. image:: /images/developers/pipeline-from-MR.png
 
-.. image:: images/see-mr-pipelines.png
+.. image:: /images/developers/see-mr-pipelines.png
 
-.. image:: images/pipeline-pause-button.png
-
-
-.. image:: images/continued-pipeline.png
+.. image:: /images/developers/pipeline-pause-button.png
 
 
-.. image:: images/show-failure.png
+.. image:: /images/developers/continued-pipeline.png
 
 
-.. image:: images/find-exact-bad-job.png
+.. image:: /images/developers/show-failure.png
+
+
+.. image:: /images/developers/find-exact-bad-job.png
 
 
 
-.. image:: images/failed-examples.png
+.. image:: /images/developers/failed-examples.png
 
 
-.. image:: images/unfreed-memory.png
+.. image:: /images/developers/unfreed-memory.png
 
-.. image:: images/mr-overview.png
+.. image:: /images/developers/mr-overview.png
 
-.. image:: images/changes-or-commits.png
-
-
-.. image:: images/start-comment-on-code.png
+.. image:: /images/developers/changes-or-commits.png
 
 
-.. image:: images/write-review-text.png
-
-.. image:: images/provide-suggestion.png
-
-.. image:: images/mr-thread.png
-
-.. image:: images/mr-thread-details.png
-
-.. image:: images/button-for-approvers.png
-
-.. image:: images/approvers.png
-
-.. image:: images/mr-assign.png
-
-.. image:: images/badsource.png
-
-.. image:: images/another-failure.png
-
-.. image:: images/error-compiling-source.png
+.. image:: /images/developers/start-comment-on-code.png
 
 
-.. image:: images/pipeline-configure.png
+.. image:: /images/developers/write-review-text.png
+
+.. image:: /images/developers/provide-suggestion.png
+
+.. image:: /images/developers/mr-thread.png
+
+.. image:: /images/developers/mr-thread-details.png
+
+.. image:: /images/developers/button-for-approvers.png
+
+.. image:: /images/developers/approvers.png
+
+.. image:: /images/developers/mr-assign.png
+
+.. image:: /images/developers/badsource.png
+
+.. image:: /images/developers/another-failure.png
+
+.. image:: /images/developers/error-compiling-source.png
 
 
-.. image:: images/pipeline-configure-browse.png
+.. image:: /images/developers/pipeline-configure.png
 
 
-.. image:: images/retry-job.png
+.. image:: /images/developers/pipeline-configure-browse.png
 
-.. image:: images/retry-pipeline.png
+
+.. image:: /images/developers/retry-job.png
+
+.. image:: /images/developers/retry-pipeline.png
 
 

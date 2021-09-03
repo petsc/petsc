@@ -35,7 +35,7 @@ We can regularly refine the surface before extrusion using `-dm_refine <k>`, whe
 
 which produces the following surface
 
-.. figure:: images/surface.png
+.. figure:: /images/tutorials/meshing/surface.png
    :align: center
 
    **Surface mesh refined twice**
@@ -47,7 +47,7 @@ and the extruded mesh can be visualized using VTK. Here I make the image using P
   > make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_1" EXTRA_OPTIONS="-dm_view hdf5:$PETSC_DIR/mesh.h5 -dm_plex_extrude_layers 3"
   > $PETSC_DIR/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
 
-.. figure:: images/extrusion.png
+.. figure:: /images/tutorials/meshing/extrusion.png
    :align: center
 
    **Extruded mesh with refined surface**
@@ -59,7 +59,7 @@ We can similarly look at this in parallel. Test 2 uses three refinements and thr
   > make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_2" EXTRA_OPTIONS="-dm_view hdf5:$PETSC_DIR/mesh.h5 -dm_partition_view -petscpartitioner_type parmetis"
   > $PETSC_DIR/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
 
-.. figure:: images/extrusionParallel.png
+.. figure:: /images/tutorials/meshing/extrusionParallel.png
    :align: center
 
    **Parallel extruded mesh with refined surface**
@@ -96,7 +96,7 @@ We can look at a parallel run using extra options for the test system
   > make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_3" EXTRA_OPTIONS="-dm_view hdf5:$PETSC_DIR/mesh.h5 -dm_partition_view -dm_distribute -petscpartitioner_type parmetis" NP=5
   > $PETSC_DIR/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
 
-.. figure:: images/extrusionAdaptiveParallel.png
+.. figure:: /images/tutorials/meshing/extrusionAdaptiveParallel.png
    :align: center
 
    **Parallel extruded mesh with adaptively refined surface**

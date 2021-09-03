@@ -43,7 +43,7 @@ examining the errors is with this command:
 This method can also be used for pipeline jobs. Failed jobs can have all of the
 log files downloaded from the artifacts download tab on the right side:
 
-.. figure:: images/test-artifacts.png
+.. figure:: /images/developers/test-artifacts.png
    :alt: Test Artifacts at Gitlab
 
    Test artifacts can be downloaded from gitlab.
