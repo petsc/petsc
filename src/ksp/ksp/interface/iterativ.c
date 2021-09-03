@@ -1025,7 +1025,7 @@ PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerForm
 
    Notes:
    This may be useful for a flexibly preconditioner Krylov method to
-   control the accuracy of the inner solves needed to gaurantee the
+   control the accuracy of the inner solves needed to guarantee the
    convergence of the outer iterations.
 
    Level: advanced

@@ -345,7 +345,7 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
            values. Each block is of size bs*bs.
   values - the values inserted
   rmax   - the number of block-rows in the original block.
-  cmax   - the number of block-columsn on the original block.
+  cmax   - the number of block-columns on the original block.
   idx    - the index of the current block-row in the original block.
 */
 PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
@@ -399,7 +399,7 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,Pet
            values. Each block is of size bs*bs.
   values - the values inserted
   rmax   - the number of block-rows in the original block.
-  cmax   - the number of block-columsn on the original block.
+  cmax   - the number of block-columns on the original block.
   idx    - the index of the current block-row in the original block.
 */
 PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
@@ -765,7 +765,7 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
     MPI_Datatype types[2],stype;
     /* Note that DummyBlock is a type having standard layout, even when PetscScalar is C++ std::complex.
        std::complex itself has standard layout, so does DummyBlock, recursively.
-       To be compatiable with C++ std::complex, complex implementations on GPUs must also have standard layout,
+       To be compatible with C++ std::complex, complex implementations on GPUs must also have standard layout,
        though they can have different alignment, e.g, 16 bytes for double complex, instead of 8 bytes as in GCC stdlibc++.
        offsetof(type, member) only requires type to have standard layout. Ref. https://en.cppreference.com/w/cpp/types/offsetof.
 

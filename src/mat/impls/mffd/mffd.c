@@ -955,7 +955,7 @@ PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
 
    Input Parameters:
 +  J - the matrix-free matrix context
-.  histroy - space to hold the history
+.  history - space to hold the history
 -  nhistory - number of entries in history, if more entries are generated than
               nhistory, then the later ones are discarded
 

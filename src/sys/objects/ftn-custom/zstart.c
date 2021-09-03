@@ -150,7 +150,7 @@ PETSC_INTERN int  PetscGlobalArgc;
 PETSC_INTERN char **PetscGlobalArgs;
 
 /*
-    Reads in Fortran command line argments and sends them to
+    Reads in Fortran command line arguments and sends them to
   all processors.
 */
 

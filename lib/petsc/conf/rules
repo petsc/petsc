@@ -775,7 +775,7 @@ check_petsc4py_rst:
 
 #  Lists all the URLs in the PETSc repository that are unaccessible, nonexistent, or permanently moved (301)
 #  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository
-#  This code is fragile; always check the changes after a use of REPLACE=1 before commiting the changes
+#  This code is fragile; always check the changes after a use of REPLACE=1 before committing the changes
 #
 #  Notes:
 #    The first tr in the line is split lines for the cases where multiple URLs are in the same line

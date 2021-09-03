@@ -6,7 +6,7 @@
    Include "petsctao.h" so that we can use TAO solvers.  Note that this
    file automatically includes libraries such as:
      petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - sysem routines        petscmat.h - matrices
+     petscsys.h    - system routines        petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
 
   /* Set the residual function and Jacobian routines for least squares. */
   ierr = TaoSetResidualRoutine(tao,res,EvaluateResidual,(void*)&user);CHKERRQ(ierr);
-  /* Jacobian matrix fixed as user.A for Linear least sqaure problem. */
+  /* Jacobian matrix fixed as user.A for Linear least square problem. */
   ierr = TaoSetJacobianResidualRoutine(tao,user.A,user.A,EvaluateJacobian,(void*)&user);CHKERRQ(ierr);
 
   /* User set the regularizer objective, gradient, and hessian. Set it the same as using l2prox choice, for testing purpose.  */

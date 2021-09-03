@@ -458,7 +458,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  %sJacobian is built using a DMDA local Jacobian\n",pre);CHKERRQ(ierr);
       }
     } else if (snes->mf) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is applied matrix-free with differencing, no explict Jacobian\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is applied matrix-free with differencing, no explicit Jacobian\n");CHKERRQ(ierr);
     }
   } else if (isstring) {
     const char *type;
@@ -893,7 +893,7 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
    To see all options, run your program with the -help option or consult the users manual
 
    Notes:
-      SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explictly with
+      SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explicitly with
       finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
 
    Level: beginner
@@ -1252,7 +1252,7 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
    Level: intermediate
 
    Notes:
-      SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explictly with
+      SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free, and computing explicitly with
       finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation and the MatFDColoring object.
 
 .seealso:   SNESGetUseMatrixFree(), MatCreateSNESMF(), SNESComputeJacobianDefaultColor()
@@ -1903,7 +1903,7 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
 }
 
 /*@
-   SNESSetNormSchedule - Sets the SNESNormSchedule used in covergence and monitoring
+   SNESSetNormSchedule - Sets the SNESNormSchedule used in convergence and monitoring
    of the SNES method.
 
    Logically Collective on SNES
@@ -1913,13 +1913,13 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
 -  normschedule - the frequency of norm computation
 
    Options Database Key:
-.  -snes_norm_schedule <none, always, initialonly, finalonly, initalfinalonly>
+.  -snes_norm_schedule <none, always, initialonly, finalonly, initialfinalonly>
 
    Notes:
    Only certain SNES methods support certain SNESNormSchedules.  Most require evaluation
    of the nonlinear function and the taking of its norm at every iteration to
    even ensure convergence at all.  However, methods such as custom Gauss-Seidel methods
-   (SNESNGS) and the like do not require the norm of the function to be computed, and therfore
+   (SNESNGS) and the like do not require the norm of the function to be computed, and therefore
    may either be monitored for convergence or not.  As these are often used as nonlinear
    preconditioners, monitoring the norm of their error is not a useful enterprise within
    their solution.
@@ -1937,7 +1937,7 @@ PetscErrorCode  SNESSetNormSchedule(SNES snes, SNESNormSchedule normschedule)
 }
 
 /*@
-   SNESGetNormSchedule - Gets the SNESNormSchedule used in covergence and monitoring
+   SNESGetNormSchedule - Gets the SNESNormSchedule used in convergence and monitoring
    of the SNES method.
 
    Logically Collective on SNES
@@ -2053,7 +2053,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
 }
 
 /*@C
-   SNESSetFunctionType - Sets the SNESNormSchedule used in covergence and monitoring
+   SNESSetFunctionType - Sets the SNESNormSchedule used in convergence and monitoring
    of the SNES method.
 
    Logically Collective on SNES
@@ -2066,7 +2066,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
    Only certain SNES methods support certain SNESNormSchedules.  Most require evaluation
    of the nonlinear function and the taking of its norm at every iteration to
    even ensure convergence at all.  However, methods such as custom Gauss-Seidel methods
-   (SNESNGS) and the like do not require the norm of the function to be computed, and therfore
+   (SNESNGS) and the like do not require the norm of the function to be computed, and therefore
    may either be monitored for convergence or not.  As these are often used as nonlinear
    preconditioners, monitoring the norm of their error is not a useful enterprise within
    their solution.
@@ -2084,7 +2084,7 @@ PetscErrorCode  SNESSetFunctionType(SNES snes, SNESFunctionType type)
 }
 
 /*@C
-   SNESGetFunctionType - Gets the SNESNormSchedule used in covergence and monitoring
+   SNESGetFunctionType - Gets the SNESNormSchedule used in convergence and monitoring
    of the SNES method.
 
    Logically Collective on SNES
@@ -2752,12 +2752,12 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 .    -snes_compare_explicit_contour  - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
 .    -snes_compare_operator  - Make the comparison options above use the operator instead of the preconditioning matrix
 .    -snes_compare_coloring - Compute the finite difference Jacobian using coloring and display norms of difference
-.    -snes_compare_coloring_display - Compute the finite differece Jacobian using coloring and display verbose differences
+.    -snes_compare_coloring_display - Compute the finite difference Jacobian using coloring and display verbose differences
 .    -snes_compare_coloring_threshold - Display only those matrix entries that differ by more than a given threshold
 .    -snes_compare_coloring_threshold_atol - Absolute tolerance for difference in matrix entries to be displayed by -snes_compare_coloring_threshold
 .    -snes_compare_coloring_threshold_rtol - Relative tolerance for difference in matrix entries to be displayed by -snes_compare_coloring_threshold
-.    -snes_compare_coloring_draw - Compute the finite differece Jacobian using coloring and draw differences
--    -snes_compare_coloring_draw_contour - Compute the finite differece Jacobian using coloring and show contours of matrices and differences
+.    -snes_compare_coloring_draw - Compute the finite difference Jacobian using coloring and draw differences
+-    -snes_compare_coloring_draw_contour - Compute the finite difference Jacobian using coloring and show contours of matrices and differences
 
    Notes:
    Most users should not need to explicitly call this routine, as it

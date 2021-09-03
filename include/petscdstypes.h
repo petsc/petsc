@@ -24,7 +24,7 @@ typedef struct _p_PetscWeakForm *PetscWeakForm;
 /*S
   PetscFormKey - This key indicates how to use a set of pointwise functions defining part of a system of equations
 
-  The subdomain on which to integrate is specificed by (label, value), the test function field by (field), and the
+  The subdomain on which to integrate is specified by (label, value), the test function field by (field), and the
   piece of the equation by (part). For example, LHS = 0 and RHS = 1 in IMEX methods. More pieces can be present for
   operator splitting methods.
 

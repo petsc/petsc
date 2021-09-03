@@ -251,7 +251,7 @@ class PetscCursor(object):
     elif (cursor.type.get_canonical().kind == clx.TypeKind.POINTER) or (cursor.kind == clx.CursorKind.UNEXPOSED_EXPR):
       pointees = []
       if cursor.type.get_pointee().kind  == clx.TypeKind.CHAR_S:
-        # For some reason preprocessor macros that contain strings don't propogate
+        # For some reason preprocessor macros that contain strings don't propagate
         # their spelling up to the primary cursor, so we need to plumb through
         # the various sub-cursors to find it.
         pointees = [c for c in cursor.walk_preorder() if c.kind in literalCursors]
@@ -896,7 +896,7 @@ class PetscLinter(object):
     try:
       if warnMsg in self.warnings[-1]:
         # we just had the exact same warning, we can ignore it. This happens very often
-        # for warnings occuring deep within a macro
+        # for warnings occurring deep within a macro
         return
     except IndexError:
       pass

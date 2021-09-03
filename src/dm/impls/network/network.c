@@ -2400,7 +2400,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     if (nrows) {
       for (j=0; j<nrows; j++) rows[j] = j + rstart;
 
-      /* Set preallocation for conntected vertices */
+      /* Set preallocation for connected vertices */
       ierr = DMNetworkGetConnectedVertices(dm,e,&cone);CHKERRQ(ierr);
       for (v=0; v<2; v++) {
         ierr = PetscSectionGetDof(network->DofSection,cone[v],&ncols);CHKERRQ(ierr);
@@ -2520,7 +2520,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     if (nrows) {
       for (j=0; j<nrows; j++) rows[j] = j + rstart;
 
-      /* Set matrix entries for conntected vertices */
+      /* Set matrix entries for connected vertices */
       ierr = DMNetworkGetConnectedVertices(dm,e,&cone);CHKERRQ(ierr);
       for (v=0; v<2; v++) {
         ierr = DMNetworkGetGlobalVecOffset(dm,cone[v],ALL_COMPONENTS,&cstart);CHKERRQ(ierr);

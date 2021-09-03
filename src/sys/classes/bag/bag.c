@@ -1014,7 +1014,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
   if (!pre) {
     ierr = PetscFree(bag->bagprefix);CHKERRQ(ierr);
   } else {
-    if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
+    if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hyphen");
     ierr = PetscFree(bag->bagprefix);CHKERRQ(ierr);
     ierr = PetscStrallocpy(pre,&(bag->bagprefix));CHKERRQ(ierr);
   }

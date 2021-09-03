@@ -265,7 +265,7 @@ int main(int argc,char **argv)
         context that provides application-specific data for the
         function evaluation routine.
 
-     At the begining, one can use a stub function that checks the Kokkos version
+     At the beginning, one can use a stub function that checks the Kokkos version
      against the CPU version to quickly expose errors.
      ierr = SNESSetFunction(snes,r,StubFunction,&ctx);CHKERRQ(ierr);
   */

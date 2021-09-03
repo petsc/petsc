@@ -3059,7 +3059,7 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
 . prob - The PetscDS object
 
   Output Parameter:
-. Tf - The basis function and derviative tabulation on each local face at quadrature points for each and field
+. Tf - The basis function and derivative tabulation on each local face at quadrature points for each and field
 
   Level: intermediate
 
@@ -3137,7 +3137,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 . Nc       - The number of constrained field components (0 will constrain all fields)
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
-. bcFunc_t - A pointwise function giving the time derviative of the boundary values, or NULL
+. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
 - ctx      - An optional user context for bcFunc
 
   Output Parameters:
@@ -3255,7 +3255,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 . Nc       - The number of constrained field components (0 will constrain all fields)
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
-. bcFunc_t - A pointwise function giving the time derviative of the boundary values, or NULL
+. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
 - ctx      - An optional user context for bcFunc
 
   Output Parameters:
@@ -3362,7 +3362,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 . Nc       - The number of constrained field components
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
-. bcFunc_t - A pointwise function giving the time derviative of the boundary values, or NULL
+. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
 - ctx      - An optional user context for bcFunc
 
   Note:
@@ -3461,7 +3461,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 . Nc       - The number of constrained field components
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
-. bcFunc_t - A pointwise function giving the time derviative of the boundary values
+. bcFunc_t - A pointwise function giving the time derivative of the boundary values
 - ctx      - An optional user context for bcFunc
 
   Options Database Keys:

@@ -197,7 +197,7 @@ PetscErrorCode JunctionCreateJacobian(DM dm,PetscInt v,Mat *Jin,Mat *J[])
   PetscScalar    *zeros;
 
   PetscFunctionBegin;
-  /* Get arrary size of Jv */
+  /* Get array size of Jv */
   ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
   if (nedges <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"%d vertex, nedges %d\n",v,nedges);
 

@@ -15,7 +15,7 @@ Changes: 3.9
 .. rubric:: Configure/Build:
 
 -  Option --with-cuda-arch is removed. Use CUDAFLAGS to directly
-   specify relevent nvcc option [for ex: CUDAFLAGS=-arch=sm_20]
+   specify relevant nvcc option [for ex: CUDAFLAGS=-arch=sm_20]
 -  Added --with-avx512-kernels to specify that hand-coded kernels
    using AVX-512 intrinsics should be used when available. Currently
    defaults to off.

@@ -370,7 +370,7 @@ Unable to run hostname to check the network')
       self.addDefine('HAVE_MPI_REDUCE_LOCAL',1)
     if self.checkLink('#include <mpi.h>\n', 'char version[MPI_MAX_LIBRARY_VERSION_STRING];int verlen;if (MPI_Get_library_version(version,&verlen));\n'):
       self.addDefine('HAVE_MPI_GET_LIBRARY_VERSION', 1)
-    # Even MPI_Win_create is in MPI 2.0, we do this test to supress MPIUNI, which does not support MPI one-sided.
+    # Even MPI_Win_create is in MPI 2.0, we do this test to suppress MPIUNI, which does not support MPI one-sided.
     if self.checkLink('#include <mpi.h>\n', 'int base[100]; MPI_Win win; if (MPI_Win_create(base,100,4,MPI_INFO_NULL,MPI_COMM_WORLD,&win));\n'):
       self.addDefine('HAVE_MPI_WIN_CREATE', 1)
     if not self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Accumulate(ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_REPLACE,win));\n'):

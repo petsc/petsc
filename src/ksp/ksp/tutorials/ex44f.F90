@@ -48,7 +48,7 @@
       common /cb/ sd
       data sd /0/
       end
-      subroutine knl_workarround(xx)
+      subroutine knl_workaround(xx)
       implicit none
       PetscScalar xx
       PetscScalar sd
@@ -72,7 +72,7 @@
       hx     = 1.0_PETSC_REAL_KIND/(mx-1)
       call DMDAVecGetArrayF90(da,x,xx,ierr);CHKERRQ(ierr)
       do i=xs,xs+xm-1
-        call knl_workarround(xx(i))
+        call knl_workaround(xx(i))
         xx(i) = i*hx
       enddo
       call DMDAVecRestoreArrayF90(da,x,xx,ierr);CHKERRQ(ierr)

@@ -125,4 +125,4 @@ instead of ``10.0`` or declare them as PETSc variables, e.g.
 precision number, which can cause crashes or other mysterious problems.
 Make sure to declare all variables (do not use the implicit feature of
 Fortran). In fact, we **highly** recommend using the **implicit none**
-option at the begining of each Fortran subroutine you write.
+option at the beginning of each Fortran subroutine you write.

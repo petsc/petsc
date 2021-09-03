@@ -452,7 +452,7 @@ class Package(config.base.Configure):
     return os.path.join(prefix, includeDir)
 
   def checkPackageInDefaultLocations(self,mess):
-    '''This does not work for the reasons below so is turned off; perhaps the simplier model of just use ls'''
+    '''This does not work for the reasons below so is turned off; perhaps the simpler model of just use ls'''
     '''to look for the offending library files and includes files would work'''
     '''Errors if the package is found by the compiler in a default location, such as /usr/local'''
     '''This will miss some cases with libraries, for example if --download-hdf5 --download-pnetcdf is used because'''

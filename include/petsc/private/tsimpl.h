@@ -438,7 +438,7 @@ struct _n_TSEvent {
     PetscInt  ctr;        /* recorder counter */
     PetscReal *time;      /* Event times */
     PetscInt  *stepnum;   /* Step numbers */
-    PetscInt  *nevents;   /* Number of events occuring at the event times */
+    PetscInt  *nevents;   /* Number of events occurring at the event times */
     PetscInt  **eventidx; /* Local indices of the events in the event list */
   } recorder;
   PetscInt  recsize; /* Size of recorder stack */

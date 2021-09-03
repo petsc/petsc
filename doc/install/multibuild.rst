@@ -76,7 +76,7 @@ when determining whether to rebuild various packages installed through PETSc.
 .. note::
 
    While the caching system used by ``configure`` is very useful, it usually errs on
-   the side of caution. If a change has occured in your system which could reasonably
+   the side of caution. If a change has occurred in your system which could reasonably
    change how a package/program is compiled, ``configure`` will automatically rebuild this
    software for you.
 
@@ -94,7 +94,7 @@ when determining whether to rebuild various packages installed through PETSc.
    :class: yellow
 
    If one still suspects malfeasance due to ``configure`` caching, or some corruption has
-   occured due to a faulty ``configure`` one may use the nuclear option
+   occurred due to a faulty ``configure`` one may use the nuclear option
    ``--with-clean``. This will **permanently delete all build files, including installed
    packages** under ``$PETSC_DIR/$PETSC_ARCH`` (effectively a "clean slate") before
    runnning ``configure``. The only thing preserved during this process is the

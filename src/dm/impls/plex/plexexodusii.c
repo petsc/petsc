@@ -1056,7 +1056,7 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
      exodus stores each component of a vector-valued field as a separate variable.
      We assume that they are stored sequentially
      Zonal variables are accessed one element block at a time, so we loop through the cell sets,
-     but once the vector has been reordered to natural size, we cannot use the label informations
+     but once the vector has been reordered to natural size, we cannot use the label information
      to figure out what to save where. */
   numCS = ex_inquire_int(exoid, EX_INQ_ELEM_BLK);
   ierr = PetscMalloc2(numCS, &csID, numCS, &csSize);CHKERRQ(ierr);
@@ -1149,7 +1149,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
      exodus stores each component of a vector-valued field as a separate variable.
      We assume that they are stored sequentially
      Zonal variables are accessed one element block at a time, so we loop through the cell sets,
-     but once the vector has been reordered to natural size, we cannot use the label informations
+     but once the vector has been reordered to natural size, we cannot use the label information
      to figure out what to save where. */
   numCS = ex_inquire_int(exoid, EX_INQ_ELEM_BLK);
   ierr = PetscMalloc2(numCS, &csID, numCS, &csSize);CHKERRQ(ierr);
@@ -1432,7 +1432,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = MPI_Comm_size(comm, &num_proc);CHKERRMPI(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
+  /* Open EXODUS II file and read basic information on rank 0, then broadcast to all processors */
   if (!rank) {
     ierr = PetscMemzero(title,PETSC_MAX_PATH_LEN+1);CHKERRQ(ierr);
     PetscStackCallStandard(ex_get_init,(exoid, title, &dimEmbed, &numVertices, &numCells, &num_cs, &num_vs, &num_fs));

@@ -41,7 +41,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
         Save the images in a .gif (movie) file
         -draw_save -draw_save_single_file
 
-        Compute the sensitivies of the solution of the first tempature on the initial conditions
+        Compute the sensitivies of the solution of the first temperature on the initial conditions
         -ts_adjoint_solve  -ts_dt 1.e-5 -ts_type cn -ts_adjoint_view_solution draw
 
         Turn off diffusion

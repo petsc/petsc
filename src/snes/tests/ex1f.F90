@@ -206,7 +206,7 @@
         call FormJacobian(snes,x,J,J,0,ierr)
 !
 !       Color the matrix, i.e. determine groups of columns that share no common
-!      rows. These columns in the Jacobian can all be computed simulataneously.
+!      rows. These columns in the Jacobian can all be computed simultaneously.
 !
         call MatColoringCreate(J,mc,ierr)
         call MatColoringSetType(mc,MATCOLORINGNATURAL,ierr)

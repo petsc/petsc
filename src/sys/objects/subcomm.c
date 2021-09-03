@@ -80,7 +80,7 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm,const char pre
    if (!pre) {
     ierr = PetscFree(psubcomm->subcommprefix);CHKERRQ(ierr);
   } else {
-    if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
+    if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hyphen");
     ierr = PetscFree(psubcomm->subcommprefix);CHKERRQ(ierr);
     ierr = PetscStrallocpy(pre,&(psubcomm->subcommprefix));CHKERRQ(ierr);
   }

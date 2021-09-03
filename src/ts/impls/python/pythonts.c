@@ -1,7 +1,7 @@
 #include <petsc/private/tsimpl.h>          /*I "petscts.h" I*/
 
 /*@C
-   TSPythonSetType - Initalize a TS object implemented in Python.
+   TSPythonSetType - Initialize a TS object implemented in Python.
 
    Collective on TS
 

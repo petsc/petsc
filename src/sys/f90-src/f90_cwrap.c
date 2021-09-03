@@ -19,7 +19,7 @@
    Fortran MPI_Datatypes in C (or vis-versa) but this is problematic since users could never
    call C routines from Fortran that have MPI_Datatype arguments. Jed states that the Fortran
    MPI_Datatypes will always be available in C if the MPI was built to support Fortran. This function
-   relys on this.
+   relies on this.
 @*/
 PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit,MPI_Datatype *dtype)
 {

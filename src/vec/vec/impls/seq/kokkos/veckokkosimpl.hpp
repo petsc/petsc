@@ -33,7 +33,7 @@ struct Vec_Kokkos {
            std::enable_if_t<std::is_same<MemorySpace,DefaultMemorySpace>::value,bool> = true>
   void UpdateArray(PetscScalar *array) {
     PetscScalarKokkosViewHost v_h(array,v_dual.extent(0));
-    /* Kokkos said they would add error-checking so that users won't accidently pass two different Views in this case */
+    /* Kokkos said they would add error-checking so that users won't accidentally pass two different Views in this case */
     v_dual = PetscScalarKokkosDualView(v_h,v_h);
   }
 

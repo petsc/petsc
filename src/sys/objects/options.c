@@ -743,7 +743,7 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
     ierr = PetscOptionsFindPair(options,NULL,opt[o],&val[o],&set[o]);CHKERRQ(ierr);
   }
 
-  /* Loop through all args to collect last occuring value of each option */
+  /* Loop through all args to collect last occurring value of each option */
   for (a=1; a<argc; a++) {
     PetscBool valid, eq;
 
@@ -2646,7 +2646,7 @@ char *PetscOptionsGetStringMatlab(PetscOptions options,const char pre[],const ch
 
    Output Parameter:
 +  dvalue - the integer values to return
-.  nmax - actual number of values retreived
+.  nmax - actual number of values retrieved
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
@@ -2706,7 +2706,7 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options,const char pre[],co
 
    Output Parameters:
 +  ivalue - the  enum values to return
-.  nmax - actual number of values retreived
+.  nmax - actual number of values retrieved
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
@@ -2771,7 +2771,7 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
 
    Output Parameter:
 +  ivalue - the integer values to return
-.  nmax - actual number of values retreived
+.  nmax - actual number of values retrieved
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
@@ -2873,7 +2873,7 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
 
    Output Parameters:
 +  dvalue - the double values to return
-.  nmax - actual number of values retreived
+.  nmax - actual number of values retrieved
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
@@ -2929,7 +2929,7 @@ PetscErrorCode PetscOptionsGetRealArray(PetscOptions options,const char pre[],co
 
    Output Parameters:
 +  dvalue - the scalar values to return
-.  nmax - actual number of values retreived
+.  nmax - actual number of values retrieved
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner

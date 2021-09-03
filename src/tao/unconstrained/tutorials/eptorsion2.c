@@ -23,7 +23,7 @@
   file automatically includes files for lower-level support, such as those
   provided by the PETSc library:
      petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - sysem routines        petscmat.h - matrices
+     petscsys.h    - system routines        petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
   Include "petscdmda.h" so that we can use distributed arrays (DMs) for managing

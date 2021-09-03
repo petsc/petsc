@@ -116,11 +116,11 @@ if (flg) {                                   \
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_MPI_COMM"); *ierr = 1; return; }
 
-/* The two macros are used at the begining and end of PETSc object Fortran destroy routines XxxDestroy(). -2 is in consistent with
+/* The two macros are used at the beginning and end of PETSc object Fortran destroy routines XxxDestroy(). -2 is in consistent with
    the one used in checkFortranTypeInitialize() at compilersFortran.py.
  */
 
-/* In the begining of Fortran XxxDestroy(a), if the input object was destroyed, change it to a petsc C NULL object so that it won't crash C XxxDestory() */
+/* In the beginning of Fortran XxxDestroy(a), if the input object was destroyed, change it to a petsc C NULL object so that it won't crash C XxxDestory() */
 #define PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a) do {if (*((void**)(a)) == (void*)-2) *(a) = NULL;} while (0)
 
 /* After C XxxDestroy(a) is called, change a's state from NULL to destroyed, so that it can be used/destroyed again by Fortran.

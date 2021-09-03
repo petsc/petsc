@@ -2382,7 +2382,7 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
         /* Up (Middle) partial dummy row */
         PetscInt j = stag->n[1];
 
-        /* Up (Middle) partial dummy row: colums 1/3: Left Up (Middle), on Left (Middle) (Middle) rank */
+        /* Up (Middle) partial dummy row: columns 1/3: Left Up (Middle), on Left (Middle) (Middle) rank */
         if (!dummyStart[0]) {
           const PetscInt neighbor = 12;
           for (ighost = 0; ighost<ghostOffsetStart[0]; ++ighost) {
@@ -2881,7 +2881,7 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
       for (jghost = 0; jghost<ghostOffsetStart[1]; ++jghost) {
         const PetscInt j = nNeighbors[10][1] - ghostOffsetStart[1] + jghost; /* wrt down neighbor (10) */
 
-        /* Down Front partial ghost row: colums 1/3: Left Down Front, on  Left Down (Middle) */
+        /* Down Front partial ghost row: columns 1/3: Left Down Front, on  Left Down (Middle) */
         if (!star && !dummyStart[0]) {
           const PetscInt neighbor = 9;
           const PetscInt epFaceRow         = entriesPerFace * nNeighbors[neighbor][0]; /* Note that we can't be a right boundary */
@@ -3106,7 +3106,7 @@ static PetscErrorCode DMStagSetUpBuildL2G_3d(DM dm,const PetscInt *globalOffsets
         }
 
         if (!star && !dummyEnd[0]) {
-          /* Up Front partial dummy row: columsn 3/3: Right Up Front, on Right Up (Middle) */
+          /* Up Front partial dummy row: columns 3/3: Right Up Front, on Right Up (Middle) */
           const PetscInt neighbor = 17;
           const PetscInt epFaceRow = entriesPerFace * nNeighbors[neighbor][0] + (nextToDummyEnd[0] ? entriesPerEdge : 0); /* Neighbor may be a right boundary */
           PetscInt       i;

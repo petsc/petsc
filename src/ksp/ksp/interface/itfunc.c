@@ -213,7 +213,7 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
   ierr = PCGetFailedReasonRank(pc,&pcreason);CHKERRQ(ierr);
-  /* TODO: this code was wrong and is still wrong, there is no way to propogate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
+  /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   }
@@ -405,7 +405,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);
-  /* TODO: this code was wrong and is still wrong, there is no way to propogate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
+  /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   }

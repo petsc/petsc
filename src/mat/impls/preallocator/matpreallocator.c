@@ -210,7 +210,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   preallocation data for a given nonzero structure. Use this object like a
   regular matrix, e.g. loop over the nonzero structure of the matrix and
   call MatSetValues() or MatSetValuesBlocked() to indicate the nonzero locations.
-  The matrix entires provided to MatSetValues() will be ignored, it only uses
+  The matrix entries provided to MatSetValues() will be ignored, it only uses
   the row / col indices provided to determine the information required to be
   passed to MatXAIJSetPreallocation(). Once you have looped over the nonzero
   structure, you must call MatAssemblyBegin(), MatAssemblyEnd() on mat.

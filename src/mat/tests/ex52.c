@@ -55,7 +55,7 @@ int main(int argc,char **args)
     col  = start/bs;
     ierr = PetscMalloc1(bs*bs,&bval);CHKERRQ(ierr);
     k = 1;
-    /* row oriented - defalt */
+    /* row oriented - default */
     for (i=0; i<bs; i++) {
       for (j=0; j<bs; j++) {
         bval[i*bs+j] = (PetscScalar)k; k++;

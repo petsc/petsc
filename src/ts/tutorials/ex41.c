@@ -217,8 +217,8 @@ int main(int argc,char **argv)
   ierr = TSSetMaxTime(ts,30.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.1);CHKERRQ(ierr);
-  /* The adapative time step controller could take very large timesteps resulting in
-     the same event occuring multiple times in the same interval. A maximum step size
+  /* The adaptive time step controller could take very large timesteps resulting in
+     the same event occurring multiple times in the same interval. A maximum step size
      limit is enforced here to avoid this issue. */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
