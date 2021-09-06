@@ -1,5 +1,5 @@
 # vtk DataFile Version 2.0
-Simplicial Mesh Example
+Example Mesh
 ASCII
 DATASET UNSTRUCTURED_GRID
 POINTS 9 double
@@ -77,7 +77,7 @@ L_2 Residual: 0.253829
 Taylor approximation converging at order 1.00
 L_2 convergence rate: [0.050, 1.0]
 # vtk DataFile Version 2.0
-Simplicial Mesh Example
+Example Mesh
 ASCII
 DATASET UNSTRUCTURED_GRID
 POINTS 9 double

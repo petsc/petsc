@@ -467,7 +467,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, Pets
 }
 
 struct _p_PetscTabulation {
-  PetscInt    K;    /* Indicates a k-jet, namely tabulated derviatives up to order k */
+  PetscInt    K;    /* Indicates a k-jet, namely tabulated derivatives up to order k */
   PetscInt    Nr;   /* The number of tabulation replicas (often 1) */
   PetscInt    Np;   /* The number of tabulation points in a replica */
   PetscInt    Nb;   /* The number of functions tabulated */

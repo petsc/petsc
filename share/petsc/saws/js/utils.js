@@ -46,7 +46,7 @@ function getParent(endtag) {
     return endtag.substring(0,endtag.lastIndexOf('_'));
 }
 
-//returns the number of occurances of a string in another string
+//returns the number of occurrences of a string in another string
 function countNumOccurances(small_string, big_string) {
 
     var count = 0;

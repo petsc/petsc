@@ -4,10 +4,7 @@
 #include <petscpkg_version.h>
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-#include <petsccublas.h>
-
-/* cublas definitions are here */
-#include <petsc/private/cudavecimpl.h>
+#include <petsc/private/cudavecimpl.h> /* cublas definitions are here */
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -1306,8 +1303,6 @@ PetscErrorCode MatDuplicate_SeqDenseCUDA(Mat A,MatDuplicateOption cpvalues,Mat *
   }
   PetscFunctionReturn(0);
 }
-
-#include <petsc/private/vecimpl.h>
 
 static PetscErrorCode MatGetColumnVector_SeqDenseCUDA(Mat A,Vec v,PetscInt col)
 {

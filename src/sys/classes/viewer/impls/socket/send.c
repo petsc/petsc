@@ -83,7 +83,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 +    url - for example www.mcs.anl.gov
 -    portnum - for example 80
 
-    Output Paramater:
+    Output Parameter:
 .    t - the socket number
 
     Notes:

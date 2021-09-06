@@ -1,5 +1,5 @@
 # vtk DataFile Version 2.0
-Simplicial Mesh Example
+Generated Mesh
 ASCII
 DATASET UNSTRUCTURED_GRID
 POINTS 14 double

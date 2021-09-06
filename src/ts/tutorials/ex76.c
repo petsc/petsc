@@ -34,8 +34,8 @@ F*/
 typedef enum {MOD_INCOMPRESSIBLE, MOD_CONDUCTING, NUM_MOD_TYPES} ModType;
 const char *modTypes[NUM_MOD_TYPES+1] = {"incompressible", "conducting", "unknown"};
 
-typedef enum {SOL_QUADRATIC, SOL_CUBIC, SOL_CUBIC_TRIG, SOL_TAYLOR_GREEN, SOL_PIPE, NUM_SOL_TYPES} SolType;
-const char *solTypes[NUM_SOL_TYPES+1] = {"quadratic", "cubic", "cubic_trig", "taylor_green", "pipe", "unknown"};
+typedef enum {SOL_QUADRATIC, SOL_CUBIC, SOL_CUBIC_TRIG, SOL_TAYLOR_GREEN, SOL_PIPE, SOL_PIPE_WIGGLY, NUM_SOL_TYPES} SolType;
+const char *solTypes[NUM_SOL_TYPES+1] = {"quadratic", "cubic", "cubic_trig", "taylor_green", "pipe", "pipe_wiggly", "unknown"};
 
 /* Fields */
 const PetscInt VEL      = 0;
@@ -58,6 +58,7 @@ const PetscInt K        = 8;
 const PetscInt ALPHA    = 9;
 const PetscInt T_IN     = 10;
 const PetscInt G_DIR    = 11;
+const PetscInt EPSILON  = 12;
 
 typedef struct {
   PetscReal Strouhal; /* Strouhal number */
@@ -72,6 +73,7 @@ typedef struct {
   PetscReal alpha;    /* Thermal diffusivity */
   PetscReal T_in;     /* Inlet temperature */
   PetscReal g_dir;    /* Gravity direction */
+  PetscReal epsilon;  /* Strength of perturbation */
 } Parameter;
 
 typedef struct {
@@ -626,6 +628,140 @@ static void f0_conduct_pipe_w(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   const PetscReal Pe = PetscRealPart(constants[PECLET]);
 
   f0[0] -= 2*k/Pe;
+}
+
+/*
+  CASE: Wiggly pipe flow
+  Perturbed Poiseuille flow, with the incoming fluid having a perturbed parabolic temperature profile and the side walls being held at T_in
+
+    u = \Delta Re/(2 mu) [y (1 - y) + a sin(pi y)]
+    v = 0
+    p = -\Delta x
+    T = y (1 - y) + a sin(pi y) + T_in
+  rho = p^{th} / T
+
+  so that
+
+    \nabla \cdot u = 0 - 0 = 0
+    grad u = \Delta Re/(2 mu) <<0, 0>, <1 - 2y + a pi cos(pi y), 0>>
+    epsilon(u) = 1/2 (grad u + grad u^T) = \Delta Re/(4 mu) <<0, 1 - 2y + a pi cos(pi y)>, <<1 - 2y + a pi cos(pi y), 0>>
+    epsilon'(u) = epsilon(u) - 1/3 (div u) I = epsilon(u)
+    div epsilon'(u) = -\Delta Re/(2 mu) <1 + a pi^2/2 sin(pi y), 0>
+
+  f = rho S du/dt + rho u \cdot \nabla u - 2\mu/Re div \epsilon'(u) + \nabla p + rho / F^2 \hat y
+    = 0 + 0 - div (2\mu/Re \epsilon'(u) - pI) + rho / F^2 \hat y
+    = -\Delta div <<x, (1 - 2y)/2 + a pi/2 cos(pi y)>, <<(1 - 2y)/2 + a pi/2 cos(pi y), x>> + rho / F^2 \hat y
+    = -\Delta <1 - 1 - a pi^2/2 sin(pi y), 0> + rho/F^2 <0, 1>
+    = a \Delta pi^2/2 sin(pi y) <1, 0> + rho/F^2 <0, 1>
+
+  g = S rho_t + div (rho u)
+    = 0 + rho div (u) + u . grad rho
+    = 0 + 0 - pth u . grad T / T^2
+    = 0
+
+  Q = rho c_p S dT/dt + rho c_p u . grad T - 1/Pe div k grad T
+    = 0 + c_p pth / T 0 - k/Pe div <0, 1 - 2y + a pi cos(pi y)>
+    = - k/Pe (-2 - a pi^2 sin(pi y))
+    = 2 k/Pe (1 + a pi^2/2 sin(pi y))
+
+  The boundary conditions on the top and bottom are zero velocity and T_in temperature. The boundary term is
+
+    (2\mu/Re \epsilon'(u) - p I) . n = \Delta <<x, (1 - 2y)/2 + a pi/2 cos(pi y)>, <<(1 - 2y)/2 + a pi/2 cos(pi y), x>> . n
+
+  so that
+
+    x = 0: \Delta <<0, (1 - 2y)/2>, <<(1 - 2y)/2, 0>> . <-1, 0> = <0, (2y - 1)/2 - a pi/2 cos(pi y)>
+    x = 1: \Delta <<1, (1 - 2y)/2>, <<(1 - 2y)/2, 1>> . < 1, 0> = <1, (1 - 2y)/2 + a pi/2 cos(pi y)>
+*/
+static PetscErrorCode pipe_wiggly_u(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  Parameter *param = (Parameter *) ctx;
+
+  u[0] = (0.5*param->Reynolds / param->mu) * (X[1]*(1.0 - X[1]) + param->epsilon*PetscSinReal(PETSC_PI*X[1]));
+  u[1] = 0.0;
+  return 0;
+}
+static PetscErrorCode pipe_wiggly_u_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  u[0] = 0.0;
+  u[1] = 0.0;
+  return 0;
+}
+
+static PetscErrorCode pipe_wiggly_p(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, void *ctx)
+{
+  p[0] = -X[0];
+  return 0;
+}
+static PetscErrorCode pipe_wiggly_p_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *p, void *ctx)
+{
+  p[0] = 0.0;
+  return 0;
+}
+
+static PetscErrorCode pipe_wiggly_T(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, void *ctx)
+{
+  Parameter *param = (Parameter *) ctx;
+
+  T[0] = X[1]*(1.0 - X[1]) + param->epsilon*PetscSinReal(PETSC_PI*X[1]) + param->T_in;
+  return 0;
+}
+static PetscErrorCode pipe_wiggly_T_t(PetscInt dim, PetscReal time, const PetscReal X[], PetscInt Nf, PetscScalar *T, void *ctx)
+{
+  T[0] = 0.0;
+  return 0;
+}
+
+static void f0_conduct_pipe_wiggly_v(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                     PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal F    = PetscRealPart(constants[FROUDE]);
+  const PetscReal p_th = PetscRealPart(constants[P_TH]);
+  const PetscReal T_in = PetscRealPart(constants[T_IN]);
+  const PetscReal eps  = PetscRealPart(constants[EPSILON]);
+  const PetscReal rho  = p_th / (X[1]*(1. - X[1]) + T_in);
+  const PetscInt  gd   = (PetscInt) PetscRealPart(constants[G_DIR]);
+
+  f0[0]  -= eps*0.5*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*X[1]);
+  f0[gd] -= rho/PetscSqr(F);
+}
+
+static void f0_conduct_bd_pipe_wiggly_v(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                        PetscReal t, const PetscReal X[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal eps = PetscRealPart(constants[EPSILON]);
+  PetscReal sigma[4] = {X[0], 0.5*(1. - 2.*X[1]) + eps*0.5*PETSC_PI*PetscCosReal(PETSC_PI*X[1]), 0.5*(1. - 2.*X[1]) + eps*0.5*PETSC_PI*PetscCosReal(PETSC_PI*X[1]), X[0]};
+  PetscInt  d, e;
+
+  for (d = 0; d < dim; ++d) {
+    for (e = 0; e < dim; ++e) {
+      f0[d] -= sigma[d*dim + e] * n[e];
+    }
+  }
+}
+
+static void f0_conduct_pipe_wiggly_q(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                     PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  f0[0] += 0.0;
+}
+
+static void f0_conduct_pipe_wiggly_w(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                     PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal k  = PetscRealPart(constants[K]);
+  const PetscReal Pe = PetscRealPart(constants[PECLET]);
+  const PetscReal eps = PetscRealPart(constants[EPSILON]);
+
+  f0[0] -= 2*k/Pe*(1.0 + eps*0.5*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*X[1]));
 }
 
 /*      Physics Kernels      */
@@ -1188,6 +1324,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->modType      = MOD_INCOMPRESSIBLE;
   options->solType      = SOL_QUADRATIC;
   options->hasNullSpace = PETSC_TRUE;
+  options->dmCell       = NULL;
 
   ierr = PetscOptionsBegin(comm, "", "Low Mach flow Problem Options", "DMPLEX");CHKERRQ(ierr);
   mod = options->modType;
@@ -1227,6 +1364,7 @@ static PetscErrorCode SetupParameters(DM dm, AppCtx *user)
   ierr = PetscBagRegisterReal(bag, &p->alpha,    1.0, "alpha", "Thermal diffusivity");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &p->T_in,     1.0, "T_in",  "Inlet temperature");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal(bag, &p->g_dir,    dir, "g_dir", "Gravity direction");CHKERRQ(ierr);
+  ierr = PetscBagRegisterReal(bag, &p->epsilon,  1.0, "epsilon", "Perturbation strength");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1413,6 +1551,37 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
         ierr = PetscDSAddBoundary(ds, DM_BC_ESSENTIAL, "bottom wall velocity",    label, 1, &id, VEL,  0, NULL, (void (*)(void)) exactFuncs[VEL], (void (*)(void)) exactFuncs_t[VEL], ctx, NULL);CHKERRQ(ierr);
         ierr = PetscDSAddBoundary(ds, DM_BC_ESSENTIAL, "bottom wall temperature", label, 1, &id, TEMP, 0, NULL, (void (*)(void)) exactFuncs[TEMP], (void (*)(void)) exactFuncs_t[TEMP], ctx, NULL);CHKERRQ(ierr);
         break;
+      case SOL_PIPE_WIGGLY:
+        user->hasNullSpace = PETSC_FALSE;
+        ierr = PetscWeakFormSetIndexResidual(wf, NULL, 0, VEL,  0, 1, f0_conduct_pipe_wiggly_v, 0, NULL);CHKERRQ(ierr);
+        ierr = PetscWeakFormSetIndexResidual(wf, NULL, 0, PRES, 0, 1, f0_conduct_pipe_wiggly_q, 0, NULL);CHKERRQ(ierr);
+        ierr = PetscWeakFormSetIndexResidual(wf, NULL, 0, TEMP, 0, 1, f0_conduct_pipe_wiggly_w, 0, NULL);CHKERRQ(ierr);
+
+        exactFuncs[VEL]    = pipe_wiggly_u;
+        exactFuncs[PRES]   = pipe_wiggly_p;
+        exactFuncs[TEMP]   = pipe_wiggly_T;
+        exactFuncs_t[VEL]  = pipe_wiggly_u_t;
+        exactFuncs_t[PRES] = pipe_wiggly_p_t;
+        exactFuncs_t[TEMP] = pipe_wiggly_T_t;
+
+        ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
+        id   = 2;
+        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "right wall", label, 1, &id, 0, 0, NULL, NULL, NULL, ctx, &bd);CHKERRQ(ierr);
+        ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+        ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, VEL, 0, 0, f0_conduct_bd_pipe_wiggly_v, 0, NULL);CHKERRQ(ierr);
+        id   = 4;
+        ierr = DMAddBoundary(dm, DM_BC_NATURAL, "left wall", label, 1, &id, 0, 0, NULL, NULL, NULL, ctx, &bd);CHKERRQ(ierr);
+        ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+        ierr = PetscWeakFormSetIndexBdResidual(wf, label, id, VEL, 0, 0, f0_conduct_bd_pipe_wiggly_v, 0, NULL);CHKERRQ(ierr);
+        id   = 4;
+        ierr = PetscDSAddBoundary(ds, DM_BC_ESSENTIAL, "left wall temperature",   label, 1, &id, TEMP, 0, NULL, (void (*)(void)) exactFuncs[TEMP], (void (*)(void)) exactFuncs_t[TEMP], ctx, NULL);CHKERRQ(ierr);
+        id   = 3;
+        ierr = PetscDSAddBoundary(ds, DM_BC_ESSENTIAL, "top wall velocity",       label, 1, &id, VEL,  0, NULL, (void (*)(void)) exactFuncs[VEL], (void (*)(void)) exactFuncs_t[VEL], ctx, NULL);CHKERRQ(ierr);
+        ierr = PetscDSAddBoundary(ds, DM_BC_ESSENTIAL, "top wall temperature",    label, 1, &id, TEMP, 0, NULL, (void (*)(void)) exactFuncs[TEMP], (void (*)(void)) exactFuncs_t[TEMP], ctx, NULL);CHKERRQ(ierr);
+        id   = 1;
+        ierr = PetscDSAddBoundary(ds, DM_BC_ESSENTIAL, "bottom wall velocity",    label, 1, &id, VEL,  0, NULL, (void (*)(void)) exactFuncs[VEL], (void (*)(void)) exactFuncs_t[VEL], ctx, NULL);CHKERRQ(ierr);
+        ierr = PetscDSAddBoundary(ds, DM_BC_ESSENTIAL, "bottom wall temperature", label, 1, &id, TEMP, 0, NULL, (void (*)(void)) exactFuncs[TEMP], (void (*)(void)) exactFuncs_t[TEMP], ctx, NULL);CHKERRQ(ierr);
+        break;
        default: SETERRQ2(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user->solType, NUM_SOL_TYPES)], user->solType);
       }
       break;
@@ -1421,7 +1590,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   /* Setup constants */
   {
     Parameter  *param;
-    PetscScalar constants[12];
+    PetscScalar constants[13];
 
     ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
 
@@ -1437,7 +1606,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     constants[ALPHA]    = param->alpha;
     constants[T_IN]     = param->T_in;
     constants[G_DIR]    = param->g_dir;
-    ierr = PetscDSSetConstants(ds, 12, constants);CHKERRQ(ierr);
+    constants[EPSILON]  = param->epsilon;
+    ierr = PetscDSSetConstants(ds, 13, constants);CHKERRQ(ierr);
   }
 
   ierr = PetscBagGetData(user->bag, (void **) &ctx);CHKERRQ(ierr);
@@ -1450,10 +1620,50 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode CreateCellDM(DM dm, AppCtx *user)
+{
+  PetscFE        fe, fediv;
+  DMPolytopeType ct;
+  PetscInt       dim, cStart;
+  PetscBool      simplex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetCellType(dm, cStart, &ct);CHKERRQ(ierr);
+  simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct)+1 ? PETSC_TRUE : PETSC_FALSE;
+
+  ierr = DMGetField(dm, VEL,  NULL, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "div_", PETSC_DEFAULT, &fediv);CHKERRQ(ierr);
+  ierr = PetscFECopyQuadrature(fe, fediv);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fediv, "divergence");CHKERRQ(ierr);
+
+  ierr = DMDestroy(&user->dmCell);CHKERRQ(ierr);
+  ierr = DMClone(dm, &user->dmCell);CHKERRQ(ierr);
+  ierr = DMSetField(user->dmCell, 0, NULL, (PetscObject) fediv);CHKERRQ(ierr);
+  ierr = DMCreateDS(user->dmCell);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fediv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode GetCellDM(DM dm, AppCtx *user, DM *dmCell)
+{
+  PetscInt       cStart, cEnd, cellStart = -1, cellEnd = -1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  if (user->dmCell) {ierr = DMPlexGetSimplexOrBoxCells(user->dmCell, 0, &cellStart, &cellEnd);CHKERRQ(ierr);}
+  if (cStart != cellStart || cEnd != cellEnd) {ierr = CreateCellDM(dm, user);CHKERRQ(ierr);}
+  *dmCell = user->dmCell;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM              cdm   = dm;
-  PetscFE         fe[3], fediv;
+  DM              cdm = dm;
+  PetscFE         fe[3];
   Parameter      *param;
   DMPolytopeType  ct;
   PetscInt        dim, cStart;
@@ -1477,10 +1687,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFECopyQuadrature(fe[0], fe[2]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[2], "temperature");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, "div_", PETSC_DEFAULT, &fediv);CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], fediv);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fediv, "divergence");CHKERRQ(ierr);
-
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMSetField(dm, VEL,  NULL, (PetscObject) fe[VEL]);CHKERRQ(ierr);
   ierr = DMSetField(dm, PRES, NULL, (PetscObject) fe[PRES]);CHKERRQ(ierr);
@@ -1495,11 +1701,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFEDestroy(&fe[VEL]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[PRES]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[TEMP]);CHKERRQ(ierr);
-
-  ierr = DMClone(dm, &user->dmCell);CHKERRQ(ierr);
-  ierr = DMSetField(user->dmCell, 0, NULL, (PetscObject) fediv);CHKERRQ(ierr);
-  ierr = DMCreateDS(user->dmCell);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fediv);CHKERRQ(ierr);
 
   if (user->hasNullSpace) {
     PetscObject  pressure;
@@ -1561,6 +1762,17 @@ static PetscErrorCode RemoveDiscretePressureNullspace(TS ts)
   PetscFunctionReturn(0);
 }
 
+static void divergence(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                       PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar divu[])
+{
+  PetscInt d;
+
+  divu[0] = 0.;
+  for (d = 0; d < dim; ++d) divu[0] += u_x[d*dim+d];
+}
+
 static PetscErrorCode SetInitialConditions(TS ts, Vec u)
 {
   AppCtx        *user;
@@ -1577,23 +1789,12 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
   PetscFunctionReturn(0);
 }
 
-static void divergence(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                       PetscReal t, const PetscReal X[], PetscInt numConstants, const PetscScalar constants[], PetscScalar divu[])
-{
-  PetscInt d;
-
-  divu[0] = 0.;
-  for (d = 0; d < dim; ++d) divu[0] += u_x[d*dim+d];
-}
-
 static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
   PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   void            *ctxs[3];
   PetscPointFunc   diagnostics[1] = {divergence};
-  DM               dm, dmCell = ((AppCtx *) ctx)->dmCell;
+  DM               dm, dmCell = NULL;
   PetscDS          ds;
   Vec              v, divu;
   PetscReal        ferrors[3], massFlux;
@@ -1606,6 +1807,7 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
 
   for (f = 0; f < 3; ++f) {ierr = PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]);CHKERRQ(ierr);}
   ierr = DMComputeL2FieldDiff(dm, crtime, exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
+  ierr = GetCellDM(dm, (AppCtx *) ctx, &dmCell);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmCell, &divu);CHKERRQ(ierr);
   ierr = DMProjectField(dmCell, crtime, u, diagnostics, INSERT_VALUES, divu);CHKERRQ(ierr);
   ierr = VecViewFromOptions(divu, NULL, "-divu_vec_view");CHKERRQ(ierr);
@@ -1755,5 +1957,14 @@ int main(int argc, char **argv)
       args: -sol_type pipe \
             -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 2 \
             -dmts_check .001 -ts_max_steps 4 -ts_dt 0.1
+
+    test:
+      suffix: 2d_tri_p2_p1_p2_conduct_pipe_wiggly_sconv
+      args: -sol_type pipe_wiggly -Fr 1e10 \
+            -vel_petscspace_degree 2 -pres_petscspace_degree 1 -temp_petscspace_degree 2 \
+            -ts_convergence_estimate -ts_convergence_temporal 0 -convest_num_refine 1 \
+            -ts_max_steps 1 -ts_dt 1e10 \
+            -ksp_atol 1e-12 -ksp_max_it 300 \
+              -fieldsplit_pressure_ksp_atol 1e-14
 
 TEST*/

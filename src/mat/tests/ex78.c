@@ -9,7 +9,7 @@ Input parameters are:\n\
 
 /*
 Example: ./ex78 -Ain Ain -rhs rhs -solu solu -noshift -mat_view
- with the datafiles in the followig format:
+ with the datafiles in the following format:
 Ain (I and J start at 0):
 ------------------------
 3 3 6
@@ -156,7 +156,7 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-      requires:  !define(PETSC_USE_64BIT_INDICES) double !complex
+      requires:  !defined(PETSC_USE_64BIT_INDICES) double !complex
 
    test:
       requires: datafilespath

@@ -38,7 +38,7 @@ end program main
 !/*TEST
 !
 !   test:
-!      requires: define(PETSC_USE_LOG)
+!      requires: defined(PETSC_USE_LOG)
 !      nsize: 2
 !      args: -options_view -get_total_flops
 !      filter: egrep -v "(malloc|display|nox|Total flops|saws_port_auto_select|vecscatter_mpi1|options_left|error_output_stdout|check_pointer_intensity|cuda_initialize|use_gpu_aware_mpi|checkstack)"

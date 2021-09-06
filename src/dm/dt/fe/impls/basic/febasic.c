@@ -434,13 +434,23 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
         ierr = DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ);CHKERRQ(ierr);
 #endif
       }
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d wt %g\n", q, quadWeights[q]);CHKERRQ(ierr);}
       ierr = PetscFEEvaluateFieldJets_Internal(ds, Nf, 0, q, T, &fegeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       if (dsAux) {ierr = PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, 0, q, TAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);CHKERRQ(ierr);}
       for (i = 0; i < n0; ++i) f0_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, numConstants, constants, &f0[q*T[field]->Nc]);
       for (c = 0; c < T[field]->Nc; ++c) f0[q*T[field]->Nc+c] *= w;
       for (i = 0; i < n1; ++i) f1_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, numConstants, constants, &f1[q*T[field]->Nc*dim]);
       for (c = 0; c < T[field]->Nc; ++c) for (d = 0; d < dim; ++d) f1[(q*T[field]->Nc+c)*dim+d] *= w;
+      if (debug) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d wt %g\n", q, quadWeights[q]);CHKERRQ(ierr);
+        if (debug > 2) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "  field %d:", field);CHKERRQ(ierr);
+          for (c = 0; c < T[field]->Nc; ++c) {ierr = PetscPrintf(PETSC_COMM_SELF, " %g", u[uOff[field]+c]);CHKERRQ(ierr);}
+          ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "  resid %d:", field);CHKERRQ(ierr);
+          for (c = 0; c < T[field]->Nc; ++c) {ierr = PetscPrintf(PETSC_COMM_SELF, " %g", f0[q*T[field]->Nc+c]);CHKERRQ(ierr);}
+          ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+        }
+      }
     }
     ierr = PetscFEUpdateElementVec_Internal(fe, T[field], 0, basisReal, basisDerReal, e, cgeom, f0, f1, &elemVec[cOffset+fOffset]);CHKERRQ(ierr);
     cOffset    += totDim;

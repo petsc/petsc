@@ -1649,6 +1649,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
     for (s = 0; s < numSupp; s++) {
       PetscInt       p = supp[s], i;
       PetscInt       numCone;
+      DMPolytopeType ct;
       const PetscInt *cone;
       const PetscInt *ornt;
       PetscInt       orient = PETSC_MIN_INT;
@@ -1656,10 +1657,11 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
       ierr = DMPlexGetConeSize(dm, p, &numCone);CHKERRQ(ierr);
       if (numCone != P4EST_FACES) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"cell %D has %D facets, expect %d",p,numCone,P4EST_FACES);
       ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetCellType(dm, cone[0], &ct);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, p, &ornt);CHKERRQ(ierr);
       for (i = 0; i < P4EST_FACES; i++) {
         if (cone[i] == f) {
-          orient = ornt[i];
+          orient = DMPolytopeConvertNewOrientation_Internal(ct, ornt[i]);
           break;
         }
       }
@@ -1681,7 +1683,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         myFace[s] = PetscFaceToP4estFace[i];
         /* get the orientation of cell p in p4est-type closure to facet f, by composing the p4est-closure to
          * petsc-closure permutation and the petsc-closure to facet orientation */
-        myOrnt[s] = DihedralCompose(N,orient,P4estFaceToPetscOrnt[myFace[s]]);
+        myOrnt[s] = DihedralCompose(N,orient,DMPolytopeConvertNewOrientation_Internal(ct, P4estFaceToPetscOrnt[myFace[s]]));
       }
     }
     if (numSupp == 2) {
@@ -1733,13 +1735,16 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
         for (c = 0; c < P8EST_EDGES; c++) {
           PetscInt cellEdge = closure[2 * (c + edgeOff)];
           PetscInt cellOrnt = closure[2 * (c + edgeOff) + 1];
+          DMPolytopeType ct;
 
+          ierr = DMPlexGetCellType(dm, cellEdge, &ct);CHKERRQ(ierr);
+          cellOrnt = DMPolytopeConvertNewOrientation_Internal(ct, cellOrnt);
           if (cellEdge == e) {
             PetscInt p4estEdge = PetscEdgeToP4estEdge[c];
             PetscInt totalOrient;
 
             /* compose p4est-closure to petsc-closure permutation and petsc-closure to edge orientation */
-            totalOrient = DihedralCompose(2,cellOrnt,P4estEdgeToPetscOrnt[p4estEdge]);
+            totalOrient = DihedralCompose(2,cellOrnt,DMPolytopeConvertNewOrientation_Internal(DM_POLYTOPE_SEGMENT, P4estEdgeToPetscOrnt[p4estEdge]));
             /* p4est orientations are positive: -2 => 1, -1 => 0 */
             totalOrient             = (totalOrient < 0) ? -(totalOrient + 1) : totalOrient;
             conn->edge_to_tree[off] = (p4est_locidx_t) (p - cStart);
@@ -1936,6 +1941,7 @@ static PetscErrorCode P4estToPlex_Local(p4est_t *p4est, DM * plex)
     ierr = DMPlexCreate(PETSC_COMM_SELF,plex);CHKERRQ(ierr);
     ierr = DMSetDimension(*plex,P4EST_DIM);CHKERRQ(ierr);
     ierr = DMPlexCreateFromDAG(*plex,P4EST_DIM,(PetscInt*)points_per_dim->array,(PetscInt*)cone_sizes->array,(PetscInt*)cones->array,(PetscInt*)cone_orientations->array,(PetscScalar*)coords->array);CHKERRQ(ierr);
+    ierr = DMPlexConvertOldOrientations_Internal(*plex);CHKERRQ(ierr);
     sc_array_destroy (points_per_dim);
     sc_array_destroy (cone_sizes);
     sc_array_destroy (cones);
@@ -2008,14 +2014,17 @@ static PetscErrorCode DMReferenceTreeGetChildSymmetry_pforest(DM dm, PetscInt pa
         PetscInt j = (sOrientB >= 0) ? ((sOrientB + i) % sConeSize) : ((sConeSize -(sOrientB+1) - i) % sConeSize);
         if (childB) *childB = coneB[j];
         if (childOrientB) {
-          PetscInt oBtrue;
+          DMPolytopeType ct;
+          PetscInt       oBtrue;
 
           ierr = DMPlexGetConeSize(dm,childA,&coneSize);CHKERRQ(ierr);
           /* compose sOrientB and oB[j] */
           if (coneSize != 0 && coneSize != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
+          ct = coneSize ? DM_POLYTOPE_SEGMENT : DM_POLYTOPE_POINT;
           /* we may have to flip an edge */
-          oBtrue        = coneSize ? ((sOrientB >= 0) ? oB[j] : -(oB[j] + 2)) : 0;
-          ABswap        = DihedralSwap(coneSize,oA[i],oBtrue);
+          oBtrue        = (sOrientB >= 0) ? oB[j] : DMPolytopeTypeComposeOrientationInv(ct, -1, oB[j]);
+          oBtrue        = DMPolytopeConvertNewOrientation_Internal(ct, oBtrue);
+          ABswap        = DihedralSwap(coneSize,DMPolytopeConvertNewOrientation_Internal(ct, oA[i]),oBtrue);
           *childOrientB = DihedralCompose(coneSize,childOrientA,ABswap);
         }
         break;
@@ -2689,8 +2698,11 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
               PetscInt point  = childClosures[cid][2 * cl];
               PetscInt ornt   = childClosures[cid][2 * cl + 1];
               PetscInt newcid = -1;
+              DMPolytopeType ct;
 
               if (rootType[p-pStartF] == PETSC_MAX_INT) continue;
+              ierr = DMPlexGetCellType(refTree, point, &ct);CHKERRQ(ierr);
+              ornt = DMPolytopeConvertNewOrientation_Internal(ct, ornt);
               if (!cl) {
                 newcid = cid + 1;
               } else {
@@ -2702,14 +2714,17 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                 } else if (!parent) { /* in the root */
                   newcid = point;
                 } else {
+                  DMPolytopeType rct = DM_POLYTOPE_UNKNOWN;
+
                   for (rcl = 1; rcl < P4EST_INSUL; rcl++) {
                     if (rootClosure[2 * rcl] == parent) {
-                      parentOrnt = rootClosure[2 * rcl + 1];
+                      ierr = DMPlexGetCellType(refTree, parent, &rct);CHKERRQ(ierr);
+                      parentOrnt = DMPolytopeConvertNewOrientation_Internal(rct, rootClosure[2 * rcl + 1]);
                       break;
                     }
                   }
                   if (rcl >= P4EST_INSUL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Couldn't find parent in root closure");
-                  ierr = DMPlexReferenceTreeGetChildSymmetry(refTree,parent,parentOrnt,ornt,point,pointClosure[2 * rcl + 1],NULL,&newcid);CHKERRQ(ierr);
+                  ierr = DMPlexReferenceTreeGetChildSymmetry(refTree,parent,parentOrnt,ornt,point,DMPolytopeConvertNewOrientation_Internal(rct, pointClosure[2 * rcl + 1]),NULL,&newcid);CHKERRQ(ierr);
                 }
               }
               if (newcid >= 0) {
@@ -4324,6 +4339,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr  = DMSetCoordinateDim(newPlex,coordDim);CHKERRQ(ierr);
     ierr  = DMPlexSetMaxProjectionHeight(newPlex,P4EST_DIM - 1);CHKERRQ(ierr);
     ierr  = DMPlexCreateFromDAG(newPlex,P4EST_DIM,(PetscInt*)points_per_dim->array,(PetscInt*)cone_sizes->array,(PetscInt*)cones->array,(PetscInt*)cone_orientations->array,(PetscScalar*)coords->array);CHKERRQ(ierr);
+    ierr  = DMPlexConvertOldOrientations_Internal(newPlex);CHKERRQ(ierr);
     ierr  = DMCreateReferenceTree_pforest(comm,&refTree);CHKERRQ(ierr);
     ierr  = DMPlexSetReferenceTree(newPlex,refTree);CHKERRQ(ierr);
     ierr  = PetscSectionCreate(comm,&parentSection);CHKERRQ(ierr);

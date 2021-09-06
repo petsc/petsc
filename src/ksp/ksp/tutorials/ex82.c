@@ -96,7 +96,7 @@ int main(int argc,char **argv)
       requires: htool hpddm
 
    test:
-      requires: htool hpddm slepc define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+      requires: htool hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
       # different numbers of iterations depending on PetscScalar type
       filter: sed -e "s/symmetry: S/symmetry: N/g" -e "/number of dense/d" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 13/Linear solve converged due to CONVERGED_RTOL iterations 18/g"

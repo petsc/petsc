@@ -67,17 +67,17 @@ int main(int argc,char **args)
    test:
       suffix: 1
       nsize: 1
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -nmat 1 -pc_type none -ksp_converged_reason -ksp_type {{gmres hpddm}shared output} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -ksp_hpddm_type {{gmres bgmres}shared output} -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
 
    test:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       suffix: 1_icc
       nsize: 1
       args: -nmat 1 -pc_type icc -ksp_converged_reason -ksp_type {{gmres hpddm}shared output} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
 
    testset:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -nmat 3 -pc_type none -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_type {{gcrodr bgcrodr}shared output} -ksp_hpddm_recycle 20 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
       test:
         nsize: 1
@@ -89,7 +89,7 @@ int main(int argc,char **args)
         output_file: output/ex75_2.out
 
    testset:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       nsize: 1
       args: -nmat 3 -pc_type icc -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_rtol 1e-10 -ksp_hpddm_type {{gcrodr bgcrodr}shared output} -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
       test:
@@ -100,7 +100,7 @@ int main(int argc,char **args)
         args: -ksp_atol 1e-12
 
    test:
-      requires: hpddm datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) slepc define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+      requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 2
       suffix: symmetric
       args: -nmat 3 -pc_type jacobi -ksp_converged_reason -ksp_type hpddm -ksp_max_it 1000 -ksp_gmres_restart 40 -ksp_atol 1e-11 -ksp_hpddm_type bgcrodr -ksp_hpddm_recycle 20 -reset {{false true}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR -ksp_hpddm_recycle_symmetric true

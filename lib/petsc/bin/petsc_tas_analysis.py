@@ -56,7 +56,7 @@ def getFiles(cmdLineArgs):
             if len(filesTemp) == 0 or len(files) == 0:
                 raise IOError()
         except IOError:
-            sys.exit ("No vaild data files in " + dataPath + " and -file/-f argument is empty. \n"
+            sys.exit ("No valid data files in " + dataPath + " and -file/-f argument is empty. \n"
             "Please check for .py, .pyc, or .csv files in " + dataPath + " or specify one with the -file/-f "
             "argument.")
     else:
@@ -324,7 +324,7 @@ def dataProces(cmdLineArgs, fileName):
                         else module.Stages[stageName]["SNESSolve"][n]["flop"]
                 totalFlop = totalFlop + module.Stages[stageName]["SNESSolve"][n]["flop"]
 
-                #Gather LU factor infomation
+                #Gather LU factor information
                 if module.Stages[stageName]["MatLUFactorNum"][n]["time"] != 0:
                     luFactorTempMax = luFactorTempMax if luFactorTempMax >= luFactorCur \
                             else luFactorCur
@@ -336,7 +336,7 @@ def dataProces(cmdLineArgs, fileName):
 
 
 
-            #The informaiton from level 0 is NOT included.
+            #The information from level 0 is NOT included.
             meanTime.append(totalTime/nProcs)
             times.append(timeTempMax)
             timesMin.append(timeTempMin)
@@ -416,12 +416,12 @@ def getNf(errorList):
     """
     This simple function takes the supplied error list and loops through that list until it encounters -1.  The default
     convention is that each field from the problem has an entry in the error list with at most 8 fields.  If there are
-    less thatn 8 fields those entries are set to -1.
+    less than 8 fields those entries are set to -1.
     Example:
       A problem with 4 fields would have a list of the form [.01, .003, .2, .04, -1, -1, -1, -1]
 
     :param errorList: contains a list of floating point numbers with the errors from each level of refinement.
-    :type errorList: List containg Floating point numbers.
+    :type errorList: List containing Floating point numbers.
     :returns: Nf an integer that represents the number of fields.
     """
     i  = 0
@@ -437,7 +437,7 @@ def getNfCSV(df):
     the values of the dofx columns, where x is an integer, from the row where
     Stage Name = ConvEst Refinement Level 0, Event Name = ConvEst Error, and Rank = 0 until it
     encounters -1.  The default convention is that each field from the problem has an entry in the error list with at most
-    8 fields.  If there are less thatn 8 fields those entries are set to -1.
+    8 fields.  If there are less than 8 fields those entries are set to -1.
     Example:
       A problem with 4 fields would have a list of the form [.01, .003, .2, .04, -1, -1, -1, -1]
 
@@ -476,7 +476,7 @@ def graphGen(file, enable_graphs, graph_flops_scaling, dim):
     lstSqMeshConv = np.empty([2])
 
     counter = 0
-    #Loop through each file and add the data/line for that file to the Mesh Convergance, Static Scaling, and Efficacy Graphs
+    #Loop through each file and add the data/line for that file to the Mesh Convergence, Static Scaling, and Efficacy Graphs
     for field in file.fieldList:
         #Least squares solution for Mesh Convergence
         lstSqMeshConv[0], lstSqMeshConv[1] = leastSquares(field.fieldData['dofs'], field.fieldData['Errors'])
@@ -525,9 +525,9 @@ def graphGen(file, enable_graphs, graph_flops_scaling, dim):
         axEffic.set_ylim(0,10)
 
 
-        #Loop through each file and add the data/line for that file to the Mesh Convergance, Static Scaling, and Efficacy Graphs
+        #Loop through each file and add the data/line for that file to the Mesh Convergence, Static Scaling, and Efficacy Graphs
         for field in file.fieldList:
-            ##Start Mesh Convergance graph
+            ##Start Mesh Convergence graph
             convRate = str(convRate)
 
             x, = axMeshConv.loglog(field.fieldData['dofs'], field.fieldData['Errors'],
@@ -629,7 +629,7 @@ if __name__ == "__main__":
     help = 'Enables graphing. Default: %(default)s  print the graphs. 0 to disable printing the graphs')
 
     cmdLine.add_argument('-view_variance', '--view_variance', type = int, default = 0, choices = [0, 1],
-    help = 'Enables calculating and outputing the Variance. Default: %(default)s does not print the variance. 1 to enable \
+    help = 'Enables calculating and outputting the Variance. Default: %(default)s does not print the variance. 1 to enable \
         printing the graphs')
 
     cmdLine.add_argument('-problem', '--problem', default = 'NULL', help = 'Enables searching for the names of fields in \

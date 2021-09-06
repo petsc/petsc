@@ -215,7 +215,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
       ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
 
-    /* Mark diagonal and invert diagonal for simplier triangular solves */
+    /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscArraycpy(pv,rtmp+bs2*pj[0],bs2);CHKERRQ(ierr);
@@ -438,7 +438,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
       ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
 
-    /* Mark diagonal and invert diagonal for simplier triangular solves */
+    /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscArraycpy(pv,rtmp+bs2*pj[0],bs2);CHKERRQ(ierr);

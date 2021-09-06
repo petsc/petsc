@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
 /*TEST
 
    build:
-      requires: viennacl define(PETSC_HAVE_VIENNACL_NO_CUDA)
+      requires: viennacl defined(PETSC_HAVE_VIENNACL_NO_CUDA)
 
    test:
       nsize: 1

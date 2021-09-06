@@ -49,7 +49,7 @@ cdef getprefix(prefix, deft=None):
     if prefix.count(' '):
         raise ValueError('option prefix should not have spaces')
     if prefix.startswith('-'):
-        raise ValueError('option prefix should not start with a hypen')
+        raise ValueError('option prefix should not start with a hyphen')
     return prefix
 
 #

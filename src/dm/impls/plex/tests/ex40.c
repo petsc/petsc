@@ -31,6 +31,10 @@ int main(int argc, char **argv)
 
 /*TEST
   test:
+    suffix: ref_seg
+    args: -dm_plex_reference_cell_domain -dm_plex_cell segment -dm_refine 1 -dm_plex_check_all
+
+  test:
     suffix: ref_tri
     args: -dm_plex_reference_cell_domain -dm_plex_cell triangle -dm_refine 2 -dm_plex_check_all
 
@@ -85,31 +89,42 @@ int main(int argc, char **argv)
     args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_quadrilateral_prism -dm_refine 2 -dm_plex_check_all
 
   test:
-    suffix: ref_tri_tobox
-    args: -dm_plex_reference_cell_domain -dm_plex_cell triangle -dm_plex_cell_refiner tobox -dm_coord_space 0 -dm_refine 2 -dm_plex_check_all
+    suffix: ref_pyramid
+    args: -dm_plex_reference_cell_domain -dm_plex_cell pyramid -dm_refine 2 -dm_plex_check_all
 
-  test:
-    suffix: box_tri_tobox
-    requires: triangle
-    nsize: {{1 3 5}}
-    args: -dm_distribute -dm_plex_box_faces 3,3 -dm_plex_cell_refiner tobox -dm_coord_space 0 -dm_refine 2 -dm_plex_check_all
+  testset:
+    args: -dm_coord_space 0 -dm_plex_transform_type refine_tobox -dm_plex_check_all
 
-  test:
-    suffix: ref_tet_tobox
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_plex_cell_refiner tobox -dm_coord_space 0 -dm_refine 2 -dm_plex_check_all
+    test:
+      suffix: ref_tri_tobox
+      args: -dm_plex_reference_cell_domain -dm_plex_cell triangle -dm_refine 2
 
-  test:
-    suffix: box_tet_tobox
-    requires: ctetgen
-    nsize: {{1 3 5}}
-    args: -dm_distribute -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_plex_cell_refiner tobox -dm_coord_space 0 -dm_refine 2 -dm_plex_check_all
+    test:
+      suffix: box_tri_tobox
+      requires: triangle
+      nsize: {{1 3 5}}
+      args: -dm_distribute -dm_plex_box_faces 3,3 -dm_refine 2
 
-  test:
-    suffix: ref_trip_tobox
-    args: -dm_plex_reference_cell_domain -dm_plex_cell triangular_prism -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
+    test:
+      suffix: ref_tet_tobox
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -dm_refine 2
 
-  test:
-    suffix: ref_ttrip_tobox
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_triangular_prism -dm_plex_cell_refiner tobox -dm_refine 2 -dm_plex_check_all
+    test:
+      suffix: box_tet_tobox
+      requires: ctetgen
+      nsize: {{1 3 5}}
+      args: -dm_distribute -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_refine 2
+
+    test:
+      suffix: ref_trip_tobox
+      args: -dm_plex_reference_cell_domain -dm_plex_cell triangular_prism -dm_refine 2
+
+    test:
+      suffix: ref_ttrip_tobox
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_triangular_prism -dm_refine 2
+
+    test:
+      suffix: ref_tquadp_tobox
+      args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_quadrilateral_prism -dm_refine 2
 
 TEST*/

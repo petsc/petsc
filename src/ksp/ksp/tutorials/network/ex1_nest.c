@@ -337,7 +337,7 @@ int main(int argc,char ** argv)
 /*TEST
 
    build:
-      requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+      requires: !complex double defined(PETSC_HAVE_ATTRIBUTEALIGNED)
 
    test:
       args: -ksp_converged_reason

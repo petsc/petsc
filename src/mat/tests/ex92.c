@@ -127,7 +127,7 @@ int main(int argc,char **args)
         ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%d]: %d\n",rank,i,sz);CHKERRQ(ierr);
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
-    } else { /* Test all rows and colums */
+    } else { /* Test all rows and columns */
       sz   = M;
       ierr = ISCreateStride(PETSC_COMM_SELF,sz,0,1,is1+i);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,sz,0,1,is2+i);CHKERRQ(ierr);

@@ -83,7 +83,7 @@
 !/*TEST
 !
 !     build:
-!       requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+!       requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
 !
 !     test:
 !        args: -binary_read_double -options_left false

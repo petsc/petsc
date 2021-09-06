@@ -1496,7 +1496,7 @@ PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
 
   Input Parameters:
 + dm - the DM object
-. count - The minium size
+. count - The minimum size
 - dtype - MPI data type, often MPIU_REAL, MPIU_SCALAR, MPIU_INT)
 
   Output Parameter:
@@ -1544,7 +1544,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
 
   Input Parameters:
 + dm - the DM object
-. count - The minium size
+. count - The minimum size
 - dtype - MPI data type, often MPIU_REAL, MPIU_SCALAR, MPIU_INT
 
   Output Parameter:
@@ -5878,16 +5878,19 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
     PetscInt Nbd, bd;
 
     ierr = DMGetRegionNumDS(dm, s, &label, &fields, &ds);CHKERRQ(ierr);
+    /* TODO: We need to change all keys from labels in the old DM to labels in the new DM */
     ierr = DMTransferDS_Internal(newdm, label, fields, ds);CHKERRQ(ierr);
     /* Commplete new labels in the new DS */
     ierr = DMGetRegionDS(newdm, label, NULL, &newds);CHKERRQ(ierr);
     ierr = PetscDSGetNumBoundary(newds, &Nbd);CHKERRQ(ierr);
     for (bd = 0; bd < Nbd; ++bd) {
-      DMLabel  label;
-      PetscInt field;
+      PetscWeakForm wf;
+      DMLabel       label;
+      PetscInt      field;
 
-      ierr = PetscDSGetBoundary(newds, bd, NULL, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscDSGetBoundary(newds, bd, &wf, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = DMCompleteBoundaryLabel_Internal(newdm, newds, field, bd, label);CHKERRQ(ierr);
+      ierr = PetscWeakFormReplaceLabel(wf, label);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -9631,7 +9634,7 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
 . dm     - The DM
 
   Output Parameter:
-. numAux - The nubmer of auxiliary data vectors
+. numAux - The number of auxiliary data vectors
 
   Level: advanced
 
@@ -9776,5 +9779,180 @@ PetscErrorCode DMCopyAuxiliaryVec(DM dm, DM dmNew)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscHMapAuxDestroy(&dmNew->auxData);CHKERRQ(ierr);
   ierr = PetscHMapAuxDuplicate(dm->auxData, &dmNew->auxData);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPolytopeMatchOrientation - Determine an orientation that takes the source face arrangement to the target face arrangement
+
+  Not collective
+
+  Input Parameters:
++ ct         - The DMPolytopeType
+. sourceCone - The source arrangement of faces
+- targetCone - The target arrangement of faces
+
+  Output Parameters:
++ ornt  - The orientation which will take the source arrangement to the target arrangement
+- found - Flag indicating that a suitable orientation was found
+
+  Level: advanced
+
+.seealso: DMPolytopeGetOrientation(), DMPolytopeMatchVertexOrientation()
+@*/
+PetscErrorCode DMPolytopeMatchOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt, PetscBool *found)
+{
+  const PetscInt cS = DMPolytopeTypeGetConeSize(ct);
+  const PetscInt nO = DMPolytopeTypeGetNumArrangments(ct)/2;
+  PetscInt       o, c;
+
+  PetscFunctionBegin;
+  if (!nO) {*ornt = 0; *found = PETSC_TRUE; PetscFunctionReturn(0);}
+  for (o = -nO; o < nO; ++o) {
+    const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, o);
+
+    for (c = 0; c < cS; ++c) if (sourceCone[arr[c*2]] != targetCone[c]) break;
+    if (c == cS) {*ornt = o; break;}
+  }
+  *found = o == nO ? PETSC_FALSE : PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPolytopeGetOrientation - Determine an orientation that takes the source face arrangement to the target face arrangement
+
+  Not collective
+
+  Input Parameters:
++ ct         - The DMPolytopeType
+. sourceCone - The source arrangement of faces
+- targetCone - The target arrangement of faces
+
+  Output Parameters:
+. ornt  - The orientation which will take the source arrangement to the target arrangement
+
+  Note: This function will fail if no suitable orientation can be found.
+
+  Level: advanced
+
+.seealso: DMPolytopeMatchOrientation(), DMPolytopeGetVertexOrientation()
+@*/
+PetscErrorCode DMPolytopeGetOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt)
+{
+  PetscBool      found;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPolytopeMatchOrientation(ct, sourceCone, targetCone, ornt, &found);CHKERRQ(ierr);
+  if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find orientation for %s", DMPolytopeTypes[ct]);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPolytopeMatchVertexOrientation - Determine an orientation that takes the source vertex arrangement to the target vertex arrangement
+
+  Not collective
+
+  Input Parameters:
++ ct         - The DMPolytopeType
+. sourceVert - The source arrangement of vertices
+- targetVert - The target arrangement of vertices
+
+  Output Parameters:
++ ornt  - The orientation which will take the source arrangement to the target arrangement
+- found - Flag indicating that a suitable orientation was found
+
+  Level: advanced
+
+.seealso: DMPolytopeGetOrientation(), DMPolytopeMatchOrientation()
+@*/
+PetscErrorCode DMPolytopeMatchVertexOrientation(DMPolytopeType ct, const PetscInt sourceVert[], const PetscInt targetVert[], PetscInt *ornt, PetscBool *found)
+{
+  const PetscInt cS = DMPolytopeTypeGetNumVertices(ct);
+  const PetscInt nO = DMPolytopeTypeGetNumArrangments(ct)/2;
+  PetscInt       o, c;
+
+  PetscFunctionBegin;
+  if (!nO) {*ornt = 0; *found = PETSC_TRUE; PetscFunctionReturn(0);}
+  for (o = -nO; o < nO; ++o) {
+    const PetscInt *arr = DMPolytopeTypeGetVertexArrangment(ct, o);
+
+    for (c = 0; c < cS; ++c) if (sourceVert[arr[c]] != targetVert[c]) break;
+    if (c == cS) {*ornt = o; break;}
+  }
+  *found = o == nO ? PETSC_FALSE : PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPolytopeGetVertexOrientation - Determine an orientation that takes the source vertex arrangement to the target vertex arrangement
+
+  Not collective
+
+  Input Parameters:
++ ct         - The DMPolytopeType
+. sourceCone - The source arrangement of vertices
+- targetCone - The target arrangement of vertices
+
+  Output Parameters:
+. ornt  - The orientation which will take the source arrangement to the target arrangement
+
+  Note: This function will fail if no suitable orientation can be found.
+
+  Level: advanced
+
+.seealso: DMPolytopeMatchVertexOrientation(), DMPolytopeGetOrientation()
+@*/
+PetscErrorCode DMPolytopeGetVertexOrientation(DMPolytopeType ct, const PetscInt sourceCone[], const PetscInt targetCone[], PetscInt *ornt)
+{
+  PetscBool      found;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPolytopeMatchVertexOrientation(ct, sourceCone, targetCone, ornt, &found);CHKERRQ(ierr);
+  if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find orientation for %s", DMPolytopeTypes[ct]);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPolytopeInCellTest - Check whether a point lies inside the reference cell of given type
+
+  Not collective
+
+  Input Parameters:
++ ct    - The DMPolytopeType
+- point - Coordinates of the point
+
+  Output Parameters:
+. inside  - Flag indicating whether the point is inside the reference cell of given type
+
+  Level: advanced
+
+.seealso: DMLocatePoints()
+@*/
+PetscErrorCode DMPolytopeInCellTest(DMPolytopeType ct, const PetscReal point[], PetscBool *inside)
+{
+  PetscReal sum = 0.0;
+  PetscInt  d;
+
+  PetscFunctionBegin;
+  *inside = PETSC_TRUE;
+  switch (ct) {
+  case DM_POLYTOPE_TRIANGLE:
+  case DM_POLYTOPE_TETRAHEDRON:
+    for (d = 0; d < DMPolytopeTypeGetDim(ct); ++d) {
+      if (point[d] < -1.0) {*inside = PETSC_FALSE; break;}
+      sum += point[d];
+    }
+    if (sum > PETSC_SMALL) {*inside = PETSC_FALSE; break;}
+    break;
+  case DM_POLYTOPE_QUADRILATERAL:
+  case DM_POLYTOPE_HEXAHEDRON:
+    for (d = 0; d < DMPolytopeTypeGetDim(ct); ++d)
+      if (PetscAbsReal(point[d]) > 1.+PETSC_SMALL) {*inside = PETSC_FALSE; break;}
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported polytope type %s", DMPolytopeTypes[ct]);
+  }
   PetscFunctionReturn(0);
 }

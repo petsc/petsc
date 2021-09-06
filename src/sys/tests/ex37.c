@@ -80,6 +80,6 @@ PetscErrorCode TestPetscVSNPrintf(char *str,size_t l_str,size_t *fullLength,cons
 
    test:
      nsize: 2
-     requires: define(PETSC_HAVE_VA_COPY)
+     requires: defined(PETSC_HAVE_VA_COPY)
 
 TEST*/

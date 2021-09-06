@@ -98,9 +98,9 @@ int main(int argc, char **argv)
 
 /*TEST
   build:
-    requires: !define(PETSC_USE_64BIT_INDICES) double !complex !define(PETSCTEST_VALGRIND)
+    requires: !defined(PETSC_USE_64BIT_INDICES) double !complex !defined(PETSCTEST_VALGRIND)
 
-  # Mempry checks cannot be included in tests because the allocated memory differs among environments
+  # Memory checks cannot be included in tests because the allocated memory differs among environments
   testset:
     args: -malloc_requested_size -dm_plex_box_faces 5,5 -check_memory 0
     test:

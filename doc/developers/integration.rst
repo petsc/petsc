@@ -20,7 +20,7 @@ The ``release`` branch contains the latest PETSc release including bug-fixes.
 
 Bug-fix branches for the release should start from ``release``.
 
-.. code-block:: none
+.. code-block:: console
 
    $ git checkout release
    $ git pull
@@ -41,7 +41,7 @@ on recently-added features in PETSc should follow ``main``.
 
 New feature branches and bug-fixes for ``main`` :any:`should start  <sec_developing_a_new_feature>` from ``main``.
 
-.. code-block:: none
+.. code-block:: console
 
    $ git checkout main
    $ git pull
@@ -65,10 +65,19 @@ Before filing an MR
    separate contributions, submit them in sequence with different
    branches and merge requests instead of all at once.
 -  Include tests which cover any changes to the source code.
--  Run the full test suite on your machine -
-   i.e ``make alltests TIMEOUT=600``
--  Run source checker on your machine -
-   i.e ``make checkbadSource``
+-  Run the full test suite on your machine
+
+   .. code-block:: console
+
+      $ make alltests TIMEOUT=600
+
+-  Run the source checkers on your machine
+
+   .. code-block:: console
+
+      $ make checkbadSource
+      $ make lint
+
 -  :any:`sec_squash_excessive_commits`
 
 
@@ -152,7 +161,7 @@ Fork MR
 -  Fork users cannot run the pipeline or set labels.
    Hence one of the developers has to help with these processes. (If necessary - ping a developer
    in the comments section of the MR page)
-   
+
 Testing
 -------
 
@@ -273,17 +282,17 @@ There are two ways (either is fine) to comment directly on the submitted source 
 
 .. raw:: html
 
-         
+
    <div name="raw_15" id="thumbwrap"> <a class="thumb" href="#raw_15"><img src="../../_images/changes-or-commits.png" alt=""><span><img src="../../_images/changes-or-commits.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
-   
+
 Click on the left of the code to make a comment on that line of code.
 
 .. raw:: html
 
    <div name="raw_16" id="thumbwrap"> <a class="thumb" href="#raw_16"><img src="../../_images/start-comment-on-code.png" alt=""><span><img src="../../_images/start-comment-on-code.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
-   
+
 
 Write the review text and then press ``Start a Review``
 
@@ -291,14 +300,14 @@ Write the review text and then press ``Start a Review``
 
    <div name="raw_17" id="thumbwrap"> <a class="thumb" href="#raw_17"><img src="../../_images/write-review-text.png" alt=""><span><img src="../../_images/write-review-text.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
-   
+
 You can also provide an exact replacement for the line you would like changed
 
 .. raw:: html
 
    <div name="raw_18" id="thumbwrap"> <a class="thumb" href="#raw_18"><img src="../../_images/provide-suggestion.png" alt=""><span><img src="../../_images/provide-suggestion.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
-   
+
 
 Gitlab MRs  use ``threads`` to track discussions on MR.
 This allows Gitlab and reviewers to track what threads are not yet
@@ -336,7 +345,7 @@ You can determine who must approve your MR by clicking on the ``Viewer eligible 
    <div name="raw_22" id="thumbwrap"> <a class="thumb" href="#raw_22"><img src="../../_images/approvers.png" alt=""><span><img src="../../_images/approvers.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
 
-   
+
 If the **submitter** feels the MR is not getting reviewed in a timely
 manner they may ``Assign`` (upper right corner of the screen) to potential
 reviewers and request in the discussion these same people to review by @
@@ -395,7 +404,7 @@ Error in compiling the source code.
    <div name="raw_25" id="thumbwrap"> <a class="thumb" href="#raw_25"><img src="../../_images/another-failure.png" alt=""><span><img src="../../_images/another-failure.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
 
-Error in running configure.  
+Error in running configure.
 
 .. raw:: html
 
@@ -424,7 +433,7 @@ the pipeline on the pipeline page,
 
    <div name="raw_29" id="thumbwrap"> <a class="thumb" href="#raw_29"><img src="../../_images/cancel-pipeline.png" alt=""><span><img src="../../_images/cancel-pipeline.png" alt=""></span></a> </div></p>
    <div class="clearfix"></div>
-   
+
 then retry the failed jobs by using the  ``Retry``
 circular button to the right of job name.
 
@@ -520,7 +529,7 @@ Starting a new feature branch
 -----------------------------
 
 -  Obtain the PETSc source
-   
+
    - If you have write access to the PETSc `GitLab <https://gitlab.com/petsc/petsc>`__ repository
 
      - ``git clone git@gitlab.com/petsc/petsc``  (or just use a clone you already have)
@@ -598,7 +607,7 @@ Managing branches
 -  Show available remotes: ``git remote -v`` (you usually only have one)
 
 -  Checkout and track a branch available on remote:
-   ``git checkout -t knepley/dm-hexfem`` 
+   ``git checkout -t knepley/dm-hexfem``
 
    If you have multiple remotes defined, use
    ``git checkout -t <remotename>/knepley/dm-hexfem``,

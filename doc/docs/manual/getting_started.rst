@@ -497,7 +497,7 @@ deal of checking for memory corruption (writing outside of array bounds
 etc). The macro ``CHKMEMQ`` can be called anywhere in the code to check
 the current status of the memory for corruption. By putting several (or
 many) of these macros into your code you can usually easily track down
-in what small segment of your code the corruption has occured. One can
+in what small segment of your code the corruption has occurred. One can
 also use Valgrind to track down memory errors; see the `FAQ <https://petsc.org/release/faq/>`__.
 
 .. _sec_parallel:

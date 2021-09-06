@@ -145,6 +145,7 @@ include "petscdmshell.pxi"
 include "petscdmlabel.pxi"
 include "petscdmswarm.pxi"
 include "petscpartitioner.pxi"
+include "petscadapt.pxi"
 
 # --------------------------------------------------------------------
 

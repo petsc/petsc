@@ -112,7 +112,7 @@
 
 !/*TEST
 !  build:
-!    requires: define(PETSC_HAVE_FORTRAN_TYPE_STAR)
+!    requires: defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
 !
 !  test:
 !    nsize: 3

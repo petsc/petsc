@@ -116,64 +116,64 @@ int main(int argc,char **args)
       requires: scalapack
 
    test:
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij
       output_file: output/ex244.out
 
    test:
       suffix: 2
       nsize: 8
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij
       output_file: output/ex244.out
 
    test:
       suffix: 2_dense
       nsize: 8
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -orig_mat_type dense
       output_file: output/ex244_dense.out
 
    test:
       suffix: 2_scalapack
       nsize: 8
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -orig_mat_type scalapack
       output_file: output/ex244_scalapack.out
 
    test:
       suffix: 2_sbaij
       nsize: 8
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B -orig_mat_type sbaij
       output_file: output/ex244_sbaij.out
 
    test:
       suffix: complex
-      requires: complex double datafilespath !define(PETSC_USE_64BIT_INDICES)
+      requires: complex double datafilespath !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/nimrod/small_112905
       output_file: output/ex244.out
 
    test:
       suffix: complex_2
       nsize: 4
-      requires: complex double datafilespath !define(PETSC_USE_64BIT_INDICES)
+      requires: complex double datafilespath !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/nimrod/small_112905
       output_file: output/ex244.out
 
    test:
       suffix: dense
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -orig_mat_type dense
 
    test:
       suffix: scalapack
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -orig_mat_type scalapack
 
    test:
       suffix: sbaij
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B -orig_mat_type sbaij
 
 TEST*/

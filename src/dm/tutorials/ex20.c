@@ -37,6 +37,7 @@ PetscErrorCode pic_insert_DMDA(PetscInt dim)
 
   /* Create the DMSwarm */
   ierr = DMCreate(PETSC_COMM_WORLD,&swarm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)swarm,"Swarm");CHKERRQ(ierr);
   ierr = DMSetType(swarm,DMSWARM);CHKERRQ(ierr);
   ierr = DMSetDimension(swarm,dim);CHKERRQ(ierr);
 
@@ -155,6 +156,7 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
     ierr = DMDestroy(&celldm);CHKERRQ(ierr);
     celldm = distributedMesh;
   }
+  ierr = PetscObjectSetName((PetscObject)celldm,"Cells");CHKERRQ(ierr);
   ierr = DMSetFromOptions(celldm);CHKERRQ(ierr);
   {
     PetscInt     numComp[] = {1};
@@ -180,6 +182,7 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
 
   /* Create the DMSwarm */
   ierr = DMCreate(PETSC_COMM_WORLD,&swarm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)swarm,"Swarm");CHKERRQ(ierr);
   ierr = DMSetType(swarm,DMSWARM);CHKERRQ(ierr);
   ierr = DMSetDimension(swarm,dim);CHKERRQ(ierr);
 
@@ -224,6 +227,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
     ierr = DMDestroy(&celldm);CHKERRQ(ierr);
     celldm = distributedMesh;
   }
+  ierr = PetscObjectSetName((PetscObject)celldm,"Cells");CHKERRQ(ierr);
   ierr = DMSetFromOptions(celldm);CHKERRQ(ierr);
   {
     PetscInt     numComp[] = {1};
@@ -248,6 +252,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
   }
 
   ierr = DMCreate(PETSC_COMM_WORLD,&swarm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)swarm,"Swarm");CHKERRQ(ierr);
   ierr = DMSetType(swarm,DMSWARM);CHKERRQ(ierr);
   ierr = DMSetDimension(swarm,dim);CHKERRQ(ierr);
 
@@ -306,14 +311,14 @@ int main(int argc,char **args)
    test:
       args:
       requires: !complex double
-      filter: grep -v DM_ | grep -v atomic
+      filter: grep -v atomic
       filter_output: grep -v atomic
 
    test:
       suffix: 2
       requires: triangle double !complex
       args: -mode 1
-      filter: grep -v DM_ | grep -v atomic
+      filter: grep -v atomic
       filter_output: grep -v atomic
 
 TEST*/

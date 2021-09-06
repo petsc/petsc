@@ -816,6 +816,8 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct p
 #else
 #define MPIU_2INT MPI_2INT
 #endif
+PETSC_EXTERN MPI_Datatype MPI_4INT;
+PETSC_EXTERN MPI_Datatype MPIU_4INT;
 
 PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power)
 {

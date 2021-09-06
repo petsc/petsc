@@ -51,7 +51,7 @@ import os
 import re
 import sys
 import platform
-# workarround for python2.2 which does not have pathsep
+# workaround for python2.2 which does not have pathsep
 if not hasattr(os.path,'pathsep'): os.path.pathsep=':'
 
 import pickle
@@ -519,6 +519,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
         lines = [s for s in lines if not self.warningRE.search(s)]
+      #Intel
+      lines = [s for s in lines if s.find(": command line warning #10121: overriding") < 0]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
@@ -552,6 +554,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find(' was built for newer macOS version') < 0]
       lines = [s for s in lines if s.find(' was built for newer OSX version') < 0]
       lines = [s for s in lines if s.find(' stack subq instruction is too different from dwarf stack size') < 0]
+      # Nvidia linker
+      lines = [s for s in lines if s.find('nvhpc.ld contains output sections') < 0]
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Linker output after filtering:\n"+output+":\n")

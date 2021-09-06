@@ -272,7 +272,7 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt,Mat*[]);
 
   Input Parameters:
 +  A,B - square bs by bs arrays stored in column major order
--  W   - bs*bs work arrary
+-  W   - bs*bs work array
 
   Output Parameter:
 .  A = A * B
@@ -314,7 +314,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_2(PetscS
 
   Input Parameters:
 +  A,B - square bs by bs arrays stored in column major order
--  W   - bs*bs work arrary
+-  W   - bs*bs work array
 
   Output Parameter:
 .  A = A * B
@@ -366,7 +366,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_3(PetscS
 
   Input Parameters:
 +  A,B - square bs by bs arrays stored in column major order
--  W   - bs*bs work arrary
+-  W   - bs*bs work array
 
   Output Parameter:
 .  A = A * B
@@ -1065,7 +1065,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscS
 
   Input Parameters:
 +  A,B - square bs by bs arrays stored in column major order
--  W   - bs*bs work arrary
+-  W   - bs*bs work array
 
   Output Parameter:
 .  A = A * B

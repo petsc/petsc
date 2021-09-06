@@ -1,5 +1,6 @@
-DM Object: 1 MPI processes
+DM Object: Cells 1 MPI processes
   type: plex
+Cells in 2 dimensions:
   0-cells: 15
   1-cells: 30
   2-cells: 16
@@ -8,29 +9,30 @@ Labels:
   depth: 3 strata with value/size (0 (15), 1 (30), 2 (16))
   marker: 1 strata with value/size (1 (24))
   Face Sets: 1 strata with value/size (1 (12))
+DM Object: Swarm 1 MPI processes
   type: swarm
-DMSwarmDataBucketView:
-  L                  = 144
-  buffer             = 0
-  allocated          = 144
-  nfields registered = 6
+DMSwarmDataBucketView: 
+  L                  = 144 
+  buffer             = 0 
+  allocated          = 144 
+  nfields registered = 6 
     [  0]     DMSwarm_pid : Mem. usage       = 1.15e-03 (MB) [rank0]
-                            blocksize        = 1
-                            atomic size      = 8
+                            blocksize        = 1 
+                            atomic size      = 8 
     [  1]    DMSwarm_rank : Mem. usage       = 5.76e-04 (MB) [rank0]
-                            blocksize        = 1
-                            atomic size      = 4
+                            blocksize        = 1 
+                            atomic size      = 4 
     [  2] DMSwarmPIC_coor : Mem. usage       = 2.30e-03 (MB) [rank0]
-                            blocksize        = 2
+                            blocksize        = 2 
                             atomic size      = 16 [full block, bs=2]
-                            atomic size/item = 8
+                            atomic size/item = 8 
     [  3]  DMSwarm_cellid : Mem. usage       = 5.76e-04 (MB) [rank0]
-                            blocksize        = 1
-                            atomic size      = 4
+                            blocksize        = 1 
+                            atomic size      = 4 
     [  4]       viscosity : Mem. usage       = 1.15e-03 (MB) [rank0]
-                            blocksize        = 1
-                            atomic size      = 8
+                            blocksize        = 1 
+                            atomic size      = 8 
     [  5]         density : Mem. usage       = 1.15e-03 (MB) [rank0]
-                            blocksize        = 1
-                            atomic size      = 8
+                            blocksize        = 1 
+                            atomic size      = 8 
   Total mem. usage                           = 6.91e-03 (MB) (collective)

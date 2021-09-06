@@ -102,7 +102,7 @@ int main(int argc,char **argv)
   ierr = TSSetMaxTime(ts,final_time);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
-  /* The adapative time step controller is forced to take constant time steps. */
+  /* The adaptive time step controller is forced to take constant time steps. */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
 

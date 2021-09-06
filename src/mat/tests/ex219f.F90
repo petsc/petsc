@@ -4,15 +4,16 @@ program newnonzero
  implicit none
 
  Mat :: A
- PetscInt :: n,m,idxm(1),idxn(1),nl1,nl2,one,i
+ PetscInt :: n,m,idxm(1),idxn(1),nl1,nl2,zero,one,i
  PetscScalar :: v(1)
  PetscErrorCode :: ierr
 
  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+ zero = 0
  one = 1
  n=3
  m=n
- call MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,m,1,PETSC_NULL_INTEGER,0,PETSC_NULL_INTEGER,A,ierr)
+ call MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,m,one,PETSC_NULL_INTEGER,zero,PETSC_NULL_INTEGER,A,ierr)
 
  call MatGetOwnershipRange(A,nl1,nl2,ierr)
  do i=nl1,nl2-1
@@ -53,7 +54,7 @@ program newnonzero
 !       filter: Error:
 !
 !     test:
-!       requires: define(PETSC_USE_INFO)
+!       requires: defined(PETSC_USE_INFO)
 !       suffix: 2
 !       nsize: 2
 !       args: -info

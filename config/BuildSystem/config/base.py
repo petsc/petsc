@@ -54,7 +54,7 @@ Output
   The object may define a headerPrefix member, which will be appended, followed
 by an underscore, to every define which is output from it. Similarly, a substPrefix
 can be defined which applies to every substitution from the object. Typedefs and
-function prototypes are placed in a separate header in order to accomodate languges
+function prototypes are placed in a separate header in order to accommodate languges
 such as Fortran whose preprocessor can sometimes fail at these statements.
 '''
 import script

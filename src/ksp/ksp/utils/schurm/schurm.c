@@ -181,7 +181,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
     Developer Notes:
     The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
-    remove redundancy and be clearer and simplier.
+    remove redundancy and be clearer and simpler.
 
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdateSubMatrices(), MatCreateTranspose(), MatGetSchurComplement(),
           MatSchurComplementGetPmat()
@@ -598,7 +598,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
     Developer Notes:
     The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
-    remove redundancy and be clearer and simplier.
+    remove redundancy and be clearer and simpler.
 
     Level: advanced
 
@@ -836,7 +836,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 
     Developer Notes:
     The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
-    remove redundancy and be clearer and simplier.
+    remove redundancy and be clearer and simpler.
 
     Level: advanced
 

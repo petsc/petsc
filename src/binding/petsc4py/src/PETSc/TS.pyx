@@ -157,6 +157,10 @@ cdef class TS(Object):
         ts_type = str2bytes(ts_type, &cval)
         CHKERR( TSARKIMEXSetType(self.ts, cval) )
 
+    def setARKIMEXFullyImplicit(self, flag):
+        cdef PetscBool bval = asBool(flag)
+        CHKERR( TSARKIMEXSetFullyImplicit(self.ts, bval) )
+
     def getType(self):
         cdef PetscTSType cval = NULL
         CHKERR( TSGetType(self.ts, &cval) )
@@ -733,6 +737,21 @@ cdef class TS(Object):
     def interpolate(self, t, Vec u):
         cdef PetscReal rval = asReal(t)
         CHKERR( TSInterpolate(self.ts, rval, u.vec) )
+
+    def setStepLimits(self, hmin, hmax):
+        cdef PetscTSAdapt tsadapt = NULL
+        cdef PetscReal hminr = toReal(hmin)
+        cdef PetscReal hmaxr = toReal(hmax)
+        TSGetAdapt(self.ts, &tsadapt)
+        CHKERR( TSAdaptSetStepLimits(tsadapt, hminr, hmaxr) )
+
+    def getStepLimits(self):
+        cdef PetscTSAdapt tsadapt = NULL
+        cdef PetscReal hminr = 0.
+        cdef PetscReal hmaxr = 0.
+        TSGetAdapt(self.ts, &tsadapt)
+        CHKERR( TSAdaptGetStepLimits(tsadapt, &hminr, &hmaxr) )
+        return (asReal(hminr), asReal(hmaxr))
 
     # --- Adjoint methods ---
 

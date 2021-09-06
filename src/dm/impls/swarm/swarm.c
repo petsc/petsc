@@ -1305,7 +1305,7 @@ PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
 -  remove_sent_points - flag indicating if sent points should be removed from the current MPI-rank
 
    Notes:
-   The DM will be modified to accomodate received points.
+   The DM will be modified to accommodate received points.
    If remove_sent_points = PETSC_TRUE, any points that were sent will be removed from the DM.
    Different styles of migration are supported. See DMSwarmSetMigrateType().
 

@@ -59,9 +59,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetMaxSizes(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSymmetrize(DM);
 PETSC_EXTERN PetscErrorCode DMPlexStratify(DM);
 PETSC_EXTERN PetscErrorCode DMPlexEqual(DM,DM,PetscBool*);
-PETSC_EXTERN PetscErrorCode DMPlexReverseCell(DM, PetscInt);
-PETSC_EXTERN PetscErrorCode DMPlexOrientCell(DM,PetscInt,PetscInt,const PetscInt[]);
-PETSC_EXTERN PetscErrorCode DMPlexCompareOrientations(DM, PetscInt, PetscInt, const PetscInt [], PetscInt *, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexOrientPoint(DM,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexOrient(DM);
 PETSC_EXTERN PetscErrorCode DMPlexPreallocateOperator(DM, PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscInt[], Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetPointLocal(DM,PetscInt,PetscInt*,PetscInt*);
@@ -138,6 +136,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGetFullJoin(DM, PetscInt, const PetscInt [], P
 PETSC_EXTERN PetscErrorCode DMPlexRestoreJoin(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 PETSC_EXTERN PetscErrorCode DMPlexGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMPlexGetCompressedClosure(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscSection *, IS *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMPlexRestoreCompressedClosure(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscSection *, IS *, const PetscInt **);
 
 /* Mesh Generation */
 PETSC_EXTERN PetscErrorCode DMPlexGenerate(DM, const char [], PetscBool , DM *);
@@ -254,8 +254,6 @@ PETSC_EXTERN PetscErrorCode DMPlexSetRefinementFunction(DM, PetscErrorCode (*)(c
 PETSC_EXTERN PetscErrorCode DMPlexCreateCoarsePointIS(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetRegularRefinement(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexSetRegularRefinement(DM, PetscBool);
-PETSC_EXTERN PetscErrorCode DMPlexGetCellRefinerType(DM, DMPlexCellRefinerType *);
-PETSC_EXTERN PetscErrorCode DMPlexSetCellRefinerType(DM, DMPlexCellRefinerType);
 
 /* Support for cell-vertex meshes */
 PETSC_EXTERN PetscErrorCode DMPlexGetNumFaceVertices(DM, PetscInt, PetscInt, PetscInt *);
@@ -441,14 +439,6 @@ PETSC_EXTERN PetscErrorCode DMPlexSnapToGeomModel(DM, PetscInt, const PetscScala
 PETSC_EXTERN PetscErrorCode DMPlexGlobalToLocalBasis(DM, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexLocalToGlobalBasis(DM, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexCreateBasisRotation(DM, PetscReal, PetscReal, PetscReal);
-
-PETSC_EXTERN PetscErrorCode DMPlexCellRefinerCreate(DM, DMPlexCellRefiner *);
-PETSC_EXTERN PetscErrorCode DMPlexCellRefinerSetUp(DMPlexCellRefiner);
-PETSC_EXTERN PetscErrorCode DMPlexCellRefinerDestroy(DMPlexCellRefiner *);
-PETSC_EXTERN PetscErrorCode DMPlexCellRefinerRefine(DMPlexCellRefiner, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
-PETSC_EXTERN PetscErrorCode DMPlexCellRefinerGetAffineTransforms(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
-PETSC_EXTERN PetscErrorCode DMPlexCellRefinerGetAffineFaceTransforms(DMPlexCellRefiner, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);
-PETSC_EXTERN PetscErrorCode DMPlexRefineUniform(DM, DMPlexCellRefiner, DM *);
 
 PETSC_EXTERN PetscErrorCode DMPlexTopologyView(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesView(DM, PetscViewer);

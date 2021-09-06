@@ -1,7 +1,13 @@
 #if !defined(PETSC_P4EST_PACKAGE_H)
 #define      PETSC_P4EST_PACKAGE_H
 #include <petscsys.h>
+#if defined(PETSC_HAVE_MPIUNI)
+#undef MPI_SUCCESS
+#endif
 #include <p4est_base.h>
+#if defined(PETSC_HAVE_MPIUNI)
+#define MPI_SUCCESS 0
+#endif
 
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_DEBUG)
 #include <setjmp.h>

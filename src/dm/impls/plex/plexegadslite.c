@@ -9,7 +9,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, ego m
   DM             cdm;
   ego           *bodies;
   ego            geom, body, obj;
-  /* result has to hold derviatives, along with the value */
+  /* result has to hold derivatives, along with the value */
   double         params[3], result[18], paramsV[16*3], resultV[16*3], range[4];
   int            Nb, oclass, mtype, *senses, peri;
   Vec            coordinatesLocal;

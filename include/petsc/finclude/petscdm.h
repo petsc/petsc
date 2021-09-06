@@ -48,6 +48,16 @@
 #define DMP8EST     'p8est'
 #define DMSWARM     'swarm'
 
-#define DMPlexCellRefiner type(tDMPlexCellRefiner)
+#define DMPlexTransform type(tDMPlexTransform)
+
+#define DMPLEXREFINEREGULAR       'refine_regular'
+#define DMPLEXREFINEALFELD        'refine_alfeld'
+#define DMPLEXREFINEPOWELLSABIN   'refine_powell_sabin'
+#define DMPLEXREFINEBOUNDARYLAYER 'refine_boundary_layer'
+#define DMPLEXREFINESBR           'refine_sbr'
+#define DMPLEXREFINETOBOX         'refine_tobox'
+#define DMPLEXREFINETOSIMPLEX     'refine_tosimplex'
+#define DMPLEXEXTRUDE             'extrude'
+#define DMPLEXTRANSFORMFILTER     'transform_filter'
 
 #endif

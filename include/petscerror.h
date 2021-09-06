@@ -607,7 +607,6 @@ do { \
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
 M*/
 #define CHKERRXX(ierr)  do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_IN_CXX,0);}} while (0)
-
 #endif
 
 /*MC
@@ -634,10 +633,6 @@ $     CHKERRCXX(foo(1));
 M*/
 #define CHKERRCXX(func) do {try {func;} catch (const std::exception& e) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"%s", e.what()); }} while (0)
 
-/* TODO: SEK:  Need to figure out the hipsolver issues */
-#if defined(PETSC_HAVE_HIP)
-#define CHKERRHIPSOLVER(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"HIPSOLVER error %d",err);} while (0)
-#endif
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 

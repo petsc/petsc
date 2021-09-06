@@ -17,6 +17,52 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,MatType,MatReuse,M
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat,MatType,MatReuse,Mat*);
 
+PetscErrorCode MatGetColumnNorms_SeqBAIJ(Mat A,NormType type,PetscReal *norms)
+{
+  PetscErrorCode ierr;
+  Mat_SeqBAIJ    *a_aij = (Mat_SeqBAIJ*) A->data;
+  PetscInt       N,i;
+  PetscInt       ib,jb,bs = A->rmap->bs;
+  MatScalar      *a_val = a_aij->a;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
+  for (i=0; i<N; i++) norms[i] = 0.0;
+  if (type == NORM_2) {
+    for (i=a_aij->i[0]; i<a_aij->i[A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          norms[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val * *a_val);
+          a_val++;
+        }
+      }
+    }
+  } else if (type == NORM_1) {
+    for (i=a_aij->i[0]; i<a_aij->i[A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          norms[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val);
+          a_val++;
+        }
+      }
+    }
+  } else if (type == NORM_INFINITY) {
+    for (i=a_aij->i[0]; i<a_aij->i[A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          int col = A->cmap->rstart + a_aij->j[i] * bs + jb;
+          norms[col] = PetscMax(PetscAbsScalar(*a_val), norms[col]);
+          a_val++;
+        }
+      }
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  if (type == NORM_2) {
+    for (i=0; i<N; i++) norms[i] = PetscSqrtReal(norms[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
@@ -1210,7 +1256,6 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJGetArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJRestoreArray_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInvertBlockDiagonal_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetColumnIndices_C",NULL);CHKERRQ(ierr);
@@ -1955,7 +2000,7 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 /*
    This function returns an array of flags which indicate the locations of contiguous
    blocks that should be zeroed. for eg: if bs = 3  and is = [0,1,2,3,5,6,7,8,9]
-   then the resulting sizes = [3,1,1,3,1] correspondig to sets [(0,1,2),(3),(5),(6,7,8),(9)]
+   then the resulting sizes = [3,1,1,3,1] corresponding to sets [(0,1,2),(3),(5),(6,7,8),(9)]
    Assume: sizes should be long enough to hold all the values.
 */
 static PetscErrorCode MatZeroRows_SeqBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,PetscInt bs,PetscInt sizes[], PetscInt *bs_max)
@@ -1966,7 +2011,7 @@ static PetscErrorCode MatZeroRows_SeqBAIJ_Check_Blocks(PetscInt idx[],PetscInt n
   PetscFunctionBegin;
   for (i=0,j=0; i<n; j++) {
     row = idx[i];
-    if (row%bs!=0) { /* Not the begining of a block */
+    if (row%bs!=0) { /* Not the beginning of a block */
       sizes[j] = 1;
       i++;
     } else if (i+bs > n) { /* complete block doesn't exist (at idx end) */
@@ -2722,7 +2767,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        MatMultHermitianTransposeAdd_SeqBAIJ,
                                        NULL,
                                /*124*/ NULL,
-                                       NULL,
+                                       MatGetColumnNorms_SeqBAIJ,
                                        MatInvertBlockDiagonal_SeqBAIJ,
                                        NULL,
                                        NULL,
@@ -3161,7 +3206,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJGetArray_C",MatSeqBAIJGetArray_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJRestoreArray_C",MatSeqBAIJRestoreArray_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatInvertBlockDiagonal_C",MatInvertBlockDiagonal_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);

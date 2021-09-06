@@ -590,6 +590,10 @@ cdef class SNES(Object):
         CHKERR( SNESGetIterationNumber(self.snes, &ival) )
         return toInt(ival)
 
+    def setForceIteration(self, force):
+        cdef PetscBool bval = asBool(force)
+        CHKERR( SNESSetForceIteration(self.snes, bval) )
+
     def setFunctionNorm(self, norm):
         cdef PetscReal rval = asReal(norm)
         CHKERR( SNESSetFunctionNorm(self.snes, rval) )
@@ -684,7 +688,7 @@ cdef class SNES(Object):
                 'alpha2'    : toReal(alpha2),
                 'threshold' : toReal(threshold),}
 
-    # --- matrix free / finite diferences ---
+    # --- matrix free / finite differences ---
 
     def setUseMF(self, flag=True):
         cdef PetscBool bval = flag
@@ -965,7 +969,7 @@ cdef class SNES(Object):
         def __get__(self):
             return self.reason < 0
 
-    # --- matrix free / finite diferences ---
+    # --- matrix free / finite differences ---
 
     property use_mf:
         def __get__(self):

@@ -10,7 +10,7 @@
 # - only look at sources where comments are stripped out (using gcc for that)
 # - get all lines with 'else' followed by a space or a curly brace
 # - remove all good uses of '} else {'
-# - remove all good uses of 'else {' preceeded by blanks only
+# - remove all good uses of 'else {' preceded by blanks only
 # - remove all good uses of '} else if (...) {'
 # - remove else with single command on same line
 # - remove preprocessor stuff

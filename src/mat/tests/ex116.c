@@ -260,13 +260,13 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       requires: !complex
 
    test:
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small
       output_file: output/ex116_1.out
 
    test:
       suffix: 2
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -test_syev -check_symmetry
 
 TEST*/

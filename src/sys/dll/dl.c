@@ -46,7 +46,7 @@ PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
-   occuring in directoryname and filename will be replaced with appropriate values.
+   occurring in directoryname and filename will be replaced with appropriate values.
 @*/
 PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,size_t llen,PetscBool  *found)
 {
@@ -116,7 +116,7 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
    If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
    when the library is opened.
 
-   ${PETSC_ARCH} occuring in directoryname and filename
+   ${PETSC_ARCH} occurring in directoryname and filename
    will be replaced with the appropriate value.
 
 .seealso: PetscLoadDynamicLibrary(), PetscDLLibraryAppend()

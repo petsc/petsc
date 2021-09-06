@@ -7,7 +7,7 @@
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <petscmat.h>
-#include <petsccublas.h>
+#include <petscdevice.h>
 
 #include "../land_tensors.h"
 #include <petscaijdevice.h>
@@ -110,7 +110,7 @@ PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, PetscReal nu_
     cerr = cudaMalloc((void **)&SData_d->w,      nip*szf);CHKERRCUDA(cerr); // kernel input
     cerr = cudaMemcpy(          SData_d->w, a_w, nip*szf,   cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
 
-    // allcoate space for dynamic data once
+    // allocate space for dynamic data once
     cerr = cudaMalloc((void **)&SData_d->Eq_m,       Nf*szf);CHKERRCUDA(cerr);
     cerr = cudaMalloc((void **)&SData_d->f,      nip*Nf*szs);CHKERRCUDA(cerr);
     cerr = cudaMalloc((void **)&SData_d->dfdx,   nip*Nf*szs);CHKERRCUDA(cerr);

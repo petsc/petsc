@@ -16,7 +16,7 @@ static char help[] = "Poiseuille flow problem. Viscous, laminar flow in a 2D cha
 /* Discretized with the cell-centered finite-volume method on a                */
 /* Cartesian grid with co-located variables. Variables ordered as              */
 /* [u1...uN v1...vN p1...pN]^T. Matrix [A00 A01; A10, A11] solved with         */
-/* PCFIELDSPLIT. Lower factorization is used to mimick the Semi-Implicit       */
+/* PCFIELDSPLIT. Lower factorization is used to mimic the Semi-Implicit        */
 /* Method for Pressure Linked Equations (SIMPLE) used as preconditioner        */
 /* instead of solver.                                                          */
 /*                                                                             */

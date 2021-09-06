@@ -111,13 +111,13 @@ def printsingleindex(outfilename,alphabet_dict):
       alphabet_index = list(alphabet_dict.keys())
       alphabet_index.sort()
 
-      # Now print each section, begining with a title
+      # Now print each section, beginning with a title
       for key in alphabet_index:
 
             # Print the HTML tag for this section
             fd.write('<A NAME="' + key + '"></A>\n' )
 
-            # Print the HTML index at the begining of each section
+            # Print the HTML index at the beginning of each section
             fd.write('<H3> <CENTER> | ')
             for key_tmp in alphabet_index:
                   if key == key_tmp:

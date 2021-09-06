@@ -47,7 +47,7 @@ static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao,Vec x)
 
   Input Parameter:
 + tao - Tao context
-- x - vector at which constraints to be evaluted
+- x - vector at which constraints to be evaluated
 
    Level: beginner
 
@@ -360,7 +360,7 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes,Vec X, Mat J, Mat Jpre, vo
     }
   }
 
-  /* (3) insert 3nd row block of Jpre: [ -grad h, 0, deltac, I] */
+  /* (3) insert 3rd row block of Jpre: [ -grad h, 0, deltac, I] */
   if (pdipm->Nh) {
     ierr = MatGetOwnershipRange(tao->jacobian_inequality,&rjstart,NULL);CHKERRQ(ierr);
     for (i=0; i < pdipm->nh; i++) {
@@ -699,7 +699,7 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
           }
 
           if (pdipm->deltaw >= 1.e10) {
-            SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_CONV_FAILED,"Reached maximum delta w will not converge, try different inital x0");
+            SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_CONV_FAILED,"Reached maximum delta w will not converge, try different initial x0");
           }
           ierr = PetscInfo1(tao,"Updated deltaw %g\n",(double)pdipm->deltaw);CHKERRQ(ierr);
           pdipm->lastdeltaw = pdipm->deltaw;

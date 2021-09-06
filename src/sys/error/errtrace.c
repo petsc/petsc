@@ -224,7 +224,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
       PetscErrorPrintfNormal();
     }
   } else {
-    /* do not print error messages since process 0 will print them, sleep before aborting so will not accidently kill process 0*/
+    /* do not print error messages since process 0 will print them, sleep before aborting so will not accidentally kill process 0*/
     PetscSleep(10.0);
     exit(0);
   }

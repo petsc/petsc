@@ -51,7 +51,7 @@ int main(int argc,char **args)
 /*TEST
 
      build:
-       requires: define(PETSC_USE_SOCKET_VIEWER)
+       requires: defined(PETSC_USE_SOCKET_VIEWER)
 
      test:
        TODO: Need to figure out how to test examples that use sockets

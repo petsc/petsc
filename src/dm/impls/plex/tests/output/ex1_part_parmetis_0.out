@@ -49,9 +49,9 @@ DM Object: Parallel Mesh 2 MPI processes
   type: plex
   Cell balance: 1.00 (max 8, min 8, empty 0)
   Edge Cut: 4 (on node 0.000)
-DM Object: Simplicial Mesh 2 MPI processes
+DM Object: Generated Mesh 2 MPI processes
   type: plex
-Simplicial Mesh in 2 dimensions:
+Generated Mesh in 2 dimensions:
   0-cells: 15 15
   1-cells: 22 22
   2-cells: 8 8

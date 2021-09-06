@@ -287,9 +287,9 @@ PetscErrorCode PetscWeakFormClear(PetscWeakForm wf)
 
 static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscHMapForm hmap, DMLabel label, PetscInt Nv, const PetscInt values[])
 {
-  PetscFormKey *keys;
-  PetscInt          n, i, v, off = 0;
-  PetscErrorCode    ierr;
+  PetscFormKey  *keys;
+  PetscInt       n, i, v, off = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscHMapFormGetSize(hmap, &n);CHKERRQ(ierr);
@@ -328,7 +328,7 @@ static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscH
 
   Level: intermediate
 
-.seealso: PetscWeakFormCreate(), PetscWeakFormDestroy()
+.seealso: PetscWeakFormReplaceLabel(), PetscWeakFormCreate(), PetscWeakFormDestroy()
 @*/
 PetscErrorCode PetscWeakFormRewriteKeys(PetscWeakForm wf, DMLabel label, PetscInt Nv, const PetscInt values[])
 {
@@ -337,6 +337,83 @@ PetscErrorCode PetscWeakFormRewriteKeys(PetscWeakForm wf, DMLabel label, PetscIn
 
   PetscFunctionBegin;
   for (f = 0; f < PETSC_NUM_WF; ++f) {ierr = PetscWeakFormRewriteKeys_Internal(wf, wf->form[f], label, Nv, values);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscWeakFormReplaceLabel_Internal(PetscWeakForm wf, PetscHMapForm hmap, DMLabel label)
+{
+  PetscFormKey  *keys;
+  PetscInt       n, i, off = 0, maxFuncs = 0;
+  void       (**tmpf)();
+  const char    *name = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (label) {ierr = PetscObjectGetName((PetscObject) label, &name);CHKERRQ(ierr);}
+  ierr = PetscHMapFormGetSize(hmap, &n);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &keys);CHKERRQ(ierr);
+  ierr = PetscHMapFormGetKeys(hmap, &off, keys);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) {
+    PetscBool   match = PETSC_FALSE;
+    const char *lname = NULL;
+
+    if (label == keys[i].label) continue;
+    if (keys[i].label) {ierr = PetscObjectGetName((PetscObject) keys[i].label, &lname);CHKERRQ(ierr);}
+    ierr = PetscStrcmp(name, lname, &match);CHKERRQ(ierr);
+    if ((!name && !lname) || match) {
+      void  (**funcs)();
+      PetscInt Nf;
+
+      ierr = PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs);CHKERRQ(ierr);
+      maxFuncs = PetscMax(maxFuncs, Nf);
+    }
+  }
+  /* Need temp space because chunk buffer can be reallocated in SetFunction() call */
+  ierr = PetscMalloc1(maxFuncs, &tmpf);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) {
+    PetscBool   match = PETSC_FALSE;
+    const char *lname = NULL;
+
+    if (label == keys[i].label) continue;
+    if (keys[i].label) {ierr = PetscObjectGetName((PetscObject) keys[i].label, &lname);CHKERRQ(ierr);}
+    ierr = PetscStrcmp(name, lname, &match);CHKERRQ(ierr);
+    if ((!name && !lname) || match) {
+      void  (**funcs)();
+      PetscInt Nf, j;
+
+      ierr = PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs);CHKERRQ(ierr);
+      for (j = 0; j < Nf; ++j) tmpf[j] = funcs[j];
+      ierr = PetscWeakFormSetFunction_Private(wf, hmap, label,         keys[i].value, keys[i].field, keys[i].part,  Nf,  tmpf);CHKERRQ(ierr);
+      ierr = PetscWeakFormSetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part,  0,   NULL);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(tmpf);CHKERRQ(ierr);
+  ierr = PetscFree(keys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscWeakFormReplaceLabel - Change any key on a label of the same name to use the new label
+
+  Not Collective
+
+  Input Parameters:
++ wf    - The original PetscWeakForm
+- label - The label to change keys for
+
+  Note: This is used internally when meshes are modified
+
+  Level: intermediate
+
+.seealso: PetscWeakFormRewriteKeys(), PetscWeakFormCreate(), PetscWeakFormDestroy()
+@*/
+PetscErrorCode PetscWeakFormReplaceLabel(PetscWeakForm wf, DMLabel label)
+{
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (f = 0; f < PETSC_NUM_WF; ++f) {ierr = PetscWeakFormReplaceLabel_Internal(wf, wf->form[f], label);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1331,7 +1408,7 @@ PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm wf, DMLabel labe
 . wf - The PetscWeakForm object
 
   Output Parameter:
-. Nf - The nubmer of fields
+. Nf - The number of fields
 
   Level: beginner
 
@@ -1417,7 +1494,7 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
     for (k = 0; k < Nk; ++k) {
       if (keys[k].label) {
         ierr = PetscObjectGetName((PetscObject) keys[k].label, &name);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer, "(%s, %D) ", name, keys[k].value);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "(%s:%p, %D) ", name, keys[k].label, keys[k].value);CHKERRQ(ierr);
       } else {ierr = PetscViewerASCIIPrintf(viewer, "");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
       if (splitField) {ierr = PetscViewerASCIIPrintf(viewer, "(%D, %D) ", keys[k].field/Nf, keys[k].field%Nf);CHKERRQ(ierr);}

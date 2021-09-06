@@ -1075,7 +1075,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 /*TEST
 
   build:
-      requires: double !complex !define(USE_64BIT_INDICES)
+      requires: double !complex !defined(USE_64BIT_INDICES)
 
    test:
       args: -viewer_binary_skip_info -tao_monitor -tao_gttol .2

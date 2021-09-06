@@ -5,7 +5,7 @@
 ! Processors: n
 
 ! Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
-! Fortan tranlation by Arko Bhattacharjee <a.bhattacharjee@mpie.de>
+! Fortran translation by Arko Bhattacharjee <a.bhattacharjee@mpie.de>
 
 program main
 #include <petsc/finclude/petscvec.h>

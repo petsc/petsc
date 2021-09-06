@@ -130,34 +130,34 @@ int main(int argc,char **args)
 
    test:
       nsize: 3
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !complex
       args: -f ${DATAFILESPATH}/matrices/arco1 -nd 5 -ov 2
 
    test:
       suffix: 2
       args: -f ${DATAFILESPATH}/matrices/arco1 -nd 8 -ov 2
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !complex
 
    test:
       suffix: unsorted_baij_mpi
       nsize: 3
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !complex
       args: -f ${DATAFILESPATH}/matrices/cfd.1.10 -nd 8 -mat_type baij -test_unsorted
 
    test:
       suffix: unsorted_baij_seq
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !complex
       args: -f ${DATAFILESPATH}/matrices/cfd.1.10 -nd 8 -mat_type baij -test_unsorted
 
    test:
       suffix: unsorted_mpi
       nsize: 3
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !complex
       args: -f ${DATAFILESPATH}/matrices/arco1 -nd 8 -test_unsorted
 
    test:
       suffix: unsorted_seq
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !complex
       args: -f ${DATAFILESPATH}/matrices/arco1 -nd 8 -test_unsorted
 
 TEST*/

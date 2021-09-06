@@ -9,7 +9,7 @@
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
 .  fcn - modifypc function
-.  ctx - optional contex
+.  ctx - optional context
 -  d - optional context destroy routine
 
    Calling Sequence of function:

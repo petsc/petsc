@@ -472,6 +472,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   PetscReal                lengthScale;
   PetscInt                 totVertices, totCells = 0, loops_per_scalar, l;
   PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE, writePartition = PETSC_FALSE, localized, writeComplex;
+  const char               *dmname;
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
@@ -486,8 +487,9 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   if (localized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"VTK output with localized coordinates not yet supported");
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscFOpen(comm, vtk->filename, "wb", &fp);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)dm, &dmname);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fp, "Simplicial Mesh Example\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fp, "%s\n", dmname);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "ASCII\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "DATASET UNSTRUCTURED_GRID\n");CHKERRQ(ierr);
   /* Vertices */

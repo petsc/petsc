@@ -99,7 +99,7 @@ below.
 -  Added routines KSPComputeEigenvalues(),
    KSPComputeEigenvaluesExplicitly() and runtime options
    -ksp_compute_eigenvalues, -ksp_plot_eigenvalues,
-   -ksp_compute_eigenvalues_explictly and
+   -ksp_compute_eigenvalues_explicitly and
    -ksp_plot_eigenvalues_explicitly for users interested in examining
    the eigenvalues of the preconditioned operator to better
    understand the convergence of a chosen iterative method.

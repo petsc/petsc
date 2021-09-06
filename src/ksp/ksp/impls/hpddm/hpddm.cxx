@@ -436,6 +436,7 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(HPDDMCitation, &HPDDMCite);CHKERRQ(ierr);
   if (!op) {
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
     op = data->op;

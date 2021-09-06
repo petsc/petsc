@@ -114,14 +114,17 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
         PetscInt j = (sOrientB >= 0) ? ((sOrientB + i) % sConeSize) : ((sConeSize -(sOrientB+1) - i) % sConeSize);
         if (childB) *childB = coneB[j];
         if (childOrientB) {
-          PetscInt oBtrue;
+          DMPolytopeType ct;
+          PetscInt       oBtrue;
 
           ierr          = DMPlexGetConeSize(dm,childA,&coneSize);CHKERRQ(ierr);
           /* compose sOrientB and oB[j] */
           if (coneSize != 0 && coneSize != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
+          ct = coneSize ? DM_POLYTOPE_SEGMENT : DM_POLYTOPE_POINT;
           /* we may have to flip an edge */
-          oBtrue        = coneSize ? ((sOrientB >= 0) ? oB[j] : -(oB[j] + 2)) : 0;
-          ABswap        = DihedralSwap(coneSize,oA[i],oBtrue);
+          oBtrue        = (sOrientB >= 0) ? oB[j] : DMPolytopeTypeComposeOrientation(ct, -1, oB[j]);
+          oBtrue        = DMPolytopeConvertNewOrientation_Internal(ct, oBtrue);
+          ABswap        = DihedralSwap(coneSize,DMPolytopeConvertNewOrientation_Internal(ct, oA[i]),oBtrue);
           *childOrientB = DihedralCompose(coneSize,childOrientA,ABswap);
         }
         break;
@@ -1934,6 +1937,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
 
     ierr = PetscMalloc1(pNewEnd[dim],&newConeSizes);CHKERRQ(ierr);
     {
+      DMPolytopeType pct, qct;
       PetscInt kStart, kEnd, k, closureSizeK, *closureK = NULL, j;
 
       ierr = DMPlexGetChart(K,&kStart,&kEnd);CHKERRQ(ierr);
@@ -1953,11 +1957,15 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
 
         p = closureK[2*j];
         q = cellClosure[2*j];
+        ierr = DMPlexGetCellType(K, p, &pct);CHKERRQ(ierr);
+        ierr = DMPlexGetCellType(dm, q, &qct);CHKERRQ(ierr);
         for (d = 0; d <= dim; d++) {
           if (q >= pOldStart[d] && q < pOldEnd[d]) {
             Kembedding[p] = (q - pOldStart[d]) + pNewStart[d];
           }
         }
+        parentOrientA = DMPolytopeConvertNewOrientation_Internal(pct, parentOrientA);
+        parentOrientB = DMPolytopeConvertNewOrientation_Internal(qct, parentOrientB);
         if (parentOrientA != parentOrientB) {
           PetscInt numChildren, i;
           const PetscInt *children;
@@ -2052,14 +2060,17 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
           for (l = 0; l < size; l++) {
             PetscInt q, m = (preO >= 0) ? ((preO + l) % size) : ((size -(preO + 1) - l) % size);
             PetscInt newO, lSize, oTrue;
+            DMPolytopeType ct = DM_NUM_POLYTOPES;
 
             q                         = iperm[cone[m]];
             newCones[offset]          = Kembedding[q];
             ierr                      = DMPlexGetConeSize(K,q,&lSize);CHKERRQ(ierr);
-            oTrue                     = orientation[m];
+            if (lSize == 2) ct = DM_POLYTOPE_SEGMENT;
+            else if (lSize == 4) ct = DM_POLYTOPE_QUADRILATERAL;
+            oTrue                     = DMPolytopeConvertNewOrientation_Internal(ct, orientation[m]);
             oTrue                     = ((!lSize) || (preOrient[k] >= 0)) ? oTrue : -(oTrue + 2);
             newO                      = DihedralCompose(lSize,oTrue,preOrient[q]);
-            newOrientations[offset++] = newO;
+            newOrientations[offset++] = DMPolytopeConvertOldOrientation_Internal(ct, newO);
           }
           if (kParent != 0) {
             PetscInt newPoint = Kembedding[kParent];
@@ -3144,7 +3155,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         }
         ierr = DMPlexRestoreTransitiveClosure(refTree,p,PETSC_FALSE,&numStar,&star);CHKERRQ(ierr);
       }
-      /* determine the offset of p's shape functions withing parentCell's shape functions */
+      /* determine the offset of p's shape functions within parentCell's shape functions */
       ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(disc,&classId);CHKERRQ(ierr);
       if (classId == PETSCFE_CLASSID) {

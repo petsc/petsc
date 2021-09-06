@@ -11,7 +11,7 @@ static char help[] = "Test of CUDA matrix assemble with simple matrix.\n\n";
 
 #include <petscconf.h>
 #include <petscmat.h>
-#include <petsccublas.h>
+#include <petscdevice.h>
 #include <assert.h>
 
 #include <petscaijdevice.h>

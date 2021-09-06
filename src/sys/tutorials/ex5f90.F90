@@ -124,7 +124,7 @@
 !/*TEST
 !
 !   build:
-!      requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
+!      requires: defined(PETSC_USING_F2003) defined(PETSC_USING_F90FREEFORM)
 !
 !   test:
 !      args: -pbag_rarray 4,5,88

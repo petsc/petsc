@@ -10,7 +10,7 @@
    corresponds to the PETSc BLAS/LAPACK mangling flag (we pass this flag to configure SuperLU_dist)
 */
 
-/* Why not incude superlu_dist inludes? */
+/* Why not include superlu_dist inludes? */
 #  if defined(PETSC_BLASLAPACK_CAPS)
 #    define mc64id_dist     MC64ID_DIST
 #    define mc64ad_dist     MC64AD_DIST

@@ -116,15 +116,16 @@ class Configure(config.package.CMakePackage):
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       dir = self.externalpackagesdir.dir
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(dir,'git.kokkos','bin','nvcc_wrapper'))
-      genToName = {'30' : 'KEPLER30','32' : 'KEPLER32', '35' : 'KEPLER35', '37' : 'KEPLER37',
-                   '50': 'MAXWELL50', '52': 'MAXWELL52', '53' : 'MAXWELL53', '60' : 'PASCAL60',
-                   '61' : 'PASCAL61', '70' : 'VOLTA70', '72': 'VOLTA72', '75' : 'TURING75', '80' : 'AMPERE80'}
+      genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
       if hasattr(self.cuda,'gencodearch'):
-        deviceArchName = genToName[self.cuda.gencodearch] # Kokkos also supports host arch names.
-        if not deviceArchName:
+        generation = self.cuda.gencodearch[:-1]
+        try:
+          # Kokkos uses names like VOLTA75, AMPERE86
+          deviceArchName = genToName[generation] + self.cuda.gencodearch
+        except KeyError:
           raise RuntimeError('Could not find an arch name for CUDA gen number '+ self.cuda.gencodearch)
       else:
-        raise RuntimeError('You must set -with-cuda-gencodearch=60, 70, 75, 80 etc.')
+        raise RuntimeError('You must set --with-cuda-gencodearch=60, 70, 75, 80 etc.')
       args.append('-DKokkos_ARCH_'+deviceArchName+'=ON')
       args.append('-DKokkos_ENABLE_CUDA_LAMBDA:BOOL=ON')
       #  Kokkos nvcc_wrapper REQUIRES nvcc be visible in the PATH!

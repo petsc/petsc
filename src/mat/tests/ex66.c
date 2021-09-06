@@ -383,13 +383,13 @@ int main(int argc,char **argv)
      args: -n 33 -kernel 1 -dim 1 -lda 13 -ldc 11 -symm 0 -checkexpl -bgpu 1
 
    test:
-     requires: hara define(PETSC_HAVE_MPI_INIT_THREAD)
+     requires: hara defined(PETSC_HAVE_MPI_INIT_THREAD)
      nsize: 2
      suffix: 1_par
      args: -n 32 -kernel 1 -dim 1 -ldc 12 -testlayout {{0 1}} -bgpu 0 -cgpu 0
 
    test:
-     requires: hara cuda define(PETSC_HAVE_MPI_INIT_THREAD)
+     requires: hara cuda defined(PETSC_HAVE_MPI_INIT_THREAD)
      nsize: 2
      suffix: 1_par_cuda
      args: -n 32 -kernel 1 -dim 1 -ldc 12 -testlayout {{0 1}} -bgpu {{0 1}} -cgpu {{0 1}}

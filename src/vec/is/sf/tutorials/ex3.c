@@ -101,26 +101,26 @@ int main(int argc, char **argv)
       suffix: window
       filter: grep -v "type" | grep -v "sort"
       args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create allocate dynamic}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
+      requires: defined(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: window_dupped
       filter: grep -v "type" | grep -v "sort"
       args: -test_dupped_type -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor {{create allocate dynamic}}
-      requires: define(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
+      requires: defined(PETSC_HAVE_MPI_ONE_SIDED) defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
 
    test:
       suffix: window_shared
       output_file: output/ex3_window.out
       filter: grep -v "type" | grep -v "sort"
       args: -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor shared
-      requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) defined(PETSC_HAVE_MPI_ONE_SIDED)
 
    test:
       suffix: window_dupped_shared
       output_file: output/ex3_window_dupped.out
       filter: grep -v "type" | grep -v "sort"
       args: -test_dupped_type -sf_type window -sf_window_sync {{fence active lock}} -sf_window_flavor shared
-      requires: define(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) define(PETSC_HAVE_MPI_ONE_SIDED)
+      requires: defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY) defined(PETSC_HAVE_MPI_ONE_SIDED)
 
 TEST*/

@@ -983,7 +983,7 @@ PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const Pets
 
   Input Parameters:
 + dm     - The DM
-- label  - DMLabel assinging ranks to remote roots
+- label  - DMLabel assigning ranks to remote roots
 
   Level: developer
 
@@ -1021,7 +1021,7 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
 
   Input Parameters:
 + dm     - The DM
-- label  - DMLabel assinging ranks to remote roots
+- label  - DMLabel assigning ranks to remote roots
 
   Level: developer
 
@@ -1064,7 +1064,7 @@ PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
 
   Input Parameters:
 + dm     - The DM
-- label  - DMLabel assinging ranks to remote roots
+- label  - DMLabel assigning ranks to remote roots
 
   Level: developer
 
@@ -1126,11 +1126,11 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
 
   Input Parameters:
 + dm        - The DM
-. rootLabel - DMLabel assinging ranks to local roots
+. rootLabel - DMLabel assigning ranks to local roots
 - processSF - A star forest mapping into the local index on each remote rank
 
   Output Parameter:
-. leafLabel - DMLabel assinging ranks to remote roots
+. leafLabel - DMLabel assigning ranks to remote roots
 
   Note: The rootLabel defines a send pattern by mapping local points to remote target ranks. The
   resulting leafLabel is a receiver mapping of remote roots to their parent rank.
@@ -1262,7 +1262,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 
   Input Parameters:
 + dm    - The DM
-- label - DMLabel assinging ranks to remote roots
+- label - DMLabel assigning ranks to remote roots
 
   Output Parameter:
 . sf    - The star forest communication context encapsulating the defined mapping

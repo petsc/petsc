@@ -168,6 +168,12 @@ class TestTSPython(unittest.TestCase):
         self.testSolve()
         self.ts.reset()
 
+    def testSetAdaptLimits(self):
+        self.ts.setStepLimits(1.0, 2.0)
+        hmin, hmax = self.ts.getStepLimits()
+        self.assertEqual(1.0, hmin)
+        self.assertEqual(2.0, hmax)
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

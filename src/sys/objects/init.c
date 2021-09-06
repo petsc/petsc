@@ -20,15 +20,8 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #include <unistd.h>
 #endif
 
-#if defined(PETSC_HAVE_CUDA)
-  #include <cuda_runtime.h>
-  #include <cuda_runtime_api.h>
-  #include <cuda_device_runtime_api.h>
-  #include <petsccublas.h>
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-  #include <hip/hip_runtime.h>
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#  include <petscdevice.h>
 #endif
 
 #if defined(PETSC_HAVE_DEVICE)
@@ -99,6 +92,8 @@ MPI_Datatype MPIU_SCALAR_INT = 0;
 #if defined(PETSC_USE_64BIT_INDICES)
 MPI_Datatype MPIU_2INT = 0;
 #endif
+MPI_Datatype MPI_4INT = 0;
+MPI_Datatype MPIU_4INT = 0;
 MPI_Datatype MPIU_BOOL;
 MPI_Datatype MPIU_ENUM;
 MPI_Datatype MPIU_FORTRANADDR;

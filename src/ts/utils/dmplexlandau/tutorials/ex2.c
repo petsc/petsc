@@ -121,7 +121,7 @@ static PetscReal CalculateE(PetscReal Tev, PetscReal n, PetscReal lnLambda, Pets
   PetscReal c,e,m;
 
   PetscFunctionBegin;
-  c = 299792458;
+  c = 299792458.0;
   e = 1.602176e-19;
   m = 9.10938e-31;
   if (1) {
@@ -672,6 +672,8 @@ int main(int argc, char **argv)
   ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-dm_view_sources");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-dm_view_diff");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm,NULL,"-dm_view_0");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(X,NULL,"-vec_view_0");CHKERRQ(ierr); // initial condition (monitor plots after step)
   /* Create timestepping solver context */
   ierr = TSCreate(PETSC_COMM_SELF,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,dm);CHKERRQ(ierr);
@@ -708,7 +710,7 @@ int main(int argc, char **argv)
     ierr = VecDestroy(&vec);CHKERRQ(ierr);
     ctx->aux_bool = PETSC_FALSE; // flag for not a clean Jacobian
   }
-  ierr = VecViewFromOptions(X,NULL,"-vec_view");CHKERRQ(ierr); // inital condition (monitor plots after step)
+  ierr = VecViewFromOptions(X,NULL,"-vec_view");CHKERRQ(ierr); // initial condition (monitor plots after step)
   /* go */
   ierr = PetscLogStageRegister("Solve", &stage);CHKERRQ(ierr);
   ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);

@@ -62,5 +62,5 @@ int main(int argc,char **argv)
 
     test:
       suffix: 2
-      requires: elemental !define(PETSC_USE_DEBUG)
+      requires: elemental !defined(PETSC_USE_DEBUG)
 TEST*/

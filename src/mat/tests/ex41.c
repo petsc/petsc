@@ -99,7 +99,7 @@ int main(int argc,char **args)
 
    test:
       nsize: 3
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !complex
       args: -f ${DATAFILESPATH}/matrices/arco1 -nd 3 -ov 1
 
 TEST*/

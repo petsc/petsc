@@ -9,7 +9,7 @@ with zero Dirichlet condition. The discretization is standard centered\n\
 difference. Input parameters include:\n\
   -n1        : number of mesh points in 1st dimension (default 32)\n\
   -n2        : number of mesh points in 2nd dimension (default 32)\n\
-  -n3        : number of mesh points in 3nd dimension (default 32)\n\
+  -n3        : number of mesh points in 3rd dimension (default 32)\n\
   -h         : spacing between mesh points (default 1/n1)\n\
   -gamma     : gamma (default 4/h)\n\
   -beta      : beta (default 0.01/h^2)\n\n";

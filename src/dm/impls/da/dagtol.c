@@ -160,7 +160,7 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec n)
 
 /*@
    DMDAGlobalToNaturalEnd - Maps values from the global vector to a global vector
-   in the natural ordering. Must be preceeded by DMDAGlobalToNaturalBegin().
+   in the natural ordering. Must be preceded by DMDAGlobalToNaturalBegin().
 
    Neighbor-wise Collective on da
 
@@ -243,7 +243,7 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec n,InsertMode mode,Vec g)
 
 /*@
    DMDANaturalToGlobalEnd - Maps values from the natural ordering global vector
-   to a global vector in the PETSc DMDA ordering. Must be preceeded by DMDANaturalToGlobalBegin().
+   to a global vector in the PETSc DMDA ordering. Must be preceded by DMDANaturalToGlobalBegin().
 
    Neighbor-wise Collective on da
 
