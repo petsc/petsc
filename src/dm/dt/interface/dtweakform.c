@@ -1408,7 +1408,7 @@ PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm wf, DMLabel labe
 . wf - The PetscWeakForm object
 
   Output Parameter:
-. Nf - The nubmer of fields
+. Nf - The number of fields
 
   Level: beginner
 

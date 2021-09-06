@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
 
-  /* Create dense matrix C and X; C holds true solution with identical colums */
+  /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);

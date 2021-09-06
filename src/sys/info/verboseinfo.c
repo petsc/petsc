@@ -207,7 +207,7 @@ PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt N, const char *co
 
     Not Collective
 
-    Input Paramater:
+    Input Parameter:
 .   classname - Name of the class to search for
 
     Output Parameter:

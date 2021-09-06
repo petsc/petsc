@@ -107,7 +107,7 @@ program ex26f90
 
     ! Create the exodus result file
 
-    ! enable exodus debugging informations
+    ! enable exodus debugging information
     call exopts(EXVRBS+EXDEBG,ierr)
     ! Create the exodus file
     call PetscViewerExodusIIOpen(PETSC_COMM_WORLD,ofilename,FILE_MODE_WRITE,viewer,ierr);CHKERRA(ierr)

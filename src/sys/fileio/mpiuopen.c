@@ -155,7 +155,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
        will use the machine running node zero of the communicator
 
        The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
-    will be replaced with relevent values.
+    will be replaced with relevant values.
 
 .seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpenSetMachine()
 

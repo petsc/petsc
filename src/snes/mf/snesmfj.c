@@ -16,7 +16,7 @@
 .   x - the point at which the Jacobian vector products will be performed
 .   jac - the matrix-free Jacobian object
 .   B - either the same as jac or another matrix type (ignored)
-.   flag - not relevent for matrix-free form
+.   flag - not relevant for matrix-free form
 -   dummy - the user context (ignored)
 
    Level: developer

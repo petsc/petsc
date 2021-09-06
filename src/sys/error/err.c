@@ -54,12 +54,12 @@ static EH eh = NULL;
 
 /*@C
    PetscEmacsClientErrorHandler - Error handler that uses the emacsclient program to
-    load the file where the error occured. Then calls the "previous" error handler.
+    load the file where the error occurred. Then calls the "previous" error handler.
 
    Not Collective
 
    Input Parameters:
-+  comm - communicator over which error occured
++  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
@@ -119,7 +119,7 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
    Calling sequence of handler:
 $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,int p,char *mess,void *ctx);
 
-+  comm - communicator over which error occured
++  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  n - the generic error number (see list defined in include/petscerror.h)

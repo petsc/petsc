@@ -1496,7 +1496,7 @@ PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
 
   Input Parameters:
 + dm - the DM object
-. count - The minium size
+. count - The minimum size
 - dtype - MPI data type, often MPIU_REAL, MPIU_SCALAR, MPIU_INT)
 
   Output Parameter:
@@ -1544,7 +1544,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
 
   Input Parameters:
 + dm - the DM object
-. count - The minium size
+. count - The minimum size
 - dtype - MPI data type, often MPIU_REAL, MPIU_SCALAR, MPIU_INT
 
   Output Parameter:
@@ -9634,7 +9634,7 @@ PetscErrorCode DMComputeError(DM dm, Vec sol, PetscReal errors[], Vec *errorVec)
 . dm     - The DM
 
   Output Parameter:
-. numAux - The nubmer of auxiliary data vectors
+. numAux - The number of auxiliary data vectors
 
   Level: advanced
 

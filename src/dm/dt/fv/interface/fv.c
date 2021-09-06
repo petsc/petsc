@@ -1632,7 +1632,7 @@ PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
 . fvm - The PetscFV object
 
   Output Parameter:
-. T - The basis function values and derviatives at quadrature points
+. T - The basis function values and derivatives at quadrature points
 
   Note:
 $ T->T[0] = B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
@@ -1671,7 +1671,7 @@ PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T)
 - K       - The order of derivative to tabulate
 
   Output Parameter:
-. T - The basis function values and derviative at tabulation points
+. T - The basis function values and derivative at tabulation points
 
   Note:
 $ T->T[0] = B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c

@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   ierr = PetscLogEventEnd(e1,&x,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscTime(&x);CHKERRQ(ierr);
-  /* 10 Occurences of the dummy event */
+  /* 10 Occurrences of the dummy event */
   ierr = PetscLogEventBegin(e1,&x,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(e1,&x,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(e1,&x,&y,0,0);CHKERRQ(ierr);

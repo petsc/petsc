@@ -1111,7 +1111,7 @@ time, input state :math:`u`, array of event function value, and the
 (optional) user-provided context ``eventP``.
 
 The arguments to ``postevent()`` routine are the timestep context,
-number of events occured, indices of events occured, current time, input
+number of events occurred, indices of events occured, current time, input
 state :math:`u`, a boolean flag indicating forward solve (1) or adjoint
 solve (0), and the (optional) user-provided context ``eventP``.
 

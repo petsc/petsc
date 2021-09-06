@@ -688,7 +688,7 @@ cdef class SNES(Object):
                 'alpha2'    : toReal(alpha2),
                 'threshold' : toReal(threshold),}
 
-    # --- matrix free / finite diferences ---
+    # --- matrix free / finite differences ---
 
     def setUseMF(self, flag=True):
         cdef PetscBool bval = flag
@@ -969,7 +969,7 @@ cdef class SNES(Object):
         def __get__(self):
             return self.reason < 0
 
-    # --- matrix free / finite diferences ---
+    # --- matrix free / finite differences ---
 
     property use_mf:
         def __get__(self):

@@ -479,7 +479,7 @@ PetscErrorCode DMShellDAFieldScatter_Forward(DM dmf,Vec x,DM dmc,Vec xc)
   ierr = VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  /* copy vector entires into xred */
+  /* copy vector entries into xred */
   ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
   if (xc) {
     PetscScalar *LA_xred;

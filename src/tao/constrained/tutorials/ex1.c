@@ -24,7 +24,7 @@ Input parameters include:\n\
   -snes_fd           : snes with finite difference Jacobian (needed for pdipm)\n\
   -snes_compare_explicit : compare user Jacobian with finite difference Jacobian \n\
   -tao_cmonitor      : convergence monitor with constraint norm \n\
-  -tao_view_solution : view exact solution at each itteration\n\
+  -tao_view_solution : view exact solution at each iteration\n\
   Note: external package MUMPS is required to run pdipm. This is designed for a maximum of 2 processors, the code will error if size > 2.\n";
 
 /*
@@ -166,7 +166,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = VecSetFromOptions(user->ci);CHKERRQ(ierr);
   ierr = VecSetUp(user->ci);CHKERRQ(ierr);
 
-  /* nexn & nixn matricies for equaly and inequalty constriants */
+  /* nexn & nixn matricies for equally and inequalty constraints */
   if (!user->noeqflag) {
     ierr = MatCreate(PETSC_COMM_WORLD,&user->Ae);CHKERRQ(ierr);
     ierr = MatSetSizes(user->Ae,neloc,nloc,user->ne,user->n);CHKERRQ(ierr);

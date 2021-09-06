@@ -220,7 +220,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
 
 /*
 
-  Allocate a bufffer sufficient to hold messages of size specified in olengths.
+  Allocate a buffer sufficient to hold messages of size specified in olengths.
   And post Irecvs on these buffers using node info from onodes
 
  */

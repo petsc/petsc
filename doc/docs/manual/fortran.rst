@@ -317,7 +317,7 @@ differs only slightly.
 Array Arguments
 ^^^^^^^^^^^^^^^
 
-This material is no longer relevent since one should use
+This material is no longer relevant since one should use
 ``VecGetArrayF90()`` and the other routines that utilize Fortran
 pointers, instead of the code below, but it is included for historical
 reasons and because many of the Fortran examples still utilize the old

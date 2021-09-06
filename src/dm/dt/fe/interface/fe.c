@@ -832,7 +832,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
 - k   - The highest derivative we need to tabulate, very often 1
 
   Output Parameters:
-. Tf - The basis function values and derviatives at face quadrature points
+. Tf - The basis function values and derivatives at face quadrature points
 
   Note:
 $ T->T[0] = Bf[((f*Nq + q)*pdim + i)*Nc + c] is the value at point f,q for basis function i and component c

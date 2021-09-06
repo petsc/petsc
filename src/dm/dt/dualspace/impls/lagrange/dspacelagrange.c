@@ -1478,7 +1478,7 @@ static PetscErrorCode PetscDualSpaceLagrangeCreateSimplexNodeMat(Petsc1DNodeFami
 }
 
 /* once the nodeIndices have been created for the interior of the reference cell, and for all of the boundary cells,
- * push forward the boudary dofs and concatenate them into the full node indices for the dual space */
+ * push forward the boundary dofs and concatenate them into the full node indices for the dual space */
 static PetscErrorCode PetscDualSpaceLagrangeCreateAllNodeIdx(PetscDualSpace sp)
 {
   DM             dm;

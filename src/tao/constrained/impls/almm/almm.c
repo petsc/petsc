@@ -661,7 +661,7 @@ static PetscErrorCode TaoALMMComputePHRLagAndGradient_Private(Tao tao)
     /* dL/dX += mu * pmax(0, Ci + Yi/mu)^T Ai */
     ierr = VecScale(auglag->Ciwork, auglag->mu);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(auglag->Ai, auglag->Ciwork, auglag->LgradX, auglag->LgradX);CHKERRQ(ierr);
-    /* dL/dS = 0 becuase there are no slacks in PHR */
+    /* dL/dS = 0 because there are no slacks in PHR */
     ierr = VecZeroEntries(auglag->LgradS);CHKERRQ(ierr);
   }
   /* combine gradient together */

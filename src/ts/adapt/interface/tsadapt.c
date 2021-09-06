@@ -446,7 +446,7 @@ PetscErrorCode TSAdaptSetSafety(TSAdapt adapt,PetscReal safety,PetscReal reject_
    Input Arguments:
 .  adapt - adaptive controller context
 
-   Ouput Arguments:
+   Output Arguments:
 .  safety - safety factor relative to target error/stability goal
 +  reject_safety - extra safety factor to apply if the last step was rejected
 
@@ -498,7 +498,7 @@ PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt,PetscReal max_ignore)
    Input Arguments:
 .  adapt - adaptive controller context
 
-   Ouput Arguments:
+   Output Arguments:
 .  max_ignore - threshold for solution components that are ignored during error estimation
 
    Level: intermediate
@@ -553,7 +553,7 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
    Input Arguments:
 .  adapt - adaptive controller context
 
-   Ouput Arguments:
+   Output Arguments:
 +  low - optional, admissible decrease factor
 -  high - optional, admissible increase factor
 
@@ -607,7 +607,7 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt,PetscReal scale)
    Input Arguments:
 .  adapt - adaptive controller context
 
-   Ouput Arguments:
+   Output Arguments:
 .  scale - scale factor
 
    Level: intermediate

@@ -575,7 +575,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       if (sctx.newshift) break; /* break for-loop */
       rtmp[i] = sctx.pv; /* sctx.pv might be updated in the case of MAT_SHIFT_INBLOCKS */
 
-      /* Mark diagonal and invert diagonal for simplier triangular solves */
+      /* Mark diagonal and invert diagonal for simpler triangular solves */
       pv  = b->a + bdiag[i];
       *pv = 1.0/rtmp[i];
 
@@ -736,7 +736,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
     }
   } while (sctx.newshift);
 
-  /* invert diagonal entries for simplier triangular solves */
+  /* invert diagonal entries for simpler triangular solves */
   for (i=0; i<n; i++) {
     b->a[diag_offset[i]] = 1.0/b->a[diag_offset[i]];
   }
@@ -923,7 +923,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
     }
   } while (sctx.newshift);
 
-  /* invert diagonal entries for simplier triangular solves */
+  /* invert diagonal entries for simpler triangular solves */
   for (i=0; i<n; i++) {
     a->a[diag[r[i]]] = 1.0/a->a[diag[r[i]]];
   }
@@ -3399,7 +3399,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     if (*batmp == 0.0) {
       *batmp = dt+shift;
     }
-    *batmp = 1.0/(*batmp); /* invert diagonal entries for simplier triangular solves */
+    *batmp = 1.0/(*batmp); /* invert diagonal entries for simpler triangular solves */
 
     bjtmp = bj + bdiag[i+1]+1;
     batmp = ba + bdiag[i+1]+1;
@@ -3528,7 +3528,7 @@ PetscErrorCode  MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,const MatFactorInfo 
       pv[j] = rtmp[pj[j]];
     }
 
-    /* diagonal: invert diagonal entries for simplier triangular solves */
+    /* diagonal: invert diagonal entries for simpler triangular solves */
     if (rtmp[i] == 0.0) rtmp[i] = dt+shift;
     b->a[bdiag[i]] = 1.0/rtmp[i];
 

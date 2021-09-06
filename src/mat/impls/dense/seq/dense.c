@@ -2880,7 +2880,7 @@ static PetscErrorCode MatDenseGetColumn_SeqDense(Mat A,PetscInt col,PetscScalar 
 static PetscErrorCode MatDenseRestoreColumn_SeqDense(Mat A,PetscScalar **vals)
 {
   PetscFunctionBegin;
-  *vals = NULL; /* user cannot accidently use the array later */
+  *vals = NULL; /* user cannot accidentally use the array later */
   PetscFunctionReturn(0);
 }
 

@@ -3,7 +3,7 @@
 
 typedef struct  {
   char      *string;         /* string where info is stored */
-  char      *head;           /* pointer to begining of unused portion */
+  char      *head;           /* pointer to beginning of unused portion */
   size_t    curlen,maxlen;
   PetscBool ownstring;       /* string viewer is responsable for freeing the string */
 } PetscViewer_String;

@@ -48,7 +48,7 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 +   viewer - the PetscViewer (created with PetscViewerDrawOpen())
 -   windownumber - indicates which subwindow (usually 0)
 
-    Ouput Parameter:
+    Output Parameter:
 .   draw - the draw object
 
     Level: intermediate
@@ -180,7 +180,7 @@ PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
 +   PetscViewer - the PetscViewer (created with PetscViewerDrawOpen())
 -   windownumber - indicates which subwindow (usually 0)
 
-    Ouput Parameter:
+    Output Parameter:
 .   draw - the draw line graph object
 
     Level: intermediate
@@ -225,7 +225,7 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
 +   viewer - the PetscViewer (created with PetscViewerDrawOpen()
 -   windownumber - indicates which subwindow (usually 0)
 
-    Ouput Parameter:
+    Output Parameter:
 .   drawaxis - the draw axis object
 
     Level: advanced

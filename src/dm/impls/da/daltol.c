@@ -104,7 +104,7 @@ PetscErrorCode  DMLocalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 /*
    DMLocalToLocalEnd_DA - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
-   points in the second are set correctly.  Must be preceeded by
+   points in the second are set correctly.  Must be preceded by
    DMLocalToLocalBegin_DA().
 
    Neighbor-wise Collective on da

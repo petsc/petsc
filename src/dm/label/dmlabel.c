@@ -1008,7 +1008,7 @@ PetscErrorCode DMLabelInsertIS(DMLabel label, IS is, PetscInt value)
   Input Parameter:
 . label - the DMLabel
 
-  Output Paramater:
+  Output Parameter:
 . numValues - the number of values
 
   Level: intermediate
@@ -1032,7 +1032,7 @@ PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
   Input Parameter:
 . label - the DMLabel
 
-  Output Paramater:
+  Output Parameter:
 . is    - the value IS
 
   Level: intermediate
@@ -1059,7 +1059,7 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 + label - the DMLabel
 = value - the value
 
-  Output Paramater:
+  Output Parameter:
 . index - the index of value in the list of values
 
   Level: intermediate
@@ -1089,7 +1089,7 @@ PetscErrorCode DMLabelGetValueIndex(DMLabel label, PetscInt value, PetscInt *ind
 + label - the DMLabel
 - value - the stratum value
 
-  Output Paramater:
+  Output Parameter:
 . exists - Flag saying whether points exist
 
   Level: intermediate
@@ -1118,7 +1118,7 @@ PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exist
 + label - the DMLabel
 - value - the stratum value
 
-  Output Paramater:
+  Output Parameter:
 . size - The number of points in the stratum
 
   Level: intermediate
@@ -1150,7 +1150,7 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
 + label - the DMLabel
 - value - the stratum value
 
-  Output Paramaters:
+  Output Parameters:
 + start - the smallest point in the stratum
 - end - the largest point in the stratum
 
@@ -1186,7 +1186,7 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
 + label - the DMLabel
 - value - the stratum value
 
-  Output Paramater:
+  Output Parameter:
 . points - The stratum points
 
   Level: intermediate

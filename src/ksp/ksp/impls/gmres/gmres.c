@@ -434,7 +434,7 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool hap
     *hh        = PetscConj(*cc) * *hh + *ss * *(hh+1);
     *res       = PetscAbsScalar(*GRS(it+1));
   } else {
-    /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply
+    /* happy breakdown: HH(it+1, it) = 0, therefore we don't need to apply
             another rotation matrix (so RH doesn't change).  The new residual is
             always the new sine term times the residual from last time (GRS(it)),
             but now the new sine rotation would be zero...so the residual should

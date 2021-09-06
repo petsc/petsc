@@ -225,7 +225,7 @@ static PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction func
  Input Parameters:
  +  ksp      - iterative context obtained from KSPCreate()
  .  function - user defined function to modify the preconditioner
- .  ctx      - user provided contex for the modify preconditioner function
+ .  ctx      - user provided context for the modify preconditioner function
  -  destroy  - the function to use to destroy the user provided application context.
 
  Calling Sequence of function:

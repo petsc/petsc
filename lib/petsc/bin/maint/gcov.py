@@ -100,7 +100,7 @@ def make_tarball(gcov_dir,petsc_dir,petsc_arch):
     os.chdir(gcov_dir)
     os.system("tar -czf "+petsc_dir+os.sep+"gcov.tar.gz *.tested *.code")
     os.chdir(petsc_dir)
-    # Copy file so artifacts in CI propogate without overwriting
+    # Copy file so artifacts in CI propagate without overwriting
     shutil.copyfile('gcov.tar.gz',os.path.join(petsc_arch,'gcov.tar.gz'))
     print("""Tarball created in %s"""%(petsc_dir))
     os.chdir(curdir)

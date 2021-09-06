@@ -1287,7 +1287,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec r,TSIFunction f,void *ctx)
 }
 
 /*@C
-   TSGetIFunction - Returns the vector where the implicit residual is stored and the function/contex to compute it.
+   TSGetIFunction - Returns the vector where the implicit residual is stored and the function/context to compute it.
 
    Not Collective
 
@@ -1481,7 +1481,7 @@ PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
 }
 
 /*@C
-  TSGetI2Function - Returns the vector where the implicit residual is stored and the function/contex to compute it.
+  TSGetI2Function - Returns the vector where the implicit residual is stored and the function/context to compute it.
 
   Not Collective
 

@@ -494,7 +494,7 @@ static PetscErrorCode AssembleStokes_RHS(Vec F,DM stokes_da,DM quadrature)
   /* setup for coefficients */
   ierr = DMSwarmGetField(quadrature,"rho_q",NULL,NULL,(void**)&q_rhs);CHKERRQ(ierr);
 
-  /* get acces to the vector */
+  /* get access to the vector */
   ierr = DMGetLocalVector(stokes_da,&local_F);CHKERRQ(ierr);
   ierr = VecZeroEntries(local_F);CHKERRQ(ierr);
   ierr = VecGetArray(local_F,&LA_F);CHKERRQ(ierr);
@@ -635,7 +635,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
           min_sep = sep;
         }
       }
-      if (nearest_neighour == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cell %D is empty - cannot initalize using nearest neighbours",e);
+      if (nearest_neighour == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cell %D is empty - cannot initialize using nearest neighbours",e);
       nnlist[q] = nearest_neighour;
     }
     ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);

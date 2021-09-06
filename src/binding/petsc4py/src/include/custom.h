@@ -436,7 +436,7 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   if (!flg && !flag) PetscFunctionReturn(0);
   if (flg  && !flag) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
-            "cannot change colored finite diferences once it is set");
+            "cannot change colored finite differences once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
 

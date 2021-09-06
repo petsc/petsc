@@ -4,7 +4,7 @@
 # Rule: 'No space between the type and the * in a cast'
 
 # Steps:
-# - find lines with ' *)' preceeded by letters and an opening parenthesis
+# - find lines with ' *)' preceded by letters and an opening parenthesis
 #
 
 

@@ -3,7 +3,7 @@
 #include <petscmatlab.h>   /*I  "petscmatlab.h"  I*/
 
 /*
-        Ths PF generates a MATLAB function on the fly
+        This PF generates a MATLAB function on the fly
 */
 typedef struct {
   PetscInt          dimin,dimout;

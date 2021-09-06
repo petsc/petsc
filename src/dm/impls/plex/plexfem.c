@@ -1148,7 +1148,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
 }
 
 /*@
-  DMPlexInsertTimeDerivativeBoundaryValues - Puts coefficients which represent boundary values of the time derviative into the local solution vector
+  DMPlexInsertTimeDerivativeBoundaryValues - Puts coefficients which represent boundary values of the time derivative into the local solution vector
 
   Input Parameters:
 + dm - The DM
@@ -4012,7 +4012,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   We always assemble JacP, and if the matrix is different from Jac and two different sets of point functions are provided, we also assemble Jac
 
   X   - The local solution vector
-  X_t - The local solution time derviative vector, or NULL
+  X_t - The local solution time derivative vector, or NULL
 */
 PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section, PetscSection globalSection, IS cellIS,
                                                     PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Mat Jac, Mat JacP, void *ctx)

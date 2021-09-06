@@ -811,7 +811,7 @@ PetscErrorCode MatProductSymbolic(Mat mat)
 
    Input Parameters:
 +  mat - the matrix product
--  fill - expected fill as ratio of nnz(mat)/(nnz(A) + nnz(B) + nnz(C)); use PETSC_DEFAULT if you do not have a good estimate. If the product is a dense matrix, this is irrelevent.
+-  fill - expected fill as ratio of nnz(mat)/(nnz(A) + nnz(B) + nnz(C)); use PETSC_DEFAULT if you do not have a good estimate. If the product is a dense matrix, this is irrelevant.
 
    Level: intermediate
 

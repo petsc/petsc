@@ -227,7 +227,7 @@ static PetscErrorCode PerturbMesh(DM *mesh,PetscScalar *coordVals,PetscInt npoin
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
 
   /* Compute something approximately equal to half an edge length. This is the
-   * most we can perturb points and gaurantee that there won't be any topology
+   * most we can perturb points and guarantee that there won't be any topology
    * issues. */
   for (k = 0; k < dim; ++k) maxPert[k] = 0.025 * (maxCoords[k] - minCoords[k]) / (PetscPowReal(npoints,1. / dim) - 1);
   /* For each mesh vertex */

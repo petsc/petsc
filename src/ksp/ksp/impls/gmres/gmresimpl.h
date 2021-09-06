@@ -39,7 +39,7 @@
   PetscInt vecs_allocated;                              /*   total number of vecs available */ \
   /* Since we may call the user "obtain_work_vectors" several times, we have to keep track of the pointers that it has returned */ \
   Vec      **user_work;                                              \
-  PetscInt *mwork_alloc;       /* Number of work vectors allocated as part of  a work-vector chunck */ \
+  PetscInt *mwork_alloc;       /* Number of work vectors allocated as part of  a work-vector chunk */ \
   PetscInt nwork_alloc;        /* Number of work vector chunks allocated */ \
                                                                         \
   /* Information for building solution */                               \

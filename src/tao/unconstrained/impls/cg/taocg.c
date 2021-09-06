@@ -153,7 +153,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
     /*  Check for restart condition */
     ierr = VecDot(tao->gradient, cgP->G_old, &ginner);CHKERRQ(ierr);
     if (PetscAbsScalar(ginner) >= cgP->eta * gnorm2) {
-      /*  Gradients far from orthognal; use steepest descent direction */
+      /*  Gradients far from orthogonal; use steepest descent direction */
       beta = 0.0;
     } else {
       /*  Gradients close to orthogonal; use conjugate gradient formula */

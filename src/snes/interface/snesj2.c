@@ -39,7 +39,7 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
 .  -snes_mf_operator - Use matrix free application of Jacobian
--  -snes_mf - Use matrix free Jacobian with no explicit Jacobian represenation
+-  -snes_mf - Use matrix free Jacobian with no explicit Jacobian representation
 
     Notes:
         If the coloring is not provided through the context, this will first try to get the
@@ -48,7 +48,7 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
         precomputed.
 
        SNES supports three approaches for computing (approximate) Jacobians: user provided via SNESSetJacobian(), matrix free via SNESSetUseMatrixFree(),
-       and computing explictly with finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation
+       and computing explicitly with finite differences and coloring using MatFDColoring. It is also possible to use automatic differentiation
        and the MatFDColoring object, see src/ts/tutorials/autodiff/ex16adj_tl.cxx
 
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESComputeJacobianDefault(), SNESSetUseMatrixFree(),

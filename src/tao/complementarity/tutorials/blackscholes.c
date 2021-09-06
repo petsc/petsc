@@ -33,7 +33,7 @@
 
    Background (American Options):
      The American option is similar to its European counterpart.  The
-     difference is that the holder of the American option can excercise
+     difference is that the holder of the American option can exercise
      their right to buy or sell the asset at any time prior to the
      expiration.  This additional ability introduce a free boundary into
      the Black-Scholes equation which can be modeled as a linear

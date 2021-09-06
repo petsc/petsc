@@ -82,7 +82,7 @@
       if (.false.) then
          call MatMult(M, rho, rhs, ierr);CHKERRA(ierr) ! this is what you would do for and FE solve
       else
-         call VecCopy(rho, rhs, ierr);CHKERRA(ierr) ! Indentity: M^1 M rho
+         call VecCopy(rho, rhs, ierr);CHKERRA(ierr) ! Identity: M^1 M rho
       end if
       call KSPCreate(PETSC_COMM_WORLD, ksp, ierr);CHKERRA(ierr)
       call KSPSetOptionsPrefix(ksp, 'ftop_', ierr);CHKERRA(ierr)

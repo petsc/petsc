@@ -748,7 +748,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBounda
   if (pcbddc->DirichletBoundaries) {
     ierr = ISEqual(DirichletBoundaries,pcbddc->DirichletBoundaries,&isequal);CHKERRQ(ierr);
   }
-  /* last user setting takes precendence -> destroy any other customization */
+  /* last user setting takes precedence -> destroy any other customization */
   ierr = ISDestroy(&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
   pcbddc->DirichletBoundaries = DirichletBoundaries;
@@ -795,7 +795,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc,IS DirichletB
   if (pcbddc->DirichletBoundariesLocal) {
     ierr = ISEqual(DirichletBoundaries,pcbddc->DirichletBoundariesLocal,&isequal);CHKERRQ(ierr);
   }
-  /* last user setting takes precendence -> destroy any other customization */
+  /* last user setting takes precedence -> destroy any other customization */
   ierr = ISDestroy(&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
   pcbddc->DirichletBoundariesLocal = DirichletBoundaries;
@@ -841,7 +841,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries
   if (pcbddc->NeumannBoundaries) {
     ierr = ISEqual(NeumannBoundaries,pcbddc->NeumannBoundaries,&isequal);CHKERRQ(ierr);
   }
-  /* last user setting takes precendence -> destroy any other customization */
+  /* last user setting takes precedence -> destroy any other customization */
   ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
   pcbddc->NeumannBoundaries = NeumannBoundaries;
@@ -888,7 +888,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc,IS NeumannBound
   if (pcbddc->NeumannBoundariesLocal) {
     ierr = ISEqual(NeumannBoundaries,pcbddc->NeumannBoundariesLocal,&isequal);CHKERRQ(ierr);
   }
-  /* last user setting takes precendence -> destroy any other customization */
+  /* last user setting takes precedence -> destroy any other customization */
   ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
   pcbddc->NeumannBoundariesLocal = NeumannBoundaries;
@@ -1186,7 +1186,7 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc,PetscInt n_is, IS I
     ierr = ISDestroy(&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(pcbddc->ISForDofsLocal);CHKERRQ(ierr);
-  /* last user setting takes precendence -> destroy any other customization */
+  /* last user setting takes precedence -> destroy any other customization */
   for (i=0;i<pcbddc->n_ISForDofs;i++) {
     ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
   }
@@ -1262,7 +1262,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
     ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
-  /* last user setting takes precendence -> destroy any other customization */
+  /* last user setting takes precedence -> destroy any other customization */
   for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
     ierr = ISDestroy(&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
   }

@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   ierr = MatViewFromOptions(A,NULL,"-A_view");CHKERRQ(ierr);
 
-  /* Create dense matrix C and X; C holds true solution with identical colums */
+  /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"ex125: nrhs %D\n",nrhs);CHKERRQ(ierr);

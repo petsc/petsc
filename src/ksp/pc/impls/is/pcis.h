@@ -19,7 +19,7 @@ typedef struct {
   /*       nodes) and                                              */
   /* * N - stands for Neumann (by extension, refers to all local   */
   /*       nodes, interior plus interface).                        */
-  /* In some cases, I or D would apply equaly well (e.g. vec1_D).  */
+  /* In some cases, I or D would apply equally well (e.g. vec1_D).  */
 
   PetscInt n;                /* number of nodes (interior+interface) in this subdomain */
   PetscInt n_B;              /* number of interface nodes in this subdomain */

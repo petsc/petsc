@@ -900,7 +900,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
 /*
    This function returns an array of flags which indicate the locations of contiguous
    blocks that should be zeroed. for eg: if bs = 3  and is = [0,1,2,3,5,6,7,8,9]
-   then the resulting sizes = [3,1,1,3,1] correspondig to sets [(0,1,2),(3),(5),(6,7,8),(9)]
+   then the resulting sizes = [3,1,1,3,1] corresponding to sets [(0,1,2),(3),(5),(6,7,8),(9)]
    Assume: sizes should be long enough to hold all the values.
 */
 PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,PetscInt bs,PetscInt sizes[], PetscInt *bs_max)
@@ -911,7 +911,7 @@ PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,Petsc
   PetscFunctionBegin;
   for (i=0,j=0; i<n; j++) {
     row = idx[i];
-    if (row%bs!=0) { /* Not the begining of a block */
+    if (row%bs!=0) { /* Not the beginning of a block */
       sizes[j] = 1;
       i++;
     } else if (i+bs > n) { /* Beginning of a block, but complete block doesn't exist (at idx end) */

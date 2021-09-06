@@ -365,7 +365,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 
   Collective on Tao
 
-  Input Paremeter:
+  Input Parameter:
 . tao - the Tao solver context
 
   options Database Keys:

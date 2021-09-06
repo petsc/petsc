@@ -164,7 +164,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
 . cgeom          - The FE geometry for this point
 . sp             - The output PetscDualSpace for each field
 . p              - The point in the output DM
-. T              - Input basis and derviatives for each field tabulated on the quadrature points
+. T              - Input basis and derivatives for each field tabulated on the quadrature points
 . TAux           - Auxiliary basis and derivatives for each aux field tabulated on the quadrature points
 . funcs          - The evaluation function for each field
 - ctxs           - The user context for each field

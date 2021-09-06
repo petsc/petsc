@@ -1,4 +1,4 @@
-static char help[] = "Test MatrixMarket outputing.\n\n";
+static char help[] = "Test MatrixMarket outputting.\n\n";
 
 /*
   Include "petscmat.h" so that we can use matrices.

@@ -211,7 +211,7 @@ def chkcygwinlink():
       if '--ignore-cygwin-link' in sys.argv: return 0
       print('===============================================================================')
       print(' *** Cygwin /usr/bin/link detected! Compiles with Intel icl/ifort can break!  **')
-      print(' *** To workarround do: "mv /usr/bin/link.exe /usr/bin/link-cygwin.exe"     **')
+      print(' *** To workaround do: "mv /usr/bin/link.exe /usr/bin/link-cygwin.exe"     **')
       print(' *** Or to ignore this check, use configure option: --ignore-cygwin-link. But compiles can fail. **')
       print('===============================================================================')
       sys.exit(3)

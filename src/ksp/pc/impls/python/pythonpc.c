@@ -1,7 +1,7 @@
 #include <petsc/private/pcimpl.h>          /*I "petscpc.h" I*/
 
 /*@C
-   PCPythonSetType - Initalize a PC object implemented in Python.
+   PCPythonSetType - Initialize a PC object implemented in Python.
 
    Collective on PC
 

@@ -407,7 +407,7 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 -   mattype - the matrix type for the explicit operator
 
     Output Parameter:
-.   mat - the explict  operator
+.   mat - the explicit  operator
 
     Notes:
     This computation is done by applying the operators to columns of the identity matrix.
@@ -438,7 +438,7 @@ PetscErrorCode  MatComputeOperator(Mat inmat,MatType mattype,Mat *mat)
 .   inmat - the matrix
 
     Output Parameter:
-.   mat - the explict  operator transposed
+.   mat - the explicit  operator transposed
 
     Notes:
     This computation is done by applying the transpose of the operator to columns of the identity matrix.

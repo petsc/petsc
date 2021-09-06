@@ -6420,7 +6420,7 @@ static PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscIn
 . point   - The point contributing dofs with these indices
 . off     - The global offset of this point
 . loff    - The local offset of each field
-. setBC   - The flag determining whether to include indices of bounsary values
+. setBC   - The flag determining whether to include indices of boundary values
 . perm    - A permutation of the dofs on this point, or NULL
 - indperm - A permutation of the entire indices array, or NULL
 

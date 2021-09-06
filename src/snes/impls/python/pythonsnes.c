@@ -1,7 +1,7 @@
 #include <petsc/private/snesimpl.h>          /*I "petscsnes.h" I*/
 
 /*@C
-   SNESPythonSetType - Initalize a SNES object implemented in Python.
+   SNESPythonSetType - Initialize a SNES object implemented in Python.
 
    Collective on SNES
 

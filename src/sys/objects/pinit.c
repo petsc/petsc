@@ -809,7 +809,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
       The checking over compatible runtime libraries is complicated by the MPI ABI initiative
       https://wiki.mpich.org/mpich/index.php/ABI_Compatibility_Initiative which started with
-        MPICH v3.1 (Released Feburary 2014)
+        MPICH v3.1 (Released February 2014)
         IBM MPI v2.1 (December 2014)
         Intel MPI Library v5.0 (2014)
         Cray MPT v7.0.0 (June 2014)

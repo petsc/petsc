@@ -3155,7 +3155,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         }
         ierr = DMPlexRestoreTransitiveClosure(refTree,p,PETSC_FALSE,&numStar,&star);CHKERRQ(ierr);
       }
-      /* determine the offset of p's shape functions withing parentCell's shape functions */
+      /* determine the offset of p's shape functions within parentCell's shape functions */
       ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(disc,&classId);CHKERRQ(ierr);
       if (classId == PETSCFE_CLASSID) {

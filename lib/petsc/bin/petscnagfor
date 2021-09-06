@@ -27,7 +27,7 @@ import subprocess
 #      hence this script removes the lines of generated C code that check the lengths.
 #   nagfor does not handle -verbose or -v; so this script provides support
 #   nagfor does not handle -shared; this script passes it to linker with -Wl,-shared
-#   nagfor does not hanlde --whole-archive, --no-whole-archive that MPICH insists on putting in so they are removed
+#   nagfor does not handle --whole-archive, --no-whole-archive that MPICH insists on putting in so they are removed
 #
 def runnagfor(args):
   if not isinstance(args, list): args = args.strip().split(' ')
