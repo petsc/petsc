@@ -735,15 +735,11 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
 {
   const PetscInt   *gpoint;
   PetscInt          numLabels, l;
-  hid_t             fileId, groupId;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
-  if (groupId != fileId) PetscStackCallHDF5(H5Gclose,(groupId));
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   for (l = 0; l < numLabels; ++l) {
     DMLabel         label;
@@ -752,18 +748,13 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
     const PetscInt *values;
     PetscInt        numValues, v;
     PetscBool       isDepth, output;
-    char            group[PETSC_MAX_PATH_LEN];
 
-    ierr = DMGetLabelName(dm, l, &name);CHKERRQ(ierr);
+    ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)label, &name);CHKERRQ(ierr);
     ierr = DMGetLabelOutput(dm, name, &output);CHKERRQ(ierr);
     ierr = PetscStrncmp(name, "depth", 10, &isDepth);CHKERRQ(ierr);
     if (isDepth || !output) continue;
-    ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s", name);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
-    if (groupId != fileId) PetscStackCallHDF5(H5Gclose,(groupId));
-    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PushGroup(viewer, name);CHKERRQ(ierr);
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
     /* Must copy to a new IS on the global comm */
     ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
@@ -780,8 +771,10 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
       const PetscInt *spoints = NULL;
       PetscInt       *gspoints, n = 0, gn, p;
       const char     *iname = "indices";
+      char            group[PETSC_MAX_PATH_LEN];
 
-      ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s/%D", name, values[v]);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(group, sizeof(group), "%D", values[v]);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
       ierr = DMLabelGetStratumIS(label, values[v], &stratumIS);CHKERRQ(ierr);
 
       if (stratumIS) {ierr = ISGetLocalSize(stratumIS, &n);CHKERRQ(ierr);}
@@ -794,17 +787,18 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
       if (stratumIS) {ierr = PetscObjectGetName((PetscObject) stratumIS, &iname);CHKERRQ(ierr);}
       ierr = PetscObjectSetName((PetscObject) globalStratumIS, iname);CHKERRQ(ierr);
 
-      ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
       ierr = ISView(globalStratumIS, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
       ierr = ISDestroy(&globalStratumIS);CHKERRQ(ierr);
       ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(globalValueIS, &values);CHKERRQ(ierr);
     ierr = ISDestroy(&globalValueIS);CHKERRQ(ierr);
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1074,8 +1068,8 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_
 PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 {
   LabelCtx        ctx;
-  hid_t           fileId, groupId;
   hsize_t         idx = 0;
+  PetscBool       hasGroup;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1083,9 +1077,14 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer)
   ctx.dm     = dm;
   ctx.viewer = viewer;
   ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
-  PetscStackCallHDF5(H5Literate,(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, &ctx));
-  PetscStackCallHDF5(H5Gclose,(groupId));
+  ierr = PetscViewerHDF5HasGroup(viewer, NULL, &hasGroup);CHKERRQ(ierr);
+  if (hasGroup) {
+    hid_t fileId, groupId;
+
+    ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
+    PetscStackCallHDF5(H5Literate,(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, &ctx));
+    PetscStackCallHDF5(H5Gclose,(groupId));
+  }
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
