@@ -77,7 +77,17 @@ def generateDevDicts(imRelDir):
       "web_url"    : "",
       "avatar_url" : os.path.join(imRelDir,"victorminden.jpg"),
       "name"       : "Victor Minden"
-    }
+    },
+    "steve_benson" : {
+      "web_url"    : "",
+      "avatar_url" : "",
+      "name"       : "Steven J. Benson",
+    },
+    "stefan_wild" : {
+      "web_url"    : "https://www.anl.gov/profile/stefan-m-wild",
+      "avatar_url" : "",
+      "name"       : "Stefan Wild",
+    },
   }
 
   # Tuple of all current active devs' gitlab usernames, only the people whose corresponding
@@ -89,7 +99,7 @@ def generateDevDicts(imRelDir):
                             "jfaibussowitsch","caidao22","jczhang07","karlrupp","markadams4",
                             "knepley","oanam198","psanan","rtmills","abhyshr","stefanozampini",
                             "tmunson","haplav","prj-","wence","tisaac","krugers","dalcinl",
-                            "joseroman","bwhitchurch","barrysmith")
+                            "joseroman","bwhitchurch","barrysmith","emconsta","hsuh")
   activeCoreDevs = {d:{"web_url":None,"avatar_url":None,"name":None} for d in activeCoreDevUsernames}
   # Some people don't have the right profile picture (or any profile picture) on their
   # gitlab account, or perhaps want a different name or URL. So we apply this special
