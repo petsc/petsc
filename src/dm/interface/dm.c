@@ -1109,7 +1109,7 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = PetscSectionGetStorageSize(section, &n);CHKERRQ(ierr);
       ierr = PetscMalloc1(n, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
       for (p = pStart, l = 0; p < pEnd; ++p) {
-        PetscInt bdof, cdof, dof, off, c, cind = 0;
+        PetscInt bdof, cdof, dof, off, c, cind;
 
         /* Should probably use constrained dofs */
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -1122,9 +1122,13 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
           if (bs < 0)          {bs = bdof;}
           else if (bs != bdof) {bs = 1;}
         }
-        for (c = 0; c < dof; ++c, ++l) {
-          if ((cind < cdof) && (c == cdofs[cind])) ltog[l] = off < 0 ? off-c : off+c;
-          else                                     ltog[l] = (off < 0 ? -(off+1) : off) + c;
+        for (c = 0, cind = 0; c < dof; ++c, ++l) {
+          if ((cind < cdof) && (c == cdofs[cind])) {
+            ltog[l] = off < 0 ? off-c : -(off+c+1);
+            cind++;
+          } else {
+            ltog[l] = (off < 0 ? -(off+1) : off) + c;
+          }
         }
       }
       /* Must have same blocksize on all procs (some might have no points) */
