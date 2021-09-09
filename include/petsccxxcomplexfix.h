@@ -6,7 +6,7 @@
     In particular, it silences `-Wfloat-equal` warnings in `operator==()` and `operator!=` below.
     Other compilers beyond GCC support this pragma.
 */
-#if defined(__GNUC__) && (__GNUC__ >= 4)
+#if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__NEC__)
 #pragma GCC system_header
 #endif
 
@@ -40,7 +40,7 @@
      files to prevent these methods from being provided.
 */
 
-#if defined(__GNUC__) && (__GNUC__ >= 4)
+#if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__NEC__)
 #pragma GCC system_header
 #endif
 
