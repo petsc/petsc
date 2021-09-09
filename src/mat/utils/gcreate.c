@@ -582,10 +582,10 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt c
 
    Notes: Entries can be repeated, see MatSetValuesCOO().
 
-   If the matrix type is not AIJKOKKOS, then the entries must be owned by the local part
+   If the matrix type is not AIJ or AIJKOKKOS, then the entries must be owned by the local part
    of the matrix and no row or column indices are allowed to be negative.
 
-   If the matrix type is AIJKOKKOS (sequential or parallel), the above constraints do not apply.
+   If the matrix type is AIJ or AIJKOKKOS (sequential or parallel), the above constraints do not apply.
    More specifically, entries with negative row or column indices are allowed but will be ignored.
    The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries are allowed
    and will be properly added or inserted to the matrix.
@@ -609,8 +609,8 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
   if (PetscDefined(USE_DEBUG) && !isAIJKokkos) {
     PetscInt i;
     for (i = 0; i < ncoo; i++) {
-      if (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %" PetscInt_FMT "! Must be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",coo_i[i],A->rmap->rstart,A->rmap->rend);
-      if (coo_j[i] < 0 || coo_j[i] >= A->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %" PetscInt_FMT "! Must be in [0,%" PetscInt_FMT ")",coo_j[i],A->cmap->N);
+      if (coo_i[i] >= 0 && (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %" PetscInt_FMT "! Must be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",coo_i[i],A->rmap->rstart,A->rmap->rend);
+      if (coo_j[i] >= A->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %" PetscInt_FMT "! Must be in [0,%" PetscInt_FMT ")",coo_j[i],A->cmap->N);
     }
   }
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOO_C",&f);CHKERRQ(ierr);
