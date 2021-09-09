@@ -125,8 +125,8 @@ class Script(logger.Logger):
     return
 
   def checkPython(self):
-    if not hasattr(sys, 'version_info') or sys.version_info < (2,6):
-      raise RuntimeError('BuildSystem requires Python version 2.6 or higher. Get Python at https://www.python.org/')
+    if not hasattr(sys, 'version_info') or sys.version_info < (2,7):
+      raise RuntimeError('BuildSystem requires Python version 2.7 or higher. Get Python at https://www.python.org/')
     return
 
   @staticmethod

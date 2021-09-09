@@ -284,12 +284,6 @@ prepend-path PATH "%s"
     self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('PCC',self.setCompilers.getCompiler())
     self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())
-    self.addMakeMacro('PCPP_FLAGS',getattr(self.setCompilers,self.languages.clanguage.upper()+'PPFLAGS'))
-    self.addMakeMacro('PFLAGS','${'+self.languages.clanguage.upper()+'FLAGS}')
-    self.addMakeMacro('PPPFLAGS','${'+self.languages.clanguage.upper()+'PPFLAGS}')
-    # ugly work-around for python3 distutils parse_makefile() issue with the above 2 lines
-    self.addMakeMacro('PY_'+self.languages.clanguage.upper()+'FLAGS','')
-    self.addMakeMacro('PY_'+self.languages.clanguage.upper()+'PPFLAGS','')
     self.setCompilers.popLanguage()
     # .o or .obj
     self.addMakeMacro('CC_SUFFIX','o')

@@ -22,50 +22,6 @@ class Configure(config.base.Configure):
     self.libraries = framework.require('config.libraries', self)
     return
 
-  def configureDisutils(self):
-    '''Check that disutils.sysconfig is functional, and can return the required config vars'''
-    try:
-      try:
-        import distutils.sysconfig
-      except ImportError as e:
-        self.logPrint('Error importing distutils.sysconfig: '+str(e))
-        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
-
-      try:
-        distutils.sysconfig.get_python_inc()
-        distutils.sysconfig.get_python_inc(1)
-      except distutils.sysconfig.DistutilsPlatformError as e:
-        self.logPrint('Error finding Python include directories: '+str(e))
-        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
-
-      try:
-        distutils.sysconfig.get_config_var('LDFLAGS')
-        distutils.sysconfig.get_config_var('LIBS')
-        distutils.sysconfig.get_config_var('SYSLIBS')
-      except distutils.sysconfig.DistutilsPlatformError as e:
-        self.logPrint('Error finding Python libraries: '+str(e))
-        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
-
-      try:
-        distutils.sysconfig.get_config_var('LIBDIR')
-        distutils.sysconfig.get_config_var('LIBPL')
-        distutils.sysconfig.get_config_var('LDLIBRARY')
-        distutils.sysconfig.get_config_var('SO')
-      except distutils.sysconfig.DistutilsPlatformError as e:
-        self.logPrint('Error finding Python shared library: '+str(e))
-        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
-
-      try:
-        distutils.sysconfig.get_config_var('BINDIR')
-        distutils.sysconfig.get_config_var('PYTHON')
-      except distutils.sysconfig.DistutilsPlatformError as e:
-        self.logPrint('Error finding Python executable: '+str(e))
-        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
-    except Exception as e:
-      self.logPrint('I do not know what went wrong: '+str(e))
-      raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
-    return
-
   def checkInclude(self, includeDir):
     '''Check that Python.h is present'''
     oldFlags = self.compilers.CPPFLAGS
@@ -88,19 +44,19 @@ class Configure(config.base.Configure):
     return success
 
   def configurePythonLibraries(self):
-    import distutils.sysconfig
+    import sysconfig
 
     # Check for Python headers
-    inc = [distutils.sysconfig.get_python_inc(), distutils.sysconfig.get_python_inc(1)]
+    inc = [sysconfig.get_path('include'), sysconfig.get_path('platinclude')]
     if not self.checkInclude(inc):
       raise RuntimeError('Unable to locate Python headers')
     self.include = inc
     # Check for Python dynamic library
-    dylib = distutils.sysconfig.get_config_var('LDLIBRARY')
+    dylib = sysconfig.get_config_var('LDLIBRARY')
     if not dylib:
-      raise RuntimeError('LDLIBRARY variable is missing from disutils database');
-    libDirs = [distutils.sysconfig.get_config_var('LIBDIR'),
-               distutils.sysconfig.get_config_var('LIBPL'),
+      raise RuntimeError('LDLIBRARY variable is missing from sysconfig database');
+    libDirs = [sysconfig.get_config_var('LIBDIR'),
+               sysconfig.get_config_var('LIBPL'),
                os.path.join('/System', 'Library', 'Frameworks'),
                os.path.join('/Library', 'Frameworks')]
     lib = None
@@ -112,19 +68,19 @@ class Configure(config.base.Configure):
     if lib is None:
       raise RuntimeError("Cannot locate Python dynamic libraries");
     # Remove any version numbers from the library name
-    if distutils.sysconfig.get_config_var('SO'):
-      ext = distutils.sysconfig.get_config_var('SO')
+    if sysconfig.get_config_var('SO'):
+      ext = sysconfig.get_config_var('SO')
       if os.path.isfile(lib.split(ext)[0]+ext):
         lib = lib.split(ext)[0]+ext
     # Add any additional libraries needed for the link
     self.lib = [lib]
-    if distutils.sysconfig.get_config_var('LIBS'):
-      flags = distutils.sysconfig.get_config_var('LIBS')
-      if distutils.sysconfig.get_config_var('LDFLAGS'):
-        flags = distutils.sysconfig.get_config_var('LDFLAGS')+' '+flags
+    if sysconfig.get_config_var('LIBS'):
+      flags = sysconfig.get_config_var('LIBS')
+      if sysconfig.get_config_var('LDFLAGS'):
+        flags = sysconfig.get_config_var('LDFLAGS')+' '+flags
       self.lib.extend(self.splitLibs(flags))
-    if distutils.sysconfig.get_config_var('SYSLIBS'):
-      self.lib.extend(self.splitLibs(distutils.sysconfig.get_config_var('SYSLIBS')))
+    if sysconfig.get_config_var('SYSLIBS'):
+      self.lib.extend(self.splitLibs(sysconfig.get_config_var('SYSLIBS')))
     # Verify that the Python library is a shared library
     try:
       self.isShared = self.libraries.checkShared('#include <Python.h>\n', 'Py_Initialize', 'Py_IsInitialized', 'Py_Finalize', checkLink = self.checkPythonLink, libraries = self.lib, initArgs = '', noCheckArg = 1)
@@ -154,7 +110,6 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.executeTest(self.configureDisutils)
     self.executeTest(self.configurePythonLibraries)
     self.setOutput()
     return

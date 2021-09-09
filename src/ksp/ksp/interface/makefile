@@ -3,8 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
-           xmon.c eige.c dlregisksp.c dmksp.c
+SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c xmon.c eige.c dlregisksp.c dmksp.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp

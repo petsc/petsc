@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-from distutils.sysconfig import parse_makefile
+from sysconfig import _parse_makefile as parse_makefile
 import sys
 import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
