@@ -3,7 +3,7 @@
    Include "petsctao.h" so that we can use TAO solvers.  Note that this
    file automatically includes libraries such as:
      petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - sysem routines        petscmat.h - matrices
+     petscsys.h    - system routines        petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 
@@ -150,7 +150,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
-  /* Even for linear least square, we do not direct use matrix operation f = A*x - b now, just for future modification and compatability for nonlinear least square */
+  /* Even for linear least square, we do not direct use matrix operation f = A*x - b now, just for future modification and compatibility for nonlinear least square */
   for (m=0;m<M;m++) {
     f[m] = -b[m];
     for (n=0;n<N;n++) {
@@ -257,7 +257,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 /*TEST
 
    build:
-      requires: !complex !single !quad !define(PETSC_USE_64BIT_INDICES)
+      requires: !complex !single !quad !defined(PETSC_USE_64BIT_INDICES)
 
    test:
       localrunfiles: cs1Data_A_b_xGT

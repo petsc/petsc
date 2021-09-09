@@ -107,7 +107,7 @@ def printdata(LOC,fd,dict):
                   a_key_tmp = a_key
                   # Print the HTML tag for this section
                   fd.write('<A NAME="' + a_key + '"></A>\n' )
-                  # Print the HTML index at the begining of each section
+                  # Print the HTML index at the beginning of each section
                   fd.write('<H3> <CENTER> | ')
                   for key_tmp in alphabet_keys:
                         if a_key == key_tmp:
@@ -120,7 +120,7 @@ def printdata(LOC,fd,dict):
             # Precheck the sub_keys so that if it has 'PetscNoKey', then start printing
             # the filename (data) in the same column
             sub_keys = sorted(dict[prim_key].keys(), key=str.lower)
-            # Now move 'PetscNoKey' to the begining of this list
+            # Now move 'PetscNoKey' to the beginning of this list
             if not sub_keys.count('PetscNoKey') == 0:
                   sub_keys.remove('PetscNoKey')
                   sub_keys.insert(0,'PetscNoKey')

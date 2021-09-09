@@ -1,8 +1,8 @@
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined Newton method.\n\
-Uses KSP to solve the linearized Newton sytems.  This solver\n\
+Uses KSP to solve the linearized Newton systems.  This solver\n\
 is a very simplistic inexact Newton method.  The intent of this code is to\n\
-demonstrate the repeated solution of linear sytems with the same nonzero pattern.\n\
+demonstrate the repeated solution of linear systems with the same nonzero pattern.\n\
 \n\
 This is NOT the recommended approach for solving nonlinear problems with PETSc!\n\
 We urge users to employ the SNES component for solving nonlinear problems whenever\n\
@@ -197,7 +197,7 @@ int main(int argc,char **argv)
       This solver is a very simplistic inexact Newton method, with no
       no damping strategies or bells and whistles. The intent of this code
       is  merely to demonstrate the repeated solution with KSP of linear
-      sytems with the same nonzero structure.
+      systems with the same nonzero structure.
 
       This is NOT the recommended approach for solving nonlinear problems
       with PETSc!  We urge users to employ the SNES component for solving

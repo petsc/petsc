@@ -1027,7 +1027,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
     this context, but ML doesn't provide a way to find out which ones.
    */
   ierr = PetscOptionsBool("-pc_ml_OldHierarchy","Use old routine to generate hierarchy","None",pc_ml->OldHierarchy,&pc_ml->OldHierarchy,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_ml_repartition", "Allow ML to repartition levels of the heirarchy","ML_Repartition_Activate",pc_ml->Repartition,&pc_ml->Repartition,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_repartition", "Allow ML to repartition levels of the hierarchy","ML_Repartition_Activate",pc_ml->Repartition,&pc_ml->Repartition,NULL);CHKERRQ(ierr);
   if (pc_ml->Repartition) {
     ierr = PetscOptionsReal("-pc_ml_repartitionMaxMinRatio", "Acceptable ratio of repartitioned sizes","ML_Repartition_Set_LargestMinMaxRatio",pc_ml->MaxMinRatio,&pc_ml->MaxMinRatio,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_ml_repartitionMinPerProc", "Smallest repartitioned size","ML_Repartition_Set_MinPerProc",pc_ml->MinPerProc,&pc_ml->MinPerProc,NULL);CHKERRQ(ierr);
@@ -1089,7 +1089,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
 .  -pc_ml_DampingFactor <1.33333> - P damping factor (ML_Aggregate_Set_DampingFactor)
 .  -pc_ml_Threshold <0> - Smoother drop tol (ML_Aggregate_Set_Threshold)
 .  -pc_ml_SpectralNormScheme_Anorm <false> - Method used for estimating spectral radius (ML_Set_SpectralNormScheme_Anorm)
-.  -pc_ml_repartition <false> - Allow ML to repartition levels of the heirarchy (ML_Repartition_Activate)
+.  -pc_ml_repartition <false> - Allow ML to repartition levels of the hierarchy (ML_Repartition_Activate)
 .  -pc_ml_repartitionMaxMinRatio <1.3> - Acceptable ratio of repartitioned sizes (ML_Repartition_Set_LargestMinMaxRatio)
 .  -pc_ml_repartitionMinPerProc <512>: Smallest repartitioned size (ML_Repartition_Set_MinPerProc)
 .  -pc_ml_repartitionPutOnSingleProc <5000> - Problem size automatically repartitioned to one processor (ML_Repartition_Set_PutOnSingleProc)

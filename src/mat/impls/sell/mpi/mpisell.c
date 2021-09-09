@@ -1379,7 +1379,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin,MatDuplicateOption cpvalues,Mat *n
    34 values.
 
    When d_nnz, o_nnz parameters are specified, the storage is specified
-   for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
    In the above case the values for d_nnz,o_nnz are:
 .vb
      proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
@@ -1549,7 +1549,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
    34 values.
 
    When d_rlen, o_rlen parameters are specified, the storage is specified
-   for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
    In the above case the values for d_nnz,o_nnz are:
 .vb
      proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]

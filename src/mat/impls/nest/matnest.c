@@ -1641,7 +1641,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
   ierr = PetscMalloc1(nr,&vs->isglobal.row);CHKERRQ(ierr);
   ierr = PetscMalloc1(nc,&vs->isglobal.col);CHKERRQ(ierr);
   if (is_row) { /* valid IS is passed in */
-    /* refs on is[] are incremeneted */
+    /* refs on is[] are incremented */
     for (i=0; i<vs->nr; i++) {
       ierr = PetscObjectReference((PetscObject)is_row[i]);CHKERRQ(ierr);
 
@@ -1669,7 +1669,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
   }
 
   if (is_col) { /* valid IS is passed in */
-    /* refs on is[] are incremeneted */
+    /* refs on is[] are incremented */
     for (j=0; j<vs->nc; j++) {
       ierr = PetscObjectReference((PetscObject)is_col[j]);CHKERRQ(ierr);
 

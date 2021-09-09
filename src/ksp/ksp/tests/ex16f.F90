@@ -109,6 +109,6 @@
 !
 !    test:
 !      args: -f ${DATAFILESPATH}/matrices/arco1 -options_left no
-!      requires: datafilespath double  !complex !define(PETSC_USE_64BIT_INDICES)
+!      requires: datafilespath double  !complex !defined(PETSC_USE_64BIT_INDICES)
 !
 !TEST*/

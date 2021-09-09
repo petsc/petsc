@@ -201,7 +201,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
       SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported x boundary type %s",DMBoundaryTypes[stag->boundaryType[0]]);
   }
 
-  /* Total size of ghosted/local represention */
+  /* Total size of ghosted/local representation */
   stag->entriesGhost = stag->nGhost[0]*stag->entriesPerElement;
 
   /* Define neighbors */

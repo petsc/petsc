@@ -12,7 +12,7 @@ configuration variant is associated to a name, frequently available as
 an environmental variable named ``PETSC_ARCH``.
 
 This package is a holds all the available variants of the PETSc
-extension module built agaist specific PETSc configurations. It also
+extension module built against specific PETSc configurations. It also
 provides a convenience function using of the builtin ``imp`` module
 for easily importing any of the available extension modules depending
 on the value of a user-provided configuration name, the ``PETSC_ARCH``

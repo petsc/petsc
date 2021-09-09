@@ -112,7 +112,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  /* Tests mappings betweeen application/PETSc orderings */
+  /* Tests mappings between application/PETSc orderings */
   if (testorder) {
     ISLocalToGlobalMapping ltogm;
 

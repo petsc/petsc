@@ -4,7 +4,7 @@ from petsc4py import PETSc
 
 # this user class is an application
 # context for the nonlinear problem
-# at hand; it contains some parametes
+# at hand; it contains some parameters
 # and knows how to compute residuals
 
 class Bratu2D:
@@ -59,7 +59,7 @@ snes.setFromOptions()
 
 # solve the nonlinear problem
 b, x = None, f.duplicate()
-x.set(0) # zero inital guess
+x.set(0) # zero initial guess
 snes.solve(b, x)
 
 if OptDB.getBool('plot', True):

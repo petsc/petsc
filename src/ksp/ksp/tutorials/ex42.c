@@ -943,7 +943,7 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
   ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
-  /* get acces to the vector */
+  /* get access to the vector */
   ierr = DMGetLocalVector(stokes_da,&local_F);CHKERRQ(ierr);
   ierr = VecZeroEntries(local_F);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(stokes_da,local_F,&ff);CHKERRQ(ierr);

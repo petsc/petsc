@@ -290,8 +290,6 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F,Mat A,IS perm,const M
 
   Use ./configure --download-suitesparse to install PETSc to use CHOLMOD
 
-  TODO: Use -pc_type qr -pc_factor_mat_solver_type spqr to use this direct solver (TODO: PCQR)
-
   Consult SPQR documentation for more information about the Common parameters
   which correspond to the options database keys below.
 

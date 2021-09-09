@@ -127,7 +127,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
       ierr = DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
       if (detJ < 0) {
-        ierr = DMPlexReverseCell(*dm, 0);CHKERRQ(ierr);
+        ierr = DMPlexOrientPoint(*dm, 0, -1);CHKERRQ(ierr);
         ierr = DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
         if (detJ < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Something is wrong");
       }
@@ -401,7 +401,7 @@ int main(int argc, char **argv)
       requires: !complex !single
 
     test:
-      requires: hdf5 double datafilespath !define(PETSC_USE_64BIT_INDICES) hypre
+      requires: hdf5 double datafilespath !defined(PETSC_USE_64BIT_INDICES) hypre
       args: -laplace_ksp_type cg -laplace_pc_type hypre -laplace_ksp_monitor_true_residual -laplace_ksp_max_it 4 -mat_lmvm_ksp_type cg -mat_lmvm_pc_type gamg -tao_monitor -petscspace_degree 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
       filter: sed -e "s/-nan/nan/g"
 

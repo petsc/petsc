@@ -3,16 +3,8 @@
 
 #include <petscvec.h>
 #include <petscsf.h>
+#include <petscdevice.h>
 #include <petsc/private/petscimpl.h>
-#include <petscviewer.h>
-
-#if defined(PETSC_HAVE_CUDA)
-  #include <cuda_runtime.h>
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-  #include <hip/hip_runtime.h>
-#endif
 
 PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;
 PETSC_EXTERN PetscLogEvent PETSCSF_SetUp;

@@ -314,6 +314,25 @@ Usage of PETSc Functions and Macros
 #. Public and private PETSc include files cannot reference include files
    located in the PETSc source tree.
 
+#. All public functions must sanity-check their arguments using the appropriate
+   ``PetscValidXXX()`` macros. These must appear between ``PetscFunctionBegin`` and
+   ``PetscFunctionReturn()`` For example
+
+   ::
+
+     PetscErrorCode PetscPublicFunction(Vec v, PetscScalar *array, PetscInt collectiveInt)
+     {
+       PetscFunctionBegin;
+       PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+       PetscValidScalarPointer(array,2);
+       PetscValidLogicalCollectiveInt(v,collectiveInt,3);
+       ...
+       PetscFunctionReturn(0);
+     }
+
+   See ``include/petsc/private/petscimpl.h`` and search for "PetscValid" to see all
+   available checker macros.
+
 #. When possible, use ``PetscDefined()`` instead of preprocessor conditionals.
    For example use::
 

@@ -760,7 +760,7 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   m    = n = B->mnls[rank];
   d_nz = o_nz = 0;
 
-  /* Determine preallocation for MatCreateMPIAIJ */
+  /* Determine preallocation for MatCreateAIJ */
   ierr = PetscMalloc1(m,&d_nnz);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&o_nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;

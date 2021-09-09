@@ -4,7 +4,7 @@
 
 #include <petscsys.h>
 #include <petsc/private/petscimpl.h>
-#include <petsccublas.h>
+#include <petscdevice.h>
 
 static cublasHandle_t     cublasv2handle   = NULL;
 static cusolverDnHandle_t cusolverdnhandle = NULL;

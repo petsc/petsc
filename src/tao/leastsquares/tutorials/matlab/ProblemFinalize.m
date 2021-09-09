@@ -1,7 +1,7 @@
 % Sample calling syntax for testing taopounders and comparing to fminsearch
 % ProblemFinalize is called after solving the instance
 
-% Pad the histroy if there are remaining evaluations or truncate if too many
+% Pad the history if there are remaining evaluations or truncate if too many
 if nfev < nfmax
   fvals = [fvals(1:nfev);ones(nfmax-nfev,1)*fvals(nfev)];
 else
@@ -34,7 +34,7 @@ X_hist = zeros(nfmax,n);
 % Call fminsearch
 fminsearch(func,X0,options);
 
-% Pad the histroy if there are remaining evaluations or truncate if too many
+% Pad the history if there are remaining evaluations or truncate if too many
 if nfev < nfmax
   fvals = [fvals(1:nfev);ones(nfmax-nfev,1)*fvals(nfev)];
 else

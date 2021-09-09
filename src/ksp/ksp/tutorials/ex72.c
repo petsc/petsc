@@ -456,14 +456,14 @@ int main(int argc,char **args)
 
    testset:
       nsize: 2
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
       args:  -ksp_type bicg
       test:
          suffix: 2
 
    testset:
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
       args: -ksp_type bicg
       test:
@@ -474,14 +474,14 @@ int main(int argc,char **args)
 
    testset:
       suffix: 6
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/fem1
       args: -pc_factor_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always
 
    testset:
       TODO: Matrix row/column sizes are not compatible with block size
       suffix: 7
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
       args: -viewer_binary_skip_info -mat_type seqbaij
       args: -matload_block_size {{2 3 4 5 6 7 8}separate output}
@@ -499,7 +499,7 @@ int main(int argc,char **args)
    testset:
       TODO: Matrix row/column sizes are not compatible with block size
       suffix: 7_d
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
       args: -viewer_binary_skip_info -mat_type seqbaij
       args: -matload_block_size {{2 3 4 5 6 7 8}shared output}
@@ -507,14 +507,14 @@ int main(int argc,char **args)
 
    testset:
       suffix: 8
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
       args: -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
 
    testset:
       TODO: Matrix row/column sizes are not compatible with block size
       suffix: 9
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
       args: -viewer_binary_skip_info  -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
       test:
@@ -543,7 +543,7 @@ int main(int argc,char **args)
    testset:
       suffix: 10
       nsize: 2
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -ksp_type fgmres -pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor_short
 
    testset:
@@ -560,7 +560,7 @@ int main(int argc,char **args)
    testset:
       nsize: 3
       args: -f0 ${DATAFILESPATH}/matrices/medium
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       test:
          suffix: 14
          requires: spai
@@ -584,7 +584,7 @@ int main(int argc,char **args)
 
    testset:
       suffix: 19
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/poisson1
       args: -ksp_type cg -pc_type icc
       args: -pc_factor_levels {{0 2 4}separate output}
@@ -594,7 +594,7 @@ int main(int argc,char **args)
 
    testset:
       suffix: ILU
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
       args: -pc_factor_levels 1
       test:
@@ -604,7 +604,7 @@ int main(int argc,char **args)
 
    testset:
       suffix: aijcusparse
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) cuda
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) cuda
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_type cusparse -pc_type ilu -vec_type cuda
 
    testset:
@@ -616,7 +616,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 2
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) hypre
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) hypre
       args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg
       test:
          suffix: boomeramg_euclid
@@ -638,7 +638,7 @@ int main(int argc,char **args)
 
    testset:
       suffix: cg_singlereduction
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
       args: -mat_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason
       test:
@@ -646,7 +646,7 @@ int main(int argc,char **args)
          args: -ksp_cg_single_reduction
 
    testset:
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz
       args: -ksp_monitor_short -pc_type icc
       test:
@@ -657,7 +657,7 @@ int main(int argc,char **args)
          args: -ksp_type lcd
 
    testset:
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
       args: -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info
       test:
@@ -669,7 +669,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 2
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
       args: -ksp_monitor_short -ksp_view
       # Different output files
@@ -682,7 +682,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 4
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -ksp_monitor_short -ksp_view
       test:
          suffix: xxt
@@ -695,7 +695,7 @@ int main(int argc,char **args)
       # The output file here is the same as mumps
       suffix: mumps_cholesky
       output_file: output/ex72_mumps.out
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
       nsize: {{1 2}}
       test:
@@ -709,7 +709,7 @@ int main(int argc,char **args)
       # The output file here is the same as mumps
       suffix: mumps_lu
       output_file: output/ex72_mumps.out
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
       test:
          args: -mat_type seqaij
@@ -728,14 +728,14 @@ int main(int argc,char **args)
    test:
       suffix: mumps_lu_parmetis
       output_file: output/ex72_mumps.out
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps parmetis
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps parmetis
       nsize: 2
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2 -mat_type mpiaij -mat_mumps_icntl_28 2 -mat_mumps_icntl_29 2
 
    test:
       suffix: mumps_lu_ptscotch
       output_file: output/ex72_mumps.out
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps ptscotch
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps ptscotch
       nsize: 2
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2 -mat_type mpiaij -mat_mumps_icntl_28 2 -mat_mumps_icntl_29 1
 
@@ -744,19 +744,19 @@ int main(int argc,char **args)
       suffix: mumps_redundant
       output_file: output/ex72_mumps_redundant.out
       nsize: 8
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: pastix_cholesky
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) pastix
       output_file: output/ex72_mumps.out
       nsize: {{1 2}}
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2 -pc_type cholesky -mat_type sbaij -mat_ignore_lower_triangular
 
    testset:
       suffix: pastix_lu
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) pastix
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
       output_file: output/ex72_mumps.out
       test:
@@ -769,12 +769,12 @@ int main(int argc,char **args)
       suffix: pastix_redundant
       output_file: output/ex72_mumps_redundant.out
       nsize: 8
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) pastix
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: superlu_dist_lu
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu_dist
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) superlu_dist
       output_file: output/ex72_mumps.out
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu_dist -num_numfac 2 -num_rhs 2
       nsize: {{1 2}}
@@ -783,23 +783,23 @@ int main(int argc,char **args)
       suffix: superlu_dist_redundant
       nsize: 8
       output_file: output/ex72_mumps_redundant.out
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu_dist
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) superlu_dist
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type superlu_dist -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: superlu_lu
       output_file: output/ex72_mumps.out
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) superlu
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: umfpack
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) suitesparse
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) suitesparse
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_type umfpack -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: zeropivot
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps
       args: -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp
       test:
          nsize: 3
@@ -813,7 +813,7 @@ int main(int argc,char **args)
          #TODO: Need to determine if deprecated
 
    testset:
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type fgmres
       test:
          suffix: bddc_seq
@@ -830,7 +830,7 @@ int main(int argc,char **args)
          nsize: 4
          args: -ksp_error_if_not_converged -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type parmetis
       test:
-         requires: ptscotch define(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+         requires: ptscotch defined(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
          suffix: bddc_par_nd_ptscotch
          filter: sed -e "s/Number of iterations =   [0-9]/Number of iterations = 9/g"
          nsize: 4

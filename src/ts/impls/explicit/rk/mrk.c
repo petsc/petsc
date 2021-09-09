@@ -342,7 +342,7 @@ static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts)
     for (i=0; i<s; i++) {
       ierr = VecGetSubVector(YdotRHS[i],rk->is_fast,&YdotRHS_fast[i]);CHKERRQ(ierr);
     }
-    /* propogate fast component using small time steps */
+    /* propagate fast component using small time steps */
     for (i=0; i<s; i++) {
       /* stage value for slow components */
       ierr = TSInterpolate_RK_MultirateSplit(rk->ts_root,t+k*h/rk->dtratio+h/rk->dtratio*c[i],Y[i]);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ static PetscErrorCode TSStep_RK_MultirateSplit(TS ts)
     ierr = VecGetSubVector(YdotRHS[i],rk->is_fast,&YdotRHS_fast[i]);CHKERRQ(ierr);
   }
   ierr = VecCopy(ts->vec_sol,rk->X0);CHKERRQ(ierr);
-  /* propogate both slow and fast components using large time steps */
+  /* propagate both slow and fast components using large time steps */
   for (i=0; i<s; i++) {
     rk->stage_time = t + h*c[i];
     ierr = TSPreStage(ts,rk->stage_time);CHKERRQ(ierr);

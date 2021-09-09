@@ -474,7 +474,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     bottom = ys - Ys; top = bottom + y;
     down   = zs - Zs;   up  = down + z;
     count  = 0;
-    /* the bottom chunck */
+    /* the bottom chunk */
     for (i=(IZs-Zs); i<down; i++) {
       for (j=bottom; j<top; j++) {
         for (k=left; k<right; k++) idx[count++] = (i*(Ye-Ys) + j)*(Xe-Xs) + k;

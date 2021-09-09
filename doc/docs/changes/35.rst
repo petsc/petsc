@@ -27,7 +27,7 @@ Changes: 3.5
    ``PETSC_DIR/externalpackages`` to
    ``PETSC_DIR/PETSC_ARCH/externalpackages``
 -  Added ``--with-clean`` option to delete the build files in
-   ``PETSC_DIR/PETSC_ARCH`` at the begining of the build
+   ``PETSC_DIR/PETSC_ARCH`` at the beginning of the build
 -  The ``__SDIR__`` macro (and ``__INSDIR__``) is no longer used. We
    recommend passing full paths or paths from the project root to the
    compiler so that error messages contain enough context.

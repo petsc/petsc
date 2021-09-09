@@ -75,20 +75,23 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: 0
-    requires: triangle
-    args: -dm_plex_adaptor cellrefiner -dm_plex_cell_refiner sbr -dm_view -adapt_dm_view
+  testset:
+    args: -dm_plex_adaptor cellrefiner -dm_plex_transform_type refine_sbr
 
-  test:
-    suffix: 1
-    requires: triangle
-    args: -dm_coord_space 0 -refcell 2 -dm_plex_adaptor cellrefiner -dm_plex_cell_refiner sbr -dm_view ::ascii_info_detail -adapt_dm_view ::ascii_info_detail
+    test:
+      suffix: 0
+      requires: triangle
+      args: -dm_view -adapt_dm_view
 
-  test:
-    suffix: 2
-    requires: triangle
-    nsize: 2
-    args: -refcell 2,-1 -dm_distribute -petscpartitioner_type simple -dm_plex_adaptor cellrefiner -dm_plex_cell_refiner sbr -dm_view -adapt_dm_view
+    test:
+      suffix: 1
+      requires: triangle
+      args: -dm_coord_space 0 -refcell 2 -dm_view ::ascii_info_detail -adapt_dm_view ::ascii_info_detail
+
+    test:
+      suffix: 2
+      requires: triangle
+      nsize: 2
+      args: -refcell 2,-1 -dm_distribute -petscpartitioner_type simple -dm_view -adapt_dm_view
 
 TEST*/

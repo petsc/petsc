@@ -11,7 +11,7 @@ except ImportError:
 
 # this user class is an application
 # context for the nonlinear problem
-# at hand; it contains some parametes
+# at hand; it contains some parameters
 # and knows how to compute residuals
 
 class AppCtx:

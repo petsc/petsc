@@ -240,12 +240,12 @@ int main(int argc,char **args)
         suffix: matis_aij_parmetis_nd
         args: -testseqaij
       test:
-        requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+        requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
         suffix: matis_poisson1_parmetis_nd
         args: -f ${DATAFILESPATH}/matrices/poisson1
 
    testset:
-      requires: ptscotch define(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
+      requires: ptscotch defined(PETSC_HAVE_SCOTCH_PARMETIS_V3_NODEND)
       output_file: output/ex55_1.out
       nsize: 4
       args: -mat_is_disassemble_l2g_type nd -mat_partitioning_type ptscotch
@@ -255,7 +255,7 @@ int main(int argc,char **args)
         suffix: matis_aij_ptscotch_nd
         args: -testseqaij
       test:
-        requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+        requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
         suffix: matis_poisson1_ptscotch_nd
         args: -f ${DATAFILESPATH}/matrices/poisson1
 

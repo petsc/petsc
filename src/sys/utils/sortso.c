@@ -1172,7 +1172,7 @@ PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *
 
    This function serves as an alternative to PetscSortInt(). While this function works for any array of integers it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
-   recomended that the user benchmark their code to see which routine is fastest.
+   recommended that the user benchmark their code to see which routine is fastest.
 
    Level: intermediate
 
@@ -1212,7 +1212,7 @@ PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[])
 
    This function serves as an alternative to PetscSortIntWithArray(). While this function works for any array of integers it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
-   recomended that the user benchmark their code to see which routine is fastest.
+   recommended that the user benchmark their code to see which routine is fastest.
 
    Level: intermediate
 
@@ -1247,7 +1247,7 @@ PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], Pet
 
    This function serves as an alternative to PetscSortMPIInt(). While this function works for any array of PetscMPIInts it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
-   recomended that the user benchmark their code to see which routine is fastest.
+   recommended that the user benchmark their code to see which routine is fastest.
 
    Level: intermediate
 
@@ -1288,7 +1288,7 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
 
    This function serves as an alternative to PetscSortMPIIntWithArray(). While this function works for any array of integers it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
-   recomended that the user benchmark their code to see which routine is fastest.
+   recommended that the user benchmark their code to see which routine is fastest.
 
    Level: intermediate
 
@@ -1323,7 +1323,7 @@ PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[
 
    This function serves as an alternative to PetscSortReal(). While this function works for any array of PetscReals it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
-   recomended that the user benchmark their code to see which routine is fastest.
+   recommended that the user benchmark their code to see which routine is fastest.
 
    Level: intermediate
 
@@ -1362,7 +1362,7 @@ PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[])
    Notes:
    This function serves as an alternative to PetscSortRealWithArray(). While this function works for any array of PetscReals it is
    significantly faster if the array is not totally random. There are exceptions to this and so it is __highly__
-   recomended that the user benchmark their code to see which routine is fastest.
+   recommended that the user benchmark their code to see which routine is fastest.
 
    Level: intermediate
 

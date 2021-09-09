@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 /*TEST
 
    build:
-     requires: !define(PETSC_USE_64BIT_INDICES)
+     requires: !defined(PETSC_USE_64BIT_INDICES)
 
    test:
       nsize: 12

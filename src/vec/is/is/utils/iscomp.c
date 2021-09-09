@@ -18,7 +18,7 @@
 
    Note:
    This routine sorts the contents of the index sets before
-   the comparision is made, so the order of the indices on a processor is immaterial.
+   the comparison is made, so the order of the indices on a processor is immaterial.
 
    Each processor has to have the same indices in the two sets, for example,
 $           Processor
@@ -105,7 +105,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
 
    Note:
    This routine does NOT sort the contents of the index sets before
-   the comparision is made.
+   the comparison is made.
 
 .seealso: ISEqual()
 @*/

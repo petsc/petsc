@@ -4062,7 +4062,7 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
    34 values.
 
    When d_nnz, o_nnz parameters are specified, the storage is specified
-   for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
    In the above case the values for d_nnz,o_nnz are:
 .vb
      proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
@@ -4394,7 +4394,7 @@ $     MatMPIAIJSetPreallocation(A,...);
    34 values.
 
    When d_nnz, o_nnz parameters are specified, the storage is specified
-   for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   for every row, corresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
    In the above case the values for d_nnz,o_nnz are
 .vb
      proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
@@ -4654,7 +4654,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat,Mat mpimat)
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *(buf_ri_k[k]);
     nextrow[k]  = buf_ri_k[k]+1;  /* next row number of k-th recved i-structure */
-    nextai[k]   = buf_ri_k[k] + (nrows + 1); /* poins to the next i-structure of k-th recved i-structure  */
+    nextai[k]   = buf_ri_k[k] + (nrows + 1); /* points to the next i-structure of k-th recved i-structure  */
   }
 
   /* set values of ba */
@@ -4870,7 +4870,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *buf_ri_k[k];
     nextrow[k]  = buf_ri_k[k] + 1;  /* next row number of k-th recved i-structure */
-    nextai[k]   = buf_ri_k[k] + (nrows + 1); /* poins to the next i-structure of k-th recved i-structure  */
+    nextai[k]   = buf_ri_k[k] + (nrows + 1); /* points to the next i-structure of k-th recved i-structure  */
   }
 
   ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);

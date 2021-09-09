@@ -43,7 +43,7 @@ static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
 -   mattype - the matrix type to be used
 
     Output Parameter:
-.   mat - the explict preconditioned operator
+.   mat - the explicit preconditioned operator
 
     Notes:
     This computation is done by applying the operators to columns of the

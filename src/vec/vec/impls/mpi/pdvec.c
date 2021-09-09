@@ -287,7 +287,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
       }
     } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
-      /* GLVis ASCII visualization/dump: this function mimicks mfem::GridFunction::Save() */
+      /* GLVis ASCII visualization/dump: this function mimics mfem::GridFunction::Save() */
       const PetscScalar       *array;
       PetscInt                i,n,vdim, ordering = 1; /* mfem::FiniteElementSpace::Ordering::byVDIM */
       PetscContainer          glvis_container;

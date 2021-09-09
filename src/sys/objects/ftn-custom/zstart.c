@@ -150,7 +150,7 @@ PETSC_INTERN int  PetscGlobalArgc;
 PETSC_INTERN char **PetscGlobalArgs;
 
 /*
-    Reads in Fortran command line argments and sends them to
+    Reads in Fortran command line arguments and sends them to
   all processors.
 */
 
@@ -442,6 +442,14 @@ PETSC_EXTERN void petscinitializef_(char* filename,char* help,PetscBool *readarg
   *ierr = MPI_Type_commit(&MPIU_2INT);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
 #endif
+  *ierr = MPI_Type_contiguous(4,MPI_INT,&MPI_4INT);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Type_commit(&MPI_4INT);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Type_contiguous(4,MPIU_INT,&MPIU_4INT);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Type_commit(&MPIU_4INT);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_Counter_Attr_Delete_Fn,&Petsc_Counter_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
   *ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_InnerComm_Attr_Delete_Fn,&Petsc_InnerComm_keyval,(void*)0);
@@ -540,4 +548,3 @@ PETSC_EXTERN void petscend_(PetscErrorCode *ierr)
 
   *ierr = PetscEnd();
 }
-

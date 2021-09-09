@@ -671,7 +671,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-     requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+     requires: !complex double defined(PETSC_HAVE_ATTRIBUTEALIGNED)
      depends: power/PFReadData.c power/pffunctions.c water/waterreaddata.c water/waterfunctions.c
 
    test:

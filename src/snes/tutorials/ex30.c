@@ -972,7 +972,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 }
 
 /* ------------------------------------------------------------------- */
-/*  generates an inital guess using the analytic solution for isoviscous
+/*  generates an initial guess using the analytic solution for isoviscous
     corner flow */
 PetscErrorCode Initialize(DM da)
 /* ------------------------------------------------------------------- */

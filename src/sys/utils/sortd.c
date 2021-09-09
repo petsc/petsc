@@ -2,7 +2,7 @@
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
-   of overhead in calling the comparision routines.
+   of overhead in calling the comparison routines.
 
  */
 #include <petscsys.h>                /*I  "petscsys.h"  I*/
@@ -69,7 +69,7 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 
    Notes:
    This function serves as an alternative to PetscRealSortSemiOrdered(), and may perform faster especially if the array
-   is completely random. There are exceptions to this and so it is __highly__ recomended that the user benchmark their
+   is completely random. There are exceptions to this and so it is __highly__ recommended that the user benchmark their
    code to see which routine is fastest.
 
    Level: intermediate

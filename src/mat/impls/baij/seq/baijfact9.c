@@ -276,7 +276,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat B,Mat A,const MatFactorInfo *inf
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
         ierr = PetscKernel_A_gets_A_times_B_5(pc,pv,mwork);CHKERRQ(ierr);
 
-        pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
+        pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
         pv = b->a + bs2*(bdiag[row+1]+1);
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
@@ -299,7 +299,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat B,Mat A,const MatFactorInfo *inf
       ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
 
-    /* Mark diagonal and invert diagonal for simplier triangular solves */
+    /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscArraycpy(pv,rtmp+bs2*pj[0],bs2);CHKERRQ(ierr);
@@ -562,7 +562,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const Ma
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
         ierr = PetscKernel_A_gets_A_times_B_5(pc,pv,mwork);CHKERRQ(ierr);
 
-        pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
+        pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
         pv = b->a + bs2*(bdiag[row+1]+1);
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
@@ -585,7 +585,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const Ma
       ierr = PetscArraycpy(pv+bs2*j,rtmp+bs2*pj[j],bs2);CHKERRQ(ierr);
     }
 
-    /* Mark diagonal and invert diagonal for simplier triangular solves */
+    /* Mark diagonal and invert diagonal for simpler triangular solves */
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscArraycpy(pv,rtmp+bs2*pj[0],bs2);CHKERRQ(ierr);

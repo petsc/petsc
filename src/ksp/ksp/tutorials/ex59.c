@@ -939,7 +939,7 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->gcomm = PETSC_COMM_WORLD;
   ierr      = MPI_Comm_size(dd->gcomm,&sizes);CHKERRMPI(ierr);
   ierr      = MPI_Comm_rank(dd->gcomm,&rank);CHKERRMPI(ierr);
-  /* Get informations from command line */
+  /* Get information from command line */
   /* Processors/subdomains per dimension */
   /* Default is 1d problem */
   dd->npx = sizes;
@@ -1077,7 +1077,7 @@ int main(int argc,char **args)
   if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
   ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.);CHKERRQ(ierr);
   if (norm > 1.e-1 || reason < 0) {
-    ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(dd.gcomm,"Error between exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
   }
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
   if (testfetidp) {
@@ -1121,7 +1121,7 @@ int main(int argc,char **args)
     if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
     ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.);CHKERRQ(ierr);
     if (norm > 1.e-1 || reason < 0) {
-      ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(dd.gcomm,"Error between exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = VecDestroy(&fetidp_solution);CHKERRQ(ierr);

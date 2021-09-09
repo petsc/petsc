@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     int          *truthtable;
     PetscInt      numNodalVar, numZonalVar, i;
 
-    /* enable exodus debugging informations */
+    /* enable exodus debugging information */
     ex_opts(EX_VERBOSE|EX_DEBUG);
     /* Create the exodus file */
     ierr = PetscViewerExodusIIOpen(PETSC_COMM_WORLD,ofilename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);

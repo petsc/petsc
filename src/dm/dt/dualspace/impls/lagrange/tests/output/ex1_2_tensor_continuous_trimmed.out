@@ -87,31 +87,31 @@ New space: quadrilateral, order 2, trimmed 1, tensor 1, continuous 1, form degre
   Interior node symmetry matrix for orientation -4:
     Mat Object: 1 MPI processes
       type: seqaij
-row 0: (2, 1.) 
-row 1: (3, 1.) 
-row 2: (0, 1.) 
-row 3: (1, 1.) 
-  Interior node symmetry matrix for orientation -3:
-    Mat Object: 1 MPI processes
-      type: seqaij
-row 0: (0, 1.) 
-row 1: (1, 1.) 
-row 2: (3, -1.) 
-row 3: (2, -1.) 
-  Interior node symmetry matrix for orientation -2:
-    Mat Object: 1 MPI processes
-      type: seqaij
 row 0: (3, -1.) 
 row 1: (2, -1.) 
 row 2: (1, -1.) 
 row 3: (0, -1.) 
-  Interior node symmetry matrix for orientation -1:
+  Interior node symmetry matrix for orientation -3:
     Mat Object: 1 MPI processes
       type: seqaij
 row 0: (1, -1.) 
 row 1: (0, -1.) 
 row 2: (2, 1.) 
 row 3: (3, 1.) 
+  Interior node symmetry matrix for orientation -2:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (2, 1.) 
+row 1: (3, 1.) 
+row 2: (0, 1.) 
+row 3: (1, 1.) 
+  Interior node symmetry matrix for orientation -1:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (0, 1.) 
+row 1: (1, 1.) 
+row 2: (3, -1.) 
+row 3: (2, -1.) 
   Interior node symmetry matrix for orientation 0:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -212,31 +212,31 @@ New space: quadrilateral, order 2, trimmed 1, tensor 1, continuous 1, form degre
   Interior node symmetry matrix for orientation -4:
     Mat Object: 1 MPI processes
       type: seqaij
-row 0: (2, 1.) 
-row 1: (3, 1.) 
-row 2: (0, 1.) 
-row 3: (1, 1.) 
-  Interior node symmetry matrix for orientation -3:
-    Mat Object: 1 MPI processes
-      type: seqaij
-row 0: (0, 1.) 
-row 1: (1, 1.) 
-row 2: (3, -1.) 
-row 3: (2, -1.) 
-  Interior node symmetry matrix for orientation -2:
-    Mat Object: 1 MPI processes
-      type: seqaij
 row 0: (3, -1.) 
 row 1: (2, -1.) 
 row 2: (1, -1.) 
 row 3: (0, -1.) 
-  Interior node symmetry matrix for orientation -1:
+  Interior node symmetry matrix for orientation -3:
     Mat Object: 1 MPI processes
       type: seqaij
 row 0: (1, -1.) 
 row 1: (0, -1.) 
 row 2: (2, 1.) 
 row 3: (3, 1.) 
+  Interior node symmetry matrix for orientation -2:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (2, 1.) 
+row 1: (3, 1.) 
+row 2: (0, 1.) 
+row 3: (1, 1.) 
+  Interior node symmetry matrix for orientation -1:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (0, 1.) 
+row 1: (1, 1.) 
+row 2: (3, -1.) 
+row 3: (2, -1.) 
   Interior node symmetry matrix for orientation 0:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -278,31 +278,31 @@ New space: quadrilateral, order 2, trimmed 1, tensor 1, continuous 1, form degre
   Interior node symmetry matrix for orientation -4:
     Mat Object: 1 MPI processes
       type: seqaij
-row 0: (0, -1.) 
-row 1: (2, -1.) 
-row 2: (1, -1.) 
-row 3: (3, -1.) 
-  Interior node symmetry matrix for orientation -3:
-    Mat Object: 1 MPI processes
-      type: seqaij
-row 0: (2, -1.) 
-row 1: (3, -1.) 
-row 2: (0, -1.) 
-row 3: (1, -1.) 
-  Interior node symmetry matrix for orientation -2:
-    Mat Object: 1 MPI processes
-      type: seqaij
 row 0: (3, -1.) 
 row 1: (1, -1.) 
 row 2: (2, -1.) 
 row 3: (0, -1.) 
-  Interior node symmetry matrix for orientation -1:
+  Interior node symmetry matrix for orientation -3:
     Mat Object: 1 MPI processes
       type: seqaij
 row 0: (1, -1.) 
 row 1: (0, -1.) 
 row 2: (3, -1.) 
 row 3: (2, -1.) 
+  Interior node symmetry matrix for orientation -2:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (0, -1.) 
+row 1: (2, -1.) 
+row 2: (1, -1.) 
+row 3: (3, -1.) 
+  Interior node symmetry matrix for orientation -1:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (2, -1.) 
+row 1: (3, -1.) 
+row 2: (0, -1.) 
+row 3: (1, -1.) 
   Interior node symmetry matrix for orientation 0:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -366,36 +366,6 @@ New space: quadrilateral, order 3, trimmed 1, tensor 1, continuous 1, form degre
   Interior node symmetry matrix for orientation -4:
     Mat Object: 1 MPI processes
       type: seqaij
-row 0: (6, 1.) 
-row 1: (8, 1.) 
-row 2: (10, 1.) 
-row 3: (7, 1.) 
-row 4: (9, 1.) 
-row 5: (11, 1.) 
-row 6: (0, 1.) 
-row 7: (3, 1.) 
-row 8: (1, 1.) 
-row 9: (4, 1.) 
-row 10: (2, 1.) 
-row 11: (5, 1.) 
-  Interior node symmetry matrix for orientation -3:
-    Mat Object: 1 MPI processes
-      type: seqaij
-row 0: (3, 1.) 
-row 1: (4, 1.) 
-row 2: (5, 1.) 
-row 3: (0, 1.) 
-row 4: (1, 1.) 
-row 5: (2, 1.) 
-row 6: (10, -1.) 
-row 7: (11, -1.) 
-row 8: (8, -1.) 
-row 9: (9, -1.) 
-row 10: (6, -1.) 
-row 11: (7, -1.) 
-  Interior node symmetry matrix for orientation -2:
-    Mat Object: 1 MPI processes
-      type: seqaij
 row 0: (11, -1.) 
 row 1: (9, -1.) 
 row 2: (7, -1.) 
@@ -408,7 +378,7 @@ row 8: (4, -1.)
 row 9: (1, -1.) 
 row 10: (3, -1.) 
 row 11: (0, -1.) 
-  Interior node symmetry matrix for orientation -1:
+  Interior node symmetry matrix for orientation -3:
     Mat Object: 1 MPI processes
       type: seqaij
 row 0: (2, -1.) 
@@ -423,6 +393,36 @@ row 8: (9, 1.)
 row 9: (8, 1.) 
 row 10: (11, 1.) 
 row 11: (10, 1.) 
+  Interior node symmetry matrix for orientation -2:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (6, 1.) 
+row 1: (8, 1.) 
+row 2: (10, 1.) 
+row 3: (7, 1.) 
+row 4: (9, 1.) 
+row 5: (11, 1.) 
+row 6: (0, 1.) 
+row 7: (3, 1.) 
+row 8: (1, 1.) 
+row 9: (4, 1.) 
+row 10: (2, 1.) 
+row 11: (5, 1.) 
+  Interior node symmetry matrix for orientation -1:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (3, 1.) 
+row 1: (4, 1.) 
+row 2: (5, 1.) 
+row 3: (0, 1.) 
+row 4: (1, 1.) 
+row 5: (2, 1.) 
+row 6: (10, -1.) 
+row 7: (11, -1.) 
+row 8: (8, -1.) 
+row 9: (9, -1.) 
+row 10: (6, -1.) 
+row 11: (7, -1.) 
   Interior node symmetry matrix for orientation 0:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -510,31 +510,31 @@ New space: quadrilateral, order 3, trimmed 1, tensor 1, continuous 1, form degre
   Interior node symmetry matrix for orientation -4:
     Mat Object: 1 MPI processes
       type: seqaij
-row 0: (0, 1.) 
-row 1: (2, 1.) 
-row 2: (1, 1.) 
-row 3: (3, 1.) 
-  Interior node symmetry matrix for orientation -3:
-    Mat Object: 1 MPI processes
-      type: seqaij
-row 0: (2, 1.) 
-row 1: (3, 1.) 
-row 2: (0, 1.) 
-row 3: (1, 1.) 
-  Interior node symmetry matrix for orientation -2:
-    Mat Object: 1 MPI processes
-      type: seqaij
 row 0: (3, 1.) 
 row 1: (1, 1.) 
 row 2: (2, 1.) 
 row 3: (0, 1.) 
-  Interior node symmetry matrix for orientation -1:
+  Interior node symmetry matrix for orientation -3:
     Mat Object: 1 MPI processes
       type: seqaij
 row 0: (1, 1.) 
 row 1: (0, 1.) 
 row 2: (3, 1.) 
 row 3: (2, 1.) 
+  Interior node symmetry matrix for orientation -2:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (0, 1.) 
+row 1: (2, 1.) 
+row 2: (1, 1.) 
+row 3: (3, 1.) 
+  Interior node symmetry matrix for orientation -1:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (2, 1.) 
+row 1: (3, 1.) 
+row 2: (0, 1.) 
+row 3: (1, 1.) 
   Interior node symmetry matrix for orientation 0:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -598,36 +598,6 @@ New space: quadrilateral, order 3, trimmed 1, tensor 1, continuous 1, form degre
   Interior node symmetry matrix for orientation -4:
     Mat Object: 1 MPI processes
       type: seqaij
-row 0: (6, 1.) 
-row 1: (8, 1.) 
-row 2: (10, 1.) 
-row 3: (7, 1.) 
-row 4: (9, 1.) 
-row 5: (11, 1.) 
-row 6: (0, 1.) 
-row 7: (3, 1.) 
-row 8: (1, 1.) 
-row 9: (4, 1.) 
-row 10: (2, 1.) 
-row 11: (5, 1.) 
-  Interior node symmetry matrix for orientation -3:
-    Mat Object: 1 MPI processes
-      type: seqaij
-row 0: (3, 1.) 
-row 1: (4, 1.) 
-row 2: (5, 1.) 
-row 3: (0, 1.) 
-row 4: (1, 1.) 
-row 5: (2, 1.) 
-row 6: (10, -1.) 
-row 7: (11, -1.) 
-row 8: (8, -1.) 
-row 9: (9, -1.) 
-row 10: (6, -1.) 
-row 11: (7, -1.) 
-  Interior node symmetry matrix for orientation -2:
-    Mat Object: 1 MPI processes
-      type: seqaij
 row 0: (11, -1.) 
 row 1: (9, -1.) 
 row 2: (7, -1.) 
@@ -640,7 +610,7 @@ row 8: (4, -1.)
 row 9: (1, -1.) 
 row 10: (3, -1.) 
 row 11: (0, -1.) 
-  Interior node symmetry matrix for orientation -1:
+  Interior node symmetry matrix for orientation -3:
     Mat Object: 1 MPI processes
       type: seqaij
 row 0: (2, -1.) 
@@ -655,6 +625,36 @@ row 8: (9, 1.)
 row 9: (8, 1.) 
 row 10: (11, 1.) 
 row 11: (10, 1.) 
+  Interior node symmetry matrix for orientation -2:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (6, 1.) 
+row 1: (8, 1.) 
+row 2: (10, 1.) 
+row 3: (7, 1.) 
+row 4: (9, 1.) 
+row 5: (11, 1.) 
+row 6: (0, 1.) 
+row 7: (3, 1.) 
+row 8: (1, 1.) 
+row 9: (4, 1.) 
+row 10: (2, 1.) 
+row 11: (5, 1.) 
+  Interior node symmetry matrix for orientation -1:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (3, 1.) 
+row 1: (4, 1.) 
+row 2: (5, 1.) 
+row 3: (0, 1.) 
+row 4: (1, 1.) 
+row 5: (2, 1.) 
+row 6: (10, -1.) 
+row 7: (11, -1.) 
+row 8: (8, -1.) 
+row 9: (9, -1.) 
+row 10: (6, -1.) 
+row 11: (7, -1.) 
   Interior node symmetry matrix for orientation 0:
     Mat Object: 1 MPI processes
       type: seqaij
@@ -733,30 +733,6 @@ New space: quadrilateral, order 3, trimmed 1, tensor 1, continuous 1, form degre
   Interior node symmetry matrix for orientation -4:
     Mat Object: 1 MPI processes
       type: seqaij
-row 0: (0, -1.) 
-row 1: (3, -1.) 
-row 2: (6, -1.) 
-row 3: (1, -1.) 
-row 4: (4, -1.) 
-row 5: (7, -1.) 
-row 6: (2, -1.) 
-row 7: (5, -1.) 
-row 8: (8, -1.) 
-  Interior node symmetry matrix for orientation -3:
-    Mat Object: 1 MPI processes
-      type: seqaij
-row 0: (6, -1.) 
-row 1: (7, -1.) 
-row 2: (8, -1.) 
-row 3: (3, -1.) 
-row 4: (4, -1.) 
-row 5: (5, -1.) 
-row 6: (0, -1.) 
-row 7: (1, -1.) 
-row 8: (2, -1.) 
-  Interior node symmetry matrix for orientation -2:
-    Mat Object: 1 MPI processes
-      type: seqaij
 row 0: (8, -1.) 
 row 1: (5, -1.) 
 row 2: (2, -1.) 
@@ -766,7 +742,7 @@ row 5: (1, -1.)
 row 6: (6, -1.) 
 row 7: (3, -1.) 
 row 8: (0, -1.) 
-  Interior node symmetry matrix for orientation -1:
+  Interior node symmetry matrix for orientation -3:
     Mat Object: 1 MPI processes
       type: seqaij
 row 0: (2, -1.) 
@@ -778,6 +754,30 @@ row 5: (3, -1.)
 row 6: (8, -1.) 
 row 7: (7, -1.) 
 row 8: (6, -1.) 
+  Interior node symmetry matrix for orientation -2:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (0, -1.) 
+row 1: (3, -1.) 
+row 2: (6, -1.) 
+row 3: (1, -1.) 
+row 4: (4, -1.) 
+row 5: (7, -1.) 
+row 6: (2, -1.) 
+row 7: (5, -1.) 
+row 8: (8, -1.) 
+  Interior node symmetry matrix for orientation -1:
+    Mat Object: 1 MPI processes
+      type: seqaij
+row 0: (6, -1.) 
+row 1: (7, -1.) 
+row 2: (8, -1.) 
+row 3: (3, -1.) 
+row 4: (4, -1.) 
+row 5: (5, -1.) 
+row 6: (0, -1.) 
+row 7: (1, -1.) 
+row 8: (2, -1.) 
   Interior node symmetry matrix for orientation 0:
     Mat Object: 1 MPI processes
       type: seqaij

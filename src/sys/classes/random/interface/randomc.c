@@ -24,7 +24,7 @@ PetscClassId PETSC_RANDOM_CLASSID;
 
    Collective on PetscRandom
 
-   Intput Parameter:
+   Input Parameter:
 .  r  - the random number generator context
 
    Level: intermediate

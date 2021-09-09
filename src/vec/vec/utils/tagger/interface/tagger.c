@@ -354,7 +354,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 
    Collective on VecTagger
 
-   Input Aguments:
+   Input Arguments:
 +  tagger - the VecTagger context
 -  vec - the vec to tag
 
@@ -396,7 +396,7 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes
 
    Collective on VecTagger
 
-   Input Aguments:
+   Input Arguments:
 +  tagger - the VecTagger context
 -  vec - the vec to tag
 

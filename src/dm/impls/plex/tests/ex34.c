@@ -61,7 +61,24 @@ static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM 
   PetscFunctionReturn(0);
 }
 
-/* TODO Need to extend interpolation to work when regular cells join to hybrid faces, rather than end faces */
+/*
+   This is not a valid mesh. We need to either change to tensor quad prisms or regular triangular prisms.
+
+           10-------16--------20
+           /|        |
+          / |        |
+         /  |        |
+        9---|---15   |
+       /|   7    |  13--------18
+      / |  /     |  /    ____/
+     /  | /      | /____/
+    8   |/  14---|//---19
+    |   6    |  12
+    |  /     |  / \
+    | /      | /   \__
+    |/       |/       \
+    5--------11--------17
+*/
 static PetscErrorCode CreateReverseHybridMesh(MPI_Comm comm, PetscBool interpolate, DM *dm)
 {
   PetscInt       dim;
@@ -199,7 +216,9 @@ int main(int argc, char **argv)
     suffix: 0
     args: -interpolate -dm_view ascii::ascii_info_detail
 
+  # Test needs to be reworked
   test:
+    requires: BROKEN
     suffix: 1
     args: -mesh_num 1 -interpolate -dm_view ascii::ascii_info_detail
 

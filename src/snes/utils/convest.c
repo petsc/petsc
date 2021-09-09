@@ -61,6 +61,7 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
   ierr = PetscOptionsInt("-convest_num_refine", "The number of refinements for the convergence check", "PetscConvEst", ce->Nr, &ce->Nr, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-convest_refine_factor", "The increase in resolution in each dimension", "PetscConvEst", ce->r, &ce->r, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-convest_monitor", "Monitor the error for each convergence check", "PetscConvEst", ce->monitor, &ce->monitor, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-convest_no_refine", "Debugging flag to run on the same mesh each time", "PetscConvEst", ce->noRefine, &ce->noRefine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -350,8 +351,18 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
 #endif
     ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
     if (r > 0) {
-      ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
-      ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
+      if (!ce->noRefine) {
+        ierr = DMRefine(dm[r-1], MPI_COMM_NULL, &dm[r]);CHKERRQ(ierr);
+        ierr = DMSetCoarseDM(dm[r], dm[r-1]);CHKERRQ(ierr);
+      } else {
+        DM cdm, rcdm;
+
+        ierr = DMClone(dm[r-1], &dm[r]);CHKERRQ(ierr);
+        ierr = DMCopyDisc(dm[r-1], dm[r]);CHKERRQ(ierr);
+        ierr = DMGetCoordinateDM(dm[r-1], &cdm);CHKERRQ(ierr);
+        ierr = DMGetCoordinateDM(dm[r],   &rcdm);CHKERRQ(ierr);
+        ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
+      }
       ierr = DMCopyTransform(ce->idm, dm[r]);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) dm[r-1], &dmname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) dm[r], dmname);CHKERRQ(ierr);

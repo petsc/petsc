@@ -1,16 +1,16 @@
   0 SNES Function norm 18.865 
     0 SNES Function norm 18.865 
-    1 SNES Function norm 2.06247e-05 
-      0 SNES Function norm 1.88046e-05 
-      1 SNES Function norm 3.68089e-06 
-        0 SNES Function norm 2.01792e-06 
-        1 SNES Function norm 1.66009e-06 
-      0 SNES Function norm 3.77841e-06 
-      1 SNES Function norm 2.92719e-06 
-    0 SNES Function norm 0.000129353 
-    1 SNES Function norm 5.67038e-06 
-  1 SNES Function norm 5.67038e-06 
-L_2 Error: 1.00138e-07
+    1 SNES Function norm 8.73683e-07 
+      0 SNES Function norm 7.9907e-07 
+      1 SNES Function norm < 1.e-11
+        0 SNES Function norm < 1.e-11
+        1 SNES Function norm < 1.e-11
+      0 SNES Function norm < 1.e-11
+      1 SNES Function norm < 1.e-11
+    0 SNES Function norm 1.11797e-06 
+    1 SNES Function norm < 1.e-11
+  1 SNES Function norm < 1.e-11
+L_2 Error: < 1.0e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 7 MPI processes
   type: fas
@@ -20,7 +20,7 @@ SNES Object: 7 MPI processes
     SNES Object: (fas_coarse_) 7 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
-      tolerances: relative=1e-05, absolute=1e-25, solution=1e-05
+      tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
       total number of linear solver iterations=4
       total number of function evaluations=1
       SNESLineSearch Object: (fas_coarse_) 7 MPI processes
@@ -31,7 +31,7 @@ SNES Object: 7 MPI processes
       KSP Object: (fas_coarse_) 7 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 7 MPI processes
@@ -88,13 +88,13 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_coarse_pc_bddc_dirichlet_) 1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_coarse_pc_bddc_dirichlet_) 1 MPI processes
             type: lu
               out-of-place factorization
-              tolerance for zero pivot 1.19209e-05
+              tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.12422
                 Factored matrix follows:
@@ -115,13 +115,13 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_coarse_pc_bddc_neumann_) 1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_coarse_pc_bddc_neumann_) 1 MPI processes
             type: lu
               out-of-place factorization
-              tolerance for zero pivot 1.19209e-05
+              tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.12539
                 Factored matrix follows:
@@ -142,7 +142,7 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_coarse_pc_bddc_coarse_) 7 MPI processes
             type: preonly
             maximum iterations=1, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_coarse_pc_bddc_coarse_) 7 MPI processes
@@ -158,13 +158,13 @@ SNES Object: 7 MPI processes
                       KSP Object:         (fas_coarse_pc_bddc_coarse_redundant_)         1 MPI processes
                         type: preonly
                         maximum iterations=10000, initial guess is zero
-                        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+                        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                         left preconditioning
                         using NONE norm type for convergence test
                       PC Object:         (fas_coarse_pc_bddc_coarse_redundant_)         1 MPI processes
                         type: lu
                           out-of-place factorization
-                          tolerance for zero pivot 1.19209e-05
+                          tolerance for zero pivot 2.22045e-14
                           matrix ordering: nd
                           factor fill ratio given 5., needed 1.2246
                             Factored matrix follows:
@@ -192,7 +192,7 @@ SNES Object: 7 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=5
+      total number of linear solver iterations=6
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_1_) 7 MPI processes
@@ -205,7 +205,7 @@ SNES Object: 7 MPI processes
       KSP Object: (fas_levels_1_) 7 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 7 MPI processes
@@ -262,13 +262,13 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_levels_1_pc_bddc_dirichlet_) 1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_levels_1_pc_bddc_dirichlet_) 1 MPI processes
             type: lu
               out-of-place factorization
-              tolerance for zero pivot 1.19209e-05
+              tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.40246
                 Factored matrix follows:
@@ -289,13 +289,13 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_levels_1_pc_bddc_neumann_) 1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_levels_1_pc_bddc_neumann_) 1 MPI processes
             type: lu
               out-of-place factorization
-              tolerance for zero pivot 1.19209e-05
+              tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.26294
                 Factored matrix follows:
@@ -316,7 +316,7 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_levels_1_pc_bddc_coarse_) 7 MPI processes
             type: preonly
             maximum iterations=1, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_levels_1_pc_bddc_coarse_) 7 MPI processes
@@ -332,13 +332,13 @@ SNES Object: 7 MPI processes
                       KSP Object:         (fas_levels_1_pc_bddc_coarse_redundant_)         1 MPI processes
                         type: preonly
                         maximum iterations=10000, initial guess is zero
-                        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+                        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                         left preconditioning
                         using NONE norm type for convergence test
                       PC Object:         (fas_levels_1_pc_bddc_coarse_redundant_)         1 MPI processes
                         type: lu
                           out-of-place factorization
-                          tolerance for zero pivot 1.19209e-05
+                          tolerance for zero pivot 2.22045e-14
                           matrix ordering: nd
                           factor fill ratio given 5., needed 1.25455
                             Factored matrix follows:
@@ -367,7 +367,7 @@ SNES Object: 7 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=4
+      total number of linear solver iterations=6
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_2_) 7 MPI processes
@@ -380,7 +380,7 @@ SNES Object: 7 MPI processes
       KSP Object: (fas_levels_2_) 7 MPI processes
         type: cg
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_2_) 7 MPI processes
@@ -437,13 +437,13 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_levels_2_pc_bddc_dirichlet_) 1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_levels_2_pc_bddc_dirichlet_) 1 MPI processes
             type: lu
               out-of-place factorization
-              tolerance for zero pivot 1.19209e-05
+              tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.7887
                 Factored matrix follows:
@@ -464,13 +464,13 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_levels_2_pc_bddc_neumann_) 1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_levels_2_pc_bddc_neumann_) 1 MPI processes
             type: lu
               out-of-place factorization
-              tolerance for zero pivot 1.19209e-05
+              tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5., needed 1.77676
                 Factored matrix follows:
@@ -491,7 +491,7 @@ SNES Object: 7 MPI processes
           KSP Object: (fas_levels_2_pc_bddc_coarse_) 7 MPI processes
             type: preonly
             maximum iterations=1, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
             using NONE norm type for convergence test
           PC Object: (fas_levels_2_pc_bddc_coarse_) 7 MPI processes
@@ -507,13 +507,13 @@ SNES Object: 7 MPI processes
                       KSP Object:         (fas_levels_2_pc_bddc_coarse_redundant_)         1 MPI processes
                         type: preonly
                         maximum iterations=10000, initial guess is zero
-                        tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+                        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                         left preconditioning
                         using NONE norm type for convergence test
                       PC Object:         (fas_levels_2_pc_bddc_coarse_redundant_)         1 MPI processes
                         type: lu
                           out-of-place factorization
-                          tolerance for zero pivot 1.19209e-05
+                          tolerance for zero pivot 2.22045e-14
                           matrix ordering: nd
                           factor fill ratio given 5., needed 1.35955
                             Factored matrix follows:
@@ -538,11 +538,6 @@ SNES Object: 7 MPI processes
           total number of mallocs used during MatSetValues calls=0
     Up solver (post-smoother) same as down solver (pre-smoother)
   maximum iterations=20, maximum function evaluations=30000
-  tolerances: relative=1e-05, absolute=1e-25, solution=1e-05
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of function evaluations=1
   norm schedule ALWAYS
-  SNESLineSearch Object: 7 MPI processes
-    type: basic
-    maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=1

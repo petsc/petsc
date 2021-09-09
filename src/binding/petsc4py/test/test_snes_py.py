@@ -72,17 +72,17 @@ class MySNES(object):
     #def linearSolve(self, snes, b, x):
     #    self._log('linearSolve', snes, b, x)
     #    snes.ksp.solve(b,x)
-    #    ## return False # not succedd
+    #    ## return False # not succeed
     #    if snes.ksp.getConvergedReason() < 0:
-    #        return False # not succedd
-    #    return True # succedd
+    #        return False # not succeed
+    #    return True # succeed
     #
     #def lineSearch(self, snes, x, y, F):
     #    self._log('lineSearch', snes, x, y, F)
     #    x.axpy(-1,y)
     #    snes.computeFunction(x, F)
-    #    ## return False # not succedd
-    #    return True # succedd
+    #    ## return False # not succeed
+    #    return True # succeed
 
 
 from test_snes import BaseTestSNES

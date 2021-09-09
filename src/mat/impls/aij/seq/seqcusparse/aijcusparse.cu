@@ -2062,7 +2062,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
  #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
   cusparseOperation_t opB = (product->type == MATPRODUCT_ABt || product->type == MATPRODUCT_RARt) ? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE;
-  /* (re)allcoate mmBuffer if not initialized or LDAs are different */
+  /* (re)allocate mmBuffer if not initialized or LDAs are different */
   if (!mmdata->initialized || mmdata->Blda != blda || mmdata->Clda != clda) {
     size_t mmBufferSize;
     if (mmdata->initialized && mmdata->Blda != blda) {stat = cusparseDestroyDnMat(mmdata->matBDescr);CHKERRCUSPARSE(stat); mmdata->matBDescr = NULL;}

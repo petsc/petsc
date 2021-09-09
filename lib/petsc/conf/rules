@@ -341,6 +341,7 @@ getautoconfargs:
           grep -v "is deprecated" | \
           grep -v "Werror=format-security" | \
           grep -v " -Werror " | \
+          grep -v "only the last is used because nvcc can only accept a single optimization setting" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
@@ -704,19 +705,21 @@ checkbadSource:
 	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|PETSC_STATIC_INLINE)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "wrong usage of PetscDefined() ------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscDefined.PETSC' -- ${GITSRC} >> checkbadSource.out;true
-	-@echo "CHKERRQ following SETERRQ ------------------------" >> checkbadSource.out
+	-@echo "CHKERRQ following SETERRQ ----------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";CHKERRQ" >> checkbadSource.out;true
 	-@echo "SETERRQ() without defined error code -----------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ\(' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
+	-@echo "define keyword in test definition --------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e 'requires:.*define\(' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "No spaces before { after if|for|while|switch----------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '(for|while|if|switch)(.*)\){$$' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
-	-@echo "No new line at end of file" >> checkbadSource.out
+	-@echo "No new line at end of file ---------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '[^\n]\z' -- ${GITSRC} >> checkbadSource.out;true
-	-@echo "No space after ierr" >> checkbadSource.out
+	-@echo "No space after ierr ----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'ierr=' -- ${GITSRC} >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 19` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 20` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
@@ -773,7 +776,7 @@ check_petsc4py_rst:
 
 #  Lists all the URLs in the PETSc repository that are unaccessible, nonexistent, or permanently moved (301)
 #  REPLACE=1 locations marked as permanently moved (301) are replaced in the repository
-#  This code is fragile; always check the changes after a use of REPLACE=1 before commiting the changes
+#  This code is fragile; always check the changes after a use of REPLACE=1 before committing the changes
 #
 #  Notes:
 #    The first tr in the line is split lines for the cases where multiple URLs are in the same line

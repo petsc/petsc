@@ -1,0 +1,210 @@
+triangle orientation -3
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 1.,font=\fontsize{8}{8}\selectfont]
+\path (2.,-2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,-2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\path (0.,-2.) node(7_0) [draw,shape=circle,color=gray] {7};
+\path (-2.,0.) node(8_0) [draw,shape=circle,color=gray] {8};
+\path (0.,0.) node(9_0) [draw,shape=circle,color=gray] {9};
+\path
+(0.,-1.) node(10_0) [draw,shape=circle,color=gray] {10} --
+(-1.,0.) node(11_0) [draw,shape=circle,color=gray] {11} --
+(-1.,-1.) node(12_0) [draw,shape=circle,color=gray] {12} --
+(1.,-2.) node(13_0) [draw,shape=circle,color=gray] {13} --
+(-1.,-2.) node(14_0) [draw,shape=circle,color=gray] {14} --
+(-2.,-1.) node(15_0) [draw,shape=circle,color=gray] {15} --
+(-2.,1.) node(16_0) [draw,shape=circle,color=gray] {16} --
+(-1.,1.) node(17_0) [draw,shape=circle,color=gray] {17} --
+(1.,-1.) node(18_0) [draw,shape=circle,color=gray] {18} --
+(0,0);
+\draw[color=gray] (5_0) -- (14_0) -- (7_0) -- (12_0) -- (8_0) -- (15_0) -- (5_0);
+\draw[color=gray] (7_0) -- (13_0) -- (4_0) -- (18_0) -- (9_0) -- (10_0) -- (7_0);
+\draw[color=gray] (8_0) -- (11_0) -- (9_0) -- (17_0) -- (6_0) -- (16_0) -- (8_0);
+\draw[color=gray] (7_0) -- (10_0) -- (9_0) -- (11_0) -- (8_0) -- (12_0) -- (7_0);
+\path (-1.33333,-1.33333) node(0_0) [] {};
+\path (0.666667,-1.33333) node(1_0) [] {};
+\path (-1.33333,0.666667) node(2_0) [] {};
+\path (-0.666667,-0.666667) node(3_0) [] {};
+\end{tikzpicture}
+\end{document}
+triangle orientation -2
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 1.,font=\fontsize{8}{8}\selectfont]
+\path (-2.,-2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (2.,-2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\path (-2.,0.) node(7_0) [draw,shape=circle,color=gray] {7};
+\path (0.,0.) node(8_0) [draw,shape=circle,color=gray] {8};
+\path (0.,-2.) node(9_0) [draw,shape=circle,color=gray] {9};
+\path
+(0.,-1.) node(10_0) [draw,shape=circle,color=gray] {10} --
+(-1.,0.) node(11_0) [draw,shape=circle,color=gray] {11} --
+(-1.,-1.) node(12_0) [draw,shape=circle,color=gray] {12} --
+(-2.,-1.) node(13_0) [draw,shape=circle,color=gray] {13} --
+(-2.,1.) node(14_0) [draw,shape=circle,color=gray] {14} --
+(-1.,1.) node(15_0) [draw,shape=circle,color=gray] {15} --
+(1.,-1.) node(16_0) [draw,shape=circle,color=gray] {16} --
+(1.,-2.) node(17_0) [draw,shape=circle,color=gray] {17} --
+(-1.,-2.) node(18_0) [draw,shape=circle,color=gray] {18} --
+(0,0);
+\draw[color=gray] (4_0) -- (18_0) -- (9_0) -- (12_0) -- (7_0) -- (13_0) -- (4_0);
+\draw[color=gray] (9_0) -- (17_0) -- (6_0) -- (16_0) -- (8_0) -- (10_0) -- (9_0);
+\draw[color=gray] (7_0) -- (11_0) -- (8_0) -- (15_0) -- (5_0) -- (14_0) -- (7_0);
+\draw[color=gray] (9_0) -- (10_0) -- (8_0) -- (11_0) -- (7_0) -- (12_0) -- (9_0);
+\path (-1.33333,-1.33333) node(0_0) [] {};
+\path (0.666667,-1.33333) node(1_0) [] {};
+\path (-1.33333,0.666667) node(2_0) [] {};
+\path (-0.666667,-0.666667) node(3_0) [] {};
+\end{tikzpicture}
+\end{document}
+triangle orientation -1
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 1.,font=\fontsize{8}{8}\selectfont]
+\path (-2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (2.,-2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,-2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\path (0.,0.) node(7_0) [draw,shape=circle,color=gray] {7};
+\path (0.,-2.) node(8_0) [draw,shape=circle,color=gray] {8};
+\path (-2.,0.) node(9_0) [draw,shape=circle,color=gray] {9};
+\path
+(0.,-1.) node(10_0) [draw,shape=circle,color=gray] {10} --
+(-1.,0.) node(11_0) [draw,shape=circle,color=gray] {11} --
+(-1.,-1.) node(12_0) [draw,shape=circle,color=gray] {12} --
+(-1.,1.) node(13_0) [draw,shape=circle,color=gray] {13} --
+(1.,-1.) node(14_0) [draw,shape=circle,color=gray] {14} --
+(1.,-2.) node(15_0) [draw,shape=circle,color=gray] {15} --
+(-1.,-2.) node(16_0) [draw,shape=circle,color=gray] {16} --
+(-2.,-1.) node(17_0) [draw,shape=circle,color=gray] {17} --
+(-2.,1.) node(18_0) [draw,shape=circle,color=gray] {18} --
+(0,0);
+\draw[color=gray] (6_0) -- (16_0) -- (8_0) -- (12_0) -- (9_0) -- (17_0) -- (6_0);
+\draw[color=gray] (8_0) -- (15_0) -- (5_0) -- (14_0) -- (7_0) -- (10_0) -- (8_0);
+\draw[color=gray] (9_0) -- (11_0) -- (7_0) -- (13_0) -- (4_0) -- (18_0) -- (9_0);
+\draw[color=gray] (8_0) -- (10_0) -- (7_0) -- (11_0) -- (9_0) -- (12_0) -- (8_0);
+\path (-1.33333,-1.33333) node(0_0) [] {};
+\path (0.666667,-1.33333) node(1_0) [] {};
+\path (-1.33333,0.666667) node(2_0) [] {};
+\path (-0.666667,-0.666667) node(3_0) [] {};
+\end{tikzpicture}
+\end{document}
+triangle orientation 0
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 1.,font=\fontsize{8}{8}\selectfont]
+\path (-2.,-2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (2.,-2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\path (0.,-2.) node(7_0) [draw,shape=circle,color=gray] {7};
+\path (0.,0.) node(8_0) [draw,shape=circle,color=gray] {8};
+\path (-2.,0.) node(9_0) [draw,shape=circle,color=gray] {9};
+\path
+(0.,-1.) node(10_0) [draw,shape=circle,color=gray] {10} --
+(-1.,0.) node(11_0) [draw,shape=circle,color=gray] {11} --
+(-1.,-1.) node(12_0) [draw,shape=circle,color=gray] {12} --
+(-1.,-2.) node(13_0) [draw,shape=circle,color=gray] {13} --
+(1.,-2.) node(14_0) [draw,shape=circle,color=gray] {14} --
+(1.,-1.) node(15_0) [draw,shape=circle,color=gray] {15} --
+(-1.,1.) node(16_0) [draw,shape=circle,color=gray] {16} --
+(-2.,1.) node(17_0) [draw,shape=circle,color=gray] {17} --
+(-2.,-1.) node(18_0) [draw,shape=circle,color=gray] {18} --
+(0,0);
+\draw[color=gray] (4_0) -- (13_0) -- (7_0) -- (12_0) -- (9_0) -- (18_0) -- (4_0);
+\draw[color=gray] (7_0) -- (14_0) -- (5_0) -- (15_0) -- (8_0) -- (10_0) -- (7_0);
+\draw[color=gray] (9_0) -- (11_0) -- (8_0) -- (16_0) -- (6_0) -- (17_0) -- (9_0);
+\draw[color=gray] (7_0) -- (10_0) -- (8_0) -- (11_0) -- (9_0) -- (12_0) -- (7_0);
+\path (-1.33333,-1.33333) node(0_0) [] {};
+\path (0.666667,-1.33333) node(1_0) [] {};
+\path (-1.33333,0.666667) node(2_0) [] {};
+\path (-0.666667,-0.666667) node(3_0) [] {};
+\end{tikzpicture}
+\end{document}
+triangle orientation 1
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 1.,font=\fontsize{8}{8}\selectfont]
+\path (-2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,-2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (2.,-2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\path (-2.,0.) node(7_0) [draw,shape=circle,color=gray] {7};
+\path (0.,-2.) node(8_0) [draw,shape=circle,color=gray] {8};
+\path (0.,0.) node(9_0) [draw,shape=circle,color=gray] {9};
+\path
+(0.,-1.) node(10_0) [draw,shape=circle,color=gray] {10} --
+(-1.,0.) node(11_0) [draw,shape=circle,color=gray] {11} --
+(-1.,-1.) node(12_0) [draw,shape=circle,color=gray] {12} --
+(-2.,1.) node(13_0) [draw,shape=circle,color=gray] {13} --
+(-2.,-1.) node(14_0) [draw,shape=circle,color=gray] {14} --
+(-1.,-2.) node(15_0) [draw,shape=circle,color=gray] {15} --
+(1.,-2.) node(16_0) [draw,shape=circle,color=gray] {16} --
+(1.,-1.) node(17_0) [draw,shape=circle,color=gray] {17} --
+(-1.,1.) node(18_0) [draw,shape=circle,color=gray] {18} --
+(0,0);
+\draw[color=gray] (5_0) -- (15_0) -- (8_0) -- (12_0) -- (7_0) -- (14_0) -- (5_0);
+\draw[color=gray] (8_0) -- (16_0) -- (6_0) -- (17_0) -- (9_0) -- (10_0) -- (8_0);
+\draw[color=gray] (7_0) -- (11_0) -- (9_0) -- (18_0) -- (4_0) -- (13_0) -- (7_0);
+\draw[color=gray] (8_0) -- (10_0) -- (9_0) -- (11_0) -- (7_0) -- (12_0) -- (8_0);
+\path (-1.33333,-1.33333) node(0_0) [] {};
+\path (0.666667,-1.33333) node(1_0) [] {};
+\path (-1.33333,0.666667) node(2_0) [] {};
+\path (-0.666667,-0.666667) node(3_0) [] {};
+\end{tikzpicture}
+\end{document}
+triangle orientation 2
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 1.,font=\fontsize{8}{8}\selectfont]
+\path (2.,-2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,-2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\path (0.,0.) node(7_0) [draw,shape=circle,color=gray] {7};
+\path (-2.,0.) node(8_0) [draw,shape=circle,color=gray] {8};
+\path (0.,-2.) node(9_0) [draw,shape=circle,color=gray] {9};
+\path
+(0.,-1.) node(10_0) [draw,shape=circle,color=gray] {10} --
+(-1.,0.) node(11_0) [draw,shape=circle,color=gray] {11} --
+(-1.,-1.) node(12_0) [draw,shape=circle,color=gray] {12} --
+(1.,-1.) node(13_0) [draw,shape=circle,color=gray] {13} --
+(-1.,1.) node(14_0) [draw,shape=circle,color=gray] {14} --
+(-2.,1.) node(15_0) [draw,shape=circle,color=gray] {15} --
+(-2.,-1.) node(16_0) [draw,shape=circle,color=gray] {16} --
+(-1.,-2.) node(17_0) [draw,shape=circle,color=gray] {17} --
+(1.,-2.) node(18_0) [draw,shape=circle,color=gray] {18} --
+(0,0);
+\draw[color=gray] (6_0) -- (17_0) -- (9_0) -- (12_0) -- (8_0) -- (16_0) -- (6_0);
+\draw[color=gray] (9_0) -- (18_0) -- (4_0) -- (13_0) -- (7_0) -- (10_0) -- (9_0);
+\draw[color=gray] (8_0) -- (11_0) -- (7_0) -- (14_0) -- (5_0) -- (15_0) -- (8_0);
+\draw[color=gray] (9_0) -- (10_0) -- (7_0) -- (11_0) -- (8_0) -- (12_0) -- (9_0);
+\path (-1.33333,-1.33333) node(0_0) [] {};
+\path (0.666667,-1.33333) node(1_0) [] {};
+\path (-1.33333,0.666667) node(2_0) [] {};
+\path (-0.666667,-0.666667) node(3_0) [] {};
+\end{tikzpicture}
+\end{document}

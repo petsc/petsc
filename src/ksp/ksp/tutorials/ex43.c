@@ -864,7 +864,7 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,DM properties_da,Vec p
   ierr = DMGlobalToLocalEnd(properties_da,properties,INSERT_VALUES,local_properties);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(properties_da,local_properties,&props);CHKERRQ(ierr);
 
-  /* get acces to the vector */
+  /* get access to the vector */
   ierr = DMGetLocalVector(stokes_da,&local_F);CHKERRQ(ierr);
   ierr = VecZeroEntries(local_F);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(stokes_da,local_F,&ff);CHKERRQ(ierr);

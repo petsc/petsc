@@ -1,0 +1,312 @@
+tensor_triangular_prism orientation -6
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (2.,2.,2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.,2.,2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (-2.,2.,-2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (2.,-2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,-2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,-2.,-2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation -5
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.,2.,2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.,2.,-2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (2.,2.,2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (-2.,-2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,-2.,-2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (2.,-2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation -4
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.,2.,-2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (2.,2.,2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (-2.,2.,2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (-2.,-2.,-2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (2.,-2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,-2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation -3
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (2.,-2.,2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.,-2.,2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (-2.,-2.,-2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (2.,2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,2.,-2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation -2
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.,-2.,2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.,-2.,-2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (2.,-2.,2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (-2.,2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,2.,-2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (2.,2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation -1
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.,-2.,-2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (2.,-2.,2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (-2.,-2.,2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (-2.,2.,-2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (2.,2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation 0
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.,-2.,2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (2.,-2.,2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (-2.,-2.,-2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (-2.,2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (2.,2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,2.,-2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation 1
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.,-2.,-2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.,-2.,2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (2.,-2.,2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (-2.,2.,-2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (2.,2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation 2
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (2.,-2.,2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.,-2.,-2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (-2.,-2.,2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (2.,2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,2.,-2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation 3
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.,2.,2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (2.,2.,2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (-2.,2.,-2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (-2.,-2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (2.,-2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,-2.,-2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation 4
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (-2.,2.,-2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.,2.,2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (2.,2.,2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (-2.,-2.,-2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,-2.,2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (2.,-2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}
+tensor_triangular_prism orientation 5
+\documentclass[tikz]{standalone}
+
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\begin{tikzpicture}[scale = 0.5,font=\fontsize{8}{8}\selectfont]
+\path (2.,2.,2.) node(1_0) [draw,shape=circle,color=gray] {1};
+\path (-2.,2.,-2.) node(2_0) [draw,shape=circle,color=gray] {2};
+\path (-2.,2.,2.) node(3_0) [draw,shape=circle,color=gray] {3};
+\path (2.,-2.,2.) node(4_0) [draw,shape=circle,color=gray] {4};
+\path (-2.,-2.,-2.) node(5_0) [draw,shape=circle,color=gray] {5};
+\path (-2.,-2.,2.) node(6_0) [draw,shape=circle,color=gray] {6};
+\draw[color=gray] (1_0) -- (2_0);
+\draw[color=gray] (2_0) -- (3_0);
+\draw[color=gray] (3_0) -- (1_0);
+\draw[color=gray] (4_0) -- (5_0);
+\draw[color=gray] (5_0) -- (6_0);
+\draw[color=gray] (6_0) -- (4_0);
+\draw[color=gray] (1_0) -- (4_0);
+\draw[color=gray] (2_0) -- (5_0);
+\draw[color=gray] (3_0) -- (6_0);
+\path (-0.666667,0.,0.666667) node(0_0) [] {};
+\end{tikzpicture}
+\end{document}

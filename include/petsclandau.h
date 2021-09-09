@@ -94,10 +94,13 @@ typedef struct {
   PetscInt       nZRefine2;          /* origin refinement after origin AMR refinement */
   PetscInt       maxRefIts;         /* normal AMR - refine from origin */
   PetscInt       postAMRRefine;     /* uniform refinement of AMR */
+  PetscInt       preAMRRefine;     /* uniform refinement of AMR */
   /* discretization - AMR */
   PetscErrorCode (*errorIndicator)(PetscInt, PetscReal, PetscReal [], PetscInt, const PetscInt[], const PetscScalar[], const PetscScalar[], PetscReal *, void *);
   PetscReal      refineTol[LANDAU_MAX_SPECIES];
   PetscReal      coarsenTol[LANDAU_MAX_SPECIES];
+  PetscBool      use_energy_tensor_trick;
+  PetscBool      use_relativistic_corrections;
   /* physics */
   PetscReal      thermal_temps[LANDAU_MAX_SPECIES];
   PetscReal      masses[LANDAU_MAX_SPECIES];  /* mass of each species  */

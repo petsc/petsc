@@ -265,6 +265,8 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
       ierr = PetscViewerRestoreSubViewer(v,PETSC_COMM_SELF,&sv);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
     }
+    ierr = PetscViewerFlush(v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopSynchronized(v);CHKERRQ(ierr);
   }
 
   /* Compare recCoordinatesPerRank with refCoordinatesPerRank */

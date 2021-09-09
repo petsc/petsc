@@ -138,7 +138,7 @@ finally:
     suffix: default
 
   testset:
-    requires: define(PETSC_USE_LOG)
+    requires: defined(PETSC_USE_LOG)
     args: -petscpartitioner_type simple -log_summary
     filter: grep MyPartitionerEvent | cut -d " " -f 1
     test:

@@ -550,7 +550,7 @@ PetscErrorCode  PCMGGetInjection(PC pc,PetscInt l,Mat *mat)
 +  pc - the multigrid context
 -  l - the level (0 is coarsest) to supply
 
-   Ouput Parameters:
+   Output Parameter:
 .  ksp - the smoother
 
    Notes:
@@ -583,7 +583,7 @@ PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 +  pc - the multigrid context
 -  l  - the level (0 is coarsest) to supply
 
-   Ouput Parameters:
+   Output Parameter:
 .  ksp - the smoother
 
    Level: advanced
@@ -652,7 +652,7 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 +  pc - the multigrid context
 -  l  - the level (0 is coarsest) to supply
 
-   Ouput Parameters:
+   Output Parameter:
 .  ksp - the smoother
 
    Level: advanced

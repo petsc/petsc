@@ -1,5 +1,5 @@
 !
-!   Description: Tests PCFieldSplitGetIS and PCFieldSplitSetIS from Fortan.
+!   Description: Tests PCFieldSplitGetIS and PCFieldSplitSetIS from Fortran.
 !
       program main
 #include <petsc/finclude/petscksp.h>

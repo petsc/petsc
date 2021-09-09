@@ -494,33 +494,33 @@ int main(int argc, char **argv)
       requires: p4est !single
 
   testset:
-    args: -petscspace_type tensor
+    args: -petscspace_type tensor -dm_coord_space 0 -dm_plex_transform_type refine_tobox
 
     test:
       TODO: broken
       output_file: output/ex2_3d.out
       suffix: p4est_3d_transfer_fails
-      args: -petscspace_degree 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 1 -dm_forest_initial_refinement 1 -use_bcs 0 -dm_refine -dm_plex_cell_refiner tobox
+      args: -petscspace_degree 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 1 -dm_forest_initial_refinement 1 -use_bcs 0 -dm_refine
       requires: p4est !single
 
     test:
       TODO: broken
       output_file: output/ex2_steps2_notfb.out
       suffix: p4est_3d_transfer_fails_2
-      args: -petscspace_degree 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 0 -transfer_from_base 0 -use_bcs 0 -dm_refine -dm_plex_cell_refiner tobox
+      args: -petscspace_degree 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 0 -transfer_from_base 0 -use_bcs 0 -dm_refine
       requires: p4est !single
 
     test:
       output_file: output/ex2_steps2.out
       suffix: p4est_3d_multi_transfer_s2t
-      args: -petscspace_degree 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 1 -petscdualspace_lagrange_continuity 0 -use_bcs 0 -dm_refine 1 -dm_plex_cell_refiner tobox
-      requires: p4est !single -dm_coord_space 0
+      args: -petscspace_degree 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 1 -petscdualspace_lagrange_continuity 0 -use_bcs 0 -dm_refine 1
+      requires: p4est !single
 
     test:
       output_file: output/ex2_steps2.out
       suffix: p4est_3d_coords_transfer_s2t
-      args: -petscspace_degree 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 1 -petscdualspace_lagrange_continuity 0 -coords -use_bcs 0 -dm_refine 1 -dm_plex_cell_refiner tobox
-      requires: p4est !single -dm_coord_space 0
+      args: -petscspace_degree 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -adapt_steps 2 -dm_forest_initial_refinement 1 -petscdualspace_lagrange_continuity 0 -coords -use_bcs 0 -dm_refine 1
+      requires: p4est !single
 
   testset:
     args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3,3

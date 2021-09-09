@@ -390,7 +390,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
       ierr = MatShellSetContext(gn->H,gn);CHKERRQ(ierr);
     }
     ierr = MatSetUp(gn->H);CHKERRQ(ierr);
-    /* Subsolver setup,include initial vector and dicttionary D */
+    /* Subsolver setup,include initial vector and dictionary D */
     ierr = TaoSetUpdate(gn->subsolver,GNHookFunction,gn);CHKERRQ(ierr);
     ierr = TaoSetInitialVector(gn->subsolver,tao->solution);CHKERRQ(ierr);
     if (tao->bounded) {

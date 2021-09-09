@@ -2,213 +2,66 @@
 #include <petscsf.h>
 
 /*@
-  DMPlexCompareOrientations - Compare the cone of the given DAG point (cell) with the given reference cone (with the same cone points modulo order), and return relative orientation.
+  DMPlexOrientPoint - Act with the given orientation on the cone points of this mesh point, and update its use in the mesh.
 
   Not Collective
 
   Input Parameters:
-+ dm              - The DM (DMPLEX)
-. p               - The DAG point whose cone is compared
-. mainConeSize    - Number of the reference cone points passed (at least 2 and at most size of the cone of p)
-- mainCone        - The reference cone points
-
-  Output Parameters:
-+ start           - The new starting point within the cone of p to make it conforming with the reference cone
-- reverse         - The flag whether the order of the cone points should be reversed
-
-  Level: advanced
-
-.seealso: DMPlexOrient(), DMPlexOrientCell()
-@*/
-PetscErrorCode DMPlexCompareOrientations(DM dm, PetscInt p, PetscInt mainConeSize, const PetscInt mainCone[], PetscInt *start, PetscBool *reverse)
-{
-  PetscInt        coneSize;
-  const PetscInt *cone;
-  PetscInt        i, start_;
-  PetscBool       reverse_;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
-  if (coneSize < 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D has no cone", p);
-  ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-  if (mainConeSize < 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D: mainConeSize must be at least 2", p);
-  if (mainConeSize > coneSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D: mainConeSize must be at most coneSize", p);
-  start_ = 0;
-  for (i=0; i<coneSize; i++) {
-    if (cone[i] == mainCone[0]) {
-      start_ = i;
-      break;
-    }
-  }
-  if (PetscUnlikely(i==coneSize)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Point %D: starting point of reference cone not found in worker cone", p);
-  reverse_ = PETSC_FALSE;
-  for (i=0; i<mainConeSize; i++) {if (cone[(start_+i)%coneSize] != mainCone[i]) break;}
-  if (i != mainConeSize) {
-    reverse_ = PETSC_TRUE;
-    for (i=0; i<mainConeSize; i++) {if (cone[(coneSize+start_-i)%coneSize] != mainCone[i]) break;}
-    if (i < mainConeSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Point %D: cone has non-conforming order of points with respect to reference cone", p);
-  }
-  if (start) *start = start_;
-  if (reverse) *reverse = reverse_;
-  if (PetscUnlikely(cone[start_] != mainCone[0])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D: cone[%d] = %d != %d = mainCone[0]", p, start_, cone[start_], mainCone[0]);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexOrientCell - Set the desired order of cone points of this DAG point, and fix orientations accordingly.
-
-  Not Collective
-
-  Input Parameters:
-+ dm              - The DM
-. p               - The DAG point (from interval given by DMPlexGetChart())
-. mainConeSize    - Number of specified cone points (at least 2)
-- mainCone        - Specified cone points, i.e. ordered subset of current cone in DAG numbering (not cone-local numbering)
++ dm - The DM
+. p  - The mesh point
+- o  - The orientation
 
   Level: intermediate
 
 .seealso: DMPlexOrient(), DMPlexGetCone(), DMPlexGetConeOrientation(), DMPlexInterpolate(), DMPlexGetChart()
 @*/
-PetscErrorCode DMPlexOrientCell(DM dm, PetscInt p, PetscInt mainConeSize, const PetscInt mainCone[])
+PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o)
 {
-  PetscInt        coneSize;
-  PetscInt        start1=0;
-  PetscBool       reverse1=PETSC_FALSE;
+  DMPolytopeType  ct;
+  const PetscInt *arr, *cone, *ornt, *support;
+  PetscInt       *newcone, *newornt;
+  PetscInt        coneSize, c, supportSize, s;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (mainConeSize) PetscValidIntPointer(mainCone,4);
-  if (mainConeSize == 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "mainConeSize cannot be 1");
+  ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+  arr  = DMPolytopeTypeGetArrangment(ct, o);
   ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
-  if (!coneSize) PetscFunctionReturn(0); /* do nothing for points with no cone */
-  ierr = DMPlexCompareOrientations(dm, p, mainConeSize, mainCone, &start1, &reverse1);CHKERRQ(ierr);
-  ierr = DMPlexOrientCell_Internal(dm, p, start1, reverse1);CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG)) {
-    PetscInt        c;
-    const PetscInt *cone;
-    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-    for (c = 0; c < mainConeSize; c++) {
-      if (PetscUnlikely(cone[c] != mainCone[c])) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "The algorithm above is wrong as cone[%d] = %d != %d = mainCone[%d]", c, cone[c], mainCone[c], c);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMPlexOrientCell_Internal(DM dm, PetscInt p, PetscInt start1, PetscBool reverse1)
-{
-  PetscInt        i, j, k, maxConeSize, coneSize, coneConeSize, supportSize, supportConeSize;
-  PetscInt        start0, start;
-  PetscBool       reverse0, reverse;
-  PetscInt        newornt;
-  const PetscInt *cone=NULL, *support=NULL, *supportCone=NULL, *ornts=NULL;
-  PetscInt       *newcone=NULL, *newornts=NULL;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  if (!start1 && !reverse1) PetscFunctionReturn(0);
-  ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
-  if (!coneSize) PetscFunctionReturn(0); /* do nothing for points with no cone */
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  /* permute p's cone and orientations */
-  ierr = DMPlexGetConeOrientation(dm, p, &ornts);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, maxConeSize, MPIU_INT, &newcone);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, maxConeSize, MPIU_INT, &newornts);CHKERRQ(ierr);
-  ierr = DMPlexFixFaceOrientations_Permute_Private(coneSize, cone, start1, reverse1, newcone);CHKERRQ(ierr);
-  ierr = DMPlexFixFaceOrientations_Permute_Private(coneSize, ornts, start1, reverse1, newornts);CHKERRQ(ierr);
-  /* if direction of p (face) is flipped, flip also p's cone points (edges) */
-  if (reverse1) {
-    for (i=0; i<coneSize; i++) {
-      ierr = DMPlexGetConeSize(dm, cone[i], &coneConeSize);CHKERRQ(ierr);
-      ierr = DMPlexFixFaceOrientations_Translate_Private(newornts[i], &start0, &reverse0);CHKERRQ(ierr);
-      ierr = DMPlexFixFaceOrientations_Combine_Private(coneConeSize, start0, reverse0, 1, PETSC_FALSE, &start, &reverse);CHKERRQ(ierr);
-      ierr = DMPlexFixFaceOrientations_TranslateBack_Private(coneConeSize, start, reverse, &newornts[i]);CHKERRQ(ierr);
-    }
+  ierr = DMPlexGetConeOrientation(dm, p, &ornt);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, coneSize, MPIU_INT, &newcone);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, coneSize, MPIU_INT, &newornt);CHKERRQ(ierr);
+  for (c = 0; c < coneSize; ++c) {
+    DMPolytopeType ft;
+    PetscInt       nO;
+
+    ierr = DMPlexGetCellType(dm, cone[c], &ft);CHKERRQ(ierr);
+    nO   = DMPolytopeTypeGetNumArrangments(ft)/2;
+    newcone[c] = cone[arr[c*2+0]];
+    newornt[c] = DMPolytopeTypeComposeOrientation(ft, arr[c*2+1], ornt[arr[c*2+0]]);
+    if (newornt[c] && (newornt[c] >= nO || newornt[c] < -nO)) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %D not in [%D,%D) for %s %D", newornt[c], -nO, nO, DMPolytopeTypes[ft], cone[c]);
   }
-  ierr = DMPlexSetConeOrientation(dm, p, newornts);CHKERRQ(ierr);
-  /* fix oriention of p within cones of p's support points */
-  ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
-  ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
-  for (j=0; j<supportSize; j++) {
-    ierr = DMPlexGetCone(dm, support[j], &supportCone);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm, support[j], &supportConeSize);CHKERRQ(ierr);
-    ierr = DMPlexGetConeOrientation(dm, support[j], &ornts);CHKERRQ(ierr);
-    for (k=0; k<supportConeSize; k++) {
-      if (supportCone[k] != p) continue;
-      ierr = DMPlexFixFaceOrientations_Translate_Private(ornts[k], &start0, &reverse0);CHKERRQ(ierr);
-      ierr = DMPlexFixFaceOrientations_Combine_Private(coneSize, start0, reverse0, start1, reverse1, &start, &reverse);CHKERRQ(ierr);
-      ierr = DMPlexFixFaceOrientations_TranslateBack_Private(coneSize, start, reverse, &newornt);CHKERRQ(ierr);
-      ierr = DMPlexInsertConeOrientation(dm, support[j], k, newornt);CHKERRQ(ierr);
-    }
-  }
-  /* rewrite cone */
   ierr = DMPlexSetCone(dm, p, newcone);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm, maxConeSize, MPIU_INT, &newcone);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm, maxConeSize, MPIU_INT, &newornts);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+  ierr = DMPlexSetConeOrientation(dm, p, newornt);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, coneSize, MPIU_INT, &newcone);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, coneSize, MPIU_INT, &newornt);CHKERRQ(ierr);
+  /* Update orientation of this point in the support points */
+  ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+  ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
+  for (s = 0; s < supportSize; ++s) {
+    ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
+    for (c = 0; c < coneSize; ++c) {
+      PetscInt po;
 
-/*@
-  DMPlexReverseCell - Give a mesh cell the opposite orientation
-
-  Input Parameters:
-+ dm   - The DM
-- cell - The cell number
-
-  Note: The modification of the DM is done in-place.
-
-  Level: advanced
-
-.seealso: DMPlexOrient(), DMCreate(), DMPLEX
-@*/
-PetscErrorCode DMPlexReverseCell(DM dm, PetscInt cell)
-{
-  /* Note that the reverse orientation ro of a face with orientation o is:
-
-       ro = o >= 0 ? -(faceSize - o) : faceSize + o
-
-     where faceSize is the size of the cone for the face.
-  */
-  const PetscInt *cone,    *coneO, *support;
-  PetscInt       *revcone, *revconeO;
-  PetscInt        maxConeSize, coneSize, supportSize, faceSize, cp, sp;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, maxConeSize, MPIU_INT, &revcone);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, maxConeSize, MPIU_INT, &revconeO);CHKERRQ(ierr);
-  /* Reverse cone, and reverse orientations of faces */
-  ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
-  ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
-  ierr = DMPlexGetConeOrientation(dm, cell, &coneO);CHKERRQ(ierr);
-  for (cp = 0; cp < coneSize; ++cp) {
-    const PetscInt rcp = coneSize-cp-1;
-
-    ierr = DMPlexGetConeSize(dm, cone[rcp], &faceSize);CHKERRQ(ierr);
-    revcone[cp]  = cone[rcp];
-    revconeO[cp] = coneO[rcp] >= 0 ? -(faceSize-coneO[rcp]) : faceSize+coneO[rcp];
-  }
-  ierr = DMPlexSetCone(dm, cell, revcone);CHKERRQ(ierr);
-  ierr = DMPlexSetConeOrientation(dm, cell, revconeO);CHKERRQ(ierr);
-  /* Reverse orientation of this cell in the support hypercells */
-  faceSize = coneSize;
-  ierr = DMPlexGetSupportSize(dm, cell, &supportSize);CHKERRQ(ierr);
-  ierr = DMPlexGetSupport(dm, cell, &support);CHKERRQ(ierr);
-  for (sp = 0; sp < supportSize; ++sp) {
-    ierr = DMPlexGetConeSize(dm, support[sp], &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, support[sp], &cone);CHKERRQ(ierr);
-    ierr = DMPlexGetConeOrientation(dm, support[sp], &coneO);CHKERRQ(ierr);
-    for (cp = 0; cp < coneSize; ++cp) {
-      if (cone[cp] != cell) continue;
-      ierr = DMPlexInsertConeOrientation(dm, support[sp], cp, coneO[cp] >= 0 ? -(faceSize-coneO[cp]) : faceSize+coneO[cp]);CHKERRQ(ierr);
+      if (cone[c] != p) continue;
+      /* ornt[c] * 0 = target = po * o so that po = ornt[c] * o^{-1} */
+      po   = DMPolytopeTypeComposeOrientationInv(ct, ornt[c], o);
+      ierr = DMPlexInsertConeOrientation(dm, support[s], c, po);CHKERRQ(ierr);
     }
   }
-  ierr = DMRestoreWorkArray(dm, maxConeSize, MPIU_INT, &revcone);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm, maxConeSize, MPIU_INT, &revconeO);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -634,7 +487,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   /* Reverse flipped cells in the mesh */
   for (c = cStart; c < cEnd; ++c) {
     if (PetscBTLookup(flippedCells, c-cStart)) {
-      ierr = DMPlexReverseCell(dm, c);CHKERRQ(ierr);
+      ierr = DMPlexOrientPoint(dm, c, -1);CHKERRQ(ierr);
     }
   }
   ierr = PetscBTDestroy(&seenCells);CHKERRQ(ierr);

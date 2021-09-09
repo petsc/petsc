@@ -929,7 +929,7 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   ierr = VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  /* copy vector entires into xred */
+  /* copy vector entries into xred */
   ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
   if (xred) {
     PetscScalar *LA_xred;
@@ -999,7 +999,7 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscRea
     ierr = VecScatterBegin(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scatter,xp,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-    /* copy vector entires into xred */
+    /* copy vector entries into xred */
     ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
     if (yred) {
       PetscScalar *LA_yred;

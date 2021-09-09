@@ -84,7 +84,7 @@ int main(int argc,char **args)
    test:
      suffix: 1
      nsize: 2
-     requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+     requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
      args: -mat_type {{aij baij}} -A ${DATAFILESPATH}/matrices/CreateSubMatrices/A -row ${DATAFILESPATH}/matrices/CreateSubMatrices/row -col ${DATAFILESPATH}/matrices/CreateSubMatrices/col
 
 TEST*/

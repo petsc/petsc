@@ -441,7 +441,7 @@ PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *functio
    Note:
    This function is not normally called directly by users, but rather via the macros PetscFree(), PetscFree2(), etc.
 
-   The pointers are zeroed to prevent users from accidently reusing space that has been freed.
+   The pointers are zeroed to prevent users from accidentally reusing space that has been freed.
 
    Level: developer
 

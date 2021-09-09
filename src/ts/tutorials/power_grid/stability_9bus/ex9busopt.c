@@ -3,7 +3,7 @@ This example is based on the 9-bus (node) example given in the book Power\n\
 Systems Dynamics and Stability (Chapter 7) by P. Sauer and M. A. Pai.\n\
 The power grid in this example consists of 9 buses (nodes), 3 generators,\n\
 3 loads, and 9 transmission lines. The network equations are written\n\
-in current balance form using rectangular coordiantes.\n\n";
+in current balance form using rectangular coordinates.\n\n";
 
 /*
   This code demonstrates how to solve a DAE-constrained optimization problem with TAO, TSAdjoint and TS.
@@ -1386,7 +1386,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 /*TEST
 
    build:
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
 
    test:
       args: -viewer_binary_skip_info -tao_monitor -tao_gttol .2

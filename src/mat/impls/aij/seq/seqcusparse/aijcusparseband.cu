@@ -337,7 +337,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
   cusparseTriFactors->nnz = b->nz; // only meta data needed: n & nz
   ierr = PetscInfo2(A,"Matrix Bandwidth = %D, nnz = %D\n",bwL,b->nz);CHKERRQ(ierr);
   if (!cusparseTriFactors->workVector) { cusparseTriFactors->workVector = new THRUSTARRAY(n); }
-  cerr = cudaMalloc(&ba_t,(b->nz+1)*sizeof(PetscScalar));CHKERRCUDA(cerr); // incude a place for flops
+  cerr = cudaMalloc(&ba_t,(b->nz+1)*sizeof(PetscScalar));CHKERRCUDA(cerr); // include a place for flops
   cerr = cudaMalloc(&bi_t,(n+1)*sizeof(int));CHKERRCUDA(cerr);
   cusparseTriFactors->a_band_d = ba_t;
   cusparseTriFactors->i_band_d = bi_t;

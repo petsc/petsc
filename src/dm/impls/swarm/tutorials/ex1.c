@@ -95,7 +95,7 @@ int main(int argc, char **argv)
   ierr = DMSetField(crddm, field, NULL, (PetscObject)fe);CHKERRQ(ierr);
   ierr = DMCreateDS(crddm);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  /* project coordiantes to vertices */
+  /* project coordinates to vertices */
   ierr = DMCreateGlobalVector(crddm, &crd_vec);CHKERRQ(ierr);
   initu[0] = crd_func;
   ierr = DMProjectFunction(crddm, 0.0, initu, NULL, INSERT_ALL_VALUES, crd_vec);CHKERRQ(ierr);

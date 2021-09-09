@@ -163,7 +163,7 @@ int main(int argc,char **argv)
 
     /*
        Color the matrix, i.e. determine groups of columns that share no common
-      rows. These columns in the Jacobian can all be computed simulataneously.
+      rows. These columns in the Jacobian can all be computed simultaneously.
     */
     ierr = MatColoringCreate(J,&mc);CHKERRQ(ierr);
     ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
@@ -518,13 +518,13 @@ PetscErrorCode postcheck(SNES snes,Vec x,Vec y,Vec w,PetscBool *changed_y,PetscB
       suffix: 2a
       filter: grep -i KSPConvergedDefault > /dev/null && echo "Found KSPConvergedDefault"
       args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -info
-      requires: define(PETSC_USE_INFO)
+      requires: defined(PETSC_USE_INFO)
 
    test:
       suffix: 2b
       filter: grep -i  "User provided convergence test" > /dev/null  && echo "Found User provided convergence test"
       args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -use_convergence_test -info
-      requires: define(PETSC_USE_INFO)
+      requires: defined(PETSC_USE_INFO)
 
    test:
       suffix: 3

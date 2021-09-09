@@ -599,10 +599,10 @@ PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
 
   Input Parameter:
 + ts - timestepping context
-. \alpha_m - algorithmic paramenter
-. \alpha_f - algorithmic paramenter
-. \gamma   - algorithmic paramenter
-- \beta    - algorithmic paramenter
+. \alpha_m - algorithmic parameter
+. \alpha_f - algorithmic parameter
+. \gamma   - algorithmic parameter
+- \beta    - algorithmic parameter
 
   Options Database:
 + -ts_alpha_alpha_m <alpha_m>

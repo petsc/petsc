@@ -51,16 +51,20 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
   ierr = DMPlexGetTransitiveClosure(dm,0,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
   for (i = 0, offset = 0; i < closureSize; i++, offset += numDofs[depth]) {
-    PetscInt          point = closure[2 * i], coneSize, j;
+    PetscInt          point = closure[2 * i], numFaces, j;
     const PetscInt    **pointPerms = perms ? perms[i] : NULL;
     const PetscScalar **pointFlips = flips ? flips[i] : NULL;
     PetscBool         anyPrinted = PETSC_FALSE;
 
-    ierr = DMLabelGetValue(depthLabel,point,&depth);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm,point,&coneSize);CHKERRQ(ierr);
-
     if (!pointPerms && !pointFlips) continue;
-    for (j = -coneSize; j < coneSize; j++) {
+    ierr = DMLabelGetValue(depthLabel,point,&depth);CHKERRQ(ierr);
+    {
+      DMPolytopeType ct;
+      /* The number of arrangements is no longer based on the number of faces */
+      ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);
+      numFaces = DMPolytopeTypeGetNumArrangments(ct) / 2;
+    }
+    for (j = -numFaces; j < numFaces; j++) {
       PetscInt          k, l;
       const PetscInt    *perm = pointPerms ? pointPerms[j] : NULL;
       const PetscScalar *flip = pointFlips ? pointFlips[j] : NULL;

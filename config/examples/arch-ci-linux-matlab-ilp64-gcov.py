@@ -11,7 +11,7 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 # Note: MATLAB build requires petsc shared libraries
 
-# Some versions of Matlab [R2013a] conflicted with -lgfortan - so the following workarround worked.
+# Some versions of Matlab [R2013a] conflicted with -lgfortan - so the following workaround worked.
 # export LD_PRELOAD=/usr/lib/gcc/x86_64-linux-gnu/4.6/libgfortran.so
 
 # find MATLAB location

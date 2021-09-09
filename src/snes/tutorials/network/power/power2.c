@@ -612,7 +612,7 @@ int main(int argc,char ** argv)
 
    build:
      depends: PFReadData.c pffunctions.c
-     requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+     requires: !complex double defined(PETSC_HAVE_ATTRIBUTEALIGNED)
 
    test:
      args: -snes_rtol 1.e-3

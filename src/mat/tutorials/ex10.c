@@ -79,28 +79,28 @@ int main(int argc,char **args)
    test:
       suffix: mpiaij
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpiaij
       args: -a_matload_symmetric
 
    test:
       suffix: mpiaij_hdf5
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type mpiaij -viewer_type hdf5 -viewer_format hdf5_mat
       args: -a_matload_symmetric
 
    test:
       suffix: mpiaij_rect_hdf5
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small_rect.mat -a_mat_type mpiaij -viewer_type hdf5 -viewer_format hdf5_mat
 
    test:
       # test for more processes than rows
       suffix: mpiaij_hdf5_tiny
       nsize: 8
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0.mat -a_mat_type mpiaij -viewer_type hdf5 -viewer_format hdf5_mat
       args: -a_matload_symmetric
 
@@ -109,7 +109,7 @@ int main(int argc,char **args)
       TODO: not yet implemented for MATLAB complex format
       suffix: mpiaij_hdf5_tiny_complex
       nsize: 8
-      requires: double complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: double complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system_with_x0_complex.mat -a_mat_type mpiaij -viewer_type hdf5 -viewer_format hdf5_mat
       args: -a_matload_symmetric
 
@@ -117,61 +117,61 @@ int main(int argc,char **args)
       TODO: mpibaij not supported yet
       suffix: mpibaij_hdf5
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type mpibaij -a_mat_block_size 2 -viewer_type hdf5 -viewer_format hdf5_mat
       args: -a_matload_symmetric
 
    test:
       suffix: mpidense
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpidense
       args: -a_matload_symmetric
 
    test:
       suffix: seqaij
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqaij
       args: -a_matload_symmetric
 
    test:
       suffix: seqaij_hdf5
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small.mat -a_mat_type seqaij -viewer_type hdf5 -viewer_format hdf5_mat
       args: -a_matload_symmetric
 
    test:
       suffix: seqaij_rect_hdf5
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small_rect.mat -a_mat_type seqaij -viewer_type hdf5 -viewer_format hdf5_mat
 
    test:
       suffix: seqdense
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqdense
       args: -a_matload_symmetric
 
    test:
       suffix: seqdense_hdf5
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small_dense.mat -a_mat_type seqdense -viewer_type hdf5 -viewer_format hdf5_mat
       args: -a_matload_symmetric
 
    test:
       suffix: seqdense_rect_hdf5
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small_rect_dense.mat -a_mat_type seqdense -viewer_type hdf5 -viewer_format hdf5_mat
 
    test:
       suffix: mpidense_hdf5
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small_dense.mat -a_mat_type mpidense -viewer_type hdf5 -viewer_format hdf5_mat
       args: -a_matload_symmetric
 
    test:
       suffix: mpidense_rect_hdf5
       nsize: 2
-      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES) hdf5 define(PETSC_HDF5_HAVE_ZLIB)
+      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/small_rect_dense.mat -a_mat_type mpidense -viewer_type hdf5 -viewer_format hdf5_mat
 TEST*/

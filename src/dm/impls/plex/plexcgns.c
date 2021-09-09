@@ -107,7 +107,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
 
-  /* Open CGNS II file and read basic informations on rank 0, then broadcast to all processors */
+  /* Open CGNS II file and read basic information on rank 0, then broadcast to all processors */
   if (!rank) {
     int nbases, z;
 

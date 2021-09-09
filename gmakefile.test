@@ -29,7 +29,7 @@ generatedtest  := $(TESTDIR)/testfiles
 
 TESTFLAGS :=             # Initialize as simple variable
 
-#workarround old cygwin versions
+#workaround old cygwin versions
 ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
 ifeq ($(shell basename $(AR)),ar)
   V ?=1

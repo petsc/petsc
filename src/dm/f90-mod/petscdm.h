@@ -55,10 +55,3 @@
       PetscEnum, parameter :: DM_POLYTOPE_INTERIOR_GHOST = 13
       PetscEnum, parameter :: DM_POLYTOPE_UNKNOWN = 14
       PetscEnum, parameter :: DM_NUM_POLYTOPES = 15
-
-      type tDMPlexCellRefiner
-        sequence
-        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
-      end type tDMPlexCellRefiner
-
-      DMPlexCellRefiner, parameter :: PETSC_NULL_DMPLEXCELLREFINER = tDMPlexCellRefiner(0)

@@ -10,13 +10,13 @@
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-#include <petsccublas.h>
+#include <petsc/private/deviceimpl.h>
 PETSC_EXTERN cudaEvent_t petsc_gputimer_begin;
 PETSC_EXTERN cudaEvent_t petsc_gputimer_end;
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-#include <petschipblas.h>
+#include <petsc/private/deviceimpl.h>
 PETSC_EXTERN hipEvent_t petsc_gputimer_begin;
 PETSC_EXTERN hipEvent_t petsc_gputimer_end;
 #endif
@@ -809,7 +809,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   /*
       The checking over compatible runtime libraries is complicated by the MPI ABI initiative
       https://wiki.mpich.org/mpich/index.php/ABI_Compatibility_Initiative which started with
-        MPICH v3.1 (Released Feburary 2014)
+        MPICH v3.1 (Released February 2014)
         IBM MPI v2.1 (December 2014)
         Intel MPI Library v5.0 (2014)
         Cray MPT v7.0.0 (June 2014)
@@ -1042,6 +1042,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRMPI(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRMPI(ierr);
 #endif
+  ierr = MPI_Type_contiguous(4,MPI_INT,&MPI_4INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_commit(&MPI_4INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_contiguous(4,MPIU_INT,&MPIU_4INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_commit(&MPIU_4INT);CHKERRMPI(ierr);
 
   /*
      Attributes to be set on PETSc communicators
@@ -1170,6 +1174,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 #endif
 
+#if (defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)) && defined(PETSC_EXPERIMENTAL)
+  ierr = PetscDeviceInitializeDefaultDevices_Internal();CHKERRQ(ierr);
+  ierr = PetscDeviceContextInitializeRootContext_Internal(PETSC_COMM_WORLD,NULL);CHKERRQ(ierr);
+#endif
+
   /*
       Set flag that we are completely initialized
   */
@@ -1218,6 +1227,8 @@ PetscErrorCode  PetscFreeMPIResources(void)
 #if defined(PETSC_USE_64BIT_INDICES)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRMPI(ierr);
 #endif
+  ierr = MPI_Type_free(&MPI_4INT);CHKERRMPI(ierr);
+  ierr = MPI_Type_free(&MPIU_4INT);CHKERRMPI(ierr);
   ierr = MPI_Op_free(&MPIU_MAXSUM_OP);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }

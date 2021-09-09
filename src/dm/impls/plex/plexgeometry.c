@@ -2243,7 +2243,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 . dm - the DM
 
   Output Argument:
-. minradius - the minium cell radius
+. minradius - the minimum cell radius
 
   Level: developer
 
@@ -2265,7 +2265,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
 
   Input Arguments:
 + dm - the DM
-- minradius - the minium cell radius
+- minradius - the minimum cell radius
 
   Level: developer
 

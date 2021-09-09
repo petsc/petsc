@@ -318,7 +318,7 @@ class PetscBinaryIO(object):
 
     @decorate_with_conf
     def readMatDense(self, fh):
-        """Reads a PETSc Mat, returning a dense represention of the data, must be called after readObjectType()"""
+        """Reads a PETSc Mat, returning a dense representation of the data, must be called after readObjectType()"""
 
         try:
             M,N,nz = np.fromfile(fh, dtype=self._inttype, count=3)

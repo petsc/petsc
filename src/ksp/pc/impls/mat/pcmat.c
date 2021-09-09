@@ -39,7 +39,7 @@ static PetscErrorCode PCDestroy_Mat(PC pc)
              in PCSetOperators() or KSPSetOperators()
 
    Notes:
-    This one is a little strange. One rarely has an explict matrix that approximates the
+    This one is a little strange. One rarely has an explicit matrix that approximates the
          inverse of the matrix they wish to solve for.
 
    Level: intermediate

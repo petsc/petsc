@@ -121,7 +121,7 @@ static PetscErrorCode PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawBut
       break;
     } else current = current->wnext;
   }
-  /* If no actions have occured, wait for one */
+  /* If no actions have occurred, wait for one */
   node = current->MouseListHead;
   if (!node) {
     ReleaseMutex(g_hWindowListMutex);

@@ -1,5 +1,5 @@
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
-#include <petsccublas.h>          /* Needed to provide CHKERRCUDA() */
+#include <petscdevice.h>          /* Needed to provide CHKERRCUDA() */
 
 static PetscErrorCode PetscCUDAHostMalloc(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {

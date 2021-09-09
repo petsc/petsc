@@ -1641,7 +1641,7 @@ int main(int argc, char **argv)
   # PCHPDDM tests
   testset:
     nsize: 4
-    requires: hpddm slepc !single define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+    requires: hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     args: -run_type test -run_test_check_ksp -quiet -petscspace_degree 1 -dm_distribute -petscpartitioner_type simple -bc_type none -dm_plex_simplex 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 2 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type svd -ksp_rtol 1.e-10 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -ksp_converged_reason
     test:
       suffix: quad_singular_hpddm
@@ -1656,7 +1656,7 @@ int main(int argc, char **argv)
       args: -dm_plex_convert_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 3 -dm_p4est_refine_pattern hash
   testset:
     nsize: 4
-    requires: hpddm slepc triangle !single define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+    requires: hpddm slepc triangle !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     args: -run_type full -dm_distribute -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
@@ -1666,7 +1666,7 @@ int main(int argc, char **argv)
       suffix: tri_hpddm_reuse
   testset:
     nsize: 4
-    requires: hpddm slepc !single define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+    requires: hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     args: -run_type full -dm_distribute -petscpartitioner_type simple -dm_plex_box_faces 7,5 -dm_refine 2 -dm_plex_simplex 0 -bc_type dirichlet -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
@@ -1676,7 +1676,7 @@ int main(int argc, char **argv)
       suffix: quad_hpddm_reuse
   testset:
     nsize: 4
-    requires: hpddm slepc !single define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+    requires: hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     args: -run_type full -dm_distribute -petscpartitioner_type simple -dm_plex_box_faces 7,5 -dm_refine 2 -dm_plex_simplex 0 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
@@ -1686,7 +1686,7 @@ int main(int argc, char **argv)
       suffix: quad_hpddm_reuse_threshold
   testset:
     nsize: 4
-    requires: hpddm slepc parmetis !single define(PETSC_HAVE_DYNAMIC_LIBRARIES) define(PETSC_USE_SHARED_LIBRARIES)
+    requires: hpddm slepc parmetis !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     filter: sed -e "s/linear solver iterations=17/linear solver iterations=16/g"
     args: -run_type full -dm_distribute -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient circle -dm_plex_gmsh_periodic 0
     test:

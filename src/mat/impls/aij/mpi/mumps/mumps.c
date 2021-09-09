@@ -2194,7 +2194,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(5) (fixation for null pivots):         %g \n",mumps->id.CNTL(5));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(7) (dropping parameter for BLR):       %g \n",mumps->id.CNTL(7));CHKERRQ(ierr);
 
-      /* infomation local to each processor */
+      /* information local to each processor */
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %g \n",mumps->myid,mumps->id.RINFO(1));CHKERRQ(ierr);

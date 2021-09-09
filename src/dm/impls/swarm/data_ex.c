@@ -364,7 +364,7 @@ PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
   if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be initialised. Call DMSwarmDataExTopologyInitialize() first");
 
   ierr = PetscLogEventBegin(DMSWARM_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
-  /* given infomation about all my neighbours, make map symmetric */
+  /* given information about all my neighbours, make map symmetric */
   ierr = _DMSwarmDataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs);CHKERRQ(ierr);
   /* update my arrays */
   ierr = PetscFree(d->neighbour_procs);CHKERRQ(ierr);

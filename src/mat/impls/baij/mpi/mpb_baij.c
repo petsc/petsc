@@ -15,7 +15,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&commsize);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRMPI(ierr);
 
-  /* create subMat object with the relavent layout */
+  /* create subMat object with the relevant layout */
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(subComm,subMat);CHKERRQ(ierr);
     ierr = MatSetType(*subMat,MATMPIBAIJ);CHKERRQ(ierr);

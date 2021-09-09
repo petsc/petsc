@@ -2103,7 +2103,7 @@ was run with the option ``--with-x``.
 The program seems to use more and more memory as it runs, even though you don't think you are allocating more memory
 --------------------------------------------------------------------------------------------------------------------
 
-Some of the following may be occuring:
+Some of the following may be occurring:
 
 - You are creating new PETSc objects but never freeing them.
 

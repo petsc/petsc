@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&U);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
 
-  /* create explict matrix preconditioner */
+  /* create explicit matrix preconditioner */
   ierr         = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&B);CHKERRQ(ierr);
 
   /* Store right-hand-side of PDE and exact solution */
@@ -171,7 +171,7 @@ PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*  Evaluates a matrix that is used to precondition the matrix-free
-    jacobian. In this case, the explict preconditioner matrix is
+    jacobian. In this case, the explicit preconditioner matrix is
     also EXACTLY the Jacobian. In general, it would be some lower
     order, simplified apprioximation */
 

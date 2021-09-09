@@ -213,7 +213,7 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
   ierr = PCGetFailedReasonRank(pc,&pcreason);CHKERRQ(ierr);
-  /* TODO: this code was wrong and is still wrong, there is no way to propogate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
+  /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   }
@@ -405,7 +405,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   ierr = PCGetFailedReasonRank(ksp->pc,&pcreason);CHKERRQ(ierr);
-  /* TODO: this code was wrong and is still wrong, there is no way to propogate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
+  /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   }
@@ -1226,8 +1226,8 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     ierr = KSPGetMatSolveBatchSize(ksp, &Bbn);CHKERRQ(ierr);
     /* by default, do a single solve with all columns */
     if (Bbn == PETSC_DECIDE) Bbn = N2;
-    else if (Bbn < 1) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() block size %D must be positive", Bbn);
-    ierr = PetscInfo2(ksp, "KSP type %s solving using blocks of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
+    else if (Bbn < 1) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() batch size %D must be positive", Bbn);
+    ierr = PetscInfo2(ksp, "KSP type %s solving using batches of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
     /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
       ierr = (*ksp->ops->matsolve)(ksp, B, X);CHKERRQ(ierr);
@@ -1290,7 +1290,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 
    Input Parameters:
 +     ksp - iterative context
--     bs - block size
+-     bs - batch size
 
    Level: advanced
 
@@ -1312,7 +1312,7 @@ PetscErrorCode KSPSetMatSolveBatchSize(KSP ksp, PetscInt bs)
 .     ksp - iterative context
 
    Output Parameter:
-.     bs - block size
+.     bs - batch size
 
    Level: advanced
 

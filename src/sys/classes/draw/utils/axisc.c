@@ -10,7 +10,7 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
    Input Parameters:
 .  win - PetscDraw object where axis to to be made
 
-   Ouput Parameters:
+   Output Parameter:
 .  axis - the axis datastructure
 
    Notes:

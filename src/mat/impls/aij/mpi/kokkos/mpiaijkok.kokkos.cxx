@@ -291,7 +291,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       if (aij->B->rmap->n != aij->A->rmap->n) SETERRQ(comm,PETSC_ERR_SUP,"Only support aij->B->rmap->n == aij->A->rmap->n");
       aij->donotstash = PETSC_TRUE;
       aij->A->nooffprocentries = aij->B->nooffprocentries = A->nooffprocentries = PETSC_TRUE;
-      jaca->nonew = jacb->nonew = PETSC_TRUE; // no more dissassembly
+      jaca->nonew = jacb->nonew = PETSC_TRUE; // no more disassembly
       ierr = PetscCalloc1(A->cmap->N,&colmap);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)A,(A->cmap->N)*sizeof(PetscInt));CHKERRQ(ierr);
       for (ii=0; ii<aij->B->cmap->n; ii++) colmap[aij->garray[ii]] = ii+1;

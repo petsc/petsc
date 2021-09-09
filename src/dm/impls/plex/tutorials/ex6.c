@@ -214,15 +214,15 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
       if (d == 1) {
         PetscInt        numDof  = user->k[f] - 1;
         PetscInt        numComp = user->Nc[f];
-        PetscInt        minOrnt = -2;
-        PetscInt        maxOrnt = 2;
+        PetscInt        minOrnt = -1;
+        PetscInt        maxOrnt = 1;
         PetscInt        **perms;
 
         ierr = PetscCalloc1(maxOrnt - minOrnt,&perms);CHKERRQ(ierr);
         for (o = minOrnt; o < maxOrnt; o++) {
           PetscInt *perm;
 
-          if (o == -1 || !o) { /* identity */
+          if (!o) { /* identity */
             perms[o - minOrnt] = NULL;
           } else {
             ierr = PetscMalloc1(numDof * numComp, &perm);CHKERRQ(ierr);
@@ -251,7 +251,7 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
           switch (o) {
           case 0:
             break; /* identity */
-          case -4: /* flip along (-1,-1)--( 1, 1), which swaps edges 0 and 3 and edges 1 and 2.  This swaps the i and j variables */
+          case -2: /* flip along (-1,-1)--( 1, 1), which swaps edges 0 and 3 and edges 1 and 2.  This swaps the i and j variables */
             for (i = 0, k = 0; i < perEdge; i++) {
               for (j = 0; j < perEdge; j++, k++) {
                 for (c = 0; c < numComp; c++) {
@@ -260,7 +260,7 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
               }
             }
             break;
-          case -3: /* flip along (-1, 0)--( 1, 0), which swaps edges 0 and 2.  This reverses the i variable */
+          case -1: /* flip along (-1, 0)--( 1, 0), which swaps edges 0 and 2.  This reverses the i variable */
             for (i = 0, k = 0; i < perEdge; i++) {
               for (j = 0; j < perEdge; j++, k++) {
                 for (c = 0; c < numComp; c++) {
@@ -269,7 +269,7 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
               }
             }
             break;
-          case -2: /* flip along ( 1,-1)--(-1, 1), which swaps edges 0 and 1 and edges 2 and 3.  This swaps the i and j variables and reverse both */
+          case -4: /* flip along ( 1,-1)--(-1, 1), which swaps edges 0 and 1 and edges 2 and 3.  This swaps the i and j variables and reverse both */
             for (i = 0, k = 0; i < perEdge; i++) {
               for (j = 0; j < perEdge; j++, k++) {
                 for (c = 0; c < numComp; c++) {
@@ -278,7 +278,7 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
               }
             }
             break;
-          case -1: /* flip along ( 0,-1)--( 0, 1), which swaps edges 3 and 1.  This reverses the j variable */
+          case -3: /* flip along ( 0,-1)--( 0, 1), which swaps edges 3 and 1.  This reverses the j variable */
             for (i = 0, k = 0; i < perEdge; i++) {
               for (j = 0; j < perEdge; j++, k++) {
                 for (c = 0; c < numComp; c++) {

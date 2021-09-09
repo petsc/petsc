@@ -150,7 +150,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 5
-      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !complex
       args: -f ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -ov 2
       output_file: output/ex40_1.out
       test:
@@ -163,7 +163,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 3
-      requires: double !define(PETSC_USE_64BIT_INDICES) !complex
+      requires: double !defined(PETSC_USE_64BIT_INDICES) !complex
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -ov 2
       output_file: output/ex40_1.out
       test:

@@ -83,7 +83,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-     requires: define(PETSC_USE_LOG)
+     requires: defined(PETSC_USE_LOG)
 
    test:
 
