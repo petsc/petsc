@@ -75,8 +75,8 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
 
     ierr = DMPlexTopologyLoad(dmnew, v, &sfXC);CHKERRQ(ierr);
     ierr = DMPlexCoordinatesLoad(dmnew, v, sfXC);CHKERRQ(ierr);
+    ierr = DMPlexLabelsLoad(dmnew, v, sfXC);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfXC);CHKERRQ(ierr);
-    ierr = DMPlexLabelsLoad(dmnew, v);CHKERRQ(ierr);
   } else {
     ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
   }

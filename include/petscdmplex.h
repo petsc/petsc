@@ -492,7 +492,7 @@ PETSC_EXTERN PetscErrorCode DMPlexLocalVectorView(DM,PetscViewer,DM,Vec);
 
 PETSC_EXTERN PetscErrorCode DMPlexTopologyLoad(DM, PetscViewer, PetscSF*);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesLoad(DM, PetscViewer, PetscSF);
-PETSC_EXTERN PetscErrorCode DMPlexLabelsLoad(DM, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMPlexLabelsLoad(DM, PetscViewer, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexSectionLoad(DM,PetscViewer,DM,PetscSF,PetscSF*,PetscSF*);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalVectorLoad(DM,PetscViewer,DM,PetscSF,Vec);
 PETSC_EXTERN PetscErrorCode DMPlexLocalVectorLoad(DM,PetscViewer,DM,PetscSF,Vec);
