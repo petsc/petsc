@@ -629,25 +629,20 @@ int main(int argc,char ** argv)
   Wash              wash;
   Junction          junctions,junction;
   Pipe              pipe,pipes;
-  PetscInt          KeyPipe,KeyJunction;
-  PetscInt          *edgelist = NULL,*vtype = NULL;
-  PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,key;
-  PetscInt          vkey,type;
+  PetscInt          KeyPipe,KeyJunction,*edgelist = NULL,*vtype = NULL;
+  PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,key,vkey,type;
+  PetscInt          steps=1,nedges,nnodes=6;
   const PetscInt    *cone;
   DM                networkdm;
   PetscMPIInt       size,rank;
   PetscReal         ftime;
   Vec               X;
   TS                ts;
-  PetscInt          steps=1;
   TSConvergedReason reason;
   PetscBool         viewpipes,viewjuncs,monipipes=PETSC_FALSE,userJac=PETSC_TRUE,viewdm=PETSC_FALSE,viewX=PETSC_FALSE;
   PetscInt          pipesCase=0;
   DMNetworkMonitor  monitor;
   MPI_Comm          comm;
-
-  PetscInt          nedges,nvertices; /* local number of edges and vertices */
-  PetscInt          nnodes = 6;
 
   ierr = PetscInitialize(&argc,&argv,"pOption",help);if (ierr) return ierr;
 
@@ -677,7 +672,6 @@ int main(int argc,char ** argv)
   /* Create a distributed wash network (user-specific) */
   ierr = WashNetworkCreate(comm,pipesCase,&wash);CHKERRQ(ierr);
   nedges      = wash->nedge;
-  nvertices   = wash->nvertex; /* local number of vertices, excluding ghosts */
   edgelist    = wash->edgelist;
   vtype       = wash->vtype;
   junctions   = wash->junction;
@@ -685,7 +679,7 @@ int main(int argc,char ** argv)
 
   /* Set up the network layout */
   ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,NULL,nvertices,nedges,edgelist,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,NULL,nedges,edgelist,NULL);CHKERRQ(ierr);
 
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 

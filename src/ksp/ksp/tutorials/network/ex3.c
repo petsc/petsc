@@ -20,7 +20,7 @@ int main(int argc,char ** argv)
   PetscMPIInt    size,rank;
   DM             dmnetwork;
   PetscInt       i,j,net,Nsubnet,nsubnet,ne,nv,nvar,v,ncomp,compkey0,compkey1,compkey,goffset,row;
-  PetscInt       numVertices[10],numEdges[10],*edgelist[10],asvtx,bsvtx;
+  PetscInt       numEdges[10],*edgelist[10],asvtx,bsvtx;
   const PetscInt *vtx,*edges;
   PetscBool      sharedv,ghost,distribute=PETSC_TRUE,test=PETSC_FALSE;
   Vec            X;
@@ -50,24 +50,24 @@ int main(int argc,char ** argv)
   ierr = DMNetworkGetNumSubNetworks(dmnetwork,NULL,&Nsubnet);CHKERRQ(ierr);
 
   /* Input subnetworks; when size>1, process[i] creates subnetwork[i] */
-  for (i=0; i<Nsubnet; i++) {numVertices[i] = 0; numEdges[i] = 0;}
+  for (i=0; i<Nsubnet; i++) numEdges[i] = 0;
   for (i=0; i<Nsubnet; i++) {
     if (i == 0 && (size == 1 || (rank == i && size >1))) {
-      numVertices[i] = 4; numEdges[i] = 3;
+      numEdges[i] = 3;
       ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
       edgelist[i][0] = 0; edgelist[i][1] = 2;
       edgelist[i][2] = 2; edgelist[i][3] = 1;
       edgelist[i][4] = 1; edgelist[i][5] = 3;
 
     } else if (i == 1 && (size == 1 || (rank == i && size >1))) {
-      numVertices[i] = 4; numEdges[i] = 3;
+      numEdges[i] = 3;
       ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
       edgelist[i][0] = 0; edgelist[i][1] = 3;
       edgelist[i][2] = 3; edgelist[i][3] = 2;
       edgelist[i][4] = 2; edgelist[i][5] = 1;
 
     } else if (i>1 && (size == 1 || (rank == i && size >1))) {
-      numVertices[i] = 4; numEdges[i] = 3;
+      numEdges[i] = 3;
       ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
       for (j=0; j< numEdges[i]; j++) {
         edgelist[i][2*j] = j; edgelist[i][2*j+1] = j+1;
@@ -78,7 +78,7 @@ int main(int argc,char ** argv)
   /* Add subnetworks */
   for (i=0; i<Nsubnet; i++) {
     PetscInt netNum = -1;
-    ierr = DMNetworkAddSubnetwork(dmnetwork,NULL,numVertices[i],numEdges[i],edgelist[i],&netNum);CHKERRQ(ierr);
+    ierr = DMNetworkAddSubnetwork(dmnetwork,NULL,numEdges[i],edgelist[i],&netNum);CHKERRQ(ierr);
   }
 
   /* Add shared vertices -- all processes hold this info at current implementation */
