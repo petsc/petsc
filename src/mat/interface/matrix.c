@@ -9766,13 +9766,25 @@ static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fi
 
    To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value actually needed.
 
-   If you have many matrices with the same non-zero structure to multiply, you should use MatProductCreate()/MatProductSymbolic(C)/ReplaceMats(), and call MatProductNumeric() repeatedly.
+   If you have many matrices with the same non-zero structure to multiply, you should use MatProductCreate()/MatProductSymbolic()/MatProductReplaceMats(), and call MatProductNumeric() repeatedly.
 
    In the special case where matrix B (and hence C) are dense you can create the correctly sized matrix C yourself and then call this routine with MAT_REUSE_MATRIX, rather than first having MatMatMult() create it for you. You can NEVER do this if the matrix C is sparse.
 
+   Example of Usage:
+.vb
+     MatProductCreate(A,B,NULL,&C);
+     MatProductSetType(C,MATPRODUCT_AB);
+     MatProductSymbolic(C);
+     MatProductNumeric(C); // compute C=A * B
+     MatProductReplaceMats(A1,B1,NULL,C); // compute C=A1 * B1
+     MatProductNumeric(C);
+     MatProductReplaceMats(A2,NULL,NULL,C); // compute C=A2 * B1
+     MatProductNumeric(C);
+.ve
+
    Level: intermediate
 
-.seealso: MatTransposeMatMult(), MatMatTransposeMult(), MatPtAP()
+.seealso: MatTransposeMatMult(), MatMatTransposeMult(), MatPtAP(), MatProductCreate(), MatProductSymbolic(), MatProductReplaceMats(), MatProductNumeric()
 @*/
 PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
