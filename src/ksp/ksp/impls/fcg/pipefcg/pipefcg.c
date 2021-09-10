@@ -591,9 +591,9 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsOb
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP PIPEFCG options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_pipefcg_mmax","Number of search directions to storue","KSPPIPEFCGSetMmax",pipefcg->mmax,&mmax,&flg);CHKERRQ(ierr);
-  if (flg) ierr = KSPPIPEFCGSetMmax(ksp,mmax);CHKERRQ(ierr);
+  if (flg) {ierr = KSPPIPEFCGSetMmax(ksp,mmax);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ksp_pipefcg_nprealloc","Number of directions to preallocate","KSPPIPEFCGSetNprealloc",pipefcg->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
+  if (flg) {ierr = KSPPIPEFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ksp_pipefcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)pipefcg->truncstrat,(PetscEnum*)&pipefcg->truncstrat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

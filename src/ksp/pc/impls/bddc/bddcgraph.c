@@ -1026,9 +1026,9 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     if (graph->xadj) {
       PetscInt *new_xadj,*new_adjncy;
       /* sort CSR graph */
-      for (i=0;i<graph->nvtxs;i++)
+      for (i=0;i<graph->nvtxs;i++) {
         ierr = PetscSortInt(graph->xadj[i+1]-graph->xadj[i],&graph->adjncy[graph->xadj[i]]);CHKERRQ(ierr);
-
+      }
       /* adapt local CSR graph in case of local periodicity */
       k = 0;
       for (i=0;i<graph->nvtxs;i++)

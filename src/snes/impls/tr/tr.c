@@ -354,7 +354,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       ierr = SNESNewtonTRPreCheck(snes,X,Y,&changed_y);CHKERRQ(ierr);
       ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);         /* W <- X - Y */
       ierr = SNESNewtonTRPostCheck(snes,X,Y,W,&changed_y,&changed_w);CHKERRQ(ierr);
-      if (changed_y) ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);
+      if (changed_y) {ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);}
       ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr); /*  F(X) */
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */

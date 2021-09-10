@@ -750,7 +750,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
       ierr = PetscFree(crsGID);CHKERRQ(ierr);
 
       /* clean up and create coordinates for coarse grid (output) */
-      if (size > 1) ierr = PetscFree(coords);CHKERRQ(ierr);
+      if (size > 1) {ierr = PetscFree(coords);CHKERRQ(ierr);}
 
       ierr = MPIU_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm);CHKERRMPI(ierr);
       if (tm > 1.) { /* needs to be globalized - should not happen */

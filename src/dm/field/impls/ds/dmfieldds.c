@@ -474,9 +474,9 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &weights);CHKERRQ(ierr);
   if (qNc != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected scalar quadrature components\n");
   N = numPoints * Nq * Nc;
-  if (B) ierr = DMGetWorkArray(field->dm, N, mpitype, &qB);CHKERRQ(ierr);
-  if (D) ierr = DMGetWorkArray(field->dm, N * dimC, mpitype, &qD);CHKERRQ(ierr);
-  if (H) ierr = DMGetWorkArray(field->dm, N * dimC * dimC, mpitype, &qH);CHKERRQ(ierr);
+  if (B) {ierr = DMGetWorkArray(field->dm, N, mpitype, &qB);CHKERRQ(ierr);}
+  if (D) {ierr = DMGetWorkArray(field->dm, N * dimC, mpitype, &qD);CHKERRQ(ierr);}
+  if (H) {ierr = DMGetWorkArray(field->dm, N * dimC * dimC, mpitype, &qH);CHKERRQ(ierr);}
   ierr = DMFieldEvaluateFE(field,pointIS,quad,type,qB,qD,qH);CHKERRQ(ierr);
   if (B) {
     PetscInt i, j, k;
@@ -643,9 +643,9 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
       }
     }
   }
-  if (B) ierr = DMRestoreWorkArray(field->dm, N, mpitype, &qB);CHKERRQ(ierr);
-  if (D) ierr = DMRestoreWorkArray(field->dm, N * dimC, mpitype, &qD);CHKERRQ(ierr);
-  if (H) ierr = DMRestoreWorkArray(field->dm, N * dimC * dimC, mpitype, &qH);CHKERRQ(ierr);
+  if (B) {ierr = DMRestoreWorkArray(field->dm, N, mpitype, &qB);CHKERRQ(ierr);}
+  if (D) {ierr = DMRestoreWorkArray(field->dm, N * dimC, mpitype, &qD);CHKERRQ(ierr);}
+  if (H) {ierr = DMRestoreWorkArray(field->dm, N * dimC * dimC, mpitype, &qH);CHKERRQ(ierr);}
   ierr = PetscFEGeomDestroy(&geom);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
   PetscFunctionReturn(0);

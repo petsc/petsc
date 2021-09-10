@@ -143,7 +143,7 @@ static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
         for (ki = 0; ki <= user->k[f]; ++ki) {
           if (ki > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  ");CHKERRQ(ierr);}
           for (c = 0; c < user->Nc[f]; ++c) {
-            if (c > 0) ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);
+            if (c > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);}
             ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) PetscRealPart(closure[(kj*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]));CHKERRQ(ierr);
           }
         }
@@ -178,7 +178,7 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
           for (ki = 0; ki <= user->k[f]; ++ki) {
             if (ki > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  ");CHKERRQ(ierr);}
             for (c = 0; c < user->Nc[f]; ++c) {
-              if (c > 0) ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);
+              if (c > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);}
               ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) PetscRealPart(closure[((kk*(user->k[f]+1) + kj)*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]));CHKERRQ(ierr);
             }
           }

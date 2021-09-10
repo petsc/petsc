@@ -288,8 +288,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   if (!adctx->no_an) {
-    if (adctx->sparse)
-      ierr = AdolcFree2(Rec);CHKERRQ(ierr);
+    if (adctx->sparse) {ierr = AdolcFree2(Rec);CHKERRQ(ierr);}
     ierr = AdolcFree2(Seed);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&da);CHKERRQ(ierr);

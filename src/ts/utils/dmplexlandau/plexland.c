@@ -687,11 +687,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   PetscReal tmp = 0;
                   PetscPrintf(PETSC_COMM_SELF,"\t\t%D.%D.%D) ERROR total I = %22.16e (LANDAU_MAX_Q_FACE=%d, #face=%D)\n",eidx,q,fieldA,sum,LANDAU_MAX_Q_FACE,maps->num_face);
                   for (d = 0, tmp = 0; d < numindices; ++d) {
-                    if (tmp!=0 && PetscAbs(tmp-1.0) > 10*PETSC_MACHINE_EPSILON) ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D) %3D: ",d,indices[d]);CHKERRQ(ierr);
+                    if (tmp!=0 && PetscAbs(tmp-1.0) > 10*PETSC_MACHINE_EPSILON) {ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D) %3D: ",d,indices[d]);CHKERRQ(ierr);}
                     for (f = 0; f < numindices; ++f) {
                       tmp += PetscRealPart(elMat[d*numindices + f]);
                     }
-                    if (tmp!=0) ierr = PetscPrintf(ctx->comm," | %22.16e\n",tmp);CHKERRQ(ierr);
+                    if (tmp!=0) {ierr = PetscPrintf(ctx->comm," | %22.16e\n",tmp);CHKERRQ(ierr);}
                   }
                 }
                 maps->num_reduced++;
@@ -1481,10 +1481,10 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   for (ii=0;ii<ctx->num_species;ii++) ctx->coarsenTol[ii] = 0.;
   ii = LANDAU_MAX_SPECIES;
   ierr = PetscOptionsRealArray("-dm_landau_refine_tol","tolerance for refining cells in AMR","plexland.c",ctx->refineTol, &ii, &flg);CHKERRQ(ierr);
-  if (flg && ii != ctx->num_species) ierr = PetscInfo2(dummy, "Phase: Warning, #refine_tol %D != num_species %D\n",ii,ctx->num_species);CHKERRQ(ierr);
+  if (flg && ii != ctx->num_species) {ierr = PetscInfo2(dummy, "Phase: Warning, #refine_tol %D != num_species %D\n",ii,ctx->num_species);CHKERRQ(ierr);}
   ii = LANDAU_MAX_SPECIES;
   ierr = PetscOptionsRealArray("-dm_landau_coarsen_tol","tolerance for coarsening cells in AMR","plexland.c",ctx->coarsenTol, &ii, &flg);CHKERRQ(ierr);
-  if (flg && ii != ctx->num_species) ierr = PetscInfo2(dummy, "Phase: Warning, #coarsen_tol %D != num_species %D\n",ii,ctx->num_species);CHKERRQ(ierr);
+  if (flg && ii != ctx->num_species) {ierr = PetscInfo2(dummy, "Phase: Warning, #coarsen_tol %D != num_species %D\n",ii,ctx->num_species);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-dm_landau_domain_radius","Phase space size in units of electron thermal velocity","plexland.c",ctx->radius,&ctx->radius, &flg);CHKERRQ(ierr);
   if (flg && ctx->radius <= 0) { /* negative is ratio of c */
     if (ctx->radius == 0) ctx->radius = 0.75;

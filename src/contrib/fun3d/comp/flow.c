@@ -2433,7 +2433,7 @@ int ReadRestartFile(GRID *grid)
     }
     ierr = MPI_Barrier(MPI_COMM_WORLD);
   }
-  if (!rank) ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);
+  if (!rank) {ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);}
 
   /* Create a distributed vector in Petsc ordering */
   ICALLOC(nnodesLoc, &loc2pet);
