@@ -202,7 +202,7 @@ M*/
     Complex number definitions
  */
 #if defined(PETSC_HAVE_COMPLEX)
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
 /* C++ support of complex number */
 
 #define PetscRealPartComplex(a)      (a).real()
@@ -384,7 +384,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 */
 PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 {
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
   return PetscComplex(x,y);
 #elif defined(_Imaginary_I)
   return x + y * _Imaginary_I;

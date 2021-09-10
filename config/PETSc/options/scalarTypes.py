@@ -121,8 +121,6 @@ class Configure(config.base.Configure):
     else:
       raise RuntimeError('--with-precision must be __fp16, single, double, or __float128')
     self.logPrint('Precision is '+str(self.precision))
-    if self.precision == '__float128' and self.scalartype == 'complex' and self.languages.clanguage == 'Cxx':
-      raise RuntimeError('Cannot use --with-precision=__float128 --with-scalar-type=complex and --with-clanguage=cxx because C++ std:complex class has no support for __float128, use --with-clanguage=c')
     return
 
   def configure(self):
