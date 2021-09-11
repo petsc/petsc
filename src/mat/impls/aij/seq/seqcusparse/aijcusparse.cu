@@ -3942,6 +3942,26 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
   PetscFunctionReturn(0);
 }
 
+/*@C
+    MatSeqAIJCUSPARSEGetIJ - returns the device row storage i and j indices for MATSEQAIJCUSPARSE matrices.
+
+   Not collective
+
+    Input Parameters:
++   A - the matrix
+-   compressed - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be always returned in compressed form
+
+    Output Parameters:
++   ia - the CSR row pointers
+-   ja - the CSR column indices
+
+    Level: developer
+
+    Notes:
+      When compressed is true, the CSR structure does not contain empty rows
+
+.seealso: MatSeqAIJCUSPARSERestoreIJ(), MatSeqAIJCUSPARSEGetArrayRead()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat A, PetscBool compressed, const int** i, const int **j)
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -3971,6 +3991,23 @@ PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat A, PetscBool compressed, const int** i
   PetscFunctionReturn(0);
 }
 
+/*@C
+    MatSeqAIJCUSPARSERestoreIJ - restore the device row storage i and j indices obtained with MatSeqAIJCUSPARSEGetIJ()
+
+   Not collective
+
+    Input Parameters:
++   A - the matrix
+-   compressed - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be always returned in compressed form
+
+    Output Parameters:
++   ia - the CSR row pointers
+-   ja - the CSR column indices
+
+    Level: developer
+
+.seealso: MatSeqAIJCUSPARSEGetIJ()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool compressed, const int** i, const int **j)
 {
   PetscFunctionBegin;
@@ -3981,6 +4018,23 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool compressed, const int
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSEGetArrayRead - gives read-only access to the array where the device data for a MATSEQAIJCUSPARSE matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+   Notes: may trigger host-device copies if up-to-date matrix data is on host
+
+.seealso: MatSeqAIJCUSPARSEGetArray(), MatSeqAIJCUSPARSEGetArrayWrite(), MatSeqAIJCUSPARSERestoreArrayRead()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat A, const PetscScalar** a)
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -4000,6 +4054,21 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat A, const PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSERestoreArrayRead - restore the read-only access array obtained from MatSeqAIJCUSPARSEGetArrayRead()
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+.seealso: MatSeqAIJCUSPARSEGetArrayRead()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar** a)
 {
   PetscFunctionBegin;
@@ -4010,6 +4079,23 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSEGetArray - gives read-write access to the array where the device data for a MATSEQAIJCUSPARSE matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+   Notes: may trigger host-device copies if up-to-date matrix data is on host
+
+.seealso: MatSeqAIJCUSPARSEGetArrayRead(), MatSeqAIJCUSPARSEGetArrayWrite(), MatSeqAIJCUSPARSERestoreArray()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat A, PetscScalar** a)
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -4030,7 +4116,21 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat A, PetscScalar** a)
   ierr = MatSeqAIJCUSPARSEInvalidateTranspose(A,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+/*@C
+   MatSeqAIJCUSPARSERestoreArray - restore the read-write access array obtained from MatSeqAIJCUSPARSEGetArray()
 
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+.seealso: MatSeqAIJCUSPARSEGetArray()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar** a)
 {
   PetscErrorCode ierr;
@@ -4044,6 +4144,23 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSEGetArrayWrite - gives write access to the array where the device data for a MATSEQAIJCUSPARSE matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+   Notes: does not trigger host-device copies and flags data validity on the GPU
+
+.seealso: MatSeqAIJCUSPARSEGetArray(), MatSeqAIJCUSPARSEGetArrayRead(), MatSeqAIJCUSPARSERestoreArrayWrite()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar** a)
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -4064,6 +4181,21 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSERestoreArrayWrite - restore the write-only access array obtained from MatSeqAIJCUSPARSEGetArrayWrite()
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+.seealso: MatSeqAIJCUSPARSEGetArrayWrite()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar** a)
 {
   PetscErrorCode ierr;
