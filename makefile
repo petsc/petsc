@@ -145,7 +145,7 @@ matlabbin:
 #
 check_install: check
 check:
-	-+@${OMAKE_SELF} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} check_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/check.log
+	-+@${OMAKE_SELF} PETSC_OPTIONS="${PETSC_OPTIONS} ${PETSC_TEST_OPTIONS}" PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} check_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/check.log
 checkx:
 	-@${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} checkx_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/checkx.log
 check_build:
