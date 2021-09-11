@@ -28,17 +28,17 @@ Prepared by
 **W. Gropp** :sup:`1`,
 **D. Karpeyev** :sup:`1`,
 **D. Kaushik** :sup:`1`,
-**M. Knepley** :sup:`9`,
+**M. Knepley** :sup:`1,9`,
 **D. May** :sup:`7`,
 **L. Curfman McInnes** :sup:`1`,
 **R. Mills** :sup:`1`,
 **T. Munson** :sup:`1`,
 **K. Rupp** :sup:`1`,
-**P. Sanan** :sup:`8`,
+**P. Sanan** :sup:`1,8`,
 **B. Smith** :sup:`1`,
 **H. Suh** :sup:`1`,
 **S. Zampini** :sup:`4`,
-**H. Zhang** :sup:`5`, and
+**H. Zhang** :sup:`1,5`, and
 **H. Zhang** :sup:`1`
 
 | :sup:`1`\ Mathematics and Computer Science Division, Argonne National Laboratory
