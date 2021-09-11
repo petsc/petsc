@@ -32,7 +32,7 @@ class Configure(config.package.CMakePackage):
   def setupHelp(self, help):
     import nargs
     config.package.CMakePackage.setupHelp(self, help)
-    help.addArgument('KOKKOS', '-with-kokkos-hip-arch',  nargs.ArgString(None, 0, 'One of VEGA900, VEGA906, VEGA908'))
+    help.addArgument('KOKKOS', '-with-kokkos-hip-arch=<string>',  nargs.ArgString(None, 0, 'One of VEGA900, VEGA906, VEGA908'))
     return
 
   def setupDependencies(self, framework):
@@ -101,8 +101,8 @@ class Configure(config.package.CMakePackage):
       args.append('-DKokkos_ENABLE_PTHREAD=ON')
       self.system = 'PThread'
 
+    lang = 'cxx'
     if self.cuda.found:
-      lang = 'cuda'
       args.append('-DKokkos_ENABLE_CUDA=ON')
       self.system = 'CUDA'
       self.pushLanguage('CUDA')
@@ -149,11 +149,9 @@ class Configure(config.package.CMakePackage):
       args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
       args.append('-DCMAKE_CXX_FLAGS="' + hipFlags + '"')
       if not 'with-kokkos-hip-arch' in self.framework.clArgDB:
-        raise RuntimeError('You must set -with-kokkos-hip-arch=VEGA900, VEGA906, VEGA908 etc.')
+        raise RuntimeError('You must set --with-kokkos-hip-arch=VEGA900, VEGA906, VEGA908 etc.')
       args.append('-DKokkos_ARCH_'+self.argDB['with-kokkos-hip-arch']+'=ON')
       args.append('-DKokkos_ENABLE_HIP_RELOCATABLE_DEVICE_CODE=OFF')
-    else:
-      lang = 'cxx'
 
     # set -DCMAKE_CXX_STANDARD=
     if not hasattr(self.compilers,lang+'dialect'):

@@ -29,3 +29,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Com
 }
 #endif
 
+#if PETSC_PKG_HYPRE_VERSION_LT(2,19,0)
+typedef int HYPRE_MemoryLocation;
+#define hypre_IJVectorMemoryLocation(a) 0
+#define hypre_IJMatrixMemoryLocation(a) 0
+#endif

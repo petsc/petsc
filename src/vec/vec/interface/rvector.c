@@ -1513,7 +1513,6 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
           case PETSC_OFFLOAD_UNALLOCATED:
           case PETSC_OFFLOAD_VECKOKKOS:
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
-            break;
           }
 #endif
         } else if (iship) {
@@ -1544,7 +1543,6 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
           case PETSC_OFFLOAD_UNALLOCATED:
           case PETSC_OFFLOAD_VECKOKKOS:
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
-            break;
           }
 #endif
         } else {

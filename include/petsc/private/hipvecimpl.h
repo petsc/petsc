@@ -46,6 +46,8 @@ PETSC_INTERN PetscErrorCode VecAYPX_SeqHIP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqHIP(Vec,PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqHIP(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqHIP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecGetLocalVectorRead_SeqHIP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecRestoreLocalVectorRead_SeqHIP(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecGetArrayWrite_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArray_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecRestoreArray_SeqHIP(Vec,PetscScalar**);

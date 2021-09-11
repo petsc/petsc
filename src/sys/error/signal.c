@@ -147,8 +147,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   (*PetscErrorPrintf)("or try https://docs.nvidia.com/cuda/cuda-memcheck/index.html on NVIDIA CUDA systems  to find memory corruption errors\n");
 #endif
   if (PetscDefined(USE_DEBUG)) {
-    if (!PetscStackActive()) (*PetscErrorPrintf)("  or try option -log_stack\n");
-    else {
+    if (PetscStackActive()) {
       PetscStackPop;  /* remove stack frames for error handlers */
       PetscStackPop;
       (*PetscErrorPrintf)("likely location of problem given in stack below\n");

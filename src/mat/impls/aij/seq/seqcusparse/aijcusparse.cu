@@ -299,8 +299,11 @@ static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOp
     ierr = PetscOptionsEnum("-mat_cusparse_spmv_alg","sets cuSPARSE algorithm used in sparse-mat dense-vector multiplication (SpMV)",
                             "cusparseSpMVAlg_t",MatCUSPARSESpMVAlgorithms,(PetscEnum)cusparsestruct->spmvAlg,(PetscEnum*)&cusparsestruct->spmvAlg,&flg);CHKERRQ(ierr);
     /* If user did use this option, check its consistency with cuSPARSE, since PetscOptionsEnum() sets enum values based on their position in MatCUSPARSESpMVAlgorithms[] */
+#if PETSC_PKG_CUDA_VERSION_GE(11,4,0)
+    if (flg && CUSPARSE_SPMV_CSR_ALG1 != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseSpMVAlg_t has been changed but PETSc has not been updated accordingly");
+#else
     if (flg && CUSPARSE_CSRMV_ALG1 != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseSpMVAlg_t has been changed but PETSc has not been updated accordingly");
-
+#endif
     ierr = PetscOptionsEnum("-mat_cusparse_spmm_alg","sets cuSPARSE algorithm used in sparse-mat dense-mat multiplication (SpMM)",
                             "cusparseSpMMAlg_t",MatCUSPARSESpMMAlgorithms,(PetscEnum)cusparsestruct->spmmAlg,(PetscEnum*)&cusparsestruct->spmmAlg,&flg);CHKERRQ(ierr);
     if (flg && CUSPARSE_SPMM_CSR_ALG1 != 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSPARSE enum cusparseSpMMAlg_t has been changed but PETSc has not been updated accordingly");
@@ -3221,6 +3224,7 @@ static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaijcusparse_hypre_C",NULL);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3465,7 +3469,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtyp
       stat = cusparseSetStream(spptr->handle,PetscDefaultCudaStream);CHKERRCUSPARSE(stat);
       spptr->format     = MAT_CUSPARSE_CSR;
      #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+     #if PETSC_PKG_CUDA_VERSION_GE(11,4,0)
+      spptr->spmvAlg    = CUSPARSE_SPMV_CSR_ALG1; /* default, since we only support csr */
+     #else
       spptr->spmvAlg    = CUSPARSE_CSRMV_ALG1;    /* default, since we only support csr */
+     #endif
       spptr->spmmAlg    = CUSPARSE_SPMM_CSR_ALG1; /* default, only support column-major dense matrix B */
       spptr->csr2cscAlg = CUSPARSE_CSR2CSC_ALG1;
      #endif
@@ -3490,6 +3498,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtyp
   ierr = MatBindToCPU_SeqAIJCUSPARSE(B,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPARSESetFormat_C",MatCUSPARSESetFormat_SeqAIJCUSPARSE);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijcusparse_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -3931,6 +3942,99 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const Pe
   PetscFunctionReturn(0);
 }
 
+/*@C
+    MatSeqAIJCUSPARSEGetIJ - returns the device row storage i and j indices for MATSEQAIJCUSPARSE matrices.
+
+   Not collective
+
+    Input Parameters:
++   A - the matrix
+-   compressed - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be always returned in compressed form
+
+    Output Parameters:
++   ia - the CSR row pointers
+-   ja - the CSR column indices
+
+    Level: developer
+
+    Notes:
+      When compressed is true, the CSR structure does not contain empty rows
+
+.seealso: MatSeqAIJCUSPARSERestoreIJ(), MatSeqAIJCUSPARSEGetArrayRead()
+@*/
+PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat A, PetscBool compressed, const int** i, const int **j)
+{
+  Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  CsrMatrix          *csr;
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  if (!i || !j) PetscFunctionReturn(0);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  if (cusp->format == MAT_CUSPARSE_ELL || cusp->format == MAT_CUSPARSE_HYB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented");
+  ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
+  if (!cusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
+  csr = (CsrMatrix*)cusp->mat->mat;
+  if (i) {
+    if (!compressed && a->compressedrow.use) { /* need full row offset */
+      if (!cusp->rowoffsets_gpu) {
+        cusp->rowoffsets_gpu  = new THRUSTINTARRAY32(A->rmap->n + 1);
+        cusp->rowoffsets_gpu->assign(a->i,a->i + A->rmap->n + 1);
+        ierr = PetscLogCpuToGpu((A->rmap->n + 1)*sizeof(PetscInt));CHKERRQ(ierr);
+      }
+      *i = cusp->rowoffsets_gpu->data().get();
+    } else *i = csr->row_offsets->data().get();
+  }
+  if (j) *j = csr->column_indices->data().get();
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    MatSeqAIJCUSPARSERestoreIJ - restore the device row storage i and j indices obtained with MatSeqAIJCUSPARSEGetIJ()
+
+   Not collective
+
+    Input Parameters:
++   A - the matrix
+-   compressed - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be always returned in compressed form
+
+    Output Parameters:
++   ia - the CSR row pointers
+-   ja - the CSR column indices
+
+    Level: developer
+
+.seealso: MatSeqAIJCUSPARSEGetIJ()
+@*/
+PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool compressed, const int** i, const int **j)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  if (i) *i = NULL;
+  if (j) *j = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSeqAIJCUSPARSEGetArrayRead - gives read-only access to the array where the device data for a MATSEQAIJCUSPARSE matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+   Notes: may trigger host-device copies if up-to-date matrix data is on host
+
+.seealso: MatSeqAIJCUSPARSEGetArray(), MatSeqAIJCUSPARSEGetArrayWrite(), MatSeqAIJCUSPARSERestoreArrayRead()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat A, const PetscScalar** a)
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -3950,6 +4054,21 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat A, const PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSERestoreArrayRead - restore the read-only access array obtained from MatSeqAIJCUSPARSEGetArrayRead()
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+.seealso: MatSeqAIJCUSPARSEGetArrayRead()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar** a)
 {
   PetscFunctionBegin;
@@ -3960,6 +4079,23 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSEGetArray - gives read-write access to the array where the device data for a MATSEQAIJCUSPARSE matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+   Notes: may trigger host-device copies if up-to-date matrix data is on host
+
+.seealso: MatSeqAIJCUSPARSEGetArrayRead(), MatSeqAIJCUSPARSEGetArrayWrite(), MatSeqAIJCUSPARSERestoreArray()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat A, PetscScalar** a)
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -3980,7 +4116,21 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat A, PetscScalar** a)
   ierr = MatSeqAIJCUSPARSEInvalidateTranspose(A,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+/*@C
+   MatSeqAIJCUSPARSERestoreArray - restore the read-write access array obtained from MatSeqAIJCUSPARSEGetArray()
 
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+.seealso: MatSeqAIJCUSPARSEGetArray()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar** a)
 {
   PetscErrorCode ierr;
@@ -3994,6 +4144,23 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSEGetArrayWrite - gives write access to the array where the device data for a MATSEQAIJCUSPARSE matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+   Notes: does not trigger host-device copies and flags data validity on the GPU
+
+.seealso: MatSeqAIJCUSPARSEGetArray(), MatSeqAIJCUSPARSEGetArrayRead(), MatSeqAIJCUSPARSERestoreArrayWrite()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar** a)
 {
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -4014,6 +4181,21 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqAIJCUSPARSERestoreArrayWrite - restore the write-only access array obtained from MatSeqAIJCUSPARSEGetArrayWrite()
+
+   Not Collective
+
+   Input Parameter:
+.   A - a MATSEQAIJCUSPARSE matrix
+
+   Output Parameter:
+.   a - pointer to the device data
+
+   Level: developer
+
+.seealso: MatSeqAIJCUSPARSEGetArrayWrite()
+@*/
 PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar** a)
 {
   PetscErrorCode ierr;

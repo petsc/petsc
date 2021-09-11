@@ -567,19 +567,19 @@ int main(int argc,char **args)
          args: -pc_type spai
       test:
          suffix: 15
-         requires: hypre
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type pilut
       test:
          suffix: 16
-         requires: hypre
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type parasails
       test:
          suffix: 17
-         requires: hypre
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type boomeramg
       test:
          suffix: 18
-         requires: hypre
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type euclid
 
    testset:
@@ -616,7 +616,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 2
-      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) hypre
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg
       test:
          suffix: boomeramg_euclid

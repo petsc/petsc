@@ -763,7 +763,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-
     if (!jac->ksp) {
       wasSetup = PETSC_FALSE;
 

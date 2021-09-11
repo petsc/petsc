@@ -249,7 +249,7 @@ static PetscErrorCode PetscCUPMInitializeAndView(PetscBool initDevice,PetscInt d
   PetscFunctionBegin;
   PetscCUPMSynchronize = logView;
   if (initDevice) {ierr = PetscCUPMInitialize(PETSC_COMM_WORLD,device);CHKERRQ(ierr);}
-  else if (logView) { /* With -log_view, we want to do costly gpu runtime initialization early so that not to distort the timing later. */
+  else if (logView || devView) { /* With -{log,cuda,hip}_view, we want to do costly gpu runtime initialization early so that not to distort the timing later. */
     devCount = 0;
     cerr = cupmGetDeviceCount(&devCount);
     cupmGetLastError(); /* Reset the last error */
@@ -269,8 +269,9 @@ static PetscErrorCode PetscCUPMInitializeAndView(PetscBool initDevice,PetscInt d
       }
       ierr = PetscCUPMInitialize(PETSC_COMM_WORLD,(PetscInt)devId);CHKERRQ(ierr);
      #if defined(PETSC_HAVE_KOKKOS)
-      /* With -log_view, we always do eager init */
-      ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
+      if (logView) { /* With -log_view, we always do eager init */
+        ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
+      }
      #endif
     }
   }
@@ -278,9 +279,11 @@ static PetscErrorCode PetscCUPMInitializeAndView(PetscBool initDevice,PetscInt d
   if (devView) {
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
     cerr = cupmGetDeviceCount(&devCount);CHKERRCUPM(cerr);
-    for (devId = 0; devId < devCount; ++devId) {
-      cerr = cupmGetDeviceProperties(&prop,devId);CHKERRCUPM(cerr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "device %d: %s\n", devId, prop.name);CHKERRQ(ierr);
+    if (rank == 0) {
+      for (devId = 0; devId < devCount; ++devId) {
+        cerr = cupmGetDeviceProperties(&prop,devId);CHKERRCUPM(cerr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "device %d: %s\n", devId, prop.name);CHKERRQ(ierr);
+      }
     }
     cerr = cupmGetDevice(&devId);CHKERRCUPM(cerr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Using device %d.\n",rank,devId);CHKERRQ(ierr);

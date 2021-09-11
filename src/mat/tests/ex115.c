@@ -350,53 +350,62 @@ int main(int argc,char **args)
       requires: hypre
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 1
       args: -N 11 -M 11
       output_file: output/ex115_1.out
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 2
       nsize: 3
       args: -N 13 -M 13 -matmatmult_via hypre
       output_file: output/ex115_1.out
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 3
       nsize: 4
       args: -M 13 -N 7 -matmatmult_via hypre
       output_file: output/ex115_1.out
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 4
       nsize: 2
       args: -M 12 -N 19
       output_file: output/ex115_1.out
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 5
       nsize: 3
       args: -M 13 -N 13 -matptap_via hypre -matptap_hypre_outtype hypre
       output_file: output/ex115_1.out
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 6
       nsize: 3
       args: -M 12 -N 19 -test_offproc
       output_file: output/ex115_1.out
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 7
       nsize: 3
       args: -M 19 -N 12 -test_offproc -view_B ::ascii_info_detail
       output_file: output/ex115_7.out
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 8
       nsize: 3
       args: -M 1 -N 12 -test_offproc
       output_file: output/ex115_1.out
 
    test:
+      requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: 9
       nsize: 3
       args: -M 1 -N 2 -test_offproc

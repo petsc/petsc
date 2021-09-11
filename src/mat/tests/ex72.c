@@ -23,7 +23,6 @@ The option -aij_only allows to use MATAIJ for all cases.\n\\n";
 
 int main(int argc,char **argv)
 {
-  PetscInt    ret_code;
   MM_typecode matcode;
   FILE        *file;
   PetscInt    M, N, ninput;
@@ -63,7 +62,7 @@ int main(int argc,char **argv)
   if (mm_is_pattern(matcode)) pattern = PETSC_TRUE;
 
   /* Find out size of sparse matrix .... */
-  if ((ret_code = mm_read_mtx_crd_size(file, &M, &N, &nz)) !=0)
+  if (mm_read_mtx_crd_size(file, &M, &N, &nz))
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Size of sparse matrix is wrong.");
 
   ierr = mm_write_banner(stdout, matcode);CHKERRQ(ierr);

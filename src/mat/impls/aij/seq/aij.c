@@ -4657,10 +4657,10 @@ PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
 }
 
 #if defined(PETSC_HAVE_CUDA)
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat);
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat,MatType,MatReuse,Mat*);
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat);
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat,MatType,MatReuse,Mat*);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
@@ -5325,8 +5325,6 @@ PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-  Developers Note: CUSPARSE does not yet support the MatConvert_SeqAIJ..() paradigm and thus cannot be registered here
-
 .seealso:  MatRegisterAll(), MatSeqAIJRegister()
 @*/
 PetscErrorCode  MatSeqAIJRegisterAll(void)
@@ -5342,6 +5340,12 @@ PetscErrorCode  MatSeqAIJRegisterAll(void)
   ierr = MatSeqAIJRegister(MATSEQAIJSELL,     MatConvert_SeqAIJ_SeqAIJSELL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MKL_SPARSE)
   ierr = MatSeqAIJRegister(MATSEQAIJMKL,      MatConvert_SeqAIJ_SeqAIJMKL);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_CUDA)
+  ierr = MatSeqAIJRegister(MATSEQAIJCUSPARSE, MatConvert_SeqAIJ_SeqAIJCUSPARSE);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  ierr = MatSeqAIJRegister(MATSEQAIJKOKKOS,   MatConvert_SeqAIJ_SeqAIJKokkos);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_VIENNACL) && defined(PETSC_HAVE_VIENNACL_NO_CUDA)
   ierr = MatSeqAIJRegister(MATMPIAIJVIENNACL, MatConvert_SeqAIJ_SeqAIJViennaCL);CHKERRQ(ierr);

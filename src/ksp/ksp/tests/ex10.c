@@ -216,7 +216,7 @@ PetscInt  rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
  */
 PetscErrorCode Elastic20Stiff(PetscReal **Ke)
 {
-  PetscReal K[60][60],x,y,z,dx,dy,dz,v;
+  PetscReal K[60][60],x,y,z,dx,dy,dz;
   PetscInt  i,j,k,l,Ii,J;
 
   paulsetup20();
@@ -256,7 +256,7 @@ PetscErrorCode Elastic20Stiff(PetscReal **Ke)
     for (j=0; j<20; j++) {
       for (k=0; k<3; k++) {
         for (l=0; l<3; l++) {
-          Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[Ii+k][J+l];
+          Ke[3*rmap[i]+k][3*rmap[j]+l] = K[Ii+k][J+l];
         }
       }
       J += 3;

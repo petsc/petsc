@@ -461,6 +461,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpiaijcusparse_hypre_C",NULL);CHKERRQ(ierr);
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -519,6 +520,9 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",MatCUSPARSESetFormat_MPIAIJCUSPARSE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_MPIAIJCUSPARSE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_MPIAIJCUSPARSE);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpiaijcusparse_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

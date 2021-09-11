@@ -444,7 +444,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 @*/
 PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
 {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_DEVICE)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

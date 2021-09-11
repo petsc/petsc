@@ -1,4 +1,4 @@
-#include <petscsys.h>
+#include <petscdevice.h>
 #include <petsc/private/petscimpl.h>
 #include <Kokkos_Core.hpp>
 
@@ -30,11 +30,15 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
   PetscFunctionBegin;
   if (!Kokkos::is_initialized()) {
    #if defined(KOKKOS_ENABLE_CUDA)
+    cudaError_t cerr;
+
     ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
-    cudaGetDevice(&devId);
+    cerr = cudaGetDevice(&devId);CHKERRCUDA(cerr);
    #elif defined(KOKKOS_ENABLE_HIP) /* Kokkos does not support CUDA and HIP at the same time */
+    hipError_t herr;
+
     ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
-    hipGetDevice(&devId);
+    herr = hipGetDevice(&devId);CHKERRHIP(herr);
    #endif
     args.device_id   = devId;
     Kokkos::initialize(args);

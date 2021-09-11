@@ -56,7 +56,6 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceKind kind, PetscDevice *device)
 #endif
   default:
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Must have configured PETSc with %s support to use PetscDeviceKind %d",PetscDeviceKinds[kind],kind);
-    break;
   }
   *device = dev;
   PetscFunctionReturn(0);
@@ -98,7 +97,6 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
 #endif
   default:
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Must have configured PETSc with %s support to use PetscDeviceKind %d",PetscDeviceKinds[device->kind],device->kind);
-    break;
   }
   PetscFunctionReturn(0);
 }

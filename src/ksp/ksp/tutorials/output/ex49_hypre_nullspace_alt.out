@@ -1,0 +1,54 @@
+  Residual norms for elas_ solve.
+  0 KSP Residual norm 4.57659 
+  1 KSP Residual norm 0.260071 
+  2 KSP Residual norm 0.0322625 
+  3 KSP Residual norm 0.00896886 
+  4 KSP Residual norm 0.00262147 
+  5 KSP Residual norm 0.000762594 
+  6 KSP Residual norm 0.000121774 
+  7 KSP Residual norm 2.23073e-05 
+Linear elas_ solve converged due to CONVERGED_RTOL iterations 7
+KSP Object: (elas_) 1 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using NATURAL norm type for convergence test
+PC Object: (elas_) 1 MPI processes
+  type: hypre
+    HYPRE BoomerAMG preconditioning
+      Cycle type V
+      Maximum number of levels 25
+      Maximum number of iterations PER hypre call 1
+      Convergence tolerance PER hypre call 0.
+      Threshold for strong coupling 0.25
+      Interpolation truncation factor 0.
+      Interpolation: max elements per row 0
+      Number of levels of aggressive coarsening 0
+      Number of paths for aggressive coarsening 1
+      Maximum row sums 0.9
+      Sweeps down         1
+      Sweeps up           1
+      Sweeps on coarse    1
+      Relax down          symmetric-SOR/Jacobi
+      Relax up            symmetric-SOR/Jacobi
+      Relax on coarse     Gaussian-elimination
+      Relax weight  (all)      1.
+      Outer relax weight (all) 1.
+      Using CF-relaxation
+      Not using more complex smoothers.
+      Measure type        local
+      Coarsen type        Falgout
+      Interpolation type  ext+i
+      Using nodal coarsening with HYPRE_BOOMERAMGSetNodal() 6
+      HYPRE_BoomerAMGSetInterpVecVariant() 3
+      HYPRE_BoomerAMGSetInterpVecQMax() 0
+      HYPRE_BoomerAMGSetSmoothInterpVectors() 0
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=966, cols=966, bs=2
+    total: nonzeros=16348, allocated nonzeros=16348
+    total number of mallocs used during MatSetValues calls=0
+      has attached near null space
+      using I-node routines: found 483 nodes, limit used is 5

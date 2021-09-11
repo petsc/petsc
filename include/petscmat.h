@@ -1994,7 +1994,14 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,P
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat);
 typedef struct Mat_SeqAIJCUSPARSETriFactors* Mat_SeqAIJCUSPARSETriFactors_p;
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat,PetscBool,const int**,const int**);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat,PetscBool,const int**,const int**);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat,PetscScalar**);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat,PetscScalar**);
 
 PETSC_EXTERN PetscErrorCode MatCreateDenseCUDA(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqDenseCUDA(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);
