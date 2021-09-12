@@ -462,6 +462,7 @@ class Configure(script.Script):
         codeStr += codeBegin+body+codeEnd
     else:
       raise RuntimeError('Cannot determine code body for language: '+language)
+    codeStr += '\n'
     return codeStr
 
   def preprocess(self, codeStr, timeout = 600.0):
