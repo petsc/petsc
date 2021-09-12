@@ -421,7 +421,7 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsn
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  SNES - the SNES context
 
    Output Parameters:
@@ -464,7 +464,7 @@ static PetscErrorCode SNESNASMGetSubdomains_NASM(SNES snes,PetscInt *n,SNES *sub
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  SNES - the SNES context
 
    Output Parameters:

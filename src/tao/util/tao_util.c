@@ -23,7 +23,7 @@ PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
 .  L - lower bounds
 -  U - upper bounds
 
-   Output Parameters:
+   Output Parameter:
 .  FB - The Fischer-Burmeister function vector
 
    Notes:
@@ -123,7 +123,7 @@ PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 .  U - upper bounds
 -  mu - smoothing parameter
 
-   Output Parameters:
+   Output Parameter:
 .  FB - The Smoothed Fischer-Burmeister function vector
 
    Notes:

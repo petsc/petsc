@@ -55,7 +55,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscR
 
   Logically Collective on TS
 
-  Input Parameters:
+  Input Parameter:
 . ts - TS context obtained from TSCreate()
 
   Output Parameters:

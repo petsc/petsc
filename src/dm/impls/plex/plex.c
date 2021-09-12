@@ -9207,7 +9207,7 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 
   not collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - The DMPlex object
 
   Output Parameters:

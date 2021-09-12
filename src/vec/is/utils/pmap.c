@@ -546,7 +546,7 @@ PetscErrorCode PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . map - pointer to the map
 
   Output Parameters:

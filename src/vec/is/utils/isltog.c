@@ -1012,7 +1012,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
     Output Parameters:
@@ -1463,7 +1463,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
     Output Parameters:
@@ -1508,7 +1508,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping ma
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
     Output Parameters:
@@ -1564,7 +1564,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
     Output Parameters:
@@ -1592,7 +1592,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
     Output Parameters:
@@ -1657,7 +1657,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
     Output Parameters:

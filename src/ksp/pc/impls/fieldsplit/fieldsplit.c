@@ -2352,7 +2352,7 @@ PetscErrorCode PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptyp
 
     Logically Collective on PC
 
-    Input Parameters:
+    Input Parameter:
 .   pc      - the preconditioner context
 
     Output Parameters:

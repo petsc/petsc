@@ -1224,7 +1224,7 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
 
  Not collective
 
- Input Parameters:
+ Input Parameter:
 .   A  - nest matrix
 
  Output Parameters:
@@ -1269,7 +1269,7 @@ PetscErrorCode  MatNestGetSize_Nest(Mat A,PetscInt *M,PetscInt *N)
 
  Not collective
 
- Input Parameters:
+ Input Parameter:
 .   A  - nest matrix
 
  Output Parameters:
@@ -1308,7 +1308,7 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
 
  Not collective
 
- Input Parameters:
+ Input Parameter:
 .   A  - nest matrix
 
  Output Parameters:
@@ -1349,7 +1349,7 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
 
  Not collective
 
- Input Parameters:
+ Input Parameter:
 .   A  - nest matrix
 
  Output Parameters:

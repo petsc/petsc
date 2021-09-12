@@ -375,7 +375,7 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
 -  w, h - window width and height in pixels, or may use PETSC_DECIDE or PETSC_DRAW_FULL_SIZE, PETSC_DRAW_HALF_SIZE,
           PETSC_DRAW_THIRD_SIZE, PETSC_DRAW_QUARTER_SIZE
 
-   Output Parameters:
+   Output Parameter:
 . viewer - the PetscViewer
 
    Format Options:

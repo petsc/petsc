@@ -168,7 +168,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 
   Not collective
 
-  Input Parameters:
+  Input Parameter:
 . da  - The DMDA
 
   Output Parameters:

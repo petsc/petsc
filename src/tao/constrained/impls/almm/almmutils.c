@@ -289,7 +289,7 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
                         and slack variable components of the subsolver's solution vector.
                         Not valid for problems with only equality constraints.
 
-   Input Parameters:
+   Input Parameter:
 .  tao - the Tao context for the TAOALMM solver
 
    Output Parameters:
@@ -333,7 +333,7 @@ PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is)
                       by TaoALMMGetMultipliers(). Not valid for problems with only one
                       type of constraint.
 
-   Input Parameters:
+   Input Parameter:
 .  tao - the Tao context for the TAOALMM solver
 
    Output Parameters:

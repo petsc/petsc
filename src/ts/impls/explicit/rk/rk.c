@@ -483,7 +483,7 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - timestepping context
 
    Output Parameters:

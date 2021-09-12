@@ -103,7 +103,7 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the factored matrix
 
    Output Parameters:
@@ -2096,7 +2096,7 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Output Parameters:
@@ -2150,7 +2150,7 @@ PetscErrorCode MatSetLayouts(Mat A,PetscLayout rmap,PetscLayout cmap)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Output Parameters:
@@ -2875,7 +2875,7 @@ PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
 
    Collective on Mat if MAT_GLOBAL_MAX or MAT_GLOBAL_SUM is used as the flag
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -4118,7 +4118,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 .  its - the number of iterations
 -  lits - the number of local iterations
 
-   Output Parameters:
+   Output Parameter:
 .  x - the solution (can contain an initial guess, use option SOR_ZERO_INITIAL_GUESS to indicate no guess)
 
    SOR Flags:
@@ -4938,7 +4938,7 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -4987,7 +4987,7 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -5037,7 +5037,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -5085,7 +5085,7 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6690,7 +6690,7 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6720,7 +6720,7 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective, unless matrix has not been allocated, then collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6756,7 +6756,7 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -7508,7 +7508,7 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat,PetscInt nblocks,PetscInt *bsize
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:

@@ -3609,7 +3609,7 @@ PetscErrorCode DMHasVariableBounds(DM dm,PetscBool *flg)
 
     Logically Collective on dm
 
-    Input Parameters:
+    Input Parameter:
 .   dm - the DM object
 
     Output parameters:
@@ -5058,7 +5058,7 @@ PetscErrorCode DMSetAdjacency(DM dm, PetscInt f, PetscBool useCone, PetscBool us
 
   Not collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - The DM object
 
   Output Parameters:
@@ -6648,7 +6648,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
 /*@C
   DMGetPeriodicity - Get the description of mesh periodicity
 
-  Input Parameters:
+  Input Parameter:
 . dm      - The DM object
 
   Output Parameters:

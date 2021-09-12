@@ -47,7 +47,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
 +  comm - MPI_Communicator that may share /tmp
 -  len - length of string to hold name
 
-   Output Parameters:
+   Output Parameter:
 .  dir - directory name
 
    Options Database Keys:

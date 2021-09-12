@@ -1225,7 +1225,7 @@ PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao tao, PetscReal *radius)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . tao - the Tao context
 
   Output Parameters:
@@ -2546,7 +2546,7 @@ PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
 
   Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  tao - the Tao context
 
    Output Parameters:

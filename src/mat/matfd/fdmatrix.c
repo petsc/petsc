@@ -252,7 +252,7 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  coloring - the coloring context
 
    Output Parameters:
@@ -542,7 +542,7 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 
     Not Collective
 
-    Input Parameters:
+    Input Parameter:
 .   coloring - coloring context created with MatFDColoringCreate()
 
     Output Parameters:

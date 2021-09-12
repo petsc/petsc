@@ -100,7 +100,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 
   Collective on DMAdaptor
 
-  Input Parameters:
+  Input Parameter:
 . adaptor - The DMAdaptor object
 
   Options Database Keys:

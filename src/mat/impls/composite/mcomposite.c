@@ -837,7 +837,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 
   Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the composite matrix
 
    Options Database Keys:

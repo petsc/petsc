@@ -290,7 +290,7 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
 
    Collective on Vec
 
-   Input Parameters:
+   Input Parameter:
 +  x - the vector
 
    Output Parameters:
@@ -360,7 +360,7 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 
    Collective on Vec
 
-   Input Parameters:
+   Input Parameter:
 .  x - the vector
 
    Output Parameters:

@@ -284,7 +284,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 
    Collective on ksp
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - the Krylov space context
 
    Options Database Keys:

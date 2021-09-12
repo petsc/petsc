@@ -5880,7 +5880,7 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . A - The matrix in mpiaij format
 
   Output Parameters:

@@ -443,7 +443,7 @@ PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 
    Collective on TS
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
    Options Database:

@@ -168,7 +168,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 
    Collective on MatColoring
 
-   Input Parameters:
+   Input Parameter:
 .  mc - MatColoring context
 
    Options Database Keys:

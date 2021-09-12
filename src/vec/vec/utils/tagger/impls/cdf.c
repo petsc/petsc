@@ -520,7 +520,7 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
 
   Logically Collective on VecTagger
 
-  Input Parameters:
+  Input Parameter:
 . tagger - the VecTagger context
 
   Output Parameters:

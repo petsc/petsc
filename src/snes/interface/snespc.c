@@ -71,7 +71,7 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
 
    Collective on SNES
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the SNES context
 
    Output Parameters:

@@ -340,7 +340,7 @@ PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorC
 /*@C
    SNESLineSearchGetPreCheck - Gets the pre-check function for the line search routine.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - the SNESLineSearch context
 
    Output Parameters:
@@ -387,7 +387,7 @@ PetscErrorCode  SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscError
 /*@C
    SNESLineSearchGetPostCheck - Gets the post-check function for the line search routine.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - the SNESLineSearch context
 
    Output Parameters:
@@ -759,7 +759,7 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
 /*@
    SNESLineSearchSetFromOptions - Sets options for the line search
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Options Database Keys:
@@ -1090,7 +1090,7 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
    in lambda for iterative line searches, the minimum steplength, the maximum steplength,
    and the maximum number of iterations the line search procedure may take.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Output Parameters:
@@ -1317,7 +1317,7 @@ PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,PetscInt order)
 /*@
    SNESLineSearchGetNorms - Gets the norms for for X, Y, and F.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Output Parameters:
@@ -1429,7 +1429,7 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 /*@
    SNESLineSearchGetVecs - Gets the vectors from the SNESLineSearch context
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Output Parameters:
@@ -1706,7 +1706,7 @@ PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineS
 /*@C
    SNESLineSearchGetVIFunctions - Sets VI-specific functions for line search computation.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - the line search context, obtain with SNESGetLineSearch()
 
    Output Parameters:
