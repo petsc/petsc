@@ -1668,10 +1668,13 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
    Collective
 
    Input Parameters:
-+  M, N               - the global number of grid points in the x and y directions
-.  Mdomains, Ndomains - the global number of subdomains in the x and y directions
-.  dof                - degrees of freedom per node
--  overlap            - overlap in mesh lines
++  pc       - the preconditioner context
+.  M        - the global number of grid points in the x direction
+.  N        - the global number of grid points in the y direction
+.  Mdomains - the global number of subdomains in the x direction
+.  Ndomains - the global number of subdomains in the y direction
+.  dof      - degrees of freedom per node
+-  overlap  - overlap in mesh lines
 
    Output Parameters:
 +  Nsub - the number of local subdomains created

@@ -298,16 +298,15 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 
   Input Parameters:
 + ls - the Tao context
-. x - The current solution (on output x contains the new solution determined by the line search)
-. f - objective function value at current solution (on output contains the objective function value at new solution)
-. g - gradient evaluated at x (on output contains the gradient at new solution)
 - s - search direction
 
+  Input/Output Parameters:
++ x - The current solution (on output x contains the new solution determined by the line search)
+. f - objective function value at current solution (on output contains the objective function value at new solution)
+- g - gradient evaluated at x (on output contains the gradient at new solution)
+
   Output Parameters:
-+ x - new solution
-. f - objective function value at x
-. g - gradient vector at x
-. steplength - scalar multiplier of s used ( x = x0 + steplength * x)
++ steplength - scalar multiplier of s used ( x = x0 + steplength * x)
 - reason - reason why the line-search stopped
 
   reason will be set to one of:

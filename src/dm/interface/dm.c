@@ -2061,8 +2061,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
 - subdms - the local subdomains
 
   Output Parameters:
-+ n     - the number of scatters returned
-. iscat - scatter from global vector to nonoverlapping global vector entries on subdomain
++ iscat - scatter from global vector to nonoverlapping global vector entries on subdomain
 . oscat - scatter from global vector to overlapping global vector entries on subdomain
 - gscat - scatter from global vector to local vector on subdomain (fills in ghosts)
 
@@ -7093,13 +7092,12 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
   Input Parameters:
 + dm - The DM
-. v - The Vec of points
-. ltype - The type of point location, e.g. DM_POINTLOCATION_NONE or DM_POINTLOCATION_NEAREST
-- cells - Points to either NULL, or a PetscSF with guesses for which cells contain each point.
+- ltype - The type of point location, e.g. DM_POINTLOCATION_NONE or DM_POINTLOCATION_NEAREST
 
-  Output Parameters:
-+ v - The Vec of points, which now contains the nearest mesh points to the given points if DM_POINTLOCATION_NEAREST is used
-- cells - The PetscSF containing the ranks and local indices of the containing points.
+  Input/Output Parameters:
++ v - The Vec of points, on output contains the nearest mesh points to the given points if DM_POINTLOCATION_NEAREST is used
+- cellSF - Points to either NULL, or a PetscSF with guesses for which cells contain each point;
+           on output, the PetscSF containing the ranks and local indices of the containing points
 
   Level: developer
 
@@ -9541,13 +9539,14 @@ PetscErrorCode DMMonitor(DM dm)
 
   Input Parameters:
 + dm     - The DM
-. sol    - The solution vector
-. errors - An array of length Nf, the number of fields, or NULL for no output
-- errorVec - A Vec pointer, or NULL for no output
+- sol    - The solution vector
 
-  Output Parameters:
-+ errors   - The error in each field
-- errorVec - Creates a vector to hold the cellwise error
+  Input/Output Parameter:
+. errors - An array of length Nf, the number of fields, or NULL for no output; on output
+           contains the error in each field
+
+  Output Parameter:
+. errorVec - A vector to hold the cellwise error (may be NULL)
 
   Note: The exact solutions come from the PetscDS object, and the time comes from DMGetOutputSequenceNumber().
 

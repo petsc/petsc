@@ -208,10 +208,10 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI_Communicator that may share working directory
 
-   Output Parameters:
+   Output Parameter:
 .  shared - PETSC_TRUE or PETSC_FALSE
 
    Options Database Keys:

@@ -215,7 +215,8 @@ static PetscErrorCode SNESNewtonTRPreCheck(SNES snes,Vec X,Vec Y,PetscBool *chan
    Logically Collective on snes
 
    Input Parameters:
-+  snes - the solver.  X - The last solution
++  snes - the solver
+.  X - The last solution
 .  Y - The full step direction
 -  W - The updated solution, W = X - Y
 

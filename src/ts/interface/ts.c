@@ -511,15 +511,11 @@ PetscErrorCode  TSResetTrajectory(TS ts)
 
    Output Parameters:
 +  A - Jacobian matrix
-.  B - optional preconditioning matrix
--  flag - flag indicating matrix structure
+-  B - optional preconditioning matrix
 
    Notes:
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers.
-
-   See KSPSetOperators() for important information about setting the
-   flag parameter.
 
    Level: developer
 
@@ -4389,8 +4385,7 @@ PetscErrorCode  SNESTSFormFunction(SNES snes,Vec U,Vec F,void *ctx)
 
    Output Parameters:
 + A - the Jacobian
-. B - the preconditioning matrix (may be the same as A)
-- flag - indicates any structure change in the matrix
+- B - the preconditioning matrix (may be the same as A)
 
    Notes:
    This function is not normally called by users and is automatically registered with the SNES used by TS.

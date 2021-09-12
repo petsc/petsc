@@ -5392,7 +5392,7 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
    Not Collective
 
    Input Parameters:
-     snes - SNES context
+.    snes - SNES context
 
    Output Parameters:
 +    version - version 1, 2 (default is 2) or 3

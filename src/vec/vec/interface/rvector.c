@@ -293,9 +293,8 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
    Input Parameter:
 +  x - the vector
 
-   Output Parameters:
-+  x - the normalized vector
--  val - the vector norm before normalization
+   Output Parameter:
+.  val - the vector norm before normalization
 
    Level: intermediate
 
@@ -442,9 +441,6 @@ PetscErrorCode  VecTDot(Vec x,Vec y,PetscScalar *val)
    Input Parameters:
 +  x - the vector
 -  alpha - the scalar
-
-   Output Parameter:
-.  x - the scaled vector
 
    Note:
    For a vector with n components, VecScale() computes

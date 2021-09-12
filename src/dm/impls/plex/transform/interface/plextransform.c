@@ -1381,8 +1381,9 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 
 /*@
   DMPlexTransformMapCoordinates -
+
   Input Parameters:
-+ cr   - The DMPlexCellRefiner
++ tr   - The DMPlexTransform
 . pct  - The cell type of the parent, from whom the new cell is being produced
 . ct   - The type being produced
 . r    - The replica number requested for the produced cell type
@@ -1662,7 +1663,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
   Not collective
 
   Input Parameters:
-+ cr  - The DMPlexCellRefiner
++ tr  - The DMPlexTransform
 . ct  - The type of the parent cell
 . rct - The type of the produced cell
 . r   - The index of the produced cell

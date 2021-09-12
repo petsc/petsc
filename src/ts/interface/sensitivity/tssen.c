@@ -859,7 +859,8 @@ PetscErrorCode TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameters:
-+  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
++  numcost - size of returned arrays
+.  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
 -  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
 
    Level: intermediate

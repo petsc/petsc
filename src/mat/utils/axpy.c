@@ -434,8 +434,9 @@ PetscErrorCode  MatComputeOperator(Mat inmat,MatType mattype,Mat *mat)
 
     Collective on Mat
 
-    Input Parameter:
-.   inmat - the matrix
+    Input Parameters:
++   inmat - the matrix
+-   mattype - the matrix type for the explicit operator
 
     Output Parameter:
 .   mat - the explicit  operator transposed

@@ -5579,13 +5579,16 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,PetscInt dof,MatReuse reus
     Collective on Mat
 
    Input Parameters:
-+    A,B - the matrices in mpiaij format
-.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--    rowb, colb - index sets of rows and columns of B to extract (or NULL)
++    A - the first matrix in mpiaij format
+.    B - the second matrix in mpiaij format
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
-   Output Parameters:
-+    rowb, colb - index sets of rows and columns of B to extract
--    B_seq - the sequential matrix generated
+   Input/Output Parameters:
++    rowb - index sets of rows of B to extract (or NULL), modified on output
+-    colb - index sets of columns of B to extract (or NULL), modified on output
+
+   Output Parameter:
+.    B_seq - the sequential matrix generated
 
     Level: developer
 

@@ -177,6 +177,7 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 
    Input Parameters:
 +  comm - the communicator to own the viewer
+.  options - options database, use NULL for default global database
 .  pre - the string to prepend to the name or NULL
 -  name - the option one is seeking
 

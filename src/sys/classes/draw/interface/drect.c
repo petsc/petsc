@@ -52,10 +52,12 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscRea
 
    Input Parameters:
 +  draw - the draw where the coordinates are defined
--  x,y - the coordinate location
+.  x - the horizontal coordinate
+-  y - the vertical coordinate
 
    Output Parameters:
--  i,j - the pixel location
++  i - the horizontal pixel location
+-  j - the vertical pixel location
 
    Level: developer
 
@@ -78,10 +80,12 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y
 
    Input Parameters:
 +  draw - the draw where the coordinates are defined
--  i,j - the pixel location
+.  i - the horizontal pixel location
+-  j - the vertical pixel location
 
    Output Parameters:
-.  x,y - the coordinate location
++  x - the horizontal coordinate
+-  y - the vertical coordinate
 
    Level: developer
 

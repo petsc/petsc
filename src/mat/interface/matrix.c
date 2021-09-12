@@ -7831,7 +7831,7 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
     Input Parameters:
 +   mat - the matrix
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
--   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
+.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
 -   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is

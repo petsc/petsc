@@ -120,12 +120,17 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
    Output Parameters:
 +  dim      - dimension of the distributed array (1, 2, or 3)
-.  M, N, P  - global dimension in each direction of the array
-.  m, n, p  - corresponding number of procs in each dimension
+.  M        - global dimension in first direction of the array
+.  N        - global dimension in second direction of the array
+.  P        - global dimension in third direction of the array
+.  m        - corresponding number of procs in first dimension
+.  n        - corresponding number of procs in second dimension
+.  p        - corresponding number of procs in third dimension
 .  dof      - number of degrees of freedom per node
 .  s        - stencil width
-.  bx,by,bz - type of ghost nodes at boundary, one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED,
-              DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC
+.  bx       - type of ghost nodes at boundary in first dimension
+.  by       - type of ghost nodes at boundary in second dimension
+.  bz       - type of ghost nodes at boundary in third dimension
 -  st       - stencil type, either DMDA_STENCIL_STAR or DMDA_STENCIL_BOX
 
    Level: beginner

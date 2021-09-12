@@ -371,8 +371,9 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
    Input Parameter:
 .  name - the name of an object
 
-   Output Parameter:
-.   obj - the object or null if there is no object
+   Output Parameters:
++  obj - the object or null if there is no object
+-  classname - the name of the class
 
    Level: advanced
 

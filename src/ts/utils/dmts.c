@@ -644,7 +644,7 @@ PetscErrorCode DMTSGetTransientVariable(DM dm,TSTransientVariable *tvar,void *ct
 
    Not Collective
 
-   Input Arguments:
+   Input Argument:
 .  dm - DM to be used with TS
 
    Output Parameters:

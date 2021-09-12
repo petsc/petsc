@@ -243,10 +243,12 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 .  da - the distributed array
 
    Output Parameters:
-+  x,y,z - the corner indices (where y and z are optional; these are used
-           for 2D and 3D problems)
--  m,n,p - widths in the corresponding directions (where n and p are optional;
-           these are used for 2D and 3D problems)
++  x - the corner index for the first dimension
+.  y - the corner index for the second dimension (only used in 2D and 3D problems)
+.  z - the corner index for the third dimension (only used in 3D problems)
+.  m - the width in the first dimension
+.  n - the width in the second dimension (only used in 2D and 3D problems)
+-  p - the width in the third dimension (only used in 3D problems)
 
    Note:
    The corner information is independent of the number of degrees of

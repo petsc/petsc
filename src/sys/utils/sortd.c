@@ -239,15 +239,13 @@ PetscErrorCode  PetscSortRemoveDupsReal(PetscInt *n,PetscReal v[])
 
    Input Parameters:
 +  ncut  - splitig index
-.  n     - number of values to sort
-.  a     - array of values
--  idx   - index for array a
+-  n     - number of values to sort
 
-   Output Parameters:
-+  a     - permuted array of values such that its elements satisfy:
+   Input/Output Parameters:
++  a     - array of values, on output the values are permuted such that its elements satisfy:
            abs(a[i]) >= abs(a[ncut-1]) for i < ncut and
            abs(a[i]) <= abs(a[ncut-1]) for i >= ncut
--  idx   - permuted index of array a
+-  idx   - index for array a, on output permuted accordingly
 
    Level: intermediate
 
@@ -300,15 +298,13 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
 
    Input Parameters:
 +  ncut  - splitig index
-.  n     - number of values to sort
-.  a     - array of values in PetscReal
--  idx   - index for array a
+-  n     - number of values to sort
 
-   Output Parameters:
-+  a     - permuted array of real values such that its elements satisfy:
+   Input/Output Parameters:
++  a     - array of values, on output the values are permuted such that its elements satisfy:
            abs(a[i]) >= abs(a[ncut-1]) for i < ncut and
            abs(a[i]) <= abs(a[ncut-1]) for i >= ncut
--  idx   - permuted index of array a
+-  idx   - index for array a, on output permuted accordingly
 
    Level: intermediate
 

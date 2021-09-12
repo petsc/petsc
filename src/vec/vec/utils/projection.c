@@ -899,9 +899,6 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
 + v - the vector
 - p - the exponent to use on each element
 
-  Output Parameter:
-. v - the vector
-
   Level: intermediate
 
 @*/
@@ -975,7 +972,9 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
   Logically Collective
 
   Input Parameters:
-. Vec1, Vec2, Vec3 - The three vectors
++ Vec1 - The first vector
+. Vec2 - The second vector
+- Vec3 - The third vector
 
   Output Parameter:
 . VMedian - The median vector (this can be any one of the input vectors)

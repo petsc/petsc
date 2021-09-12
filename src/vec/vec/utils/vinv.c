@@ -1415,9 +1415,6 @@ PetscErrorCode  VecRealPart(Vec v)
 +  v - the vector
 -  shift - the shift
 
-   Output Parameter:
-.  v - the shifted vector
-
    Level: intermediate
 
 @*/

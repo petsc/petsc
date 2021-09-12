@@ -1277,10 +1277,9 @@ PetscErrorCode  KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 .  rnorm - residual norm (may be estimated, depending on the method may be the preconditioned residual norm)
 -  ctx - convergence context which must be created by KSPConvergedDefaultCreate()
 
-   Output Parameters:
-+   positive - if the iteration has converged
-.   negative - if the iteration has diverged
--   KSP_CONVERGED_ITERATING - otherwise.
+   Output Parameter:
+.  reason - the convergence reason; it is positive if the iteration has converged,
+            negative if the iteration has diverged, and KSP_CONVERGED_ITERATING otherwise
 
    Notes:
    KSPConvergedDefault() reaches convergence when   rnorm < MAX (rtol * rnorm_0, abstol);

@@ -560,15 +560,12 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 
    Input Parameters:
 +  linesearch - The linesearch context
-.  X - The current solution
-.  F - The current function
-.  fnorm - The current norm
 -  Y - The search direction
 
-   Output Parameters:
-+  X - The new solution
-.  F - The new function
--  fnorm - The new function norm
+   Input/Output Parameters:
++  X - The current solution, on output the new solution
+.  F - The current function, on output the new function
+-  fnorm - The current norm, on output the new function norm
 
    Options Database Keys:
 + -snes_linesearch_type - basic, bt, l2, cp, nleqerr, shell

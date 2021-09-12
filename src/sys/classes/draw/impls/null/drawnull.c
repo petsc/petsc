@@ -173,6 +173,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
    PetscDrawOpenNull - Opens a null drawing context. All draw commands to
    it are ignored.
 
+   Input Parameter:
+.  comm - MPI communicator
+
    Output Parameter:
 .  draw - the drawing context
 

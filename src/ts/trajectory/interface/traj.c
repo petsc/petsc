@@ -154,7 +154,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 . ts      - the time stepper object (optional)
 - stepnum - the requested step number
 
-  Input/Output Parameters:
+  Input/Output Parameter:
 . time - the time associated with the step number
 
   Output Parameters:

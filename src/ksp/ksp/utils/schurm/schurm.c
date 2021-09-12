@@ -422,11 +422,14 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
   Collective on S
 
   Input Parameter:
-. S                - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
+. S    - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
 
   Output Parameters:
-+ A00,A01,A10,A11  - the four parts of the original matrix A = [A00 A01; A10 A11] (A11 is optional)
-- Ap00             - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A^{-1}.
++ A00  - the upper-left block of the original matrix A = [A00 A01; A10 A11]
+. Ap00 - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A^{-1}
+. A01  - the upper-right block of the original matrix A = [A00 A01; A10 A11]
+. A10  - the lower-left block of the original matrix A = [A00 A01; A10 A11]
+- A11  - (optional) the lower-right block of the original matrix A = [A00 A01; A10 A11]
 
   Note: A11 is optional, and thus can be NULL.  The submatrices are not increfed before they are returned and should not be modified or destroyed.
 
@@ -716,12 +719,15 @@ PetscErrorCode  MatSchurComplementGetAinvType(Mat S,MatSchurComplementAinvType *
     Collective on A00
 
     Input Parameters:
-+   A00,A01,A10,A11      - the four parts of the original matrix A = [A00 A01; A10 A11] (A01,A10, and A11 are optional, implying zero matrices)
-.   ainvtype             - type of approximation for inv(A00) used when forming Sp = A11 - A10 inv(A00) A01
--   preuse               - MAT_INITIAL_MATRIX for a new Sp, or MAT_REUSE_MATRIX to reuse an existing Sp, or MAT_IGNORE_MATRIX to put nothing in Sp
++   A00      - the upper-left part of the original matrix A = [A00 A01; A10 A11]
+.   A01      - (optional) the upper-right part of the original matrix A = [A00 A01; A10 A11]
+.   A10      - (optional) the lower-left part of the original matrix A = [A00 A01; A10 A11]
+.   A11      - (optional) the lower-right part of the original matrix A = [A00 A01; A10 A11]
+.   ainvtype - type of approximation for inv(A00) used when forming Sp = A11 - A10 inv(A00) A01
+-   preuse   - MAT_INITIAL_MATRIX for a new Sp, or MAT_REUSE_MATRIX to reuse an existing Sp, or MAT_IGNORE_MATRIX to put nothing in Sp
 
     Output Parameter:
--   Spmat                - approximate Schur complement suitable for preconditioning S = A11 - A10 inv(diag(A00)) A01
+-   Spmat    - approximate Schur complement suitable for preconditioning S = A11 - A10 inv(diag(A00)) A01
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires

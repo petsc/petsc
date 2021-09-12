@@ -1030,16 +1030,14 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
 
   Input Parameters:
 + n     - number of values
-. arr   - array to be sorted
 . asize - size in bytes of the datatype held in arr
-. barr  - array to be reordered
-. asize - size in bytes of the datatype held in barr
+. bsize - size in bytes of the datatype held in barr
 . cmp   - function pointer to comparison function
 - ctx   - optional context to be passed to comparison function, NULL if not needed
 
-  Output Parameters:
-+ arr  - sorted array
-- barr - reordered array
+  Input/Output Parameters:
++ arr  - array to be sorted, on output it is sorted
+- barr - array to be reordered, on output it is reordered
 
   Notes:
   The arrays need not be of the same type, however barr MUST contain at least as many elements as arr and the two CANNOT
@@ -1198,14 +1196,12 @@ PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[])
 
    Not Collective
 
-   Input Parameters:
-+  n   - number of values
-.  arr1 - array of integers to be sorted
--  arr2 - array of integers to be reordered
+   Input Parameter:
+.  n   - number of values
 
-   Output Parameters:
-+  arr1 - sorted array of integers
--  arr2 - reordered array of integers
+   Input/Output Parameters:
++  arr1 - array of integers to be sorted, modified on output
+-  arr2 - array of integers to be reordered, modified on output
 
    Notes:
    The arrays CANNOT overlap.
@@ -1274,14 +1270,12 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
 
    Not Collective
 
-   Input Parameters:
-+  n   - number of values
-.  arr1 - array of integers to be sorted
--  arr2 - array of integers to be reordered
+   Input Parameter:
+.  n   - number of values
 
-   Output Parameters:
-+  arr1 - sorted array of integers
--  arr2 - reordered array of integers
+   Input/Output Parameters:
+.  arr1 - array of integers to be sorted, modified on output
+-  arr2 - array of integers to be reordered, modified on output
 
    Notes:
    The arrays CANNOT overlap.
@@ -1350,14 +1344,12 @@ PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[])
 
    Not Collective
 
-   Input Parameters:
-+  n   - number of values
-.  arr1 - array of PetscReals to be sorted
--  arr2 - array of PetscReals to be reordered
+   Input Parameter:
+.  n   - number of values
 
-   Output Parameters:
-+  arr1 - sorted array of PetscReals
--  arr2 - reordered array of PetscInts
+   Input/Output Parameters:
+.  arr1 - array of PetscReals to be sorted, modified on output
+-  arr2 - array of PetscReals to be reordered, modified on output
 
    Notes:
    This function serves as an alternative to PetscSortRealWithArray(). While this function works for any array of PetscReals it is

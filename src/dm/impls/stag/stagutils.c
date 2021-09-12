@@ -230,9 +230,15 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm,DMStagS
 . dm - the DMStag object
 
   Output Parameters:
-+ x,y,z - starting element indices in each direction
-. m,n,p - element widths in each direction
-- nExtrax,nExtray,nExtraz - number of extra partial elements in each direction.
++ x     - starting element index in first direction
+. y     - starting element index in second direction
+. z     - starting element index in third direction
+. m     - element width in first direction
+. n     - element width in second direction
+. p     - element width in third direction
+. nExtrax - number of extra partial elements in first direction
+. nExtray - number of extra partial elements in second direction
+- nExtraz - number of extra partial elements in third direction
 
   Notes:
   Arguments corresponding to higher dimensions are ignored for 1D and 2D grids. These arguments may be set to NULL in this case.

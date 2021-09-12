@@ -827,12 +827,11 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 
   Not collective
 
-  Input Parameter:
-. coords - The coordinates of a segment
+  Input/Output Parameter:
+. coords - The coordinates of a segment, on output the new y-coordinate, and 0 for x
 
-  Output Parameters:
-+ coords - The new y-coordinate, and 0 for x
-- R - The rotation which accomplishes the projection
+  Output Parameter:
+. R - The rotation which accomplishes the projection
 
   Level: developer
 
@@ -857,12 +856,11 @@ PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar coords[], PetscReal R[]
 
   Not collective
 
-  Input Parameter:
-. coords - The coordinates of a segment
+  Input/Output Parameter:
+. coords - The coordinates of a segment; on output, the new y-coordinate, and 0 for x and z
 
-  Output Parameters:
-+ coords - The new y-coordinate, and 0 for x and z
-- R - The rotation which accomplishes the projection
+  Output Parameter:
+. R - The rotation which accomplishes the projection
 
   Note: This uses the basis completion described by Frisvad in http://www.imm.dtu.dk/~jerf/papers/abstracts/onb.html, DOI:10.1080/2165347X.2012.689606
 
@@ -905,13 +903,15 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
 
   Not collective
 
-  Input Parameters:
-+ coordSize - Length of coordinate array (3x number of points); must be at least 9 (3 points)
-- coords - The interlaced coordinates of each coplanar 3D point
+  Input Parameter:
+. coordSize - Length of coordinate array (3x number of points); must be at least 9 (3 points)
 
-  Output Parameters:
-+ coords - The first 2*coordSize/3 entries contain interlaced 2D points, with the rest undefined
-- R - 3x3 row-major rotation matrix whose columns are the tangent basis [t1, t2, n].  Multiplying by R^T transforms from original frame to tangent frame.
+  Input/Output Parameter:
+. coords - The interlaced coordinates of each coplanar 3D point; on output the first
+           2*coordSize/3 entries contain interlaced 2D points, with the rest undefined
+
+  Output Parameter:
+. R - 3x3 row-major rotation matrix whose columns are the tangent basis [t1, t2, n].  Multiplying by R^T transforms from original frame to tangent frame.
 
   Level: developer
 
@@ -2455,12 +2455,14 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   Input Arguments:
 + dm  - The DM
 . fvm - The PetscFV
-. faceGeometry - The face geometry from DMPlexComputeFaceGeometryFVM()
 - cellGeometry - The face geometry from DMPlexComputeCellGeometryFVM()
 
-  Output Parameters:
-+ faceGeometry - The geometric factors for gradient calculation are inserted
-- dmGrad - The DM describing the layout of gradient data
+  Input/Output Parameter:
+. faceGeometry - The face geometry from DMPlexComputeFaceGeometryFVM(); on output
+                 the geometric factors for gradient calculation are inserted
+
+  Output Parameter:
+. dmGrad - The DM describing the layout of gradient data
 
   Level: developer
 
@@ -2510,12 +2512,12 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
 
   Input Arguments:
 + dm  - The DM
-- fvm - The PetscFV
+- fv  - The PetscFV
 
   Output Parameters:
 + cellGeometry - The cell geometry
 . faceGeometry - The face geometry
-- dmGrad       - The gradient matrices
+- gradDM       - The gradient matrices
 
   Level: developer
 

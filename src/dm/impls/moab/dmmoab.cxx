@@ -83,7 +83,6 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 + comm - The communicator for the DMMoab object
 . mbiface - (ptr to) the MOAB Instance; if passed in NULL, MOAB instance is created inside PETSc, and destroyed
          along with the DMMoab
-. pcomm - (ptr to) a ParallelComm; if NULL, creates one internally for the whole communicator
 . ltog_tag - A tag to use to retrieve global id for an entity; if 0, will use GLOBAL_ID_TAG_NAME/tag
 - range - If non-NULL, contains range of entities to which DOFs will be assigned
 

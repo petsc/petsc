@@ -36,7 +36,7 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,P
 . dm      - The DM object
 
   Output Parameters:
-- user    - The user callback
++ user    - The user callback
 - ctx     - context for callback evaluation
 
   Level: advanced
@@ -271,13 +271,13 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
 
   Input Parameters:
 + dm - The DM object
-. p  - The point
-. adjSize - The maximum size of adj if it is non-NULL, or PETSC_DETERMINE
-- adj - Either NULL so that the array is allocated, or an existing array with size adjSize
+- p  - The point
 
-  Output Parameters:
-+ adjSize - The number of adjacent points
-- adj - The adjacent points
+  Input/Output Parameters:
++ adjSize - The maximum size of adj if it is non-NULL, or PETSC_DETERMINE;
+            on output the number of adjacent points
+- adj - Either NULL so that the array is allocated, or an existing array with size adjSize;
+        on output contains the adjacent points
 
   Level: advanced
 
@@ -308,7 +308,11 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 
   Input Parameters:
 + dm      - The DM
-- sfPoint - The PetscSF which encodes point connectivity
+. sfPoint - The PetscSF which encodes point connectivity
+. rootRankSection -
+. rootRanks -
+. leftRankSection -
+- leafRanks -
 
   Output Parameters:
 + processRanks - A list of process neighbors, or NULL
