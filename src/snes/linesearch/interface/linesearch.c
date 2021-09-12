@@ -476,13 +476,13 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
 
    Logically Collective on SNESLineSearch
 
-   Input Arguments:
+   Input Parameters:
 +  linesearch - linesearch context
 .  X - base state for this step
 .  Y - initial correction
 -  ctx - context for this function
 
-   Output Arguments:
+   Output Parameters:
 +  Y - correction, possibly modified
 -  changed - flag indicating that Y was modified
 

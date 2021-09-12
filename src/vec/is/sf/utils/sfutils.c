@@ -6,7 +6,7 @@
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  layout - PetscLayout defining the global space for roots
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
@@ -431,11 +431,11 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  rmap - PetscLayout defining the global root space
 -  lmap - PetscLayout defining the global leaf space
 
-   Output Arguments:
+   Output Parameter:
 .  sf - The parallel star forest
 
    Level: intermediate

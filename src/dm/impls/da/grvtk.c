@@ -508,9 +508,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 
    Collective
 
-   Input Arguments:
-   odm - DM specifying the grid layout, passed as a PetscObject
-   viewer - viewer of type VTK
+   Input Parameters:
++  odm - DM specifying the grid layout, passed as a PetscObject
+-  viewer - viewer of type VTK
 
    Level: developer
 

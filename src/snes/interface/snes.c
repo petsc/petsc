@@ -733,7 +733,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  snes - snes to configure
 
    Level: developer

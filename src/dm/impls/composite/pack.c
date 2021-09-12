@@ -979,10 +979,10 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 . dm - composite DM
 
-   Output Arguments:
+   Output Parameter:
 . is - array of serial index sets for each each component of the DMComposite
 
    Level: intermediate

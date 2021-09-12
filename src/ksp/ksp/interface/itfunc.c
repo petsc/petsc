@@ -2864,7 +2864,7 @@ PetscErrorCode  KSPGetDiagonalScaleFix(KSP ksp,PetscBool  *fix)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - the KSP context
 .  func - function to compute the operators
 -  ctx - optional context
@@ -2905,7 +2905,7 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - the KSP context
 .  func - function to compute the right hand side
 -  ctx - optional context
@@ -2941,7 +2941,7 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),vo
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - the KSP context
 .  func - function to compute the initial guess
 -  ctx - optional context

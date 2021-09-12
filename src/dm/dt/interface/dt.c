@@ -380,7 +380,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 
    Collecive on PetscQuadrature
 
-   Input Arguments:
+   Input Parameters:
 +  q - the quadrature functional
 .  imageDim - the dimension of the image of the transformation
 .  origin - a point in the original space
@@ -388,7 +388,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 .  J - the Jacobian of the image: an [imageDim x dim] matrix in row major order
 -  formDegree - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see PetscDTAltVPullback() for interpretation of formDegree]
 
-   Output Arguments:
+   Output Parameters:
 .  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of J to the k-form weights in the image space.
 
    Note: the new quadrature rule will have a different number of components if spaces have different dimensions.  For example, pushing a 2-form forward from a two dimensional space to a three dimensional space changes the number of components from 1 to 3.
@@ -633,12 +633,12 @@ do {                                                            \
 
   $\| P^{\alpha,\beta}_n \|_{\alpha,\beta}^2 = \int_{-1}^1 (1 + x)^{\alpha} (1 - x)^{\beta} P^{\alpha,\beta}_n (x)^2 dx.$
 
-  Input Arguments:
+  Input Parameters:
 - alpha - the left exponent > -1
 . beta - the right exponent > -1
 + n - the polynomial degree
 
-  Output Arguments:
+  Output Parameter:
 . norm - the weighted L2 norm
 
   Level: beginner
@@ -748,7 +748,7 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
 /*@
   PetscDTJacobiEvalJet - Evaluate the jet (function and derivatives) of the Jacobi polynomials basis up to a given degree.  The Jacobi polynomials with indices $\alpha$ and $\beta$ are orthogonal with respect to the weighted inner product $\langle f, g \rangle = \int_{-1}^1 (1+x)^{\alpha} (1-x)^{\beta) f(x) g(x) dx$.
 
-  Input Arguments:
+  Input Parameters:
 + alpha - the left exponent of the weight
 . beta - the right exponetn of the weight
 . npoints - the number of points to evaluate the polynomials at
@@ -804,7 +804,7 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  npoints - number of spatial points to evaluate at
 .  alpha - the left exponent > -1
 .  beta - the right exponent > -1
@@ -812,7 +812,7 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 .  ndegree - number of basis degrees to evaluate
 -  degrees - sorted array of degrees to evaluate
 
-   Output Arguments:
+   Output Parameters:
 +  B - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or NULL)
 .  D - row-oriented derivative evaluation matrix (or NULL)
 -  D2 - row-oriented second derivative evaluation matrix (or NULL)
@@ -840,13 +840,13 @@ PetscErrorCode PetscDTJacobiEval(PetscInt npoints,PetscReal alpha, PetscReal bet
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  npoints - number of spatial points to evaluate at
 .  points - array of locations to evaluate at
 .  ndegree - number of basis degrees to evaluate
 -  degrees - sorted array of degrees to evaluate
 
-   Output Arguments:
+   Output Parameters:
 +  B - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or NULL)
 .  D - row-oriented derivative evaluation matrix (or NULL)
 -  D2 - row-oriented second derivative evaluation matrix (or NULL)
@@ -975,7 +975,7 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
   as the reference element for finite elements in PETSc), which makes it a stable basis to use for evaluating
   polynomials in that domain.
 
-  Input Arguments:
+  Input Parameters:
 + dim - the number of variables in the multivariate polynomials
 . npoints - the number of points to evaluate the polynomials at
 . points - [npoints x dim] array of point coordinates
@@ -1558,12 +1558,12 @@ PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints,PetscReal a,
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  npoints - number of points
 .  a - left end of interval (often-1)
 -  b - right end of interval (often +1)
 
-   Output Arguments:
+   Output Parameters:
 +  x - quadrature points
 -  w - quadrature weights
 
@@ -1600,7 +1600,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
 +  n - number of grid nodes
 -  type - PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA or PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON
 
-   Output Arguments:
+   Output Parameters:
 +  x - quadrature points
 -  w - quadrature weights
 
@@ -1634,14 +1634,14 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
 
   Not Collective
 
-  Input Arguments:
+  Input Parameters:
 + dim     - The spatial dimension
 . Nc      - The number of components
 . npoints - number of points in one dimension
 . a       - left end of interval (often-1)
 - b       - right end of interval (often +1)
 
-  Output Argument:
+  Output Parameter:
 . q - A PetscQuadrature object
 
   Level: intermediate
@@ -1715,14 +1715,14 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 
   Not Collective
 
-  Input Arguments:
+  Input Parameters:
 + dim     - The simplex dimension
 . Nc      - The number of components
 . npoints - The number of points in one dimension
 . a       - left end of interval (often-1)
 - b       - right end of interval (often +1)
 
-  Output Argument:
+  Output Parameter:
 . q - A PetscQuadrature object
 
   Level: intermediate
@@ -1781,13 +1781,13 @@ PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscIn
 
   Not Collective
 
-  Input Arguments:
+  Input Parameters:
 + dim   - The cell dimension
 . level - The number of points in one dimension, 2^l
 . a     - left end of interval (often-1)
 - b     - right end of interval (often +1)
 
-  Output Argument:
+  Output Parameter:
 . q - A PetscQuadrature object
 
   Level: intermediate
@@ -2105,14 +2105,14 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscRea
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  degree - degree of reconstruction polynomial
 .  nsource - number of source intervals
 .  sourcex - sorted coordinates of source cell boundaries (length nsource+1)
 .  ntarget - number of target intervals
 -  targetx - sorted coordinates of target cell boundaries (length ntarget+1)
 
-   Output Arguments:
+   Output Parameter:
 .  R - reconstruction matrix, utarget = sum_s R[t*nsource+s] * usource[s]
 
    Level: advanced

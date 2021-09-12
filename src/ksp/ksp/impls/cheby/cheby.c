@@ -269,7 +269,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - linear solver context
 -  use - PETSC_TRUE to use noisy
 

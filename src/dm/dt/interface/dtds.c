@@ -1843,11 +1843,11 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g,
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + ds - The PetscDS object
 - f  - The field number
 
-  Output Argument:
+  Output Parameter:
 . r    - Riemann solver
 
   Calling sequence for r:
@@ -1890,7 +1890,7 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f,
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + ds - The PetscDS object
 . f  - The field number
 - r  - Riemann solver

@@ -10,10 +10,10 @@ typedef struct {
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  snes - SNES to monitor
 
-   Output Arguments:
+   Output Parameter:
 .  ctx - context for monitor
 
    Level: developer
@@ -38,7 +38,7 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes,void **ctx)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  ctx - monitor context
 
    Level: developer

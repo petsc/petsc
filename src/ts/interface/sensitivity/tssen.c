@@ -1634,7 +1634,7 @@ PetscErrorCode TSAdjointMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscI
 
  Collective on TS
 
- Input Arguments:
+ Input Parameter:
  .  ts - time stepping context
 
  Level: advanced
@@ -1767,7 +1767,7 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts,PetscInt *numfwdint,Vec **vp)
 
   Collective on TS
 
-  Input Arguments:
+  Input Parameter:
 . ts - time stepping context
 
   Level: advanced
@@ -1855,7 +1855,7 @@ PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Mat *Smat)
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameter:
 .  ts - time stepping context
 
    Level: advanced

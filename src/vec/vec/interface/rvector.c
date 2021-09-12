@@ -1206,11 +1206,11 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 
    Collective on X
 
-   Input Arguments:
+   Input Parameters:
 +  nx   - number of vectors to be concatenated
 -  X    - array containing the vectors to be concatenated in the order of concatenation
 
-   Output Arguments:
+   Output Parameters:
 +  Y    - concatenated vector
 -  x_is - array of index sets corresponding to the concatenated components of Y (NULL if not needed)
 
@@ -1287,11 +1287,11 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
 
    Collective on X and IS
 
-   Input Arguments:
+   Input Parameters:
 + X - vector from which to extract a subvector
 - is - index set representing portion of X to extract
 
-   Output Arguments:
+   Output Parameter:
 . Y - subvector corresponding to is
 
    Level: advanced
@@ -1439,7 +1439,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 
    Collective on IS
 
-   Input Arguments:
+   Input Parameters:
 + X - vector from which subvector was obtained
 . is - index set representing the subset of X
 - Y - subvector being restored

@@ -1788,10 +1788,10 @@ PetscErrorCode PetscOptionsGetVec(PetscOptions options,const char prefix[],const
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  x - the vector
 
-   Output Arguments:
+   Output Parameter:
 .  map - the layout
 
    Level: developer
@@ -1812,7 +1812,7 @@ PetscErrorCode VecGetLayout(Vec x,PetscLayout *map)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  x - the vector
 -  map - the layout
 

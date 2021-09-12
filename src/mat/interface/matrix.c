@@ -6849,10 +6849,10 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  A - matrix of type Elemental or ScaLAPACK
 
-   Output Arguments:
+   Output Parameters:
 +  rows - rows in which this process owns elements
 -  cols - columns in which this process owns elements
 
@@ -10096,12 +10096,12 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  mat - matrix to extract local submatrix from
 .  isrow - local row indices for submatrix
 -  iscol - local column indices for submatrix
 
-   Output Arguments:
+   Output Parameter:
 .  submat - the submatrix
 
    Level: intermediate
@@ -10145,11 +10145,11 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
 
    Not Collective
 
-   Input Arguments:
-   mat - matrix to extract local submatrix from
-   isrow - local row indices for submatrix
-   iscol - local column indices for submatrix
-   submat - the submatrix
+   Input Parameters:
++  mat - matrix to extract local submatrix from
+.  isrow - local row indices for submatrix
+.  iscol - local column indices for submatrix
+-  submat - the submatrix
 
    Level: intermediate
 

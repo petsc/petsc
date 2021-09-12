@@ -210,10 +210,10 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  obj - object
 
-   Output Arguments:
+   Output Parameter:
 .  id - integer ID
 
    Level: developer
@@ -235,11 +235,11 @@ PetscErrorCode PetscObjectGetId(PetscObject obj,PetscObjectId *id)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  obj - object
 -  id - integer ID
 
-   Output Argument;
+   Output Parameter;
 .  eq - the ids are equal
 
    Level: developer

@@ -102,7 +102,7 @@ PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIIn
 
    Collective but not synchronizing
 
-   Input Arguments:
+   Input Parameter:
    comm - communicator on which split reduction has been queued
 
    Level: advanced

@@ -19,10 +19,10 @@
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  comm - communicator on which the vec tagger will operate
 
-   Output Arguments:
+   Output Parameter:
 .  tagger - new Vec tagger context
 
    Level: advanced
@@ -130,7 +130,7 @@ PetscErrorCode  VecTaggerGetType(VecTagger tagger, VecTaggerType *type)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  tagger - address of tagger
 
    Level: advanced
@@ -155,7 +155,7 @@ PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  tagger - Vec tagger object
 
    Level: advanced
@@ -179,7 +179,7 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameter:
 .  tagger - vec tagger
 
    Options Database Keys:
@@ -225,7 +225,7 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  tagger - vec tagger
 -  blocksize - block size of the criteria used to tagger vectors
 
@@ -248,7 +248,7 @@ PetscErrorCode VecTaggerSetBlockSize(VecTagger tagger, PetscInt blocksize)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  tagger - vec tagger
 -  blocksize - block size of the vectors the tagger operates on
 
@@ -273,7 +273,7 @@ PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  tagger - vec tagger
 -  invert - PETSC_TRUE to invert, PETSC_FALSE to use the indices as is
 
@@ -296,7 +296,7 @@ PetscErrorCode VecTaggerSetInvert(VecTagger tagger, PetscBool invert)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  tagger - vec tagger
 -  invert - PETSC_TRUE to invert, PETSC_FALSE to use the indices as is
 
@@ -319,7 +319,7 @@ PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  tagger - vec tagger
 -  viewer - viewer to display tagger, for example PETSC_VIEWER_STDOUT_WORLD
 
@@ -354,11 +354,11 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 
    Collective on VecTagger
 
-   Input Arguments:
+   Input Parameters:
 +  tagger - the VecTagger context
 -  vec - the vec to tag
 
-   Output Arguments:
+   Output Parameters:
 +  numBoxes - the number of boxes in the tag definition
 -  boxes - a newly allocated list of boxes.  This is a flat array of (BlockSize * numBoxes) pairs that the user can free with PetscFree().
 
@@ -396,11 +396,11 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes
 
    Collective on VecTagger
 
-   Input Arguments:
+   Input Parameters:
 +  tagger - the VecTagger context
 -  vec - the vec to tag
 
-   Output Arguments:
+   Output Parameter:
 .  IS - a list of the indices tagged by the tagger, i.e., if the number of local indices will be n / bs, where n is VecGetLocalSize() and bs is VecTaggerGetBlockSize().
 
    Level: advanced

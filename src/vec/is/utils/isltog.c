@@ -1685,10 +1685,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping map
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 . ltog - local to global mapping
 
-   Output Arguments:
+   Output Parameter:
 . array - array of indices, the length of this array may be obtained with ISLocalToGlobalMappingGetSize()
 
    Level: advanced
@@ -1726,7 +1726,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + ltog - local to global mapping
 - array - array of indices
 
@@ -1753,10 +1753,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 . ltog - local to global mapping
 
-   Output Arguments:
+   Output Parameter:
 . array - array of indices
 
    Level: advanced
@@ -1777,7 +1777,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping lto
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + ltog - local to global mapping
 - array - array of indices
 
@@ -1800,12 +1800,12 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + comm - communicator for the new mapping, must contain the communicator of every mapping to concatenate
 . n - number of mappings to concatenate
 - ltogs - local to global mappings
 
-   Output Arguments:
+   Output Parameter:
 . ltogcat - new mapping
 
    Note: this currently always returns a mapping with block size of 1

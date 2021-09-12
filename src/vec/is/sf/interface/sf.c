@@ -61,10 +61,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  comm - communicator on which the star forest will operate
 
-   Output Arguments:
+   Output Parameter:
 .  sf - new star forest context
 
    Options Database Keys:
@@ -132,7 +132,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest
 
    Level: advanced
@@ -246,7 +246,7 @@ PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - address of star forest
 
    Level: intermediate
@@ -297,7 +297,7 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest communication object
 
    Level: beginner
@@ -346,7 +346,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest
 
    Options Database Keys:
@@ -409,7 +409,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 -  flg - PETSC_TRUE to sort, PETSC_FALSE to skip sorting (lower setup cost, but non-deterministic)
 
@@ -432,7 +432,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
@@ -644,12 +644,12 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf,PetscLayout map,PetscSFPatt
 
    Collective
 
-   Input Arguments:
-
+   Input Parameter:
 .  sf - star forest to invert
 
-   Output Arguments:
+   Output Parameter:
 .  isf - inverse of sf
+
    Level: advanced
 
    Notes:
@@ -714,11 +714,11 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - communication object to duplicate
 -  opt - PETSCSF_DUPLICATE_CONFONLY, PETSCSF_DUPLICATE_RANKS, or PETSCSF_DUPLICATE_GRAPH (see PetscSFDuplicateOption)
 
-   Output Arguments:
+   Output Parameter:
 .  newsf - new communication object
 
    Level: beginner
@@ -774,10 +774,10 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest
 
-   Output Arguments:
+   Output Parameters:
 +  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
 .  ilocal - locations of leaves in leafdata buffers
@@ -815,10 +815,10 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf,PetscInt *nroots,PetscInt *nleaves,con
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest
 
-   Output Arguments:
+   Output Parameters:
 +  minleaf - minimum active leaf on this process. Return 0 if there are no leaves.
 -  maxleaf - maximum active leaf on this process. Return -1 if there are no leaves.
 
@@ -864,7 +864,7 @@ PetscErrorCode  PetscSFViewFromOptions(PetscSF A,PetscObject obj,const char name
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 -  viewer - viewer to display graph, for example PETSC_VIEWER_STDOUT_WORLD
 
@@ -935,10 +935,10 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest
 
-   Output Arguments:
+   Output Parameters:
 +  nranks - number of ranks referenced by local part
 .  ranks - array of ranks
 .  roffset - offset in rmine/rremote for each rank (length nranks+1)
@@ -974,10 +974,10 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest
 
-   Output Arguments:
+   Output Parameters:
 +  niranks - number of leaf ranks referencing roots on this process
 .  iranks - array of ranks
 .  ioffset - offset in irootloc for each rank (length niranks+1)
@@ -1017,7 +1017,7 @@ static PetscBool InList(PetscMPIInt needle,PetscMPIInt n,const PetscMPIInt *list
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - PetscSF to set up; PetscSFSetGraph() must have been called
 -  dgroup - MPI_Group of ranks to be distinguished (e.g., for self or shared memory exchange)
 
@@ -1121,10 +1121,10 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
 
    Collective
 
-   Input Argument:
+   Input Parameter:
 .  sf - star forest
 
-   Output Arguments:
+   Output Parameters:
 +  incoming - group of origin processes for incoming edges (leaves that reference my roots)
 -  outgoing - group of destination processes for outgoing edges (roots that I reference)
 
@@ -1184,10 +1184,10 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
 
    Collective
 
-   Input Argument:
+   Input Parameter:
 .  sf - star forest that may contain roots with 0 or with more than 1 vertex
 
-   Output Arguments:
+   Output Parameter:
 .  multi - star forest with split roots, such that each root has degree exactly 1
 
    Level: developer
@@ -1278,12 +1278,12 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - original star forest
 .  nselected  - number of selected roots on this process
 -  selected   - indices of the selected roots on this process
 
-   Output Arguments:
+   Output Parameter:
 .  esf - new star forest
 
    Level: advanced
@@ -1370,12 +1370,12 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf,PetscInt nselected,const P
 
   Collective
 
-  Input Arguments:
+  Input Parameters:
 + sf - original star forest
 . nselected  - number of selected leaves on this process
 - selected   - indices of the selected leaves on this process
 
-  Output Arguments:
+  Output Parameter:
 .  newsf - new star forest
 
   Level: advanced
@@ -1429,13 +1429,13 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
 
    Collective on PetscSF
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest on which to communicate
 .  unit - data type associated with each node
 .  rootdata - buffer to broadcast
 -  op - operation to use for reduction
 
-   Output Arguments:
+   Output Parameter:
 .  leafdata - buffer to be reduced with values from each leaf's respective root
 
    Level: intermediate
@@ -1467,7 +1467,7 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void *rootda
 
    Collective on PetscSF
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest on which to communicate
 .  unit - data type associated with each node
 .  rootmtype - memory type of rootdata
@@ -1475,7 +1475,7 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void *rootda
 .  leafmtype - memory type of leafdata
 -  op - operation to use for reduction
 
-   Output Arguments:
+   Output Parameter:
 .  leafdata - buffer to be reduced with values from each leaf's respective root
 
    Level: intermediate
@@ -1500,13 +1500,13 @@ PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMe
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  rootdata - buffer to broadcast
 -  op - operation to use for reduction
 
-   Output Arguments:
+   Output Parameter:
 .  leafdata - buffer to be reduced with values from each leaf's respective root
 
    Level: intermediate
@@ -1530,13 +1530,13 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  leafdata - values to reduce
 -  op - reduction operation
 
-   Output Arguments:
+   Output Parameter:
 .  rootdata - result of reduction of values from all leaves of each root
 
    Level: intermediate
@@ -1569,7 +1569,7 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  leafmtype - memory type of leafdata
@@ -1577,7 +1577,7 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
 .  rootmtype - memory type of rootdata
 -  op - reduction operation
 
-   Output Arguments:
+   Output Parameter:
 .  rootdata - result of reduction of values from all leaves of each root
 
    Level: intermediate
@@ -1602,13 +1602,13 @@ PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscM
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  leafdata - values to reduce
 -  op - reduction operation
 
-   Output Arguments:
+   Output Parameter:
 .  rootdata - result of reduction of values from all leaves of each root
 
    Level: intermediate
@@ -1632,13 +1632,13 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  leafdata - leaf values to use in reduction
 -  op - operation to use for reduction
 
-   Output Arguments:
+   Output Parameters:
 +  rootdata - root values to be updated, input state is seen by first process to perform an update
 -  leafupdate - state at each leaf's respective root immediately prior to my atomic update
 
@@ -1675,13 +1675,13 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdat
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  leafdata - leaf values to use in reduction
 -  op - operation to use for reduction
 
-   Output Arguments:
+   Output Parameters:
 +  rootdata - root values to be updated, input state is seen by first process to perform an update
 -  leafupdate - state at each leaf's respective root immediately prior to my atomic update
 
@@ -1706,10 +1706,10 @@ PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf,MPI_Datatype unit,void *rootdata,
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest
 
-   Output Arguments:
+   Output Parameter:
 .  degree - degree of each root vertex
 
    Level: advanced
@@ -1746,10 +1746,10 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sf - star forest
 
-   Output Arguments:
+   Output Parameter:
 .  degree - degree of each root vertex
 
    Level: developer
@@ -1783,11 +1783,11 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 -  degree - degree of each root vertex, computed with PetscSFComputeDegreeBegin()/PetscSFComputeDegreeEnd()
 
-   Output Arguments:
+   Output Parameters:
 +  nMultiRoots - (optional) number of multi-roots (roots of multi-SF)
 -  multiRootsOrigNumbering - original indices of multi-roots; length of this array is nMultiRoots
 
@@ -1829,12 +1829,12 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 -  leafdata - leaf data to gather to roots
 
-   Output Argument:
+   Output Parameter:
 .  multirootdata - root buffer to gather into, amount of space per root is equal to its degree
 
    Level: intermediate
@@ -1859,12 +1859,12 @@ PetscErrorCode PetscSFGatherBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 -  leafdata - leaf data to gather to roots
 
-   Output Argument:
+   Output Parameter:
 .  multirootdata - root buffer to gather into, amount of space per root is equal to its degree
 
    Level: intermediate
@@ -1888,12 +1888,12 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 -  multirootdata - root buffer to send to each leaf, one unit of data per leaf
 
-   Output Argument:
+   Output Parameter:
 .  leafdata - leaf data to be update with personal data from each respective root
 
    Level: intermediate
@@ -1918,12 +1918,12 @@ PetscErrorCode PetscSFScatterBegin(PetscSF sf,MPI_Datatype unit,const void *mult
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 -  multirootdata - root buffer to send to each leaf, one unit of data per leaf
 
-   Output Argument:
+   Output Parameter:
 .  leafdata - leaf data to be update with personal data from each respective root
 
    Level: intermediate

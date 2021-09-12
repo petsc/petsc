@@ -940,7 +940,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscS
 }
 
 /* When SF could not find a proper UnpackAndOp() from link, it falls back to MPI_Reduce_local.
-  Input Arguments:
+  Input Parameters:
   +sf      - The StarForest
   .link    - The link
   .count   - Number of entries to unpack
@@ -949,7 +949,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscS
   .buf     - A contiguous buffer to unpack from
   -op      - Operation after unpack
 
-  Output Arguments:
+  Output Parameters:
   .data    - The data to unpack to
 */
 PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *indices,void *data,const void *buf,MPI_Op op)
@@ -1003,7 +1003,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(Pets
  ============================================================================*/
 
 /* Pack rootdata to rootbuf
-  Input Arguments:
+  Input Parameters:
   + sf       - The SF this packing works on.
   . link     - It gives the memtype of the roots and also provides root buffer.
   . scope    - PETSCSF_LOCAL or PETSCSF_REMOTE. Note SF has the ability to do local and remote communications separately.

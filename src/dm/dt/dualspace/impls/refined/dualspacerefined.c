@@ -11,7 +11,7 @@ typedef struct {
 
    Collective on PetscDualSpace
 
-   Input Arguments:
+   Input Parameters:
 +  sp - a PetscDualSpace
 -  cellSpaces - one PetscDualSpace for each of the cells.  The reference count of each cell space will be incremented,
                 so the user is still responsible for these spaces afterwards

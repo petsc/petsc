@@ -34,7 +34,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm,PetscInt numComponents,DMFieldCo
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  field - address of DMField
 
    Level: advanced
@@ -60,7 +60,7 @@ PetscErrorCode DMFieldDestroy(DMField *field)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  field - DMField
 -  viewer - viewer to display field, for example PETSC_VIEWER_STDOUT_WORLD
 
@@ -355,11 +355,11 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + field - the DMField object
 - cellIS - the index set of points over which we want know the invariance
 
-  Output Arguments:
+  Output Parameters:
 + minDegree - the degree of the largest polynomial space contained in the field on each element
 - maxDegree - the largest degree of the smallest polynomial space containing the field on any element
 
@@ -392,11 +392,11 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + field - the DMField object
 - pointIS - the index set of points over which we wish to integrate the field
 
-  Output Arguments:
+  Output Parameter:
 . quad - a PetscQuadrature object
 
   Level: developer
@@ -424,14 +424,14 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + field - the DMField object
 . pointIS - the index set of points over which we wish to integrate the field
 . quad - the quadrature points at which to evaluate the geometric factors
 - faceData - whether additional data for facets (the normal vectors and adjacent cells) should
   be calculated
 
-  Output Arguments:
+  Output Parameter:
 . geom - the geometric factors
 
   Level: developer

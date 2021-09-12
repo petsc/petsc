@@ -412,11 +412,11 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 
   Collective on DM
 
-  Input Arguments:
+  Input Parameters:
 + dm - The DMPlex
 - cellHeight - The height of mesh points to treat as cells (default should be 0)
 
-  Output Arguments:
+  Output Parameters:
 + numVertices - The number of local vertices in the graph, or cells in the mesh.
 . offsets     - The offset to the adjacency list for each cell
 - adjacency   - The adjacency list for all cells

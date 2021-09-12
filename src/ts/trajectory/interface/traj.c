@@ -671,7 +671,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj - the TSTrajectory context
 -  flg - PETSC_TRUE to save, PETSC_FALSE to disable
 
@@ -696,7 +696,7 @@ PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj,PetscBool flg)
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj - the TSTrajectory context
 -  flg - PETSC_TRUE to active a monitor, PETSC_FALSE to disable
 
@@ -722,7 +722,7 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj - the TSTrajectory context
 -  flg - PETSC_TRUE to save, PETSC_FALSE to disable
 
@@ -750,7 +750,7 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj      - the TSTrajectory context
 -  dirname - the directory name
 
@@ -785,7 +785,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj      - the TSTrajectory context
 -  filetemplate - the template
 

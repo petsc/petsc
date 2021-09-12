@@ -83,11 +83,11 @@ static PetscErrorCode DMPlexRestoreFEGeom(DMField coordField, IS pointIS, PetscQ
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - the DM
 - unit - The SI unit
 
-  Output Argument:
+  Output Parameter:
 . scale - The value used to scale all quantities with this unit
 
   Level: advanced
@@ -110,7 +110,7 @@ PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - the DM
 . unit - The SI unit
 - scale - The value used to scale all quantities with this unit
@@ -157,11 +157,11 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
 
   Collective on dm
 
-  Input Arguments:
+  Input Parameters:
 + dm - the DM
 - field - The field number for the rigid body space, or 0 for the default
 
-  Output Argument:
+  Output Parameter:
 . sp - the null space
 
   Note: This is necessary to provide a suitable coarse space for algebraic multigrid
@@ -231,14 +231,14 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
 
   Collective on dm
 
-  Input Arguments:
+  Input Parameters:
 + dm    - the DM
 . nb    - The number of bodies
 . label - The DMLabel marking each domain
 . nids  - The number of ids per body
 - ids   - An array of the label ids in sequence for each domain
 
-  Output Argument:
+  Output Parameter:
 . sp - the null space
 
   Note: This is necessary to provide a suitable coarse space for algebraic multigrid

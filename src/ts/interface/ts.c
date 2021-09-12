@@ -1422,7 +1422,7 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat Amat,Mat Pmat,TSIJacobian f,void *ctx)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ts - TS context obtained from TSCreate()
 -  reuse - PETSC_TRUE if the RHS Jacobian
 
@@ -1740,7 +1740,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context on which to change the transient variable
 .  tvar - a function that transforms to transient variables
 -  ctx - a context for tvar
@@ -3487,11 +3487,11 @@ PetscErrorCode  TSPostStep(TS ts)
 
    Collective on TS
 
-   Input Argument:
+   Input Parameters:
 +  ts - time stepping context
 -  t - time to interpolate to
 
-   Output Argument:
+   Output Parameter:
 .  U - state at given time
 
    Level: intermediate
@@ -3590,12 +3590,12 @@ PetscErrorCode  TSStep(TS ts)
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 -  order - optional, desired order for the error evaluation or PETSC_DECIDE
 
-   Output Arguments:
+   Output Parameters:
 +  order - optional, the actual order of the error evaluation
 -  wlte - the weighted local truncation error norm
 
@@ -3630,12 +3630,12 @@ PetscErrorCode TSEvaluateWLTE(TS ts,NormType wnormtype,PetscInt *order,PetscReal
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  order - desired order of accuracy
 -  done - whether the step was evaluated at this order (pass NULL to generate an error if not available)
 
-   Output Arguments:
+   Output Parameter:
 .  U - state at the end of the current step
 
    Level: advanced
@@ -3664,10 +3664,10 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 
   Not collective
 
-  Input Argument:
+  Input Parameter:
 . ts        - time stepping context
 
-  Output Argument:
+  Output Parameter:
 . initConditions - The function which computes an initial condition
 
    Level: advanced
@@ -3694,7 +3694,7 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
 
   Logically collective on ts
 
-  Input Arguments:
+  Input Parameters:
 + ts        - time stepping context
 - initCondition - The function which computes an initial condition
 
@@ -3722,7 +3722,7 @@ PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initConditio
 
   Collective on ts
 
-  Input Arguments:
+  Input Parameters:
 + ts - time stepping context
 - u  - The Vec to store the condition in which will be used in TSSolve()
 
@@ -3746,10 +3746,10 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
 
   Not collective
 
-  Input Argument:
+  Input Parameter:
 . ts         - time stepping context
 
-  Output Argument:
+  Output Parameter:
 . exactError - The function which computes the solution error
 
   Level: advanced
@@ -3777,7 +3777,7 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, V
 
   Logically collective on ts
 
-  Input Arguments:
+  Input Parameters:
 + ts         - time stepping context
 - exactError - The function which computes the solution error
 
@@ -3806,7 +3806,7 @@ PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Ve
 
   Collective on ts
 
-  Input Arguments:
+  Input Parameters:
 + ts - time stepping context
 . u  - The approximate solution
 - e  - The Vec used to store the error
@@ -4416,13 +4416,13 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec U,Mat A,Mat B,void *ctx)
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  t - time at which to evaluate
 .  U - state at which to evaluate
 -  ctx - context
 
-   Output Arguments:
+   Output Parameter:
 .  F - right hand side
 
    Level: intermediate
@@ -4452,13 +4452,13 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec U,Vec F,void *ct
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  t - time at which to evaluate
 .  U - state at which to evaluate
 -  ctx - context
 
-   Output Arguments:
+   Output Parameters:
 +  A - pointer to operator
 .  B - pointer to preconditioning matrix
 -  flg - matrix structure flag
@@ -4481,14 +4481,14 @@ PetscErrorCode TSComputeRHSJacobianConstant(TS ts,PetscReal t,Vec U,Mat A,Mat B,
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  t - time at which to evaluate
 .  U - state at which to evaluate
 .  Udot - time derivative of state vector
 -  ctx - context
 
-   Output Arguments:
+   Output Parameter:
 .  F - left hand side
 
    Level: intermediate
@@ -4520,7 +4520,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,v
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  t - time at which to evaluate
 .  U - state at which to evaluate
@@ -4528,7 +4528,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,v
 .  shift - shift to apply
 -  ctx - context
 
-   Output Arguments:
+   Output Parameters:
 +  A - pointer to operator
 .  B - pointer to preconditioning matrix
 -  flg - matrix structure flag
@@ -4881,10 +4881,10 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
 
    Collective on TS if controller has not been created yet
 
-   Input Arguments:
+   Input Parameter:
 .  ts - time stepping context
 
-   Output Arguments:
+   Output Parameter:
 .  adapt - adaptive controller
 
    Level: intermediate
@@ -4912,7 +4912,7 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time integration context
 .  atol - scalar absolute tolerances, PETSC_DECIDE to leave current value
 .  vatol - vector of absolute tolerances or NULL, used in preference to atol if present
@@ -4960,10 +4960,10 @@ PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameter:
 .  ts - time integration context
 
-   Output Arguments:
+   Output Parameters:
 +  atol - scalar absolute tolerances, NULL to ignore
 .  vatol - vector of absolute tolerances, NULL to ignore
 .  rtol - scalar relative tolerances, NULL to ignore
@@ -4988,12 +4988,12 @@ PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  U - state vector, usually ts->vec_sol
 -  Y - state vector to be compared to U
 
-   Output Arguments:
+   Output Parameters:
 +  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
 -  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
@@ -5162,12 +5162,12 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  U - state vector, usually ts->vec_sol
 -  Y - state vector to be compared to U
 
-   Output Arguments:
+   Output Parameters:
 +  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
 -  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
@@ -5314,13 +5314,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  U - state vector, usually ts->vec_sol
 .  Y - state vector to be compared to U
 -  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
-   Output Arguments:
+   Output Parameters:
 +  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
 .  norma - weighted norm, a value of 1.0 means that the error meets the absolute tolerance set by the user
 -  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
@@ -5350,13 +5350,13 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscRea
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  E - error vector
 .  U - state vector, usually ts->vec_sol
 -  Y - state vector, previous time step
 
-   Output Arguments:
+   Output Parameters:
 +  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
 -  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
@@ -5528,13 +5528,13 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
    TSErrorWeightedENormInfinity - compute a weighted infinity error norm based on supplied absolute and relative tolerances
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  E - error vector
 .  U - state vector, usually ts->vec_sol
 -  Y - state vector, previous time step
 
-   Output Arguments:
+   Output Parameters:
 +  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
 -  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
@@ -5685,14 +5685,14 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  E - error vector
 .  U - state vector, usually ts->vec_sol
 .  Y - state vector, previous time step
 -  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
-   Output Arguments:
+   Output Parameters:
 +  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
 .  norma - weighted norm, a value of 1.0 means that the error meets the absolute tolerance set by the user
 -  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
@@ -5722,7 +5722,7 @@ PetscErrorCode TSErrorWeightedENorm(TS ts,Vec E,Vec U,Vec Y,NormType wnormtype,P
 
    Logically Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 -  cfltime - maximum stable time step if using forward Euler (value can be different on each process)
 
@@ -5747,10 +5747,10 @@ PetscErrorCode TSSetCFLTimeLocal(TS ts,PetscReal cfltime)
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameter:
 .  ts - time stepping context
 
-   Output Arguments:
+   Output Parameter:
 .  cfltime - maximum stable time step for forward Euler
 
    Level: advanced

@@ -36,10 +36,10 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sp - null space object
 
-   Output Arguments:
+   Output Parameters:
 +  has_cnst - PETSC_TRUE if the null space contains the constant vector, otherwise PETSC_FALSE
 .  n - number of vectors (excluding constant vector) in null space
 -  vecs - orthonormal vectors that span the null space (excluding the constant vector)
@@ -67,10 +67,10 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt
 
    Collective on Vec
 
-   Input Argument:
+   Input Parameter:
 .  coords - block of coordinates of each node, must have block size set
 
-   Output Argument:
+   Output Parameter:
 .  sp - the null space
 
    Level: advanced

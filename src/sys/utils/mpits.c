@@ -20,7 +20,7 @@ static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  comm - PETSC_COMM_WORLD
 -  twosided - algorithm to use in subsequent calls to PetscCommBuildTwoSided()
 
@@ -51,7 +51,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
 
    Logically Collective
 
-   Output Arguments:
+   Output Parameters:
 +  comm - communicator on which to query algorithm
 -  twosided - algorithm to use for PetscCommBuildTwoSided()
 
@@ -247,7 +247,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  comm - communicator
 .  count - number of entries to send/receive (must match on all ranks)
 .  dtype - datatype to send/receive from each rank (must match on all ranks)
@@ -255,7 +255,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
 .  toranks - ranks to send to (array of length nto)
 -  todata - data to send to each rank (packed)
 
-   Output Arguments:
+   Output Parameters:
 +  nfrom - number of ranks receiving messages from
 .  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
 -  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
@@ -451,7 +451,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  comm - communicator
 .  count - number of entries to send/receive in initial rendezvous (must match on all ranks)
 .  dtype - datatype to send/receive from each rank (must match on all ranks)
@@ -463,7 +463,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
 .  recv - callback invoked on receiving process after delivery of rendezvous message
 -  ctx - context for callbacks
 
-   Output Arguments:
+   Output Parameters:
 +  nfrom - number of ranks receiving messages from
 .  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
 -  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
@@ -503,7 +503,7 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datat
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  comm - communicator
 .  count - number of entries to send/receive in initial rendezvous (must match on all ranks)
 .  dtype - datatype to send/receive from each rank (must match on all ranks)
@@ -515,7 +515,7 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datat
 .  recv - callback invoked on receiving process after delivery of rendezvous message
 -  ctx - context for callbacks
 
-   Output Arguments:
+   Output Parameters:
 +  nfrom - number of ranks receiving messages from
 .  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
 .  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())

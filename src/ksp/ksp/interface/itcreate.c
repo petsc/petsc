@@ -370,7 +370,7 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - Krylov method
 .  normtype - supported norm type
 .  pcside - preconditioner side that can be used with this norm

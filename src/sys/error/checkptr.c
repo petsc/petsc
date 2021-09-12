@@ -17,7 +17,7 @@ static PetscInt petsc_checkpointer_intensity = 1;
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  intensity - how much to check pointers for validity
 
    Options Database:

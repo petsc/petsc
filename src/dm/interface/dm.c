@@ -2143,7 +2143,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  coarse - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  refinehook - function to run when setting up a coarser level
 .  interphook - function to run to update data on finer levels (once per SNESSolve())
@@ -2199,7 +2199,7 @@ PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  coarse - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  refinehook - function to run when setting up a coarser level
 .  interphook - function to run to update data on finer levels (once per SNESSolve())
@@ -2237,7 +2237,7 @@ PetscErrorCode DMRefineHookRemove(DM coarse,PetscErrorCode (*refinehook)(DM,DM,v
 
    Collective if any hooks are
 
-   Input Arguments:
+   Input Parameters:
 +  coarse - coarser DM to use as a base
 .  interp - interpolation matrix, apply using MatInterpolate()
 -  fine - finer DM to update
@@ -2265,7 +2265,7 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 
    Collective on DM
 
-   Input Arguments:
+   Input Parameters:
 +  coarse - coarse DM
 .  fine   - fine DM
 .  interp - (optional) the matrix computed by DMCreateInterpolation().  Implementations may not need this, but if it
@@ -2273,7 +2273,7 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
             the coarse DM does not have a specialized implementation.
 -  coarseSol - solution on the coarse mesh
 
-   Output Arguments:
+   Output Parameter:
 .  fineSol - the interpolation of coarseSol to the fine mesh
 
    Level: developer
@@ -2467,7 +2467,7 @@ PetscErrorCode DMCopyTransform(DM dm, DM newdm)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - the DM
 .  beginhook - function to run at the beginning of DMGlobalToLocalBegin()
 .  endhook - function to run after DMGlobalToLocalEnd() has completed
@@ -2675,7 +2675,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - the DM
 .  beginhook - function to run at the beginning of DMLocalToGlobalBegin()
 .  endhook - function to run after DMLocalToGlobalEnd() has completed
@@ -3113,7 +3113,7 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  coarsenhook - function to run when setting up a coarser level
 .  restricthook - function to run to update data on coarser levels (once per SNESSolve())
@@ -3174,7 +3174,7 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  coarsenhook - function to run when setting up a coarser level
 .  restricthook - function to run to update data on coarser levels (once per SNESSolve())
@@ -3212,7 +3212,7 @@ PetscErrorCode DMCoarsenHookRemove(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,v
 
    Collective if any hooks are
 
-   Input Arguments:
+   Input Parameters:
 +  fine - finer DM to use as a base
 .  restrct - restriction matrix, apply using MatRestrict()
 .  rscale - scaling vector for restriction
@@ -3242,7 +3242,7 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 
    Logically Collective on global
 
-   Input Arguments:
+   Input Parameters:
 +  global - global DM
 .  ddhook - function to run to pass data to the decomposition DM upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
@@ -3302,7 +3302,7 @@ PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  global - global DM
 .  ddhook - function to run to pass data to the decomposition DM upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
@@ -3339,7 +3339,7 @@ PetscErrorCode DMSubDomainHookRemove(DM global,PetscErrorCode (*ddhook)(DM,DM,vo
 
    Collective if any hooks are
 
-   Input Arguments:
+   Input Parameters:
 +  fine - finer DM to use as a base
 .  oscatter - scatter from domain global vector filling subdomain global vector with overlap
 .  gscatter - scatter from domain global vector filling subdomain local vector with ghosts

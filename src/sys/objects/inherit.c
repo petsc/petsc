@@ -195,7 +195,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  obj - object on which to set callback
 .  cbtype - callback type (class or subtype)
 .  cid - address of callback Id, updated if not yet initialized (zero)
@@ -235,12 +235,12 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbac
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  obj - object on which to get callback
 .  cbtype - callback type
 -  cid - address of callback Id
 
-   Output Arguments:
+   Output Parameters:
 +  func - Fortran function (or NULL if not needed)
 -  ctx - Fortran context (or NULL if not needed)
 

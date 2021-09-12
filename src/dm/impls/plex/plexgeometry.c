@@ -1568,11 +1568,11 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
 
   Collective on dm
 
-  Input Arguments:
+  Input Parameters:
 + dm   - the DM
 - cell - the cell
 
-  Output Arguments:
+  Output Parameters:
 + v0   - the translation part of this affine transform
 . J    - the Jacobian of the transform from the reference element
 . invJ - the inverse of the Jacobian
@@ -1705,13 +1705,13 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
 
   Collective on dm
 
-  Input Arguments:
+  Input Parameters:
 + dm   - the DM
 . cell - the cell
 - quad - the quadrature containing the points in the reference element where the geometry will be evaluated.  If quad == NULL, geometry will be
          evaluated at the first vertex of the reference element
 
-  Output Arguments:
+  Output Parameters:
 + v    - the image of the transformed quadrature points, otherwise the image of the first vertex in the closure of the reference element
 . J    - the Jacobian of the transform from the reference element at each quadrature point
 . invJ - the inverse of the Jacobian at each quadrature point
@@ -1987,11 +1987,11 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
 
   Collective on dm
 
-  Input Arguments:
+  Input Parameters:
 + dm   - the DM
 - cell - the cell
 
-  Output Arguments:
+  Output Parameters:
 + volume   - the cell volume
 . centroid - the cell centroid
 - normal - the cell normal, if appropriate
@@ -2239,10 +2239,10 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 
   Not collective
 
-  Input Argument:
+  Input Parameter:
 . dm - the DM
 
-  Output Argument:
+  Output Parameter:
 . minradius - the minimum cell radius
 
   Level: developer
@@ -2263,7 +2263,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
 
   Logically collective
 
-  Input Arguments:
+  Input Parameters:
 + dm - the DM
 - minradius - the minimum cell radius
 
@@ -2452,7 +2452,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
 
   Collective on dm
 
-  Input Arguments:
+  Input Parameters:
 + dm  - The DM
 . fvm - The PetscFV
 - cellGeometry - The face geometry from DMPlexComputeCellGeometryFVM()
@@ -2510,7 +2510,7 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
 
   Collective on dm
 
-  Input Arguments:
+  Input Parameters:
 + dm  - The DM
 - fv  - The PetscFV
 

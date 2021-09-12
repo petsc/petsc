@@ -1125,10 +1125,10 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  is - the index set
 
-   Output Arguments:
+   Output Parameter:
 .  map - the layout
 
    Level: developer
@@ -1826,12 +1826,12 @@ PetscErrorCode  ISCopy(IS is,IS isy)
 
    Collective on IS
 
-   Input Arguments:
+   Input Parameters:
 + is - index set
 . comm - communicator for new index set
 - mode - copy semantics, PETSC_USE_POINTER for no-copy if possible, otherwise PETSC_COPY_VALUES
 
-   Output Arguments:
+   Output Parameter:
 . newis - new IS on comm
 
    Level: advanced
@@ -1867,7 +1867,7 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 
    Logicall Collective on IS
 
-   Input Arguments:
+   Input Parameters:
 + is - index set
 - bs - block size
 

@@ -182,7 +182,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - DM to associate callback with
 . func - local function evaluation
 - ctx  - context for function evaluation
@@ -215,7 +215,7 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - DM to associate callback with
 . func - local function evaluation
 - ctx  - context for function evaluation
@@ -250,7 +250,7 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm - DM to associate callback with
 . func - local Jacobian evaluation
 - ctx - optional context for local Jacobian evaluation
@@ -284,7 +284,7 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - DM to associate callback with
 . func - local function evaluation
 - ctx  - context for function evaluation

@@ -7,10 +7,10 @@
 
   Not collective
 
-  Input Arguments:
+  Input Parameter:
 . tagger - the VecTagger context
 
-  Output Arguments:
+  Output Parameters:
 + nsubs - the number of sub VecTaggers
 - subs - the sub VecTaggers
 
@@ -32,7 +32,7 @@ PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger 
 
   Logically collective
 
-  Input Arguments:
+  Input Parameters:
 + tagger - the VecTagger context
 . nsubs - the number of sub VecTaggers
 - subs - the sub VecTaggers
