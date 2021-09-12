@@ -1474,7 +1474,7 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 }
 
 /*@C
-   ISRestoreTotalIndices - Restore the index array obtained with ISGetNonlocalIndices().
+   ISRestoreNonlocalIndices - Restore the index array obtained with ISGetNonlocalIndices().
 
    Not Collective.
 

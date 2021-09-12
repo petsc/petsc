@@ -355,7 +355,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
 }
 
 /*@C
-  DMMoabVecRestoreArray - Restores the read-only direct access array obtained via DMMoabVecGetArray
+  DMMoabVecRestoreArrayRead - Restores the read-only direct access array obtained via DMMoabVecGetArray
 
   Collective
 
