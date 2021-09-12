@@ -2309,8 +2309,14 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   ierr = MatSeqAIJCUSPARSECopyToGPU(B);CHKERRQ(ierr);
 
   ptype = product->type;
-  if (A->symmetric && ptype == MATPRODUCT_AtB) ptype = MATPRODUCT_AB;
-  if (B->symmetric && ptype == MATPRODUCT_ABt) ptype = MATPRODUCT_AB;
+  if (A->symmetric && ptype == MATPRODUCT_AtB) {
+    ptype = MATPRODUCT_AB;
+    if (!product->symbolic_used_the_fact_A_is_symmetric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Symbolic should have been built using the fact that A is symmetric");
+  }
+  if (B->symmetric && ptype == MATPRODUCT_ABt) {
+    ptype = MATPRODUCT_AB;
+    if (!product->symbolic_used_the_fact_B_is_symmetric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Symbolic should have been built using the fact that B is symmetric");
+  }
   switch (ptype) {
   case MATPRODUCT_AB:
     Amat = Acusp->mat;
@@ -2428,8 +2434,14 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   if (Bcusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
 
   ptype = product->type;
-  if (A->symmetric && ptype == MATPRODUCT_AtB) ptype = MATPRODUCT_AB;
-  if (B->symmetric && ptype == MATPRODUCT_ABt) ptype = MATPRODUCT_AB;
+  if (A->symmetric && ptype == MATPRODUCT_AtB) {
+    ptype = MATPRODUCT_AB;
+    product->symbolic_used_the_fact_A_is_symmetric = PETSC_TRUE;
+  }
+  if (B->symmetric && ptype == MATPRODUCT_ABt) {
+    ptype = MATPRODUCT_AB;
+    product->symbolic_used_the_fact_B_is_symmetric = PETSC_TRUE;
+  }
   biscompressed = PETSC_FALSE;
   ciscompressed = PETSC_FALSE;
   switch (ptype) {
