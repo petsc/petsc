@@ -5391,7 +5391,7 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .    snes - SNES context
 
    Output Parameters:

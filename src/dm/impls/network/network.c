@@ -1856,7 +1856,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
 + mainSF - the original SF structure
 - map - a ISLocalToGlobal mapping that contains the subset of points
 
-  Output Parameters:
+  Output Parameter:
 . subSF - a subset of the mainSF for the desired subset.
 
   Level: intermediate

@@ -876,6 +876,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt,PetscInt *n,const PetscInt **o
 
    Input Parameters:
 +  adapt - adaptive contoller
+.  ts - time stepper
 -  h - current step size
 
    Output Parameters:

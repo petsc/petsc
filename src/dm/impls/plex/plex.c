@@ -5586,7 +5586,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, Pets
 . v - The local vector
 - point - The point in the DM
 
-
   Input/Output Parameters:
 + csize  - The size of the input values array, or NULL; on output the number of values in the closure
 - values - An array to use for the values, or NULL to have it allocated automatically;

@@ -5507,7 +5507,7 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
 +  mat - the matrix
 -  type - the type of norm, NORM_1, NORM_FROBENIUS, NORM_INFINITY
 
-   Output Parameters:
+   Output Parameter:
 .  nrm - the resulting norm
 
    Level: intermediate

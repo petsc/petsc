@@ -60,7 +60,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
 
   Logically Collective
 
-  Input Parameter:
+  Input Parameters:
 + tagger - the VecTagger context
 - box - a blocksize list of VecTaggerBox boxes
 

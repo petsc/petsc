@@ -1057,7 +1057,7 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 
   Input Parameters:
 + label - the DMLabel
-= value - the value
+- value - the value
 
   Output Parameter:
 . index - the index of value in the list of values

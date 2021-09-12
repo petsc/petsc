@@ -359,7 +359,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm, Vec vec, void* array)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm              - The DMMoab object being set
 . vec             - The Vector whose underlying data is requested
 - array           - The local data array

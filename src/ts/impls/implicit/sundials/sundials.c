@@ -581,7 +581,7 @@ PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool s)
 
    Not Collective
 
-   Input parameter:
+   Input Parameter:
 .    ts     - the time-step context
 
    Output Parameters:

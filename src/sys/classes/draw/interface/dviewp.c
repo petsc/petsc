@@ -48,11 +48,11 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
    Input Parameter:
 .  draw - the drawing context
 
-   Output Parameter:
+   Output Parameters:
 +  xl - the horizontal coordinate of the lower left corner of the subwindow.
 .  yl - the vertical coordinate of the lower left corner of the subwindow.
 .  xr - the horizontal coordinate of the upper right corner of the subwindow.
-.  yr - the vertical coordinate of the upper right corner of the subwindow.
+-  yr - the vertical coordinate of the upper right corner of the subwindow.
 
    Notes:
    These numbers must always be between 0.0 and 1.0.

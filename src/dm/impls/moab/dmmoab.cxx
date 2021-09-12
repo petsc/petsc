@@ -825,7 +825,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
 /*@C
   DMMoabCheckBoundaryVertices - Check whether a given entity is on the boundary (vertex, edge, face, element)
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 . nconn - Number of handles
 - cnt - Array of entity handles

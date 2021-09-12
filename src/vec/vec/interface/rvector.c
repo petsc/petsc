@@ -291,7 +291,7 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
    Collective on Vec
 
    Input Parameter:
-+  x - the vector
+.  x - the vector
 
    Output Parameter:
 .  val - the vector norm before normalization

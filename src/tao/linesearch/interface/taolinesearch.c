@@ -309,6 +309,7 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 + steplength - scalar multiplier of s used ( x = x0 + steplength * x)
 - reason - reason why the line-search stopped
 
+  Notes:
   reason will be set to one of:
 
 + TAOLINESEARCH_FAILED_ASCENT - initial line search step * g is not descent direction
@@ -322,11 +323,9 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 . TAOLINESEARCH_HALTED_OTHER - any other reason
 - TAOLINESEARCH_SUCCESS - successful line search
 
-  Note:
   The algorithm developer must set up the TaoLineSearch with calls to
   TaoLineSearchSetObjectiveRoutine() and TaoLineSearchSetGradientRoutine(), TaoLineSearchSetObjectiveAndGradientRoutine(), or TaoLineSearchUseTaoRoutines()
 
-  Note:
   You may or may not need to follow this with a call to
   TaoAddLineSearchCounts(), depending on whether you want these
   evaluations to count toward the total function/gradient evaluations.

@@ -1391,7 +1391,7 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 . dE   - Spatial dimension
 - in   - array of size Nv*dE, holding coordinates of the vertices in the closure of the parent cell
 
-  Output Parameters:
+  Output Parameter:
 . out - The coordinates of the new vertices
 @*/
 PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])

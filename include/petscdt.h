@@ -204,11 +204,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, Petsc
 /*MC
    PetscDTBinomialInt - Compute the binomial coefficient "n choose k"
 
-   Input Parameter:
+   Input Parameters:
 +  n - a non-negative integer
 -  k - an integer between 0 and n, inclusive
 
-   Output Parameters:
+   Output Parameter:
 .  binomial - the binomial coefficient n choose k
 
    Note: this is limited by integers that can be represented by PetscInt

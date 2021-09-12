@@ -349,7 +349,7 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    Output Parameters:
 +  J    - Jacobian matrix
 .  Jpre - Preconditioning matrix
--  Jinv - 
+-  Jinv -
 
    Notes:
    Most users should not need to explicitly call this routine, as it

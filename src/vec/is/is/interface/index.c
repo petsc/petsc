@@ -1478,7 +1478,7 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 
    Not Collective.
 
-   Input Parameter:
+   Input Parameters:
 +  is - the index set
 -  indices - index array; must be the array obtained with ISGetNonlocalIndices()
 

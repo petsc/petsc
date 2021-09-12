@@ -479,12 +479,13 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
    Input Parameters:
 +  linesearch - linesearch context
 .  X - base state for this step
-.  Y - initial correction
 -  ctx - context for this function
 
-   Output Parameters:
-+  Y - correction, possibly modified
--  changed - flag indicating that Y was modified
+   Input/Output Parameter:
+.  Y - correction, possibly modified
+
+   Output Parameter:
+.  changed - flag indicating that Y was modified
 
    Options Database Key:
 +  -snes_linesearch_precheck_picard - activate this routine

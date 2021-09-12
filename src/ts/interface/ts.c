@@ -3592,12 +3592,14 @@ PetscErrorCode  TSStep(TS ts)
 
    Input Parameters:
 +  ts - time stepping context
-.  wnormtype - norm type, either NORM_2 or NORM_INFINITY
--  order - optional, desired order for the error evaluation or PETSC_DECIDE
+-  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
-   Output Parameters:
-+  order - optional, the actual order of the error evaluation
--  wlte - the weighted local truncation error norm
+   Input/Output Parameter:
+.  order - optional, desired order for the error evaluation or PETSC_DECIDE;
+           on output, the actual order of the error evaluation
+
+   Output Parameter:
+.  wlte - the weighted local truncation error norm
 
    Level: advanced
 
@@ -4460,8 +4462,7 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec U,Vec F,void *ct
 
    Output Parameters:
 +  A - pointer to operator
-.  B - pointer to preconditioning matrix
--  flg - matrix structure flag
+-  B - pointer to preconditioning matrix
 
    Level: intermediate
 
@@ -4530,8 +4531,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,v
 
    Output Parameters:
 +  A - pointer to operator
-.  B - pointer to preconditioning matrix
--  flg - matrix structure flag
+-  B - pointer to preconditioning matrix
 
    Level: advanced
 

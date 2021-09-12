@@ -179,7 +179,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
 .  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 -  gp - global grid point number in this direction
 
-   Output Parameters:
+   Output Parameter:
 .  comm - new communicator
 
    Level: advanced
@@ -253,7 +253,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
 +  da - the distributed array
 -  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 
-   Output Parameters:
+   Output Parameter:
 .  subcomm - new communicator
 
    Level: advanced
