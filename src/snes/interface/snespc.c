@@ -74,7 +74,7 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
    Input Parameters:
 .  snes - the SNES context
 
-   Output Parameter:
+   Output Parameters:
 +  F - function vector
 -  fnorm - the norm of F
 

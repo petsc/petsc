@@ -187,7 +187,7 @@ PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
 .  viewer - the PetscViewer
 
    Output Parameter:
--  format - the format
+.  format - the format
 
    Level: intermediate
 

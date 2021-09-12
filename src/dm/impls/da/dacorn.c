@@ -138,7 +138,7 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
 
    Not collective; name will contain a common value
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 -  nf - field number for the DMDA (0, 1, ... dof-1), where dof indicates the
         number of degrees of freedom per node within the DMDA
@@ -204,7 +204,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 
    Not collective; name will contain a common value
 
-   Input Parameter:
+   Input Parameters:
 +  dm - the DM
 -  nf -  number for the DMDA (0, 1, ... dim-1)
 
@@ -414,7 +414,7 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 
    Not collective
 
-   Input Parameter:
+   Input Parameters:
 +  dm - the DM
 -  xc - the coordinates
 

@@ -766,7 +766,7 @@ PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  op - the option
 -  flag - turn the option on or off
@@ -1327,7 +1327,7 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  bs - the blocksize
 
@@ -1388,7 +1388,7 @@ PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the Vec context
 -  prefix - the prefix to prepend to all option names
 

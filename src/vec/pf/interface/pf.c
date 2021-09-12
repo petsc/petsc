@@ -12,7 +12,7 @@ PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
    Collective on PF
 
-   Input Parameter:
+   Input Parameters:
 +  pf - the function context
 .  apply - function to apply to an array
 .  applyvec - function to apply to a Vec
@@ -71,7 +71,7 @@ PetscErrorCode  PFDestroy(PF *pf)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - MPI communicator
 .  dimin - dimension of the space you are mapping from
 -  dimout - dimension of the space you are mapping to
@@ -354,7 +354,7 @@ PetscErrorCode  PFGetType(PF pf,PFType *type)
 
    Collective on PF
 
-   Input Parameter:
+   Input Parameters:
 +  pf - the function context.
 .  type - a known method
 -  ctx - optional type dependent context

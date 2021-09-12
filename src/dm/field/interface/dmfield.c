@@ -219,7 +219,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 
   Collective on points
 
-  Input Parameter:
+  Input Parameters:
 + field - The DMField object
 . points - The points at which to evaluate the field.  Should have size d x n,
            where d is the coordinate dimension of the manifold and n is the number
@@ -228,7 +228,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
 
-  Output Parameter:
+  Output Parameters:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
       If B is not NULL, the values of the field are written in this array, varying first by component,
       then by point.
@@ -266,7 +266,7 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + field - The DMField object
 . cellIS - Index set for cells on which to evaluate the field
 . points - The quadature containing the points in the reference cell at which to evaluate the field.
@@ -274,7 +274,7 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
 
-  Output Parameter:
+  Output Parameters:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
       If B is not NULL, the values of the field are written in this array, varying first by component,
       then by point.
@@ -311,14 +311,14 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + field - The DMField object
 . cellIS - Index set for cells on which to evaluate the field
 - datatype - The PetscDataType of the output arrays: either PETSC_REAL or PETSC_SCALAR.
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
 
-  Output Parameter:
+  Output Parameters:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
       If B is not NULL, the values of the field are written in this array, varying first by component,
       then by point.

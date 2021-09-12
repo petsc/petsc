@@ -1346,7 +1346,7 @@ PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + tao  - the Tao context
 - type - regularizer type
 
@@ -1401,7 +1401,7 @@ PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + tao  - the Tao context
 - type - spectral parameter update type
 

@@ -455,7 +455,7 @@ PetscErrorCode  DMDAGetSubdomainCornersIS(DM dm,IS *is)
 
     Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +     dm - the DM object
 .     nel - number of local elements
 .     nen - number of element nodes
@@ -489,7 +489,7 @@ PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const Pets
 
     Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +     dm - the DM object
 -     is - the index set
 

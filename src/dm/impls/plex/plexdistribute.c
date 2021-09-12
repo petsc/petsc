@@ -1366,10 +1366,10 @@ static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_D
   Input Parameters:
 + dm          - The source DMPlex object
 . migrationSF - The star forest that describes the parallel point remapping
-. ownership   - Flag causing a vote to determine point ownership
+- ownership   - Flag causing a vote to determine point ownership
 
   Output Parameter:
-- pointSF     - The star forest describing the point overlap in the remapped DM
+. pointSF     - The star forest describing the point overlap in the remapped DM
 
   Notes:
   Output pointSF is guaranteed to have the array of local indices (leaves) sorted.
@@ -1499,10 +1499,10 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
   Input Parameters:
 + dm       - The source DMPlex object
-. sf       - The star forest communication context describing the migration pattern
+- sf       - The star forest communication context describing the migration pattern
 
   Output Parameter:
-- targetDM - The target DMPlex object
+. targetDM - The target DMPlex object
 
   Level: intermediate
 

@@ -144,7 +144,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  fname - the filename
 -  mode - either 'r', 'w', 'x' or '\0'
 
@@ -184,7 +184,7 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  dirname - the directory name
 -  mode - either 'r', 'w', or 'x'
 
@@ -222,12 +222,12 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - the MPI communicator
 .  dirname - the directory name
 -  tlen - the length of the buffer found[]
 
-   Output Parameter:
+   Output Parameters:
 +  found - listing of files
 -  flg - the directory exists
 

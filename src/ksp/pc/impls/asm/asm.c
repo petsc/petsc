@@ -1783,7 +1783,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
 
     Logically Collective
 
-    Input Parameter:
+    Input Parameters:
 +   pc  - the preconditioner
 -   flg - boolean indicating whether to use subdomains defined by the DM
 

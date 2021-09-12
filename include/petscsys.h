@@ -746,11 +746,11 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 -  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 -  r2 - memory allocated in second chunk
 
@@ -770,11 +770,11 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 -  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 -  r2 - memory allocated in second chunk
 
@@ -794,12 +794,12 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 -  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 -  r3 - memory allocated in third chunk
@@ -820,12 +820,12 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 -  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 -  r3 - memory allocated in third chunk
@@ -846,13 +846,13 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 -  m4 - number of elements to allocate in 4th chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
@@ -2281,7 +2281,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +     a - the PetscReal value
 -     b - the second value
 
@@ -2318,7 +2318,7 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +     a - the PetscInt value
 -     b - the second value
 
@@ -2354,7 +2354,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +     a - the PetscInt value
 -     b - the second value
 
@@ -2388,11 +2388,11 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +     a - the PetscInt value
 -     b - the second value
 
-   Output Parameter:ma
+   Output Parameter:
 .     result - the result as a PetscInt value, or NULL if you do not want the result, you just want to check if it overflows
 
    Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
@@ -2425,11 +2425,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +     a - the PetscInt value
 -     b - the second value
 
-   Output Parameter:ma
+   Output Parameter:
 .     c - the result as a PetscInt value,  or NULL if you do not want the result, you just want to check if it overflows
 
    Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64

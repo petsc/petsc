@@ -106,7 +106,7 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
    Input Parameters:
 .  mat - the factored matrix
 
-   Output Parameter:
+   Output Parameters:
 +  pivot - the pivot value computed
 -  row - the row that the zero pivot occurred. Note that this row must be interpreted carefully due to row reorderings and which processes
          the share the matrix
@@ -714,7 +714,7 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the Mat context
 -  prefix - the prefix to prepend to all option names
 
@@ -4941,7 +4941,7 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
    Input Parameters:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (optional)
 
@@ -4990,7 +4990,7 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
    Input Parameters:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the minimums
 -  idx - the indices of the column found for each row (or NULL if not needed)
 
@@ -5040,7 +5040,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
    Input Parameters:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (optional)
 
@@ -5088,7 +5088,7 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
    Input Parameters:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (or NULL if not needed)
 
@@ -5214,7 +5214,7 @@ PetscErrorCode MatTranspose(Mat mat,MatReuse reuse,Mat *B)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  B - the matrix to test against, this can equal the first parameter
 
@@ -5290,7 +5290,7 @@ PetscErrorCode MatHermitianTranspose(Mat mat,MatReuse reuse,Mat *B)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  B - the matrix to test against, this can equal the first parameter
 
@@ -7412,7 +7412,7 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
    Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  rbs - row block size
 -  cbs - column block size
 
@@ -8952,7 +8952,7 @@ PetscErrorCode MatSolves(Mat mat,Vecs b,Vecs x)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact transpose)
 
@@ -9004,7 +9004,7 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact Hermitian)
 
@@ -9186,7 +9186,7 @@ PetscErrorCode MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,Petsc
    Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +   right - (optional) vector that the matrix can be multiplied against
 -   left - (optional) vector that the matrix vector product can be stored in
 

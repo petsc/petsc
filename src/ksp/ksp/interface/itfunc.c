@@ -2533,7 +2533,7 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
    Input Parameter:
 .   ksp - iterative context obtained from KSPCreate()
 
-   Output Parameter:
+   Output Parameters:
 +  converge - pointer to convergence test function
 .  cctx    - context for private data for the convergence routine (may be null)
 -  destroy - a routine for destroying the context (may be null)
@@ -2569,7 +2569,7 @@ PetscErrorCode  KSPGetConvergenceTest(KSP ksp,PetscErrorCode (**converge)(KSP,Pe
    Input Parameter:
 .   ksp - iterative context obtained from KSPCreate()
 
-   Output Parameter:
+   Output Parameters:
 +  converge - pointer to convergence test function
 .  cctx    - context for private data for the convergence routine
 -  destroy - a routine for destroying the context
@@ -2725,7 +2725,7 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
    Logically Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the KSP context
 -  scale - PETSC_TRUE or PETSC_FALSE
 
@@ -2797,7 +2797,7 @@ PetscErrorCode  KSPGetDiagonalScale(KSP ksp,PetscBool  *scale)
 
    Logically Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the KSP context
 -  fix - PETSC_TRUE to scale back after the system solve, PETSC_FALSE to not
          rescale (default)

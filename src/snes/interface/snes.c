@@ -1343,7 +1343,7 @@ PetscErrorCode  SNESGetIterationNumber(SNES snes,PetscInt *iter)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  snes - SNES context
 -  iter - iteration number
 
@@ -1595,7 +1595,7 @@ PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
 
    Logically Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 +  snes - SNES context
 -  reset - whether to reset the counters or not
 
@@ -2302,7 +2302,7 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*bp)(SNES,Vec,Vec,
    Input Parameter:
 .  snes - the SNES context
 
-   Output Parameter:
+   Output Parameters:
 +  r - the function (or NULL)
 .  f - the function (or NULL); see SNESFunction for calling sequence details
 .  Amat - the matrix used to defined the operation A(x) x - b(x) (or NULL)
@@ -3634,7 +3634,7 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
 
    Logically collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the SNES context
 -   flg - jacobian lagging persists if true
 
@@ -3668,7 +3668,7 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
 
    Logically Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the SNES context
 -   flg - preconditioner lagging persists if true
 
@@ -5003,7 +5003,7 @@ PetscErrorCode  SNESGetSolutionUpdate(SNES snes,Vec *x)
    Input Parameter:
 .  snes - the SNES context
 
-   Output Parameter:
+   Output Parameters:
 +  r - the vector that is used to store residuals (or NULL if you don't want it)
 .  f - the function (or NULL if you don't want it); see SNESFunction for calling sequence details
 -  ctx - the function context (or NULL if you don't want it)
@@ -5044,7 +5044,7 @@ PetscErrorCode  SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,V
    Input Parameter:
 .  snes - the SNES context
 
-   Output Parameter:
+   Output Parameters:
 +  f - the function (or NULL) see SNESNGSFunction for details
 -  ctx    - the function context (or NULL)
 
@@ -5071,7 +5071,7 @@ PetscErrorCode SNESGetNGS (SNES snes, PetscErrorCode (**f)(SNES, Vec, Vec, void*
 
    Logically Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the SNES context
 -  prefix - the prefix to prepend to all option names
 

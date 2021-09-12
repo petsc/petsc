@@ -664,7 +664,7 @@ PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch ls, PetscBool *flg)
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective function evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -707,7 +707,7 @@ PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -749,7 +749,7 @@ PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode(
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective and gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -795,7 +795,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective and gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -843,7 +843,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErr
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 - ts - the Tao context with defined objective/gradient evaluation routines
 
@@ -923,7 +923,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
 + ls - the TaoLineSearch context
 - x - input vector
 
-  Output Parameter:
+  Output Parameters:
 + f - Objective value at X
 - g - Gradient vector at X
 
@@ -1029,7 +1029,7 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
 + ls - the TaoLineSearch context
 - x - input vector
 
-  Output Parameter:
+  Output Parameters:
 + f - Objective value at X
 - gts - inner product of gradient and step direction at X
 
@@ -1069,7 +1069,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   Input Parameter:
 . ls - the TaoLineSearch context
 
-  Output Parameter:
+  Output Parameters:
 + x - the new solution
 . f - the objective function value at x
 . g - the gradient at x

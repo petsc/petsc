@@ -328,7 +328,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 /*@C
     PetscOmpCtrlCreate - create a PETSc OpenMP controller, which manages PETSc's interaction with third party libraries using OpenMP
 
-    Input Parameter:
+    Input Parameters:
 +   petsc_comm - a communicator some PETSc object (for example, a matrix) lives in
 -   nthreads   - number of threads per MPI rank to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
 
@@ -495,7 +495,7 @@ PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
     Input Parameter:
 .   ctrl - a PETSc OMP controller
 
-    Output Parameter:
+    Output Parameters:
 +   omp_comm         - a communicator that includes a master rank and slave ranks where master spawns threads
 .   omp_master_comm  - on master ranks, return a communicator that include master ranks of each omp_comm;
                        on slave ranks, MPI_COMM_NULL will be return in reality.

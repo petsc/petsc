@@ -79,7 +79,7 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + comm - The communicator for the DMMoab object
 . mbiface - (ptr to) the MOAB Instance; if passed in NULL, MOAB instance is created inside PETSc, and destroyed
          along with the DMMoab
@@ -193,7 +193,7 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm      - The DMMoab object being set
 - mbiface - The MOAB instance being set on this DMMoab
 
@@ -246,7 +246,7 @@ PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm    - The DMMoab object being set
 - range - The entities treated by this DMMoab
 
@@ -444,7 +444,7 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object being set
 - bs - The block size used with this DMMoab
 
@@ -489,7 +489,7 @@ PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
   Input Parameter:
 . dm - The DMMoab object being set
 
-  Output Parameter:
+  Output Parameters:
 + neg - The number of global elements in the DMMoab instance
 - nvg - The number of global vertices in the DMMoab instance
 
@@ -513,7 +513,7 @@ PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
   Input Parameter:
 . dm - The DMMoab object being set
 
-  Output Parameter:
+  Output Parameters:
 + nel - The number of owned elements in this processor
 . neg - The number of ghosted elements in this processor
 . nvl - The number of owned vertices in this processor
@@ -605,7 +605,7 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 - ehandle - The element entity handle
 
@@ -633,7 +633,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, P
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 . nconn - Number of entities whose coordinates are needed
 - conn - The vertex entity handles
@@ -671,11 +671,11 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 - vhandle - Vertex entity handle
 
-  Output Parameter:
+  Output Parameters:
 + nconn - Number of entities whose coordinates are needed
 - conn - The vertex entity handles
 
@@ -712,7 +712,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 . vhandle - Vertex entity handle
 . nconn - Number of entities whose coordinates are needed
@@ -742,11 +742,11 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 - ehandle - Vertex entity handle
 
-  Output Parameter:
+  Output Parameters:
 + nconn - Number of entities whose coordinates are needed
 - conn - The vertex entity handles
 
@@ -779,7 +779,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 - ent - Entity handle
 
@@ -861,7 +861,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
   Input Parameter:
 . dm - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + bdvtx - Boundary vertices
 . bdelems - Boundary elements
 - bdfaces - Boundary faces

@@ -38,7 +38,7 @@ static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
 
     Collective on ksp
 
-    Input Parameter:
+    Input Parameters:
 +   ksp - the Krylov subspace context
 -   mattype - the matrix type to be used
 
@@ -86,7 +86,7 @@ PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 
    Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 -  n - size of arrays r and c
 

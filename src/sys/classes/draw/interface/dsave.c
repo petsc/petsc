@@ -14,7 +14,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 
    Collective on PetscDraw
 
-   Input Parameter:
+   Input Parameters:
 +  draw      - the graphics context
 -  filename  - name of the file, if .ext then uses name of draw object plus .ext using .ext to determine the image type
 
@@ -81,7 +81,7 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
 
    Collective on PetscDraw
 
-   Input Parameter:
+   Input Parameters:
 +  draw      - the graphics context
 -  movieext  - optional extension defining the movie format
 
@@ -119,7 +119,7 @@ PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
 
    Collective on PetscDraw
 
-   Input Parameter:
+   Input Parameters:
 +  draw      - the graphics context
 -  filename  - name of the file, if NULL or empty uses name set with PetscDrawSetSave() or name of draw object
 

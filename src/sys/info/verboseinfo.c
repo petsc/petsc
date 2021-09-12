@@ -86,7 +86,7 @@ PetscErrorCode PetscInfoAllow(PetscBool flag)
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   filename - Name of the file where PetscInfo() will print to
 -   mode - Write mode passed to PetscFOpen()
 
@@ -512,7 +512,7 @@ PETSC_INTERN FILE *petsc_history;
 
     Collective on obj
 
-    Input Parameter:
+    Input Parameters:
 +   obj - object most closely associated with the logging statement or NULL
 .   message - logging message
 .   formatmessage - logging message using standard "printf" format

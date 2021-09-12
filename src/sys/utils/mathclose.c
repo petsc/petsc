@@ -4,7 +4,7 @@
     PetscIsCloseAtTol - Returns whether the two floating point numbers
        are close at given relative and absolute tolerances.
 
-    Input Parameter:
+    Input Parameters:
 +     a - first floating point number
 .     b - second floating point number
 .     rtol - relative tolerance

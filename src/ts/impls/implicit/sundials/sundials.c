@@ -810,7 +810,7 @@ PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
 /*@
    TSSundialsSetMinTimeStep - Smallest time step to be chosen by the adaptive controller.
 
-   Input Parameter:
+   Input Parameters:
 +   ts - the time-step context
 -   mindt - lowest time step if positive, negative to deactivate
 
@@ -834,7 +834,7 @@ PetscErrorCode  TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 /*@
    TSSundialsSetMaxTimeStep - Largest time step to be chosen by the adaptive controller.
 
-   Input Parameter:
+   Input Parameters:
 +   ts - the time-step context
 -   maxdt - lowest time step if positive, negative to deactivate
 
@@ -854,7 +854,7 @@ PetscErrorCode  TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 /*@
    TSSundialsMonitorInternalSteps - Monitor Sundials internal steps (Defaults to false).
 
-   Input Parameter:
+   Input Parameters:
 +   ts - the time-step context
 -   ft - PETSC_TRUE if monitor, else PETSC_FALSE
 

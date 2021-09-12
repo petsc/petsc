@@ -745,7 +745,7 @@ static PetscErrorCode MatCompositeSetMergeType_Composite(Mat mat,MatCompositeMer
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat - the composite matrix
 -  type - MAT_COMPOSITE_MERGE RIGHT (default) to start merge from right with the first added matrix (mat[0]),
           MAT_COMPOSITE_MERGE_LEFT to start merge from left with the last added matrix (mat[nmat-1])
@@ -920,7 +920,7 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat,PetscInt i,Mat *Ai)
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat - the composite matrix
 -  i - the number of requested matrix
 
@@ -962,7 +962,7 @@ PetscErrorCode MatCompositeSetScalings_Composite(Mat mat,const PetscScalar *scal
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat      - the composite matrix
 -  scalings - array of scaling factors with scalings[i] being factor of i-th matrix, for i in [0, nmat)
 

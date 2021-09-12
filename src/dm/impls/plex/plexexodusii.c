@@ -1208,7 +1208,7 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
 .  viewer - the PetscViewer
 
   Output Parameter:
--  exoid - The ExodusII file id
+.  exoid - The ExodusII file id
 
   Level: intermediate
 

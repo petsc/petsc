@@ -293,7 +293,7 @@ static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer 
 
   Collective on tr
 
-  Input Parameter:
+  Input Parameters:
 + tr - the DMPlexTransform object to view
 - v  - the viewer
 

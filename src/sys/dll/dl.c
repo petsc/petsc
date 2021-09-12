@@ -35,7 +35,7 @@ PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
 +   comm - processors that are opening the library
 -   libname - name of the library, can be relative or absolute
 
-   Output Parameter:
+   Output Parameters:
 +   name - actual name of file on local filesystem if found
 .   llen - length of the name buffer
 -   found - true if the file exists
@@ -195,7 +195,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - communicator that will open the library
 .  outlist - list of already open libraries that may contain symbol (can be NULL and only the executable is searched for the function)
 .  path     - optional complete library name (if provided checks here before checking outlist)

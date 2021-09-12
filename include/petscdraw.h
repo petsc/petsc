@@ -79,7 +79,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw,PetscObject,const
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  value - value to map within the interval [min,max]
 .  min - lower end of interval
 -  max - upper end of interval

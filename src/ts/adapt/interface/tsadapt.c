@@ -120,7 +120,7 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 
   Logicially Collective on TSAdapt
 
-  Input Parameter:
+  Input Parameters:
 + adapt - the TS adapter, most likely obtained with TSGetAdapt()
 - type - either  TSADAPTBASIC or TSADAPTNONE
 

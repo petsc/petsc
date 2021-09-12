@@ -948,7 +948,7 @@ static PetscErrorCode TSLoad_GLEE(TS ts,PetscViewer viewer)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  gleetype - type of GLEE-scheme
 

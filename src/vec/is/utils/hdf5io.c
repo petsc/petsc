@@ -190,7 +190,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 . map      - The layout which specifies array partitioning
 - datatype - The HDF5 datatype of the items in the dataset
 
-  Output Parameter:
+  Output Parameters:
 + map      - The set up layout (with global size and blocksize according to dataset)
 - newarr   - The partitioned array, a memory image of the given dataset
 
@@ -252,7 +252,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 + viewer - The HDF5 viewer
 - name   - The dataset name
 
-  Output Parameter:
+  Output Parameters:
 + bs     - block size
 - N      - global size
 

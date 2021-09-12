@@ -191,7 +191,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
 
    Logically Collective on PetscDrawLG
 
-   Input Parameter:
+   Input Parameters:
 +  lg - the line graph context.
 -  colors - the colors
 
@@ -219,7 +219,7 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int colors[])
 
    Logically Collective on PetscDrawLG
 
-   Input Parameter:
+   Input Parameters:
 +  lg - the line graph context.
 -  names - the names for each curve
 
@@ -285,7 +285,7 @@ PetscErrorCode  PetscDrawLGGetDimension(PetscDrawLG lg,PetscInt *dim)
 
    Logically Collective on PetscDrawLG
 
-   Input Parameter:
+   Input Parameters:
 +  lg - the line graph context.
 -  dim - the number of curves.
 
@@ -571,7 +571,7 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 
    Logically Collective on PetscDrawLG
 
-   Input Parameter:
+   Input Parameters:
 +  lg - the line graph context
 -  prefix - the prefix to prepend to all option names
 

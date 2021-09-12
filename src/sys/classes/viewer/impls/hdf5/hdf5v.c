@@ -696,7 +696,7 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char *name[])
   Input Parameter:
 . viewer - the PetscViewer
 
-  Output Parameter:
+  Output Parameters:
 + fileId - The HDF5 file ID
 - groupId - The HDF5 group ID
 

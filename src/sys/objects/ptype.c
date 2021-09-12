@@ -172,7 +172,7 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
     Input Parameter:
 .     name - the PETSc datatype name (for example, DOUBLE or real or Scalar)
 
-    Output Parameter:
+    Output Parameters:
 +    ptype - the enum value
 -    found - the string matches one of the data types
 

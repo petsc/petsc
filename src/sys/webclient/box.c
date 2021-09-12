@@ -169,7 +169,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
                     if not found it will call PetscBoxAuthorize()
 -   tokensize - size of the output string access_token
 
-   Output Parameter:
+   Output Parameters:
 +   access_token - token that can be passed to PetscBoxUpload()
 -   new_refresh_token - the old refresh token is no longer valid, not this is different than Google where the same refresh_token is used forever
 

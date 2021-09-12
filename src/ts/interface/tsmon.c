@@ -1375,7 +1375,7 @@ PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void
    Input Parameter:
 .  ts - the TS context
 
-   Output Parameter:
+   Output Parameters:
 +  max - the maximum values
 -  min - the minimum values
 

@@ -841,7 +841,7 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 .  its - the number of iterations to apply.
 -  guesszero - if the input x contains nonzero initial guess
 
-   Output Parameter:
+   Output Parameters:
 +  outits - number of iterations actually used (for SOR this always equals its)
 .  reason - the reason the apply terminated
 -  y - the solution (also contains initial guess if guesszero is PETSC_FALSE
@@ -878,7 +878,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
    Logically Collective on PC
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context
 -  reason - the reason it failedx
 
@@ -1868,7 +1868,7 @@ static PetscErrorCode MatMult_PC(Mat A,Vec X,Vec Y)
 
     Collective on PC
 
-    Input Parameter:
+    Input Parameters:
 +   pc - the preconditioner object
 -   mattype - the matrix type to be used for the operator
 
@@ -1945,12 +1945,12 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal co
 
    Logically Collective on PC
 
-   Input Parameters:
-+  pc - the precondition context
+   Input Parameter:
+.  pc - the precondition context
 
-   Output Parameter:
--  num_levels - the number of levels
-.  interpolations - the interpolation matrices (size of num_levels-1)
+   Output Parameters:
++  num_levels - the number of levels
+-  interpolations - the interpolation matrices (size of num_levels-1)
 
    Level: advanced
 
@@ -1975,12 +1975,12 @@ PetscErrorCode PCGetInterpolations(PC pc,PetscInt *num_levels,Mat *interpolation
 
    Logically Collective on PC
 
-   Input Parameters:
-+  pc - the precondition context
+   Input Parameter:
+.  pc - the precondition context
 
-   Output Parameter:
--  num_levels - the number of levels
-.  coarseOperators - the coarse operator matrices (size of num_levels-1)
+   Output Parameters:
++  num_levels - the number of levels
+-  coarseOperators - the coarse operator matrices (size of num_levels-1)
 
    Level: advanced
 

@@ -420,7 +420,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 /*@C
      DMDAGetArray - Gets a work array for a DMDA
 
-    Input Parameter:
+    Input Parameters:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch
 
@@ -546,7 +546,7 @@ done:
 /*@C
      DMDARestoreArray - Restores an array of derivative types for a DMDA
 
-    Input Parameter:
+    Input Parameters:
 +    da - information about my local patch
 .    ghosted - do you want arrays for the ghosted or nonghosted patch
 -    vptr - array data structured

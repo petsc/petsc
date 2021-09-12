@@ -348,7 +348,7 @@ PetscErrorCode PetscLayoutReference(PetscLayout in,PetscLayout *out)
 
   Collective on PetscLayout
 
-  Input Parameter:
+  Input Parameters:
 + in - input PetscLayout
 - ltog - the local to global mapping
 

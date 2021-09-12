@@ -70,7 +70,7 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 
    Not Collective, but PetscViewer will be collective object on PetscViewers
 
-   Input Parameter:
+   Input Parameters:
 +   viewers - object created with PetscViewersCreate()
 -   n - number of PetscViewer you want
 

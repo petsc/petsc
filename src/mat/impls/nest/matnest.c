@@ -1227,7 +1227,7 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
  Input Parameters:
 .   A  - nest matrix
 
- Output Parameter:
+ Output Parameters:
 +   M - number of rows in the nest matrix
 .   N - number of cols in the nest matrix
 -   mat - 2d array of matrices
@@ -1272,7 +1272,7 @@ PetscErrorCode  MatNestGetSize_Nest(Mat A,PetscInt *M,PetscInt *N)
  Input Parameters:
 .   A  - nest matrix
 
- Output Parameter:
+ Output Parameters:
 +   M - number of rows in the nested mat
 -   N - number of cols in the nested mat
 
@@ -1311,7 +1311,7 @@ static PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
  Input Parameters:
 .   A  - nest matrix
 
- Output Parameter:
+ Output Parameters:
 +   rows - array of row index sets
 -   cols - array of column index sets
 
@@ -1352,7 +1352,7 @@ static PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
  Input Parameters:
 .   A  - nest matrix
 
- Output Parameter:
+ Output Parameters:
 +   rows - array of row index sets (or NULL to ignore)
 -   cols - array of column index sets (or NULL to ignore)
 
@@ -1491,7 +1491,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - nested matrix
 .  nr - number of nested row blocks
 .  is_row - index sets for each nested row block, or NULL to make contiguous
@@ -1780,7 +1780,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  comm - Communicator for the new Mat
 .  nr - number of nested row blocks
 .  is_row - index sets for each nested row block, or NULL to make contiguous

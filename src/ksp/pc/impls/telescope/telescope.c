@@ -1193,7 +1193,7 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 
  Logically Collective
 
- Input Parameter:
+ Input Parameters:
 +  pc - the preconditioner context
 -  subcommtype - the subcommunicator type (see PetscSubcommType)
 

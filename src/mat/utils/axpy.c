@@ -402,7 +402,7 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 
     Collective on Mat
 
-    Input Parameter:
+    Input Parameters:
 +   inmat - the matrix
 -   mattype - the matrix type for the explicit operator
 

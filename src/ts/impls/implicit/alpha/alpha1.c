@@ -498,7 +498,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
     \alpha_m = 0.5*(3-\rho)/(1+\rho)
     \alpha_f = 1/(1+\rho)
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  radius - the desired spectral radius
 
@@ -535,7 +535,7 @@ PetscErrorCode TSAlphaSetRadius(TS ts,PetscReal radius)
   Backward Euler method is recovered with:
     \alpha_m = \alpha_f = gamma = 1
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 .  \alpha_m - algorithmic parameter
 .  \alpha_f - algorithmic parameter

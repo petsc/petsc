@@ -176,7 +176,7 @@ PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
 
     Collective on PetscViewer
 
-    Input Parameter:
+    Input Parameters:
 +   PetscViewer - the PetscViewer (created with PetscViewerDrawOpen())
 -   windownumber - indicates which subwindow (usually 0)
 
@@ -221,7 +221,7 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
 
     Collective on PetscViewer
 
-    Input Parameter:
+    Input Parameters:
 +   viewer - the PetscViewer (created with PetscViewerDrawOpen()
 -   windownumber - indicates which subwindow (usually 0)
 

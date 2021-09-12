@@ -460,7 +460,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 
    Logically Collective on dm
 
-   Input Parameter:
+   Input Parameters:
 +  da - the DM context
 -  prefix - the prefix to prepend to all option names
 
@@ -935,7 +935,7 @@ PetscErrorCode  DMViewFromOptions(DM dm,PetscObject obj,const char name[])
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object to view
 -   v - the viewer
 
@@ -1165,11 +1165,11 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 
     Collective on dmc
 
-    Input Parameter:
+    Input Parameters:
 +   dmc - the DM object
 -   dmf - the second, finer DM object
 
-    Output Parameter:
+    Output Parameters:
 +  mat - the interpolation
 -  vec - the scaling (optional)
 
@@ -1237,7 +1237,7 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 
     Collective on dmc
 
-    Input Parameter:
+    Input Parameters:
 +   dmc - the DM object
 -   dmf - the second, finer DM object
 
@@ -1273,7 +1273,7 @@ PetscErrorCode  DMCreateRestriction(DM dmc,DM dmf,Mat *mat)
 
     Collective on dac
 
-    Input Parameter:
+    Input Parameters:
 +   dac - the DM object
 -   daf - the second, finer DM object
 
@@ -1309,7 +1309,7 @@ PetscErrorCode  DMCreateInjection(DM dac,DM daf,Mat *mat)
 
   Collective on dac
 
-  Input Parameter:
+  Input Parameters:
 + dac - the DM object
 - daf - the second, finer DM object
 
@@ -1338,7 +1338,7 @@ PetscErrorCode DMCreateMassMatrix(DM dac, DM daf, Mat *mat)
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   ctype - IS_COLORING_LOCAL or IS_COLORING_GLOBAL
 
@@ -1449,7 +1449,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
 
   Logically Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm - the DM
 - only - PETSC_TRUE if only want preallocation
 
@@ -1474,7 +1474,7 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 
   Logically Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm - the DM
 - only - PETSC_TRUE if only want matrix stucture
 
@@ -1954,7 +1954,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + dms - The DM objects
 - len - The number of DMs
 
@@ -2093,7 +2093,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm   - the DM object
 - comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
@@ -2335,7 +2335,7 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   level - number of refinements
 
@@ -3070,7 +3070,7 @@ PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
@@ -3415,7 +3415,7 @@ PetscErrorCode DMSetCoarsenLevel(DM dm,PetscInt level)
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   nlevels - the number of levels of refinement
 
@@ -3454,7 +3454,7 @@ PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   nlevels - the number of levels of coarsening
 
@@ -3561,7 +3561,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
     Logically Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   f - the function that computes variable bounds used by SNESVI (use NULL to cancel a previous function that was set)
 
@@ -4309,7 +4309,7 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
   Input Parameter:
 . dm - The DM
 
-  Output Parameter:
+  Output Parameters:
 + section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Returns NULL if there are no local constraints.
 - mat - The Mat that interpolates local constraints: its width should be the layout size of the default section.  Returns NULL if there are no local constraints.
 
@@ -4978,7 +4978,7 @@ PetscErrorCode DMCopyFields(DM dm, DM newdm)
 + dm - The DM object
 - f  - The field number, or PETSC_DEFAULT for the default adjacency
 
-  Output Parameter:
+  Output Parameters:
 + useCone    - Flag for variable influence starting with the cone operation
 - useClosure - Flag for variable influence using transitive closure
 
@@ -5061,7 +5061,7 @@ PetscErrorCode DMSetAdjacency(DM dm, PetscInt f, PetscBool useCone, PetscBool us
   Input Parameters:
 . dm - The DM object
 
-  Output Parameter:
+  Output Parameters:
 + useCone    - Flag for variable influence starting with the cone operation
 - useClosure - Flag for variable influence using transitive closure
 
@@ -6295,11 +6295,11 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - the DM
 - p - the IS of points whose coordinates will be returned
 
-  Output Parameter:
+  Output Parameters:
 + pCoordSection - the PetscSection describing the layout of pCoord, i.e. each point corresponds to one point in p, and DOFs correspond to coordinates
 - pCoord - the Vec with coordinates of points in p
 
@@ -7097,7 +7097,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 . ltype - The type of point location, e.g. DM_POINTLOCATION_NONE or DM_POINTLOCATION_NEAREST
 - cells - Points to either NULL, or a PetscSF with guesses for which cells contain each point.
 
-  Output Parameter:
+  Output Parameters:
 + v - The Vec of points, which now contains the nearest mesh points to the given points if DM_POINTLOCATION_NEAREST is used
 - cells - The PetscSF containing the ranks and local indices of the containing points.
 
@@ -8158,7 +8158,7 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 
   Collective on dmA
 
-  Input Parameter:
+  Input Parameters:
 + dmA - The DM object with initial labels
 . dmB - The DM object with copied labels
 . mode - Copy labels by pointers (PETSC_OWN_POINTER) or duplicate them (PETSC_COPY_VALUES)

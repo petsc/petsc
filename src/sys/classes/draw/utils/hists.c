@@ -104,7 +104,7 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 
    Logically Collective on PetscDrawHG
 
-   Input Parameter:
+   Input Parameters:
 +  hist - The histogram context.
 -  bins  - The number of bins.
 

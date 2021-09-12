@@ -216,7 +216,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
 
   Collective on PetscConvEst
 
-  Input Parameter:
+  Input Parameters:
 + ce - The PetscConvEst object
 - r  - The refinement level
 

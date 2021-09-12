@@ -152,7 +152,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  options - options database, use NULL for default global database
 -  in_str - YAML-formatted string options
 
@@ -194,7 +194,7 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 +   comm - the processes that will share the options (usually PETSC_COMM_WORLD)
 .   options - options database, use NULL for default global database
 .   file - name of file

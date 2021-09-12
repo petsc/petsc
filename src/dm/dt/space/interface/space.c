@@ -146,7 +146,7 @@ PetscErrorCode  PetscSpaceViewFromOptions(PetscSpace A,PetscObject obj,const cha
 
   Collective on sp
 
-  Input Parameter:
+  Input Parameters:
 + sp - the PetscSpace object to view
 - v  - the viewer
 
@@ -355,7 +355,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
   Input Parameter:
 . sp - The PetscSpace
 
-  Output Parameter:
+  Output Parameters:
 + minDegree - The degree of the largest polynomial space contained in the space
 - maxDegree - The degree of the smallest polynomial space containing the space
 

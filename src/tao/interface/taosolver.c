@@ -954,7 +954,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
   Input Parameter:
 . tao - the Tao context
 
-  Output Parameter:
+  Output Parameters:
 + catol - absolute constraint tolerance, constraint norm must be less than catol for used for gatol convergence criteria
 - crtol - relative contraint tolerance, constraint norm must be less than crtol for used for gatol, gttol convergence criteria
 
@@ -1154,7 +1154,7 @@ PetscErrorCode TaoGetMaximumIterations(Tao tao,PetscInt *maxits)
 
    Logically collective on Tao
 
-   Input Parameter:
+   Input Parameters:
 +  tao - a TAO optimization solver
 -  radius - the trust region radius
 
@@ -2384,7 +2384,7 @@ PetscErrorCode  TaoGetResidualNorm(Tao tao,PetscReal *value)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  tao - Tao context
 -  iter - iteration number
 
@@ -2439,7 +2439,7 @@ PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  tao - Tao context
 -  iter - iteration number
 
@@ -2852,7 +2852,7 @@ PetscErrorCode  TaoGetGradientNorm(Tao tao, Mat *M)
 
    Collective on tao
 
-   Input Parameter:
+   Input Parameters:
 +  tao      - the Tao context
 .  gradient - the gradient to be computed
 -  norm     - the norm type

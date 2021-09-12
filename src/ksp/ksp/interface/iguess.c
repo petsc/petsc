@@ -254,7 +254,7 @@ PetscErrorCode  KSPGuessGetType(KSPGuess guess,KSPGuessType *type)
 
    Collective on guess
 
-   Input Parameter:
+   Input Parameters:
 +  guess - the initial guess context
 .  rhs   - the corresponding rhs
 -  sol   - the computed solution

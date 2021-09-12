@@ -21,7 +21,7 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface,c
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm              - The DMMoab object being set
 . tag             - If non-zero, block size will be taken from the tag size
 . range           - If non-empty, Vec corresponds to these entities, otherwise to the entities set on the DMMoab
@@ -111,7 +111,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm              - The DMMoab object being set
 - vec             - The Vector whose underlying data is requested
 
@@ -196,7 +196,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm, Vec vec, void* array)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm              - The DMMoab object being set
 . vec             - The Vector whose underlying data is requested
 - array           - The local data array
@@ -278,7 +278,7 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm, Vec vec, void* array)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm              - The DMMoab object being set
 - vec             - The Vector whose underlying data is requested
 

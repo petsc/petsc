@@ -1581,7 +1581,7 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 /*@C
    SNESLineSearchSetWorkVecs - Gets work vectors for the line search.
 
-   Input Parameter:
+   Input Parameters:
 +  linesearch - the SNESLineSearch context
 -  nwork - the number of work vectors
 

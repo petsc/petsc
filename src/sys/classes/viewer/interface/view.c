@@ -223,7 +223,7 @@ PetscErrorCode  PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 
    Logically Collective on PetscViewer
 
-   Input Parameter:
+   Input Parameters:
 +  viewer - the PetscViewer context
 -  prefix - the prefix to prepend to all option names
 

@@ -1373,7 +1373,7 @@ PetscErrorCode  TSThetaGetTheta(TS ts,PetscReal *theta)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  theta - stage abscissa
 
@@ -1425,7 +1425,7 @@ PetscErrorCode TSThetaGetEndpoint(TS ts,PetscBool *endpoint)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  flg - PETSC_TRUE to use the endpoint variant
 

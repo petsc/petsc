@@ -481,7 +481,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 
     Collective on PetscViewer
 
-    Input Parameter:
+    Input Parameters:
 +    viewer - the viewer that defines the communicator
 -    message - string printed before values
 
@@ -946,7 +946,7 @@ foundit:;
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   eachcall - checks the entire heap of allocated memory for issues on each call to PetscMalloc() and PetscFree()
 -   initializenan - initializes all memory with NaN to catch use of uninitialized floating point arrays
 

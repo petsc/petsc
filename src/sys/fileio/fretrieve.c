@@ -323,12 +323,12 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   comm     - processors accessing the file
 .   url      - name of file, including entire URL (with or without .gz)
 -   llen     - length of localname
 
-    Output Parameter:
+    Output Parameters:
 +   localname - name of local copy of file - valid on only process zero
 -   found - if found or retrieved the file - valid on all processes
 

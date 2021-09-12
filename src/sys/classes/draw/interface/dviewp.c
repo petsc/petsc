@@ -317,7 +317,7 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 
    Logically Collective on PetscDraw inside PetscDrawViewPorts
 
-   Input Parameter:
+   Input Parameters:
 +  ports - the PetscDrawViewPorts object
 -  port - the port number, from 0 to nports-1
 

@@ -243,7 +243,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
    before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
    This routine enables a "higher-level" package that uses PETSc to print its messages first.
 
-   Input Parameter:
+   Input Parameters:
 +  help - the help function (may be NULL)
 -  version - the version function (may be NULL)
 

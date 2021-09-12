@@ -243,7 +243,7 @@ PetscErrorCode  PetscDualSpaceViewFromOptions(PetscDualSpace A,PetscObject obj,c
 
   Collective on sp
 
-  Input Parameter:
+  Input Parameters:
 + sp - the PetscDualSpace object to view
 - v  - the viewer
 
@@ -1275,7 +1275,7 @@ PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const Petsc
   Input Parameter:
 . sp - The dualspace
 
-  Output Parameter:
+  Output Parameters:
 + allNodes - A PetscQuadrature object containing all evaluation nodes
 - allMat - A Mat for the node-to-dof transformation
 
@@ -1312,7 +1312,7 @@ PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allN
   Input Parameter:
 . sp - The dualspace
 
-  Output Parameter:
+  Output Parameters:
 + allNodes - A PetscQuadrature object containing all evaluation nodes
 - allMat - A Mat for the node-to-dof transformation
 
@@ -1388,7 +1388,7 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
   Input Parameter:
 . sp - The dualspace
 
-  Output Parameter:
+  Output Parameters:
 + intNodes - A PetscQuadrature object containing all evaluation points needed to evaluate interior degrees of freedom
 - intMat   - A matrix that computes dual space values from point values: size [spdim0 x (npoints * nc)], where spdim0 is
              the size of the constrained layout (PetscSectionGetConstrainStorageSize()) of the dual space section,
@@ -1427,7 +1427,7 @@ PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature 
   Input Parameter:
 . sp - The dualspace
 
-  Output Parameter:
+  Output Parameters:
 + intNodes - A PetscQuadrature object containing all evaluation points needed to evaluate interior degrees of freedom
 - intMat    - A matrix that computes dual space values from point values: size [spdim0 x (npoints * nc)], where spdim0 is
               the size of the constrained layout (PetscSectionGetConstrainStorageSize()) of the dual space section,
@@ -1775,7 +1775,7 @@ PetscErrorCode PetscDualSpaceGetFormDegree(PetscDualSpace dsp, PetscInt *k)
   PetscDualSpaceSetFormDegree - Set the form degree k for the k-form the describes the pushforwards/pullbacks of this
   dual space's functionals.
 
-  Input Parameter:
+  Input Parameters:
 + dsp - The PetscDualSpace
 - k   - The *signed* degree k of the k.  If k >= 0, this means that the degrees of freedom are k-forms, and are stored
         in lexicographic order according to the basis of k-forms constructed from the wedge product of 1-forms.  So for example,

@@ -280,7 +280,7 @@ static PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer,Pet
 .   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
 
     Output Parameter:
--   use - PETSC_TRUE if MPI-IO is being used
+.   use - PETSC_TRUE if MPI-IO is being used
 
     Options Database:
     -viewer_binary_mpiio : Flag for using MPI-IO
@@ -323,7 +323,7 @@ static PetscErrorCode PetscViewerBinaryGetUseMPIIO_Binary(PetscViewer viewer,Pet
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
 -   fc - the number of messages, defaults to 256 if this function was not called
 
@@ -469,7 +469,7 @@ PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer viewer)
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   viewer - PetscViewer context, obtained from PetscViewerCreate()
 -   skip - PETSC_TRUE implies the .info file will not be generated
 

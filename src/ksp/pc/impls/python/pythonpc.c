@@ -5,7 +5,7 @@
 
    Collective on PC
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner (PC) context.
 -  pyname - full dotted Python name [package].module[.{class|function}]
 

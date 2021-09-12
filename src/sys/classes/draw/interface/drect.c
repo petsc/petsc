@@ -9,7 +9,7 @@
 
    Not collective
 
-   Input Parameter:
+   Input Parameters:
 +  draw - a PetscDraw
 .  xmin,xmax,ymin,ymax - region to draw indicator function
 -  f - the indicator function

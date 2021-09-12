@@ -1257,7 +1257,7 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  arktype - type of ARK-IMEX scheme
 
@@ -1310,7 +1310,7 @@ PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType *arktype)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  flg - PETSC_TRUE for fully implicit
 

@@ -657,7 +657,7 @@ $                 value = defaultvalue
 $                 PetscOptionsEnum(..., value,&value,&flg);
 $                 if (flg) {
 
-   Output Parameter:
+   Output Parameters:
 +  value - the  value to return
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -719,7 +719,7 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject,co
 .  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
 -  n - maximum number of values
 
-   Output Parameter:
+   Output Parameters:
 +  value - location to copy values
 .  n - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
@@ -792,7 +792,7 @@ $                 PetscOptionsInt(..., value,&value,&flg);
 $                 if (flg) {
 -  bound - the requested value should be greater than or equal this bound or an error is generated
 
-   Output Parameter:
+   Output Parameters:
 +  value - the integer value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -836,7 +836,7 @@ $                 if (flg) {
 .  lb - the lower bound, provided value must be greater than or equal to this value or an error is generated
 -  ub - the upper bound, provided value must be less than or equal to this value or an error is generated
 
-   Output Parameter:
+   Output Parameters:
 +  value - the integer value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -878,7 +878,7 @@ $                 value = defaultvalue
 $                 PetscOptionsInt(..., value,&value,&flg);
 $                 if (flg) {
 
-   Output Parameter:
+   Output Parameters:
 +  value - the integer value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -946,7 +946,7 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
 .  currentvalue - the current value; caller is responsible for setting this value correctly. This is not used to set value
 -  len - length of the result string including null terminator
 
-   Output Parameter:
+   Output Parameters:
 +  value - the value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -1010,7 +1010,7 @@ $                 value = defaultvalue
 $                 PetscOptionsReal(..., value,&value,&flg);
 $                 if (flg) {
 
-   Output Parameter:
+   Output Parameters:
 +  value - the value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -1073,7 +1073,7 @@ $                 value = defaultvalue
 $                 PetscOptionsScalar(..., value,&value,&flg);
 $                 if (flg) {
 
-   Output Parameter:
+   Output Parameters:
 +  value - the value to return
 -  flg - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -1179,7 +1179,7 @@ $                 PetscOptionsFlist(..., obj->value,value,len,&flg);
 $                 if (flg) {
 -  len - the length of the character array value
 
-   Output Parameter:
+   Output Parameters:
 +  value - the value to return
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -1248,7 +1248,7 @@ PetscErrorCode  PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject,c
 $                 PetscOptionsElist(..., obj->value,&value,&flg);
 $                 if (flg) {
 
-   Output Parameter:
+   Output Parameters:
 +  value - the index of the value to return
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -1472,7 +1472,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
 .  man - manual page with additional information on option
 -  currentvalue - the current value
 
-   Output Parameter:
+   Output Parameters:
 +  flg - PETSC_TRUE or PETSC_FALSE
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -1538,7 +1538,7 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject,co
 .  man - manual page for option
 -  nmax - maximum number of values
 
-   Output Parameter:
+   Output Parameters:
 +  value - location to copy values
 .  nmax - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
@@ -1602,7 +1602,7 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
 .  man - manual page for option
 -  nmax - maximum number of values
 
-   Output Parameter:
+   Output Parameters:
 +  value - location to copy values
 .  nmax - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
@@ -1665,7 +1665,7 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
 .  man - manual page for option
 -  n - maximum number of values
 
-   Output Parameter:
+   Output Parameters:
 +  value - location to copy values
 .  n - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
@@ -1735,7 +1735,7 @@ PetscErrorCode  PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObjec
 .  man - manual page for option
 -  nmax - maximum number of strings
 
-   Output Parameter:
+   Output Parameters:
 +  value - location to copy strings
 .  nmax - actual number of strings found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
@@ -1795,7 +1795,7 @@ PetscErrorCode  PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsOb
 .  man - manual page for option
 -  nmax - maximum number of values
 
-   Output Parameter:
+   Output Parameters:
 +  value - location to copy values
 .  nmax - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
@@ -1856,7 +1856,7 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObje
 .  text - short string that describes the option
 -  man - manual page with additional information on option
 
-   Output Parameter:
+   Output Parameters:
 +  viewer - the viewer
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 

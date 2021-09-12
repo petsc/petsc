@@ -1131,7 +1131,7 @@ functionend:
   Input Parameter:
 .  vin  - input MPIVEC
 
-  Output Parameter:
+  Output Parameters:
 +  ctx - scatter context
 -  vout - output SEQVEC that is large enough to scatter into
 
@@ -1200,7 +1200,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   Input Parameter:
 .  vin  - input MPIVEC
 
-  Output Parameter:
+  Output Parameters:
 +  ctx - scatter context
 -  vout - output SEQVEC that is large enough to scatter into on processor 0 and
           of length zero on all other processors

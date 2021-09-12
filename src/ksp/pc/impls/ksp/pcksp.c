@@ -170,7 +170,7 @@ static PetscErrorCode  PCKSPSetKSP_KSP(PC pc,KSP ksp)
 
    Collective on PC
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context
 -  ksp - the KSP solver
 

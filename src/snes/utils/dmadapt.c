@@ -921,7 +921,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + adaptor  - The DMAdaptor object
 . x        - The global approximate solution
 - strategy - The adaptation strategy

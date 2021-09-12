@@ -1029,7 +1029,7 @@ PetscErrorCode  ISDestroy(IS *is)
 
    Collective on IS
 
-   Input Parameter:
+   Input Parameters:
 +  is - the index set
 -  nlocal - number of indices on this processor in result (ignored for 1 proccessor) or
             use PETSC_DECIDE
@@ -1204,7 +1204,7 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
    Input Parameter:
 .  is - the index set
 
-   Output Parameter:
+   Output Parameters:
 +   min - the minimum value
 -   max - the maximum value
 
@@ -1230,7 +1230,7 @@ PetscErrorCode  ISGetMinMax(IS is,PetscInt *min,PetscInt *max)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + is - the index set
 - key - the search key
 
@@ -1400,7 +1400,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 
    Not Collective.
 
-   Input Parameter:
+   Input Parameters:
 +  is - the index set
 -  indices - index array; must be the array obtained with ISGetTotalIndices()
 
@@ -1546,7 +1546,7 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 
    Not collective.
 
-   Input Parameter:
+   Input Parameters:
 +  is         - the index set
 -  complement - index set of is's nonlocal indices
 

@@ -1294,7 +1294,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec r,TSIFunction f,void *ctx)
    Input Parameter:
 .  ts - the TS context
 
-   Output Parameter:
+   Output Parameters:
 +  r - vector to hold residual (or NULL)
 .  func - the function to compute residual (or NULL)
 -  ctx - the function context (or NULL)
@@ -1326,7 +1326,7 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
    Input Parameter:
 .  ts - the TS context
 
-   Output Parameter:
+   Output Parameters:
 +  r - vector to hold computed right hand side (or NULL)
 .  func - the function to compute right hand side (or NULL)
 -  ctx - the function context (or NULL)
@@ -1488,7 +1488,7 @@ PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
   Input Parameter:
 . ts - the TS context
 
-  Output Parameter:
+  Output Parameters:
 + r - vector to hold residual (or NULL)
 . fun - the function to compute residual (or NULL)
 - ctx - the function context (or NULL)
@@ -1890,7 +1890,7 @@ PetscErrorCode  TS2SetSolution(TS ts,Vec u,Vec v)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Output Parameter:
+   Output Parameters:
 +  u - the vector containing the solution
 -  v - the vector containing the time derivative
 
@@ -2318,7 +2318,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 
   Logically Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +   ts - the time-step context
 -   eftopt - exact final time option
 
@@ -2901,7 +2901,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context obtained from TSCreate()
 -  snes - the nonlinear solver context
 
@@ -3836,7 +3836,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 
    Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context obtained from TSCreate()
 -  u - the solution vector  (can be null if TSSetSolution() was used and TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP) was not used,
                              otherwise must contain the initial conditions and will contain the solution at the final requested time
@@ -4098,7 +4098,7 @@ PetscErrorCode  TSSetTime(TS ts, PetscReal t)
 
    Logically Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +  ts     - The TS context
 -  prefix - The prefix to prepend to all option names
 
@@ -4131,7 +4131,7 @@ PetscErrorCode  TSSetOptionsPrefix(TS ts,const char prefix[])
 
    Logically Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +  ts     - The TS context
 -  prefix - The prefix to prepend to all option names
 
@@ -4347,7 +4347,7 @@ PetscErrorCode  TSGetDM(TS ts,DM *dm)
 
    Logically Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 + snes - nonlinear solver
 . U - the current state at which to evaluate the residual
 - ctx - user context, must be a TS
@@ -4382,12 +4382,12 @@ PetscErrorCode  SNESTSFormFunction(SNES snes,Vec U,Vec F,void *ctx)
 
    Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 + snes - nonlinear solver
 . U - the current state at which to evaluate the residual
 - ctx - user context, must be a TS
 
-   Output Parameter:
+   Output Parameters:
 + A - the Jacobian
 . B - the preconditioning matrix (may be the same as A)
 - flag - indicates any structure change in the matrix
@@ -4597,7 +4597,7 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context
 -  equation_type - see TSEquationType
 
@@ -4808,7 +4808,7 @@ PetscErrorCode TSGetSNESFailures(TS ts,PetscInt *fails)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - TS context
 -  rejects - maximum number of rejected steps, pass -1 for unlimited
 
@@ -4835,7 +4835,7 @@ PetscErrorCode TSSetMaxStepRejections(TS ts,PetscInt rejects)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - TS context
 -  fails - maximum number of failed nonlinear solves, pass -1 for unlimited
 
@@ -4862,7 +4862,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - TS context
 -  err - PETSC_TRUE to error if no step succeeds, PETSC_FALSE to return without failure
 
@@ -6249,7 +6249,7 @@ PetscErrorCode  TSRHSJacobianTestTranspose(TS ts,PetscBool *flg)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  use_splitrhsfunction - PETSC_TRUE indicates that the split RHSFunction will be used
 

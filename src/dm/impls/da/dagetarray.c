@@ -7,7 +7,7 @@
 
    Logically collective on da
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 -  vec - the vector, either a vector the same size as one obtained with DMCreateGlobalVector() or DMCreateLocalVector()
 
@@ -78,7 +78,7 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
 
    Logically collective on da
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
@@ -133,7 +133,7 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
 
    Logically collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 -  vec - the vector, either a vector the same size as one obtained with DMCreateGlobalVector() or DMCreateLocalVector()
 
@@ -209,7 +209,7 @@ PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
 
    Logically collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
@@ -267,7 +267,7 @@ PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
 
    Logically collective
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 -  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
@@ -324,7 +324,7 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
 
    Logically collective
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
@@ -372,7 +372,7 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
 
    Not collective
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 -  vec - the vector, either a vector the same size as one obtained with DMCreateGlobalVector() or DMCreateLocalVector()
 
@@ -443,7 +443,7 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
 
    Not collective
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
@@ -498,7 +498,7 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 -  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
@@ -555,7 +555,7 @@ PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
@@ -603,7 +603,7 @@ PetscErrorCode  DMDAVecRestoreArrayDOFRead(DM da,Vec vec,void *array)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 -  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
@@ -661,7 +661,7 @@ PetscErrorCode  DMDAVecGetArrayDOFWrite(DM da,Vec vec,void *array)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()

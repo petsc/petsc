@@ -551,7 +551,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + q - The original PetscQuadrature
 . numSubelements - The number of subelements the original element is divided into
 . v0 - An array of the initial points for each subelement
@@ -1596,7 +1596,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - number of grid nodes
 -  type - PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA or PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON
 
@@ -2174,7 +2174,7 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weights
@@ -2205,7 +2205,7 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n,PetscReal *nodes,Pe
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 -  weights - the GLL weights
@@ -2302,7 +2302,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n,PetscR
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weightss
@@ -2334,7 +2334,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n,Petsc
 .  nodes - the GLL nodes
 .  weights - the GLL weights
 
-   Output Parameter:
+   Output Parameters:
 .  AA - the stiffness element
 -  AAT - the transpose of AA (pass in NULL if you do not need this array)
 
@@ -2391,7 +2391,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n,PetscRe
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weights
@@ -2424,7 +2424,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n,PetscR
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 -  weights - the GLL weightss
@@ -2468,7 +2468,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n,PetscR
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weights

@@ -285,7 +285,7 @@ M*/
 + ht  - The hash table
 - key - The key
 
-  Output Parameter:
+  Output Parameters:
 + iter - Iterator referencing the value for key
 - found - Boolean indicating whether the key was present
 
@@ -305,7 +305,7 @@ M*/
 + ht  - The hash table
 - key - The key
 
-  Output Parameter:
+  Output Parameters:
 + iter - Iterator referencing the value for key
 - missing - Boolean indicating whether the key was missing
 
@@ -378,7 +378,7 @@ M*/
 . off   - Input offset in array (usually zero)
 - array - Array where to put hash table keys into
 
-  Output Parameter:
+  Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
 - array - Array filled with the hash table keys
 
@@ -399,7 +399,7 @@ M*/
 . off   - Input offset in array (usually zero)
 - array - Array where to put hash table values into
 
-  Output Parameter:
+  Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
 - array - Array filled with the hash table values
 
@@ -421,7 +421,7 @@ M*/
 - karray - Array where to put hash table keys into
 - varray - Array where to put hash table values into
 
-  Output Parameter:
+  Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
 - karray - Array filled with the hash table keys
 - varray - Array filled with the hash table values

@@ -429,7 +429,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   sf - star forest mapping contiguous local indices to (rank, offset)
 -   start - first global index on this process
 
@@ -1015,7 +1015,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
     Input Parameters:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each subdomain (processor)
@@ -1466,7 +1466,7 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
     Input Parameters:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each processor
@@ -1511,7 +1511,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping ma
     Input Parameters:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each subdomain (processor)
@@ -1567,7 +1567,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     Input Parameters:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each processor
@@ -1595,7 +1595,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
     Input Parameters:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nnodes - number of local nodes (same ISLocalToGlobalMappingGetSize())
 .   count - number of neighboring processors per node
 -   indices - indices of processes sharing the node (sorted)
@@ -1660,7 +1660,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
     Input Parameters:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nnodes - number of local nodes
 .   count - number of neighboring processors per node
 -   indices - indices of processes sharing the node (sorted)

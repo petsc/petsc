@@ -1638,7 +1638,7 @@ PETSC_STATIC_INLINE PetscErrorCode SetSubnetIdLookupBT(DM dm,PetscInt v,PetscInt
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + DM - the DMNetwork object
 - overlap - the overlap of partitions, 0 is the default
 

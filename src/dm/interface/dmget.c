@@ -70,7 +70,7 @@ alldone:
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  dm - the dm
 -  g - the local vector
 
@@ -259,7 +259,7 @@ PetscErrorCode  DMClearLocalVectors(DM dm)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  dm - the dm
 -  g - the global vector
 

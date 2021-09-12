@@ -27,7 +27,7 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 /*@
    SNESFASSetGalerkin - Sets coarse problems as formed by projection to the fine problem
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the nonlinear solver context
 -  flg - the status of the galerkin problem
 

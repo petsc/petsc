@@ -18,7 +18,7 @@
 +  s - pointer to string
 -  sp - separator character
 
-   Output Parameter:
+   Output Parameters:
 +   argc - the number of entries in the array
 -   args - an array of the entries with a null at the end
 

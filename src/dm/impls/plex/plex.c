@@ -46,7 +46,7 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 /*@
   DMPlexGetSimplexOrBoxCells - Get the range of cells which are neither prisms nor ghost FV cells
 
-  Input Parameter:
+  Input Parameters:
 + dm     - The DMPlex object
 - height - The cell height in the Plex, 0 is the default
 
@@ -2571,7 +2571,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 + dm - The DMPlex
 - p - The IS of points, which must lie in the chart set with DMPlexSetChart()
 
-  Output Parameter:
+  Output Parameters:
 + pConesSection - PetscSection describing the layout of pCones
 - pCones - An array of points which are on the in-edges for the point set p
 
@@ -2645,7 +2645,7 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
 + dm - The DMPlex
 - points - The IS of points, which must lie in the chart set with DMPlexSetChart()
 
-  Output Parameter:
+  Output Parameters:
 + depth - (optional) Size of the output arrays, equal to DMPlex depth, returned by DMPlexGetDepth()
 . expandedPoints - (optional) An array of index sets with recursively expanded cones
 - sections - (optional) An array of sections which describe mappings from points to their cone points
@@ -2738,7 +2738,7 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *exp
 + dm - The DMPlex
 - points - The IS of points, which must lie in the chart set with DMPlexSetChart()
 
-  Output Parameter:
+  Output Parameters:
 + depth - (optional) Size of the output arrays, equal to DMPlex depth, returned by DMPlexGetDepth()
 . expandedPoints - (optional) An array of recursively expanded cones
 - sections - (optional) An array of sections which describe mappings from points to their cone points
@@ -4710,7 +4710,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm    - The DMPlex object
 - point - The point
 
@@ -4737,7 +4737,7 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm    - The DMPlex object
 - point - The point
 
@@ -4797,7 +4797,7 @@ PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm   - The DMPlex object
 - cell - The cell
 

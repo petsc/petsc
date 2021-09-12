@@ -40,7 +40,7 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
 
     Not collective
 
-    Output Parameter:
+    Output Parameters:
 +   major - the major version (optional, pass NULL if not requested)
 .   minor - the minor version (optional, pass NULL if not requested)
 .   subminor - the subminor version (patch number)  (optional, pass NULL if not requested)

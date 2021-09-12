@@ -905,7 +905,7 @@ PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar coords[], PetscReal R[]
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + coordSize - Length of coordinate array (3x number of points); must be at least 9 (3 points)
 - coords - The interlaced coordinates of each coplanar 3D point
 

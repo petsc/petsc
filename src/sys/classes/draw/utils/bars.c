@@ -85,7 +85,7 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 
    Logically Collective on PetscDrawBar
 
-   Input Parameter:
+   Input Parameters:
 +  bar - The bar graph context.
 .  bins  - number of items
 .  values - values of each item

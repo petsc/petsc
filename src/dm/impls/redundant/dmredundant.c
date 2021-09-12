@@ -279,7 +279,7 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - redundant DM
 .   rank - rank of process to own redundant degrees of freedom
 -   N - total number of redundant degrees of freedom
@@ -413,7 +413,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   comm - the processors that will share the global vector
 .   rank - rank to own the redundant values
 -   N - total number of degrees of freedom

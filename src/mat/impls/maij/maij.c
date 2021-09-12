@@ -64,7 +64,7 @@ PetscErrorCode  MatMAIJGetAIJ(Mat A,Mat *B)
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  A - the MAIJ matrix
 -  dof - the block size for the new matrix
 

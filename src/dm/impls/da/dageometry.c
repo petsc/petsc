@@ -6,7 +6,7 @@
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + da - the distributed array
 - s - A MatStencil giving (i,j,k)
 

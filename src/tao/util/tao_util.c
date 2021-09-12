@@ -374,7 +374,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
 .  T1 - work vector
 -  T2 - work vector
 
-   Output Parameter:
+   Output Parameters:
 +  Da - diagonal perturbation component of the result
 .  Db - row scaling component of the result
 -  Dm - derivative with respect to scaling parameter

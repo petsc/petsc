@@ -552,7 +552,7 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map,PetscInt N,const PetscInt idx
 . leafLocalIndices - leaf local index permutation (NULL if no permutation)
 - leafLocalOffset - offset to be added to leaf local indices
 
-  Output Parameter:
+  Output Parameters:
 + sfA - star forest representing the communication pattern from the layout space to the leaf space (NULL if not needed)
 - sf - star forest representing the communication pattern from the root space to the leaf space
 

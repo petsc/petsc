@@ -44,7 +44,7 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
          cast with a (PetscObject), for example,
          PetscObjectStateSet((PetscObject)mat,state);

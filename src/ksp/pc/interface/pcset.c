@@ -17,7 +17,7 @@ PetscFunctionList PCList = NULL;
 
    Collective on PC
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context.
 -  type - a known method
 

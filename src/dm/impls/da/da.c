@@ -87,7 +87,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + da    - The DMDA
 - bx,by,bz - One of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_PERIODIC
 
@@ -276,7 +276,7 @@ PetscErrorCode  DMDASetNumLocalSubDomains(DM da,PetscInt Nsub)
 
   Collective on DA
 
-  Input Parameter:
+  Input Parameters:
 + da  - The DMDA
 . xo  - The offset in the x direction
 . yo  - The offset in the y direction
@@ -391,7 +391,7 @@ PetscErrorCode  DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, P
 
   Collective on DA
 
-  Input Parameter:
+  Input Parameters:
 + da  - The DMDA
 . xs  - The start of the region in x
 . ys  - The start of the region in y
@@ -431,7 +431,7 @@ PetscErrorCode  DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pet
 
   Logically Collective on da
 
-  Input Parameter:
+  Input Parameters:
 + da    - The DMDA
 - stype - The stencil type, use either DMDA_STENCIL_BOX or DMDA_STENCIL_STAR.
 
@@ -482,7 +482,7 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
 
   Logically Collective on da
 
-  Input Parameter:
+  Input Parameters:
 + da    - The DMDA
 - width - The stencil width
 
@@ -544,7 +544,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
 
   Logically Collective on da
 
-  Input Parameter:
+  Input Parameters:
 + da - The DMDA
 . lx - array containing number of nodes in the X direction on each process, or NULL. If non-null, must be of length da->m
 . ly - array containing number of nodes in the Y direction on each process, or NULL. If non-null, must be of length da->n
@@ -597,7 +597,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
 
    Logically Collective on da
 
-   Input Parameter:
+   Input Parameters:
 +  da - initial distributed array
 -  ctype - DMDA_Q1 and DMDA_Q0 are currently the only supported forms
 
@@ -688,7 +688,7 @@ PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
    Input Parameter:
 .     da - the DMDA object
 
-   Output Parameter:
+   Output Parameters:
 +     lx - ownership along x direction (optional)
 .     ly - ownership along y direction (optional)
 -     lz - ownership along z direction (optional)

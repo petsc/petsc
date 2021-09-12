@@ -72,7 +72,7 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 /*@
     MatGetColumnNorms - Gets the norms of each column of a sparse or dense matrix.
 
-  Input Parameter:
+  Input Parameters:
 +  A - the matrix
 -  type - NORM_2, NORM_1 or NORM_INFINITY
 

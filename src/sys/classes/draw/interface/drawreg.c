@@ -116,7 +116,7 @@ PetscErrorCode  PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char 
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - MPI communicator
 .  display - X display when using X windows
 .  title - optional title added to top of window
@@ -197,7 +197,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 
    Collective on PetscDraw
 
-   Input Parameter:
+   Input Parameters:
 +  draw      - the graphics context
 -  type      - for example, PETSC_DRAW_X
 
@@ -336,7 +336,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 
    Logically Collective on PetscDraw
 
-   Input Parameter:
+   Input Parameters:
 +  draw - the draw context
 -  prefix - the prefix to prepend to all option names
 
