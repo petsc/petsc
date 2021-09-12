@@ -2415,11 +2415,6 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   if (!flg) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Not for B of type %s",((PetscObject)B)->type_name);
   a = (Mat_SeqAIJ*)A->data;
   b = (Mat_SeqAIJ*)B->data;
-  Acusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
-  Bcusp = (Mat_SeqAIJCUSPARSE*)B->spptr;
-  if (Acusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
-  if (Bcusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
-
   /* product data */
   ierr = PetscNew(&mmdata);CHKERRQ(ierr);
   C->product->data    = mmdata;
@@ -2427,6 +2422,11 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
 
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   ierr = MatSeqAIJCUSPARSECopyToGPU(B);CHKERRQ(ierr);
+  Acusp = (Mat_SeqAIJCUSPARSE*)A->spptr; /* Access spptr after MatSeqAIJCUSPARSECopyToGPU, not before */
+  Bcusp = (Mat_SeqAIJCUSPARSE*)B->spptr;
+  if (Acusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
+  if (Bcusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
+
   ptype = product->type;
   if (A->symmetric && ptype == MATPRODUCT_AtB) ptype = MATPRODUCT_AB;
   if (B->symmetric && ptype == MATPRODUCT_ABt) ptype = MATPRODUCT_AB;
