@@ -282,7 +282,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
       ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     }
     /* Test for convergence */
-    if (normschedule == SNES_NORM_ALWAYS) ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    if (normschedule == SNES_NORM_ALWAYS) {ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);}
     if (snes->reason) PetscFunctionReturn(0);
     /* Call general purpose update function */
     if (snes->ops->update) {

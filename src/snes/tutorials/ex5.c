@@ -702,7 +702,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      the array.
      */
     ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-    if (B) ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
+    if (B) {ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);}
     /*
      Get local grid boundaries (for 2-dimensional DMDA):
      xs, ys   - starting grid indices (no ghost points)

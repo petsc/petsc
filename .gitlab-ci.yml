@@ -623,6 +623,7 @@ linux-pkgs-cxx-mlib:
   variables:
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -checkstack
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
+    LOAD_MODULES: gcc/11.1.0-5ikoznk cmake/3.20.5-yjp2hz6
 
 linux-pkgs-valgrind:
   extends:

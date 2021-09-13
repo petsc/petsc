@@ -131,7 +131,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
     } else if (ngmres->restart_type == SNES_NGMRES_RESTART_PERIODIC) {
       ierr = SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,NULL,NULL,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm);CHKERRQ(ierr);
       if (k_restart > ngmres->restart_periodic) {
-        if (ngmres->monitor) ierr = PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %D iterations\n",k_restart);CHKERRQ(ierr);
+        if (ngmres->monitor) {ierr = PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %D iterations\n",k_restart);CHKERRQ(ierr);}
         restart_count = ngmres->restart_it;
       }
     } else {

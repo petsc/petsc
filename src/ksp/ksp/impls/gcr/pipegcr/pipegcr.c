@@ -710,9 +710,9 @@ static PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsOb
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP PIPEGCR options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_pipegcr_mmax","Number of search directions to storue","KSPPIPEGCRSetMmax",pipegcr->mmax,&mmax,&flg);CHKERRQ(ierr);
-  if (flg) ierr = KSPPIPEGCRSetMmax(ksp,mmax);CHKERRQ(ierr);
+  if (flg) {ierr = KSPPIPEGCRSetMmax(ksp,mmax);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ksp_pipegcr_nprealloc","Number of directions to preallocate","KSPPIPEGCRSetNprealloc",pipegcr->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEGCRSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
+  if (flg) {ierr = KSPPIPEGCRSetNprealloc(ksp,nprealloc);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ksp_pipegcr_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)pipegcr->truncstrat,(PetscEnum*)&pipegcr->truncstrat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_pipegcr_unroll_w","Use unrolling of w","KSPPIPEGCRSetUnrollW",pipegcr->unroll_w,&pipegcr->unroll_w,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);

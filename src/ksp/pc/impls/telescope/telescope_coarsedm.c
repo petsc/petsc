@@ -404,7 +404,7 @@ PetscErrorCode PCApplyRichardson_Telescope_CoarseDM(PC pc,Vec x,Vec y,Vec w,Pets
 
   if (PCTelescope_isActiveRank(sred)) {
     ierr = KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value);CHKERRQ(ierr);
-    if (!zeroguess) ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
+    if (!zeroguess) {ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);}
   }
 
   ierr = PCApply_Telescope_CoarseDM(pc,x,y);CHKERRQ(ierr);
