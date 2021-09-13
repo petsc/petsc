@@ -39,7 +39,7 @@
    the code.
 
    Finally, care must be taken when steepest descent directions are used.
-   For example, when the Newton direction is not not satisfy a sufficient
+   For example, when the Newton direction does not satisfy a sufficient
    descent criteria.  The code will apply the same test regardless of
    the direction.  This type of search may not be appropriate for all
    algorithms.  For example, when a gradient direction is used, we may
