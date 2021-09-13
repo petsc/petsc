@@ -675,6 +675,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   ierr = DMGetApplicationContext(adaptor->idm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(adaptor->idm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &numFields);CHKERRQ(ierr);
+  if (numFields == 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fields is zero!");
 
   /* Adapt until nothing changes */
   /* Adapt for a specified number of iterates */
