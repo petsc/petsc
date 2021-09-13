@@ -5,9 +5,10 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.minversion       = '6.1.1'
-    self.version          = '6.4.0'
+    self.version          = '7.1.0'
     self.versionname      = 'SUPERLU_DIST_MAJOR_VERSION.SUPERLU_DIST_MINOR_VERSION.SUPERLU_DIST_PATCH_VERSION'
-    self.gitcommit        = 'v'+self.version
+    #self.gitcommit        = 'v'+self.version
+    self.gitcommit        = 'e92107c6b779625a38734414ae164bf99fa5c750' # maint Sep 23, 2021 (pre-7.1.0)
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = ['set_default_options_dist']
     self.includes         = ['superlu_ddefs.h']
@@ -34,6 +35,7 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
+    if self.versionToTuple(self.cmake.foundversion) < (3,18,1): raise RuntimeError("Requires cmake version 3.18.1 or higher: use --download-cmake")
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     if self.openmp.found:
       self.usesopenmp = 'yes'
@@ -59,7 +61,9 @@ class Configure(config.package.CMakePackage):
     if self.getDefaultIndexSize() == 64:
       args.append('-DXSDK_INDEX_SIZE=64')
 
-    if not hasattr(self.compilers, 'FC'):
+    if hasattr(self.compilers, 'FC'):
+      args.append('-DXSDK_ENABLE_Fortran=ON')
+    else:
       args.append('-DXSDK_ENABLE_Fortran=OFF')
 
     args.append('-Denable_tests=0')
@@ -68,17 +72,6 @@ class Configure(config.package.CMakePackage):
     args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
     args.append('-DMPI_C_HEADER_DIR:STRING=""')
     args.append('-DMPI_C_LIBRARIES:STRING=""')
-
-    # Add in fortran mangling flag
-    if self.blasLapack.mangling == 'underscore':
-      mangledef = '-DAdd_'
-    elif self.blasLapack.mangling == 'caps':
-      mangledef = '-DUpCase'
-    else:
-      mangledef = '-DNoChange'
-    for place,item in enumerate(args):
-      if item.find('CMAKE_C_FLAGS') >= 0 or item.find('CMAKE_CXX_FLAGS') >= 0:
-        args[place]=item[:-1]+' '+mangledef+'"'
     return args
 
   def configureLibrary(self):
