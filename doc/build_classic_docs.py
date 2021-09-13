@@ -83,13 +83,15 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch):
         subprocess.run(command, cwd=petsc_dir, check=True)
 
 
-def copy_classic_docs(outdir):
-    subdirs = [
+def classic_docs_subdirs():
+    return [
             os.path.join('docs', 'manualpages'),
             'include',
             'src',
             ]
-    for subdir in subdirs:
+
+def copy_classic_docs(outdir):
+    for subdir in classic_docs_subdirs():
         source_dir = os.path.join(CLASSIC_DOCS_LOC, subdir)
         target_dir = os.path.join(outdir, subdir)
         print('============================================')
