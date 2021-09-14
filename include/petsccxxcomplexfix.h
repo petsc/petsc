@@ -40,10 +40,6 @@
      files to prevent these methods from being provided.
 */
 
-#if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__NEC__)
-#pragma GCC system_header
-#endif
-
 #define PETSC_CXX_COMPLEX_FIX(Type) \
 static inline PetscComplex operator+(const PetscComplex& lhs, const Type& rhs) { return const_cast<PetscComplex&>(lhs) + PetscReal(rhs); } \
 static inline PetscComplex operator+(const Type& lhs, const PetscComplex& rhs) { return PetscReal(lhs) + const_cast<PetscComplex&>(rhs); } \
