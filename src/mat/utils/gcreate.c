@@ -259,7 +259,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 
    Collective on Mat
 
-   Input Arguments:
+   Input Parameters:
 +  A - matrix being preallocated
 .  bs - block size
 .  dnnz - number of nonzero column blocks per block row of diagonal part of parallel matrix
@@ -532,7 +532,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt c
 
    Collective on Mat
 
-   Input Arguments:
+   Input Parameters:
 +  A - matrix being preallocated
 .  ncoo - number of entries in the locally owned part of the parallel matrix
 .  coo_i - row indices
@@ -579,7 +579,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
 
    Collective on Mat
 
-   Input Arguments:
+   Input Parameters:
 +  A - matrix being preallocated
 .  coo_v - the matrix values (can be NULL)
 -  imode - the insert mode

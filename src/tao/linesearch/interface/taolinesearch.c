@@ -298,18 +298,18 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 
   Input Parameters:
 + ls - the Tao context
-. x - The current solution (on output x contains the new solution determined by the line search)
-. f - objective function value at current solution (on output contains the objective function value at new solution)
-. g - gradient evaluated at x (on output contains the gradient at new solution)
 - s - search direction
 
+  Input/Output Parameters:
++ x - The current solution (on output x contains the new solution determined by the line search)
+. f - objective function value at current solution (on output contains the objective function value at new solution)
+- g - gradient evaluated at x (on output contains the gradient at new solution)
+
   Output Parameters:
-+ x - new solution
-. f - objective function value at x
-. g - gradient vector at x
-. steplength - scalar multiplier of s used ( x = x0 + steplength * x)
++ steplength - scalar multiplier of s used ( x = x0 + steplength * x)
 - reason - reason why the line-search stopped
 
+  Notes:
   reason will be set to one of:
 
 + TAOLINESEARCH_FAILED_ASCENT - initial line search step * g is not descent direction
@@ -323,11 +323,9 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 . TAOLINESEARCH_HALTED_OTHER - any other reason
 - TAOLINESEARCH_SUCCESS - successful line search
 
-  Note:
   The algorithm developer must set up the TaoLineSearch with calls to
   TaoLineSearchSetObjectiveRoutine() and TaoLineSearchSetGradientRoutine(), TaoLineSearchSetObjectiveAndGradientRoutine(), or TaoLineSearchUseTaoRoutines()
 
-  Note:
   You may or may not need to follow this with a call to
   TaoAddLineSearchCounts(), depending on whether you want these
   evaluations to count toward the total function/gradient evaluations.
@@ -664,7 +662,7 @@ PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch ls, PetscBool *flg)
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective function evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -707,7 +705,7 @@ PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -749,7 +747,7 @@ PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode(
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective and gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -795,7 +793,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective and gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -843,7 +841,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErr
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 - ts - the Tao context with defined objective/gradient evaluation routines
 
@@ -923,7 +921,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
 + ls - the TaoLineSearch context
 - x - input vector
 
-  Output Parameter:
+  Output Parameters:
 + f - Objective value at X
 - g - Gradient vector at X
 
@@ -1029,7 +1027,7 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
 + ls - the TaoLineSearch context
 - x - input vector
 
-  Output Parameter:
+  Output Parameters:
 + f - Objective value at X
 - gts - inner product of gradient and step direction at X
 
@@ -1069,7 +1067,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   Input Parameter:
 . ls - the TaoLineSearch context
 
-  Output Parameter:
+  Output Parameters:
 + x - the new solution
 . f - the objective function value at x
 . g - the gradient at x

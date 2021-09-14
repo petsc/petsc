@@ -267,7 +267,7 @@ PetscErrorCode  PetscDSViewFromOptions(PetscDS A,PetscObject obj,const char name
 
   Collective on prob
 
-  Input Parameter:
+  Input Parameters:
 + prob - the PetscDS object to view
 - v  - the viewer
 
@@ -1843,11 +1843,11 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g,
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + ds - The PetscDS object
 - f  - The field number
 
-  Output Argument:
+  Output Parameter:
 . r    - Riemann solver
 
   Calling sequence for r:
@@ -1890,7 +1890,7 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f,
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + ds - The PetscDS object
 . f  - The field number
 - r  - Riemann solver
@@ -1936,7 +1936,7 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f,
 + ds - The PetscDS
 - f  - The field number
 
-  Output Parameters:
+  Output Parameter:
 . update - update function
 
   Note: The calling sequence for the callback update is given by:
@@ -2588,7 +2588,7 @@ PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
 + prob - The PetscDS
 - f    - The test field number
 
-  Output Parameter:
+  Output Parameters:
 + exactSol - exact solution for the test field
 - exactCtx - exact solution context
 
@@ -2665,7 +2665,7 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
 + prob - The PetscDS
 - f    - The test field number
 
-  Output Parameter:
+  Output Parameters:
 + exactSol - time derivative of the exact solution for the test field
 - exactCtx - time derivative of the exact solution context
 
@@ -3645,7 +3645,7 @@ PetscErrorCode PetscDSDestroyBoundary(PetscDS ds)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + prob - The PetscDS object
 . numFields - Number of new fields
 - fields - Old field number for each new field
@@ -3685,7 +3685,7 @@ PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, co
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + prob - The PetscDS object
 . numFields - Number of new fields
 - fields - Old field number for each new field

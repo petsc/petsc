@@ -12,11 +12,17 @@
 
    Input Parameters:
 +  da - the distributed array
--  x,y,z - the physical coordinates
+.  x  - the first physical coordinate
+.  y  - the second physical coordinate
+-  z  - the third physical coordinate
 
    Output Parameters:
-+   II, JJ, KK - the logical coordinate (-1 on processes that do not contain that point)
--   X, Y, Z, - (optional) the coordinates of the located grid point
++  II - the first logical coordinate (-1 on processes that do not contain that point)
+.  JJ - the second logical coordinate (-1 on processes that do not contain that point)
+.  KK - the third logical coordinate (-1 on processes that do not contain that point)
+.  X  - (optional) the first coordinate of the located grid point
+.  Y  - (optional) the second coordinate of the located grid point
+-  Z  - (optional) the third coordinate of the located grid point
 
    Level: advanced
 
@@ -81,7 +87,6 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
 
    Input Parameters:
 +  da - the distributed array
-.  vec - the vector
 .  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 -  gp - global grid point number in this direction
 
@@ -174,7 +179,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
 .  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 -  gp - global grid point number in this direction
 
-   Output Parameters:
+   Output Parameter:
 .  comm - new communicator
 
    Level: advanced
@@ -248,7 +253,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
 +  da - the distributed array
 -  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 
-   Output Parameters:
+   Output Parameter:
 .  subcomm - new communicator
 
    Level: advanced

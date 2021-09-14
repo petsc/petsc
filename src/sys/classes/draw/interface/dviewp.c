@@ -11,10 +11,15 @@
    Collective on PetscDraw
 
    Input Parameters:
-+  xl,yl,xr,yr - upper right and lower left corners of subwindow
-                 These numbers must always be between 0.0 and 1.0.
-                 Lower left corner is (0,0).
++  xl - the horizontal coordinate of the lower left corner of the subwindow.
+.  yl - the vertical coordinate of the lower left corner of the subwindow.
+.  xr - the horizontal coordinate of the upper right corner of the subwindow.
+.  yr - the vertical coordinate of the upper right corner of the subwindow.
 -  draw - the drawing context
+
+   Notes:
+   These numbers must always be between 0.0 and 1.0.
+   Lower left corner is (0,0).
 
    Level: advanced
 
@@ -43,10 +48,15 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
    Input Parameter:
 .  draw - the drawing context
 
-   Output Parameter:
-.  xl,yl,xr,yr - upper right and lower left corners of subwindow
-                 These numbers must always be between 0.0 and 1.0.
-                 Lower left corner is (0,0).
+   Output Parameters:
++  xl - the horizontal coordinate of the lower left corner of the subwindow.
+.  yl - the vertical coordinate of the lower left corner of the subwindow.
+.  xr - the horizontal coordinate of the upper right corner of the subwindow.
+-  yr - the vertical coordinate of the upper right corner of the subwindow.
+
+   Notes:
+   These numbers must always be between 0.0 and 1.0.
+   Lower left corner is (0,0).
 
    Level: advanced
 
@@ -317,7 +327,7 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 
    Logically Collective on PetscDraw inside PetscDrawViewPorts
 
-   Input Parameter:
+   Input Parameters:
 +  ports - the PetscDrawViewPorts object
 -  port - the port number, from 0 to nports-1
 

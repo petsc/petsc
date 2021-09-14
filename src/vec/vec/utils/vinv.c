@@ -10,7 +10,7 @@
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  s - value to set for each entry in that subvector
@@ -55,7 +55,7 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  scale - value to multiply each subvector entry by
@@ -100,7 +100,7 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
@@ -175,11 +175,11 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  start - starting point of the subvector (defined by a stride)
 
-   Output Parameter:
+   Output Parameters:
 +  idex - the location where the maximum occurred  (pass NULL if not required)
 -  nrm - the maximum value in the subvector
 
@@ -250,11 +250,11 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  start - starting point of the subvector (defined by a stride)
 
-   Output Parameter:
+   Output Parameters:
 +  idex - the location where the minimum occurred. (pass NULL if not required)
 -  nrm - the minimum value in the subvector
 
@@ -327,7 +327,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  scales - values to multiply each subvector entry by
 
@@ -370,7 +370,7 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
 
@@ -454,7 +454,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
    Input Parameter:
 .  v - the vector
 
-   Output Parameter:
+   Output Parameters:
 +  index - the location where the maximum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the maximum values of each subvector
@@ -514,7 +514,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
    Input Parameter:
 .  v - the vector
 
-   Output Parameter:
+   Output Parameters:
 +  idex - the location where the minimum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the minimums of each subvector
@@ -572,7 +572,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
@@ -670,7 +670,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  s - the location where the subvectors are stored
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
@@ -763,7 +763,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
@@ -807,7 +807,7 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  s - the single-component vector
 .  start - starting point of the subvector (defined by a stride)
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
@@ -849,7 +849,7 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  nidx - the number of indices
 .  idxv - the indices of the components 0 <= idxv[0] ...idxv[nidx-1] < bs(v), they need not be sorted
@@ -890,7 +890,7 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  s - the smaller-component vector
 .  nidx - the number of indices in idx
 .  idxs - the indices of the components in the smaller-component vector, 0 <= idxs[0] ...idxs[nidx-1] < bs(s) they need not be sorted, may be null if nidx == bs(s) or is PETSC_DETERMINE
@@ -1252,11 +1252,11 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 
   Collective on Vec
 
-  Input Parameter:
+  Input Parameters:
 + s - first vector
 - t - second vector
 
-  Output Parameter:
+  Output Parameters:
 + dp - s'conj(t)
 - nm - t'conj(t)
 
@@ -1414,9 +1414,6 @@ PetscErrorCode  VecRealPart(Vec v)
    Input Parameters:
 +  v - the vector
 -  shift - the shift
-
-   Output Parameter:
-.  v - the shifted vector
 
    Level: intermediate
 

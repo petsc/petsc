@@ -1029,7 +1029,7 @@ PetscErrorCode  ISDestroy(IS *is)
 
    Collective on IS
 
-   Input Parameter:
+   Input Parameters:
 +  is - the index set
 -  nlocal - number of indices on this processor in result (ignored for 1 proccessor) or
             use PETSC_DECIDE
@@ -1125,10 +1125,10 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  is - the index set
 
-   Output Arguments:
+   Output Parameter:
 .  map - the layout
 
    Level: developer
@@ -1204,7 +1204,7 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
    Input Parameter:
 .  is - the index set
 
-   Output Parameter:
+   Output Parameters:
 +   min - the minimum value
 -   max - the maximum value
 
@@ -1230,7 +1230,7 @@ PetscErrorCode  ISGetMinMax(IS is,PetscInt *min,PetscInt *max)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + is - the index set
 - key - the search key
 
@@ -1400,7 +1400,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
 
    Not Collective.
 
-   Input Parameter:
+   Input Parameters:
 +  is - the index set
 -  indices - index array; must be the array obtained with ISGetTotalIndices()
 
@@ -1474,11 +1474,11 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
 }
 
 /*@C
-   ISRestoreTotalIndices - Restore the index array obtained with ISGetNonlocalIndices().
+   ISRestoreNonlocalIndices - Restore the index array obtained with ISGetNonlocalIndices().
 
    Not Collective.
 
-   Input Parameter:
+   Input Parameters:
 +  is - the index set
 -  indices - index array; must be the array obtained with ISGetNonlocalIndices()
 
@@ -1546,7 +1546,7 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 
    Not collective.
 
-   Input Parameter:
+   Input Parameters:
 +  is         - the index set
 -  complement - index set of is's nonlocal indices
 
@@ -1826,12 +1826,12 @@ PetscErrorCode  ISCopy(IS is,IS isy)
 
    Collective on IS
 
-   Input Arguments:
+   Input Parameters:
 + is - index set
 . comm - communicator for new index set
 - mode - copy semantics, PETSC_USE_POINTER for no-copy if possible, otherwise PETSC_COPY_VALUES
 
-   Output Arguments:
+   Output Parameter:
 . newis - new IS on comm
 
    Level: advanced
@@ -1867,7 +1867,7 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 
    Logicall Collective on IS
 
-   Input Arguments:
+   Input Parameters:
 + is - index set
 - bs - block size
 

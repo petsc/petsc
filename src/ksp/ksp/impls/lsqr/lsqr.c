@@ -354,7 +354,7 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ksp   - iterative context
 
    Output Parameters:

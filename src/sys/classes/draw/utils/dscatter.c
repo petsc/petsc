@@ -91,7 +91,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 
    Logically Collective on PetscDrawSP
 
-   Input Parameter:
+   Input Parameters:
 +  sp - the line graph context.
 -  dim - the number of curves.
 
@@ -286,7 +286,7 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 
    Collective on PetscDrawSP
 
-   Input Parameter:
+   Input Parameters:
 +  sp - the line graph context
 -  clear - clear the window before drawing the new plot
 

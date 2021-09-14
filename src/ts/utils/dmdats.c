@@ -228,7 +228,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to associate callback with
 .  imode - insert mode for the residual
 .  func - local residual evaluation
@@ -270,7 +270,7 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctio
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm    - DM to associate callback with
 .  func  - local RHS Jacobian evaluation routine
 -  ctx   - optional context for local jacobian evaluation
@@ -311,7 +311,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm   - DM to associate callback with
 .  func - local residual evaluation
 -  ctx  - optional context for local residual evaluation
@@ -350,7 +350,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLoc
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm   - DM to associate callback with
 .  func - local residual evaluation
 -  ctx   - optional context for local residual evaluation

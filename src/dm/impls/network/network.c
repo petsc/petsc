@@ -48,7 +48,7 @@ PetscErrorCode DMNetworkGetPlex(DM dm,DM *plexdm)
 
   Not collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the dm object
 
   Output Parameters:
@@ -875,7 +875,7 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm,PetscInt anetnum,PetscInt bnetnu
 
   Not collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the DM object
 
   Output Parameters:
@@ -974,7 +974,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,Pet
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the DMNetwork object
 
   Output Parameters:
@@ -1000,7 +1000,7 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the DMNetwork object
 
   Output Parameters:
@@ -1638,7 +1638,7 @@ PETSC_STATIC_INLINE PetscErrorCode SetSubnetIdLookupBT(DM dm,PetscInt v,PetscInt
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + DM - the DMNetwork object
 - overlap - the overlap of partitions, 0 is the default
 
@@ -1856,7 +1856,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
 + mainSF - the original SF structure
 - map - a ISLocalToGlobal mapping that contains the subset of points
 
-  Output Parameters:
+  Output Parameter:
 . subSF - a subset of the mainSF for the desired subset.
 
   Level: intermediate

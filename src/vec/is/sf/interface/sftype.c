@@ -33,10 +33,10 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
 /*
   Unwrap an MPI datatype recursively in case it is dupped or MPI_Type_contiguous(1,...)'ed from another type.
 
-   Input Arguments:
-+  a  - the datatype to be unwrapped
+   Input Parameter:
+.  a  - the datatype to be unwrapped
 
-   Output Arguments:
+   Output Parameters:
 + atype - the unwrapped datatype, which is either equal(=) to a or equivalent to a.
 - flg   - true if atype != a, which implies caller should MPIPetsc_Type_free(atype) after use. Note atype might be MPI builtin.
 */

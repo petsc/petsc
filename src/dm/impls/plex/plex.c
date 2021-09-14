@@ -46,7 +46,7 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 /*@
   DMPlexGetSimplexOrBoxCells - Get the range of cells which are neither prisms nor ghost FV cells
 
-  Input Parameter:
+  Input Parameters:
 + dm     - The DMPlex object
 - height - The cell height in the Plex, 0 is the default
 
@@ -2571,7 +2571,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 + dm - The DMPlex
 - p - The IS of points, which must lie in the chart set with DMPlexSetChart()
 
-  Output Parameter:
+  Output Parameters:
 + pConesSection - PetscSection describing the layout of pCones
 - pCones - An array of points which are on the in-edges for the point set p
 
@@ -2645,7 +2645,7 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
 + dm - The DMPlex
 - points - The IS of points, which must lie in the chart set with DMPlexSetChart()
 
-  Output Parameter:
+  Output Parameters:
 + depth - (optional) Size of the output arrays, equal to DMPlex depth, returned by DMPlexGetDepth()
 . expandedPoints - (optional) An array of index sets with recursively expanded cones
 - sections - (optional) An array of sections which describe mappings from points to their cone points
@@ -2738,7 +2738,7 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *exp
 + dm - The DMPlex
 - points - The IS of points, which must lie in the chart set with DMPlexSetChart()
 
-  Output Parameter:
+  Output Parameters:
 + depth - (optional) Size of the output arrays, equal to DMPlex depth, returned by DMPlexGetDepth()
 . expandedPoints - (optional) An array of recursively expanded cones
 - sections - (optional) An array of sections which describe mappings from points to their cone points
@@ -3441,12 +3441,14 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   Input Parameters:
 + dm      - The DMPlex
 . p       - The mesh point
-. useCone - PETSC_TRUE for the closure, otherwise return the star
-- points  - If points is NULL on input, internal storage will be returned, otherwise the provided array is used
+- useCone - PETSC_TRUE for the closure, otherwise return the star
 
-  Output Parameters:
-+ numPoints - The number of points in the closure, so points[] is of size 2*numPoints
-- points    - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
+  Input/Output Parameter:
+. points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...];
+           if NULL on input, internal storage will be returned, otherwise the provided array is used
+
+  Output Parameter:
+. numPoints - The number of points in the closure, so points[] is of size 2*numPoints
 
   Note:
   If using internal storage (points is NULL on input), each call overwrites the last output.
@@ -4710,7 +4712,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm    - The DMPlex object
 - point - The point
 
@@ -4737,7 +4739,7 @@ PetscErrorCode DMPlexGetPointDepth(DM dm, PetscInt point, PetscInt *depth)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm    - The DMPlex object
 - point - The point
 
@@ -4797,7 +4799,7 @@ PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm   - The DMPlex object
 - cell - The cell
 
@@ -5582,13 +5584,12 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, Pets
 + dm - The DM
 . section - The section describing the layout in v, or NULL to use the default section
 . v - The local vector
-. point - The point in the DM
-. csize - The size of the input values array, or NULL
-- values - An array to use for the values, or NULL to have it allocated automatically
+- point - The point in the DM
 
-  Output Parameters:
-+ csize - The number of values in the closure
-- values - The array of values. If the user provided NULL, it is a borrowed array and should not be freed
+  Input/Output Parameters:
++ csize  - The size of the input values array, or NULL; on output the number of values in the closure
+- values - An array to use for the values, or NULL to have it allocated automatically;
+           if the user provided NULL, it is a borrowed array and should not be freed
 
 $ Note that DMPlexVecGetClosure/DMPlexVecRestoreClosure only allocates the values array if it set to NULL in the
 $ calling function. This is because DMPlexVecGetClosure() is typically called in the inner loop of a Vec or Mat
@@ -9207,7 +9208,7 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 
   not collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - The DMPlex object
 
   Output Parameters:

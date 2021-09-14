@@ -97,7 +97,7 @@ PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   g - the global vector
 -   l - the local vector
 
@@ -136,7 +136,7 @@ PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
 
     Logically Collective
 
-    Input Parameter:
+    Input Parameters:
 +   g - the global vector
 -   l - the local (ghosted) representation
 

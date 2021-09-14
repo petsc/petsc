@@ -128,7 +128,7 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  obj - any PETSc object where we are changing the tab
 .  oldobj - the object providing the tab
 -  tab - the increment that is added to the old objects tab

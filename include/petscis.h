@@ -302,7 +302,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
 +    map   - the layout
 -    idx   - global index to find the owner of
 
-   Output Parameter:
+   Output Parameters:
 +    owner - the owning rank
 -    lidx  - local index used by the owner for idx
 

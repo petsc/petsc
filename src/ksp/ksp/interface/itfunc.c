@@ -141,12 +141,14 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
    Input Parameters:
 +  ksp   - iterative context obtained from KSPCreate()
 .  ritz  - PETSC_TRUE or PETSC_FALSE for ritz pairs or harmonic Ritz pairs, respectively
-.  small - PETSC_TRUE or PETSC_FALSE for smallest or largest (harmonic) Ritz values, respectively
--  nrit  - number of (harmonic) Ritz pairs to compute
+-  small - PETSC_TRUE or PETSC_FALSE for smallest or largest (harmonic) Ritz values, respectively
+
+   Input/Output Parameter:
+.  nrit  - number of (harmonic) Ritz pairs to compute; on output,
+           actual number of computed (harmonic) Ritz pairs
 
    Output Parameters:
-+  nrit  - actual number of computed (harmonic) Ritz pairs
-.  S     - multidimensional vector with Ritz vectors
++  S     - multidimensional vector with Ritz vectors
 .  tetar - real part of the Ritz values
 -  tetai - imaginary part of the Ritz values
 
@@ -2533,7 +2535,7 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
    Input Parameter:
 .   ksp - iterative context obtained from KSPCreate()
 
-   Output Parameter:
+   Output Parameters:
 +  converge - pointer to convergence test function
 .  cctx    - context for private data for the convergence routine (may be null)
 -  destroy - a routine for destroying the context (may be null)
@@ -2569,7 +2571,7 @@ PetscErrorCode  KSPGetConvergenceTest(KSP ksp,PetscErrorCode (**converge)(KSP,Pe
    Input Parameter:
 .   ksp - iterative context obtained from KSPCreate()
 
-   Output Parameter:
+   Output Parameters:
 +  converge - pointer to convergence test function
 .  cctx    - context for private data for the convergence routine
 -  destroy - a routine for destroying the context
@@ -2725,7 +2727,7 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
    Logically Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the KSP context
 -  scale - PETSC_TRUE or PETSC_FALSE
 
@@ -2797,7 +2799,7 @@ PetscErrorCode  KSPGetDiagonalScale(KSP ksp,PetscBool  *scale)
 
    Logically Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the KSP context
 -  fix - PETSC_TRUE to scale back after the system solve, PETSC_FALSE to not
          rescale (default)
@@ -2862,7 +2864,7 @@ PetscErrorCode  KSPGetDiagonalScaleFix(KSP ksp,PetscBool  *fix)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - the KSP context
 .  func - function to compute the operators
 -  ctx - optional context
@@ -2903,7 +2905,7 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - the KSP context
 .  func - function to compute the right hand side
 -  ctx - optional context
@@ -2939,7 +2941,7 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),vo
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - the KSP context
 .  func - function to compute the initial guess
 -  ctx - optional context

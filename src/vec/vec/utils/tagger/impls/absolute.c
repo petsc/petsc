@@ -26,7 +26,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger,Vec vec,Pe
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + tagger - the VecTagger context
 - box - the box: a blocksize array of VecTaggerBox boxes
 
@@ -48,10 +48,10 @@ PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger,VecTaggerBox *box)
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameter:
 . tagger - the VecTagger context
 
-  Output Arguments:
+  Output Parameter:
 . box - the box: a blocksize array of VecTaggerBox boxes
 
   Level: advanced

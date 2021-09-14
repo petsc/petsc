@@ -103,10 +103,10 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the factored matrix
 
-   Output Parameter:
+   Output Parameters:
 +  pivot - the pivot value computed
 -  row - the row that the zero pivot occurred. Note that this row must be interpreted carefully due to row reorderings and which processes
          the share the matrix
@@ -714,7 +714,7 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the Mat context
 -  prefix - the prefix to prepend to all option names
 
@@ -2096,7 +2096,7 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Output Parameters:
@@ -2150,7 +2150,7 @@ PetscErrorCode MatSetLayouts(Mat A,PetscLayout rmap,PetscLayout cmap)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Output Parameters:
@@ -2875,7 +2875,7 @@ PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
 
    Collective on Mat if MAT_GLOBAL_MAX or MAT_GLOBAL_SUM is used as the flag
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -4118,7 +4118,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 .  its - the number of iterations
 -  lits - the number of local iterations
 
-   Output Parameters:
+   Output Parameter:
 .  x - the solution (can contain an initial guess, use option SOR_ZERO_INITIAL_GUESS to indicate no guess)
 
    SOR Flags:
@@ -4938,10 +4938,10 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (optional)
 
@@ -4987,10 +4987,10 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the minimums
 -  idx - the indices of the column found for each row (or NULL if not needed)
 
@@ -5037,10 +5037,10 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (optional)
 
@@ -5085,10 +5085,10 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (or NULL if not needed)
 
@@ -5214,7 +5214,7 @@ PetscErrorCode MatTranspose(Mat mat,MatReuse reuse,Mat *B)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  B - the matrix to test against, this can equal the first parameter
 
@@ -5290,7 +5290,7 @@ PetscErrorCode MatHermitianTranspose(Mat mat,MatReuse reuse,Mat *B)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  B - the matrix to test against, this can equal the first parameter
 
@@ -5507,7 +5507,7 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
 +  mat - the matrix
 -  type - the type of norm, NORM_1, NORM_FROBENIUS, NORM_INFINITY
 
-   Output Parameters:
+   Output Parameter:
 .  nrm - the resulting norm
 
    Level: intermediate
@@ -6690,7 +6690,7 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6720,7 +6720,7 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective, unless matrix has not been allocated, then collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6756,7 +6756,7 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6849,10 +6849,10 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  A - matrix of type Elemental or ScaLAPACK
 
-   Output Arguments:
+   Output Parameters:
 +  rows - rows in which this process owns elements
 -  cols - columns in which this process owns elements
 
@@ -7412,7 +7412,7 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
    Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  rbs - row block size
 -  cbs - column block size
 
@@ -7508,7 +7508,7 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat,PetscInt nblocks,PetscInt *bsize
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -7831,7 +7831,7 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
     Input Parameters:
 +   mat - the matrix
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
--   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
+.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
 -   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is
@@ -8952,7 +8952,7 @@ PetscErrorCode MatSolves(Mat mat,Vecs b,Vecs x)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact transpose)
 
@@ -9004,7 +9004,7 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact Hermitian)
 
@@ -9186,7 +9186,7 @@ PetscErrorCode MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,Petsc
    Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +   right - (optional) vector that the matrix can be multiplied against
 -   left - (optional) vector that the matrix vector product can be stored in
 
@@ -10108,12 +10108,12 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  mat - matrix to extract local submatrix from
 .  isrow - local row indices for submatrix
 -  iscol - local column indices for submatrix
 
-   Output Arguments:
+   Output Parameter:
 .  submat - the submatrix
 
    Level: intermediate
@@ -10157,11 +10157,11 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
 
    Not Collective
 
-   Input Arguments:
-   mat - matrix to extract local submatrix from
-   isrow - local row indices for submatrix
-   iscol - local column indices for submatrix
-   submat - the submatrix
+   Input Parameters:
++  mat - matrix to extract local submatrix from
+.  isrow - local row indices for submatrix
+.  iscol - local column indices for submatrix
+-  submat - the submatrix
 
    Level: intermediate
 

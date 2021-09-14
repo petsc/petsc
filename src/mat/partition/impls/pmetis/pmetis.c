@@ -402,7 +402,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +     mesh - the graph that represents the mesh
 -     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
                      quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals
@@ -434,7 +434,7 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +     mesh - the graph that represents the mesh
 -     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangles and
                      quadrilaterials, 3 for tetrahedrals and 4 for hexahedrals

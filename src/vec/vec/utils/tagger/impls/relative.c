@@ -60,7 +60,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,Pe
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + tagger - the VecTagger context
 - box - a blocksize list of VecTaggerBox boxes
 
@@ -82,10 +82,10 @@ PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger,VecTaggerBox *box)
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameter:
 . tagger - the VecTagger context
 
-  Output Arguments:
+  Output Parameter:
 . box - a blocksize list of VecTaggerBox boxes
 
   Level: advanced

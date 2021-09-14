@@ -193,7 +193,7 @@ PetscErrorCode  PetscFEViewFromOptions(PetscFE A,PetscObject obj,const char name
 
   Collective on fem
 
-  Input Parameter:
+  Input Parameters:
 + fem - the PetscFE object to view
 - viewer   - the viewer
 
@@ -790,7 +790,7 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + fem - The PetscFE object
 - k   - The highest derivative we need to tabulate, very often 1
 
@@ -827,7 +827,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + fem - The PetscFE object
 - k   - The highest derivative we need to tabulate, very often 1
 

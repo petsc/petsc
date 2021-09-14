@@ -535,7 +535,7 @@ PetscErrorCode SNESMSGetType(SNES snes,SNESMSType *mstype)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  snes - nonlinear solver context
 -  mstype - type of multistage method
 
@@ -603,7 +603,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes,PetscReal *damping)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  snes - nonlinear solver context
 -  damping - damping parameter
 

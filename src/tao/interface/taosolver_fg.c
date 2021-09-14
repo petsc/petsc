@@ -228,7 +228,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
 + tao - the Tao context
 - X - input vector
 
-  Output Parameter:
+  Output Parameters:
 + f - Objective value at X
 - g - Gradient vector at X
 
@@ -289,7 +289,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
 
   Logically collective on Tao
 
-  Input Parameter:
+  Input Parameters:
 + tao - the Tao context
 . func - the objective function
 - ctx - [optional] user-defined context for private data for the function evaluation
@@ -320,7 +320,7 @@ PetscErrorCode TaoSetObjectiveRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, 
 
   Logically collective on Tao
 
-  Input Parameter:
+  Input Parameters:
 + tao - the Tao context
 . func - the residual evaluation routine
 - ctx - [optional] user-defined context for private data for the function evaluation
@@ -458,7 +458,7 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
 
   Logically collective on Tao
 
-  Input Parameter:
+  Input Parameters:
 + tao - the Tao context
 . func - the gradient function
 - ctx - [optional] user-defined context for private data for the gradient evaluation
@@ -489,7 +489,7 @@ PetscErrorCode TaoSetGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, V
 
   Logically collective on Tao
 
-  Input Parameter:
+  Input Parameters:
 + tao - the Tao context
 . func - the gradient function
 - ctx - [optional] user-defined context for private data for the gradient evaluation
@@ -524,7 +524,7 @@ PetscErrorCode TaoSetObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)
 
   Collective on Tao
 
-  Input Parameter:
+  Input Parameters:
 + tao - the Tao context
 - ctx - PETSC_TRUE if objective function routine is set by user,
         PETSC_FALSE otherwise
@@ -549,7 +549,7 @@ PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + tao - the Tao context
 - ctx - PETSC_TRUE if gradient routine is set by user, PETSC_FALSE otherwise
   Level: developer
@@ -573,7 +573,7 @@ PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + tao - the Tao context
 - ctx - PETSC_TRUE if objective/gradient routine is set by user, PETSC_FALSE otherwise
   Level: developer

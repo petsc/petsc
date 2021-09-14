@@ -24,7 +24,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +   comm - MPI communicator
 .   ndim - the ndim-dimensional transform
 .   dim - array of size ndim, dim[i] contains the vector length in the i-dimension

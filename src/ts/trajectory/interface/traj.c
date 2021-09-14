@@ -154,7 +154,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 . ts      - the time stepper object (optional)
 - stepnum - the requested step number
 
-  Input/Output Parameters:
+  Input/Output Parameter:
 . time - the time associated with the step number
 
   Output Parameters:
@@ -671,7 +671,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj - the TSTrajectory context
 -  flg - PETSC_TRUE to save, PETSC_FALSE to disable
 
@@ -696,7 +696,7 @@ PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj,PetscBool flg)
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj - the TSTrajectory context
 -  flg - PETSC_TRUE to active a monitor, PETSC_FALSE to disable
 
@@ -722,7 +722,7 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj - the TSTrajectory context
 -  flg - PETSC_TRUE to save, PETSC_FALSE to disable
 
@@ -750,7 +750,7 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj      - the TSTrajectory context
 -  dirname - the directory name
 
@@ -785,7 +785,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 
    Collective on TSTrajectory
 
-   Input Arguments:
+   Input Parameters:
 +  tj      - the TSTrajectory context
 -  filetemplate - the template
 
@@ -830,7 +830,7 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetempla
 
    Collective on TSTrajectory
 
-   Input Parameter:
+   Input Parameters:
 +  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 -  ts - the TS context
 
@@ -891,7 +891,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 
    Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context obtained from TSCreate()
 -  tj - the TS trajectory context
 
@@ -938,7 +938,7 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
 
    Collective on TSTrajectory
 
-   Input Parameter:
+   Input Parameters:
 +  tj  - the TS trajectory context
 -  flg - the boolean flag
 
@@ -964,7 +964,7 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_on
 .  tj  - the TS trajectory context
 
    Output Parameter:
--  flg - the boolean flag
+.  flg - the boolean flag
 
    Level: developer
 
@@ -984,12 +984,12 @@ PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj,PetscBool *solution_o
 
    Collective on TSTrajectory
 
-   Input Parameter:
+   Input Parameters:
 +  tj   - the TS trajectory context
 .  ts   - the TS solver context
 -  time - the requested time
 
-   Output Parameter:
+   Output Parameters:
 +  U    - state vector at given time (can be interpolated)
 -  Udot - time-derivative vector at given time (can be interpolated)
 
@@ -1040,7 +1040,7 @@ PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscRe
 
    Collective on TSTrajectory
 
-   Input Parameter:
+   Input Parameters:
 +  tj   - the TS trajectory context
 .  U    - state vector at given time (can be interpolated)
 -  Udot - time-derivative vector at given time (can be interpolated)

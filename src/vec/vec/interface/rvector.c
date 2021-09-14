@@ -244,7 +244,7 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
           NORM_1_AND_2, which computes both norms and stores them
           in a two element array.
 
-   Output Parameter:
+   Output Parameters:
 +  available - PETSC_TRUE if the val returned is valid
 -  val - the norm
 
@@ -290,12 +290,11 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
 
    Collective on Vec
 
-   Input Parameters:
-+  x - the vector
+   Input Parameter:
+.  x - the vector
 
    Output Parameter:
-.  x - the normalized vector
--  val - the vector norm before normalization
+.  val - the vector norm before normalization
 
    Level: intermediate
 
@@ -360,10 +359,10 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 
    Collective on Vec
 
-   Input Parameters:
+   Input Parameter:
 .  x - the vector
 
-   Output Parameter:
+   Output Parameters:
 +  p - the location of val (pass NULL if you don't want this location)
 -  val - the minimum component
 
@@ -442,9 +441,6 @@ PetscErrorCode  VecTDot(Vec x,Vec y,PetscScalar *val)
    Input Parameters:
 +  x - the vector
 -  alpha - the scalar
-
-   Output Parameter:
-.  x - the scaled vector
 
    Note:
    For a vector with n components, VecScale() computes
@@ -1210,11 +1206,11 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 
    Collective on X
 
-   Input Arguments:
+   Input Parameters:
 +  nx   - number of vectors to be concatenated
 -  X    - array containing the vectors to be concatenated in the order of concatenation
 
-   Output Arguments:
+   Output Parameters:
 +  Y    - concatenated vector
 -  x_is - array of index sets corresponding to the concatenated components of Y (NULL if not needed)
 
@@ -1291,11 +1287,11 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
 
    Collective on X and IS
 
-   Input Arguments:
+   Input Parameters:
 + X - vector from which to extract a subvector
 - is - index set representing portion of X to extract
 
-   Output Arguments:
+   Output Parameter:
 . Y - subvector corresponding to is
 
    Level: advanced
@@ -1443,7 +1439,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 
    Collective on IS
 
-   Input Arguments:
+   Input Parameters:
 + X - vector from which subvector was obtained
 . is - index set representing the subset of X
 - Y - subvector being restored
@@ -2292,7 +2288,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
    vector data on the host side with for instance VecGetArray() incurs a
    data transfer.
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  a - the CUDA device pointer.  This pointer is invalid after
        VecCUDARestoreArray() returns.
@@ -2364,7 +2360,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v,const PetscScalar** a)
    Accessing data on the host side e.g. with VecGetArray() does not
    incur a device to host data transfer.
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  a - the CUDA device pointer.  This pointer is invalid after
        VecCUDARestoreArrayRead() returns.
@@ -2433,7 +2429,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
    the data on the host side e.g. with VecGetArray() will incur a device
    to host data transfer.
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  a - the CUDA device pointer.  This pointer is invalid after
        VecCUDARestoreArrayWrite() returns.
@@ -2626,7 +2622,7 @@ PETSC_EXTERN PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
    vector data on the host side with for instance VecGetArray() incurs a
    data transfer.
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  a - the HIP device pointer.  This pointer is invalid after
        VecHIPRestoreArray() returns.
@@ -2707,7 +2703,7 @@ PETSC_EXTERN PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
    Accessing data on the host side e.g. with VecGetArray() does not
    incur a device to host data transfer.
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  a - the HIP device pointer.  This pointer is invalid after
        VecHIPRestoreArrayRead() returns.
@@ -2778,7 +2774,7 @@ PETSC_EXTERN PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
    the data on the host side e.g. with VecGetArray() will incur a device
    to host data transfer.
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  a - the HIP device pointer.  This pointer is invalid after
        VecHIPRestoreArrayWrite() returns.
@@ -3133,7 +3129,7 @@ M*/
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of two dimensional array
 .  n - second dimension of two dimensional array
@@ -3184,7 +3180,7 @@ PetscErrorCode  VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscI
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of two dimensional array
 .  n - second dimension of two dimensional array
@@ -3321,7 +3317,7 @@ PetscErrorCode  VecRestoreArray2dWrite(Vec x,PetscInt m,PetscInt n,PetscInt msta
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of two dimensional array
 -  mstart - first index you will use in first coordinate direction (often 0)
@@ -3365,7 +3361,7 @@ PetscErrorCode  VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of two dimensional array
 -  mstart - first index you will use in first coordinate direction (often 0)
@@ -3483,7 +3479,7 @@ PetscErrorCode  VecRestoreArray1dWrite(Vec x,PetscInt m,PetscInt mstart,PetscSca
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of three dimensional array
 .  n - second dimension of three dimensional array
@@ -3541,7 +3537,7 @@ PetscErrorCode  VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt ms
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of three dimensional array
 .  n - second dimension of three dimensional array
@@ -3689,7 +3685,7 @@ PetscErrorCode  VecRestoreArray3dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,Pe
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of four dimensional array
 .  n - second dimension of four dimensional array
@@ -3753,7 +3749,7 @@ PetscErrorCode  VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of four dimensional array
 .  n - second dimension of four dimensional array
@@ -3911,7 +3907,7 @@ PetscErrorCode  VecRestoreArray4dWrite(Vec x,PetscInt m,PetscInt n,PetscInt p,Pe
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of two dimensional array
 .  n - second dimension of two dimensional array
@@ -4004,7 +4000,7 @@ PetscErrorCode  VecRestoreArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstar
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of two dimensional array
 -  mstart - first index you will use in first coordinate direction (often 0)
@@ -4084,7 +4080,7 @@ PetscErrorCode  VecRestoreArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScal
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of three dimensional array
 .  n - second dimension of three dimensional array
@@ -4187,7 +4183,7 @@ PetscErrorCode  VecRestoreArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 .  m - first dimension of four dimensional array
 .  n - second dimension of four dimensional array
@@ -4370,7 +4366,7 @@ PetscErrorCode VecLockReadPop(Vec x)
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  x   - the vector
 -  flg - PETSC_TRUE to lock the vector for writing; PETSC_FALSE to unlock it.
 

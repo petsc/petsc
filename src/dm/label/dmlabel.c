@@ -266,7 +266,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelLookupAddStratum(DMLabel label, PetscI
 /*@
   DMLabelAddStratum - Adds a new stratum value in a DMLabel
 
-  Input Parameter:
+  Input Parameters:
 + label - The DMLabel
 - value - The stratum value
 
@@ -290,7 +290,7 @@ PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + label - The DMLabel
 . numStrata - The number of stratum values
 - stratumValues - The stratum values
@@ -354,7 +354,7 @@ PetscErrorCode DMLabelAddStrata(DMLabel label, PetscInt numStrata, const PetscIn
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + label - The DMLabel
 - valueIS - Index set with stratum values
 
@@ -1057,7 +1057,7 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 
   Input Parameters:
 + label - the DMLabel
-= value - the value
+- value - the value
 
   Output Parameter:
 . index - the index of value in the list of values

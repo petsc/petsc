@@ -5,7 +5,7 @@
 
    Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the nonlinear solver (SNES) context.
 -  pyname - full dotted Python name [package].module[.{class|function}]
 

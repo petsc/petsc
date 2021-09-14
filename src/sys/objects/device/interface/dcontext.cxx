@@ -748,8 +748,8 @@ PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx)
 . dctx - The PetscDeviceContext
 
   Options Database:
-. -device_context_device_kind - the kind of PetscDevice to attach by default - PetscDeviceKind
-. -device_context_stream_type - type of stream to create inside the PetscDeviceContext -
++ -device_context_device_kind - the kind of PetscDevice to attach by default - PetscDeviceKind
+- -device_context_stream_type - type of stream to create inside the PetscDeviceContext -
   PetscDeviceContextSetStreamType()
 
   Level: beginner

@@ -988,7 +988,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - the communicator, should be PETSC_COMM_SELF
 -  n - the vector length
 
@@ -1020,7 +1020,7 @@ PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - the communicator, should be PETSC_COMM_SELF
 .  bs - the block size
 .  n - the vector length
@@ -1066,7 +1066,7 @@ PETSC_EXTERN PetscErrorCode  VecCreateSeqViennaCLWithArray(MPI_Comm comm,PetscIn
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - the communicator, should be PETSC_COMM_SELF
 .  bs - the block size
 .  n - the vector length

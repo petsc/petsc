@@ -47,7 +47,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
 +  comm - MPI_Communicator that may share /tmp
 -  len - length of string to hold name
 
-   Output Parameters:
+   Output Parameter:
 .  dir - directory name
 
    Options Database Keys:
@@ -208,10 +208,10 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI_Communicator that may share working directory
 
-   Output Parameters:
+   Output Parameter:
 .  shared - PETSC_TRUE or PETSC_FALSE
 
    Options Database Keys:
@@ -323,12 +323,12 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   comm     - processors accessing the file
 .   url      - name of file, including entire URL (with or without .gz)
 -   llen     - length of localname
 
-    Output Parameter:
+    Output Parameters:
 +   localname - name of local copy of file - valid on only process zero
 -   found - if found or retrieved the file - valid on all processes
 

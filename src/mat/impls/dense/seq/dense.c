@@ -2175,7 +2175,7 @@ PetscErrorCode  MatDenseGetLDA(Mat A,PetscInt *lda)
 
    Not collective
 
-   Input Parameter:
+   Input Parameters:
 +  mat - a MATSEQDENSE or MATMPIDENSE matrix
 -  lda - the leading dimension
 

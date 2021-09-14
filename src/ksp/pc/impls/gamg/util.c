@@ -181,7 +181,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +   a_Gmat - the graph
 .   vfilter - threshold parameter [0,1)
 -   symm - make the result symmetric

@@ -1545,7 +1545,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
 
   Collective on wf
 
-  Input Parameter:
+  Input Parameters:
 + wf - the PetscWeakForm object to view
 - v  - the viewer
 

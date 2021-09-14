@@ -502,7 +502,7 @@ static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the Mat context
 -  prefix - the prefix to prepend to all option names
 

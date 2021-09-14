@@ -29,7 +29,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,co
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of enum in struct
 .  mdefault - the initial value
@@ -83,7 +83,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char *const *l
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of integer in struct
 .  msize - number of entries in array
@@ -134,7 +134,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag,void *addr,PetscInt msize, 
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of real array in struct
 .  msize - number of entries in array
@@ -185,7 +185,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize,
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of integer in struct
 .  mdefault - the initial value
@@ -232,7 +232,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of integer in struct
 .  mdefault - the initial value
@@ -282,7 +282,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag,void *addr,PetscInt64 mdefault
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of boolean array in struct
 .  msize - number of entries in array
@@ -333,7 +333,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag,void *addr,PetscInt msize,
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of start of string in struct
 .  msize - length of the string space in the struct
@@ -385,7 +385,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of double in struct
 .  mdefault - the initial value
@@ -432,7 +432,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of scalar in struct
 .  mdefault - the initial value
@@ -479,7 +479,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of logical in struct
 .  mdefault - the initial value
@@ -635,7 +635,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
 
    Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 -  viewer - location to view the values
 
@@ -802,7 +802,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
 
    Collective on PetscViewer
 
-   Input Parameter:
+   Input Parameters:
 +  viewer - file to load values from
 -  bag - the bag of values
 

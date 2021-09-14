@@ -255,8 +255,8 @@ PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,Petsc
 /*@
        PetscLogFlops - Log how many flops are performed in a calculation
 
-   Input Paramters:
-    flops - the number of flops
+   Input Parameter:
+.   flops - the number of flops
 
    Notes:
      To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
@@ -328,8 +328,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
 /*@
        PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
 
-   Input Paramters:
-    flops - the number of flops
+   Input Parameter:
+.   flops - the number of flops
 
    Notes:
      To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,

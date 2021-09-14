@@ -590,7 +590,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 
    Collective on IS
 
-   Input Parameter:
+   Input Parameters:
 +  S -  a PETSc IS
 -  V - the reference vector space
 
@@ -615,7 +615,7 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
 /*@
    VecISSet - Sets the elements of a vector, specified by an index set, to a constant
 
-   Input Parameter:
+   Input Parameters:
 +  V - the vector
 .  S - index set for the locations in the vector
 -  c - the constant
@@ -779,7 +779,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 .      XU - upper bounds
 -      DX  - step direction, can have negative, positive or zero entries
 
-     Output Parameter:
+     Output Parameters:
 +     boundmin -  (may be NULL this it is not computed) maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
 .     wolfemin -  (may be NULL this it is not computed)
 -     boundmax -   (may be NULL this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
@@ -895,12 +895,9 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
 
   Logically Collective on v
 
-  Input Parameter:
+  Input Parameters:
 + v - the vector
 - p - the exponent to use on each element
-
-  Output Parameter:
-. v - the vector
 
   Level: intermediate
 
@@ -975,7 +972,9 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
   Logically Collective
 
   Input Parameters:
-. Vec1, Vec2, Vec3 - The three vectors
++ Vec1 - The first vector
+. Vec2 - The second vector
+- Vec3 - The third vector
 
   Output Parameter:
 . VMedian - The median vector (this can be any one of the input vectors)

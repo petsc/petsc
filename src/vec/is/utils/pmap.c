@@ -348,7 +348,7 @@ PetscErrorCode PetscLayoutReference(PetscLayout in,PetscLayout *out)
 
   Collective on PetscLayout
 
-  Input Parameter:
+  Input Parameters:
 + in - input PetscLayout
 - ltog - the local to global mapping
 
@@ -546,7 +546,7 @@ PetscErrorCode PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . map - pointer to the map
 
   Output Parameters:

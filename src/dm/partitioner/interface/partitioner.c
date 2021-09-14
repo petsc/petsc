@@ -93,7 +93,7 @@ PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner A,PetscObject ob
 
   Collective on PetscPartitioner
 
-  Input Parameter:
+  Input Parameters:
 + part - the PetscPartitioner object to view
 - v    - the viewer
 

@@ -148,12 +148,13 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 + comm      - Communicator
 . nsends    - number of messages that are to be sent.
 . nrecvs    - number of messages being received
-- ilengths1, ilengths2 - array of integers of length sizeof(comm)
-              a non zero ilengths[i] represent a message to i of length ilengths[i]
+. ilengths1 - first array of integers of length sizeof(comm)
+- ilengths2 - second array of integers of length sizeof(comm)
 
   Output Parameters:
 + onodes    - list of node-ids from which messages are expected
-- olengths1, olengths2 - corresponding message lengths
+. olengths1 - first corresponding message lengths
+- olengths2 - second  message lengths
 
   Level: developer
 

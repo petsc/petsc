@@ -427,9 +427,9 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
    Input Parameter:
 .   A - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +   x - (optional) input vector of forward FFTW
--   y - (optional) output vector of forward FFTW
+.   y - (optional) output vector of forward FFTW
 -   z - (optional) output vector of backward FFTW
 
   Level: advanced

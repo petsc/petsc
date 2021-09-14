@@ -575,7 +575,7 @@ static PetscErrorCode  SNESCompositeGetSNES_Composite(SNES snes,PetscInt n,SNES 
 
    Logically Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the preconditioner context
 -  type - SNES_COMPOSITE_ADDITIVE (default), SNES_COMPOSITE_MULTIPLICATIVE
 
@@ -623,7 +623,7 @@ PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the preconditioner context
 -  n - the number of the snes requested
 
@@ -698,7 +698,7 @@ static PetscErrorCode  SNESCompositeSetDamping_Composite(SNES snes,PetscInt n,Pe
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the preconditioner context
 .  n - the number of the snes requested
 -  dmp - the damping

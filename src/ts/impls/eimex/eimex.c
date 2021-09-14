@@ -420,7 +420,7 @@ static PetscErrorCode TSView_EIMEX(TS ts,PetscViewer viewer)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  nrows - maximum number of rows
 
@@ -442,7 +442,7 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  tindex - index in the T table
 
@@ -464,7 +464,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  tindex - index in the T table
 

@@ -155,7 +155,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 
    Logically Collective on PetscObject
 
-   Input Parameter:
+   Input Parameters:
 +  src - source object
 -  dest - destination object
 
@@ -195,7 +195,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  obj - object on which to set callback
 .  cbtype - callback type (class or subtype)
 .  cid - address of callback Id, updated if not yet initialized (zero)
@@ -235,12 +235,12 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbac
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  obj - object on which to get callback
 .  cbtype - callback type
 -  cid - address of callback Id
 
-   Output Arguments:
+   Output Parameters:
 +  func - Fortran function (or NULL if not needed)
 -  ctx - Fortran context (or NULL if not needed)
 
@@ -268,7 +268,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
 
    Logically Collective on PetscViewer
 
-   Input Parameter:
+   Input Parameters:
 +  fd - file pointer
 -  all - by default only tries to display objects created explicitly by the user, if all is PETSC_TRUE then lists all outstanding objects
 
@@ -371,8 +371,9 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
    Input Parameter:
 .  name - the name of an object
 
-   Output Parameter:
-.   obj - the object or null if there is no object
+   Output Parameters:
++  obj - the object or null if there is no object
+-  classname - the name of the class
 
    Level: advanced
 
@@ -456,7 +457,7 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj,PetscObject obj
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   obj - the PETSc object
 .   handle - function that checks for options
 .   destroy - function to destroy context if provided
@@ -931,7 +932,7 @@ PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
 
    Logically Collective on PetscContainer
 
-   Input Parameter:
+   Input Parameters:
 +  obj - an object that was created with PetscContainerCreate()
 -  des - name of the user destroy function
 

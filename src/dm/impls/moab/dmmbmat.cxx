@@ -209,7 +209,7 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
 
     Logically Collective on da
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DMMoab object
 .   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks

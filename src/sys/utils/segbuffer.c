@@ -43,11 +43,11 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,size_t coun
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  unitbytes - number of bytes that each entry will contain
 -  expected - expected/typical number of entries
 
-   Output Argument:
+   Output Parameter:
 .  seg - segmented buffer object
 
    Level: developer
@@ -75,11 +75,11 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes,size_t expected,PetscSegBuf
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  seg - address of segmented buffer
 -  count - number of entries needed
 
-   Output Argument:
+   Output Parameter:
 .  buf - address of new buffer for contiguous data
 
    Level: developer
@@ -105,7 +105,7 @@ PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg,size_t count,void *buf)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  seg - address of segmented buffer object
 
    Level: developer
@@ -133,7 +133,7 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 
    Not Collective
 
-   Input Argument:
+   Input Parameters:
 +  seg - segmented buffer
 -  contig - allocated buffer to hold contiguous data
 
@@ -172,10 +172,10 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg,void *contig)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  seg - segmented buffer
 
-   Output Argument:
+   Output Parameter:
 .  contiguous - address of new array containing contiguous data, caller frees with PetscFree()
 
    Level: developer
@@ -204,10 +204,10 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg,void *contiguous)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  seg - segmented buffer object
 
-   Output Arguments:
+   Output Parameter:
 .  contig - address of pointer to contiguous memory
 
    Level: developer
@@ -241,10 +241,10 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg,void *contig)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  seg - segmented buffer object
 
-   Output Arguments:
+   Output Parameter:
 .  usedsize - number of used units
 
    Level: developer
@@ -264,7 +264,7 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,size_t *usedsize)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  seg - segmented buffer object
 -  unused - number of unused units
 

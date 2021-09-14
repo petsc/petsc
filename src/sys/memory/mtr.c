@@ -481,7 +481,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 
     Collective on PetscViewer
 
-    Input Parameter:
+    Input Parameters:
 +    viewer - the viewer that defines the communicator
 -    message - string printed before values
 
@@ -748,7 +748,7 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
 
     Not Collective
 
-    Input Arguments:
+    Input Parameter:
 .   logmin - minimum allocation size to log, or PETSC_DEFAULT
 
     Options Database Key:
@@ -781,7 +781,7 @@ PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 
     Not Collective
 
-    Output Arguments
+    Output Parameter
 .   logging - PETSC_TRUE if logging is active
 
     Options Database Key:
@@ -804,7 +804,7 @@ PetscErrorCode PetscMallocViewGet(PetscBool *logging)
 
   Not Collective
 
-  Input Arguments:
+  Input Parameters:
 + viewer - The viewer to use for tracing, or NULL to use stdout
 . active - Flag to activate or deactivate tracing
 - logmin - The smallest memory size that will be logged
@@ -835,7 +835,7 @@ PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLo
 
   Not Collective
 
-  Output Argument:
+  Output Parameter:
 . logging - PETSC_TRUE if logging is active
 
   Options Database Key:
@@ -946,7 +946,7 @@ foundit:;
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   eachcall - checks the entire heap of allocated memory for issues on each call to PetscMalloc() and PetscFree()
 -   initializenan - initializes all memory with NaN to catch use of uninitialized floating point arrays
 

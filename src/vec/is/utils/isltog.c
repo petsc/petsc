@@ -429,7 +429,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   sf - star forest mapping contiguous local indices to (rank, offset)
 -   start - first global index on this process
 
@@ -1012,10 +1012,10 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each subdomain (processor)
@@ -1463,10 +1463,10 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each processor
@@ -1508,10 +1508,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping ma
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each subdomain (processor)
@@ -1564,10 +1564,10 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each processor
@@ -1592,10 +1592,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nnodes - number of local nodes (same ISLocalToGlobalMappingGetSize())
 .   count - number of neighboring processors per node
 -   indices - indices of processes sharing the node (sorted)
@@ -1657,10 +1657,10 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nnodes - number of local nodes
 .   count - number of neighboring processors per node
 -   indices - indices of processes sharing the node (sorted)
@@ -1685,10 +1685,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping map
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 . ltog - local to global mapping
 
-   Output Arguments:
+   Output Parameter:
 . array - array of indices, the length of this array may be obtained with ISLocalToGlobalMappingGetSize()
 
    Level: advanced
@@ -1726,7 +1726,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + ltog - local to global mapping
 - array - array of indices
 
@@ -1753,10 +1753,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 . ltog - local to global mapping
 
-   Output Arguments:
+   Output Parameter:
 . array - array of indices
 
    Level: advanced
@@ -1777,7 +1777,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping lto
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + ltog - local to global mapping
 - array - array of indices
 
@@ -1800,12 +1800,12 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + comm - communicator for the new mapping, must contain the communicator of every mapping to concatenate
 . n - number of mappings to concatenate
 - ltogs - local to global mappings
 
-   Output Arguments:
+   Output Parameter:
 . ltogcat - new mapping
 
    Note: this currently always returns a mapping with block size of 1

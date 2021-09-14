@@ -5156,7 +5156,7 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 +    A - the matrix
 -    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
-   Output Parameter:
+   Output Parameters:
 +    glob - sequential IS with global indices associated with the columns of the local sequential matrix generated (can be NULL)
 -    A_loc - the local sequential matrix generated
 
@@ -5594,13 +5594,16 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,PetscInt dof,MatReuse reus
     Collective on Mat
 
    Input Parameters:
-+    A,B - the matrices in mpiaij format
-.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--    rowb, colb - index sets of rows and columns of B to extract (or NULL)
++    A - the first matrix in mpiaij format
+.    B - the second matrix in mpiaij format
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Input/Output Parameters:
++    rowb - index sets of rows of B to extract (or NULL), modified on output
+-    colb - index sets of columns of B to extract (or NULL), modified on output
 
    Output Parameter:
-+    rowb, colb - index sets of rows and columns of B to extract
--    B_seq - the sequential matrix generated
+.    B_seq - the sequential matrix generated
 
     Level: developer
 
@@ -5895,10 +5898,10 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . A - The matrix in mpiaij format
 
-  Output Parameter:
+  Output Parameters:
 + lvec - The local vector holding off-process values from the argument to a matrix-vector product
 . colmap - A map from global column index to local index into lvec
 - multScatter - A scatter from the argument of a matrix-vector product to lvec

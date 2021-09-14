@@ -50,7 +50,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMPlex object
 . otype - type of reordering, one of the following:
 $     MATORDERINGNATURAL - Natural
@@ -142,7 +142,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMPlex object
 - perm - The point permutation, perm[old point number] = new point number
 

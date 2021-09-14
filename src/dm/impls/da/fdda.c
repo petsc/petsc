@@ -92,7 +92,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
 
     Logically Collective on da
 
-    Input Parameter:
+    Input Parameters:
 +   da - the distributed array
 .   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks
@@ -143,7 +143,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 
     Logically Collective on da
 
-    Input Parameter:
+    Input Parameters:
 +   da - the distributed array
 .   dfill - the sparse fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the sparse fill pattern in the off-diagonal blocks

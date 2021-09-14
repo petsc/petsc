@@ -27,7 +27,7 @@ static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
 . X     - compute gradient at this point
 - dummy - not used
 
-  Output Parameters:
+  Output Parameter:
 . G - Gradient Vector
 
   Options Database Key:

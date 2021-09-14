@@ -248,10 +248,10 @@ PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(T
 
   Collective on Tao
 
-  Input Parameters:
+  Input Parameter:
 . tao - the Tao context
 
-  Output Parameter:
+  Output Parameters:
 + DL - dual variable vector for the lower bounds
 - DU - dual variable vector for the upper bounds
 
@@ -289,10 +289,10 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
 
   Collective on Tao
 
-  Input Parameters:
+  Input Parameter:
 . tao - the Tao context
 
-  Output Parameter:
+  Output Parameters:
 + DE - dual variable vector for the lower bounds
 - DI - dual variable vector for the upper bounds
 

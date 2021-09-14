@@ -278,7 +278,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp,PetscInt *restart)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the Krylov space context
 -  restart - integer restart value
 

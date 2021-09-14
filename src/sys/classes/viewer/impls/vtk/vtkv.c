@@ -21,7 +21,7 @@ M*/
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 + viewer - VTK viewer
 . dm - DM on which Vec lives
 . PetscViewerVTKWriteFunction - function to write this Vec
@@ -54,7 +54,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErr
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 + viewer - VTK viewer
 - dm - DM associated with the viewer (as PetscObject)
 

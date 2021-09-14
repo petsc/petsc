@@ -446,10 +446,10 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  snes - SNESFAS
 
-   Output Arguments:
+   Output Parameter:
 .  Xcoarse - vector on level one coarser than snes
 
    Level: developer
@@ -478,11 +478,11 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  fine - SNES from which to restrict
 -  Xfine - vector to restrict
 
-   Output Arguments:
+   Output Parameter:
 .  Xcoarse - result of restriction
 
    Level: developer

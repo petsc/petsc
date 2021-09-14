@@ -79,7 +79,7 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The original DM
 - val - The marker value, or PETSC_DETERMINE to use some value in the closure (or 1 if none are found)
 
@@ -2741,7 +2741,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
 . indices      - Local numbering of face vertices in cell cone
 - origVertices - Original face vertices
 
-  Output Parameter:
+  Output Parameters:
 + faceVertices - The face vertices properly oriented
 - posOriented  - PETSC_TRUE if the face was oriented with outward normal
 

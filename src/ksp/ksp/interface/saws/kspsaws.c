@@ -13,10 +13,10 @@ typedef struct {
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  ksp - KSP to monitor
 
-   Output Arguments:
+   Output Parameter:
 .  ctx - context for monitor
 
    Level: developer
@@ -41,7 +41,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  ctx - monitor context
 
    Level: developer

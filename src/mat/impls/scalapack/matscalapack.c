@@ -1643,7 +1643,7 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A,PetscInt mb,Pets
 
    Logically Collective on A
 
-   Input Parameter:
+   Input Parameters:
 +  A  - a MATSCALAPACK matrix
 .  mb - the row block size
 -  nb - the column block size

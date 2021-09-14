@@ -200,7 +200,7 @@ PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *v
 
    Not collective
 
-   Input Parameters:
+   Input Parameter:
 .  r  - the random number generator context
 
    Output Parameters:

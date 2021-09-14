@@ -264,7 +264,7 @@ PetscErrorCode  KSPViewFromOptions(KSP A,PetscObject obj,const char name[])
 
    Logically Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - Krylov solver context
 -  normtype - one of
 $   KSP_NORM_NONE - skips computing the norm, this should generally only be used if you are using
@@ -308,7 +308,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 
    Logically Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - Krylov solver context
 -  it  - use -1 to check at all iterations
 
@@ -339,7 +339,7 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 
    Logically Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - Krylov solver context
 -  flg - PETSC_TRUE or PETSC_FALSE
 
@@ -370,7 +370,7 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - Krylov method
 .  normtype - supported norm type
 .  pcside - preconditioner side that can be used with this norm

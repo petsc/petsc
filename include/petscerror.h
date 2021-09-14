@@ -714,7 +714,7 @@ PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version
 
     Not Collective
 
-    Input Parameters:
+    Input Parameter:
 .   format - the usual printf() format string
 
    Options Database Keys:

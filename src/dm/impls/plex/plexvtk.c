@@ -656,7 +656,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 
   Collective
 
-  Input Arguments:
+  Input Parameters:
 + odm - The DMPlex specifying the mesh, passed as a PetscObject
 - viewer - viewer of type VTK
 

@@ -20,7 +20,7 @@
 -  w, h - the screen width and height in pixels,  or PETSC_DRAW_HALF_SIZE, PETSC_DRAW_FULL_SIZE,
           or PETSC_DRAW_THIRD_SIZE or PETSC_DRAW_QUARTER_SIZE
 
-   Output Parameters:
+   Output Parameter:
 .  draw - the drawing context.
 
    Options Database Keys:

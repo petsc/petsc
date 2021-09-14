@@ -1616,8 +1616,10 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
    Not Collective
 
    Input Parameters:
-+  m, n - the number of mesh points in the x and y directions
-.  M, N - the number of subdomains in the x and y directions
++  m   - the number of mesh points in the x direction
+.  n   - the number of mesh points in the y direction
+.  M   - the number of subdomains in the x direction
+.  N   - the number of subdomains in the y direction
 .  dof - degrees of freedom per node
 -  overlap - overlap in mesh lines
 
@@ -1783,7 +1785,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
 
     Logically Collective
 
-    Input Parameter:
+    Input Parameters:
 +   pc  - the preconditioner
 -   flg - boolean indicating whether to use subdomains defined by the DM
 

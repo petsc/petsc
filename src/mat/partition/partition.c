@@ -232,7 +232,7 @@ PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,MatPartition
 
    Not collective
 
-   Input Parameter:
+   Input Parameters:
 +  partitioning - the partitioning context
 -  n - the number of partitions
 
@@ -725,7 +725,7 @@ PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 
    Collective on MatPartitioning
 
-   Input Parameter:
+   Input Parameters:
 +  part - the partitioning context.
 -  type - a known method
 

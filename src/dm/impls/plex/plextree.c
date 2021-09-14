@@ -1069,7 +1069,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
   DMPlexGetTree - get the tree that describes the hierarchy of non-conforming mesh points.
   Collective on dm
 
-  Input Parameters:
+  Input Parameter:
 . dm - the DMPlex object
 
   Output Parameters:

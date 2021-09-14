@@ -189,7 +189,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
 
    Not Collective
 
-    Input Parameter:
+   Input Parameters:
 +  routine - routine to call when a signal is received
 -  ctx - optional context needed by the routine
 

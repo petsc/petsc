@@ -596,7 +596,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
@@ -619,7 +619,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  v1 - first value to find maximum of
 -  v2 - second value to find maximum of
 
@@ -642,7 +642,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  x - value to use if within interval [a,b]
 .  a - lower end of interval
 -  b - upper end of interval

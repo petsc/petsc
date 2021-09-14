@@ -382,7 +382,7 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func) (
 
   Logically collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm - the new forest, which will be constructed from adapt
 - adapt - the old forest
 

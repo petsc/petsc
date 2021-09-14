@@ -149,6 +149,9 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
 
    Logically Collective on TS
 
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
    Output Parameters:
 +  splitname - the number of the split
 -  subts - the array of TS contexts
@@ -176,6 +179,9 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts,const char splitname[],TS *subts)
    TSRHSSplitGetSubTSs - Get an array of all sub-TS contexts.
 
    Logically Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
 
    Output Parameters:
 +  n - the number of splits

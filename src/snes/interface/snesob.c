@@ -57,7 +57,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscR
    Input Parameter:
 .  snes - the SNES context
 
-   Output Parameter:
+   Output Parameters:
 +  obj - objective evaluation routine (or NULL); see SNESObjectFunction for details
 -  ctx - the function context (or NULL)
 
@@ -82,7 +82,7 @@ PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscR
 
    Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the SNES context
 -  X    - the state vector
 
@@ -118,7 +118,7 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
 
    Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 +  snes - the SNES context
 .  X    - the state vector
 -  ctx  - the (ignored) function context

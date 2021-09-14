@@ -30,7 +30,7 @@ static struct PetscFPTrapLink *_trapstack;                   /* Any pushed state
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .    trap - PETSC_FP_TRAP_ON or PETSC_FP_TRAP_OFF
 
    Level: advanced

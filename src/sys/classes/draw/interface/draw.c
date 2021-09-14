@@ -89,7 +89,7 @@ PetscErrorCode  PetscDrawInitializePackage(void)
 
    Collective on PetscDraw
 
-   Input Parameter:
+   Input Parameters:
 +  draw - the window
 -  w,h - the new width and height of the window
 
@@ -368,7 +368,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 /*@C
   PetscDrawSetDisplay - Sets the display where a PetscDraw object will be displayed
 
-  Input Parameter:
+  Input Parameters:
 + draw - the drawing context
 - display - the X windows display
 

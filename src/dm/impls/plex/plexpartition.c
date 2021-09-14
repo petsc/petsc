@@ -379,7 +379,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
 + dm      - The mesh DM dm
 - height  - Height of the strata from which to construct the graph
 
-  Output Parameter:
+  Output Parameters:
 + numVertices     - Number of vertices in the graph
 . offsets         - Point offsets in the graph
 . adjacency       - Point connectivity in the graph
@@ -412,11 +412,11 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 
   Collective on DM
 
-  Input Arguments:
+  Input Parameters:
 + dm - The DMPlex
 - cellHeight - The height of mesh points to treat as cells (default should be 0)
 
-  Output Arguments:
+  Output Parameters:
 + numVertices - The number of local vertices in the graph, or cells in the mesh.
 . offsets     - The offset to the adjacency list for each cell
 - adjacency   - The adjacency list for all cells

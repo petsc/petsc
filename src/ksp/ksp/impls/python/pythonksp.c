@@ -5,7 +5,7 @@
 
    Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the linear solver (KSP) context.
 -  pyname - full dotted Python name [package].module[.{class|function}]
 

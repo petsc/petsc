@@ -293,7 +293,7 @@ static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer 
 
   Collective on tr
 
-  Input Parameter:
+  Input Parameters:
 + tr - the DMPlexTransform object to view
 - v  - the viewer
 
@@ -1381,8 +1381,9 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 
 /*@
   DMPlexTransformMapCoordinates -
+
   Input Parameters:
-+ cr   - The DMPlexCellRefiner
++ tr   - The DMPlexTransform
 . pct  - The cell type of the parent, from whom the new cell is being produced
 . ct   - The type being produced
 . r    - The replica number requested for the produced cell type
@@ -1390,7 +1391,7 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 . dE   - Spatial dimension
 - in   - array of size Nv*dE, holding coordinates of the vertices in the closure of the parent cell
 
-  Output Parameters:
+  Output Parameter:
 . out - The coordinates of the new vertices
 @*/
 PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
@@ -1662,7 +1663,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
   Not collective
 
   Input Parameters:
-+ cr  - The DMPlexCellRefiner
++ tr  - The DMPlexTransform
 . ct  - The type of the parent cell
 . rct - The type of the produced cell
 . r   - The index of the produced cell

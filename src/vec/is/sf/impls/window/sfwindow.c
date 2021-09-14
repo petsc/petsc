@@ -50,11 +50,11 @@ static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 -  unit - data type for each node
 
-   Output Arguments:
+   Output Parameters:
 +  localtypes - types describing part of local leaf buffer referencing each remote rank
 -  remotetypes - types describing part of remote root buffer referenced for each remote rank
 
@@ -124,7 +124,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest for communication
 -  flavor - flavor type
 
@@ -182,10 +182,10 @@ static PetscErrorCode PetscSFWindowSetFlavorType_Window(PetscSF sf,PetscSFWindow
 
    Logically Collective
 
-   Input Argument:
+   Input Parameter:
 .  sf - star forest for communication
 
-   Output Argument:
+   Output Parameter:
 .  flavor - flavor type
 
    Level: advanced
@@ -217,7 +217,7 @@ static PetscErrorCode PetscSFWindowGetFlavorType_Window(PetscSF sf,PetscSFWindow
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest for communication
 -  sync - synchronization type
 
@@ -253,10 +253,10 @@ static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf,PetscSFWindowSy
 
    Logically Collective
 
-   Input Argument:
+   Input Parameter:
 .  sf - star forest for communication
 
-   Output Argument:
+   Output Parameter:
 .  sync - synchronization type
 
    Level: advanced
@@ -288,7 +288,7 @@ static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf,PetscSFWindowSy
 
    Logically Collective
 
-   Input Argument:
+   Input Parameters:
 +  sf - star forest for communication
 -  info - MPI_Info handle
 
@@ -328,10 +328,10 @@ static PetscErrorCode PetscSFWindowSetInfo_Window(PetscSF sf,MPI_Info info)
 
    Logically Collective
 
-   Input Argument:
+   Input Parameter:
 .  sf - star forest for communication
 
-   Output Argument:
+   Output Parameter:
 .  info - MPI_Info handle
 
    Level: advanced
@@ -365,7 +365,7 @@ static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf,MPI_Info *info)
 
    Collective on PetscSF
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  array - array to be sent
@@ -375,7 +375,7 @@ static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf,MPI_Info *info)
 .  postassert - assert parameter for call to MPI_Win_post(), if sync == PETSCSF_WINDOW_SYNC_ACTIVE
 -  startassert - assert parameter for call to MPI_Win_start(), if sync == PETSCSF_WINDOW_SYNC_ACTIVE
 
-   Output Arguments:
+   Output Parameters:
 +  target_disp - target_disp argument for RMA calls (significative for PETSCSF_WINDOW_FLAVOR_DYNAMIC only)
 +  reqs - array of requests (significative for sync == PETSCSF_WINDOW_SYNC_LOCK only)
 -  win - window
@@ -554,12 +554,12 @@ found:
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 -  array - array with which the window is associated
 
-   Output Arguments:
+   Output Parameters:
 +  win - window
 -  reqs - outstanding requests associated to the window
 
@@ -591,7 +591,7 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void 
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  array - array associated with window

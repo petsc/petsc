@@ -42,11 +42,11 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  classid - ID of class on which to register callback
 -  subtype - subtype string, or NULL for class ids
 
-   Output Arguments:
+   Output Parameter:
 .  id - callback id
 
    Level: developer
@@ -106,10 +106,10 @@ found:
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  classid - class Id
 
-   Output Arguments:
+   Output Parameters:
 +  numbase - number of registered class callbacks
 -  numsubtype - max number of registered subtype callbacks
 

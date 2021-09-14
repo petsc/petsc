@@ -100,7 +100,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 
   Collective on DMAdaptor
 
-  Input Parameters:
+  Input Parameter:
 . adaptor - The DMAdaptor object
 
   Options Database Keys:
@@ -921,7 +921,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + adaptor  - The DMAdaptor object
 . x        - The global approximate solution
 - strategy - The adaptation strategy

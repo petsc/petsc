@@ -3615,7 +3615,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
 . spaceDim - The spatial dimension used for coordinates
 - vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
 
-  Output Parameter:
+  Output Parameters:
 + dm - The DM
 - vertexSF - (Optional) SF describing complete vertex ownership
 

@@ -635,7 +635,7 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + name   - The name associated with the event
 - classid - The classid associated to the class for this event, obtain either with
            PetscClassIdRegister() or use a predefined one such as KSP_CLASSID, SNES_CLASSID, the predefined ones
@@ -708,7 +708,7 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + event - The event id
 - collective - Bolean flag indicating whether a particular event is collective
 
@@ -2154,7 +2154,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +   flag - PETSC_TRUE to run twice, PETSC_FALSE to run once, may be overridden
            with command line option -preload true or -preload false
 -   name - name of first stage (lines of code timed separately with -log_view) to

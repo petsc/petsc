@@ -291,7 +291,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
 
    Collective on MatCoarsen
 
-   Input Parameter:
+   Input Parameters:
 +  coarser - the coarsen context.
 -  type - a known coarsening method
 

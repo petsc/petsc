@@ -10,7 +10,7 @@
 
     Logically Collective
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the composite object
 -   formcouplelocations - routine to set the nonzero locations in the matrix
 
@@ -635,7 +635,7 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +    dm - the packer object
 .    gvec - the global vector
 .    imode - INSERT_VALUES or ADD_VALUES
@@ -696,7 +696,7 @@ PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +    dm - the packer object
 .    gvec - the global vector
 .    imode - INSERT_VALUES or ADD_VALUES
@@ -752,7 +752,7 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +    dmc - the DMComposite (packer) object
 -    dm - the DM object
 
@@ -979,10 +979,10 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 . dm - composite DM
 
-   Output Arguments:
+   Output Parameter:
 . is - array of serial index sets for each each component of the DMComposite
 
    Level: intermediate

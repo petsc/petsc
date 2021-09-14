@@ -181,7 +181,7 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A,const PetscScalar **S)
    Input Parameter:
 .  A - the KAIJ matrix
 
-   Output Parameter:
+   Output Parameters:
 +  m - the number of rows in T
 .  n - the number of columns in T
 -  T - the T matrix, in form of a scalar array in column-major format
@@ -210,7 +210,7 @@ PetscErrorCode MatKAIJGetT(Mat A,PetscInt *m,PetscInt *n,PetscScalar **T)
    Input Parameter:
 .  A - the KAIJ matrix
 
-   Output Parameter:
+   Output Parameters:
 +  m - the number of rows in T
 .  n - the number of columns in T
 -  T - the T matrix, in form of a scalar array in column-major format

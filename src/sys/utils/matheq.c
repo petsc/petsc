@@ -3,7 +3,7 @@
 /*@C
     PetscEqualReal - Returns whether the two real values are equal.
 
-    Input Parameter:
+    Input Parameters:
 +     a - first real number
 -     b - second real number
 
@@ -22,7 +22,7 @@ PetscBool PetscEqualReal(PetscReal a,PetscReal b)
 /*@C
     PetscEqualScalar - Returns whether the two scalar values are equal.
 
-    Input Parameter:
+    Input Parameters:
 +     a - first scalar value
 -     b - second scalar value
 

@@ -756,10 +756,10 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  A - original MPIAdj matrix
 
-   Output Arguments:
+   Output Parameter:
 .  B - matrix on subcommunicator, NULL on ranks that owned zero rows of A
 
    Level: developer

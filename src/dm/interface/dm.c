@@ -460,7 +460,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 
    Logically Collective on dm
 
-   Input Parameter:
+   Input Parameters:
 +  da - the DM context
 -  prefix - the prefix to prepend to all option names
 
@@ -935,7 +935,7 @@ PetscErrorCode  DMViewFromOptions(DM dm,PetscObject obj,const char name[])
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object to view
 -   v - the viewer
 
@@ -1165,11 +1165,11 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 
     Collective on dmc
 
-    Input Parameter:
+    Input Parameters:
 +   dmc - the DM object
 -   dmf - the second, finer DM object
 
-    Output Parameter:
+    Output Parameters:
 +  mat - the interpolation
 -  vec - the scaling (optional)
 
@@ -1237,7 +1237,7 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 
     Collective on dmc
 
-    Input Parameter:
+    Input Parameters:
 +   dmc - the DM object
 -   dmf - the second, finer DM object
 
@@ -1273,7 +1273,7 @@ PetscErrorCode  DMCreateRestriction(DM dmc,DM dmf,Mat *mat)
 
     Collective on dac
 
-    Input Parameter:
+    Input Parameters:
 +   dac - the DM object
 -   daf - the second, finer DM object
 
@@ -1309,7 +1309,7 @@ PetscErrorCode  DMCreateInjection(DM dac,DM daf,Mat *mat)
 
   Collective on dac
 
-  Input Parameter:
+  Input Parameters:
 + dac - the DM object
 - daf - the second, finer DM object
 
@@ -1338,7 +1338,7 @@ PetscErrorCode DMCreateMassMatrix(DM dac, DM daf, Mat *mat)
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   ctype - IS_COLORING_LOCAL or IS_COLORING_GLOBAL
 
@@ -1449,7 +1449,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
 
   Logically Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm - the DM
 - only - PETSC_TRUE if only want preallocation
 
@@ -1474,7 +1474,7 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 
   Logically Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm - the DM
 - only - PETSC_TRUE if only want matrix stucture
 
@@ -1954,7 +1954,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + dms - The DM objects
 - len - The number of DMs
 
@@ -2061,8 +2061,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
 - subdms - the local subdomains
 
   Output Parameters:
-+ n     - the number of scatters returned
-. iscat - scatter from global vector to nonoverlapping global vector entries on subdomain
++ iscat - scatter from global vector to nonoverlapping global vector entries on subdomain
 . oscat - scatter from global vector to overlapping global vector entries on subdomain
 - gscat - scatter from global vector to local vector on subdomain (fills in ghosts)
 
@@ -2093,7 +2092,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm   - the DM object
 - comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
@@ -2144,7 +2143,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  coarse - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  refinehook - function to run when setting up a coarser level
 .  interphook - function to run to update data on finer levels (once per SNESSolve())
@@ -2200,7 +2199,7 @@ PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  coarse - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  refinehook - function to run when setting up a coarser level
 .  interphook - function to run to update data on finer levels (once per SNESSolve())
@@ -2238,7 +2237,7 @@ PetscErrorCode DMRefineHookRemove(DM coarse,PetscErrorCode (*refinehook)(DM,DM,v
 
    Collective if any hooks are
 
-   Input Arguments:
+   Input Parameters:
 +  coarse - coarser DM to use as a base
 .  interp - interpolation matrix, apply using MatInterpolate()
 -  fine - finer DM to update
@@ -2266,7 +2265,7 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
 
    Collective on DM
 
-   Input Arguments:
+   Input Parameters:
 +  coarse - coarse DM
 .  fine   - fine DM
 .  interp - (optional) the matrix computed by DMCreateInterpolation().  Implementations may not need this, but if it
@@ -2274,7 +2273,7 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
             the coarse DM does not have a specialized implementation.
 -  coarseSol - solution on the coarse mesh
 
-   Output Arguments:
+   Output Parameter:
 .  fineSol - the interpolation of coarseSol to the fine mesh
 
    Level: developer
@@ -2335,7 +2334,7 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   level - number of refinements
 
@@ -2468,7 +2467,7 @@ PetscErrorCode DMCopyTransform(DM dm, DM newdm)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - the DM
 .  beginhook - function to run at the beginning of DMGlobalToLocalBegin()
 .  endhook - function to run after DMGlobalToLocalEnd() has completed
@@ -2676,7 +2675,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - the DM
 .  beginhook - function to run at the beginning of DMLocalToGlobalBegin()
 .  endhook - function to run after DMLocalToGlobalEnd() has completed
@@ -3070,7 +3069,7 @@ PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
@@ -3114,7 +3113,7 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  coarsenhook - function to run when setting up a coarser level
 .  restricthook - function to run to update data on coarser levels (once per SNESSolve())
@@ -3175,7 +3174,7 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  fine - nonlinear solver context on which to run a hook when restricting to a coarser level
 .  coarsenhook - function to run when setting up a coarser level
 .  restricthook - function to run to update data on coarser levels (once per SNESSolve())
@@ -3213,7 +3212,7 @@ PetscErrorCode DMCoarsenHookRemove(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,v
 
    Collective if any hooks are
 
-   Input Arguments:
+   Input Parameters:
 +  fine - finer DM to use as a base
 .  restrct - restriction matrix, apply using MatRestrict()
 .  rscale - scaling vector for restriction
@@ -3243,7 +3242,7 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 
    Logically Collective on global
 
-   Input Arguments:
+   Input Parameters:
 +  global - global DM
 .  ddhook - function to run to pass data to the decomposition DM upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
@@ -3303,7 +3302,7 @@ PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  global - global DM
 .  ddhook - function to run to pass data to the decomposition DM upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
@@ -3340,7 +3339,7 @@ PetscErrorCode DMSubDomainHookRemove(DM global,PetscErrorCode (*ddhook)(DM,DM,vo
 
    Collective if any hooks are
 
-   Input Arguments:
+   Input Parameters:
 +  fine - finer DM to use as a base
 .  oscatter - scatter from domain global vector filling subdomain global vector with overlap
 .  gscatter - scatter from domain global vector filling subdomain local vector with ghosts
@@ -3415,7 +3414,7 @@ PetscErrorCode DMSetCoarsenLevel(DM dm,PetscInt level)
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   nlevels - the number of levels of refinement
 
@@ -3454,7 +3453,7 @@ PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
 
     Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   nlevels - the number of levels of coarsening
 
@@ -3561,7 +3560,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
     Logically Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DM object
 -   f - the function that computes variable bounds used by SNESVI (use NULL to cancel a previous function that was set)
 
@@ -3609,7 +3608,7 @@ PetscErrorCode DMHasVariableBounds(DM dm,PetscBool *flg)
 
     Logically Collective on dm
 
-    Input Parameters:
+    Input Parameter:
 .   dm - the DM object
 
     Output parameters:
@@ -4309,7 +4308,7 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
   Input Parameter:
 . dm - The DM
 
-  Output Parameter:
+  Output Parameters:
 + section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Returns NULL if there are no local constraints.
 - mat - The Mat that interpolates local constraints: its width should be the layout size of the default section.  Returns NULL if there are no local constraints.
 
@@ -4978,7 +4977,7 @@ PetscErrorCode DMCopyFields(DM dm, DM newdm)
 + dm - The DM object
 - f  - The field number, or PETSC_DEFAULT for the default adjacency
 
-  Output Parameter:
+  Output Parameters:
 + useCone    - Flag for variable influence starting with the cone operation
 - useClosure - Flag for variable influence using transitive closure
 
@@ -5058,10 +5057,10 @@ PetscErrorCode DMSetAdjacency(DM dm, PetscInt f, PetscBool useCone, PetscBool us
 
   Not collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - The DM object
 
-  Output Parameter:
+  Output Parameters:
 + useCone    - Flag for variable influence starting with the cone operation
 - useClosure - Flag for variable influence using transitive closure
 
@@ -6295,11 +6294,11 @@ PetscErrorCode DMGetCoordinatesLocalNoncollective(DM dm, Vec *c)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - the DM
 - p - the IS of points whose coordinates will be returned
 
-  Output Parameter:
+  Output Parameters:
 + pCoordSection - the PetscSection describing the layout of pCoord, i.e. each point corresponds to one point in p, and DOFs correspond to coordinates
 - pCoord - the Vec with coordinates of points in p
 
@@ -6648,7 +6647,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
 /*@C
   DMGetPeriodicity - Get the description of mesh periodicity
 
-  Input Parameters:
+  Input Parameter:
 . dm      - The DM object
 
   Output Parameters:
@@ -7093,13 +7092,12 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
   Input Parameters:
 + dm - The DM
-. v - The Vec of points
-. ltype - The type of point location, e.g. DM_POINTLOCATION_NONE or DM_POINTLOCATION_NEAREST
-- cells - Points to either NULL, or a PetscSF with guesses for which cells contain each point.
+- ltype - The type of point location, e.g. DM_POINTLOCATION_NONE or DM_POINTLOCATION_NEAREST
 
-  Output Parameter:
-+ v - The Vec of points, which now contains the nearest mesh points to the given points if DM_POINTLOCATION_NEAREST is used
-- cells - The PetscSF containing the ranks and local indices of the containing points.
+  Input/Output Parameters:
++ v - The Vec of points, on output contains the nearest mesh points to the given points if DM_POINTLOCATION_NEAREST is used
+- cellSF - Points to either NULL, or a PetscSF with guesses for which cells contain each point;
+           on output, the PetscSF containing the ranks and local indices of the containing points
 
   Level: developer
 
@@ -8158,7 +8156,7 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 
   Collective on dmA
 
-  Input Parameter:
+  Input Parameters:
 + dmA - The DM object with initial labels
 . dmB - The DM object with copied labels
 . mode - Copy labels by pointers (PETSC_OWN_POINTER) or duplicate them (PETSC_COPY_VALUES)
@@ -9541,13 +9539,14 @@ PetscErrorCode DMMonitor(DM dm)
 
   Input Parameters:
 + dm     - The DM
-. sol    - The solution vector
-. errors - An array of length Nf, the number of fields, or NULL for no output
-- errorVec - A Vec pointer, or NULL for no output
+- sol    - The solution vector
 
-  Output Parameters:
-+ errors   - The error in each field
-- errorVec - Creates a vector to hold the cellwise error
+  Input/Output Parameter:
+. errors - An array of length Nf, the number of fields, or NULL for no output; on output
+           contains the error in each field
+
+  Output Parameter:
+. errorVec - A vector to hold the cellwise error (may be NULL)
 
   Note: The exact solutions come from the PetscDS object, and the time comes from DMGetOutputSequenceNumber().
 
