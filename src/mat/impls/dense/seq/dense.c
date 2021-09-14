@@ -675,7 +675,7 @@ static PetscErrorCode MatMatSolve_SeqDense_SetUp(Mat A, Mat B, Mat X, PetscScala
   PetscBLASInt      nrhs=0,m=0,k=0,ldb=0,ldx=0,ldy=0;
 
   PetscFunctionBegin;
-  *_ldy=0; *_m=0; *_nrhs=0; *_k=0;
+  *_ldy=0; *_m=0; *_nrhs=0; *_k=0; *_y = NULL;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);
   ierr = MatGetSize(B,NULL,&n);CHKERRQ(ierr);
