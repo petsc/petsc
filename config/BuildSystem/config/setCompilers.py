@@ -118,7 +118,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-HIPC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the HIP linker flags'))
 
     help.addArgument('Compilers', '-SYCLPP=<prog>', nargs.Arg(None, None, 'Specify the SYCL preprocessor'))
-    help.addArgument('Compilers', '-SYCLPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the SYCL preprocessor options'))
+    help.addArgument('Compilers', '-SYCLPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the SYCL preprocessor options'))
     help.addArgument('Compilers', '-with-syclcxx=<prog>', nargs.Arg(None, None, 'Specify the SYCLcompiler'))
     help.addArgument('Compilers', '-SYCLCXX=<prog>',         nargs.Arg(None, None, 'Specify the SYCL compiler'))
     help.addArgument('Compilers', '-SYCLCXXFLAGS=<string>',   nargs.Arg(None, None, 'Specify the SYCL compiler options'))

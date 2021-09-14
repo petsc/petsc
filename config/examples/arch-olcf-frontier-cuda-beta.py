@@ -30,6 +30,6 @@ if __name__ == '__main__':
 
     '--with-cuda=1',
     '--with-cudac=nvcc',
-    '--with-cuda-gencodearch=70',
+    '--with-cuda-arch=70',
   ]
   configure.petsc_configure(configure_options)

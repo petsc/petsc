@@ -55,8 +55,6 @@ def check_for_option_changed(opts):
             ('matlabengine','matlab-engine'),
             ('sundials','sundials2'),
             ('f-blas-lapack','fblaslapack'),
-            ('with-cuda-arch',
-             'CUDAFLAGS=-arch'),
             ('with-packages-dir','with-packages-download-dir'),
             ('with-external-packages-dir','with-packages-build-dir'),
             ('package-dirs','with-packages-search-path'),
@@ -152,6 +150,7 @@ def chksynonyms():
     name = name.replace('with-openmpi','with-mpi')
     name = name.replace('with-mpich','with-mpi')
     name = name.replace('with-blas-lapack','with-blaslapack')
+    name = name.replace('with-cuda-gencodearch','with-cuda-arch')
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
       if name.find('=') == -1:

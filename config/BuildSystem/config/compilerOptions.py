@@ -120,7 +120,7 @@ class CompilerOptions(config.base.Configure):
       self.logPrintBox('***** WARNING: Using default optimization '+language+' flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n '+language.upper()+'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
-  def getCxxFlags(self, compiler, bopt):
+  def getCxxFlags(self, compiler, bopt, language):
     import config.setCompilers
 
     if [s for s in ['mpiCC','mpic++','mpicxx','mpiicxx','mpiicpc'] if os.path.basename(compiler).find(s)>=0]:
@@ -228,7 +228,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt in ['O']:
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default C++ optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n CXXOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
+      self.logPrintBox('***** WARNING: Using default ' + language + ' optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n ' + language.upper() + 'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getFortranFlags(self, compiler, bopt):
@@ -323,7 +323,7 @@ class CompilerOptions(config.base.Configure):
     if language == 'C' or language == 'CUDA':
       flags = self.getCFlags(compiler, bopt, language)
     elif language == 'Cxx' or language == 'HIP' or language == 'SYCL':
-      flags = self.getCxxFlags(compiler, bopt)
+      flags = self.getCxxFlags(compiler, bopt, language)
     elif language in ['Fortran', 'FC']:
       flags = self.getFortranFlags(compiler, bopt)
     return flags

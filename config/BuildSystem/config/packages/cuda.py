@@ -27,13 +27,13 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('CUDA', '-with-cuda-gencodearch', nargs.ArgString(None, None, 'Cuda architecture for code generation, for example 70, (this may be used by external packages), use all to build a fat binary for distribution'))
+    help.addArgument('CUDA', '-with-cuda-arch', nargs.ArgString(None, None, 'Cuda architecture for code generation, for example 70, (this may be used by external packages), use all to build a fat binary for distribution'))
     return
 
   def __str__(self):
     output  = config.package.Package.__str__(self)
-    if hasattr(self,'gencodearch'):
-      output += '  CUDA SM '+self.gencodearch+'\n'
+    if hasattr(self,'cudaArch'):
+      output += '  CUDA SM '+self.cudaArch+'\n'
     if hasattr(self.setCompilers,'CUDA_CXX'):
       output += '  CUDA underlying compiler: CUDA_CXX ' + self.setCompilers.CUDA_CXX + '\n'
     if hasattr(self.setCompilers,'CUDA_CXXFLAGS'):
@@ -174,6 +174,7 @@ class Configure(config.package.Package):
 
 
   def configureLibrary(self):
+    import re
     self.setCudaDir()
     if not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Using CUDA requires PETSc to be configure with a C++ compiler')
@@ -191,8 +192,8 @@ class Configure(config.package.Package):
     self.popLanguage()
 
     genArches = ['30','32', '35', '37', '50', '52', '53', '60','61','70','71', '72', '75', '80']
-    if 'with-cuda-gencodearch' in self.framework.clArgDB:
-      self.gencodearch = self.argDB['with-cuda-gencodearch']
+    if 'with-cuda-arch' in self.framework.clArgDB:
+      self.cudaArch = re.search(r'(\d+)$', self.argDB['with-cuda-arch']).group() # get the trailing number from the string
     else:
       dq = os.path.join(self.cudaDir,'extras','demo_suite')
       self.getExecutable('deviceQuery',path = dq)
@@ -205,11 +206,11 @@ class Configure(config.package.Package):
           try:
             out = out.split('\n')[0]
             sm = out[-3:]
-            self.gencodearch = str(int(10*float(sm)))
+            self.cudaArch = str(int(10*float(sm)))
           except:
             self.log.write('Unable to parse the CUDA Capability output from the NVIDIA utility deviceQuery\n')
 
-    if not hasattr(self,'gencodearch') and not self.argDB['with-batch']:
+    if not hasattr(self,'cudaArch') and not self.argDB['with-batch']:
         includes = '''#include <stdio.h>
                     #include <cuda_runtime.h>
                     #include <cuda_runtime_api.h>
@@ -236,9 +237,9 @@ class Configure(config.package.Package):
               pass
             else:
               self.log.write('petsc-supplied CUDA device query test found the CUDA Capability is '+str(gen)+'\n')
-              self.gencodearch = str(gen)
+              self.cudaArch = str(gen)
 
-    if not hasattr(self,'gencodearch'):
+    if not hasattr(self,'cudaArch'):
       for gen in reversed(genArches):
         self.pushLanguage('CUDA')
         cflags = self.setCompilers.CUDAFLAGS
@@ -258,21 +259,21 @@ class Configure(config.package.Package):
             continue
           else:
             self.logPrintBox('***** WARNING: Cannot check if gencode '+str(gen)+' works for your hardware, assuming it does.\n\
-You may need to run ./configure with-cuda-gencodearch=numerical value (such as 70)\n\
+You may need to run ./configure with-cuda-arch=numerical value (such as 70)\n\
 to set the right generation for your hardware.')
-            self.gencodearch = gen
+            self.cudaArch = gen
             self.setCompilers.CUDAFLAGS = cflags
             break
 
-    if hasattr(self,'gencodearch'):
-      if self.gencodearch == 'all':
+    if hasattr(self,'cudaArch'):
+      if self.cudaArch == 'all':
         for gen in genArches:
           self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+gen+',code=sm_'+gen+' '
           self.log.write(self.setCompilers.CUDAFLAGS+'\n')
         self.addDefine('CUDA_GENERATION','0')
       else:
-        self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+self.gencodearch+',code=sm_'+self.gencodearch+' '
-        self.addDefine('CUDA_GENERATION',self.gencodearch)
+        self.setCompilers.CUDAFLAGS += ' -gencode arch=compute_'+self.cudaArch+',code=sm_'+self.cudaArch+' '
+        self.addDefine('CUDA_GENERATION',self.cudaArch)
 
     self.addDefine('HAVE_CUDA','1')
     if not self.version_tuple:
