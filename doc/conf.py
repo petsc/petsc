@@ -185,8 +185,8 @@ def _fix_links(app, exception):
 
 
 def build_finished_handler(app, exception):
-    _fix_links(app, exception)
     _copy_classic_docs(app, exception)
+    _fix_links(app, exception)
     _add_version_header(app, exception)
 
 
