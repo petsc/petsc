@@ -1540,7 +1540,7 @@ PETSC_INTERN PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
 
 .seealso: PCPostSolve()
 @*/
-PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
+PetscErrorCode PCPreSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
   Vec            x,rhs;
@@ -1555,7 +1555,38 @@ PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
 
   if (pc->ops->presolve) {
     ierr = (*pc->ops->presolve)(pc,ksp,rhs,x);CHKERRQ(ierr);
+  } else if (pc->presolve) {
+    ierr = (pc->presolve)(pc,ksp);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PCSetPreSolve - Sets function PCPreSolve() which is intended for any
+   preconditioner-specific actions that must be performed before
+   the iterative solve itself.
+
+   Logically Collective on pc
+
+   Input Parameters:
++   pc - the preconditioner object
+-   presolve - the function to call before the solve
+
+   Calling sequence of presolve:
+$  func(PC pc,KSP ksp)
+
++  pc - the PC context
+-  ksp - the KSP context
+
+   Level: developer
+
+.seealso: PC, PCSetUp(), PCPreSolve()
+@*/
+PetscErrorCode PCSetPreSolve(PC pc,PetscErrorCode (*presolve)(PC,KSP))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  pc->presolve = presolve;
   PetscFunctionReturn(0);
 }
 

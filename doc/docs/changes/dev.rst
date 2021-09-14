@@ -110,6 +110,7 @@ Changes: Development
 
 .. rubric:: PC:
 
+-  Add ``PCSetPreSolve()``
 -  Add ``PCQR`` - interface to SuiteSparse QR factorization for ``MatSeqAIJ``,
    ``MATNORMAL``, and ``MATNORMALHERMITIAN``
 -  Add support for ``MATNORMAL`` in ``PCASM`` and ``PCHPDDM``
