@@ -406,7 +406,9 @@ M*/
 
 /* PetscPragmaSIMD - from CeedPragmaSIMD */
 
-#if defined(__INTEL_COMPILER) && !defined(_WIN32)
+#if defined(__NEC__)
+#  define PetscPragmaSIMD _Pragma("_NEC ivdep")
+#elif defined(__INTEL_COMPILER) && !defined(_WIN32)
 #  define PetscPragmaSIMD _Pragma("vector")
 #elif defined(__GNUC__) && __GNUC__ >= 5 && !defined(__PGI)
 #  define PetscPragmaSIMD _Pragma("GCC ivdep")
@@ -2851,6 +2853,11 @@ M*/
 #if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
 PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint,PetscMPIInt,MPI_Info,MPI_Comm,void*,MPI_Win*);
 PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,PetscMPIInt*,void*);
+#endif
+
+/* this is a vile hack */
+#if defined(PETSC_HAVE_NECMPI)
+#define MPI_Type_free(a) (*(a) = MPI_DATATYPE_NULL,0);
 #endif
 
 /*

@@ -2,6 +2,20 @@
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 
 #include <petscvec.h>
+#define CheckError(a,b,tol) do {\
+    if (!PetscIsCloseAtTol(a,b,0,tol)) {\
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,tol,#a,(double)(a),#b,(double)(b),(double)((a)-(b)));CHKERRQ(ierr); \
+    }\
+  } while (0)
+
+#define CheckErrorScalar(a,b,tol) do {\
+    if (!PetscIsCloseAtTol(PetscRealPart(a),PetscRealPart(b),0,tol)) {\
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,tol,#a,(double)PetscRealPart(a),#b,(double)PetscRealPart(b),(double)PetscRealPart((a)-(b)));CHKERRQ(ierr); \
+    }\
+    if (!PetscIsCloseAtTol(PetscImaginaryPart(a),PetscImaginaryPart(b),0,PETSC_SMALL)) {\
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Imag error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,tol,#a,(double)PetscImaginaryPart(a),#b,(double)PetscImaginaryPart(b),(double)PetscImaginaryPart((a)-(b)));CHKERRQ(ierr); \
+    }\
+  } while (0)
 
 int main(int argc,char **argv)
 {
@@ -11,6 +25,7 @@ int main(int argc,char **argv)
   PetscScalar    result1a,result2a;
   PetscReal      result3,result4,result[2],result3a,result4a,resulta[2];
   Vec            x,y,vecs[40];
+  PetscReal      tol = PETSC_SMALL;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
@@ -43,12 +58,10 @@ int main(int argc,char **argv)
   ierr = VecNorm(y,NORM_2,&result3a);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1,&result4a);CHKERRQ(ierr);
 
-  if (result1 != result1a || result2 != result2a) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",(double)PetscRealPart(result1),(double)PetscRealPart(result2));CHKERRQ(ierr);
-  }
-  if (result3 != result3a || result4 != result4a) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error 1,2 norms: result3 %g result4 %g\n",(double)result3,(double)result4);CHKERRQ(ierr);
-  }
+  CheckErrorScalar(result1,result1a,tol);
+  CheckErrorScalar(result2,result2a,tol);
+  CheckError(result3,result3a,tol);
+  CheckError(result4,result4a,tol);
 
   /*
         Test norms that only require abs
@@ -62,9 +75,8 @@ int main(int argc,char **argv)
 
   ierr = VecNorm(x,NORM_MAX,&result4a);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_MAX,&result3a);CHKERRQ(ierr);
-  if (result3 != result3a || result4 != result4a) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error max norm: result3 %g result4 %g\n",(double)result3,(double)result4);CHKERRQ(ierr);
-  }
+  CheckError(result3,result3a,tol);
+  CheckError(result4,result4a,tol);
 
   /*
         Tests dot,  max, 1, norm
@@ -89,12 +101,10 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_MAX,&result3a);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1,&result4a);CHKERRQ(ierr);
 
-  if (result1 != result1a || result2 != result2a) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",(double)PetscRealPart(result1),(double)PetscRealPart(result2));CHKERRQ(ierr);
-  }
-  if (result3 != result3a || result4 != result4a) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error max 1 norms: result3 %g result4 %g\n",(double)result3,(double)result4);CHKERRQ(ierr);
-  }
+  CheckErrorScalar(result1,result1a,tol);
+  CheckErrorScalar(result2,result2a,tol);
+  CheckError(result3,result3a,tol);
+  CheckError(result4,result4a,tol);
 
   /*
        tests 1_and_2 norm
@@ -109,12 +119,11 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_MAX,&result3a);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1_AND_2,resulta);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_MAX,&result4a);CHKERRQ(ierr);
-  if (result3 != result3a || result4 != result4a) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error max: result1 %g result2 %g\n",(double)result3,(double)result4);CHKERRQ(ierr);
-  }
-  if (PetscAbsReal(result[0]-resulta[0]) > .01 || PetscAbsReal(result[1]-resulta[1]) > .01) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error 1 and 2 norms: result[0] %g result[1] %g\n",(double)result[0],(double)result[1]);CHKERRQ(ierr);
-  }
+
+  CheckError(result3,result3a,tol);
+  CheckError(result4,result4a,tol);
+  CheckError(result[0],resulta[0],tol);
+  CheckError(result[1],resulta[1],tol);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
@@ -134,10 +143,9 @@ int main(int argc,char **argv)
     ierr = VecDotBegin(vecs[i],vecs[i+1],results+i);CHKERRQ(ierr);
   }
   for (i=0; i<39; i++) {
+    PetscScalar expected = 25.0*i*(i+1);
     ierr = VecDotEnd(vecs[i],vecs[i+1],results+i);CHKERRQ(ierr);
-    if (results[i] != 25.0*i*(i+1)) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"i %D expected %g got %g\n",i,25.0*i*(i+1),(double)PetscRealPart(results[i]));CHKERRQ(ierr);
-    }
+    CheckErrorScalar(results[i],expected,tol);
   }
   for (i=0; i<40; i++) {
     ierr = VecDestroy(&vecs[i]);CHKERRQ(ierr);

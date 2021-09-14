@@ -233,6 +233,20 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       self.mpiexecExecutable = self.mpiexec
     self.getExecutable(self.mpiexecExecutable, getFullPath=1, resultName='mpiexecExecutable')
 
+    if not 'with-mpiexec' in self.argDB and hasattr(self,'isNecMPI') and hasattr(self,'mpiexecExecutable'):
+      self.getExecutable('venumainfo', getFullPath=1, path = os.path.dirname(self.mpiexecExecutable))
+      if hasattr(self,'venumainfo'):
+        try:
+          (out, err, ret) = Configure.executeShellCommand(self.venumainfo + ' | grep "available"',timeout = 60, log = self.log, threads = 1)
+        except Exception as e:
+          self.log.write('NEC utility venumainfo failed '+str(e)+'\n')
+        else:
+          try:
+            nve = out.split(' ')[1]
+            self.mpiexecExecutable = self.mpiexecExecutable + ' -nve ' + nve
+          except:
+            self.log.write('Unable to parse the number of VEs from the NEC utility venumainfo\n')
+
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
     # determine if the program has been started with the correct mpiexec (will only be set for parallel runs so not clear how to check appropriately)
@@ -264,7 +278,6 @@ shared libraries and run with --known-mpi-shared-libraries=1')
           if result.find("Firewall is enabled") > -1:  hostnameworks = 1
         except:
           self.logPrint("Exception: Unable to get result from socketfilterfw\n")
-
 
       self.getExecutable('hostname')
       if not hostnameworks and hasattr(self,'hostname'):
@@ -376,7 +389,7 @@ Unable to run hostname to check the network')
     if not self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Accumulate(ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_REPLACE,win));\n'):
       raise RuntimeError('PETSc requires MPI_REPLACE (introduced in MPI-2.1 in 2008). Please update or switch to MPI that supports MPI_REPLACE. Let us know at petsc-maint@mcs.anl.gov if this is not possible')
     # flag broken one-sided tests
-    if not 'HAVE_MSMPI' in self.defines and not (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) <= 30004300):
+    if not 'HAVE_MSMPI' in self.defines and not (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) <= 30004300) and not (hasattr(self, 'isNecMPI')):
       self.addDefine('HAVE_MPI_ONE_SIDED', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
@@ -593,6 +606,12 @@ Unable to run hostname to check the network')
       self.mpi_pkg = 'mpich'+mpich_numversion[0]
       return
 
+    # NEC MPI is derived from MPICH but it does not keep MPICH related NUMVERSION
+    necmpi_test = '#include <mpi.h>\nMPI_NEC_Function f = MPI_NEC_FUNCTION_NULL;\n'
+    if self.checkCompile(necmpi_test):
+      self.isNecMPI = 1
+      self.addDefine('HAVE_NECMPI',1)
+
     # IBM Spectrum MPI is derived from OpenMPI, we do not yet have specific tests for it
     # https://www.ibm.com/us-en/marketplace/spectrum-mpi
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
@@ -760,7 +779,11 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.configureIO) #depends on checkMPIDistro
     self.executeTest(self.findMPIIncludeAndLib)
     self.executeTest(self.PetscArchMPICheck)
-    funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
+    # deadlock AO tests ex1 with test 3
+    if not (hasattr(self, 'isNecMPI')):
+      funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
+    else:
+      funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter'''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)

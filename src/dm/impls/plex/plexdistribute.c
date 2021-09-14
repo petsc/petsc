@@ -2015,14 +2015,17 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
 {
   PetscInt          pStart, pEnd, count;
   MPI_Comm          comm;
+  PetscMPIInt       size;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(distributed,2);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  if (size == 1) { *distributed = PETSC_FALSE; PetscFunctionReturn(0); }
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  count = !!(pEnd - pStart);
+  count = (pEnd - pStart) > 0 ? 1 : 0;
   ierr = MPI_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
   *distributed = count > 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);

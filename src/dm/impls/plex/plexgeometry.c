@@ -600,7 +600,11 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
               for (ii = 0, cpoint[0] = point[0]; ii < 2; ++ii, cpoint[0] += h[0]) {
 
                 ierr = DMPlexLocatePoint_Internal(dm, dim, cpoint, c, &cell);CHKERRQ(ierr);
-                if (cell >= 0) { ierr = DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); ii = jj = kk = 2;}
+                if (cell >= 0) {
+                  ierr = DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr);
+                  jj = kk = 2;
+                  break;
+                }
               }
             }
           }

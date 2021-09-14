@@ -14,6 +14,7 @@ Changes: Development
 -  Change ``MPIU_Allreduce()`` to always returns a MPI error code that
    should be checked with ``CHKERRMPI(ierr)``
 -  Add support for ESSL 5.2 and later; drop support for ESSL <=5.1
+-  Add support for NEC-SX Tsubasa Vector Engine
 
 .. rubric:: Configure/Build:
 -  Configure requires Python-2.7 or Python-3.4+.
