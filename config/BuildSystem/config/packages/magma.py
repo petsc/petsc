@@ -1,5 +1,6 @@
 import config.package
 import os
+import sys
 
 #class Configure(config.package.CMakePackage):
 #  def __init__(self, framework):
@@ -8,7 +9,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     # disable version check
-    self.version          = '2.6.0'
+    self.version          = '2.6.1'
     #self.minversion       = '2.6.0'
     #self.versionname      = ???
     self.gitcommit        = 'v'+self.version
@@ -25,14 +26,14 @@ class Configure(config.package.Package):
     self.precisions       = ['single','double']
     self.cxx              = 1
     self.minCxxVersion    = 'c++11' #From CMakeLists.txt -> some code may not compile
-    self.makerulename     = 'lib sparse-lib'
+    self.makerulename     = ' lib ' #make sparse-lib is broken in many ways
     return
 
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument('MAGMA', '-with-magma-gputarget', nargs.ArgString(None, '', 'GPU_TARGET make variable'))
-    help.addArgument('MAGMA', '-with-magma-fortran-bindings', nargs.ArgBool(None, 1, 'Compile MAGMA Fortran bindings'))
+    help.addArgument('MAGMA', '-with-magma-gputarget=<string>', nargs.ArgString(None, '', 'GPU_TARGET make variable'))
+    help.addArgument('MAGMA', '-with-magma-fortran-bindings=<bool>', nargs.ArgBool(None, 0, 'Compile MAGMA Fortran bindings'))
     return
 
   def setupDependencies(self, framework):
@@ -57,7 +58,6 @@ class Configure(config.package.Package):
     usecuda = False
     if self.hip.found:
       usehip = True
-      self.makerulename = 'lib' #make sparse-lib is broken in many ways
     else:
       usecuda = True
 
@@ -125,9 +125,9 @@ class Configure(config.package.Package):
     if self.blasLapack.mangling == 'underscore':
       mangle = ' -DADD_'
     elif self.blasLapack.mangling == 'caps':
-      mangle = ' -DUPCASE_'
+      mangle = ' -DUPCASE'
     else:
-      mangle = ' -DNOCHANGE_'
+      mangle = ' -DNOCHANGE'
     cflags += mangle
     cxxflags += mangle
     fcflags += mangle
@@ -190,13 +190,14 @@ class Configure(config.package.Package):
 
     if self.installNeeded('make.inc'):
       try:
-        output1,err1,ret1  = config.package.Package.executeShellCommand('make cleanall', cwd=self.packageDir, timeout=60, log = self.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make clean on MAGMA: '+str(e))
         raise RuntimeError('Error running make clean on MAGMA')
       try:
         self.logPrintBox('Compiling MAGMA; this may take several minutes')
-        output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp + ' ' + self.makerulename, cwd=self.packageDir, timeout=2500, log = self.log)
+        codegen = ' codegen="' + sys.executable + ' tools/codegen.py"' # as of 2.6.1 they use /usr/bin/env python inside tools/codegen.py
+        output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp + self.makerulename + codegen, cwd=self.packageDir, timeout=2500, log = self.log)
         # magma install is broken when fortran bindings are not requested
         dummymod = os.path.join(self.packageDir,'include','magma_petsc_dummy.mod')
         if not fcbindings and not os.path.isfile(dummymod):
