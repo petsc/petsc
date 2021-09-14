@@ -640,6 +640,13 @@ PETSC_EXTERN PetscErrorCode MatIsLinear(Mat,PetscInt,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode MatNorm(Mat,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatGetColumnSums(Mat,PetscScalar*);
+PETSC_EXTERN PetscErrorCode MatGetColumnSumsRealPart(Mat,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatGetColumnSumsImaginaryPart(Mat,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatGetColumnMeans(Mat,PetscScalar*);
+PETSC_EXTERN PetscErrorCode MatGetColumnMeansRealPart(Mat,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatGetColumnMeansImaginaryPart(Mat,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatGetColumnReductions(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatZeroEntries(Mat);
 PETSC_EXTERN PetscErrorCode MatSetInf(Mat);
 PETSC_EXTERN PetscErrorCode MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);

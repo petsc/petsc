@@ -24,7 +24,7 @@ PetscErrorCode MatSeqAIJSetTypeFromOptions(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
+PetscErrorCode MatGetColumnReductions_SeqAIJ(Mat A,PetscInt type,PetscReal *reductions)
 {
   PetscErrorCode ierr;
   PetscInt       i,m,n;
@@ -32,23 +32,33 @@ PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = PetscArrayzero(norms,n);CHKERRQ(ierr);
+  ierr = PetscArrayzero(reductions,n);CHKERRQ(ierr);
   if (type == NORM_2) {
     for (i=0; i<aij->i[m]; i++) {
-      norms[aij->j[i]] += PetscAbsScalar(aij->a[i]*aij->a[i]);
+      reductions[aij->j[i]] += PetscAbsScalar(aij->a[i]*aij->a[i]);
     }
   } else if (type == NORM_1) {
     for (i=0; i<aij->i[m]; i++) {
-      norms[aij->j[i]] += PetscAbsScalar(aij->a[i]);
+      reductions[aij->j[i]] += PetscAbsScalar(aij->a[i]);
     }
   } else if (type == NORM_INFINITY) {
     for (i=0; i<aij->i[m]; i++) {
-      norms[aij->j[i]] = PetscMax(PetscAbsScalar(aij->a[i]),norms[aij->j[i]]);
+      reductions[aij->j[i]] = PetscMax(PetscAbsScalar(aij->a[i]),reductions[aij->j[i]]);
     }
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  } else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) {
+    for (i=0; i<aij->i[m]; i++) {
+      reductions[aij->j[i]] += PetscRealPart(aij->a[i]);
+    }
+  } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+    for (i=0; i<aij->i[m]; i++) {
+      reductions[aij->j[i]] += PetscImaginaryPart(aij->a[i]);
+    }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown reduction type");
 
   if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
+    for (i=0; i<n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
+  } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+    for (i=0; i<n; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);
 }
@@ -3692,7 +3702,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         NULL,
                                         MatGetMultiProcBlock_SeqAIJ,
                                 /*124*/ MatFindNonzeroRows_SeqAIJ,
-                                        MatGetColumnNorms_SeqAIJ,
+                                        MatGetColumnReductions_SeqAIJ,
                                         MatInvertBlockDiagonal_SeqAIJ,
                                         MatInvertVariableBlockDiagonal_SeqAIJ,
                                         NULL,

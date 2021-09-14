@@ -104,6 +104,9 @@ Changes: Development
 -  Add accessor routines for device data of ``MATSEQAIJCUSPARSE`` matrices: ``MatSeqAIJCUSPARSEGetArray()``, ``MatSeqAIJCUSPARSERestoreArray()``, ``MatSeqAIJCUSPARSEGetArrayRead()``, ``MatSeqAIJCUSPARSERestoreArrayRead()``. ``MatSeqAIJCUSPARSEGetArrayWrite()``, ``MatSeqAIJCUSPARSERestoreArrayWrite()``
 -  Add support for ``MATHYPRE`` matrices on NVIDIA and AMD GPUs
 -  ``MatPreallocatorPreallocate`` performance `significantly improved <https://gitlab.com/petsc/petsc/-/merge_requests/4273>`_
+-  Add ``MatGetColumnReductions()`` developer routine to calculate reductions over columns of a matrix
+-  Add ``MatGetColumnSums()``, ``MatGetColumnSumsRealPart()``, ``MatGetColumnSumsImaginaryPart()`` to compute sums over matrix columns
+-  Add ``MatGetColumnMeans()``, ``MatGetColumnMeansRealPart()``, ``MatGetColumnMeansImaginaryPart()`` to compute arithmetic means over matrix columns
 
 .. rubric:: PC:
 
