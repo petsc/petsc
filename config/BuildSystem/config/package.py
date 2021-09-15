@@ -145,7 +145,7 @@ class Package(config.base.Configure):
       self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    if not self.isMPI and not self.package in ['make','cuda','hip','thrust','valgrind','hwloc','x']:
+    if not self.isMPI and not self.package in ['make','cuda','hip','thrust','hwloc','x']:
       # force MPI to be the first package (except for those listed above) configured since all other packages
       # may depend on its compilers defined here
       self.mpi         = framework.require('config.packages.MPI',self)
