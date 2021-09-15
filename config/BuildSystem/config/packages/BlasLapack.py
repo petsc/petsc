@@ -212,13 +212,22 @@ class Configure(config.package.Package):
       else:
         raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
 
+    blislib = ['libblis.a']
+    if self.openmp.found:
+      blislib.insert(0,'libblis-mt.a')
+
     if not 'with-blaslapack-dir' in self.argDB:
       mkl = os.getenv('MKLROOT')
       if mkl:
         # Since user did not select MKL specifically first try compiler defaults and only if they fail use the MKL
         yield ('Default compiler libraries', '', '','unknown','unknown')
-        yield ('BLIS default compiler locations', 'libblis.a', 'liblapack.a','unknown','unknown')
-        yield ('BLIS default compiler locations /usr/local/lib', os.path.join('/usr','local','lib','libblis.a'), os.path.join('/usr','local','lib','liblapack.a'),'unknown','unknown')
+        for lib in blislib:
+          for lapack in ['libflame.a','liblapack.a']:
+            for libdir in ['',os.path.join('/usr','local','lib')]:
+              if libdir:
+                lib = os.path.join(libdir,lib)
+                lapack = os.path.join(libdir,lapack)
+            yield ('BLIS/AMD-AOCL default compiler locations '+libdir,lib,lapack,'unknown','unknown')
         yield ('OpenBLAS default compiler locations', None, 'libopenblas.a','unknown','unknown')
         yield ('OpenBLAS default compiler locations /usr/local/lib', None, os.path.join('/usr','local','lib','libopenblas.a'),'unknown','unknown')
         yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
@@ -367,9 +376,11 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')],'32','unknown')
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'),'32','unknown')
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')],'32','unknown')
-      # BLIS
-      yield ('User specified installation root BLIS/LAPACK', os.path.join(dir, 'libblis.a'), os.path.join(dir, 'liblapack.a'), 'unknown', 'unknown')
-      yield ('User specified installation root BLIS/LAPACK', os.path.join(dir,'lib','libblis.a'), os.path.join(dir,'lib','liblapack.a'), 'unknown', 'unknown')
+      # Check BLIS/AMD-AOCL libraries
+      for lib in blislib:
+        for lapack in ['libflame.a','liblapack.a']:
+          for libdir in [dir,os.path.join(dir,'lib')]:
+            yield ('User specified installation root BLIS/AMD-AOCL', os.path.join(libdir,lib), os.path.join(libdir,lapack), 'unknown', 'unknown')
       # NEC
       yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), os.path.join(dir, 'lib', 'liblapack.a'), 'unknown', 'unknown')
       # Search for OpenBLAS
@@ -399,11 +410,12 @@ class Configure(config.package.Package):
     if self.defaultPrecision == '__float128':
       raise RuntimeError('__float128 precision requires f2c libraries; suggest --download-f2cblaslapack\n')
 
-
     # Try compiler defaults
     yield ('Default compiler libraries', '', '','unknown','unknown')
     yield ('Default NEC', 'libblas_sequential.a', 'liblapack.a','unknown','unknown')
-    yield ('Default BLIS', 'libblis.a', 'liblapack.a','unknown','unknown')
+    for lib in blislib:
+      for lapack in ['libflame.a','liblapack.a']:
+        yield ('Default BLIS/AMD-AOCL', lib, lapack,'unknown','unknown')
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
     yield ('Default OpenBLAS', None, 'libopenblas.a','unknown','unknown')
     # Intel on Mac
@@ -509,12 +521,12 @@ class Configure(config.package.Package):
       self.mangling = self.argDB['known-blaslapack-mangling']
 
     if self.mangling == 'underscore':
-        self.addDefine('BLASLAPACK_UNDERSCORE', 1)
+      self.addDefine('BLASLAPACK_UNDERSCORE', 1)
     elif self.mangling == 'caps':
-        self.addDefine('BLASLAPACK_CAPS', 1)
+      self.addDefine('BLASLAPACK_CAPS', 1)
 
     if self.suffix != '':
-        self.addDefine('BLASLAPACK_SUFFIX', self.suffix)
+      self.addDefine('BLASLAPACK_SUFFIX', self.suffix)
 
     self.found = 1
     if not self.f2cblaslapack.found and not self.fblaslapack.found:
@@ -607,7 +619,6 @@ class Configure(config.package.Package):
       self.checkVersion()
     self.logWrite(self.libraries.restoreLog())
     return
-
 
   def checkESSL(self):
     '''Check for the IBM ESSL library'''
