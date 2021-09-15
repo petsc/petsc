@@ -141,7 +141,7 @@ int main(int argc,char **args)
   ierr = MatMult(subA,subx,subu);CHKERRQ(ierr);
   ierr = VecAXPY(subu,-1.0,subb);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-4 && !rank) {
+  if (norm > 1.e-4 && rank == 0) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Residual norm of each block |subb - subA*subx |= %g\n",(double)norm);CHKERRQ(ierr);
   }

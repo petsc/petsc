@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatCreateRedundantMatrix(A, size, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

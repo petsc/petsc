@@ -97,9 +97,9 @@ int main(int argc,char **args)
   /* create a SeqSBAIJ matrix sA (= A) */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
   if (vid >= 0 && vid < size) {
-    if (!rank) printf("A: \n");
+    if (rank == 0) printf("A: \n");
     ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    if (!rank) printf("sA: \n");
+    if (rank == 0) printf("sA: \n");
     ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -164,7 +164,7 @@ int main(int argc,char **args)
     for (i=0; i<nd; ++i) {
       ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
       if (!flg) {
-        if (!rank) {
+        if (rank == 0) {
           ierr = ISSort(is1[i]);CHKERRQ(ierr);
           /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
           ierr = ISSort(is2[i]);CHKERRQ(ierr);

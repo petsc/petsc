@@ -1795,7 +1795,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
     ierr = MatGetSize(As, &numRows, NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(numRows, &partGlobal);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       PetscInt *adjncy_g, *xadj_g, *vtxwgt_g;
       lenadjncy = 0;
 

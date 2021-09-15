@@ -328,7 +328,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
     eventLog->eventInfo[e].mpe_id_end   = endID;
 
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscLogMPEGetRGBColor(&color);CHKERRQ(ierr);
       MPE_Describe_state(beginID,endID,str,(char*)color);
     }

@@ -42,7 +42,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
         ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  Use -%sksp_view ::ascii_info_detail to display information for all blocks\n",prefix?prefix:"");CHKERRQ(ierr);
         ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-        if (!rank) {
+        if (rank == 0) {
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           ierr = KSPView(osm->ksp[0],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

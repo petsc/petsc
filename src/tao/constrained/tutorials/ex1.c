@@ -275,7 +275,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
   ierr = VecScatterEnd(scat,X,Xseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   fin = 0.0;
-  if (!rank) {
+  if (rank == 0) {
     ierr = VecGetArrayRead(Xseq,&x);CHKERRQ(ierr);
     fin = (x[0]-2.0)*(x[0]-2.0) + (x[1]-2.0)*(x[1]-2.0) - 2.0*(x[0]+x[1]);
     g = 2.0*(x[0]-2.0) - 2.0;
@@ -324,7 +324,7 @@ PetscErrorCode FormHessian(Tao tao, Vec x,Mat H, Mat Hpre, void *ctx)
   ierr = VecScatterBegin(Discat,DI,Diseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(Discat,DI,Diseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     if (!user->noeqflag) {
       ierr = VecGetArrayRead(Deseq,&de);CHKERRQ(ierr);  /* places equality constraint dual into array */
     }
@@ -374,7 +374,7 @@ PetscErrorCode FormInequalityConstraints(Tao tao,Vec X,Vec CI,void *ctx)
   ierr = VecScatterBegin(scat,X,Xseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,X,Xseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = VecGetArrayRead(Xseq,&x);CHKERRQ(ierr);
     ci = x[0]*x[0] - x[1];
     ierr = VecSetValue(CI,0,ci,INSERT_VALUES);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ PetscErrorCode FormEqualityConstraints(Tao tao,Vec X,Vec CE,void *ctx)
   ierr = VecScatterBegin(scat,X,Xseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,X,Xseq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = VecGetArrayRead(Xseq,&x);CHKERRQ(ierr);
     ce = x[0]*x[0] + x[1] - 2.0;
     ierr = VecSetValue(CE,0,ce,INSERT_VALUES);CHKERRQ(ierr);
@@ -472,7 +472,7 @@ PetscErrorCode FormEqualityJacobian(Tao tao,Vec X,Mat JE,Mat JEpre,void *ctx)
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     cols[0] = 0;       cols[1] = 1;
     vals[0] = 2*x[0];  vals[1] = 1.0;

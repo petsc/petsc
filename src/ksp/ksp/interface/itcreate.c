@@ -171,7 +171,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
       ierr = PetscStrncpy(type,((PetscObject)ksp)->type_name,256);CHKERRQ(ierr);
       ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 
     ierr = PetscObjectGetName((PetscObject)ksp,&name);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!((PetscObject)ksp)->amsmem && !rank) {
+    if (!((PetscObject)ksp)->amsmem && rank == 0) {
       char       dir[1024];
 
       ierr = PetscObjectViewSAWs((PetscObject)ksp,viewer);CHKERRQ(ierr);

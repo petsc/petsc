@@ -1041,7 +1041,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
 
     ierr = PetscObjectName((PetscObject)mat);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!((PetscObject)mat)->amsmem && !rank) {
+    if (!((PetscObject)mat)->amsmem && rank == 0) {
       ierr = PetscObjectViewSAWs((PetscObject)mat,viewer);CHKERRQ(ierr);
     }
 #endif

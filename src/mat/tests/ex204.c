@@ -13,7 +13,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   /* Construct a sequential ViennaCL matrix and vector */
-  if (!rank) {
+  if (rank == 0) {
     Mat A_vcl;
     Vec v_vcl,r_vcl;
     PetscInt n = 17, m = 31,nz = 5,i,cnt,j;
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   }
 
   /* Create a sequential AIJ matrix on rank 0 convert it to a new ViennaCL matrix, and apply it to a ViennaCL vector */
-  if (!rank) {
+  if (rank == 0) {
     Mat               A,A_vcl;
     Vec               v,r,v_vcl,r_vcl,d_vcl;
     PetscInt          n=17,m=31,nz=5,i,cnt,j;
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   }
 
   /* Create a sequential AIJ matrix on rank 0 convert it inplace to a new ViennaCL matrix, and apply it to a ViennaCL vector */
-  if (!rank) {
+  if (rank == 0) {
     Mat               A;
     Vec               v,r,v_vcl,r_vcl,d_vcl;
     PetscInt          n=17,m=31,nz=5,i,cnt,j;

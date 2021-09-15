@@ -102,7 +102,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       const PetscInt *sizes = NULL;
       const PetscInt *points = NULL;
 
-      if (!rank) {
+      if (rank == 0) {
         if (dim == 2 && simplex && size == 2) {
           sizes = triSizes_n2; points = triPoints_n2;
         } else if (dim == 2 && simplex && size == 3) {

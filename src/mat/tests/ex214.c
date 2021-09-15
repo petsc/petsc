@@ -23,7 +23,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
 #if !defined(PETSC_HAVE_MUMPS)
-  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"This example requires MUMPS, exit...\n");CHKERRQ(ierr);}
+  if (rank == 0) {ierr = PetscPrintf(PETSC_COMM_SELF,"This example requires MUMPS, exit...\n");CHKERRQ(ierr);}
   ierr = PetscFinalize();
   return ierr;
 #else
@@ -72,7 +72,7 @@ int main(int argc,char **args)
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(solver,MATSOLVERMUMPS);CHKERRQ(ierr);
-  if (!rank && displ) {ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %D, size mat %D x %D\n",solver,nrhs,M,N);CHKERRQ(ierr);}
+  if (rank == 0 && displ) {ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %D, size mat %D x %D\n",solver,nrhs,M,N);CHKERRQ(ierr);}
 
   for (test=0; test<2; test++) {
     if (test == 0) {
@@ -126,7 +126,7 @@ int main(int argc,char **args)
 
     ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
     if (displ) {
-      if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(2) first %D columns of inv(A) with dense RHS:\n",nrhs);CHKERRQ(ierr);}
+      if (rank == 0) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(2) first %D columns of inv(A) with dense RHS:\n",nrhs);CHKERRQ(ierr);}
       ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 
@@ -145,7 +145,7 @@ int main(int argc,char **args)
     /* Create spRHST: PETSc does not support compressed column format which is required by MUMPS for sparse RHS matrix,
      thus user must create spRHST=spRHS^T and call MatMatTransposeSolve() */
     ierr = MatCreate(PETSC_COMM_WORLD,&spRHST);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       /* MUMPS requirs RHS be centralized on the host! */
       ierr = MatSetSizes(spRHST,nrhs,M,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     } else {
@@ -154,7 +154,7 @@ int main(int argc,char **args)
     ierr = MatSetType(spRHST,MATAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(spRHST);CHKERRQ(ierr);
     ierr = MatSetUp(spRHST);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       v = 1.0;
       for (i=0; i<nrhs; i++) {
         ierr = MatSetValues(spRHST,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ int main(int argc,char **args)
     ierr = MatMatTransposeSolve(F,spRHST,X);CHKERRQ(ierr);
 
     if (displ) {
-      if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(3) first %D columns of inv(A) with sparse RHS:\n",nrhs);CHKERRQ(ierr);}
+      if (rank == 0) {ierr = PetscPrintf(PETSC_COMM_SELF," \n(3) first %D columns of inv(A) with sparse RHS:\n",nrhs);CHKERRQ(ierr);}
       ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 

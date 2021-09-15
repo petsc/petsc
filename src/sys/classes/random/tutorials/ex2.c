@@ -151,7 +151,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);
     for (i=0;i<num;i++) {
       double vv,tt;

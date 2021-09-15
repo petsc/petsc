@@ -116,7 +116,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Gather(VecTagger tagger,Vec vec,
   ierr = VecScatterEnd(vScat,vec,gVec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);
   ierr = MPI_Comm_rank (PetscObjectComm((PetscObject)vec),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = VecTaggerComputeBoxes_CDF_Serial(tagger,gVec,bs,boxes);CHKERRQ(ierr);
   }
   ierr = MPI_Bcast((PetscScalar *)boxes,2*bs,MPIU_SCALAR,0,PetscObjectComm((PetscObject)vec));CHKERRMPI(ierr);

@@ -34,7 +34,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   /* (1) all processes get global and local number of edges */
   ierr = MPI_Bcast(&numEdges,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
   nedges = numEdges/size; /* local nedges */
-  if (!rank) {
+  if (rank == 0) {
     nedges += numEdges - size*(numEdges/size);
   }
   wash->Nedge = numEdges;
@@ -53,7 +53,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] own lists row %d - %d\n",rank,estart,eend);CHKERRQ(ierr); */
 
   /* (2) distribute row block edgelist to all processors */
-  if (!rank) {
+  if (rank == 0) {
     vtype = wash->vtype;
     for (i=1; i<size; i++) {
       /* proc[0] sends edgelist to proc[i] */
@@ -74,7 +74,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   wash->edgelist = edgelist;
 
   /* (3) all processes get global and local number of vertices, without ghost vertices */
-  if (!rank) {
+  if (rank == 0) {
     for (i=0; i<size; i++) {
       for (e=eowners[i]; e<eowners[i+1]; e++) {
         v = edgelist[2*e];
@@ -433,7 +433,7 @@ PetscErrorCode WashNetworkCleanUp(Wash wash)
   ierr = MPI_Comm_rank(wash->comm,&rank);CHKERRMPI(ierr);
   ierr = PetscFree(wash->edgelist);CHKERRQ(ierr);
   ierr = PetscFree(wash->vtype);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscFree2(wash->junction,wash->pipe);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -487,7 +487,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     numVertices = 0;
     numEdges    = 0;
     edgelist    = NULL;
-    if (!rank) {
+    if (rank == 0) {
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
@@ -526,7 +526,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     wash->nvertex = npipes + 1;
 
     /* Set local edges and vertices -- proc[0] sets entire network, then distributes */
-    if (!rank) {
+    if (rank == 0) {
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
@@ -564,7 +564,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     wash->nvertex = npipes + 1;
 
     /* Set local edges and vertices -- proc[0] sets entire network, then distributes */
-    if (!rank) {
+    if (rank == 0) {
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
@@ -594,7 +594,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   /* set edge global id */
   for (i=0; i<numEdges; i++) pipes[i].id = i;
 
-  if (!rank) { /* set vtype for proc[0] */
+  if (rank == 0) { /* set vtype for proc[0] */
     PetscInt v;
     ierr = PetscMalloc1(2*numEdges,&vtype);CHKERRQ(ierr);
     for (i=0; i<2*numEdges; i++) {

@@ -1802,7 +1802,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
       ierr = PetscStrncpy(type,((PetscObject)pc)->type_name,256);CHKERRQ(ierr);
       ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
@@ -1837,7 +1837,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 
     ierr = PetscObjectName((PetscObject)pc);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!((PetscObject)pc)->amsmem && !rank) {
+    if (!((PetscObject)pc)->amsmem && rank == 0) {
       ierr = PetscObjectViewSAWs((PetscObject)pc,viewer);CHKERRQ(ierr);
     }
     if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}

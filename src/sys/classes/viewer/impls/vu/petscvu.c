@@ -54,7 +54,7 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     err = fflush(vu->fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }

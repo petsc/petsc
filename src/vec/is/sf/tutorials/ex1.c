@@ -410,7 +410,7 @@ int main(int argc,char **argv)
   }
 
   if (test_embed) {
-    const PetscInt nroots = 1 + (PetscInt) !rank;
+    const PetscInt nroots = 1 + (PetscInt) (rank == 0);
     PetscInt       selected[2];
     PetscSF        esf;
 

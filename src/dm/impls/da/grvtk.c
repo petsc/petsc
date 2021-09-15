@@ -72,7 +72,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"  <StructuredGrid WholeExtent=\"%D %D %D %D %D %D\">\n",0,mx-1,0,my-1,0,mz-1);CHKERRQ(ierr);
 
-  if (!rank) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
   rloc[0] = info.xs;
   rloc[1] = info.xm;
   rloc[2] = info.ys;
@@ -87,7 +87,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   boffset   = 0;                /* Offset into binary file */
   for (r=0; r<size; r++) {
     PetscInt xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
-    if (!rank) {
+    if (rank == 0) {
       xs     = grloc[r][0];
       xm     = grloc[r][1];
       ys     = grloc[r][2];
@@ -151,7 +151,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   for (r=0; r<size; r++) {
     MPI_Status status;
     PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
-    if (!rank) {
+    if (rank == 0) {
       xs     = grloc[r][0];
       xm     = grloc[r][1];
       ys     = grloc[r][2];
@@ -167,7 +167,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
     if (Coords) {
       const PetscScalar *coords;
       ierr = VecGetArrayRead(Coords,&coords);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
           ierr = MPI_Recv(array,nnodes*cdim,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
@@ -215,7 +215,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
       ierr = VecGetDM(X,&daCurr);CHKERRQ(ierr);
       ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL, NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
       ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
           ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
@@ -291,7 +291,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   ierr = PetscFPrintf(comm,fp,"<VTKFile type=\"RectilinearGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"  <RectilinearGrid WholeExtent=\"%D %D %D %D %D %D\">\n",0,mx-1,0,my-1,0,mz-1);CHKERRQ(ierr);
 
-  if (!rank) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
   rloc[0] = info.xs;
   rloc[1] = info.xm;
   rloc[2] = info.ys;
@@ -306,7 +306,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   boffset   = 0;                /* Offset into binary file */
   for (r=0; r<size; r++) {
     PetscInt xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
-    if (!rank) {
+    if (rank == 0) {
       xs     = grloc[r][0];
       xm     = grloc[r][1];
       ys     = grloc[r][2];
@@ -372,7 +372,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   for (r=0; r<size; r++) {
     MPI_Status status;
     PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
-    if (!rank) {
+    if (rank == 0) {
       xs     = grloc[r][0];
       xm     = grloc[r][1];
       ys     = grloc[r][2];
@@ -390,7 +390,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
       if (Coords) {
         const PetscScalar *coords;
         ierr = VecGetArrayRead(Coords,&coords);CHKERRQ(ierr);
-        if (!rank) {
+        if (rank == 0) {
           if (r) {
             PetscMPIInt nn;
             ierr = MPI_Recv(array,xm+ym+zm,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
@@ -443,7 +443,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
           array[k+xm+ym] = zs+k;
         }
       }
-      if (!rank) {
+      if (rank == 0) {
         ierr = PetscViewerVTKFWrite(viewer,fp,&(array[0]),xm,MPIU_SCALAR);CHKERRQ(ierr);
         ierr = PetscViewerVTKFWrite(viewer,fp,&(array[xm]),ym,MPIU_SCALAR);CHKERRQ(ierr);
         ierr = PetscViewerVTKFWrite(viewer,fp,&(array[xm+ym]),zm,MPIU_SCALAR);CHKERRQ(ierr);
@@ -461,7 +461,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
       ierr = DMDAGetInfo(daCurr,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
       ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
           ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);

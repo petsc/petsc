@@ -681,7 +681,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     PetscScalar *vals;
 
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
     } else {
       ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
@@ -707,7 +707,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscObjectSetName((PetscObject)((Mat_MPIDense*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
       ierr = MatView_SeqDense(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }

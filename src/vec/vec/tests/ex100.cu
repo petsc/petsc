@@ -108,7 +108,7 @@ int main(int argc,char **args)
   if (vstage2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector sizes...\n");CHKERRQ(ierr);
     if (size > 1) {
-      if (!rank) {
+      if (rank == 0) {
         lsize = m/size + size;
         ierr  = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
       } else if (rank == size-1) {

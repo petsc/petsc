@@ -327,7 +327,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
       gray   = ray;
       gsvals = svals;
     }
-    if (!rank) {
+    if (rank == 0) {
       /* Sort point along ray */
       ierr = PetscMalloc2(N, &perm, N, &nperm);CHKERRQ(ierr);
       for (i = 0; i < N; ++i) {perm[i] = i;}

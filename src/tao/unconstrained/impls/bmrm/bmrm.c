@@ -78,7 +78,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   innerSolverTol = 1.0;
   epsilon = 0.0;
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = init_df_solver(&df);CHKERRQ(ierr);
     grad_list.next = NULL;
     tail_glist = &grad_list;
@@ -114,7 +114,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
     ierr = VecScatterEnd(bmrm->scatter, G, bmrm->local_w, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
 
     /* Bring up the inner solver */
-    if (!rank) {
+    if (rank == 0) {
       ierr = ensure_df_space(tao->niter+1, &df);CHKERRQ(ierr);
       ierr = make_grad_node(bmrm->local_w, &pgrad);CHKERRQ(ierr);
       tail_glist->next = pgrad;
@@ -171,7 +171,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
     pre_epsilon = epsilon;
     epsilon = min_jw - jtwt;
 
-    if (!rank) {
+    if (rank == 0) {
       if (innerSolverTol > epsilon) innerSolverTol = epsilon;
       else if (innerSolverTol < 1e-7) innerSolverTol = 1e-7;
 
@@ -188,7 +188,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   }
 
   /* free all the memory */
-  if (!rank) {
+  if (rank == 0) {
     ierr = destroy_grad_list(&grad_list);CHKERRQ(ierr);
     ierr = destroy_df_solver(&df);CHKERRQ(ierr);
   }

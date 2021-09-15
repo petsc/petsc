@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   if (size != 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with three processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     nlocal = 4; local[0] = 0; local[1] = 3; local[2] = 2; local[3] = 1;
   } else if (rank == 1) {
     nlocal = 4; local[0] = 3; local[1] = 5; local[2] = 4; local[3] = 2;

@@ -114,7 +114,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
   if (da->dim == 3) SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank);CHKERRMPI(ierr);
   ierr = DMDAGetAO(da, &ao);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     if (da->dim == 1) {
       if (dir == DM_X) {
         ierr = PetscMalloc1(dd->w, &indices);CHKERRQ(ierr);

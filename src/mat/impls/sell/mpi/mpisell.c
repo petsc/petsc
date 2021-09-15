@@ -598,7 +598,7 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     PetscBool   isnonzero;
 
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
     } else {
       ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
@@ -646,7 +646,7 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
        synchronized across all processors that share the PetscDraw object
     */
     ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscObjectSetName((PetscObject)((Mat_MPISELL*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
       ierr = MatView_SeqSELL(((Mat_MPISELL*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }

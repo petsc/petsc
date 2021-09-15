@@ -2191,7 +2191,7 @@ static PetscErrorCode DMCreateReferenceTree_pforest(MPI_Comm comm, DM *dm)
   mesh                   = (DM_Plex*) (*dm)->data;
   mesh->getchildsymmetry = DMReferenceTreeGetChildSymmetry_pforest;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMViewFromOptions(dmRoot,   NULL,"-dm_p4est_ref_root_view");CHKERRQ(ierr);
     ierr = DMViewFromOptions(dmRefined,NULL,"-dm_p4est_ref_refined_view");CHKERRQ(ierr);
     ierr = DMViewFromOptions(dmRefined,NULL,"-dm_p4est_ref_tree_view");CHKERRQ(ierr);

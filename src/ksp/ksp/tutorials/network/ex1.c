@@ -249,7 +249,7 @@ int main(int argc,char ** argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   /* "Read" data only for processor 0 */
-  if (!rank) {
+  if (rank == 0) {
     ierr = read_data(&nnode, &nbranch, &node, &branch, &edgelist);CHKERRQ(ierr);
   }
 
@@ -266,7 +266,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkLayoutSetUp(dmnetwork);CHKERRQ(ierr);
 
   /* Add network components (physical parameters of nodes and branches) and num of variables */
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
       ierr = DMNetworkAddComponent(dmnetwork,i,componentkey[1],&branch[i-eStart],1);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkDistribute(&dmnetwork,0);CHKERRQ(ierr);
 
   /* We do not use these data structures anymore since they have been copied to dmnetwork */
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscFree(edgelist);CHKERRQ(ierr);
     ierr = PetscFree2(node,branch);CHKERRQ(ierr);
   }

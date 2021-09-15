@@ -472,7 +472,7 @@ int main(int argc,char **args)
     /* test BCs */
     ierr = VecZeroEntries(xx);CHKERRQ(ierr);
     if (test_nonzero_cols) {
-      if (!rank) {
+      if (rank == 0) {
         ierr = VecSetValue(xx,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = VecAssemblyBegin(xx);CHKERRQ(ierr);

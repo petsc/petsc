@@ -1231,7 +1231,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       if (d == depth) {ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", (depth == 1) && d ? dim : d);CHKERRQ(ierr);
       for (p = 0; p < size; ++p) {
-        if (!rank) {
+        if (rank == 0) {
           ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]+hybsizes[p]);CHKERRQ(ierr);
           if (hybsizes[p]   > 0) {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", hybsizes[p]);CHKERRQ(ierr);}
           if (ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
@@ -8729,7 +8729,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
   } else {
     ierr = PetscArraycpy(&globalStats,&stats,1);CHKERRQ(ierr);
   }
-  if (!rank) {
+  if (rank == 0) {
     count = globalStats.count;
     min   = globalStats.min;
     max   = globalStats.max;

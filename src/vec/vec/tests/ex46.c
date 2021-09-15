@@ -128,7 +128,7 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscBinaryOpen(name,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fdes,buffer,VEC_LEN,NULL,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);

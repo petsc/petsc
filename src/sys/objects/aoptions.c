@@ -129,7 +129,7 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     c = (char) getchar();
     i = 0;
     while (c != '\n' && i < n-1) {

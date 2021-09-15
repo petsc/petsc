@@ -34,7 +34,7 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 #if 0
-  if (!rank) {
+  if (rank == 0) {
     PetscInt       subsnes_id = user->subsnes_id;
     if (subsnes_id == 2) {
       ierr = PetscPrintf(PETSC_COMM_SELF," it %D, subsnes_id %D, fnorm %g\n",user->it,user->subsnes_id,(double)fnorm);CHKERRQ(ierr);
@@ -229,7 +229,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
 #if 0
-  if (!rank) printf("F:\n");
+  if (rank == 0) printf("F:\n");
   ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -351,7 +351,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
   ierr = PetscNew(&pfdata);CHKERRQ(ierr);
   ierr = PFReadMatPowerData(pfdata,pfdata_file);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Power network: nb = %D, ngen = %D, nload = %D, nbranch = %D\n",pfdata->nbus,pfdata->ngen,pfdata->nload,pfdata->nbranch);CHKERRQ(ierr);
   }
   Sbase = pfdata->sbase;

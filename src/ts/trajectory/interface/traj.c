@@ -618,7 +618,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 
     ierr = PetscObjectGetComm((PetscObject)(*tj),&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-    if (!rank && (*tj)->dirname) { /* we own the directory, so we run PetscRMTree on it */
+    if (rank == 0 && (*tj)->dirname) { /* we own the directory, so we run PetscRMTree on it */
       ierr = PetscRMTree((*tj)->dirname);CHKERRQ(ierr);
     }
   }

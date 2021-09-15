@@ -276,9 +276,9 @@ C Usage
 
 #. Do not use the ``register`` directive.
 
-#. Do not use ``if (rank == 0)`` or ``if (v == NULL)`` or
+#. Do not use ``if (v == NULL)`` or
    ``if (flg == PETSC_TRUE)`` or ``if (flg == PETSC_FALSE)``. Instead, use
-   ``if (!rank)`` or ``if (!v)`` or ``if (flg)`` or ``if (!flg)``.
+   ``if (!v)`` or ``if (flg)`` or ``if (!flg)``.
 
 #. Do not use ``#ifdef`` or ``#ifndef``. Rather, use ``#if defined(...``
    or ``#if !defined(...``.  Better, use ``PetscDefined()`` (see below).

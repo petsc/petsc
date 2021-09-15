@@ -20,7 +20,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
     mx   = mxCreateStructMatrix(1,1,8,(const char**)fnames);
     if (!mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate MATLAB struct array to hold DMDA information");
@@ -56,7 +56,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
 
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);

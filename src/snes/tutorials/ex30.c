@@ -1052,7 +1052,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
 
   if (param->output_to_file) { /* send output to binary file */
     ierr = VecCreate(comm, &pars);CHKERRQ(ierr);
-    if (!rank) { /* on processor 0 */
+    if (rank == 0) { /* on processor 0 */
       ierr = VecSetSizes(pars, 20, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
       ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);CHKERRQ(ierr);

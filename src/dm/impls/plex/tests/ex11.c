@@ -86,7 +86,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMPlexSetChart(dm, 0, 25);CHKERRQ(ierr);
     ierr = DMPlexSetConeSize(dm, 0, 6);CHKERRQ(ierr);
     ierr = DMPlexSetConeSize(dm, 1, 6);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     ierr = DMPlexSetConeSize(dm, 12, 4);CHKERRQ(ierr);
   }
   ierr = DMSetUp(dm);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMPlexSetCone(dm, 0, c0);CHKERRQ(ierr);
     ierr = DMPlexSetCone(dm, 1, c1);CHKERRQ(ierr);
     ierr = DMPlexSetCone(dm, 2, c2);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
 
     ierr = DMCreateLabel(dm, "depth");CHKERRQ(ierr);
     ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       PetscInt i;
 
       for (i = 0; i < 25; ++i) {

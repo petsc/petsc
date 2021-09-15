@@ -76,10 +76,10 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf,MPI_Datatype unit,
     ierr = PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */);CHKERRQ(ierr);
     ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(dat->rootbuflen[PETSCSF_REMOTE],&recvcount);CHKERRQ(ierr);
-    if (!rank && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) {
+    if (rank == 0 && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) {
       ierr = PetscSFMalloc(sf,link->leafmtype_mpi,sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes,(void**)&link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]);CHKERRQ(ierr);
     }
-    if (!rank && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
+    if (rank == 0 && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
     ierr = PetscMPIIntCast(sf->nleaves*link->bs,&count);CHKERRQ(ierr);
     ierr = PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_LEAF2ROOT);CHKERRQ(ierr);
     ierr = MPI_Reduce(leafbuf,link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi],count,link->basicunit,op,0,comm);CHKERRMPI(ierr); /* Must do reduce with MPI builltin datatype basicunit */
@@ -99,7 +99,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf,MPI_Datatype unit,
   ierr = PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   ierr = PetscSFLinkFinishCommunication(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
-  if (!rank && PetscMemTypeDevice(leafmtype) && !sf->use_gpu_aware_mpi) {
+  if (rank == 0 && PetscMemTypeDevice(leafmtype) && !sf->use_gpu_aware_mpi) {
     ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,leafdata,PETSC_MEMTYPE_HOST,link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST],sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes);CHKERRQ(ierr);
   }
   ierr = PetscSFLinkReclaim(sf,&link);CHKERRQ(ierr);

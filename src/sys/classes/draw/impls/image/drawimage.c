@@ -447,7 +447,7 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw,unsigned char palet
   if (h) *h = (unsigned int)img->h;
   if (pixels) *pixels = NULL;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscMemcpy(palette,img->palette,sizeof(img->palette));CHKERRQ(ierr);
     ierr = PetscMalloc1((size_t)(img->w*img->h),&buffer);CHKERRQ(ierr);
     if (pixels) *pixels = buffer;

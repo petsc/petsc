@@ -78,7 +78,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 
     ierr = PetscObjectName((PetscObject)indraw);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!((PetscObject)indraw)->amsmem && !rank) {
+    if (!((PetscObject)indraw)->amsmem && rank == 0) {
       ierr = PetscObjectViewSAWs((PetscObject)indraw,viewer);CHKERRQ(ierr);
     }
 #endif

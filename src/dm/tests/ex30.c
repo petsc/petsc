@@ -121,7 +121,7 @@ int main(int argc,char *argv[])
   /* Update the ghosted values, view the result on rank 0. */
   ierr = VecGhostUpdateBegin(b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateEnd(b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = VecGhostGetLocalForm(b,&lf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"Local form of b on rank 0, last two nodes are ghost nodes\n");CHKERRQ(ierr);
     ierr = VecView(lf,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

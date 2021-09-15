@@ -430,7 +430,7 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
   /* only processor zero can use the PetscViewer draw singleton */
   if (sviewer) *sviewer = NULL;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscMPIInt flg;
     PetscDraw   draw,sdraw;
 
@@ -472,7 +472,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
   PetscFunctionBegin;
   if (!vdraw->singleton_made) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscDraw draw,sdraw;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);

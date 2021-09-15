@@ -699,7 +699,7 @@ static PetscErrorCode KSPViewEigenvalues_Internal(KSP ksp, PetscBool isExplicit,
       if (c[i] >= 0.0) {ierr = PetscViewerASCIIPrintf(viewer, "%g + %gi\n", (double) r[i],  (double) c[i]);CHKERRQ(ierr);}
       else             {ierr = PetscViewerASCIIPrintf(viewer, "%g - %gi\n", (double) r[i], -(double) c[i]);CHKERRQ(ierr);}
     }
-  } else if (isdraw && !rank) {
+  } else if (isdraw && rank == 0) {
     PetscDraw   draw;
     PetscDrawSP drawsp;
 

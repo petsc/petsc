@@ -384,7 +384,7 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
     ierr = PetscViewerASCIIPrintf(viewer," Number of fine parts: %D\n",hpart->nfineparts);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," Fine partitioner: %s\n",hpart->fineparttype);CHKERRQ(ierr);
     ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    if (!rank && hpart->fineMatPart) {
+    if (rank == 0 && hpart->fineMatPart) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatPartitioningView(hpart->fineMatPart,sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

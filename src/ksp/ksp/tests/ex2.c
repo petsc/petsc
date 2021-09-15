@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     rowidx = 0; colidx = 0; v = 1.0;
     ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
     rowidx = 0; colidx = 1; v = 2.0;

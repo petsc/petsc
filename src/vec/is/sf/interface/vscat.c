@@ -787,7 +787,7 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
 
     ierr = MPI_Comm_rank(xcomm,&rank);CHKERRMPI(ierr);
     ierr = VecGetLayout(x,&map);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       if (ixid == IS_STRIDE && iyid == IS_STRIDE && ixsize == xlen && ixfirst == 0 && ixstep == 1 && iyfirst == 0 && iystep == 1) {
         /* Rank 0 scatters the whole mpi x to seq y, so it is either a ToAll or a ToZero candidate in its view */
         pattern[0] = pattern[1] = 1;

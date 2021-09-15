@@ -622,7 +622,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ibuf[0] = PetscBinaryRead(fd,data,num,count?&ibuf[1]:NULL,type);
   }
   ierr = MPI_Bcast(ibuf,2,MPIU_INT,0,comm);CHKERRMPI(ierr);
@@ -684,7 +684,7 @@ PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,const void *p,
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscBinaryWrite(fd,p,n,type);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -722,7 +722,7 @@ PetscErrorCode  PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,off_t off,Petsc
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscBinarySeek(fd,off,whence,offset);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
