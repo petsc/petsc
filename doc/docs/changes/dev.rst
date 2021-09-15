@@ -15,6 +15,7 @@ Changes: Development
    should be checked with ``CHKERRMPI(ierr)``
 -  Add support for ESSL 5.2 and later; drop support for ESSL <=5.1
 -  Add support for NEC-SX Tsubasa Vector Engine
+-  Add support for NVIDIA HPC SDK
 
 .. rubric:: Configure/Build:
 -  Configure requires Python-2.7 or Python-3.4+.
