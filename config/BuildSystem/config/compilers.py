@@ -263,6 +263,9 @@ class Configure(config.base.Configure):
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
+    # Cray: remove libsci link
+    iscray = config.setCompilers.Configure.isCray(self.getCompiler('C'), self.log)
+
     output = remove_xcode_verbose(output)
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
@@ -340,6 +343,9 @@ class Configure(config.base.Configure):
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
+              continue
+            elif iscray and (arg == '-lsci_cray_mpi' or arg == '-lsci_cray' or arg == '-lsci_cray_mp'):
+              self.logPrint('Skipping CRAY LIBSCI library: '+arg, 4, 'compilers')
               continue
             else:
               lflags.append(arg)
@@ -848,6 +854,9 @@ class Configure(config.base.Configure):
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
+    # Cray: remove libsci link
+    iscray = config.setCompilers.Configure.isCray(self.getCompiler('Cxx'), self.log)
+
     output = remove_xcode_verbose(output)
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
@@ -928,13 +937,19 @@ class Configure(config.base.Configure):
               continue
             elif arg == '-lLTO' and self.setCompilers.isDarwin(self.log):
               self.logPrint('Skipping -lTO')
+              continue
+            elif iscray and (arg == '-lsci_cray_mpi' or arg == '-lsci_cray' or arg == '-lsci_cray_mp'):
+              self.logPrint('Skipping CRAY LIBSCI library: '+arg, 4, 'compilers')
+              continue
+            elif arg in self.clibs:
+              self.logPrint('Library already in C list so skipping in C++', 4, 'compilers')
+              continue
             else:
               lflags.append(arg)
             self.logPrint('Found library: '+arg, 4, 'compilers')
-            if (arg == '-lLTO' and self.setCompilers.isDarwin(self.log)) or arg in self.clibs:
-              self.logPrint('Library already in C list so skipping in C++')
-            else:
-              cxxlibs.append(arg)
+            cxxlibs.append(arg)
+          else:
+            self.logPrint('Already in flags: '+arg, 4, 'compilers')
           continue
         m = re.match(r'^-L.*$', arg)
         if m:
@@ -1187,6 +1202,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
+    # Cray: remove libsci link
+    iscray = config.setCompilers.Configure.isCray(self.getCompiler('FC'), self.log)
+
     output = remove_xcode_verbose(output)
     # replace \CR that ifc puts in each line of output
     output = output.replace('\\\n', '')
@@ -1345,13 +1363,18 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
             elif arg == '-lfrtbegin' and not config.setCompilers.Configure.isCygwin(self.log):
               fmainlibs.append(arg)
               continue
-            elif not arg == '-lLTO' or not config.setCompilers.Configure.isDarwin(self.log):
+            elif arg == '-lLTO' and self.setCompilers.isDarwin(self.log):
+              self.logPrint('Skipping -lTO')
+            elif iscray and (arg == '-lsci_cray_mpi' or arg == '-lsci_cray' or arg == '-lsci_cray_mp'):
+              self.logPrint('Skipping CRAY LIBSCI library: '+arg, 4, 'compilers')
+              continue
+            elif arg in self.clibs:
+              self.logPrint('Library already in C list so skipping in Fortran', 4, 'compilers')
+              continue
+            else:
               lflags.append(arg)
             self.logPrint('Found library: '+arg, 4, 'compilers')
-            if arg in self.clibs:
-              self.logPrint('Library already in C list so skipping in Fortran')
-            elif not arg == '-lLTO' or not config.setCompilers.Configure.isDarwin(self.log):
-              flibs.append(arg)
+            flibs.append(arg)
           else:
             self.logPrint('Already in lflags: '+arg, 4, 'compilers')
           continue

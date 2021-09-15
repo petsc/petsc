@@ -539,7 +539,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBinaryInsertionSortWithArray_Private(cha
 typedef struct {
   PetscInt size;
   PetscInt start;
+#if defined(__CRAY_AARCH64) /* segfaults with Cray compilers for aarch64 on a64FX */
+} PetscTimSortStack;
+#else
 } PetscTimSortStack PETSC_ATTRIBUTEALIGNED(2*sizeof(PetscInt));
+#endif
 
 typedef struct {
   char   *ptr PETSC_ATTRIBUTEALIGNED(PETSC_MEMALIGN);

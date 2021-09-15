@@ -13,6 +13,7 @@ Changes: Development
 
 -  Change ``MPIU_Allreduce()`` to always returns a MPI error code that
    should be checked with ``CHKERRMPI(ierr)``
+-  Add support for A64FX and Cray compilers
 -  Add support for ESSL 5.2 and later; drop support for ESSL <=5.1
 -  Add support for NEC-SX Tsubasa Vector Engine
 -  Add support for NVIDIA HPC SDK

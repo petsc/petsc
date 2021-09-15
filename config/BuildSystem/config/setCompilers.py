@@ -155,7 +155,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find('NAGWare Fortran') >= 0 or output.find('The Numerical Algorithms Group Ltd') >= 0:
+      found = any([s in output for s in ['NAGWare Fortran','The Numerical Algorithms Group Ltd']])
+      if found:
         if log: log.write('Detected NAG Fortran compiler\n')
         return 1
     except RuntimeError:
@@ -335,9 +336,9 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
-      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
+      if 'Unrecognised option --help passed to ld' in output:    # NAG f95 compiler
         return 0
-      if output.find('http://www.g95.org') >= 0:
+      if 'http://www.g95.org' in output:
         if log: log.write('Detected g95 compiler\n')
         return 1
     except RuntimeError:
@@ -349,9 +350,10 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
-      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
+      if 'Unrecognised option --help passed to ld' in output:    # NAG f95 compiler
         return 0
-      if output.find('Compaq Visual Fortran') >= 0 or output.find('Digital Visual Fortran') >=0 :
+      found = any([s in output for s in ['Compaq Visual Fortran','Digital Visual Fortran']])
+      if found:
         if log: log.write('Detected Compaq Visual Fortran compiler\n')
         return 1
     except RuntimeError:
@@ -363,7 +365,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find(' Sun ') >= 0:
+      found = any([s in output for s in [' Sun C ',' Sun C++ ', ' Sun Fortran ']])
+      if found:
         if log: log.write('Detected Sun/Oracle compiler\n')
         return 1
     except RuntimeError:
@@ -387,7 +390,7 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
-      if output.find('Intel') >= 0:
+      if 'Intel' in output:
         if log: log.write('Detected Intel compiler\n')
         return 1
     except RuntimeError:
@@ -407,7 +410,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V', log = log)
       output = output + error
-      if output.find('Cray Standard C') >= 0 or output.find('Cray C++') >= 0 or output.find('Cray Fortran') >= 0:
+      found = any([s in output for s in ['Cray C ','Cray Standard C','Cray C++ ','Cray Fortran ']])
+      if found:
         if log: log.write('Detected Cray compiler\n')
         return 1
     except RuntimeError:
@@ -452,7 +456,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find('The Portland Group') >= 0 or output.find('PGI Compilers and Tools') >= 0:
+      found = any([s in output for s in ['The Portland Group','PGI Compilers and Tools']])
+      if found:
         if log: log.write('Detected PGI compiler\n')
         return 1
     except RuntimeError:
@@ -476,7 +481,7 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(ar + ' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find('Software Generation Utilities') >= 0:
+      if 'Software Generation Utilities' in output:
         return 1
     except RuntimeError:
       pass
