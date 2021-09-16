@@ -361,12 +361,20 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
+  /*
+     Setup building of stack frames for all function calls
+  */
+  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) {
+    ierr = PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg1,NULL);CHKERRQ(ierr);
+    ierr = PetscStackSetCheck(flg1);CHKERRQ(ierr);
+  }
+
 #if !defined(PETSC_HAVE_THREADSAFETY)
   if (!(PETSC_RUNNING_ON_VALGRIND)) {
     /*
       Setup the memory management; support for tracing malloc() usage
     */
-    PetscBool         mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, mlog = PETSC_FALSE;
+    PetscBool mdebug = PETSC_FALSE, eachcall = PETSC_FALSE, initializenan = PETSC_FALSE, mlog = PETSC_FALSE;
 
     if (PetscDefined(USE_DEBUG)) {
       mdebug        = PETSC_TRUE;

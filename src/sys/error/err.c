@@ -33,7 +33,9 @@ PetscErrorCode PetscAbortFindSourceFile_Private(const char* filepath, PetscInt *
   char            subpath[256];
 
   PetscFunctionBegin;
+  PetscValidCharPointer(filepath,1);
   PetscValidIntPointer(idx,2);
+  ierr = PetscStackView(stderr);CHKERRQ(ierr);
   *idx = 1;
   for (i=2; i<n; i++) {
     ierr = PetscFixFilename(PetscAbortSourceFiles[i],subpath);CHKERRQ(ierr);
