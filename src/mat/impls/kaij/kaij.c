@@ -1102,6 +1102,7 @@ PetscErrorCode MatMultAdd_MPIKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   } else {
     ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   }
+  ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr); /* Ensure b->AIJ and b->OAIJ are up to date. */
   /* start the scatter */
   ierr = VecScatterBegin(b->ctx,xx,b->w,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*b->AIJ->ops->multadd)(b->AIJ,xx,zz,zz);CHKERRQ(ierr);
@@ -1124,6 +1125,7 @@ PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A,const PetscScalar **values)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr); /* Ensure b->AIJ is up to date. */
   ierr = (*b->AIJ->ops->invertblockdiagonal)(b->AIJ,values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1216,16 +1218,18 @@ PetscErrorCode MatRestoreRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
 PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **values)
 {
   Mat_MPIKAIJ     *b      = (Mat_MPIKAIJ*) A->data;
-  Mat             MatAIJ  = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
-  Mat             MatOAIJ = ((Mat_SeqKAIJ*)b->OAIJ->data)->AIJ;
   Mat             AIJ     = b->A;
   PetscBool       diag    = PETSC_FALSE;
+  Mat             MatAIJ,MatOAIJ;
   PetscErrorCode  ierr;
   const PetscInt  rstart=A->rmap->rstart,rend=A->rmap->rend,p=b->p,q=b->q,*garray;
   PetscInt        nz,*idx,ncolsaij = 0,ncolsoaij = 0,*colsaij,*colsoaij,r,s,c,i,j,lrow;
   PetscScalar     *v,*vals,*ovals,*S=b->S,*T=b->T;
 
   PetscFunctionBegin;
+  ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr); /* Ensure b->AIJ and b->OAIJ are up to date. */
+  MatAIJ  = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
+  MatOAIJ = ((Mat_SeqKAIJ*)b->OAIJ->data)->AIJ;
   if (b->getrowactive) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
   b->getrowactive = PETSC_TRUE;
   if (row < rstart || row >= rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only local rows");
@@ -1359,6 +1363,12 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
   Notes:
   This function increases the reference count on the AIJ matrix, so the user is free to destroy the matrix if it is not needed.
   Changes to the entries of the AIJ matrix will immediately affect the KAIJ matrix.
+
+  Developer Notes:
+  In the MATMPIKAIJ case, the internal 'AIJ' and 'OAIJ' sequential KAIJ matrices are kept up to date by tracking the object state
+  of the AIJ matrix 'A' that describes the blockwise action of the MATMPIKAIJ matrix and, if the object state has changed, lazily
+  rebuilding 'AIJ' and 'OAIJ' just before executing operations with the MATMPIKAIJ matrix. If new types of operations are added,
+  routines implementing those must also ensure these are rebuilt when needed (by calling the internal MatKAIJ_build_AIJ_OAIJ() routine).
 
   Level: advanced
 
