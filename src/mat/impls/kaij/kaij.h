@@ -21,10 +21,11 @@ typedef struct {
 
 typedef struct {
   KAIJHEADER
-  Mat        OAIJ;
-  Mat        A;
-  VecScatter ctx;     /* update ghost points for parallel case */
-  Vec        w;       /* work space for ghost values for parallel case */
+  Mat              OAIJ;  /* sequential KAIJ matrix that corresponds to off-diagonal matrix entries */
+  Mat              A;
+  VecScatter       ctx;   /* update ghost points for parallel case */
+  Vec              w;     /* work space for ghost values for parallel case */
+  PetscObjectState state; /* state of the matrix A when AIJ and OIJ were last updated */
 } Mat_MPIKAIJ;
 
 #endif

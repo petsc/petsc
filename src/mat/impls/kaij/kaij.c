@@ -462,6 +462,50 @@ PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
+{
+  PetscErrorCode   ierr;
+  Mat_MPIKAIJ      *a;
+  Mat_MPIAIJ       *mpiaij;
+  PetscScalar      *T;
+  PetscInt         i,j;
+  PetscObjectState state;
+
+  PetscFunctionBegin;
+  a = (Mat_MPIKAIJ*)A->data;
+  mpiaij = (Mat_MPIAIJ*)a->A->data;
+
+  ierr = PetscObjectStateGet((PetscObject)a->A,&state);CHKERRQ(ierr);
+  if (state == a->state) {
+    /* The existing AIJ and KAIJ members are up-to-date, so simply exit. */
+    PetscFunctionReturn(0);
+  } else {
+    ierr = MatDestroy(&a->AIJ);CHKERRQ(ierr);
+    ierr = MatDestroy(&a->OAIJ);CHKERRQ(ierr);
+    if (a->isTI) {
+      /* If the transformation matrix associated with the parallel matrix A is the identity matrix, then a->T will be NULL.
+       * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
+       * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
+       * to pass in. */
+      ierr = PetscMalloc1(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
+      for (i=0; i<a->p; i++) {
+        for (j=0; j<a->q; j++) {
+          if (i==j) T[i+j*a->p] = 1.0;
+          else      T[i+j*a->p] = 0.0;
+        }
+      }
+    } else T = a->T;
+    ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr);
+    ierr = MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ);CHKERRQ(ierr);
+    if (a->isTI) {
+      ierr = PetscFree(T);CHKERRQ(ierr);
+    }
+    a->state = state;
+  }
+
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatSetUp_KAIJ(Mat A)
 {
   PetscErrorCode ierr;
