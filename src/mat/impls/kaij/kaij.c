@@ -526,8 +526,6 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     Mat_MPIAIJ  *mpiaij;
     IS          from,to;
     Vec         gvec;
-    PetscScalar *T;
-    PetscInt    i,j;
 
     a = (Mat_MPIKAIJ*)A->data;
     mpiaij = (Mat_MPIAIJ*)a->A->data;
@@ -537,24 +535,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-    if (a->isTI) {
-      /* If the transformation matrix associated with the parallel matrix A is the identity matrix, then a->T will be NULL.
-       * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
-       * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
-       * to pass in. */
-      ierr = PetscMalloc1(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
-      for (i=0; i<a->p; i++) {
-        for (j=0; j<a->q; j++) {
-          if (i==j) T[i+j*a->p] = 1.0;
-          else      T[i+j*a->p] = 0.0;
-        }
-      }
-    } else T = a->T;
-    ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr);
-    ierr = MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ);CHKERRQ(ierr);
-    if (a->isTI) {
-      ierr = PetscFree(T);CHKERRQ(ierr);
-    }
+    ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr);
 
     ierr = VecGetSize(mpiaij->lvec,&n);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_SELF,&a->w);CHKERRQ(ierr);
