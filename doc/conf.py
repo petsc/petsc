@@ -21,6 +21,16 @@ import build_classic_docs
 import make_links_relative
 
 
+if not os.path.isdir("images"):
+    print("-----------------------------------------------------------------------------")
+    print("ERROR")
+    print("images directory does not seem to exist.")
+    print("To clone the required repository, try")
+    print("   make images")
+    print("-----------------------------------------------------------------------------")
+    raise Exception("Aborting because images missing")
+
+
 # -- Project information -------------------------------------------------------
 
 project = 'PETSc'
@@ -99,8 +109,8 @@ html_context = {
 }
 
 html_static_path = ['_static']
-html_logo = os.path.join('..', 'src', 'docs', 'website','images','PETSc-TAO_RGB.svg')
-html_favicon = os.path.join('..', 'src', 'docs', 'website','images','PETSc_RGB-logo.png')
+html_logo = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc-TAO', 'web', 'PETSc-TAO_RGB.svg')
+html_favicon = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc', 'petsc_favicon.png')
 html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'
 
 

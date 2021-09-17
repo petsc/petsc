@@ -664,7 +664,7 @@ we introduce the four spaces shown in :numref:`fig_localspaces`.
    space (at least not during assembly), but it is a useful for
    declaring which part of a matrix is being assembled.
 
-.. figure:: images/localspaces.svg
+.. figure:: /images/docs/manual/localspaces.svg
    :alt: The relationship between spaces used for coupled assembly.
    :name: fig_localspaces
 
@@ -1084,7 +1084,7 @@ are the row pointers and column pointers for the given rows; these are
 the usual format for parallel compressed sparse row storage, using
 indices starting at 0, *not* 1.
 
-.. figure:: images/usg.*
+.. figure:: /images/docs/manual/usg.*
    :alt: Numbering on Simple Unstructured Grid
    :name: fig_usg
 

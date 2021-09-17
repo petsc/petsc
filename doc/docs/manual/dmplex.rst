@@ -36,7 +36,7 @@ encodes a partially ordered set (poset).
 
 For example, we can encode the doublet mesh as in :numref:`fig_doubletMesh`,
 
-.. figure:: images/dmplex_doublet_mesh.svg
+.. figure:: /images/docs/manual/dmplex_doublet_mesh.svg
   :name: fig_doubletMesh
 
   A 2D doublet mesh, two triangles sharing an edge.
@@ -44,7 +44,7 @@ For example, we can encode the doublet mesh as in :numref:`fig_doubletMesh`,
 which can also be represented as the DAG in
 :numref:`fig_doubletDAG`.
 
-.. figure:: images/dmplex_doublet_dag.svg
+.. figure:: /images/docs/manual/dmplex_doublet_dag.svg
   :name: fig_doubletDAG
 
   The Hasse diagram for our 2D doublet mesh, expressed as a DAG.

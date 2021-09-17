@@ -210,24 +210,24 @@ Note the value: xx:xx:xx:xx:xx:xx
 
 Login to your MathWorks Account from a computer which has internet access. You will see the available license that your account has. Select a license from the list.
 
-.. figure:: images/mathworks-account.png
+.. figure:: /images/docs/manual/mathworks-account.png
 
 Then, select Install and Activate option and select the Activate to Retrieve License File option.
 
- .. figure:: images/mathworks-account-2.png
+ .. figure:: /images/docs/manual/mathworks-account-2.png
 
 Enter the information and click Continue.
 
-.. figure:: images/mathworks-account-3.png
+.. figure:: /images/docs/manual/mathworks-account-3.png
 
 An option to download the License file will appear. Download it and copy the license file to the cluster (your home directory).
 Now, launch MATLAB where you have sshed into your head node.
 
-.. figure:: images/mathworks-account-4.png
+.. figure:: /images/docs/manual/mathworks-account-4.png
 
 Select the Activate manually without the internet option and click Next >.
 Browse and locate the license file.
 
-.. figure:: images/mathworks-account-5.png
+.. figure:: /images/docs/manual/mathworks-account-5.png
 
 MATLAB is activated and ready to use.

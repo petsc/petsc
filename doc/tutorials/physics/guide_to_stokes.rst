@@ -217,11 +217,11 @@ which are show in the figure below.
 
 .. list-table::
 
-  * - .. figure:: images/ex69_sol_m_2_n_2_B_1.png
+  * - .. figure:: /images/tutorials/physics/ex69_sol_m_2_n_2_B_1.png
 
          Solution for :math:`m=2`, :math:`n=2`, :math:`B=1`
 
-    - .. figure:: images/ex69_sol_m_2_n_2_B_375.png
+    - .. figure:: /images/tutorials/physics/ex69_sol_m_2_n_2_B_375.png
 
          Solution for :math:`m=2`, :math:`n=2`, :math:`B=3.75`
 
@@ -765,19 +765,19 @@ We can see a sparsity portrait of the system and preconditioning matrices if the
 
 .. list-table::
 
-  * - .. figure:: images/stokes_p2p1_sys_mat.png
+  * - .. figure:: /images/tutorials/physics/stokes_p2p1_sys_mat.png
 
          System matrix
 
-    - .. figure:: images/stokes_p2p1_sys_mat_sparse.png
+    - .. figure:: /images/tutorials/physics/stokes_p2p1_sys_mat_sparse.png
 
          System matrix with sparse stencil
 
-  * - .. figure:: images/stokes_p2p1_prec_mat.png
+  * - .. figure:: /images/tutorials/physics/stokes_p2p1_prec_mat.png
 
          Preconditioning matrix
 
-    - .. figure:: images/stokes_p2p1_prec_mat_sparse.png
+    - .. figure:: /images/tutorials/physics/stokes_p2p1_prec_mat_sparse.png
 
          Preconditioning matrix with sparse stencil
 
