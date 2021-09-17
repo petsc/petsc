@@ -5106,12 +5106,9 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
    Level: intermediate
 
    Notes:
-       The i and j indices are 0 based
-
-       The format which is used for the sparse matrix input, is equivalent to a
-    row-major ordering.. i.e for the following matrix, the input data expected is
-    as shown:
-
+       The i and j indices are 0 based. The format which is used for the sparse matrix input, is equivalent to a row-major ordering. i.e for the following matrix,
+       the input data expected is as shown
+.vb
         1 0 0
         2 0 3
         4 5 6
@@ -5119,6 +5116,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
         i =  {0,1,1,2,2,2}
         j =  {0,0,2,0,1,2}
         v =  {1,2,3,4,5,6}
+.ve
 
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateSeqAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
