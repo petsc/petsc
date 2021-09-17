@@ -6,6 +6,8 @@ PETSc uses `git <https://git-scm.com/>`__, `GitLab <https://gitlab.com/petsc/pet
 and its testing system, for its source code management.
 All new code in PETSc is accepted via merge requests (MRs).
 
+.. _sec_integration_branches:
+
 Integration branches
 ====================
 

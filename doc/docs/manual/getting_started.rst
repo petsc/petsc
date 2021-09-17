@@ -53,7 +53,7 @@ of these pieces. The figure illustrates the library’s hierarchical
 organization, which enables users to employ the solvers that are most
 appropriate for a particular problem.
 
-.. figure:: images/library_structure.svg
+.. figure:: /images/docs/manual/library_structure.svg
   :alt: PETSc numerical libraries
   :name: fig_library
 

@@ -152,7 +152,7 @@ and often poorly structured legacy codes for specific applications.
 works with external libraries and application code.
 
 
-.. figure:: images/taofig.svg
+.. figure:: /images/docs/manual/taofig.svg
   :name: fig_tao_design
 
   TAO Design

@@ -41,7 +41,7 @@ Consider the addition of two large vectors, with the result written to a
 third vector. Because there are no dependencies across the different
 entries of each vector, the operation is embarrasingly parallel.
 
-.. figure:: images/stream-results-intel.*
+.. figure:: /images/docs/manual/stream-results-intel.*
    :alt: Memory bandwidth obtained on Intel hardware (dual socket except KNL) over the number of processes used. One can get close to peak memory bandwidth with only a few processes.
    :name: fig_stream_intel
    :width: 80.0%
@@ -117,7 +117,7 @@ CPU are fully saturated. However, full saturation of memory channels is
 only possible if the data is distributed across the different memory
 channels.
 
-.. figure:: images/numa.*
+.. figure:: /images/docs/manual/numa.*
    :alt: Schematic of a two-socket NUMA system. Processes should be spread across both CPUs to obtain full bandwidth.
    :name: fig_numa
    :width: 90.0%
