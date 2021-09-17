@@ -78,6 +78,8 @@ Changes: Development
 
 .. rubric:: Vec:
 
+-  Add ``VecMean()`` to calculate arithmetic mean of elements of a vector
+
 .. rubric:: PetscSection:
 
 -  Extend ``PetscSectionView()`` for section saving to HDF5
