@@ -381,15 +381,17 @@ class Configure(config.package.Package):
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')],'32','no')
 
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'),'32','unknown')
-      yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'),'32','no')
+      for libdir in ['lib64','lib','']:
+        if os.path.exists(os.path.join(dir,libdir)):
+          yield ('User specified installation root (F2CBLASLAPACK)', os.path.join(dir,libdir,'libf2cblas.a'), os.path.join(dir,libdir,'libf2clapack.a'),'32','no')
       yield ('User specified installation root(FBLASLAPACK)', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'),'32','no')
       for lib in ['','lib64']:
         yield ('User specified installation root IBM ESSL', None, os.path.join(dir, lib, 'libessl.a'),'32','unknown')
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blaslapack-dir> while attempting to get a different library.
-      for lib in ['lib64','lib','']:
+      for libdir in ['lib64','lib','']:
         if os.path.exists(os.path.join(dir,libdir)):
-          yield ('User specified installation root BLAS/LAPACK',os.path.join(dir,lib,'libblas.a'),os.path.join(dir,lib,'liblapack.a'),'unknown','unknown')
+          yield ('User specified installation root BLAS/LAPACK',os.path.join(dir,libdir,'libblas.a'),os.path.join(dir,libdir,'liblapack.a'),'unknown','unknown')
       if hasattr(self,'checkingMKROOTautomatically'):
         raise RuntimeError('Unable to locate working BLAS/LAPACK libraries, even tried libraries in MKLROOT '+self.argDB['with-blaslapack-dir']+'\n')
       else:
