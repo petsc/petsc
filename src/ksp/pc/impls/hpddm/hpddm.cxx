@@ -1573,18 +1573,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   }
   if (!loadedSym) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCHPDDM_Internal symbol not found in loaded libhpddm_petsc");
   ierr = PetscNewLog(pc, &data);CHKERRQ(ierr);
-  pc->data                     = data;
-  pc->ops->reset               = PCReset_HPDDM;
-  pc->ops->destroy             = PCDestroy_HPDDM;
-  pc->ops->setfromoptions      = PCSetFromOptions_HPDDM;
-  pc->ops->setup               = PCSetUp_HPDDM;
-  pc->ops->apply               = PCApply_HPDDM;
-  pc->ops->matapply            = PCMatApply_HPDDM;
-  pc->ops->view                = PCView_HPDDM;
-  pc->ops->applytranspose      = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
-  pc->ops->presolve            = PCPreSolve_HPDDM;
+  pc->data                = data;
+  pc->ops->reset          = PCReset_HPDDM;
+  pc->ops->destroy        = PCDestroy_HPDDM;
+  pc->ops->setfromoptions = PCSetFromOptions_HPDDM;
+  pc->ops->setup          = PCSetUp_HPDDM;
+  pc->ops->apply          = PCApply_HPDDM;
+  pc->ops->matapply       = PCMatApply_HPDDM;
+  pc->ops->view           = PCView_HPDDM;
+  pc->ops->presolve       = PCPreSolve_HPDDM;
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetAuxiliaryMat_C", PCHPDDMSetAuxiliaryMat_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMHasNeumannMat_C", PCHPDDMHasNeumannMat_HPDDM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM);CHKERRQ(ierr);
