@@ -16,6 +16,8 @@ if __name__ == '__main__':
     '--with-cxx=mpiCC',
     '--with-fc=mpifort',
 
+    '--with-make-np=8', # Must limit size of parallel build on Summit login nodes to be within resource quota imposed by OLCF.
+
     '--with-shared-libraries=1',
 
     ############################################################
