@@ -852,7 +852,7 @@ static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMa
 static PetscErrorCode MatPtAPNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat P,Mat C)
 {
   Mat                B;
-  hypre_ParCSRMatrix *hA,*hP,*hPtAP;
+  hypre_ParCSRMatrix *hA,*hP,*hPtAP = NULL;
   PetscErrorCode     ierr;
   Mat_Product        *product=C->product;
 
@@ -885,7 +885,7 @@ static PetscErrorCode MatPtAPNumeric_AIJ_HYPRE(Mat A,Mat P,Mat C)
 {
   Mat                B;
   Mat_HYPRE          *hP;
-  hypre_ParCSRMatrix *hA = NULL,*Pparcsr,*ptapparcsr;
+  hypre_ParCSRMatrix *hA = NULL,*Pparcsr,*ptapparcsr = NULL;
   HYPRE_Int          type;
   MPI_Comm           comm = PetscObjectComm((PetscObject)A);
   PetscBool          ishypre;
@@ -912,7 +912,7 @@ static PetscErrorCode MatPtAPNumeric_AIJ_HYPRE(Mat A,Mat P,Mat C)
 static PetscErrorCode MatPtAPNumeric_HYPRE_HYPRE(Mat A,Mat P,Mat C)
 {
   Mat                B;
-  hypre_ParCSRMatrix *Aparcsr,*Pparcsr,*ptapparcsr;
+  hypre_ParCSRMatrix *Aparcsr,*Pparcsr,*ptapparcsr = NULL;
   Mat_HYPRE          *hA,*hP;
   PetscBool          ishypre;
   HYPRE_Int          type;
@@ -1027,7 +1027,7 @@ static PetscErrorCode MatMatMultNumeric_HYPRE_HYPRE(Mat A,Mat B,Mat C)
 PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C,Mat D)
 {
   Mat                E;
-  hypre_ParCSRMatrix *hA,*hB,*hC,*hABC;
+  hypre_ParCSRMatrix *hA,*hB,*hC,*hABC = NULL;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -2071,7 +2071,7 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
 
 static PetscErrorCode MatDuplicate_HYPRE(Mat A,MatDuplicateOption op, Mat *B)
 {
-  hypre_ParCSRMatrix *parcsr;
+  hypre_ParCSRMatrix *parcsr = NULL;
   PetscErrorCode     ierr;
   PetscCopyMode      cpmode;
 
