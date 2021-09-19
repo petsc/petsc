@@ -46,7 +46,7 @@ int main(int argc,char **args)
   PetscBool      table     =PETSC_FALSE,flg,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscBool      outputSoln=PETSC_FALSE,constantnullspace = PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its,num_numfac,m,n,M,nearnulldim = 0;
+  PetscInt       its,num_numfac,m,n,M,p,nearnulldim = 0;
   PetscReal      norm;
   PetscBool      preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
@@ -177,11 +177,13 @@ int main(int argc,char **args)
      to match the block size of the system), then create a new padded vector.
   */
 
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  /*  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);*/
+  ierr = MatGetLocalSize(A,NULL,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
   ierr = VecGetSize(b,&m);CHKERRQ(ierr);
-  if (M != m) {   /* Create a new vector b by padding the old one */
+  ierr = VecGetLocalSize(b,&p);CHKERRQ(ierr);
+  preload = (PetscBool)(M != m || p != n); /* Global or local dimension mismatch */
+  ierr = MPIU_Allreduce(&preload,&flg,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+  if (flg) { /* Create a new vector b by padding the old one */
     PetscInt    j,mvec,start,end,indx;
     Vec         tmp;
     PetscScalar *bold;
