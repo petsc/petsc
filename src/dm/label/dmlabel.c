@@ -1037,6 +1037,9 @@ PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 
   Level: intermediate
 
+  Notes:
+  The output IS should be destroyed when no longer needed.
+
 .seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
 @*/
 PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
