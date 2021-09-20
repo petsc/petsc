@@ -49,6 +49,8 @@ Changes: Development
 
 .. rubric:: DM/DA:
 
+-  Add ``DMLabelGetNonEmptyStratumValuesIS()``, similar to ``DMLabelGetValueIS()`` but counts only nonempty strata
+
 .. rubric:: DMSwarm:
 
 .. rubric:: DMPlex:

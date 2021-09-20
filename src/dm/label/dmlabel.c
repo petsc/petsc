@@ -1052,7 +1052,12 @@ PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 
   Level: intermediate
 
-.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+  Notes:
+  The output IS should be destroyed when no longer needed.
+  Strata which are allocated but empty [DMLabelGetStratumSize() yields 0] are counted.
+  If you need to count only nonempty strata, use DMLabelGetNonEmptyStratumValuesIS().
+
+.seealso: DMLabelGetNonEmptyStratumValuesIS(), DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
 @*/
 PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 {
@@ -1062,6 +1067,50 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscValidPointer(values, 2);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, label->numStrata, label->stratumValues, PETSC_USE_POINTER, values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMLabelGetNonEmptyStratumValuesIS - Get an IS of all values that the DMlabel takes
+
+  Not collective
+
+  Input Parameter:
+. label - the DMLabel
+
+  Output Paramater:
+. is    - the value IS
+
+  Level: intermediate
+
+  Notes:
+  The output IS should be destroyed when no longer needed.
+  This is similar to DMLabelGetValueIS() but counts only nonempty strata.
+
+.seealso: DMLabelGetValueIS(), DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
+PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
+{
+  PetscInt        i, j;
+  PetscInt       *valuesArr;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  PetscValidPointer(values, 2);
+  ierr = PetscMalloc1(label->numStrata, &valuesArr);CHKERRQ(ierr);
+  for (i = 0, j = 0; i < label->numStrata; i++) {
+    PetscInt        n;
+
+    ierr = DMLabelGetStratumSize_Private(label, i, &n);CHKERRQ(ierr);
+    if (n) valuesArr[j++] = label->stratumValues[i];
+  }
+  if (j == label->numStrata) {
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, label->numStrata, label->stratumValues, PETSC_USE_POINTER, values);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, j, valuesArr, PETSC_COPY_VALUES, values);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(valuesArr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
