@@ -454,4 +454,13 @@ PETSC_EXTERN PetscErrorCode DMPlexSectionLoad(DM,PetscViewer,DM,PetscSF,PetscSF*
 PETSC_EXTERN PetscErrorCode DMPlexGlobalVectorLoad(DM,PetscViewer,DM,PetscSF,Vec);
 PETSC_EXTERN PetscErrorCode DMPlexLocalVectorLoad(DM,PetscViewer,DM,PetscSF,Vec);
 
+typedef struct {
+  PetscBool isotropic;                    /* Is the metric isotropic? */
+  PetscBool restrictAnisotropyFirst;      /* Should anisotropy or normalisation come first? */
+  PetscReal h_min, h_max;                 /* Minimum/maximum tolerated metric magnitudes */
+  PetscReal a_max;                        /* Maximum tolerated anisotropy */
+  PetscReal targetComplexity;             /* Target metric complexity */
+  PetscReal p;                            /* Degree for L-p normalisation methods */
+} DMPlexMetricCtx;
+
 #endif
