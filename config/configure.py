@@ -65,7 +65,7 @@ def check_for_option_changed(opts):
   for opt in opts[1:]:
     optname = opt.split('=')[0].strip('-')
     for oldname,newname in optMap:
-      if optname.find(oldname) >=0 and not optname.find(newname):
+      if optname.find(oldname) >=0 and not optname.find(newname) >=0:
         raise ValueError('The option '+opt+' should probably be '+opt.replace(oldname,newname))
   return
 
