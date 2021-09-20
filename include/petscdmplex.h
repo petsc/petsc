@@ -456,11 +456,23 @@ PETSC_EXTERN PetscErrorCode DMPlexLocalVectorLoad(DM,PetscViewer,DM,PetscSF,Vec)
 
 typedef struct {
   PetscBool isotropic;                    /* Is the metric isotropic? */
-  PetscBool restrictAnisotropyFirst;      /* Should anisotropy or normalisation come first? */
+  PetscBool restrictAnisotropyFirst;      /* Should anisotropy or normalization come first? */
   PetscReal h_min, h_max;                 /* Minimum/maximum tolerated metric magnitudes */
   PetscReal a_max;                        /* Maximum tolerated anisotropy */
   PetscReal targetComplexity;             /* Target metric complexity */
-  PetscReal p;                            /* Degree for L-p normalisation methods */
+  PetscReal p;                            /* Degree for L-p normalization methods */
 } DMPlexMetricCtx;
+
+PETSC_EXTERN PetscErrorCode DMPlexMetricCreate(DM, PetscInt, Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricCreateUniform(DM, PetscInt, PetscReal, Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricCreateIsotropic(DM, PetscInt, Vec, Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricEnforceSPD(DM, PetscBool, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexMetricNormalize(DM, Vec, PetscBool, Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricAverage(DM, PetscInt, PetscReal[], Vec[], Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricAverage2(DM, Vec, Vec, Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricAverage3(DM, Vec, Vec, Vec, Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricIntersection(DM, PetscInt, Vec[], Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricIntersection2(DM, Vec, Vec, Vec *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricIntersection3(DM, Vec, Vec, Vec, Vec *);
 
 #endif
