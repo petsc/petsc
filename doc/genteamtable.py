@@ -83,11 +83,6 @@ def generateDevDicts(imRelDir):
       "avatar_url" : "",
       "name"       : "Steven J. Benson",
     },
-    "stefan_wild" : {
-      "web_url"    : "https://www.anl.gov/profile/stefan-m-wild",
-      "avatar_url" : "",
-      "name"       : "Stefan Wild",
-    },
   }
 
   # Tuple of all current active devs' gitlab usernames, only the people whose corresponding
@@ -95,11 +90,11 @@ def generateDevDicts(imRelDir):
   # constributers fromm gitlab we get a list of anyone who has ever contributed a MR to
   # PETSc, thus we maintain this extra list to filter out the repeat-devs.
   activeCoreDevUsernames = ("lois.curfman.mcinnes","sbalay","jedbrown","adener","blaisebourdin",
-                            "dmay","fdkong","ghammond","hannah_mairs","hongzhangsun",
+                            "dmay","fdkong","hongzhangsun",
                             "jfaibussowitsch","caidao22","jczhang07","karlrupp","markadams4",
-                            "knepley","oanam198","psanan","rtmills","abhyshr","stefanozampini",
+                            "knepley","psanan","rtmills","abhyshr","stefanozampini",
                             "tmunson","haplav","prj-","wence","tisaac","krugers","dalcinl",
-                            "joseroman","bwhitchurch","barrysmith","emconsta","hsuh")
+                            "joseroman","barrysmith","emconsta")
   activeCoreDevs = {d:{"web_url":None,"avatar_url":None,"name":None} for d in activeCoreDevUsernames}
   # Some people don't have the right profile picture (or any profile picture) on their
   # gitlab account, or perhaps want a different name or URL. So we apply this special
@@ -107,6 +102,7 @@ def generateDevDicts(imRelDir):
   activeCoreDevs["lois.curfman.mcinnes"]["web_url"]    = "https://press3.mcs.anl.gov/curfman/"
   activeCoreDevs["lois.curfman.mcinnes"]["avatar_url"] = os.path.join(imRelDir,"lois.gif")
   activeCoreDevs["lois.curfman.mcinnes"]["name"]       = "Lois Curfman McInnes"
+  activeCoreDevs["emconsta"]["name"]                   = "Emil M. Constantinescu"
   activeCoreDevs["dmay"]["avatar_url"]                 = os.path.join(imRelDir,"dave.jpg")
   activeCoreDevs["tmunson"]["avatar_url"]              = os.path.join(imRelDir,"todd.jpg")
 

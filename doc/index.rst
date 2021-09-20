@@ -123,28 +123,32 @@ When citing PETSc in a publication please cite the following:
 .. code-block:: none
 
    @Misc{petsc-web-page,
-      Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown
-      and Peter Brune and Kris Buschelman and Lisandro Dalcin and Alp Dener and Victor Eijkhout
-      and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and Dave~A. May
-      and Lois Curfman McInnes and Richard Tran Mills and Todd Munson and Karl Rupp
-      and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
+      Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Steven Benson and Jed Brown
+        and Peter Brune and Kris Buschelman and Emil~M. Constantinescu and Lisandro Dalcin and Alp Dener 
+        and Victor Eijkhout and William~D. Gropp and V\'{a}clav Hapla and Tobin Isaac and Pierre Jolivet 
+        and Dmitry Karpeev and Dinesh Kaushik and Matthew~G. Knepley and Fande Kong and Scott Kruger 
+        and Dave~A. May and Lois Curfman McInnes and Richard Tran Mills and Lawrence Mitchell and Todd Munson 
+        and Jose~E. Roman and Karl Rupp and Patrick Sanan and Jason Sarich and Barry~F. Smith 
+        and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang",
       Title  = "{PETS}c {W}eb page",
       Note   = "https://petsc.org/",
       Year   = "2021"}
 
    @TechReport{petsc-user-ref,
-      Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown
-      and Peter Brune and Kris Buschelman and Lisandro Dalcin and Alp Dener and Victor Eijkhout
-      and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and Dave~A. May
-      and Lois Curfman McInnes and Richard Tran Mills and Todd Munson and Karl Rupp
-      and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
-      Title       = "{PETS}c Users Manual",
+      Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Steven Benson and Jed Brown
+        and Peter Brune and Kris Buschelman and Emil Constantinescu and Lisandro Dalcin and Alp Dener 
+        and Victor Eijkhout and William~D. Gropp and V\'{a}clav Hapla and Tobin Isaac and Pierre Jolivet 
+        and Dmitry Karpeev and Dinesh Kaushik and Matthew~G. Knepley and Fande Kong and Scott Kruger 
+        and Dave~A. May and Lois Curfman McInnes and Richard Tran Mills and Lawrence Mitchell and Todd Munson 
+        and Jose~E. Roman and Karl Rupp and Patrick Sanan and Jason Sarich and Barry~F. Smith 
+        and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang",
+      Title       = "{PETSc/TAO} Users Manual",
       Number      = "ANL-21/39 - Revision 3.16",
       Institution = "Argonne National Laboratory",
       Year        = "2021"}
 
    @InProceedings{petsc-efficient,
-      Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",
+      Author    = "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
       Title     = "Efficient Management of Parallelism in Object Oriented
                    Numerical Software Libraries",
       Booktitle = "Modern Software Tools in Scientific Computing",
@@ -159,7 +163,7 @@ If you use the TS component of PETSc please cite the following:
 
    @article{abhyankar2018petsc,
      title={PETSc/TS: A Modern Scalable ODE/DAE Solver Library},
-     author={Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil M and Ghosh, Debojyoti and Smith, Barry F and Zhang, Hong},
+     author={Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil M. and Ghosh, Debojyoti and Smith, Barry F. and Zhang, Hong},
      journal={arXiv preprint arXiv:1806.01437},
      year={2018}
    }

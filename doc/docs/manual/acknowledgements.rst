@@ -96,8 +96,8 @@ Earlier contributors to PETSc include:
 -  Liyang Xu - the interface to PVODE, now SUNDIALS/CVODE
    (``TSSUNDIALS``).
 
-The Toolkit for Advanced Optimization (TAO) developers especially thank Steven Benson, Jorge Moré, 
-and Jason Sarich for their leadership, vision, and effort on previous versions of TAO.  TAO has 
+The Toolkit for Advanced Optimization (TAO) developers especially thank Jorge Moré
+for his leadership, vision, and effort on previous versions of TAO.  TAO has 
 also benefited from the work of various researchers who have provided solvers, test problems, 
 and interfaces. In particular, we acknowledge: Adam Denchfield, Elizabeth Dolan, Evan Gawlik,
 Michael Gertz, Xiang Huang, Lisa Grignon, Manojkumar Krishnan, Gabriel Lopez-Calva, 

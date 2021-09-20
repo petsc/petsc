@@ -2,10 +2,10 @@
 PETSc Development Team
 ======================
 
-Current Developers
-==================
+Current Core Developers
+=======================
 
-The following people are currently active contributers to PETSc's development and
+The following people are currently active core contributors to PETSc's development and
 maintenance.
 
 .. important::
@@ -17,8 +17,9 @@ maintenance.
 
 .. include:: ../generated/petsc-team-table.inc
 
+The full list of contributors can be found on GitLab <https://gitlab.com/petsc/petsc/-/graphs/main>
 
-Emeritus Developers
-===================
+Emeritus Core Developers
+========================
 
 .. include:: ../generated/petsc-emeritus-table.inc
