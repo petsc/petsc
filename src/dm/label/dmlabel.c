@@ -571,6 +571,115 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMLabelCompare - Compare two DMLabel objects
+
+  Collective on dmA
+
+  Input Parameters:
++ l0 - First DMLabel
+- l1 - Second DMLabel
+
+  Output Parameters
++ same    - (Optional) Flag whether the two labels are equal
+- message - (Optional) Message describing the difference, or NULL if there is no difference
+
+  Level: intermediate
+
+  Notes:
+  If both same and message is passed as NULL, and difference is found, an error is thrown with a message describing the difference.
+
+  Message must be freed by user.
+
+  For the comparison, we ignore the order of stratum values, and strata with no points.
+
+  Fortran Notes:
+  This function is currently not available from Fortran.
+
+.seealso: DMCompareLabels(), DMLabelGetNumValues(), DMLabelGetDefaultValue(), DMLabelGetNonEmptyStratumValuesIS(), DMLabelGetStratumIS()
+@*/
+PetscErrorCode DMLabelCompare(DMLabel l0, DMLabel l1, PetscBool *same, char **message)
+{
+  const char     *name0, *name1;
+  char            msg[PETSC_MAX_PATH_LEN] = "";
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(l0, DMLABEL_CLASSID, 1);
+  PetscValidHeaderSpecific(l1, DMLABEL_CLASSID, 2);
+  if (same) PetscValidBoolPointer(same, 3);
+  if (message) PetscValidPointer(message, 4);
+  ierr = PetscObjectGetName((PetscObject)l0, &name0);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)l1, &name1);CHKERRQ(ierr);
+  {
+    PetscMPIInt   result;
+
+    ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)l0), PetscObjectComm((PetscObject)l1), &result);CHKERRMPI(ierr);
+    if (result != MPI_CONGRUENT && result != MPI_IDENT) {
+      ierr = PetscSNPrintf(msg, sizeof(msg), "DMLabel l0 \"%s\" has different communicator than DMLabel l1 \"%s\"", name0, name1);CHKERRQ(ierr);
+      goto finish;
+    }
+  }
+  {
+    PetscInt v0, v1;
+
+    ierr = DMLabelGetDefaultValue(l0, &v0);CHKERRQ(ierr);
+    ierr = DMLabelGetDefaultValue(l1, &v1);CHKERRQ(ierr);
+    if (v0 != v1) {
+      ierr = PetscSNPrintf(msg, sizeof(msg), "Default value of DMLabel l0 \"%s\" = %D != %D = Default value of DMLabel l1 \"%s\"", name0, v0, v1, name1);CHKERRQ(ierr);
+      goto finish;
+    }
+  }
+  {
+    IS              is0, is1;
+    PetscBool       flg;
+
+    ierr = DMLabelGetNonEmptyStratumValuesIS(l0, &is0);CHKERRQ(ierr);
+    ierr = DMLabelGetNonEmptyStratumValuesIS(l1, &is1);CHKERRQ(ierr);
+    ierr = ISEqual(is0, is1, &flg);CHKERRQ(ierr);
+    ierr = ISDestroy(&is0);CHKERRQ(ierr);
+    ierr = ISDestroy(&is1);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscSNPrintf(msg, sizeof(msg), "Stratum values in DMLabel l0 \"%s\" are different than in DMLabel l1 \"%s\"", name0, name1);CHKERRQ(ierr);
+      goto finish;
+    }
+  }
+  {
+    PetscInt i, nValues;
+
+    ierr = DMLabelGetNumValues(l0, &nValues);CHKERRQ(ierr);
+    for (i=0; i<nValues; i++) {
+      const PetscInt  v = l0->stratumValues[i];
+      PetscInt        n;
+      IS              is0, is1;
+      PetscBool       flg;
+
+      ierr = DMLabelGetStratumSize_Private(l0, i, &n);CHKERRQ(ierr);
+      if (!n) continue;
+      ierr = DMLabelGetStratumIS(l0, v, &is0);CHKERRQ(ierr);
+      ierr = DMLabelGetStratumIS(l1, v, &is1);CHKERRQ(ierr);
+      ierr = ISEqualUnsorted(is0, is1, &flg);CHKERRQ(ierr);
+      ierr = ISDestroy(&is0);CHKERRQ(ierr);
+      ierr = ISDestroy(&is1);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscSNPrintf(msg, sizeof(msg), "Stratum #%D with value %D contains different points in DMLabel l0 \"%s\" and DMLabel l1 \"%s\"", i, v, name0, name1);CHKERRQ(ierr);
+        goto finish;
+      }
+    }
+  }
+  if (same) *same = PETSC_TRUE;
+finish:
+  if (msg[0] && !same && !message) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, msg);
+  if (same) *same = (PetscBool) !msg[0];
+  if (message) {
+    *message = NULL;
+    if (msg[0]) {
+      ierr = PetscStrallocpy(msg, message);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMLabelComputeIndex - Create an index structure for membership determination, automatically determining the bounds
 

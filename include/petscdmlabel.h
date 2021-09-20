@@ -17,6 +17,7 @@ PETSC_EXTERN PetscErrorCode DMLabelDestroy(DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelGetDefaultValue(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetDefaultValue(DMLabel, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelDuplicate(DMLabel, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMLabelCompare(DMLabel, DMLabel, PetscBool *, char **message);
 PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
