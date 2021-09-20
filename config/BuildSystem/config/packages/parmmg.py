@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'e6861f781929b6893539e9ecf765afcb240cbec2'
+    self.gitcommit        = 'd0c3dfdf727012e087efd35711e769bf9953e953' # jolivet/fix-compilation-3.16.0 sep-20-2021
     self.download         = ['git://https://github.com/prj-/ParMmg.git','https://github.com/prj-/ParMmg/archive/'+self.gitcommit+'.tar.gz']
     self.versionname      = 'PMMG_VERSION_RELEASE'
     self.includes         = ['parmmg/libparmmg.h']
@@ -30,6 +30,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DDOWNLOAD_MMG=OFF')
     args.append('-DDOWNLOAD_METIS=OFF')
     args.append('-DUSE_VTK=OFF')
+    args.append('-DUSE_POINTMAP=ON')
     args.append('-DSCOTCH_DIR:STRING="'+self.ptscotch.directory+'"')
     args.append('-DMETIS_DIR:STRING="'+self.metis.directory+'"')
     args.append('-DMMG_DIR:STRING="'+self.mmg.directory+'"')
