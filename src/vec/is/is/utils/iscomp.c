@@ -17,7 +17,7 @@
    Level: intermediate
 
    Note:
-   This routine sorts the contents of the index sets before
+   Unlike ISEqualUnsorted(), this routine sorts the contents of the index sets before
    the comparison is made, so the order of the indices on a processor is immaterial.
 
    Each processor has to have the same indices in the two sets, for example,
@@ -89,7 +89,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
 }
 
 /*@
-   ISEqualUnsorted  - Compares if two index sets have the same set of indices.
+   ISEqualUnsorted  - Compares if two index sets have the same indices.
 
    Collective on IS
 
@@ -104,8 +104,8 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
    Level: intermediate
 
    Note:
-   This routine does NOT sort the contents of the index sets before
-   the comparison is made.
+   Unlike ISEqual(), this routine does NOT sort the contents of the index sets before
+   the comparison is made, i.e., the order of indices is important.
 
 .seealso: ISEqual()
 @*/
