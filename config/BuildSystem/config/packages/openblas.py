@@ -122,8 +122,7 @@ class Configure(config.package.Package):
       raise RuntimeError('Error running make on '+blasDir)
     try:
       self.logPrintBox('Installing OpenBLAS')
-      self.installDirProvider.printSudoPasswordMessage()
-      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+' make PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
+      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+blasDir+' libraries')

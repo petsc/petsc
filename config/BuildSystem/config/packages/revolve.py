@@ -41,8 +41,7 @@ class Configure(config.package.Package):
 
     if self.installNeeded('make.inc'):
       self.logPrintBox('Configuring, compiling and installing revolve; this may take several seconds')
-      self.installDirProvider.printSudoPasswordMessage()
       output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make lib',timeout=500, log = self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+' make install ',timeout=250, log = self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make install ',timeout=250, log = self.log)
       self.postInstall(output1+err1+output2+err2,'make.inc')
     return self.installDir

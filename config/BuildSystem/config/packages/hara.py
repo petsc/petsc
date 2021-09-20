@@ -165,11 +165,10 @@ class Configure(config.package.Package):
         self.logPrintBox('Compiling HARA; this may take several minutes')
         output2,err2,ret2 = config.package.Package.executeShellCommand('make config && ' + self.make.make_jnp, cwd=self.packageDir, timeout=2500, log = self.log)
         self.logPrintBox('Installing HARA; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
         output,err,ret = config.package.Package.executeShellCommandSeq(
-          [self.installSudo+'mkdir -p '+libDir+' '+includeDir,
-           self.installSudo+'cp -f lib/*.* '+libDir+'/.',
-           self.installSudo+'cp -rf include/* '+includeDir+'/.'
+          ['mkdir -p '+libDir+' '+includeDir,
+           'cp -f lib/*.* '+libDir+'/.',
+           'cp -rf include/* '+includeDir+'/.'
           ], cwd=self.packageDir, timeout=60, log = self.log) #TODO namespace/folder include files?
       except RuntimeError as e:
         self.logPrint('Error running make on HARA: '+str(e))

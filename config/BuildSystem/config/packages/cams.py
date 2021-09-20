@@ -42,7 +42,6 @@ class Configure(config.package.Package):
 
     if self.installNeeded('make.inc'):
       self.logPrintBox('Configuring, compiling and installing cams; this may take several seconds')
-      self.installDirProvider.printSudoPasswordMessage()
       try:
         output1,err1,ret1 = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['clean', 'lib'], cwd=self.packageDir, timeout=250, log=self.log)
       except RuntimeError as e:

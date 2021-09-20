@@ -178,12 +178,6 @@ class Configure(config.package.Package):
         g.write('CXXFLAGS := '+cudaFlags+' $(addprefix -Xcompiler ,$(CXXFLAGS))\n')
       g.close()
 
-    #  if installing as Superuser than want to return to regular user for clean and build
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-       newuser = ''
-
     self.addDefine('HAVE_MFEM',1)
     self.addMakeMacro('MFEM','yes')
     self.addMakeRule('mfembuild',makedepend, \
@@ -201,7 +195,7 @@ class Configure(config.package.Package):
     self.addMakeRule('mfeminstall','', \
                        ['@echo "*** Installing mfem ***"',\
                           '@(cd '+buildDir+' && \\\n\
-           '+newuser+'${OMAKE} install) >> ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
+           '+'${OMAKE} install) >> ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building mfem. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
              echo "********************************************************************" && \\\n\

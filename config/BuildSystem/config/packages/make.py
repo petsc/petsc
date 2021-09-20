@@ -234,10 +234,6 @@ Otherwise try --download-make or install "make" with a package manager.''' % sel
     self.addMakeMacro('NPMAX',str(cores))
     self.make_jnp_list = [self.make, '-j'+str(self.make_np), '-l'+str(self.make_load)]
     self.make_jnp = ' '.join(self.make_jnp_list)
-    if self.installSudo:
-      self.make_sudo_list = [self.installSudo, self.make]
-    else:
-      self.make_sudo_list = [self.make]
     return
 
   def configure(self):

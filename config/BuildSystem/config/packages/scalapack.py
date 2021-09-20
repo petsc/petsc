@@ -70,9 +70,8 @@ class Configure(config.package.Package):
         pass
       try:
         self.logPrintBox('Compiling and installing Scalapack; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
         libDir = os.path.join(self.installDir, self.libdir)
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make_jnp+' -f Makefile.parallel lib && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp libscalapack.* '+libDir, timeout=2500, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make_jnp+' -f Makefile.parallel lib && mkdir -p '+libDir+' && cp libscalapack.* '+libDir, timeout=2500, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on SCALAPACK: '+str(e))
         raise RuntimeError('Error running make on SCALAPACK')

@@ -31,13 +31,6 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-
-    #  if installing as Superuser than want to return to regular user for clean and build
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-       newuser = ''
-
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
        iarch = 'installed-'+self.parch.nativeArch.replace('linux-','linux2-')
@@ -74,7 +67,7 @@ class Configure(config.package.Package):
     self.addMakeRule('slepcinstall','', \
                        ['@echo "*** Installing SLEPc ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+barg+'${OMAKE} install '+barg+')  || \\\n\
+           '+barg+'${OMAKE} install '+barg+')  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building SLEPc." && \\\n\
              echo "********************************************************************" && \\\n\
