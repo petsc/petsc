@@ -263,6 +263,21 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelLookupAddStratum(DMLabel label, PetscI
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode DMLabelGetStratumSize_Private(DMLabel label, PetscInt v, PetscInt *size)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *size = 0;
+  if (v < 0) PetscFunctionReturn(0);
+  if (label->validIS[v]) {
+    *size = label->stratumSizes[v];
+  } else {
+    ierr = PetscHSetIGetSize(label->ht[v], size);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMLabelAddStratum - Adds a new stratum value in a DMLabel
 
@@ -1133,11 +1148,8 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
   PetscValidPointer(size, 3);
-  *size = 0;
   ierr = DMLabelLookupStratum(label, value, &v);CHKERRQ(ierr);
-  if (v < 0) PetscFunctionReturn(0);
-  ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
-  *size = label->stratumSizes[v];
+  ierr = DMLabelGetStratumSize_Private(label, v, size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
