@@ -1741,7 +1741,6 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
   DM_Plex         *mesh  = (DM_Plex *) dm->data;
   PetscInt         debug = mesh->printFEM;
   DM               dmC;
-  PetscSection     section;
   PetscQuadrature  quad;
   PetscScalar     *interpolant, *gradsum;
   PetscFEGeom      fegeom;
@@ -1756,8 +1755,8 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
   fegeom.dimEmbed = coordDim;
-  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+  if (numFields == 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fields is zero!");
   for (field = 0; field < numFields; ++field) {
     PetscObject  obj;
     PetscClassId id;
@@ -1894,7 +1893,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   /* Determine which discretizations we have */
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;

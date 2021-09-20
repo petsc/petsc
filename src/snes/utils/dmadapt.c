@@ -675,6 +675,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   ierr = DMGetApplicationContext(adaptor->idm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(adaptor->idm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &numFields);CHKERRQ(ierr);
+  if (numFields == 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fields is zero!");
 
   /* Adapt until nothing changes */
   /* Adapt for a specified number of iterates */
@@ -760,7 +761,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
     case DM_ADAPTATION_METRIC:
     {
       DM           dmGrad,   dmHess,   dmMetric;
-      PetscDS      probGrad, probHess;
+      PetscDS      probHess;
       Vec          xGrad,    xHess,    metric;
       PetscSection sec, msec;
       PetscScalar *H, *M, integral;
@@ -771,8 +772,6 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       /*     Compute vertexwise gradients from cellwise gradients */
       ierr = DMClone(dm, &dmGrad);CHKERRQ(ierr);
       ierr = DMClone(dm, &dmHess);CHKERRQ(ierr);
-      ierr = DMGetDS(dmGrad, &probGrad);CHKERRQ(ierr);
-      ierr = DMGetDS(dmHess, &probHess);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
         PetscFE         fe, feGrad, feHess;
         PetscDualSpace  Q;
@@ -790,14 +789,16 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         ierr = PetscQuadratureGetOrder(q, &qorder);CHKERRQ(ierr);
         ierr = PetscObjectGetOptionsPrefix((PetscObject) fe, &prefix);CHKERRQ(ierr);
         ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmGrad), dim, Nc*coordDim, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feGrad);CHKERRQ(ierr);
-        ierr = PetscDSSetDiscretization(probGrad, f, (PetscObject) feGrad);CHKERRQ(ierr);
         ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmHess), dim, Nc*Nd, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feHess);CHKERRQ(ierr);
-        ierr = PetscDSSetDiscretization(probHess, f, (PetscObject) feHess);CHKERRQ(ierr);
+        ierr = DMSetField(dmGrad, f, NULL, (PetscObject)feGrad);CHKERRQ(ierr);
+        ierr = DMSetField(dmHess, f, NULL, (PetscObject)feHess);CHKERRQ(ierr);
+        ierr = DMCreateDS(dmGrad);CHKERRQ(ierr);
+        ierr = DMCreateDS(dmHess);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feGrad);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feHess);CHKERRQ(ierr);
       }
       ierr = DMGetGlobalVector(dmGrad, &xGrad);CHKERRQ(ierr);
-      ierr = VecViewFromOptions(x, NULL, "-sol_adapt_loc_pre_view");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(locX, NULL, "-sol_adapt_loc_pre_view");CHKERRQ(ierr);
       ierr = DMPlexComputeGradientClementInterpolant(dm, locX, xGrad);CHKERRQ(ierr);
       ierr = VecViewFromOptions(xGrad, NULL, "-adapt_gradient_view");CHKERRQ(ierr);
       /*     Compute vertexwise Hessians from cellwise Hessians */
@@ -833,6 +834,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         ierr = DMAdaptorModifyHessian_Private(coordDim, adaptor->h_min, adaptor->h_max, Hp);CHKERRQ(ierr);
       }
       /*       Pointwise on vertices M(x) = N^{2/d} (\int_\Omega det(|H|)^{p/(2p+d)})^{-2/d} det(|H|)^{-1/(2p+d)} |H| for L_p */
+      ierr = DMGetDS(dmHess, &probHess);CHKERRQ(ierr);
       ierr = PetscDSSetObjective(probHess, 0, detHFunc);CHKERRQ(ierr);
       ierr = DMPlexComputeIntegralFEM(dmHess, xHess, &integral, NULL);CHKERRQ(ierr);
       for (v = vStart; v < vEnd; ++v) {
@@ -888,7 +890,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = DMPlexSetSNESLocalFEM(odm, ctx, ctx, ctx);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(adaptor->snes);CHKERRQ(ierr);
       /* Transfer system */
-      ierr = DMCopyDisc(adaptor->idm, odm);CHKERRQ(ierr);
+      ierr = DMCopyDisc(dm, odm);CHKERRQ(ierr);
       /* Transfer solution */
       ierr = DMCreateGlobalVector(odm, &ox);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) x, &name);CHKERRQ(ierr);
