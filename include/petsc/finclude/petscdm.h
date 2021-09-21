@@ -19,6 +19,7 @@
 #define DMDirection          PetscEnum
 #define DMEnclosureType      PetscEnum
 #define DMPolytopeType       PetscEnum
+#define DMCopyLabelsMode     PetscEnum
 
 #define DM               type(tDM)
 

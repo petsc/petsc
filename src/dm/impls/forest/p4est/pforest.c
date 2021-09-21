@@ -4290,7 +4290,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     ierr = DMSetType(newPlex,DMPLEX);CHKERRQ(ierr);
     ierr = DMSetMatType(newPlex,dm->mattype);CHKERRQ(ierr);
     /* share labels */
-    ierr = DMCopyLabels(dm, newPlex, PETSC_OWN_POINTER, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMCopyLabels(dm, newPlex, PETSC_OWN_POINTER, PETSC_TRUE, DM_COPY_LABELS_FAIL);CHKERRQ(ierr);
     ierr = DMForestGetAdjacencyDimension(dm,&adjDim);CHKERRQ(ierr);
     ierr = DMForestGetAdjacencyCodimension(dm,&adjCodim);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(dm,&coordDim);CHKERRQ(ierr);
@@ -4434,7 +4434,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
       /* share the labels back */
       ierr = DMDestroyLabelLinkList_Internal(dm);CHKERRQ(ierr);
-      ierr = DMCopyLabels(newPlex, dm, PETSC_OWN_POINTER, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = DMCopyLabels(newPlex, dm, PETSC_OWN_POINTER, PETSC_TRUE, DM_COPY_LABELS_FAIL);CHKERRQ(ierr);
       pforest->plex = newPlex;
     }
     ierr = DMDestroy(&refTree);CHKERRQ(ierr);

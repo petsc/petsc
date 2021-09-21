@@ -325,6 +325,19 @@ PETSC_EXTERN PetscErrorCode DMClearLabelStratum(DM, const char[], PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetLabelOutput(DM, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);
 
+/*E
+   DMCopyLabelsMode - Determines how DMCopyLabels() behaves when there is a DMLabel in the source and destination DMs with the same name
+
+   Level: advanced
+
+$ DM_COPY_LABELS_REPLACE  - replace label in destination by label from source
+$ DM_COPY_LABELS_KEEP     - keep destination label
+$ DM_COPY_LABELS_FAIL     - throw error
+
+E*/
+typedef enum {DM_COPY_LABELS_REPLACE, DM_COPY_LABELS_KEEP, DM_COPY_LABELS_FAIL} DMCopyLabelsMode;
+PETSC_EXTERN const char *const DMCopyLabelsModes[];
+
 PETSC_EXTERN PetscErrorCode DMGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetLabelName(DM, PetscInt, const char **);
 PETSC_EXTERN PetscErrorCode DMHasLabel(DM, const char [], PetscBool *);
@@ -334,7 +347,7 @@ PETSC_EXTERN PetscErrorCode DMGetLabelByNum(DM, PetscInt, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMAddLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMRemoveLabel(DM, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMRemoveLabelBySelf(DM, DMLabel *, PetscBool);
-PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM, PetscCopyMode, PetscBool);
+PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM, PetscCopyMode, PetscBool, DMCopyLabelsMode emode);
 PETSC_EXTERN PetscErrorCode DMCompareLabels(DM, DM, PetscBool *, char **);
 
 PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, DMBoundaryConditionType, const char[], DMLabel, PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], void (*)(void), void (*)(void), void *, PetscInt *);

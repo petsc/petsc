@@ -1352,7 +1352,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     ierr = PetscObjectGetName((PetscObject) dm,  &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
-    ierr = DMCopyLabels(dm, idm, PETSC_COPY_VALUES, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMCopyLabels(dm, idm, PETSC_COPY_VALUES, PETSC_FALSE, DM_COPY_LABELS_FAIL);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_interpolate_orient_interfaces", &flg, NULL);CHKERRQ(ierr);
     if (flg) {ierr = DMPlexOrientInterface_Internal(idm);CHKERRQ(ierr);}
   }

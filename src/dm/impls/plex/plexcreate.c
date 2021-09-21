@@ -51,7 +51,7 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM *ndm)
   dm->data = dmNew->data;
   ((DM_Plex *) dmNew->data)->refct++;
   ierr = DMDestroyLabelLinkList_Internal(dm);CHKERRQ(ierr);
-  ierr = DMCopyLabels(dmNew, dm, PETSC_OWN_POINTER, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMCopyLabels(dmNew, dm, PETSC_OWN_POINTER, PETSC_TRUE, DM_COPY_LABELS_FAIL);CHKERRQ(ierr);
   ierr = DMGetCoarseDM(dmNew,&coarseDM);CHKERRQ(ierr);
   ierr = DMSetCoarseDM(dm,coarseDM);CHKERRQ(ierr);
   ierr = DMDestroy(ndm);CHKERRQ(ierr);
