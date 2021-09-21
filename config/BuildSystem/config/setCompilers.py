@@ -193,6 +193,7 @@ class Configure(config.base.Configure):
                                          ]])
               and not any([s in output for s in ['Intel(R)',
                                                  'Unrecognised option --help passed to ld', # NAG f95 compiler
+                                                 'IBM XL', # XL compiler
                                                  ]]))
       if found:
         if log: log.write('Detected GNU compiler\n')
@@ -1412,8 +1413,10 @@ class Configure(config.base.Configure):
       return
     if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
       PICFlags = ['-fPIC']
+    elif config.setCompilers.Configure.isIBM(self.getCompiler(), self.log):
+      PICFlags = ['-qPIC']
     else:
-      PICFlags = ['-PIC','-fPIC','-KPIC','-qpic']
+      PICFlags = ['-PIC','-qPIC','-KPIC','-fPIC','-fpic']
     try:
       output = self.executeShellCommand(self.getCompiler() + ' -show', log = self.log)[0]
     except:
@@ -1703,12 +1706,14 @@ class Configure(config.base.Configure):
       yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
     if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
       # C++ compiler default
+      yield (self.CXX, ['-qmkshrobj'], 'so')
       yield (self.CXX, ['-shared'], 'so')
       yield (self.CXX, ['-dynamic'], 'so')
+      yield (self.CC, ['-shared'], 'dll')
     # C compiler default
+    yield (self.CC, ['-qmkshrobj'], 'so')
     yield (self.CC, ['-shared'], 'so')
     yield (self.CC, ['-dynamic'], 'so')
-    yield (self.CC, ['-qmkshrobj'], 'so')
     yield (self.CC, ['-shared'], 'dll')
     # Windows default
     if self.CC.find('win32fe') >=0:

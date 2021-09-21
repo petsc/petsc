@@ -297,7 +297,8 @@ to set the right generation for your hardware.')
         # treat it as a C++ compiler
         newFlags = self.setCompilers.CPPFLAGS.split()+self.setCompilers.CFLAGS.split()+self.setCompilers.CXXPPFLAGS.split()+self.setCompilers.CXXFLAGS.split()
         # need to remove the std flag from the list, nvcc will already have its own flag set
-        self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++'))])
+        # With IBM XL compilers, we also need to remove -+
+        self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++','-+'))])
       else:
         # only add any -I arguments since compiler arguments may not work
         flags = self.setCompilers.CPPFLAGS.split(' ')+self.setCompilers.CFLAGS.split(' ')+self.setCompilers.CXXFLAGS.split(' ')

@@ -78,6 +78,13 @@ class Configure(config.package.GNUPackage):
     args.append('--with-blas=no')
     args.append('--with-lapack=no')
 
+    # HYPRE automatically detects essl symbols and includes essl.h!
+    # There are no configure options to disable it programmatically
+    if self.libraries.check(self.blasLapack.dlib, 'iessl'):
+      args = self.addArgStartsWith(args,'CFLAGS',self.headers.toString(self.blasLapack.include))
+      args = self.addArgStartsWith(args,'CXXFLAGS',self.headers.toString(self.blasLapack.include))
+
+    # device configuration
     cucc = ''
     devflags = ''
     hipbuild = False
