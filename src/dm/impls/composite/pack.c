@@ -336,6 +336,7 @@ PetscErrorCode  DMCompositeGetLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,c
         const PetscScalar *array;
         ierr = VecGetArrayRead(pvec,&array);CHKERRQ(ierr);
         ierr = VecPlaceArray(v,array+nlocal);CHKERRQ(ierr);
+        // this method does not make sense. The local vectors are not updated with a global-to-local and the user can not do it because it is locked
         ierr = VecLockReadPush(v);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(pvec,&array);CHKERRQ(ierr);
       } else {
