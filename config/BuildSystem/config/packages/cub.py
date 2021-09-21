@@ -39,11 +39,7 @@ class Configure(config.package.Package):
       PETSC_ARCH = self.arch
       prefix     = os.path.join(self.petscdir.dir,self.arch)
     incDir = os.path.join(prefix,'include')
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-       newuser = ''
-    cpstr = newuser+' mkdir -p '+incDir+' && '+newuser+' cp -r '+os.path.join(self.packageDir,'cub')+' '+incDir
+    cpstr = ' mkdir -p '+incDir+' && cp -r '+os.path.join(self.packageDir,'cub')+' '+incDir
     try:
       self.logPrintBox('Copying CUB; this may take several seconds')
       output,err,ret = config.package.Package.executeShellCommand(cpstr,timeout=100,log=self.log)

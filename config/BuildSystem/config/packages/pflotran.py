@@ -71,9 +71,7 @@ class Configure(config.package.GNUPackage):
       self.log.write(output+err)
 
       self.logPrintBox('Installing Pflotran; this may take several minutes')
-      self.installDirProvider.printSudoPasswordMessage(1)
-      # TODO: Once the prefix code above is handled correctly thgis should use self.installSudo
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+' make install',timeout=100, log = self.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && make install',timeout=100, log = self.log)
       self.log.write(output+err)
     except RuntimeError as e:
       raise RuntimeError('Error configuring/compiling or installing Pflotran: '+str(e))

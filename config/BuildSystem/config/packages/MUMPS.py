@@ -173,14 +173,13 @@ class Configure(config.package.Package):
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing Mumps; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
         output,err,ret = config.package.Package.executeShellCommandSeq(
-          [self.installSudo+'mkdir -p '+libDir+' '+includeDir,
-           self.installSudo+'cp -f lib/*.* '+libDir+'/.',
-           self.installSudo+'cp -f include/*.* '+includeDir+'/.'
+          ['mkdir -p '+libDir+' '+includeDir,
+           'cp -f lib/*.* '+libDir+'/.',
+           'cp -f include/*.* '+includeDir+'/.'
           ], cwd=self.packageDir, timeout=60, log = self.log)
         if self.argDB['with-mumps-serial']:
-          output,err,ret = config.package.Package.executeShellCommand([self.installSudo+'cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=60, log = self.log)
+          output,err,ret = config.package.Package.executeShellCommand(['cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on MUMPS: '+str(e))
         raise RuntimeError('Error running make on MUMPS')

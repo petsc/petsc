@@ -86,11 +86,10 @@ class Configure(config.package.Package):
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing KBLAS; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
         output,err,ret = config.package.Package.executeShellCommandSeq(
-          [self.installSudo+'mkdir -p '+libDir+' '+includeDir,
-           self.installSudo+'cp -f lib/*.* '+libDir+'/.',
-           self.installSudo+'cp -f include/*.* '+includeDir+'/.'
+          ['mkdir -p '+libDir+' '+includeDir,
+           'cp -f lib/*.* '+libDir+'/.',
+           'cp -f include/*.* '+includeDir+'/.'
           ], cwd=self.packageDir, timeout=60, log = self.log) #TODO namespace include files in kblas!
       except RuntimeError as e:
         self.logPrint('Error running make on KBLAS: '+str(e))

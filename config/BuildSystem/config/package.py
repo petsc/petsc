@@ -89,7 +89,7 @@ class Package(config.base.Configure):
 
     # Outside coupling
     self.defaultInstallDir      = ''
-    self.installSudo            = '' # if user does not have write access to prefix directory then this is set to sudo
+    self.PrefixWriteCheck       = 1 # check if specified prefix location is writable for 'make install'
 
     self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
     self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
@@ -388,23 +388,23 @@ class Package(config.base.Configure):
     self.updatehgDir()
     if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and (hasattr(self,'postProcess') or self.builtafterpetsc)):
       self.installDir = self.defaultInstallDir
-      self.installSudo= self.installDirProvider.installSudo
     else:
       self.installDir = self.confDir
-      self.installSudo= ''
+    if self.PrefixWriteCheck and self.publicInstall and not 'package-prefix-hash' in self.argDB and self.installDirProvider.installSudo:
+      if self.installDirProvider.dir in ['/usr','/usr/local']: prefixdir = os.path.join(self.installDirProvider.dir,'petsc')
+      else: prefixdir = self.installDirProvider.dir
+      msg='''\
+Specified prefix-dir: %s is read-only! "%s" cannot install at this location! Suggest:
+      sudo mkdir %s
+      sudo chown $USER %s
+Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.package, prefixdir, prefixdir)
+      raise RuntimeError(msg)
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
     installDir = self.Install()
     if not installDir:
       raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
     return os.path.abspath(installDir)
-
-  def withSudo(self, *args):
-    """Convert args to a list prepended by sudo when using sudo"""
-    if self.installSudo:
-      return [self.installSudo] + list(args)
-    else:
-      return list(args)
 
   def getChecksum(self,source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
@@ -1296,7 +1296,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     if self.framework.argDB['prefix']:
       try:
         self.logPrintBox('Installing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
         self.log.write(output+err)
       except RuntimeError as e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
@@ -1738,8 +1738,7 @@ class GNUPackage(Package):
       output2,err2,ret2  = config.base.Configure.executeShellCommand(self.make.make+' clean', cwd=self.packageDir, timeout=200, log = self.log)
       output3,err3,ret3  = config.base.Configure.executeShellCommand(pmake, cwd=self.packageDir, timeout=6000, log = self.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
-      self.installDirProvider.printSudoPasswordMessage(self.installSudo)
-      output4,err4,ret4  = config.base.Configure.executeShellCommand(self.installSudo+self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
+      output4,err4,ret4  = config.base.Configure.executeShellCommand(self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running make; make install on '+self.PACKAGE+': '+str(e))
       raise RuntimeError('Error running make; make install on '+self.PACKAGE)
@@ -1851,9 +1850,8 @@ class CMakePackage(Package):
         raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2  = config.package.Package.executeShellCommand(self.make.make_jnp+' '+self.makerulename, cwd=folder, timeout=3000, log = self.log)
-        output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+' '+self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
+        output3,err3,ret3  = config.package.Package.executeShellCommand(self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on  '+self.PACKAGE+': '+str(e))
         raise RuntimeError('Error running make on  '+self.PACKAGE)

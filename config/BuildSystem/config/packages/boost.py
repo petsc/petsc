@@ -44,9 +44,8 @@ class Configure(config.package.Package):
 
        self.log.write('boostDir = '+self.packageDir+' installDir '+self.installDir+'\n')
        self.logPrintBox('Building and installing boost; this may take many minutes')
-       self.installDirProvider.printSudoPasswordMessage()
        try:
-         output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; ./bootstrap.sh --prefix='+self.installDir+'; ./b2 -j'+str(self.make.make_np)+';'+self.installSudo+'./b2 install', timeout=6000, log = self.log)
+         output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; ./bootstrap.sh --prefix='+self.installDir+'; ./b2 -j'+str(self.make.make_np)+'; ./b2 install', timeout=6000, log = self.log)
        except RuntimeError as e:
          raise RuntimeError('Error building/install Boost files from '+os.path.join(self.packageDir, 'Boost')+' to '+self.packageDir)
        self.postInstall(output+err,conffile)

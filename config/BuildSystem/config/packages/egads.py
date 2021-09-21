@@ -220,9 +220,7 @@ clean:
     output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' -f make.inc PETSC_DIR=' + self.petscdir.dir + ' clean lib PCC_FLAGS="' + cflags + '"', timeout=1000, log = self.log, cwd=self.packageDir)
     self.log.write(output+err)
     self.logPrintBox('Installing egads; this may take several minutes')
-    # TODO: This message should not be printed if egads is install in PETSc arch directory; need self.printSudoPasswordMessage() defined in package.py
-    self.installDirProvider.printSudoPasswordMessage(1)
-    output,err,ret  = config.package.GNUPackage.executeShellCommand(self.installSudo+self.make.make+' -f make.inc PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-egads',timeout=1000, log = self.log, cwd=self.packageDir)
+    output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' -f make.inc PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-egads',timeout=1000, log = self.log, cwd=self.packageDir)
     self.log.write(output+err)
     return
 
@@ -236,9 +234,7 @@ clean:
     output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' -f make_lite.inc PETSC_DIR=' + self.petscdir.dir + ' clean lib PCC_FLAGS="' + cflags + '"', timeout=1000, log = self.log, cwd=self.packageDir)
     self.log.write(output+err)
     self.logPrintBox('Installing egads lite; this may take several minutes')
-    # TODO: This message should not be printed if egads is install in PETSc arch directory; need self.printSudoPasswordMessage() defined in package.py
-    self.installDirProvider.printSudoPasswordMessage(1)
-    output,err,ret  = config.package.GNUPackage.executeShellCommand(self.installSudo+self.make.make+' -f make_lite.inc PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-egads',timeout=1000, log = self.log, cwd=self.packageDir)
+    output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' -f make_lite.inc PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-egads',timeout=1000, log = self.log, cwd=self.packageDir)
     self.log.write(output+err)
     return
 

@@ -98,9 +98,8 @@ class Configure(config.package.Package):
     if True: #self.installNeeded(os.path.join('lib','mk','Make.defs.local')):
       try:
         self.logPrintBox('Compiling and installing chombo; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
 
         #run make -p to get library (config) namen
         poutput,perr,pret = config.package.Package.executeShellCommand('make vars', cwd=os.path.join(self.packageDir,'lib'), timeout=2500, log = self.log)
@@ -116,8 +115,8 @@ class Configure(config.package.Package):
         output,err,ret = config.package.Package.executeShellCommandSeq(
           ['make clean',
            'make lib',
-           self.installSudo+'cp -f lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,''),
-           self.installSudo+'cp -f include/*.H '+os.path.join(self.installDir,self.includedir,'')
+           'cp -f lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,''),
+           'cp -f include/*.H '+os.path.join(self.installDir,self.includedir,'')
           ], cwd=os.path.join(self.packageDir,'lib'), timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on Chombo: '+str(e))

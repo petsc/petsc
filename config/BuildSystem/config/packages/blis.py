@@ -74,7 +74,7 @@ class Configure(config.package.Package):
     try:
       self.logPrintBox('Compiling and installing BLIS; this may take several minutes')
       config.package.Package.executeShellCommand(self.make.make_jnp_list, cwd=self.packageDir, timeout=500, log=self.log)
-      config.package.Package.executeShellCommand(self.make.make_sudo_list + ['install'], cwd=self.packageDir, timeout=30, log=self.log)
+      config.package.Package.executeShellCommand(self.make.make_jnp_list + ['install'], cwd=self.packageDir, timeout=30, log=self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running make on BLIS: '+str(e))
     return self.installDir

@@ -32,15 +32,11 @@ class Configure(config.package.Package):
   def Install(self):
     import os
     incDir = os.path.join(self.installDir,self.includedir)
-    if self.installSudo:
-      newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-      newuser = ''
     self.include = [incDir]
     if not hasattr(self.framework,'packages'):
       self.framework.packages = []
     self.framework.packages.append(self)
-    cpstr = newuser+' mkdir -p '+incDir+' && '+newuser+' cp -r '+os.path.join(self.packageDir,'include','*')+' '+incDir
+    cpstr = 'mkdir -p '+incDir+' && cp -r '+os.path.join(self.packageDir,'include','*')+' '+incDir
     self.logPrintBox('Copying Htool; this may take several seconds')
     output,err,ret = config.package.Package.executeShellCommand(cpstr,timeout=100,log=self.log)
     self.log.write(output+err)

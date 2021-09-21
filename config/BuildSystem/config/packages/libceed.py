@@ -34,7 +34,7 @@ class Configure(config.package.Package):
       raise RuntimeError('Error running make on libceed: '+str(e))
     try:
       self.logPrintBox('Installing libceed; this may take several minutes')
-      output,err,ret  = config.package.Package.executeShellCommand(self.make.make_sudo_list + ['install', 'prefix='+self.installDir], cwd=self.packageDir, timeout=250, log=self.log)
+      output,err,ret  = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['install', 'prefix='+self.installDir], cwd=self.packageDir, timeout=250, log=self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running install on libceed: '+str(e))
     return self.installDir

@@ -40,10 +40,6 @@ class Configure(config.package.Package):
          carg = ' BAMG_DIR='+self.packageDir+' '
          barg = ' BAMG_DIR='+self.packageDir+' SLEPC_DIR='+self.slepc.installDir+' '
          prefix = os.path.join(self.petscdir.dir,self.arch)
-      if self.installSudo:
-         newuser = self.installSudo+' -u $${SUDO_USER} '
-      else:
-         newuser = ''
       if not hasattr(self.framework, 'packages'):
         self.framework.packages = []
       self.framework.packages.append(self)
@@ -68,7 +64,7 @@ class Configure(config.package.Package):
       self.addMakeRule('bamginstall','', \
                          ['@echo "*** Installing PETSc BAMG ***"',\
                             '@(cd '+self.packageDir+' && \\\n\
-             '+newuser+barg+'${OMAKE} install '+barg+') >> ${PETSC_ARCH}/lib/petsc/conf/bamg.log 2>&1 || \\\n\
+             '+barg+'${OMAKE} install '+barg+') >> ${PETSC_ARCH}/lib/petsc/conf/bamg.log 2>&1 || \\\n\
                (echo "**************************ERROR*************************************" && \\\n\
                echo "Error building bamg. Check ${PETSC_ARCH}/lib/petsc/conf/bamg.log" && \\\n\
                echo "********************************************************************" && \\\n\
