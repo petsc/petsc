@@ -1,4 +1,3 @@
-
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petsc/private/kernels/blockinvert.h>
@@ -2328,7 +2327,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_11(Mat A,Vec xx,Vec yy,Vec zz)
       v    += 121;
     }
     z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4; z[4] = sum5; z[5] = sum6; z[6] = sum7;
-    z[7] = sum6; z[8] = sum7; z[9] = sum8; z[10] = sum9; z[11] = sum10;
+    z[7] = sum8; z[8] = sum9; z[9] = sum10; z[10] = sum11;
     if (!usecprow) {
       z += 11; y += 11;
     }
