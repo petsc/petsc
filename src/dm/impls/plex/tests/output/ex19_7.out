@@ -1,19 +1,21 @@
-DM Object: DMinit 5 MPI processes
+DM Object: DMinit 2 MPI processes
   type: plex
 DMinit in 2 dimensions:
-  0-cells: 94 91 93 91 92
-  1-cells: 238 234 236 235 235
-  2-cells: 145 144 144 145 144
+  0-cells: 211 210
+  1-cells: 571 570
+  2-cells: 361 361
 Labels:
-  Face Sets: 1 strata with value/size (1 (19))
-  marker: 1 strata with value/size (1 (39))
-  depth: 3 strata with value/size (0 (94), 1 (238), 2 (145))
-DM Object: DMadapt (adapt_) 5 MPI processes
+  depth: 3 strata with value/size (0 (211), 1 (571), 2 (361))
+  celltype: 3 strata with value/size (0 (211), 1 (571), 3 (361))
+  marker: 1 strata with value/size (1 (79))
+  Face Sets: 1 strata with value/size (1 (39))
+DM Object: DMadapt (adapt_) 2 MPI processes
   type: plex
 DMadapt in 2 dimensions:
-  0-cells: 67 99 30 35 49
-  1-cells: 163 240 63 77 100
-  2-cells: 97 142 34 43 52
+  0-cells: 87 64
+  1-cells: 224 157
+  2-cells: 138 94
 Labels:
-  _boundary_: 1 strata with value/size (1 (9))
-  depth: 3 strata with value/size (0 (67), 1 (163), 2 (97))
+  celltype: 3 strata with value/size (0 (87), 3 (138), 1 (224))
+  depth: 3 strata with value/size (0 (87), 1 (224), 2 (138))
+  _boundary_: 1 strata with value/size (1 (14))

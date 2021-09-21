@@ -7,14 +7,16 @@ DMinit in 3 dimensions:
   3-cells: 384
 Labels:
   marker: 1 strata with value/size (1 (317))
+  celltype: 4 strata with value/size (0 (125), 6 (384), 3 (864), 1 (604))
   depth: 4 strata with value/size (0 (125), 1 (604), 2 (864), 3 (384))
 DM Object: DMadapt (adapt_) 1 MPI processes
   type: plex
 DMadapt in 3 dimensions:
-  0-cells: 155
-  1-cells: 752
-  2-cells: 1079
-  3-cells: 481
+  0-cells: 124
+  1-cells: 571
+  2-cells: 797
+  3-cells: 349
 Labels:
-  marker: 1 strata with value/size (1 (234))
-  depth: 4 strata with value/size (0 (155), 1 (752), 2 (1079), 3 (481))
+  celltype: 4 strata with value/size (0 (124), 6 (349), 3 (797), 1 (571))
+  depth: 4 strata with value/size (0 (124), 1 (571), 2 (797), 3 (349))
+  marker: 1 strata with value/size (1 (198))
