@@ -1,0 +1,24 @@
+DM Object: DM_init 1 MPI processes
+  type: plex
+DM_init in 3 dimensions:
+  0-cells: 125
+  1-cells: 604
+  2-cells: 864
+  3-cells: 384
+Labels:
+  marker: 1 strata with value/size (1 (317))
+  celltype: 4 strata with value/size (0 (125), 6 (384), 3 (864), 1 (604))
+  depth: 4 strata with value/size (0 (125), 1 (604), 2 (864), 3 (384))
+Field P1:
+  adjacency FEM
+DM Object: DM_adapted 1 MPI processes
+  type: plex
+DM_adapted in 3 dimensions:
+  0-cells: 289
+  1-cells: 1464
+  2-cells: 2158
+  3-cells: 982
+Labels:
+  celltype: 4 strata with value/size (0 (289), 6 (982), 3 (2158), 1 (1464))
+  depth: 4 strata with value/size (0 (289), 1 (1464), 2 (2158), 3 (982))
+  _boundary_: 1 strata with value/size (1 (388))
