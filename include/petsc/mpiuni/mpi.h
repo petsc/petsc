@@ -294,6 +294,11 @@ typedef int (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 #define MPI_NULL_COPY_FN   (MPI_Copy_function*)0
 #define MPI_NULL_DELETE_FN (MPI_Delete_function*)0
 
+#define MPI_THREAD_SINGLE 0
+#define MPI_THREAD_FUNNELED 1
+#define MPI_THREAD_SERIALIZED 2
+#define MPI_THREAD_MULTIPLE 3
+
 /*
   To enable linking PETSc+MPIUNI with any other package that might have its
   own MPIUNI (equivalent implementation) we need to avoid using 'MPI'
@@ -316,6 +321,8 @@ typedef int (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 #define MPI_Comm_dup      Petsc_MPI_Comm_dup
 #define MPI_Comm_create   Petsc_MPI_Comm_create
 #define MPI_Init          Petsc_MPI_Init
+#define MPI_Init_thread   Petsc_MPI_Init_thread
+#define MPI_Query_thread  Petsc_MPI_Query_thread
 #define MPI_Finalize      Petsc_MPI_Finalize
 #define MPI_Initialized   Petsc_MPI_Initialized
 #define MPI_Finalized     Petsc_MPI_Finalized
@@ -349,6 +356,8 @@ MPIUni_PETSC_EXTERN int    MPI_Comm_free(MPI_Comm*);
 MPIUni_PETSC_EXTERN int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 MPIUni_PETSC_EXTERN int    MPI_Comm_create(MPI_Comm,MPI_Group,MPI_Comm *);
 MPIUni_PETSC_EXTERN int    MPI_Init(int *, char ***);
+MPIUni_PETSC_EXTERN int    MPI_Init_thread(int *, char ***, int, int *);
+MPIUni_PETSC_EXTERN int    MPI_Query_thread(int *);
 MPIUni_PETSC_EXTERN int    MPI_Finalize(void);
 MPIUni_PETSC_EXTERN int    MPI_Initialized(int*);
 MPIUni_PETSC_EXTERN int    MPI_Finalized(int*);

@@ -310,6 +310,18 @@ int MPI_Init(int *argc, char ***argv)
   return MPI_SUCCESS;
 }
 
+int MPI_Init_thread(int *argc, char ***argv, int required, int* provided)
+{
+  MPI_Query_thread(provided);
+  return MPI_Init(argc,argv);
+}
+
+int MPI_Query_thread(int* provided)
+{
+  *provided = MPI_THREAD_FUNNELED;
+  return MPI_SUCCESS;
+}
+
 int MPI_Finalize(void)
 {
   MPI_Comm comm;
