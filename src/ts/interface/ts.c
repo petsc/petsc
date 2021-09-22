@@ -35,7 +35,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE, TSBSYMP
++  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE, TSBSYMP, TSIRK
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_time <time> - maximum time to compute to
 .  -ts_max_steps <steps> - maximum number of time-steps to take

@@ -21,6 +21,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 
 /*@C
   TSRegisterAll - Registers all of the timesteppers in the TS package.
@@ -67,5 +68,6 @@ PetscErrorCode  TSRegisterAll(void)
   ierr = TSRegister(TSBASICSYMPLECTIC,TSCreate_BasicSymplectic);CHKERRQ(ierr);
   ierr = TSRegister(TSMPRK,           TSCreate_MPRK);CHKERRQ(ierr);
   ierr = TSRegister(TSDISCGRAD,       TSCreate_DiscGrad);CHKERRQ(ierr);
+  ierr = TSRegister(TSIRK,            TSCreate_IRK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
