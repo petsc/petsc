@@ -33,6 +33,8 @@ configure_options = [
   '--download-adblaslapack=1',
   '--download-p4est=1',
   '--download-zlib=1',
+  '--download-h2opus=1',
+  '--download-thrust=1',
   ]
 
 if __name__ == '__main__':

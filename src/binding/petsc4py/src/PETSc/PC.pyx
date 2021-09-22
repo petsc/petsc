@@ -50,7 +50,7 @@ class PCType(object):
     HMG                = S_(PCHMG)
     DEFLATION          = S_(PCDEFLATION)
     HPDDM              = S_(PCHPDDM)
-    HARA               = S_(PCHARA)
+    H2OPUS             = S_(PCH2OPUS)
 
 class PCSide(object):
     # native

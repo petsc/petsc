@@ -1811,5 +1811,8 @@ PETSC_EXTERN PetscLogEvent MATCOLORING_Local;
 PETSC_EXTERN PetscLogEvent MATCOLORING_ISCreate;
 PETSC_EXTERN PetscLogEvent MATCOLORING_SetUp;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Weights;
+PETSC_EXTERN PetscLogEvent MAT_H2Opus_Build;
+PETSC_EXTERN PetscLogEvent MAT_H2Opus_Compress;
+PETSC_EXTERN PetscLogEvent MAT_H2Opus_Orthog;
 
 #endif

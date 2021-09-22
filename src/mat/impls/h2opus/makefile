@@ -1,17 +1,17 @@
 -include ../../../../petscdir.mk
-#requirespackage 'PETSC_HAVE_HARA'
+#requirespackage 'PETSC_HAVE_H2OPUS'
 
 ALL: lib
 
 FFLAGS    =
-SOURCECXX = matharacpu.cxx
-SOURCECU  = mathara.cu
+SOURCECXX = math2opuscpu.cxx math2opusutilscpu.cxx
+SOURCECU  = math2opus.cu math2opusutils.cu
 SOURCEF   =
 SOURCEH   =
 LIBBASE   = libpetscmat
 DIRS      =
 MANSEC    = Mat
-LOCDIR    = src/mat/impls/hara/
+LOCDIR    = src/mat/impls/h2opus/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

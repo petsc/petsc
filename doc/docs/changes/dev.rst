@@ -115,6 +115,7 @@ Changes: Development
 -  Add ``MatGetColumnSums()``, ``MatGetColumnSumsRealPart()``, ``MatGetColumnSumsImaginaryPart()`` to compute sums over matrix columns
 -  Add ``MatGetColumnMeans()``, ``MatGetColumnMeansRealPart()``, ``MatGetColumnMeansImaginaryPart()`` to compute arithmetic means over matrix columns
 -  Add ``MatBoundToCPU()`` to query information set with ``MatBindToCPU()``
+-  Rename ``MATHARA`` in ``MATH2OPUS``, supporting distributed memory operations with hierarchical matrices
 
 .. rubric:: PC:
 
@@ -124,6 +125,7 @@ Changes: Development
 -  Add support for ``MATNORMAL`` in ``PCASM`` and ``PCHPDDM``
 -  Add support for BoomerAMG from ``PCHYPRE`` to run on NVIDIA and AMD GPUs
 -  ``PCShellGetContext()`` now takes ``void*`` as return argument
+-  Rename ``PCHARA`` in ``PCH2OPUS``, supporting distributed memory operations with hierarchical matrices
 
 .. rubric:: KSP:
 

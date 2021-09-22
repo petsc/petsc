@@ -72,7 +72,7 @@ typedef const char* PCType;
 #define PCHMG             "hmg"
 #define PCDEFLATION       "deflation"
 #define PCHPDDM           "hpddm"
-#define PCHARA            "hara"
+#define PCH2OPUS          "h2opus"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

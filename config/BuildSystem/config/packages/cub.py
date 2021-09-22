@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     self.gitcommit        = 'v'+version
     self.download         = ['git://https://github.com/NVlabs/cub','https://github.com/NVlabs/cub/archive/'+self.gitcommit+'.tar.gz']
     self.functions        = []
-    self.includes         = ['cub/cub.cuh']
+    self.includes         = ['cub/host/mutex.cuh']
     self.precisions       = ['single','double']
     self.cxx              = 1
     return
@@ -30,15 +30,7 @@ class Configure(config.package.Package):
     if not self.installNeeded('petsc.mk'):
       return self.installDir
 
-    if self.framework.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      PETSC_DIR  = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
-      PETSC_ARCH = ''
-      prefix     = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
-    else:
-      PETSC_DIR  = self.petscdir.dir
-      PETSC_ARCH = self.arch
-      prefix     = os.path.join(self.petscdir.dir,self.arch)
-    incDir = os.path.join(prefix,'include')
+    incDir = self.includeDir
     cpstr = ' mkdir -p '+incDir+' && cp -r '+os.path.join(self.packageDir,'cub')+' '+incDir
     try:
       self.logPrintBox('Copying CUB; this may take several seconds')
