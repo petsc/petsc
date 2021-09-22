@@ -87,6 +87,8 @@ Changes: Development
 
 .. rubric:: Mat:
 
+-  ``MATMPIKAIJ`` now tracks the object state of the AIJ matrix describing the blockwise action of the KAIJ matrix and
+   automatically rebuilds internal data structures before executing operations with the KAIJ matrix if the state has changed
 -  Factorization types now provide their preferred ordering (which
    may be ``MATORDERINGEXTERNAL``) to prevent PETSc PCFactor from, by
    default, picking an ordering when it is not ideal
