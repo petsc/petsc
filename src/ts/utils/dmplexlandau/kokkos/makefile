@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_HAVE_KOKKOS'
+#requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
 -include ../../../../../petscdir.mk
 ALL: lib
 

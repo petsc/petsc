@@ -51,7 +51,7 @@ struct _n_SplitCSRMat {
     #define PetscAtomicAdd(a,b) atomicAdd(a,b)
   #endif
 #else
-  /* TODO: support devices other than CUDA */
+  /* TODO: support devices other than CUDA and Kokkos */
   #define PetscAtomicAdd(a,b) *(a) += b
 #endif
 
