@@ -56,10 +56,12 @@ class Configure(config.package.Package):
     if not hasattr(self.framework,'packages'):
       self.framework.packages = []
     self.framework.packages.append(self)
-    cpstr = 'mkdir -p '+incDir+' && cp '+os.path.join(self.packageDir,'include','*')+' '+incDir
-    self.logPrintBox('Copying HPDDM; this may take several seconds')
-    output,err,ret = config.package.Package.executeShellCommand(cpstr,timeout=100,log=self.log)
-    self.log.write(output+err)
+    try:
+      self.logPrintBox('Copying HPDDM; this may take several seconds')
+      output,err,ret = config.package.Package.executeShellCommand(['cp','-rf',os.path.join(self.packageDir,'include'),prefix],timeout=100,log=self.log) # cannot use shutil.copytree since target directory likely exists
+      self.log.write(output+err)
+    except RuntimeError as e:
+      raise RuntimeError('Error copying HPDDM: '+str(e))
     # SLEPc dependency
     if self.mpi.found:
       if self.slepc.found:

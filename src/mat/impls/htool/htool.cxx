@@ -388,14 +388,15 @@ static PetscErrorCode MatSetFromOptions_Htool(PetscOptionItems *PetscOptionsObje
 
 static PetscErrorCode MatAssemblyEnd_Htool(Mat A,MatAssemblyType type)
 {
-  Mat_Htool                              *a = (Mat_Htool*)A->data;
-  const PetscInt                         *ranges;
-  PetscInt                               *offset;
-  PetscMPIInt                            size;
-  char                                   S = PetscDefined(USE_COMPLEX) && A->hermitian ? 'H' : (A->symmetric ? 'S' : 'N'),uplo = S == 'N' ? 'N' : 'U';
-  htool::VirtualGenerator<PetscScalar>   *generator = nullptr;
-  std::shared_ptr<htool::VirtualCluster> t,s = nullptr;
-  PetscErrorCode                         ierr;
+  Mat_Htool                                                    *a = (Mat_Htool*)A->data;
+  const PetscInt                                               *ranges;
+  PetscInt                                                     *offset;
+  PetscMPIInt                                                  size;
+  char                                                         S = PetscDefined(USE_COMPLEX) && A->hermitian ? 'H' : (A->symmetric ? 'S' : 'N'),uplo = S == 'N' ? 'N' : 'U';
+  htool::VirtualGenerator<PetscScalar>                         *generator = nullptr;
+  std::shared_ptr<htool::VirtualCluster>                       t,s = nullptr;
+  std::shared_ptr<htool::VirtualLowRankGenerator<PetscScalar>> compressor = nullptr;
+  PetscErrorCode                                               ierr;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(HtoolCitation,&HtoolCite);CHKERRQ(ierr);
@@ -454,19 +455,21 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A,MatAssemblyType type)
   ierr = PetscFree(offset);CHKERRQ(ierr);
   switch (a->compressor) {
   case MAT_HTOOL_COMPRESSOR_FULL_ACA:
-    a->hmatrix = dynamic_cast<htool::VirtualHMatrix<PetscScalar>*>(new htool::HMatrix<PetscScalar,htool::fullACA,htool::RjasanowSteinbach>(t,s?s:t,a->epsilon,a->eta,S,uplo));
+    compressor = std::make_shared<htool::fullACA<PetscScalar>>();
     break;
   case MAT_HTOOL_COMPRESSOR_SVD:
-    a->hmatrix = dynamic_cast<htool::VirtualHMatrix<PetscScalar>*>(new htool::HMatrix<PetscScalar,htool::SVD,htool::RjasanowSteinbach>(t,s?s:t,a->epsilon,a->eta,S,uplo));
+    compressor = std::make_shared<htool::SVD<PetscScalar>>();
     break;
   default:
-    a->hmatrix = dynamic_cast<htool::VirtualHMatrix<PetscScalar>*>(new htool::HMatrix<PetscScalar,htool::sympartialACA,htool::RjasanowSteinbach>(t,s?s:t,a->epsilon,a->eta,S,uplo));
+    compressor = std::make_shared<htool::sympartialACA<PetscScalar>>();
   }
+  a->hmatrix = dynamic_cast<htool::VirtualHMatrix<PetscScalar>*>(new htool::HMatrix<PetscScalar>(t,s ? s : t,a->epsilon,a->eta,S,uplo));
+  a->hmatrix->set_compression(compressor);
   a->hmatrix->set_maxblocksize(a->bs[1]);
   a->hmatrix->set_mintargetdepth(a->depth[0]);
   a->hmatrix->set_minsourcedepth(a->depth[1]);
-  if (s) a->hmatrix->build_auto(a->wrapper ? *a->wrapper : *generator,a->gcoords_target,a->gcoords_source);
-  else   a->hmatrix->build_auto_sym(a->wrapper ? *a->wrapper : *generator,a->gcoords_target);
+  if (s) a->hmatrix->build(a->wrapper ? *a->wrapper : *generator,a->gcoords_target,a->gcoords_source);
+  else   a->hmatrix->build(a->wrapper ? *a->wrapper : *generator,a->gcoords_target);
   PetscFunctionReturn(0);
 }
 
