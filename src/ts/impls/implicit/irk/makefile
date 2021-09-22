@@ -1,10 +1,16 @@
 
 ALL: lib
 
-LOCDIR   = src/ts/impls/implicit/
-DIRS     = sundials theta alpha glle radau5 discgrad irk
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = irk.c
+SOURCEF  =
+SOURCEH  =
+LIBBASE  = libpetscts
 MANSEC   = TS
+LOCDIR   = src/ts/impls/implicit/irk/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
+

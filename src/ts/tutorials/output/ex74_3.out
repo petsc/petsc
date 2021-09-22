@@ -1,0 +1,20 @@
+0 TS dt 0.125 time 0.
+      0 KSP Residual norm 0.0902246 
+      1 KSP Residual norm 0.072483 
+      2 KSP Residual norm 0.0723051 
+      3 KSP Residual norm < 1.e-11
+KSP final norm of residual 1.84999e-09
+1 TS dt 0.125 time 0.125
+      0 KSP Residual norm 1.079e-11 
+KSP final norm of residual 3.62352e-09
+2 TS dt 0.125 time 0.25
+      0 KSP Residual norm 1.398e-11 
+KSP final norm of residual 4.71238e-09
+3 TS dt 0.125 time 0.375
+      0 KSP Residual norm 1.593e-11 
+KSP final norm of residual 5.3786e-09
+4 TS dt 0.125 time 0.5
+      0 KSP Residual norm 1.712e-11 
+KSP final norm of residual 5.78582e-09
+5 TS dt 0.125 time 0.625
+L2 norm of the numerical error = 0.000304732 (time=0.625)

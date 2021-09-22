@@ -136,6 +136,7 @@ Changes: Development
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
+-  Add ``-ts_type irk`` - fully implicit Runge-Kutta solvers
 
 -  Add ``TSTrajectory`` interface to the CAMS library for optimal offline checkpointing for multistage time stepping schemes
 -  Add option ``-ts_trajectory_memory_type <revolve | cams | petsc>`` to switch checkpointing schedule software
