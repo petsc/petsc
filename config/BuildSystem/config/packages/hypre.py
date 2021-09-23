@@ -4,13 +4,13 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.22.1'
+    self.version         = '2.23.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
     # self.gitcommit       = 'v'+self.version
-    self.gitcommit       = 'eaff5505ed08e66a9c138cae6b0bc0a390232f83' # master Sep 9, 2021 GPU support with PETSc bugfixes
+    self.gitcommit       = 'e12e942fcbc73623f8cdd94505701f2ffb605e5e' # master Sep 29, 2021 (pre-2.23.0)
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
