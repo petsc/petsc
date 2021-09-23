@@ -117,15 +117,15 @@ class Configure(config.package.CMakePackage):
       dir = self.externalpackagesdir.dir
       args.append('-DCMAKE_CXX_COMPILER='+os.path.join(dir,'git.kokkos','bin','nvcc_wrapper'))
       genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
-      if hasattr(self.cuda,'gencodearch'):
-        generation = self.cuda.gencodearch[:-1]
+      if hasattr(self.cuda,'cudaArch'):
+        generation = self.cuda.cudaArch[:-1]
         try:
           # Kokkos uses names like VOLTA75, AMPERE86
-          deviceArchName = genToName[generation] + self.cuda.gencodearch
+          deviceArchName = genToName[generation] + self.cuda.cudaArch
         except KeyError:
-          raise RuntimeError('Could not find an arch name for CUDA gen number '+ self.cuda.gencodearch)
+          raise RuntimeError('Could not find an arch name for CUDA gen number '+ self.cuda.cudaArch)
       else:
-        raise RuntimeError('You must set --with-cuda-gencodearch=60, 70, 75, 80 etc.')
+        raise RuntimeError('You must set --with-cuda-arch=60, 70, 75, 80 etc.')
       args.append('-DKokkos_ARCH_'+deviceArchName+'=ON')
       args.append('-DKokkos_ENABLE_CUDA_LAMBDA:BOOL=ON')
       #  Kokkos nvcc_wrapper REQUIRES nvcc be visible in the PATH!
@@ -140,6 +140,8 @@ class Configure(config.package.CMakePackage):
       with self.Language('HIP'):
         petscHipc = self.getCompiler()
         hipFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
+        # kokkos uses clang and offload flag
+        hipFlags = ' '.join([i for i in hipFlags.split() if '--amdgpu-target' not in i])
       args.append('-DKOKKOS_HIP_OPTIONS="'+hipFlags.replace(' ',';')+'"')
       self.getExecutable(petscHipc,getFullPath=1,resultName='systemHipc')
       if not hasattr(self,'systemHipc'):
@@ -148,9 +150,18 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_CXX_COMPILER='+self.systemHipc)
       args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
       args.append('-DCMAKE_CXX_FLAGS="' + hipFlags + '"')
-      if not 'with-kokkos-hip-arch' in self.framework.clArgDB:
-        raise RuntimeError('You must set --with-kokkos-hip-arch=VEGA900, VEGA906, VEGA908 etc.')
-      args.append('-DKokkos_ARCH_'+self.argDB['with-kokkos-hip-arch']+'=ON')
+      if hasattr(self.hip,'hipArch'):
+        genToName = {'gfx': 'VEGA'}
+        generation = self.hip.hipArch[0:3]
+        try:
+          # Kokkos uses names like VEGA908
+          deviceArchName = genToName[generation] + self.hip.hipArch[3:]
+        except KeyError:
+          raise RuntimeError('Could not find an arch name for HIP gen number '+ self.hip.hipArch)
+      else:
+        raise RuntimeError('You must set --with-hip-arch=gfx900, gfx906, gfx908 etc.')
+
+      args.append('-DKokkos_ARCH_'+deviceArchName+'=ON')
       args.append('-DKokkos_ENABLE_HIP_RELOCATABLE_DEVICE_CODE=OFF')
 
     # set -DCMAKE_CXX_STANDARD=

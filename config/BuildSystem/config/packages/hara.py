@@ -93,8 +93,8 @@ class Configure(config.package.Package):
         g.write('NVCC = '+nvcc+'\n')
         g.write('NVCCFLAGS := $(addprefix -Xcompiler ,$(CCFLAGS))\n')
         g.write('NVCCFLAGS += -DHLIB_PROFILING_ENABLED -std=c++11 --expt-relaxed-constexpr ' + nvopts+'\n')
-        if self.cuda.gencodearch:
-          g.write('GENCODE_FLAGS = -gencode arch=compute_'+self.cuda.gencodearch+',code=sm_'+self.cuda.gencodearch+'\n')
+        if self.cuda.cudaArch:
+          g.write('GENCODE_FLAGS = -gencode arch=compute_'+self.cuda.cudaArch+',code=sm_'+self.cuda.cudaArch+'\n')
         g.write('INCLUDES += '+self.headers.toString(self.cuda.include)+'\n')
         g.write('INCLUDES += '+self.headers.toString(self.magma.include)+'\n')
         g.write('INCLUDES += '+self.headers.toString(self.kblas.include)+'\n')

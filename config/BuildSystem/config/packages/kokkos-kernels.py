@@ -84,6 +84,8 @@ class Configure(config.package.CMakePackage):
       with self.Language('HIP'):
         petscHipc = self.getCompiler()
         hipFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
+        # kokkos uses clang and offload flag
+        hipFlags = ' '.join([i for i in hipFlags.split() if '--amdgpu-target' not in i])
       self.getExecutable(petscHipc,getFullPath=1,resultName='systemHipc')
       if not hasattr(self,'systemHipc'):
         raise RuntimeError('HIP error: could not find path of hipc')

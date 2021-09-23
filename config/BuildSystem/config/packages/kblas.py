@@ -60,8 +60,8 @@ class Configure(config.package.Package):
       g.write('_USE_MAGMA_ = TRUE\n')
       g.write('_MAGMA_ROOT_ = '+self.magma.directory+'\n')
       g.write('_CUDA_ROOT_ = '+cudaDir+'\n')
-      if self.cuda.gencodearch:
-        g.write('_CUDA_ARCH_ = '+self.cuda.gencodearch+'\n')
+      if self.cuda.cudaArch:
+        g.write('_CUDA_ARCH_ = '+self.cuda.cudaArch+'\n')
       else:
         g.write('_CUDA_ARCH_ = 30\n')
       g.write('NVCC = '+nvcc+'\n')

@@ -1096,7 +1096,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
     self.compilers.saveLog()
     try:
-      output = self.outputPreprocess('#include "'+self.versioninclude+'"\n;petscpkgver('+self.versionname+');\n')
+      output = self.outputPreprocess('#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n')
       self.logWrite(self.compilers.restoreLog())
     except:
       self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')

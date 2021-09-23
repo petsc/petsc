@@ -142,8 +142,10 @@ class Configure(config.package.Package):
       gputarget = ''
       if self.argDB['with-magma-gputarget']:
         gputarget = self.argDB['with-magma-gputarget']
-      elif self.cuda.found and hasattr(self.cuda,'gencodearch') and self.cuda.gencodearch:
-        gputarget = 'sm_'+self.cuda.gencodearch
+      elif self.cuda.found and hasattr(self.cuda,'cudaArch') and self.cuda.cudaArch:
+        gputarget = 'sm_'+self.cuda.cudaArch
+      elif self.hip.found and hasattr(self.hip,'hipArch') and self.hip.hipArch:
+        gputarget = self.hip.hipArch
       g.write('CC = '+cc+'\n')
       g.write('CFLAGS = '+cflags+'\n')
       g.write('CXX = '+cxx+'\n')
@@ -152,13 +154,11 @@ class Configure(config.package.Package):
         g.write('BACKEND = cuda\n')
         g.write('NVCC = '+nvcc+'\n')
         g.write('DEVCC = '+nvcc+'\n')
-        #g.write('NVCCFLAGS = '+nvccflags+'\n')
         g.write('DEVCCFLAGS = '+nvccflags+'\n')
       if usehip:
         g.write('BACKEND = hip\n')
         g.write('HIPCC = '+hipcc+'\n')
         g.write('DEVCC = '+hipcc+'\n')
-        g.write('HIPCCFLAGS = '+hipccflags+'\n')
         g.write('DEVCCFLAGS = '+hipccflags+'\n')
       if fcbindings:
         g.write('FORT = '+fc+'\n')
@@ -166,9 +166,8 @@ class Configure(config.package.Package):
         g.write('F90LAGS = '+fcflags+'\n')
       if gputarget:
         g.write('GPU_TARGET = '+gputarget+'\n')
-      if self.cuda.found and hasattr(self.cuda,'gencodearch') and self.cuda.gencodearch:
-        # g.write('NVCCFLAGS += -gencode arch=compute_'+self.cuda.gencodearch+',code=sm_'+self.cuda.gencodearch+'\n')
-        g.write('MIN_ARCH = '+self.cuda.gencodearch+'0\n')
+      if self.cuda.found and hasattr(self.cuda,'cudaArch') and self.cuda.cudaArch:
+        g.write('MIN_ARCH = '+self.cuda.cudaArch+'0\n')
 
       g.write('ARCH = '+self.setCompilers.AR+'\n')
       g.write('ARCHFLAGS = '+self.setCompilers.AR_FLAGS+'\n')

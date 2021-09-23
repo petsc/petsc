@@ -27,9 +27,7 @@ if __name__ == '__main__':
     '--download-magma',
     '--download-hypre',
     '--download-hypre-configure-arguments=--enable-unified-memory',
-    '--with-hypre-gpu-arch=gfx906',
     '--with-magma-fortran-bindings=0',
-    '--with-magma-gputarget=gfx906',
   ]
 
   configure.petsc_configure(configure_options)
