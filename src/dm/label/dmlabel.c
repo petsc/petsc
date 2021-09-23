@@ -1165,8 +1165,8 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  if (start) {PetscValidPointer(start, 3); *start = label->defaultValue;}
-  if (end)   {PetscValidPointer(end,   4); *end   = label->defaultValue;}
+  if (start) {PetscValidPointer(start, 3); *start = -1;}
+  if (end)   {PetscValidPointer(end,   4); *end   = -1;}
   ierr = DMLabelLookupStratum(label, value, &v);CHKERRQ(ierr);
   if (v < 0) PetscFunctionReturn(0);
   ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
