@@ -647,8 +647,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
         PetscScalar *ecoords = &edgeCoords[Ne*dim*2];
         PetscInt     ecsize  = dim*2;
 
-        closure[Ne] = closure[cl];
-        ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, closure[Ne], &ecsize, &ecoords);CHKERRQ(ierr);
+        ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, closure[cl], &ecsize, &ecoords);CHKERRQ(ierr);
         if (ecsize != dim*2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Got %D coords for edge, instead of %D", ecsize, dim*2);
         ++Ne;
       }
@@ -748,28 +747,6 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
                 }
               }
             }
-#if 0
-            for (kk = 0; kk < (dim > 2 ? 2 : 1); ++kk) {
-              if (dim > 2) {segB[2]     = PetscRealPart(point[2]);
-                            segB[dim+2] = PetscRealPart(point[2]) + kk*h[2];}
-              for (jj = 0; jj < (dim > 1 ? 2 : 1); ++jj) {
-                if (dim > 1) {segB[1]     = PetscRealPart(point[1]);
-                              segB[dim+1] = PetscRealPart(point[1]) + jj*h[1];}
-                for (ii = 0; ii < 2; ++ii) {
-                  PetscBool intersects = PETSC_FALSE;
-
-                  segB[0]     = PetscRealPart(point[0]);
-                  segB[dim+0] = PetscRealPart(point[0]) + ii*h[0];
-                  if (dim == 2) {
-                    ierr = DMPlexGetLineIntersection_2D_Internal(segA, segB, NULL, &intersects);CHKERRQ(ierr);
-                  } else if (dim == 3) {
-                    ierr = DMPlexGetLinePlaneIntersection_3D_Internal(segA, segB, segC, NULL, &intersects);CHKERRQ(ierr);
-                  }
-                  if (intersects) { ierr = DMLabelSetValue(lbox->cellsSparse, c, box);CHKERRQ(ierr); ii = jj = kk = 2; edge = Ne;}
-                }
-              }
-            }
-#endif
           }
         }
       }
