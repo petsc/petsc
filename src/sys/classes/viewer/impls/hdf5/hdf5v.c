@@ -680,16 +680,21 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 {
   hid_t          file_id;
   H5O_type_t     type;
-  const char     *groupName = NULL;
-  PetscBool      create;
+  const char     *groupName = NULL, *fileName = NULL;
+  PetscBool      writable, has;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerWritable(viewer, &create);CHKERRQ(ierr);
+  ierr = PetscViewerWritable(viewer, &writable);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+  ierr = PetscViewerFileGetName(viewer, &fileName);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetGroup(viewer, &groupName);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, groupName, create, NULL, &type);CHKERRQ(ierr);
-  if (type != H5O_TYPE_GROUP) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Path %s resolves to something which is not a group", groupName);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, groupName, writable, &has, &type);CHKERRQ(ierr);
+  if (!has) {
+    if (!writable) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Group %s does not exist and file %s is not open for writing", groupName, fileName);
+    else           SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_LIB, "HDF5 failed to create group %s although file %s is open for writing", groupName, fileName);
+  }
+  if (type != H5O_TYPE_GROUP) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Path %s in file %s resolves to something which is not a group", groupName, fileName);
   PetscStackCallHDF5Return(*groupId,H5Gopen2,(file_id, groupName ? groupName : "/", H5P_DEFAULT));
   *fileId  = file_id;
   PetscFunctionReturn(0);
