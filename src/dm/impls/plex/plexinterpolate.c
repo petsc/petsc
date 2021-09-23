@@ -17,7 +17,7 @@ typedef struct _PetscHashIJKLKey { PetscInt i, j, k, l; } PetscHashIJKLKey;
 #define PetscHashIJKLKeyEqual(k1,k2) \
   (((k1).i==(k2).i) ? ((k1).j==(k2).j) ? ((k1).k==(k2).k) ? ((k1).l==(k2).l) : 0 : 0 : 0)
 
-PETSC_HASH_MAP(HashIJKL, PetscHashIJKLKey, PetscInt, PetscHashIJKLKeyHash, PetscHashIJKLKeyEqual, -1)
+PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PETSC_HASH_MAP(HashIJKL, PetscHashIJKLKey, PetscInt, PetscHashIJKLKeyHash, PetscHashIJKLKeyEqual, -1))
 
 static PetscSFNode _PetscInvalidSFNode = {-1, -1};
 
@@ -30,7 +30,7 @@ typedef struct _PetscHashIJKLRemoteKey { PetscSFNode i, j, k, l; } PetscHashIJKL
 #define PetscHashIJKLRemoteKeyEqual(k1,k2) \
   (((k1).i.rank==(k2).i.rank) ? ((k1).i.index==(k2).i.index) ? ((k1).j.rank==(k2).j.rank) ? ((k1).j.index==(k2).j.index) ? ((k1).k.rank==(k2).k.rank) ? ((k1).k.index==(k2).k.index) ? ((k1).l.rank==(k2).l.rank) ? ((k1).l.index==(k2).l.index) : 0 : 0 : 0 : 0 : 0 : 0 : 0)
 
-PETSC_HASH_MAP(HashIJKLRemote, PetscHashIJKLRemoteKey, PetscSFNode, PetscHashIJKLRemoteKeyHash, PetscHashIJKLRemoteKeyEqual, _PetscInvalidSFNode)
+PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PETSC_HASH_MAP(HashIJKLRemote, PetscHashIJKLRemoteKey, PetscSFNode, PetscHashIJKLRemoteKeyHash, PetscHashIJKLRemoteKeyEqual, _PetscInvalidSFNode))
 
 static PetscErrorCode PetscSortSFNode(PetscInt n, PetscSFNode A[])
 {

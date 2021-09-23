@@ -1,5 +1,6 @@
-#include <../src/sys/classes/draw/utils/axisimpl.h>  /*I   "petscdraw.h"  I*/
+#include <petsc/private/drawimpl.h>  /*I   "petscdraw.h"  I*/
 
+#define PETSC_DRAW_AXIS_MAX_SEGMENTS 20
 PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 
 /*@
@@ -253,7 +254,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   int            i,ntick,numx,numy,ac,tc,cc;
   PetscMPIInt    rank;
   size_t         len,ytlen=0;
-  PetscReal      coors[4],tickloc[MAXSEGS],sep,tw,th;
+  PetscReal      coors[4],tickloc[PETSC_DRAW_AXIS_MAX_SEGMENTS],sep,tw,th;
   PetscReal      xl,xr,yl,yr,dxl=0,dyl=0,dxr=0,dyr=0;
   char           *p;
   PetscDraw      draw;
@@ -314,7 +315,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   /* PetscDraw the X ticks and labels */
   if (axis->xticks) {
     numx = (int)(.15*(axis->xhigh-axis->xlow)/tw); numx = PetscClipInterval(numx,2,6);
-    ierr = (*axis->xticks)(axis->xlow,axis->xhigh,numx,&ntick,tickloc,MAXSEGS);CHKERRQ(ierr);
+    ierr = (*axis->xticks)(axis->xlow,axis->xhigh,numx,&ntick,tickloc,PETSC_DRAW_AXIS_MAX_SEGMENTS);CHKERRQ(ierr);
     /* PetscDraw in tick marks */
     for (i=0; i<ntick; i++) {
       ierr = PetscDrawLine(draw,tickloc[i],axis->ylow,tickloc[i],axis->ylow+.5*th,tc);CHKERRQ(ierr);
@@ -340,7 +341,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   /* PetscDraw the Y ticks and labels */
   if (axis->yticks) {
     numy = (int)(.50*(axis->yhigh-axis->ylow)/th); numy = PetscClipInterval(numy,2,6);
-    ierr = (*axis->yticks)(axis->ylow,axis->yhigh,numy,&ntick,tickloc,MAXSEGS);CHKERRQ(ierr);
+    ierr = (*axis->yticks)(axis->ylow,axis->yhigh,numy,&ntick,tickloc,PETSC_DRAW_AXIS_MAX_SEGMENTS);CHKERRQ(ierr);
     /* PetscDraw in tick marks */
     for (i=0; i<ntick; i++) {
       ierr = PetscDrawLine(draw,axis->xlow,tickloc[i],axis->xlow+.5*tw,tickloc[i],tc);CHKERRQ(ierr);

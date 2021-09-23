@@ -1,6 +1,6 @@
 
 #include <petscviewer.h>
-#include <../src/sys/classes/draw/utils/lgimpl.h>  /*I   "petscdraw.h"  I*/
+#include <petsc/private/drawimpl.h>  /*I   "petscdraw.h"  I*/
 PetscClassId PETSC_DRAWLG_CLASSID = 0;
 
 /*@
@@ -172,10 +172,10 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
   lg->xmax    = -1.e20;
   lg->ymax    = -1.e20;
 
-  ierr = PetscMalloc2(dim*CHUNCKSIZE,&lg->x,dim*CHUNCKSIZE,&lg->y);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->x,dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->y);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)lg,2*dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
 
-  lg->len         = dim*CHUNCKSIZE;
+  lg->len         = dim*PETSC_DRAW_LG_CHUNK_SIZE;
   lg->loc         = 0;
   lg->use_markers = PETSC_FALSE;
 
@@ -312,9 +312,9 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   }
   ierr    = PetscFree(lg->colors);CHKERRQ(ierr);
   lg->dim = dim;
-  ierr    = PetscMalloc2(dim*CHUNCKSIZE,&lg->x,dim*CHUNCKSIZE,&lg->y);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory((PetscObject)lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-  lg->len = dim*CHUNCKSIZE;
+  ierr    = PetscMalloc2(dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->x,dim*PETSC_DRAW_LG_CHUNK_SIZE,&lg->y);CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory((PetscObject)lg,2*dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  lg->len = dim*PETSC_DRAW_LG_CHUNK_SIZE;
   PetscFunctionReturn(0);
 }
 

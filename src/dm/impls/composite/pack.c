@@ -560,7 +560,7 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
     if (local) {
       Vec               global;
       const PetscScalar *array;
-      PetscValidHeaderSpecific(local,VEC_CLASSID,cnt);
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidHeaderSpecific(local,VEC_CLASSID,cnt));
       ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
       ierr = VecGetArrayRead(gvec,&array);CHKERRQ(ierr);
       ierr = VecPlaceArray(global,array+next->rstart);CHKERRQ(ierr);
@@ -677,7 +677,7 @@ PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
     if (local) {
       PetscScalar *array;
       Vec         global;
-      PetscValidHeaderSpecific(local,VEC_CLASSID,cnt);
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidHeaderSpecific(local,VEC_CLASSID,cnt));
       ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
       ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
       ierr = VecPlaceArray(global,array+next->rstart);CHKERRQ(ierr);

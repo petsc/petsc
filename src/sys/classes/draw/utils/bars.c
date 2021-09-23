@@ -2,29 +2,11 @@
 /*
   Contains the data structure for plotting a bargraph in a window with an axis.
 */
-#include <petscdraw.h>                       /*I "petscdraw.h" I*/
-#include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
-#include <petscviewer.h>                     /*I "petscviewer.h" I*/
-#include <../src/sys/classes/draw/utils/axisimpl.h>   /* so we can directly modify axis xticks */
+
+#include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
+#include <petscviewer.h>            /*I "petscviewer.h" I*/
 
 PetscClassId PETSC_DRAWBAR_CLASSID = 0;
-
-struct _p_PetscDrawBar {
-  PETSCHEADER(int);
-  PetscErrorCode (*destroy)(PetscDrawSP);
-  PetscErrorCode (*view)(PetscDrawSP,PetscViewer);
-  PetscDraw      win;
-  PetscDrawAxis  axis;
-  PetscReal      ymin,ymax;
-  int            numBins;
-  PetscReal      *values;
-  int            color;
-  char           **labels;
-  PetscBool      sort;
-  PetscReal      sorttolerance;
-};
-
-#define CHUNKSIZE 100
 
 /*@C
    PetscDrawBarCreate - Creates a bar graph data structure.
