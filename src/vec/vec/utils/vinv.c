@@ -1327,7 +1327,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 
    Level: beginner
 
-.seealso: VecNorm()
+.seealso: VecMean(), VecNorm()
 @*/
 PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
 {
@@ -1348,6 +1348,35 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
     ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   }
   ierr = MPIU_Allreduce(MPI_IN_PLACE,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecMean - Computes the arithmetic mean of all the components of a vector.
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  mean - the result
+
+   Level: beginner
+
+.seealso: VecSum(), VecNorm()
+@*/
+PetscErrorCode  VecMean(Vec v,PetscScalar *mean)
+{
+  PetscErrorCode    ierr;
+  PetscInt          n;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidScalarPointer(mean,2);
+  ierr = VecGetSize(v,&n);CHKERRQ(ierr);
+  ierr = VecSum(v,mean);CHKERRQ(ierr);
+  *mean /= n;
   PetscFunctionReturn(0);
 }
 

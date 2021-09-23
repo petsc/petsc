@@ -8,7 +8,8 @@ use -hdf5 to specify HDF5 viewer format for subvector I/O \n\n";
    vector of size 100, set it to 1 and extracts the last 50 elements
    as a subvector. Loads the saved vector from disk into the subvector
    and restores the subvector. To verify that the data has been loaded
-   into the parent vector, the sum of it's elements is calculated.
+   into the parent vector, the sum of its elements is calculated.
+   The arithmetic mean is also calculated in order to test VecMean().
 */
 
 #include <petscvec.h>
@@ -25,6 +26,7 @@ int main(int argc,char **argv)
   PetscInt       skipuntil = 50;          /* parameter to slice the last N elements of parent vec */
   PetscViewer    viewer;                  /* viewer for I/O */
   PetscScalar    sum;                     /* used to test sum of parent vector elements */
+  PetscScalar    mean;                    /* used to test mean of parent vector elements */
   PetscBool      usehdf5 = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -92,10 +94,12 @@ int main(int argc,char **argv)
 
   /* Compute sum of parent vector elements */
   ierr = VecSum(testvec, &sum);CHKERRQ(ierr);
+  ierr = VecMean(testvec, &mean);CHKERRQ(ierr);
 
   /* to verify that the loaded data has been transferred */
   if (sum != 150) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB,"Data has not been transferred from subvector to parent vector");
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSum on parent vec is : %e\n",sum);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMean on parent vec is : %e\n",mean);CHKERRQ(ierr);
 
   /* destroy parent vector, index set and exit */
   ierr = VecDestroy(&testvec);CHKERRQ(ierr);

@@ -279,6 +279,7 @@ PETSC_EXTERN PetscErrorCode VecNorm(Vec,NormType,PetscReal *);
 PETSC_EXTERN PetscErrorCode VecNormAvailable(Vec,NormType,PetscBool *,PetscReal *);
 PETSC_EXTERN PetscErrorCode VecNormalize(Vec,PetscReal *);
 PETSC_EXTERN PetscErrorCode VecSum(Vec,PetscScalar*);
+PETSC_EXTERN PetscErrorCode VecMean(Vec,PetscScalar*);
 PETSC_EXTERN PetscErrorCode VecMax(Vec,PetscInt*,PetscReal *);
 PETSC_EXTERN PetscErrorCode VecMin(Vec,PetscInt*,PetscReal *);
 PETSC_EXTERN PetscErrorCode VecScale(Vec,PetscScalar);
