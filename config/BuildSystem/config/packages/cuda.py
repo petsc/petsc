@@ -16,7 +16,7 @@ class Configure(config.package.Package):
                               ['cufft.lib','cublas.lib','cusparse.lib','cusolver.lib','curand.lib']]
     self.liblist           = 'dummy' # existence of self.liblist is used by package.py to determine if --with-cuda-lib must be provided
     self.precisions        = ['single','double']
-    self.cxx               = 0
+    self.cxx               = 1
     self.complex           = 1
     self.hastests          = 0
     self.hastestsdatafiles = 0
@@ -176,8 +176,6 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     import re
     self.setCudaDir()
-    if not hasattr(self.compilers, 'CXX'):
-      raise RuntimeError('Using CUDA requires PETSc to be configure with a C++ compiler')
     # skip this because it does not properly set self.lib and self.include if they have already been set
     if not self.found: config.package.Package.configureLibrary(self)
     self.checkNVCCDoubleAlign()
