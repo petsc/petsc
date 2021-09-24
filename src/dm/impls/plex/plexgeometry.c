@@ -696,7 +696,9 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
           }
           /* Check whether cell edge intersects any face of these subboxes TODO vectorize this */
           for (edge = 0; edge < Ne; ++edge) {
-            PetscReal segA[6], segB[6], segC[6];
+            PetscReal segA[6] = {0.,0.,0.,0.,0.,0.};
+            PetscReal segB[6] = {0.,0.,0.,0.,0.,0.};
+            PetscReal segC[6] = {0.,0.,0.,0.,0.,0.};
 
             if (PetscUnlikely(dim > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected dim %d > 3",dim);
             for (d = 0; d < dim*2; ++d) segA[d] = PetscRealPart(edgeCoords[edge*dim*2+d]);
