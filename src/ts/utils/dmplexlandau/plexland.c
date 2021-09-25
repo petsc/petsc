@@ -92,7 +92,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
 {
   LandauCtx         *ctx = (LandauCtx*)a_ctx;
   PetscErrorCode    ierr;
-  PetscInt          numCells[LANDAU_MAX_GRIDS],Nq,Nb,Nf[LANDAU_MAX_GRIDS],d,f,fieldA,qj,N,nip_glb;
+  PetscInt          numCells[LANDAU_MAX_GRIDS],Nq,Nb,Nf[LANDAU_MAX_GRIDS],N;
   PetscQuadrature   quad;
   const PetscReal   *quadWeights;
   PetscTabulation   *Tf; // used for CPU and print info. Same on all grids and all species
@@ -133,13 +133,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   if (Nq >LANDAU_MAX_NQ) SETERRQ2(ctx->comm,PETSC_ERR_ARG_WRONG,"Order too high. Nq = %D > LANDAU_MAX_NQ (%D)",Nq,LANDAU_MAX_NQ);
   if (LANDAU_DIM != dim) SETERRQ2(ctx->comm, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
   /* setup each grid */
-  nip_glb = 0;
   for (PetscInt grid=0;grid<ctx->num_grids;grid++) {
     PetscInt cStart, cEnd;
     if (ctx->plex[grid] == NULL) SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"Plex not created");
     ierr = DMPlexGetHeightStratum(ctx->plex[grid], 0, &cStart, &cEnd);CHKERRQ(ierr);
     numCells[grid] = cEnd - cStart; // grids can have different topology
-    nip_glb += Nq*numCells[grid];
     ierr = DMGetLocalSection(ctx->plex[grid], &section[grid]);CHKERRQ(ierr);
     ierr = DMGetGlobalSection(ctx->plex[grid], &globsection[grid]);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section[grid], &Nf[grid]);CHKERRQ(ierr);
@@ -148,15 +146,18 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   ierr = PetscLogEventEnd(ctx->events[10],0,0,0,0);CHKERRQ(ierr);
   if (!ctx->initialized) { /* create static point data, Jacobian called first */
     PetscReal       *invJ,*ww,*xx,*yy,*zz=NULL,*invJ_a;
-    PetscInt        outer_ipidx, outer_ej,grid;
+    PetscInt        outer_ipidx, outer_ej,grid, nip_glb = 0;
     PetscFE         fe;
 
     ierr = PetscLogEventBegin(ctx->events[7],0,0,0,0);CHKERRQ(ierr);
     ierr = PetscInfo(ctx->plex[0], "Initialize static data\n");CHKERRQ(ierr);
+    for (PetscInt grid=0;grid<ctx->num_grids;grid++) nip_glb += Nq*numCells[grid];
     /* collect f data, first time is for Jacobian, but make mass now */
     if (ctx->verbose > 0) {
-      ierr = PetscPrintf(ctx->comm,"%D) %s: %D IPs, %D cells[0], Nb=%D, Nq=%D, dim=%D, Tab: Nb=%D Nf=%D Np=%D cdim=%D N=%D\n",
-                         0,"FormLandau",nip_glb,numCells[0], Nb, Nq, dim, Tf[0]->Nb, ctx->num_species, Tf[0]->Np, Tf[0]->cdim, N);CHKERRQ(ierr);
+      PetscInt ncells = 0;
+      for (PetscInt grid=0;grid<ctx->num_grids;grid++) ncells += numCells[grid];
+      ierr = PetscPrintf(ctx->comm,"%D) %s: %D IPs, %D cells total, Nb=%D, Nq=%D, dim=%D, Tab: Nb=%D Nf=%D Np=%D cdim=%D N=%D\n",
+                         0,"FormLandau",nip_glb,ncells, Nb, Nq, dim, Tf[0]->Nb, ctx->num_species, Tf[0]->Np, Tf[0]->cdim, N);CHKERRQ(ierr);
     }
     ierr = PetscMalloc4(nip_glb,&ww,nip_glb,&xx,nip_glb,&yy,nip_glb*dim*dim,&invJ_a);CHKERRQ(ierr);
     if (dim==3) {
@@ -207,7 +208,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
           ierr = DMPlexVecGetClosure(dmEnergy, e_section, v2_2, ej+cStart, NULL, &coefs);CHKERRQ(ierr);
         }
         /* create static point data */
-        for (qj = 0; qj < Nq; qj++, outer_ipidx++) {
+        for (PetscInt qj = 0; qj < Nq; qj++, outer_ipidx++) {
           const PetscInt gidx = outer_ipidx;
           ww    [gidx] = detJj[qj] * quadWeights[qj];
           if (dim==2) ww    [gidx] *=              vj[qj * dim + 0];  /* cylindrical coordinate, w/o 2pi */
@@ -313,7 +314,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     if (!pack) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "pack has no DM");
     ierr = PetscLogEventBegin(ctx->events[1],0,0,0,0);CHKERRQ(ierr);
     ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
-    for (fieldA=0;fieldA<ctx->num_species;fieldA++) {
+    for (PetscInt fieldA=0;fieldA<ctx->num_species;fieldA++) {
       Eq_m[fieldA] = ctx->Ez * ctx->t_0 * ctx->charges[fieldA] / (ctx->v_0 * ctx->masses[fieldA]); /* normalize dimensionless */
       if (dim==2) Eq_m[fieldA] *=  2 * PETSC_PI; /* add the 2pi term that is not in Landau */
     }
@@ -388,7 +389,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       ierr = PetscLogEventBegin(ctx->events[8],0,0,0,0);CHKERRQ(ierr);
       /* count IPf size */
       for (PetscInt grid=0 ; grid<ctx->num_grids ; grid++) IPf_sz += Nq*Nf[grid]*numCells[grid]; // same as closure size
-      for (fieldA=0;fieldA<ctx->num_species;fieldA++) {
+      for (PetscInt fieldA=0;fieldA<ctx->num_species;fieldA++) {
         invMass[fieldA] = m_0/ctx->masses[fieldA];
         Eq_m[fieldA] = ctx->Ez * ctx->t_0 * ctx->charges[fieldA] / (ctx->v_0 * ctx->masses[fieldA]); /* normalize dimensionless */
         if (dim==2) Eq_m[fieldA] *=  2 * PETSC_PI; /* add the 2pi term that is not in Landau */
@@ -436,13 +437,13 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
               PetscInt       b, e;
               PetscReal      refSpaceDer[LANDAU_DIM];
               ff[idx] = 0.0;
-              for (d = 0; d < LANDAU_DIM; ++d) refSpaceDer[d] = 0.0;
+              for (int d = 0; d < LANDAU_DIM; ++d) refSpaceDer[d] = 0.0;
               for (b = 0; b < Nb; ++b) {
                 const PetscInt    cidx = b;
                 ff[idx] += Bq[cidx]*PetscRealPart(coef[f*Nb+cidx]);
-                for (d = 0; d < dim; ++d) refSpaceDer[d] += Dq[cidx*dim+d]*PetscRealPart(coef[f*Nb+cidx]);
+                for (int d = 0; d < dim; ++d) refSpaceDer[d] += Dq[cidx*dim+d]*PetscRealPart(coef[f*Nb+cidx]);
               }
-              for (d = 0; d < dim; ++d) {
+              for (int d = 0; d < dim; ++d) {
                 for (e = 0, u_x[f][d] = 0.0; e < dim; ++e) {
                   u_x[f][d] += invJ[qi * dim * dim + e*dim+d]*refSpaceDer[e];
                 }
@@ -477,7 +478,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       for (PetscInt ei = 0; ei < numCells[grid]; ++ei, invJ += Nq*dim*dim) {
         ierr = PetscMemzero(elemMat, elemMatSize*sizeof(*elemMat));CHKERRQ(ierr);
         ierr = PetscLogEventBegin(ctx->events[4],0,0,0,0);CHKERRQ(ierr);
-        for (qj = 0; qj < Nq; ++qj, jpidx++) {
+        for (PetscInt qj = 0; qj < Nq; ++qj, jpidx++) {
           PetscReal               g0[LANDAU_MAX_SPECIES], g2[LANDAU_MAX_SPECIES][LANDAU_DIM], g3[LANDAU_MAX_SPECIES][LANDAU_DIM][LANDAU_DIM]; // could make a LANDAU_MAX_SPECIES_GRID ~ number of ions - 1
           PetscInt                d,d2,dp,d3,IPf_idx;
 
@@ -509,7 +510,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                     LandauTensor3D(vj, x, y, z, U, mask);
                   }
 #endif
-                  for (f = 0; f < Nfloc_r ; ++f) {
+                  for (int f = 0; f < Nfloc_r ; ++f) {
                     const PetscInt idx = IPf_idx + f*nip_loc_r + loc_fdf_idx;
                     temp1[0] += dudx[idx]*nu_beta[f+f_off]*invMass[f+f_off];
                     temp1[1] += dudy[idx]*nu_beta[f+f_off]*invMass[f+f_off];
@@ -581,7 +582,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
           } else { // mass
             PetscReal wj = ww[jpidx];
             /* Jacobian transform - g0 */
-            for (fieldA = 0; fieldA < Nfloc_j ; ++fieldA) {
+            for (PetscInt fieldA = 0; fieldA < Nfloc_j ; ++fieldA) {
               if (dim==2) {
                 g0[fieldA] = wj * shift * 2. * PETSC_PI; // move this to below and remove g0
               } else {
@@ -675,8 +676,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
         if (ei==-1) {
           PetscErrorCode    ierr2;
           ierr2 = PetscPrintf(ctx->comm,"CPU Element matrix\n");CHKERRQ(ierr2);
-          for (d = 0; d < totDim; ++d) {
-            for (f = 0; f < totDim; ++f) {ierr2 = PetscPrintf(ctx->comm," %12.5e",  PetscRealPart(elemMat[d*totDim + f]));CHKERRQ(ierr2);}
+          for (int d = 0; d < totDim; ++d) {
+            for (int f = 0; f < totDim; ++f) {ierr2 = PetscPrintf(ctx->comm," %12.5e",  PetscRealPart(elemMat[d*totDim + f]));CHKERRQ(ierr2);}
             ierr2 = PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr2);
           }
           exit(12);
@@ -748,7 +749,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
             ierr = PetscMemzero(elMat, totDim*totDim*sizeof(*elMat));CHKERRQ(ierr);
             elMat[ (fieldA*Nb + q)*totDim + fieldA*Nb + q] = 1;
             ierr = DMPlexGetClosureIndices(ctx->plex[grid], section[grid], globsection[grid], ej, PETSC_TRUE, &numindices, &indices, NULL, (PetscScalar **) &elMat);CHKERRQ(ierr);
-            for (f = 0 ; f < numindices ; ++f) { // look for a non-zero on the diagonal
+            for (PetscInt f = 0 ; f < numindices ; ++f) { // look for a non-zero on the diagonal
               if (PetscAbs(PetscRealPart(elMat[f*numindices + f])) > PETSC_MACHINE_EPSILON) {
                 // found it
                 if (PetscAbs(PetscRealPart(elMat[f*numindices + f] - 1.)) < PETSC_MACHINE_EPSILON) {

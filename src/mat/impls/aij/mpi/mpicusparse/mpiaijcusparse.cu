@@ -765,15 +765,11 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
 
       ierr = PetscCalloc1(N+1,&colmap);CHKERRQ(ierr);
       for (ii=0; ii<n; ii++) colmap[aij->garray[ii]] = (int)(ii+1);
-
-      if (sizeof(PetscInt) != sizeof(int)) { // have to make a long version of these
-        if (sizeof(PetscInt) != 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"size pof PetscInt = %d",sizeof(PetscInt));
+#if defined(PETSC_USE_64BIT_INDICES)
+      { // have to make a long version of these
         int        *h_bi32, *h_bj32;
         PetscInt   *h_bi64, *h_bj64, *d_bi64, *d_bj64;
-        ierr = PetscCalloc1(A->rmap->n+1,&h_bi32);CHKERRQ(ierr);
-        ierr = PetscCalloc1(jacb->nz,&h_bj32);CHKERRQ(ierr);
-        ierr = PetscCalloc1(A->rmap->n+1,&h_bi64);CHKERRQ(ierr);
-        ierr = PetscCalloc1(jacb->nz,&h_bj64);CHKERRQ(ierr);
+        ierr = PetscCalloc4(A->rmap->n+1,&h_bi32,jacb->nz,&h_bj32,A->rmap->n+1,&h_bi64,jacb->nz,&h_bj64);CHKERRQ(ierr);
         cerr = cudaMemcpy(h_bi32, bi, (A->rmap->n+1)*sizeof(*h_bi32),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
         for (int i=0;i<A->rmap->n+1;i++) h_bi64[i] = h_bi32[i];
         cerr = cudaMemcpy(h_bj32, bj, jacb->nz*sizeof(*h_bj32),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
@@ -788,15 +784,13 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
         h_mat->offdiag.j = d_bj64;
         h_mat->allocated_indices = PETSC_TRUE;
 
-        ierr = PetscFree(h_bi32);CHKERRQ(ierr);
-        ierr = PetscFree(h_bj32);CHKERRQ(ierr);
-        ierr = PetscFree(h_bi64);CHKERRQ(ierr);
-        ierr = PetscFree(h_bj64);CHKERRQ(ierr);
-      } else {
-        h_mat->offdiag.i = (PetscInt*)bi;
-        h_mat->offdiag.j = (PetscInt*)bj;
-        h_mat->allocated_indices = PETSC_FALSE;
+        ierr = PetscFree4(h_bi32,h_bj32,h_bi64,h_bj64);CHKERRQ(ierr);
       }
+#else
+      h_mat->offdiag.i = (PetscInt*)bi;
+      h_mat->offdiag.j = (PetscInt*)bj;
+      h_mat->allocated_indices = PETSC_FALSE;
+#endif
       h_mat->offdiag.a = ba;
       h_mat->offdiag.n = A->rmap->n;
 
@@ -809,14 +803,12 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     h_mat->cstart = A->cmap->rstart;
     h_mat->cend   = A->cmap->rend;
     h_mat->N      = A->cmap->N;
-    if (sizeof(PetscInt) != sizeof(int)) { // have to make a long version of these
+#if defined(PETSC_USE_64BIT_INDICES)
+    {
       if (sizeof(PetscInt) != 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"size pof PetscInt = %d",sizeof(PetscInt));
       int        *h_ai32, *h_aj32;
       PetscInt   *h_ai64, *h_aj64, *d_ai64, *d_aj64;
-      ierr = PetscCalloc1(A->rmap->n+1,&h_ai32);CHKERRQ(ierr);
-      ierr = PetscCalloc1(jaca->nz,&h_aj32);CHKERRQ(ierr);
-      ierr = PetscCalloc1(A->rmap->n+1,&h_ai64);CHKERRQ(ierr);
-      ierr = PetscCalloc1(jaca->nz,&h_aj64);CHKERRQ(ierr);
+      ierr = PetscCalloc4(A->rmap->n+1,&h_ai32,jaca->nz,&h_aj32,A->rmap->n+1,&h_ai64,jaca->nz,&h_aj64);CHKERRQ(ierr);
       cerr = cudaMemcpy(h_ai32, ai, (A->rmap->n+1)*sizeof(*h_ai32),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
       for (int i=0;i<A->rmap->n+1;i++) h_ai64[i] = h_ai32[i];
       cerr = cudaMemcpy(h_aj32, aj, jaca->nz*sizeof(*h_aj32),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
@@ -831,15 +823,13 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
       h_mat->diag.j = d_aj64;
       h_mat->allocated_indices = PETSC_TRUE;
 
-      ierr = PetscFree(h_ai32);CHKERRQ(ierr);
-      ierr = PetscFree(h_aj32);CHKERRQ(ierr);
-      ierr = PetscFree(h_ai64);CHKERRQ(ierr);
-      ierr = PetscFree(h_aj64);CHKERRQ(ierr);
-    } else {
-      h_mat->diag.i = (PetscInt*)ai;
-      h_mat->diag.j = (PetscInt*)aj;
-      h_mat->allocated_indices = PETSC_FALSE;
+      ierr = PetscFree4(h_ai32,h_aj32,h_ai64,h_aj64);CHKERRQ(ierr);
     }
+#else
+    h_mat->diag.i = (PetscInt*)ai;
+    h_mat->diag.j = (PetscInt*)aj;
+    h_mat->allocated_indices = PETSC_FALSE;
+#endif
     h_mat->diag.a = aa;
     h_mat->diag.n = A->rmap->n;
     h_mat->rank   = PetscGlobalRank;
