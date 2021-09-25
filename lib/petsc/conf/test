@@ -18,6 +18,12 @@ else
   LINK.kokkos.cxx = $(CXXLINKER) $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
 endif
 
+ifneq ($(RAJA_USE_CUDA_COMPILER),)
+  PETSC_RAJACOMPILE_SINGLE  = ${CUDAC} -o $*.o $(MPICXX_INCLUDES) ${CUDAC_FLAGS} ${CUFLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
+else
+    PETSC_RAJACOMPILE_SINGLE = ${CXX} -o $*.o -c ${CXX_FLAGS} ${CXXFLAGS} ${CXXCPPFLAGS}
+endif
+
 LDLIBS += $(PETSC_LIB)
 
 % : %.F90

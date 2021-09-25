@@ -26,6 +26,7 @@ if __name__ == '__main__':
     '--download-hwloc',
     '--download-hypre',
     '--download-hypre-configure-arguments=--enable-unified-memory',
+    '--download-raja',
   ]
 
   configure.petsc_configure(configure_options)
