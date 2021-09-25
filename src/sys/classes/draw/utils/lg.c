@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/draw/utils/lgimpl.h>  /*I   "petscdraw.h"  I*/
+#include <petsc/private/drawimpl.h>  /*I   "petscdraw.h"  I*/
 
 /*@
    PetscDrawLGAddCommonPoint - Adds another point to each of the line graphs. All the points share
@@ -29,14 +29,14 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
 
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    ierr     = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,&tmpx,lg->len+lg->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
-    ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscMalloc2(lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpx,lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpy);CHKERRQ(ierr);
+    ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscArraycpy(tmpx,lg->x,lg->len);CHKERRQ(ierr);
     ierr     = PetscArraycpy(tmpy,lg->y,lg->len);CHKERRQ(ierr);
     ierr     = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);
     lg->x    = tmpx;
     lg->y    = tmpy;
-    lg->len += lg->dim*CHUNCKSIZE;
+    lg->len += lg->dim*PETSC_DRAW_LG_CHUNK_SIZE;
   }
   for (i=0; i<lg->dim; i++) {
     if (x > lg->xmax) lg->xmax = x;
@@ -80,14 +80,14 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
 
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    ierr     = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,&tmpx,lg->len+lg->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
-    ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscMalloc2(lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpx,lg->len+lg->dim*PETSC_DRAW_LG_CHUNK_SIZE,&tmpy);CHKERRQ(ierr);
+    ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*PETSC_DRAW_LG_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscArraycpy(tmpx,lg->x,lg->len);CHKERRQ(ierr);
     ierr     = PetscArraycpy(tmpy,lg->y,lg->len);CHKERRQ(ierr);
     ierr     = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);
     lg->x    = tmpx;
     lg->y    = tmpy;
-    lg->len += lg->dim*CHUNCKSIZE;
+    lg->len += lg->dim*PETSC_DRAW_LG_CHUNK_SIZE;
   }
   for (i=0; i<lg->dim; i++) {
     if (!x) {
@@ -137,7 +137,7 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
 
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    PetscInt  chunk = CHUNCKSIZE;
+    PetscInt  chunk = PETSC_DRAW_LG_CHUNK_SIZE;
 
     if (n > chunk) chunk = n;
     ierr     = PetscMalloc2(lg->len+lg->dim*chunk,&tmpx,lg->len+lg->dim*chunk,&tmpy);CHKERRQ(ierr);

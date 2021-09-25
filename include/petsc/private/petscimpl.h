@@ -7,6 +7,13 @@
 #define PETSCIMPL_H
 #include <petscsys.h>
 
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr)
+#else
+#define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr) \
+  expr
+#endif
+
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
 PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
