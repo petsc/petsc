@@ -825,7 +825,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   if (xdata) {
     ierr = VecRestoreArrayReadAndMemType(a_X,&xdata);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -1645,7 +1644,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   {
     PetscMPIInt    rank;
     ierr = MPI_Comm_rank(ctx->comm, &rank);CHKERRMPI(ierr);
-    /* PetscLogStage  setup_stage; */
+    ctx->stage = 0;
     ierr = PetscLogEventRegister("Landau Operator", DM_CLASSID, &ctx->events[11]);CHKERRQ(ierr); /* 11 */
     ierr = PetscLogEventRegister("Landau Jacobian", DM_CLASSID, &ctx->events[0]);CHKERRQ(ierr); /* 0 */
     ierr = PetscLogEventRegister("Landau Mass", DM_CLASSID, &ctx->events[9]);CHKERRQ(ierr); /* 9 */
@@ -2414,6 +2413,9 @@ PetscErrorCode LandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec 
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(pack, &ctx);CHKERRQ(ierr);
   if (!ctx) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
+  if (ctx->stage) {
+    ierr = PetscLogStagePush(ctx->stage);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventBegin(ctx->events[11],0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(ctx->events[0],0,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_THREADSAFETY)
@@ -2440,8 +2442,12 @@ PetscErrorCode LandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec 
 #endif
   ierr = PetscLogEventEnd(ctx->events[0],0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ctx->events[11],0,0,0,0);CHKERRQ(ierr);
+  if (ctx->stage) {
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
 static PetscErrorCode MatrixNfDestroy(void *ptr)
 {
   PetscInt *nf = (PetscInt *)ptr;
@@ -2490,6 +2496,9 @@ PetscErrorCode LandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy,
   if (Amat!=Pmat || Amat!=ctx->J) SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Amat!=Pmat || Amat!=ctx->J");
   ierr = DMGetDimension(pack, &dim);CHKERRQ(ierr);
   /* get collision Jacobian into A */
+  if (ctx->stage) {
+    ierr = PetscLogStagePush(ctx->stage);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventBegin(ctx->events[11],0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(ctx->events[9],0,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_THREADSAFETY)
@@ -2523,5 +2532,8 @@ PetscErrorCode LandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy,
 #endif
   ierr = PetscLogEventEnd(ctx->events[9],0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ctx->events[11],0,0,0,0);CHKERRQ(ierr);
+  if (ctx->stage) {
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

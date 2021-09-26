@@ -144,6 +144,7 @@ typedef struct {
   /* diagnostics */
   PetscInt       verbose;
   PetscLogEvent  events[20];
+  PetscLogStage  stage;
 } LandauCtx;
 
 typedef int LandauIdx;

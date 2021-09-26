@@ -738,8 +738,8 @@ int main(int argc, char **argv)
   }
   /* go */
   ierr = PetscLogStageRegister("Solve", &stage);CHKERRQ(ierr);
-  //ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
-  ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
+  ierr = PetscLogStageRegister("Landau", &ctx->stage);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
