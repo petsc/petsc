@@ -1446,10 +1446,6 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm,FILE *fd)
 #endif
 }
 
-#if defined(PETSC_HAVE_OPENMP)
-extern PetscInt PetscNumOMPThreads;
-#endif
-
 PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 {
   FILE               *fd;
