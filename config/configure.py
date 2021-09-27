@@ -97,48 +97,48 @@ def chkenable():
 
     if name.find(en_dash)  >= 0:
       sys.argv[l] = name.replace(en_dash,'-')
-    if name.find('enable-cxx') >= 0:
+    if name.lstrip('-').startswith('enable-cxx'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-cxx','with-clanguage=C++')
+        sys.argv[l] = name.replace('enable-cxx','with-clanguage=C++',1)
       else:
         head, tail = name.split('=', 1)
         if tail=='0':
-          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C')
+          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C',1)
         else:
-          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C++')
+          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C++',1)
       continue
-    if name.find('disable-cxx') >= 0:
+    if name.lstrip('-').startswith('disable-cxx'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-cxx','with-clanguage=C')
+        sys.argv[l] = name.replace('disable-cxx','with-clanguage=C',1)
       else:
         head, tail = name.split('=', 1)
         if tail == '0':
-          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C++')
+          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C++',1)
         else:
-          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C')
+          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C',1)
       continue
 
 
-    if name.find('enable-') >= 0:
+    if name.lstrip('-').startswith('enable-'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-','with-')+'=1'
+        sys.argv[l] = name.replace('enable-','with-',1)+'=1'
       else:
         head, tail = name.split('=', 1)
-        sys.argv[l] = head.replace('enable-','with-')+'='+tail
-    if name.find('disable-') >= 0:
+        sys.argv[l] = head.replace('enable-','with-',1)+'='+tail
+    if name.lstrip('-').startswith('disable-'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-','with-')+'=0'
-      else:
-        head, tail = name.split('=', 1)
-        if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('disable-','with-')+'='+tail
-    if name.find('without-') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('without-','with-')+'=0'
+        sys.argv[l] = name.replace('disable-','with-',1)+'=0'
       else:
         head, tail = name.split('=', 1)
         if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('without-','with-')+'='+tail
+        sys.argv[l] = head.replace('disable-','with-',1)+'='+tail
+    if name.lstrip('-').startswith('without-'):
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('without-','with-',1)+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('without-','with-',1)+'='+tail
 
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
