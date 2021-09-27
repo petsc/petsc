@@ -418,9 +418,9 @@ Label 'celltype':
 [0]: 24 (1)
 [0]: 25 (1)
 [0]: 26 (1)
-DM Object: Triangular Prism 1 MPI processes
+DM Object: tensor_triangular_prism 1 MPI processes
   type: plex
-Triangular Prism in 3 dimensions:
+tensor_triangular_prism in 3 dimensions:
 Supports:
 [0] Max support size: 3
 [0]: 1 ----> 12

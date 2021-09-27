@@ -1926,84 +1926,72 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords = NULL;
-  PetscReal      vsum = 0.0, csum[3] = {0.0, 0.0, 0.0}, vtmp, ctmp[4], v0[3], R[9];
-  PetscBool      isHybrid = PETSC_FALSE;
   PetscInt       fv[4] = {0, 1, 2, 3};
-  PetscInt       tdim = 2, coordSize, numCorners, p, d, e;
+  PetscInt       cdim, coordSize, numCorners, p, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Must check for hybrid cells because prisms have a different orientation scheme */
   ierr = DMPlexGetCellType(dm, cell, &ct);CHKERRQ(ierr);
   switch (ct) {
-    case DM_POLYTOPE_POINT_PRISM_TENSOR:
-    case DM_POLYTOPE_SEG_PRISM_TENSOR:
-    case DM_POLYTOPE_TRI_PRISM_TENSOR:
-    case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-      isHybrid = PETSC_TRUE;
+    case DM_POLYTOPE_SEG_PRISM_TENSOR: fv[2] = 3; fv[3] = 2;break;
     default: break;
   }
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &numCorners);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
-  /* Side faces for hybrid cells are are stored as tensor products */
-  if (isHybrid && numCorners == 4) {fv[2] = 3; fv[3] = 2;}
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
 
-  if (dim > 2 && centroid) {
-    v0[0] = PetscRealPart(coords[0]);
-    v0[1] = PetscRealPart(coords[1]);
-    v0[2] = PetscRealPart(coords[2]);
-  }
-  if (normal) {
-    if (dim > 2) {
-      const PetscReal x0 = PetscRealPart(coords[dim*fv[1]+0] - coords[0]), x1 = PetscRealPart(coords[dim*fv[2]+0] - coords[0]);
-      const PetscReal y0 = PetscRealPart(coords[dim*fv[1]+1] - coords[1]), y1 = PetscRealPart(coords[dim*fv[2]+1] - coords[1]);
-      const PetscReal z0 = PetscRealPart(coords[dim*fv[1]+2] - coords[2]), z1 = PetscRealPart(coords[dim*fv[2]+2] - coords[2]);
-      PetscReal       norm;
+  if (cdim > 2) {
+    PetscReal c[3] = {0., 0., 0.}, n[3] = {0., 0., 0.}, norm;
 
-      normal[0] = y0*z1 - z0*y1;
-      normal[1] = z0*x1 - x0*z1;
-      normal[2] = x0*y1 - y0*x1;
-      norm = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
-      normal[0] /= norm;
-      normal[1] /= norm;
-      normal[2] /= norm;
-    } else {
-      for (d = 0; d < dim; ++d) normal[d] = 0.0;
+    for (p = 0; p < numCorners-2; ++p) {
+      const PetscReal x0 = PetscRealPart(coords[cdim*fv[p+1]+0] - coords[0]), x1 = PetscRealPart(coords[cdim*fv[p+2]+0] - coords[0]);
+      const PetscReal y0 = PetscRealPart(coords[cdim*fv[p+1]+1] - coords[1]), y1 = PetscRealPart(coords[cdim*fv[p+2]+1] - coords[1]);
+      const PetscReal z0 = PetscRealPart(coords[cdim*fv[p+1]+2] - coords[2]), z1 = PetscRealPart(coords[cdim*fv[p+2]+2] - coords[2]);
+      const PetscReal dx = y0*z1 - z0*y1;
+      const PetscReal dy = z0*x1 - x0*z1;
+      const PetscReal dz = x0*y1 - y0*x1;
+      PetscReal       a  = PetscSqrtReal(dx*dx + dy*dy + dz*dz);
+
+      n[0] += dx;
+      n[1] += dy;
+      n[2] += dz;
+      c[0] += a * PetscRealPart(coords[0] + coords[cdim*fv[p+1]+0] + coords[cdim*fv[p+2]+0])/3.;
+      c[1] += a * PetscRealPart(coords[1] + coords[cdim*fv[p+1]+1] + coords[cdim*fv[p+2]+1])/3.;
+      c[2] += a * PetscRealPart(coords[2] + coords[cdim*fv[p+1]+2] + coords[cdim*fv[p+2]+2])/3.;
     }
-  }
-  if (dim == 3) {ierr = DMPlexComputeProjection3Dto2D(coordSize, coords, R);CHKERRQ(ierr);}
-  for (p = 0; p < numCorners; ++p) {
-    const PetscInt pi  = p < 4 ? fv[p] : p;
-    const PetscInt pin = p < 3 ? fv[(p+1)%numCorners] : (p+1)%numCorners;
-    /* Need to do this copy to get types right */
-    for (d = 0; d < tdim; ++d) {
-      ctmp[d]      = PetscRealPart(coords[pi*tdim+d]);
-      ctmp[tdim+d] = PetscRealPart(coords[pin*tdim+d]);
+    norm = PetscSqrtReal(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
+    n[0] /= norm;
+    n[1] /= norm;
+    n[2] /= norm;
+    c[0] /= norm;
+    c[1] /= norm;
+    c[2] /= norm;
+    if (vol) *vol = 0.5*norm;
+    if (centroid) for (d = 0; d < cdim; ++d) centroid[d] = c[d];
+    if (normal) for (d = 0; d < cdim; ++d) normal[d] = n[d];
+  } else {
+    PetscReal vsum = 0.0, csum[2] = {0.0, 0.0}, vtmp, ctmp[4] = {0., 0., 0., 0.};
+
+    for (p = 0; p < numCorners; ++p) {
+      const PetscInt pi  = p < 4 ? fv[p] : p;
+      const PetscInt pin = p < 3 ? fv[(p+1)%numCorners] : (p+1)%numCorners;
+      /* Need to do this copy to get types right */
+      for (d = 0; d < cdim; ++d) {
+        ctmp[d]      = PetscRealPart(coords[pi*cdim+d]);
+        ctmp[cdim+d] = PetscRealPart(coords[pin*cdim+d]);
+      }
+      Volume_Triangle_Origin_Internal(&vtmp, ctmp);
+      vsum += vtmp;
+      for (d = 0; d < cdim; ++d) csum[d] += (ctmp[d] + ctmp[cdim+d])*vtmp;
     }
-    Volume_Triangle_Origin_Internal(&vtmp, ctmp);
-    vsum += vtmp;
-    for (d = 0; d < tdim; ++d) {
-      csum[d] += (ctmp[d] + ctmp[tdim+d])*vtmp;
-    }
-  }
-  for (d = 0; d < tdim; ++d) {
-    csum[d] /= (tdim+1)*vsum;
+    if (vol) *vol = PetscAbsReal(vsum);
+    if (centroid) for (d = 0; d < cdim; ++d) centroid[d] = csum[d] / ((cdim+1)*vsum);
+    if (normal) for (d = 0; d < cdim; ++d) normal[d] = 0.0;
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  if (vol) *vol = PetscAbsReal(vsum);
-  if (centroid) {
-    if (dim > 2) {
-      for (d = 0; d < dim; ++d) {
-        centroid[d] = v0[d];
-        for (e = 0; e < dim; ++e) {
-          centroid[d] += R[d*dim+e]*csum[e];
-        }
-      }
-    } else for (d = 0; d < dim; ++d) centroid[d] = csum[d];
-  }
   PetscFunctionReturn(0);
 }
 
