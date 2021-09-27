@@ -751,10 +751,10 @@ linux-xsdk-dbg:
 
 linux-analyzer:
   extends:
-    - .stage-3
+    - .stage-2
     - .linux_test
   tags:
-    - gce-nfs
+    - gce-nfs-short
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -949,7 +949,7 @@ analyze-pipeline:
   extends: .test
   stage: .post
   tags:
-    - gce-nfs
+    - gce-nfs-short
   dependencies:
     - linux-c-exodus-dbg
     - linux-pkgs-gcov
