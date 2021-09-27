@@ -310,10 +310,13 @@ def main():
     petsc_arch = opts.petsc_arch
     petsc_full_arch = os.path.join(petsc_dir, petsc_arch)
 
-    if opts.srcdir == 'src':
-      petsc_full_src = os.path.join(petsc_dir, 'src')
+    if petsc_arch == '':
+        petsc_full_src = os.path.join(petsc_dir, 'share', 'petsc', 'examples', 'src')
     else:
-      petsc_full_src = opts.srcdir
+      if opts.srcdir == 'src':
+        petsc_full_src = os.path.join(petsc_dir, 'src')
+      else:
+        petsc_full_src = opts.srcdir
     if opts.testdir == 'tests':
       petsc_full_test = os.path.join(petsc_full_arch, 'tests')
     else:
