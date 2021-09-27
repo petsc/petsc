@@ -207,6 +207,17 @@ Changes: Development
 - Remove ``DMPlexReverseCell()`` and ``DMPlexOrientCell()`` in favor of ``DMPlexOrientPoint()``
 - Remove ``DMPlexCompareOrientations()`` in favor of ``DMPolytopeMatchOrientation()``
 - Add ``DMPlexGetCompressedClosure()`` and ``DMPlexRestoreCompressedClosure()``
+- Add ``DMPlexMetricCreate`` as a helper function for creating a (P1) Riemannian metric.
+- Add ``DMPlexMetricCreateUniform`` as a helper function for creating a uniform metric.
+- Add ``DMPlexMetricCreateIsotropic`` as a helper function for creating an isotropic metric.
+- Add ``DMPlexMetricEnforceSPD`` for enforcing that a metric is symmetric positive-definite.
+- Add ``DMPlexMetricNormalize`` to apply L-p metric normalization.
+- Add ``DMPlexMetricAverage`` to average an arbitrary number of metrics.
+- Add ``DMPlexMetricAverage2`` to average two metrics.
+- Add ``DMPlexMetricAverage3`` to average three metrics.
+- Add ``DMPlexMetricIntersection`` to intersect an arbitrary number of metrics.
+- Add ``DMPlexMetricIntersection2`` to intersect two metrics.
+- Add ``DMPlexMetricIntersection3`` to intersect three metrics.
 
 .. rubric:: FE/FV:
 
