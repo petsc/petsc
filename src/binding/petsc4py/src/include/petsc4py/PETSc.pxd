@@ -89,8 +89,6 @@ cdef extern from "petsc.h":
     struct _p_PetscPartitioner
     ctypedef _p_PetscPartitioner* PetscPartitioner "PetscPartitioner"
 
-    struct _p_TSAdapt
-    ctypedef _p_TSAdapt* PetscTSAdapt "TSAdapt"
 # --------------------------------------------------------------------
 
 ctypedef public api class Comm [
@@ -250,6 +248,7 @@ ctypedef public api class DMLabel(Object) [
     object PyPetscDMLabelObject,
     ]:
     cdef PetscDMLabel dmlabel
+
 # --------------------------------------------------------------------
 
 cdef MPI_Comm GetComm(object, MPI_Comm) except *

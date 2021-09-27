@@ -303,6 +303,13 @@ cdef extern from * nogil:
     int TSARKIMEXSetType(PetscTS ts,PetscTSRKType)
     int TSARKIMEXSetFullyImplicit(PetscTS ts,PetscBool)
 
+cdef extern from * nogil:
+    struct _p_TSAdapt
+    ctypedef _p_TSAdapt *PetscTSAdapt "TSAdapt"
+    int TSGetAdapt(PetscTS,PetscTSAdapt*)
+    int TSAdaptGetStepLimits(PetscTSAdapt,PetscReal*,PetscReal*)
+    int TSAdaptSetStepLimits(PetscTSAdapt,PetscReal,PetscReal)
+
 cdef extern from "custom.h" nogil:
     int TSSetTimeStepNumber(PetscTS,PetscInt)
 
