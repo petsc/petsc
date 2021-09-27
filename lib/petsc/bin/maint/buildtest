@@ -108,7 +108,7 @@ if ( $? ) then
   set TIMEOUT=600
 else
   set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/lib/petsc/bin/petscmpiexec -valgrind"`
-  setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/lib/petsc/bin/maint/petsc-val.supp"
+  setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/share/petsc/valgrind/petsc-val.supp"
   set TIMEOUT=7200
 endif
 #
