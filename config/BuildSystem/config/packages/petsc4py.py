@@ -26,6 +26,7 @@ class Configure(config.package.Package):
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.installdir      = framework.require('PETSc.options.installDir',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
     return
 
   def getDir(self):
@@ -90,6 +91,8 @@ class Configure(config.package.Package):
                           '@echo "====================================="'])
 
     np = self.make.make_test_np
+    if self.mpi.usingMPIUni:
+      np = 1
     # TODO: some tests currently have issues with np > 4, this should be fixed
     np = min(np,4)
     if 'with-petsc4py-test-np' in self.argDB and self.argDB['with-petsc4py-test-np']:

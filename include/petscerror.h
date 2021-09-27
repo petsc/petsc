@@ -573,8 +573,8 @@ do { \
   PetscErrorCode _7_errorcode = (ierr); \
   if (PetscUnlikely(_7_errorcode)) { \
     char _7_errorstring[MPI_MAX_ERROR_STRING]; \
-    PetscMPIInt _7_resultlen; \
-    MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); (void)_7_resultlen; \
+    PETSC_UNUSED PetscMPIInt _7_resultlen; \
+    MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); \
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
   } \
 } while (0)

@@ -50,7 +50,7 @@ cdef extern from * nogil:
     PetscPCType PCHMG
     PetscPCType PCDEFLATION
     PetscPCType PCHPDDM
-    PetscPCType PCHARA
+    PetscPCType PCH2OPUS
 
     ctypedef enum PetscPCSide "PCSide":
         PC_SIDE_DEFAULT

@@ -239,6 +239,18 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isNVC(compiler, log):
+    '''Returns true if the compiler is an NVIDIA (former PGI) compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output + error
+      if 'NVIDIA Compilers and Tools' in output:
+        if log: log.write('Detected NVIDIA compiler\n')
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
   def isGcc110plus(compiler, log):
     '''returns true if the compiler is gcc-11.0.x or later'''
     try:

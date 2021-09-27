@@ -851,7 +851,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A,MatReuse reuse,Mat *B)
 
    Level: intermediate
 
-.seealso:  MatCreate(), MATHTOOL, PCSetCoordinates(), MatHtoolSetKernel(), MatHtoolCompressorType, MATHARA, MatCreateHaraFromKernel()
+.seealso:  MatCreate(), MATHTOOL, PCSetCoordinates(), MatHtoolSetKernel(), MatHtoolCompressorType, MATH2OPUS, MatCreateH2OpusFromKernel()
 @*/
 PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt spacedim,const PetscReal coords_target[],const PetscReal coords_source[],MatHtoolKernel kernel,void *kernelctx,Mat *B)
 {
@@ -897,7 +897,7 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm,PetscInt m,PetscInt n,Pets
 
    Level: beginner
 
-.seealso: MATHARA, MATDENSE, MatCreateHtoolFromKernel(), MatHtoolSetKernel()
+.seealso: MATH2OPUS, MATDENSE, MatCreateHtoolFromKernel(), MatHtoolSetKernel()
 M*/
 PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
 {

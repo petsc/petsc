@@ -1,5 +1,5 @@
 from petsc4py import PETSc
-import unittest
+import unittest, numpy
 from sys import getrefcount
 # --------------------------------------------------------------------
 
@@ -178,6 +178,27 @@ class TestIdentity(TestMatrix):
         self.A.getDiagonal(d)
         self.assertTrue(o.equal(d))
 
+    def testH2Opus(self):
+        if not PETSc.Sys.hasExternalPackage("h2opus"):
+            return
+        h = PETSc.Mat()
+
+        # need transpose operation for norm estimation
+        AA = self.A.getPythonContext()
+        AA.multTranspose = AA.mult
+
+        # without coordinates
+        h.createH2OpusFromMat(self.A,leafsize=2)
+        h.assemble()
+        h.destroy()
+
+        # with coordinates
+        coords = numpy.linspace((1,2,3),(10,20,30),self.A.getSize()[0])
+        h.createH2OpusFromMat(self.A,coords,leafsize=2)
+        h.assemble()
+        h.destroy()
+
+        del AA.multTranspose
 
 class TestDiagonal(TestMatrix):
 

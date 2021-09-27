@@ -80,7 +80,7 @@ class Configure(config.package.GNUPackage):
 
     # HYPRE automatically detects essl symbols and includes essl.h!
     # There are no configure options to disable it programmatically
-    if self.libraries.check(self.blasLapack.dlib, 'iessl'):
+    if hasattr(self.blasLapack,'essl'):
       args = self.addArgStartsWith(args,'CFLAGS',self.headers.toString(self.blasLapack.include))
       args = self.addArgStartsWith(args,'CXXFLAGS',self.headers.toString(self.blasLapack.include))
 

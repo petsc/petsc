@@ -51,7 +51,7 @@ class CompilerOptions(config.base.Configure):
       # Linux Intel
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
         if bopt == '':
-          flags.append('-wd1572')
+          flags.extend(['-wd1572', '-Wno-unknown-pragmas'])
           # next one fails in OpenMP build and we don't use it anyway so remove
           # flags.append('-Qoption,cpp,--extended_float_type')
         elif bopt == 'g':

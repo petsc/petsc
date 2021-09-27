@@ -16,7 +16,6 @@ class Configure(config.package.Package):
     self.required            = 1
     self.alternativedownload = 'f2cblaslapack'
     self.missingRoutines     = []
-    self.has_cheaders        = 0
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -550,37 +549,11 @@ class Configure(config.package.Package):
     if self.argDB['with-64-bit-blas-indices'] and not self.has64bitindices:
       raise RuntimeError('You requested 64 bit integer BLAS/LAPACK using --with-64-bit-blas-indices but they are not available given your other BLAS/LAPACK options')
 
-    # check for the presence of the C interface (may be needed by external packages)
-    self.executeTest(self.checkCHeaders)
-
-  def checkCHeaders(self):
-    '''Check for cblas.h and lapacke.h'''
-    if self.has_cheaders: return
-    if self.checkInclude(self.include, ['cblas.h','lapacke.h']):
-      self.has_cheaders = 1
-      return
-
-    incl = []
-    if 'with-blaslapack-include' in self.argDB:
-      incl = self.argDB['with-blaslapack-include']
-      if not isinstance(incl, list): incl = [incl]
-    elif 'with-blaslapack-dir' in self.argDB:
-      incl = [os.path.join(self.argDB['with-blaslapack-dir'],'include')]
-    else:
-      return
-
-    linc = self.include + incl
-    if self.checkInclude(linc, ['cblas.h','lapacke.h']):
-      self.include = linc
-      self.has_cheaders = 1
-      return
-
   def checkMKL(self):
     '''Check for Intel MKL library'''
     self.libraries.saveLog()
     if self.libraries.check(self.dlib, 'mkl_set_num_threads'):
       self.mkl = 1
-      self.has_cheaders = 1
       self.addDefine('HAVE_MKL',1)
       '''Set include directory for mkl.h and friends'''
       '''(the include directory is in CPATH if mklvars.sh has been sourced.'''
@@ -624,12 +597,19 @@ class Configure(config.package.Package):
     '''Check for the IBM ESSL library'''
     self.libraries.saveLog()
     if self.libraries.check(self.dlib, 'iessl'):
+      self.essl = 1
+      self.addDefine('HAVE_ESSL',1)
+
       if 'with-blaslapack-include' in self.argDB:
         incl = self.argDB['with-blaslapack-include']
         if not isinstance(incl, list): incl = [incl]
-        self.include = incl
-      self.has_cheaders = 1
-      self.addDefine('HAVE_ESSL',1)
+      elif 'with-blaslapack-dir' in self.argDB:
+        incl = [os.path.join(self.argDB['with-blaslapack-dir'],'include')]
+      else:
+        return
+      linc = self.include + incl
+      if self.checkInclude(linc, ['essl.h']):
+        self.include = linc
     self.logWrite(self.libraries.restoreLog())
     return
 

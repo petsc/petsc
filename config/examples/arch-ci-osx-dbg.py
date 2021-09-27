@@ -26,6 +26,8 @@ configure_options = [
   '--download-adblaslapack=1',
   '--download-libpng=1',
   '--download-libjpeg=1',
+  '--download-h2opus=1',
+  '--download-thrust=1',
   '--with-zlib=1',
   ]
 
