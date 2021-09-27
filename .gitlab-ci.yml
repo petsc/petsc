@@ -74,8 +74,15 @@ check-ci-settings:
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O3 -march=native' CXXOPTFLAGS='-O3 -march=native' FOPTFLAGS='-O3 -march=native' ${CONFIG_OPTS}
-    - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
-    - make CFLAGS=-Werror CXXFLAGS=-Werror FFLAGS="-Werror -std=f2008" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+    - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}"
+    - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+  variables:
+    MAKE_CFLAGS: -Werror
+    MAKE_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant
+    MAKE_FFLAGS: -Werror
+    MAKE_TEST_CFLAGS: -Werror
+    MAKE_TEST_CXXFLAGS: -Werror
+    MAKE_TEST_FFLAGS: -Werror
   after_script:
     - date
     - ccache --show-stats
@@ -95,6 +102,16 @@ check-ci-settings:
 #
 # The following tests run on the cloud as part of stage-1.
 #
+
+ompi-cuda:
+  extends: .stage-1
+  tags:
+  - stage1, name:p1
+  variables:
+    PYTHON: python3
+    CONFIG_OPTS: --with-mpi-dir=/home/petsc/soft/openmpi-4.0.2-cuda --with-cuda=1 --with-fc=0
+    TEST_SEARCH: snes_tutorials-ex19_cuda%
+    MAKE_CXXFLAGS: -Werror
 
 mpich-cxx-py3:
   extends: .stage-1
@@ -118,6 +135,7 @@ c99-mlib-static-py2:
     PYTHON: python2
     CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
+    MAKE_TEST_FFLAGS: -Werror -std=f2008
 
 petsc4py-install:
   extends: .stage-2
@@ -498,7 +516,7 @@ linux-cuda11-complex:
 
 linux-cuda-double-64idx:
   extends:
-    - .stage-2
+    - .stage-3
     - .linux_test
   tags:
     - gpu:nvidia, os:linux, name:p1
