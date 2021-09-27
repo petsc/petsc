@@ -1547,17 +1547,17 @@ int main(int argc, char **argv)
   test:
     suffix: tri_p1_adapt_0
     requires: pragmatic
-    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_view -snes_adapt_initial 1
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_view -dm_adapt_view -snes_adapt_initial 1 -adaptor_target_num 4000 -adaptor_metric_h_min 0.0001 -adaptor_metric_h_max 0.05
 
   test:
     suffix: tri_p1_adapt_1
     requires: pragmatic
-    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_iter_view -dm_adapt_view -snes_adapt_sequence 2
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_view -dm_adapt_iter_view -dm_adapt_view -snes_adapt_sequence 2 -adaptor_target_num 4000 -adaptor_metric_h_min 0.0001 -adaptor_metric_h_max 0.05
 
   test:
     suffix: tri_p1_adapt_analytic_0
     requires: pragmatic
-    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_view -dm_adapt_iter_view
+    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_view -dm_adapt_iter_view -adaptor_metric_h_min 0.0001 -adaptor_metric_h_max 0.05
 
   # Full solve tensor AMR
   test:
