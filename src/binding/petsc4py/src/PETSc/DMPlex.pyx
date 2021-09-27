@@ -660,6 +660,111 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = dmGhosted
         return toInt(numGhostCells)
 
+    # Metric
+
+    def metricSetIsotropic(self, PetscBool isotropic):
+        CHKERR( DMPlexMetricSetIsotropic(self.dm, isotropic) )
+
+    def metricIsIsotropic(self):
+        cdef PetscBool isotropic = PETSC_FALSE
+        CHKERR( DMPlexMetricIsIsotropic(self.dm, &isotropic) )
+        return toBool(isotropic)
+
+    def metricSetRestrictAnisotropyFirst(self, PetscBool restrictAnisotropyFirst):
+        CHKERR( DMPlexMetricSetRestrictAnisotropyFirst(self.dm, restrictAnisotropyFirst) )
+
+    def metricRestrictAnisotropyFirst(self):
+        cdef PetscBool restrictAnisotropyFirst = PETSC_FALSE
+        CHKERR( DMPlexMetricRestrictAnisotropyFirst(self.dm, &restrictAnisotropyFirst) )
+        return toBool(restrictAnisotropyFirst)
+
+    def metricSetMinimumMagnitude(self, PetscReal h_min):
+        CHKERR( DMPlexMetricSetMinimumMagnitude(self.dm, h_min) )
+
+    def metricGetMinimumMagnitude(self):
+        cdef PetscReal h_min
+        CHKERR( DMPlexMetricGetMinimumMagnitude(self.dm, &h_min) )
+        return h_min
+
+    def metricSetMaximumMagnitude(self, PetscReal h_max):
+        CHKERR( DMPlexMetricSetMaximumMagnitude(self.dm, h_max) )
+
+    def metricGetMaximumMagnitude(self):
+        cdef PetscReal h_max
+        CHKERR( DMPlexMetricGetMaximumMagnitude(self.dm, &h_max) )
+        return h_max
+
+    def metricSetMaximumAnisotropy(self, PetscReal a_max):
+        CHKERR( DMPlexMetricSetMaximumAnisotropy(self.dm, a_max) )
+
+    def metricGetMaximumAnisotropy(self):
+        cdef PetscReal a_max
+        CHKERR( DMPlexMetricGetMaximumAnisotropy(self.dm, &a_max) )
+        return a_max
+
+    def metricSetTargetComplexity(self, PetscReal targetComplexity):
+        CHKERR( DMPlexMetricSetTargetComplexity(self.dm, targetComplexity) )
+
+    def metricGetTargetComplexity(self):
+        cdef PetscReal targetComplexity
+        CHKERR( DMPlexMetricGetTargetComplexity(self.dm, &targetComplexity) )
+        return targetComplexity
+
+    def metricSetNormalizationOrder(self, PetscReal p):
+        CHKERR( DMPlexMetricSetNormalizationOrder(self.dm, p) )
+
+    def metricGetNormalizationOrder(self):
+        cdef PetscReal p
+        CHKERR( DMPlexMetricGetNormalizationOrder(self.dm, &p) )
+        return p
+
+    def metricCreate(self, field=0):
+        cdef Vec metric = Vec()
+        CHKERR( DMPlexMetricCreate(self.dm, field, &metric.vec) )
+        return metric
+
+    def metricCreateUniform(self, PetscReal alpha, field=0):
+        cdef Vec metric = Vec()
+        CHKERR( DMPlexMetricCreateUniform(self.dm, field, alpha, &metric.vec) )
+        return metric
+
+    def metricCreateIsotropic(self, Vec indicator, field=0):
+        cdef Vec metric = Vec()
+        CHKERR( DMPlexMetricCreateIsotropic(self.dm, field, indicator.vec, &metric.vec) )
+        return metric
+
+    def metricEnforceSPD(self, Vec metric, restrictSizes=False, restrictAnisotropy=False):
+        CHKERR( DMPlexMetricEnforceSPD(self.dm, restrictSizes, restrictAnisotropy, metric.vec) )
+
+    def metricNormalize(self, Vec metric, restrictSizes=True, restrictAnisotropy=True):
+        cdef Vec ometric = Vec()
+        CHKERR( DMPlexMetricNormalize(self.dm, metric.vec, restrictSizes, restrictAnisotropy, &ometric.vec) )
+        return ometric
+
+    def metricAverage2(self, Vec metric1, Vec metric2):
+        cdef Vec metric = Vec()
+        CHKERR( DMPlexMetricAverage2(self.dm, metric1.vec, metric2.vec, &metric.vec) )
+        return metric
+
+    def metricAverage3(self, Vec metric1, Vec metric2, Vec metric3):
+        cdef Vec metric = Vec()
+        CHKERR( DMPlexMetricAverage3(self.dm, metric1.vec, metric2.vec, metric3.vec, &metric.vec) )
+        return metric
+
+    def metricIntersection2(self, Vec metric1, Vec metric2):
+        cdef Vec metric = Vec()
+        CHKERR( DMPlexMetricIntersection2(self.dm, metric1.vec, metric2.vec, &metric.vec) )
+        return metric
+
+    def metricIntersection3(self, Vec metric1, Vec metric2, Vec metric3):
+        cdef Vec metric = Vec()
+        CHKERR( DMPlexMetricIntersection3(self.dm, metric1.vec, metric2.vec, metric3.vec, &metric.vec) )
+        return metric
+
+    def computeGradientClementInterpolant(self, Vec locX, Vec locC):
+        CHKERR( DMPlexComputeGradientClementInterpolant(self.dm, locX.vec, locC.vec) )
+        return locC
+
     # View
 
     def topologyView(self, Viewer viewer):
