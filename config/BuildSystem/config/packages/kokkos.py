@@ -104,6 +104,10 @@ class Configure(config.package.CMakePackage):
 
     lang = 'cxx'
     if self.cuda.found:
+      # lang is used below to get nvcc C++ dialect. In a case with nvhpc-21.7 and "nvcc -ccbin nvc++ -std=c++17",
+      # nvcc complains the host compiler does not support c++17, even though it does. So we have to respect
+      # what nvcc thinks, instead of taking the c++ dialect directly from the host compiler.
+      lang = 'cuda'
       args.append('-DKokkos_ENABLE_CUDA=ON')
       self.system = 'CUDA'
       self.pushLanguage('CUDA')
@@ -111,12 +115,8 @@ class Configure(config.package.CMakePackage):
       cudaFlags = self.getCompilerFlags()
       self.popLanguage()
       args.append('-DKOKKOS_CUDA_OPTIONS="'+cudaFlags.replace(' ',';')+'"')
-      # Kokkos must be compiled with its horrible nvcc_wrapper script when using nvcc
-      # cannot find way to set nvcc exectuable
-      # NVCC_WRAPPER_DEFAULT_COMPILER
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
-      dir = self.externalpackagesdir.dir
-      args.append('-DCMAKE_CXX_COMPILER='+os.path.join(dir,'git.kokkos','bin','nvcc_wrapper'))
+      args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
       genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
       if hasattr(self.cuda,'cudaArch'):
         generation = self.cuda.cudaArch[:-1]
@@ -166,8 +166,8 @@ class Configure(config.package.CMakePackage):
       args.append('-DKokkos_ENABLE_HIP_RELOCATABLE_DEVICE_CODE=OFF')
 
     # set -DCMAKE_CXX_STANDARD=
-    if not hasattr(self.compilers,lang+'dialect'):
-      raise RuntimeError('Did not properly determine C++ dialect for the '+lang.upper()+' Compiler')
+    if not hasattr(self.compilers,lang+'dialect'): # lang can be cuda, hip, or cxx
+      raise RuntimeError('Did not properly determine C++ dialect for the '+lang.upper()+' compiler')
     langdialect = getattr(self.compilers,lang+'dialect')
     args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
     args.append('-DCMAKE_CXX_STANDARD='+langdialect.split("C++",1)[1]) # e.g., extract 14 from C++14
