@@ -9,6 +9,10 @@
 #include <petsc/private/valgrind/valgrind.h>
 #endif
 
+#if defined(PETSC_HAVE_FORTRAN)
+#include <petsc/private/fortranimpl.h>
+#endif
+
 #if defined(PETSC_HAVE_CUDA)
 #include <petsc/private/deviceimpl.h>
 PETSC_EXTERN cudaEvent_t petsc_gputimer_begin;
@@ -672,140 +676,22 @@ PetscInt PetscNumOMPThreads;
 #include <dlfcn.h>
 #endif
 
-/*@C
-   PetscInitialize - Initializes the PETSc database and MPI.
-   PetscInitialize() calls MPI_Init() if that has yet to be called,
-   so this routine should always be called near the beginning of
-   your program -- usually the very first line!
+/*
+  PetscInitialize_Common  - shared code between C and Fortran initialization
 
-   Collective on MPI_COMM_WORLD or PETSC_COMM_WORLD if it has been set
-
-   Input Parameters:
-+  argc - count of number of command line arguments
-.  args - the command line arguments
-.  file - [optional] PETSc database file, append ":yaml" to filename to specify YAML options format.
-          Use NULL or empty string to not check for code specific file.
-          Also checks ~/.petscrc, .petscrc and petscrc.
-          Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
--  help - [optional] Help message to print, use NULL for no message
-
-   If you wish PETSc code to run ONLY on a subcommunicator of MPI_COMM_WORLD, create that
-   communicator first and assign it to PETSC_COMM_WORLD BEFORE calling PetscInitialize(). Thus if you are running a
-   four process job and two processes will run PETSc and have PetscInitialize() and PetscFinalize() and two process will not,
-   then do this. If ALL processes in the job are using PetscInitialize() and PetscFinalize() then you don't need to do this, even
-   if different subcommunicators of the job are doing different things with PETSc.
-
-   Options Database Keys:
-+  -help [intro] - prints help method for each option; if intro is given the program stops after printing the introductory help message
-.  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
-.  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
-.  -on_error_emacs <machinename> - causes emacsclient to jump to error file
-.  -on_error_abort - calls abort() when error detected (no traceback)
-.  -on_error_mpiabort - calls MPI_abort() when error detected
-.  -error_output_stderr - prints error messages to stderr instead of the default stdout
-.  -error_output_none - does not print the error messages (but handles errors in the same way as if this was not called)
-.  -debugger_ranks [rank1,rank2,...] - Indicates ranks to start in debugger
-.  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
-.  -stop_for_debugger - Print message on how to attach debugger manually to
-                        process and wait (-debugger_pause) seconds for attachment
-.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries) (deprecated, use -malloc_debug)
-.  -malloc no - Indicates not to use error-checking malloc (deprecated, use -malloc_debug no)
-.  -malloc_debug - check for memory corruption at EVERY malloc or free, see PetscMallocSetDebug()
-.  -malloc_dump - prints a list of all unfreed memory at the end of the run
-.  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
-.  -malloc_view - show a list of all allocated memory during PetscFinalize()
-.  -malloc_view_threshold <t> - only list memory allocations of size greater than t with -malloc_view
-.  -malloc_requested_size - malloc logging will record the requested size rather than size after alignment
-.  -fp_trap - Stops on floating point exceptions
-.  -no_signal_handler - Indicates not to trap error signals
-.  -shared_tmp - indicates /tmp directory is shared by all processors
-.  -not_shared_tmp - each processor has own /tmp
-.  -tmp - alternative name of /tmp directory
-.  -get_total_flops - returns total flops done by all processors
--  -memory_view - Print memory usage at end of run
-
-   Options Database Keys for Option Database:
-+  -skip_petscrc - skip the default option files ~/.petscrc, .petscrc, petscrc
-.  -options_monitor - monitor all set options to standard output for the whole program run
--  -options_monitor_cancel - cancel options monitoring hard-wired using PetscOptionsMonitorSet()
-
-   Options -options_monitor_{all,cancel} are
-   position-independent and apply to all options set since the PETSc start.
-   They can be used also in option files.
-
-   See PetscOptionsMonitorSet() to do monitoring programmatically.
-
-   Options Database Keys for Profiling:
-   See Users-Manual: ch_profiling for details.
-+  -info [filename][:[~]<list,of,classnames>[:[~]self]] - Prints verbose information. See PetscInfo().
-.  -log_sync - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
-        however it slows things down and gives a distorted view of the overall runtime.
-.  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
-        hangs without running in the debugger).  See PetscLogTraceBegin().
-.  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().
-.  -log_view_memory - Includes in the summary from -log_view the memory used in each method, see PetscLogView().
-.  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
-        summary is written to the file.  See PetscLogView().
-.  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
-.  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
-.  -log [filename] - Logs basic profiline information  See PetscLogDump().
-.  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
-.  -viewfromoptions on,off - Enable or disable XXXSetFromOptions() calls, for applications with many small solves turn this off
--  -check_pointer_intensity 0,1,2 - if pointers are checked for validity (debug version only), using 0 will result in faster code
-
-    Only one of -log_trace, -log_view, -log_view, -log_all, -log, or -log_mpe may be used at a time
-
-   Options Database Keys for SAWs:
-+  -saws_port <portnumber> - port number to publish SAWs data, default is 8080
-.  -saws_port_auto_select - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
-                            this is useful when you are running many jobs that utilize SAWs at the same time
-.  -saws_log <filename> - save a log of all SAWs communication
-.  -saws_https <certificate file> - have SAWs use HTTPS instead of HTTP
--  -saws_root <directory> - allow SAWs to have access to the given directory to search for requested resources and files
-
-   Environmental Variables:
-+   PETSC_TMP - alternative tmp directory
-.   PETSC_SHARED_TMP - tmp is shared by all processes
-.   PETSC_NOT_SHARED_TMP - each process has its own private tmp
-.   PETSC_OPTIONS - a string containing additional options for petsc in the form of command line "-key value" pairs
-.   PETSC_OPTIONS_YAML - (requires configuring PETSc to use libyaml) a string containing additional options for petsc in the form of a YAML document
-.   PETSC_VIEWER_SOCKET_PORT - socket number to use for socket viewer
--   PETSC_VIEWER_SOCKET_MACHINE - machine to use for socket viewer to connect to
-
-   Level: beginner
-
-   Notes:
-   If for some reason you must call MPI_Init() separately, call
-   it before PetscInitialize().
-
-   Fortran Version:
-   In Fortran this routine has the format
-$       call PetscInitialize(file,ierr)
-
-+   ierr - error return code
--  file - [optional] PETSc database file, also checks ~/.petscrc, .petscrc and petscrc.
-          Use PETSC_NULL_CHARACTER to not check for code specific file.
-          Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
-
-   Important Fortran Note:
-   In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
-   null character string; you CANNOT just use NULL as
-   in the C version. See Users-Manual: ch_fortran for details.
-
-   If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
-   calling PetscInitialize().
-
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
-
-@*/
-PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const char help[])
+  prog:     program name
+  file:     optional PETSc database file name. Might be in Fortran string format when 'fortran' is true
+  help:     program help message
+  fortran:  is it called from Fortran initilization (petscinitializef_)?
+  readarguments,len: used when fortran is true
+*/
+PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* file,const char *help,PetscBool fortran,PetscBool readarguments,PetscInt len)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    flag, size;
+  PetscMPIInt    size;
   PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
 
-  if (PetscInitializeCalled) return 0;
   /*
       The checking over compatible runtime libraries is complicated by the MPI ABI initiative
       https://wiki.mpich.org/mpich/index.php/ABI_Compatibility_Initiative which started with
@@ -838,8 +724,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(MPICH_VERSION)
 #if MPICH_NUMVERSION < 30100000
     {
-      char *ver,*lf;
-      flg = PETSC_FALSE;
+      char      *ver,*lf;
+      PetscBool flg = PETSC_FALSE;
       ierr = PetscStrstr(mpilibraryversion,"MPICH Version:",&ver);if (ierr) return ierr;
       if (ver) {
         ierr = PetscStrchr(ver,'\n',&lf);if (ierr) return ierr;
@@ -858,7 +744,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #elif defined(OMPI_MAJOR_VERSION)
     {
       char *ver,bs[MPI_MAX_LIBRARY_VERSION_STRING],*bsf;
-      flg = PETSC_FALSE;
+      PetscBool flg = PETSC_FALSE;
 #define PSTRSZ 2
       char ompistr1[PSTRSZ][MPI_MAX_LIBRARY_VERSION_STRING] = {"Open MPI","FUJITSU MPI"};
       char ompistr2[PSTRSZ][MPI_MAX_LIBRARY_VERSION_STRING] = {"v","Library "};
@@ -908,36 +794,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = PetscOptionsCreateDefault();CHKERRQ(ierr);
 
-  /*
-     We initialize the program name here (before MPI_Init()) because MPICH has a bug in
-     it that it sets args[0] on all processors to be args[0] on the first processor.
-  */
-  if (argc && *argc) {
-    ierr = PetscSetProgramName(**args);CHKERRQ(ierr);
-  } else {
-    ierr = PetscSetProgramName("Unknown Name");CHKERRQ(ierr);
-  }
-
-  ierr = MPI_Initialized(&flag);CHKERRMPI(ierr);
-  if (!flag) {
-    if (PETSC_COMM_WORLD != MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
-    ierr = PetscPreMPIInit_Private();CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MPI_INIT_THREAD)
-    {
-      PetscMPIInt provided;
-      ierr = MPI_Init_thread(argc,args,PETSC_MPI_THREAD_REQUIRED,&provided);CHKERRMPI(ierr);
-    }
-#else
-    ierr = MPI_Init(argc,args);CHKERRMPI(ierr);
-#endif
-    PetscBeganMPI = PETSC_TRUE;
-  }
-
-  if (argc && args) {
-    PetscGlobalArgc = *argc;
-    PetscGlobalArgs = *args;
-  }
   PetscFinalizeCalled = PETSC_FALSE;
+
+  ierr = PetscSetProgramName(prog);CHKERRQ(ierr);
   ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
   ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);
   ierr = PetscSpinlockCreate(&PetscViewerASCIISpinLockStderr);CHKERRQ(ierr);
@@ -1055,10 +914,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_OuterComm_Attr_Delete_Fn,&Petsc_OuterComm_keyval,(void*)0);CHKERRMPI(ierr);
   ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_ShmComm_Attr_Delete_Fn,&Petsc_ShmComm_keyval,(void*)0);CHKERRMPI(ierr);
 
-  /*
-     Build the options database
-  */
-  ierr = PetscOptionsInsert(NULL,argc,args,file);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_FORTRAN)
+  if (fortran) {ierr = PetscInitFortran_Private(readarguments,file,len);CHKERRQ(ierr);}
+  else
+#endif
+  {ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,file);CHKERRQ(ierr);}
 
   /* call a second time so it can look in the options database */
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
@@ -1071,7 +931,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscInitializeSAWs(help);CHKERRQ(ierr);
+  ierr = PetscInitializeSAWs(fortran ? NULL : help);CHKERRQ(ierr);
 #endif
 
   /*
@@ -1089,20 +949,15 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     PetscBool omp_view_flag;
     char      *threads = getenv("OMP_NUM_THREADS");
 
-   if (threads) {
-     ierr = PetscInfo1(NULL,"Number of OpenMP threads %s (given by OMP_NUM_THREADS)\n",threads);CHKERRQ(ierr);
-     (void) sscanf(threads, "%" PetscInt_FMT,&PetscNumOMPThreads);
-   } else {
-#define NMAX  10000
-     int          i;
-      PetscScalar *x;
-      ierr = PetscMalloc1(NMAX,&x);CHKERRQ(ierr);
-#pragma omp parallel for
-      for (i=0; i<NMAX; i++) {
-        x[i] = 0.0;
+    if (threads) {
+      ierr = PetscInfo1(NULL,"Number of OpenMP threads %s (given by OMP_NUM_THREADS)\n",threads);CHKERRQ(ierr);
+      (void) sscanf(threads, "%" PetscInt_FMT,&PetscNumOMPThreads);
+    } else {
+      #pragma omp parallel
+      #pragma omp master
+      {
         PetscNumOMPThreads  = (PetscInt) omp_get_num_threads();
       }
-      ierr = PetscFree(x);CHKERRQ(ierr);
       ierr = PetscInfo1(NULL,"Number of OpenMP threads %D (number not set with OMP_NUM_THREADS, chosen by system)\n",PetscNumOMPThreads);CHKERRQ(ierr);
     }
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"OpenMP options","Sys");CHKERRQ(ierr);
@@ -1154,7 +1009,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 #endif
 
-  flg = PETSC_TRUE;
+  flg  = PETSC_TRUE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewfromoptions",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE);CHKERRQ(ierr);}
 
@@ -1186,6 +1041,163 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);}
+  return 0;
+}
+
+/*@C
+   PetscInitialize - Initializes the PETSc database and MPI.
+   PetscInitialize() calls MPI_Init() if that has yet to be called,
+   so this routine should always be called near the beginning of
+   your program -- usually the very first line!
+
+   Collective on MPI_COMM_WORLD or PETSC_COMM_WORLD if it has been set
+
+   Input Parameters:
++  argc - count of number of command line arguments
+.  args - the command line arguments
+.  file - [optional] PETSc database file, append ":yaml" to filename to specify YAML options format.
+          Use NULL or empty string to not check for code specific file.
+          Also checks ~/.petscrc, .petscrc and petscrc.
+          Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
+-  help - [optional] Help message to print, use NULL for no message
+
+   If you wish PETSc code to run ONLY on a subcommunicator of MPI_COMM_WORLD, create that
+   communicator first and assign it to PETSC_COMM_WORLD BEFORE calling PetscInitialize(). Thus if you are running a
+   four process job and two processes will run PETSc and have PetscInitialize() and PetscFinalize() and two process will not,
+   then do this. If ALL processes in the job are using PetscInitialize() and PetscFinalize() then you don't need to do this, even
+   if different subcommunicators of the job are doing different things with PETSc.
+
+   Options Database Keys:
++  -help [intro] - prints help method for each option; if intro is given the program stops after printing the introductory help message
+.  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
+.  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
+.  -on_error_emacs <machinename> - causes emacsclient to jump to error file
+.  -on_error_abort - calls abort() when error detected (no traceback)
+.  -on_error_mpiabort - calls MPI_abort() when error detected
+.  -error_output_stderr - prints error messages to stderr instead of the default stdout
+.  -error_output_none - does not print the error messages (but handles errors in the same way as if this was not called)
+.  -debugger_ranks [rank1,rank2,...] - Indicates ranks to start in debugger
+.  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
+.  -stop_for_debugger - Print message on how to attach debugger manually to
+                        process and wait (-debugger_pause) seconds for attachment
+.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries) (deprecated, use -malloc_debug)
+.  -malloc no - Indicates not to use error-checking malloc (deprecated, use -malloc_debug no)
+.  -malloc_debug - check for memory corruption at EVERY malloc or free, see PetscMallocSetDebug()
+.  -malloc_dump - prints a list of all unfreed memory at the end of the run
+.  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
+.  -malloc_view - show a list of all allocated memory during PetscFinalize()
+.  -malloc_view_threshold <t> - only list memory allocations of size greater than t with -malloc_view
+.  -malloc_requested_size - malloc logging will record the requested size rather than size after alignment
+.  -fp_trap - Stops on floating point exceptions
+.  -no_signal_handler - Indicates not to trap error signals
+.  -shared_tmp - indicates /tmp directory is shared by all processors
+.  -not_shared_tmp - each processor has own /tmp
+.  -tmp - alternative name of /tmp directory
+.  -get_total_flops - returns total flops done by all processors
+-  -memory_view - Print memory usage at end of run
+
+   Options Database Keys for Option Database:
++  -skip_petscrc - skip the default option files ~/.petscrc, .petscrc, petscrc
+.  -options_monitor - monitor all set options to standard output for the whole program run
+-  -options_monitor_cancel - cancel options monitoring hard-wired using PetscOptionsMonitorSet()
+
+   Options -options_monitor_{all,cancel} are
+   position-independent and apply to all options set since the PETSc start.
+   They can be used also in option files.
+
+   See PetscOptionsMonitorSet() to do monitoring programmatically.
+
+   Options Database Keys for Profiling:
+   See Users-Manual: ch_profiling for details.
++  -info [filename][:[~]<list,of,classnames>[:[~]self]] - Prints verbose information. See PetscInfo().
+.  -log_sync - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
+        however it slows things down and gives a distorted view of the overall runtime.
+.  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
+        hangs without running in the debugger).  See PetscLogTraceBegin().
+.  -log_view [:filename:format] - Prints summary of flop and timing information to screen or file, see PetscLogView().
+.  -log_view_memory - Includes in the summary from -log_view the memory used in each method, see PetscLogView().
+.  -log_summary [filename] - (Deprecated, use -log_view) Prints summary of flop and timing information to screen. If the filename is specified the
+        summary is written to the file.  See PetscLogView().
+.  -log_exclude: <vec,mat,pc,ksp,snes> - excludes subset of object classes from logging
+.  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
+.  -log [filename] - Logs basic profiline information  See PetscLogDump().
+.  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+.  -viewfromoptions on,off - Enable or disable XXXSetFromOptions() calls, for applications with many small solves turn this off
+-  -check_pointer_intensity 0,1,2 - if pointers are checked for validity (debug version only), using 0 will result in faster code
+
+    Only one of -log_trace, -log_view, -log_view, -log_all, -log, or -log_mpe may be used at a time
+
+   Options Database Keys for SAWs:
++  -saws_port <portnumber> - port number to publish SAWs data, default is 8080
+.  -saws_port_auto_select - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
+                            this is useful when you are running many jobs that utilize SAWs at the same time
+.  -saws_log <filename> - save a log of all SAWs communication
+.  -saws_https <certificate file> - have SAWs use HTTPS instead of HTTP
+-  -saws_root <directory> - allow SAWs to have access to the given directory to search for requested resources and files
+
+   Environmental Variables:
++   PETSC_TMP - alternative tmp directory
+.   PETSC_SHARED_TMP - tmp is shared by all processes
+.   PETSC_NOT_SHARED_TMP - each process has its own private tmp
+.   PETSC_OPTIONS - a string containing additional options for petsc in the form of command line "-key value" pairs
+.   PETSC_OPTIONS_YAML - (requires configuring PETSc to use libyaml) a string containing additional options for petsc in the form of a YAML document
+.   PETSC_VIEWER_SOCKET_PORT - socket number to use for socket viewer
+-   PETSC_VIEWER_SOCKET_MACHINE - machine to use for socket viewer to connect to
+
+   Level: beginner
+
+   Notes:
+   If for some reason you must call MPI_Init() separately, call
+   it before PetscInitialize().
+
+   Fortran Version:
+   In Fortran this routine has the format
+$       call PetscInitialize(file,ierr)
+
++  ierr - error return code
+-  file - [optional] PETSc database file, also checks ~/.petscrc, .petscrc and petscrc.
+          Use PETSC_NULL_CHARACTER to not check for code specific file.
+          Use -skip_petscrc in the code specific file (or command line) to skip ~/.petscrc, .petscrc and petscrc files.
+
+   Important Fortran Note:
+   In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
+   null character string; you CANNOT just use NULL as
+   in the C version. See Users-Manual: ch_fortran for details.
+
+   If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
+   calling PetscInitialize().
+
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
+
+@*/
+PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const char help[])
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    flag;
+  const char     *prog = "Unknown Name";
+
+  if (PetscInitializeCalled) return 0;
+  ierr = MPI_Initialized(&flag);CHKERRMPI(ierr);
+  if (!flag) {
+    if (PETSC_COMM_WORLD != MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
+    ierr = PetscPreMPIInit_Private();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_INIT_THREAD)
+    {
+      PetscMPIInt provided;
+      ierr = MPI_Init_thread(argc,args,PETSC_MPI_THREAD_REQUIRED,&provided);CHKERRMPI(ierr);
+    }
+#else
+    ierr = MPI_Init(argc,args);CHKERRMPI(ierr);
+#endif
+    PetscBeganMPI = PETSC_TRUE;
+  }
+
+  if (argc && *argc) prog = **args;
+  if (argc && args) {
+    PetscGlobalArgc = *argc;
+    PetscGlobalArgs = *args;
+  }
+  ierr = PetscInitialize_Common(prog,file,help,PETSC_FALSE/*C*/,PETSC_FALSE,0);CHKERRQ(ierr);
   return 0;
 }
 
