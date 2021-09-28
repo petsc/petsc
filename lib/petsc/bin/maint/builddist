@@ -113,7 +113,7 @@ cd $PETSC_DIR/doc
 python3 -m pip install -r requirements.txt
 sphinx-build -T -E -b html -D language=en -j auto . ../docs
 make html BUILDDIR="../docs" SPHINXOPTS="-T -E"
-make latexpdf && cp _build/latex/manual.pdf ../docs/
+make latexpdf && cp _build/latex/manual.pdf ../docs/html/docs/manual/
 
 # petsc4py docs and tarball
 cd $PETSC_DIR
