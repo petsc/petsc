@@ -50,10 +50,10 @@ class Configure(config.package.Package):
         self.logPrintBox('Compiling TChem; this may take several minutes')
         output2,err2,ret2  = config.package.Package.executeShellCommand(['make'], cwd=self.packageDir, timeout=500, log = self.log)
         output2,err2,ret2  = config.package.Package.executeShellCommandSeq([
-          self.withSudo('mkdir', '-p', includeDir, libDir, shareDir),
-          self.withSudo('cp', *(glob.glob(os.path.join(self.packageDir, 'include', 'TC_*')) + [includeDir])),
-          self.withSudo('cp', *(glob.glob(os.path.join(self.packageDir, 'lib', 'libtchem*')) + [libDir])),
-          self.withSudo('cp', os.path.join(self.packageDir, 'data', 'periodictable.dat'), shareDir),
+          ['mkdir', '-p', includeDir, libDir, shareDir],
+          ['cp'] + glob.glob(os.path.join(self.packageDir, 'include', 'TC_*')) + [includeDir],
+          ['cp'] + glob.glob(os.path.join(self.packageDir, 'lib', 'libtchem*')) + [libDir],
+          ['cp', os.path.join(self.packageDir, 'data', 'periodictable.dat'), shareDir],
           ], timeout=500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on TChem: '+str(e))
