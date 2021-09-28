@@ -135,6 +135,10 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &seqnum, &seqval);CHKERRQ(ierr);
   ierr = DMSequenceView_HDF5(dm, "time", seqnum, (PetscScalar) seqval, viewer);CHKERRQ(ierr);
+  if (seqnum >= 0) {
+    ierr = PetscViewerHDF5PushTimestepping(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  }
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(dmBC, &sectionGlobal);CHKERRQ(ierr);
@@ -230,6 +234,9 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       else          {ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);}
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
     }
+  }
+  if (seqnum >= 0) {
+    ierr = PetscViewerHDF5PopTimestepping(viewer);CHKERRQ(ierr);
   }
   ierr = DMRestoreGlobalVector(dmBC, &gv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
