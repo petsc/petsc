@@ -754,8 +754,8 @@ static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A)
   PetscMPIInt    size;
   PetscErrorCode ierr;
   Mat_H2OPUS     *a = (Mat_H2OPUS*)A->data;
-  PetscInt       n,*idx;
-  int            *iidx;
+  PetscInt       n = 0,*idx = NULL;
+  int            *iidx = NULL;
   PetscCopyMode  own;
   PetscBool      rid;
 
