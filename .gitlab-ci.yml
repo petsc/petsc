@@ -652,6 +652,7 @@ linux-pkgs-valgrind:
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
     TIMEOUT: 7200
+    LOAD_MODULES: valgrind/3.17.0
 
 linux-pkgs-opt:
   extends:
