@@ -178,6 +178,9 @@ cdef class DM(Object):
         assert label is None
         CHKERR( DMAddField(self.dm, clbl, cobj) )
 
+    def clearFields(self):
+        CHKERR( DMClearFields(self.dm) )
+
     def copyFields(self, DM dm):
         CHKERR( DMCopyFields(self.dm, dm.dm) )
 
