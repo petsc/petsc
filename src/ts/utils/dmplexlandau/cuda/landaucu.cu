@@ -613,9 +613,9 @@ void __launch_bounds__(256,4) landau_mass(const PetscInt dim, const PetscInt Nb,
   __shared__ PetscScalar s_fieldMats[LANDAU_MAX_NQ][LANDAU_MAX_NQ];
   __shared__ PetscInt    s_idx[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE];
   __shared__ PetscReal   s_scale[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE];
-  int                    tid = threadIdx.x + threadIdx.y*blockDim.x;
+  PetscInt               tid = threadIdx.x + threadIdx.y*blockDim.x;
   PetscScalar            *elemMat = NULL; /* my output */
-  int                    fieldA,d,qj,q,idx,f,g, grid = 0;
+  PetscInt                fieldA,d,qj,q,idx,f,g, grid = 0;
 
   while (g_cell >= d_elem_offset[grid+1]) grid++; // yuck search for grid
   {

@@ -1296,18 +1296,19 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
                 Kokkos::single(Kokkos::PerThread(team), [&]() { colkIdx() = PETSC_MAX_INT; });
                 // get column, there has got to be a better way
                 Kokkos::parallel_reduce(Kokkos::ThreadVectorRange(team,nzL), [&] (const int &j, size_t &idx) {
-                    //printf("\t\t%d) in vector loop, testing col %d =? %d (ii)\n",j,pjL[j],ii);
                     if (pjL[j] == ii) {
                       PetscScalar *pLki = ba_d + bi_d[myk] + j;
                       idx = j; // output
                       *pLki = *pLki/Bii; // column scaling:  L(k,i) = A(:k,i) / A(i,i)
                     }
-                  }, st_idx);
+                }, st_idx);
                 Kokkos::single(Kokkos::PerThread(team), [=]() { colkIdx() = st_idx; L_ki() = *(ba_d + bi_d[myk] + st_idx); });
-                if (colkIdx() == PETSC_MAX_INT) printf("\t\t\t\t\t\t\tERROR: failed to find L_ki(%d,%d)\n",myk,ii);
-                else { // active row k, do  A_kj -= Lki * U_ij; j \in U(i,:) j != i
-                  // U(i+1,:end)
-                  Kokkos::parallel_for(Kokkos::ThreadVectorRange(team,nzUi), [=] (const int &uiIdx) { // index into i (U)
+#if defined(PETSC_USE_DEBUG)
+                if (colkIdx() == PETSC_MAX_INT) printf("\t\t\t\t\t\t\tERROR: failed to find L_ki(%d,%d)\n",(int)myk,ii); // uses a register
+#endif
+                // active row k, do  A_kj -= Lki * U_ij; j \in U(i,:) j != i
+                // U(i+1,:end)
+                Kokkos::parallel_for(Kokkos::ThreadVectorRange(team,nzUi), [=] (const int &uiIdx) { // index into i (U)
                       PetscScalar Uij = baUi[uiIdx];
                       PetscInt    col = bjUi[uiIdx];
                       if (col==myk) {
@@ -1341,11 +1342,12 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
                         for (pAkjv=start+low; pAkjv<start+high; pAkjv++) {
                           if (startj[pAkjv-start] == col) break;
                         }
-                        if (pAkjv==start+high) printf("\t\t\t\t\t\t\t\t\t\t\tERROR: *** failed to find Akj(%d,%d)\n",myk,col);
+#if defined(PETSC_USE_DEBUG)
+                        if (pAkjv==start+high) printf("\t\t\t\t\t\t\t\t\t\t\tERROR: *** failed to find Akj(%d,%d)\n",(int)myk,(int)col); // uses a register
+#endif
                         *pAkjv = *pAkjv - L_ki() * Uij; // A_kj = A_kj - L_ki * U_ij
                       }
                     });
-                }
               }
             });
           team.team_barrier(); // this needs to be a league barrier to use more that one SM per block
