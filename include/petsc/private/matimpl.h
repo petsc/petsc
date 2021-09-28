@@ -473,6 +473,7 @@ struct _p_Mat {
 #if defined(PETSC_HAVE_DEVICE)
   PetscOffloadMask       offloadmask;      /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool              boundtocpu;
+  PetscBool              bindingpropagates;
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   char                   *solvertype;
