@@ -669,7 +669,7 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
    If the fine-scale DMDA has the -dm_bind_below option set to true, then DMCreateInterpolationScale() calls MatSetBindingPropagates()
    on the restriction/interpolation operator to set the bindingpropagates flag to true.
 
-.seealso: VecSetBindingPropagates()
+.seealso: VecSetBindingPropagates(), MatGetBindingPropagates()
 @*/
 PetscErrorCode MatSetBindingPropagates(Mat A,PetscBool flg)
 {
@@ -677,6 +677,32 @@ PetscErrorCode MatSetBindingPropagates(Mat A,PetscBool flg)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   A->bindingpropagates = flg;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatGetBindingPropagates - Gets whether the state of being bound to the CPU for a GPU matrix type propagates to child and some other associated objects
+
+   Input Parameter:
+.  A - the matrix
+
+   Output Parameter:
+.  flg - flag indicating whether the boundtocpu flag will be propagated
+
+   Level: developer
+
+.seealso: MatSetBindingPropagates()
+@*/
+PetscErrorCode MatGetBindingPropagates(Mat A,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidBoolPointer(flg,2);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  *flg = A->bindingpropagates;
+#else
+  *flg = PETSC_FALSE;
 #endif
   PetscFunctionReturn(0);
 }

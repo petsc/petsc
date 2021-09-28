@@ -1953,7 +1953,7 @@ PetscErrorCode VecBoundToCPU(Vec v,PetscBool *flg)
    If a DMDA has the -dm_bind_below option set to true, then vectors created by DMCreateGlobalVector() will have VecSetBindingPropagates() called on them to
    set their bindingpropagates flag to true.
 
-.seealso: MatSetBindingPropagates()
+.seealso: MatSetBindingPropagates(), VecGetBindingPropagates()
 @*/
 PetscErrorCode VecSetBindingPropagates(Vec v,PetscBool flg)
 {
@@ -1961,6 +1961,32 @@ PetscErrorCode VecSetBindingPropagates(Vec v,PetscBool flg)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
   v->bindingpropagates = flg;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecGetBindingPropagates - Gets whether the state of being bound to the CPU for a GPU vector type propagates to child and some other associated objects
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  flg - flag indicating whether the boundtocpu flag will be propagated
+
+   Level: developer
+
+.seealso: VecSetBindingPropagates()
+@*/
+PetscErrorCode VecGetBindingPropagates(Vec v,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidBoolPointer(flg,2);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  *flg = v->bindingpropagates;
+#else
+  *flg = PETSC_FALSE;
 #endif
   PetscFunctionReturn(0);
 }

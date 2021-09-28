@@ -1220,6 +1220,10 @@ PetscErrorCode  DMCreateInterpolation(DM dmc,DM dmf,Mat *mat,Vec *vec)
 
   Level: developer
 
+  Developer Notes:
+  If the fine-scale DMDA has the -dm_bind_below option set to true, then DMCreateInterpolationScale() calls MatSetBindingPropagates()
+  on the restriction/interpolation operator to set the bindingpropagates flag to true.
+
 .seealso: DMCreateInterpolation()
 
 @*/
@@ -1229,7 +1233,7 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   Vec            fine;
   PetscScalar    one = 1.0;
 #if defined(PETSC_HAVE_CUDA)
-  PetscBool      flg;
+  PetscBool      bindingpropagates,isbound;
 #endif
 
   PetscFunctionBegin;
@@ -1240,10 +1244,11 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   /* If the 'fine' Vec is bound to the CPU, it makes sense to bind 'mat' as well.
    * Note that we only do this for the CUDA case, right now, but if we add support for MatMultTranspose() via ViennaCL,
    * we'll need to do it for that case, too.*/
-  if (fine->bindingpropagates) {
-    ierr = VecBoundToCPU(fine,&flg);CHKERRQ(ierr);
+  ierr = VecGetBindingPropagates(fine,&bindingpropagates);CHKERRQ(ierr);
+  if (bindingpropagates) {
     ierr = MatSetBindingPropagates(mat,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatBindToCPU(mat,flg);CHKERRQ(ierr);
+    ierr = VecBoundToCPU(fine,&isbound);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,isbound);CHKERRQ(ierr);
   }
 #endif
   ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
