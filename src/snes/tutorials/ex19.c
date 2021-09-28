@@ -1103,6 +1103,20 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       args: -snes_monitor -dm_mat_type mpiaijcusparse -dm_vec_type mpicuda -pc_type gamg -ksp_monitor  -mg_levels_ksp_max_it 3
 
    test:
+      suffix: cuda_dm_bind_below
+      nsize: 2
+      requires: cuda
+      args: -dm_mat_type aijcusparse -dm_vec_type cuda -da_refine 3 -pc_type mg -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -log_view -pc_mg_log -dm_bind_below 10000
+      filter: awk "/Level/ {print \$24}"
+
+   test:
+      suffix: viennacl_dm_bind_below
+      nsize: 2
+      requires: viennacl
+      args: -dm_mat_type aijviennacl -dm_vec_type viennacl -da_refine 3 -pc_type mg -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -log_view -pc_mg_log -dm_bind_below 10000
+      filter: awk "/Level/ {print \$24}"
+
+   test:
       suffix: seqbaijmkl
       nsize: 1
       requires: defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
