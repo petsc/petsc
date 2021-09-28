@@ -35,11 +35,11 @@ class Configure(config.package.Package):
     if hasattr(self,'cudaArch'):
       output += '  CUDA SM '+self.cudaArch+'\n'
     if hasattr(self.setCompilers,'CUDA_CXX'):
-      output += '  CUDA underlying compiler: CUDA_CXX ' + self.setCompilers.CUDA_CXX + '\n'
+      output += '  CUDA underlying compiler: CUDA_CXX=' + self.setCompilers.CUDA_CXX + '\n'
     if hasattr(self.setCompilers,'CUDA_CXXFLAGS'):
-      output += '  CUDA underlying compiler flags: CUDA_CXXFLAGS ' + self.setCompilers.CUDA_CXXFLAGS + '\n'
+      output += '  CUDA underlying compiler flags: CUDA_CXXFLAGS=' + self.setCompilers.CUDA_CXXFLAGS + '\n'
     if hasattr(self.setCompilers,'CUDA_CXXLIBS'):
-      output += '  CUDA underlying linker libraries: CUDA_CXXLIBS ' + self.setCompilers.CUDA_CXXLIBS + '\n'
+      output += '  CUDA underlying linker libraries: CUDA_CXXLIBS=' + self.setCompilers.CUDA_CXXLIBS + '\n'
     return output
 
   def setupDependencies(self, framework):
