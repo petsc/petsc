@@ -100,24 +100,23 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   Input Parameters:
 + dm      - The DMPlex object
 . p       - The mesh point
+. dE      - The coordinate dimension
 - mcoords - A coordinate point lying on the mesh point
 
   Output Parameter:
 . gcoords - The closest coordinate point on the geometry model associated with 'p' to the given point
 
-  Note: Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS.
+  Note: Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS. The coordinate dimension may be different from the coordinate dimension of the dm, for example if the transformation is extrusion.
 
   Level: intermediate
 
 .seealso: DMRefine(), DMPlexCreate(), DMPlexSetRefinementUniform()
 @*/
-PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, const PetscScalar mcoords[], PetscScalar gcoords[])
+PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[])
 {
-  PetscInt       dE, d;
-  PetscErrorCode ierr;
+  PetscInt d;
 
   PetscFunctionBeginHot;
-  ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_EGADS
   {
     DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -126,6 +125,7 @@ PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, const PetscScalar mcoord
     PetscContainer modelObj;
     ego            model;
     PetscBool      islite = PETSC_FALSE;
+    PetscErrorCode ierr;
 
     ierr = DMGetLabel(dm, "EGADS Body ID", &bodyLabel);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "EGADS Face ID", &faceLabel);CHKERRQ(ierr);

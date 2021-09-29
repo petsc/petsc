@@ -1,9 +1,28 @@
-static const char help[] = "Tests for regular refinement";
+static const char help[] = "Tests for Plex transforms, including regular refinement";
 
 #include <petscdmplex.h>
 #include <petscsf.h>
 
 #include <petsc/private/dmpleximpl.h>
+
+static PetscErrorCode LabelPoints(DM dm)
+{
+  DMLabel        label;
+  PetscInt       pStart, pEnd, p;
+  PetscBool      flg = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(NULL, NULL, "-label_mesh", &flg, NULL);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+  ierr = DMCreateLabel(dm, "test");CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, "test", &label);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = DMLabelSetValue(label, p, p);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
@@ -13,6 +32,10 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = LabelPoints(*dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_label_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -126,5 +149,12 @@ int main(int argc, char **argv)
     test:
       suffix: ref_tquadp_tobox
       args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_quadrilateral_prism -dm_refine 2
+
+  testset:
+    args: -dm_coord_space 0 -label_mesh -post_label_dm_extrude 2 -post_label_dm_plex_check_all -dm_view ::ascii_info_detail
+
+    test:
+      suffix: extrude_quad
+      args: -dm_plex_simplex 0
 
 TEST*/

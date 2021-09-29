@@ -53,6 +53,9 @@ Changes: Development
 
 .. rubric:: DMPlex:
 
+- Add ``DMExtrude()`` which now the default extrusion
+- Change ``DMPlexExtrude()`` to use DMPlexTransform underneath
+
 .. rubric:: FE/FV:
 
 .. rubric:: DMNetwork:
@@ -62,4 +65,3 @@ Changes: Development
 .. rubric:: DT:
 
 .. rubric:: Fortran:
-

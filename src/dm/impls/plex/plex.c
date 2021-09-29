@@ -757,7 +757,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscSectionGetChart(coordSection, &pStart, &pEnd);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject) coordinates, &name);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "%s with %D fields\n", name, Nf);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "  field %D with %D components\n", 0, Nc);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  field 0 with %D components\n", Nc);CHKERRQ(ierr);
       if (cs != CS_CARTESIAN) {ierr = PetscViewerASCIIPrintf(viewer, "  output coordinate system: %s\n", CoordSystems[cs]);CHKERRQ(ierr);}
 
       ierr = VecGetArrayRead(coordinates, &array);CHKERRQ(ierr);
