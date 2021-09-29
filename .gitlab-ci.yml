@@ -629,6 +629,7 @@ linux-pkgs-dbg-ftn-interfaces:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-dbg-ftn-interfaces
+    LOAD_MODULES: cmake/3.20.5-yjp2hz6
     OMP_PROC_BIND: "false"
     OMP_NUM_THREADS: 4
 
@@ -737,7 +738,7 @@ linux-intel-cmplx:
     - gce-nfs
   variables:
     TEST_ARCH: arch-ci-linux-intel-cmplx
-    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib
+    LOAD_MODULES: intel-mkl/19.5 intel/19.0-nompilib cmake/3.20.5-yjp2hz6
     ENABLE_PETSC4PY_LDPRELOAD: 1
 
 linux-xsdk-dbg:
@@ -803,7 +804,7 @@ linux-pkgs-64idx:
     - gce-nfs, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-64idx
-    LOAD_MODULES: cmake/3.15.5-fh74toq intel-mkl/19.5
+    LOAD_MODULES: cmake/3.20.5-yjp2hz6 intel-mkl/19.5
 
 linux-64idx-i8:
   extends:
