@@ -14,6 +14,20 @@
   expr
 #endif
 
+#if PetscDefined(USE_DEBUG)
+PETSC_INTERN PetscErrorCode PetscStackSetCheck(PetscBool);
+PETSC_INTERN PetscErrorCode PetscStackView(FILE*);
+PETSC_INTERN PetscErrorCode PetscStackReset(void);
+PETSC_INTERN PetscErrorCode PetscStackCopy(PetscStack*,PetscStack*);
+PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *,FILE*);
+#else
+#define PetscStackSetCheck(check)        0
+#define PetscStackView(file)             0
+#define PetscStackReset()                0
+#define PetscStackCopy(stackin,stackout) 0
+#define PetscStackPrint(stack,file)      0
+#endif /* PetscDefined(USE_DEBUG) */
+
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
 PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);

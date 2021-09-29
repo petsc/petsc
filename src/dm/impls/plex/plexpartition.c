@@ -942,7 +942,7 @@ PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const Pets
   DM_Plex         *mesh = (DM_Plex *)dm->data;
   const PetscBool hasTree = (mesh->parentSection || mesh->childSection) ? PETSC_TRUE : PETSC_FALSE;
   PetscInt        nelems, *elems, off = 0, p;
-  PetscHSetI      ht;
+  PetscHSetI      ht = NULL;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;

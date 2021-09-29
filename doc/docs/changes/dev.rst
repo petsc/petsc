@@ -42,6 +42,7 @@ Changes: Development
 -  Add MPIU_REAL_INT and MPIU_SCALAR_INT datatypes to be used for reduction operations
 -  Add MPIU_MAXLOC and MPIU_MINLOC operations
 -  Add ``CHKERRCXX()`` to catch C++ exceptions and return a PETSc error code
+-  Remove ``PetscStack`` routines from public headers, this class should now be considered private
 
 .. rubric:: PetscViewer:
 

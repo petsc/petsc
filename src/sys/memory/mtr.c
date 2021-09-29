@@ -2,7 +2,7 @@
 /*
      Interface to malloc() and free(). This code allows for logging of memory usage and some error checking
 */
-#include <petscsys.h>           /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>           /*I "petscsys.h" I*/
 #include <petscviewer.h>
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
@@ -210,13 +210,9 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,PetscBool clear,int lineno,const c
   TRfrags++;
 
 #if defined(PETSC_USE_DEBUG)
-  if (PetscStackActive()) {
-    ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
-    /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
-    head->stack.line[head->stack.currentsize-2] = lineno;
-  } else {
-    head->stack.currentsize = 0;
-  }
+  ierr = PetscStackCopy(&petscstack,&head->stack);CHKERRQ(ierr);
+  /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
+  head->stack.line[head->stack.currentsize-2] = lineno;
 #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE)
   if (!clear && TRdebugIinitializenan) {
     size_t     i, n = a/sizeof(PetscReal);
@@ -444,13 +440,9 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
   TRfrags++;
 
 #if defined(PETSC_USE_DEBUG)
-  if (PetscStackActive()) {
-    ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
-    /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
-    head->stack.line[head->stack.currentsize-2] = lineno;
-  } else {
-    head->stack.currentsize = 0;
-  }
+  ierr = PetscStackCopy(&petscstack,&head->stack);CHKERRQ(ierr);
+  /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
+  head->stack.line[head->stack.currentsize-2] = lineno;
 #endif
 
   /*
