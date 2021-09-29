@@ -57,7 +57,7 @@ PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
 # Clean and Update the git repository and check for branch
 cd $PETSC_DIR
-/bin/rm -rf $PETSC_DIR/$PETSC_ARCH
+/bin/rm -rf $PETSC_DIR/$PETSC_ARCH $PETSC_DIR/arch-classic-docs
 git clean -q -f -d -x
 git fetch -q origin
 git checkout -f origin/$branch
