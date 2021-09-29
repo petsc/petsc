@@ -299,7 +299,7 @@ PetscErrorCode MatGetColumnMeans(Mat A,PetscScalar means[])
 /*@
     MatGetColumnReductions - Gets the reductions of each column of a sparse or dense matrix.
 
-  Input Parameter:
+  Input Parameters:
 +  A - the matrix
 -  type - A constant defined in NormType or ReductionType: NORM_2, NORM_1, NORM_INFINITY, REDUCTION_SUM_REALPART,
           REDUCTION_SUM_IMAGINARYPART, REDUCTION_MEAN_REALPART, REDUCTION_MEAN_IMAGINARYPART

@@ -1718,7 +1718,7 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
    Level: intermediate
 
 .seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel()
-*/
+@*/
 PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
 {
   PetscBool      ish2opus;

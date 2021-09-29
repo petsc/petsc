@@ -55,10 +55,10 @@ typedef struct {
 .  A - stage coefficients (dimension nstages*nstages, row-major)
 .  b - step completion table (dimension nstages)
 .  c - abscissa (dimension nstages)
--  binterp - coefficients of the interpolation formula (dimension nstages)
+.  binterp - coefficients of the interpolation formula (dimension nstages)
 .  A_inv - inverse of A (dimension nstages*nstages, row-major)
 .  A_inv_rowsum - row sum of the inverse of A (dimension nstages)
-.  I_s - identity matrix (dimension nstages*nstages)
+-  I_s - identity matrix (dimension nstages*nstages)
 
    Level: advanced
 
@@ -728,7 +728,7 @@ static PetscErrorCode TSLoad_IRK(TS ts,PetscViewer viewer)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  irktype - type of IRK scheme
 
@@ -780,7 +780,7 @@ PetscErrorCode TSIRKGetType(TS ts,TSIRKType *irktype)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  nstages - number of stages of IRK scheme
 
@@ -806,7 +806,7 @@ PetscErrorCode TSIRKSetNumStages(TS ts,PetscInt nstages)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  nstages - number of stages of IRK scheme
 
