@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Example configure script for the IBM POWER9 and NVIDIA Volta GV100 "Summit" system at OLCF/ORNL.
 # This may also be useful for the related Sierra system at LLNL, or other, similar systems that may appear.
-# A compiler module and the 'cmake' and 'cuda' modules should be loaded on Summit.
+# A compiler module and the 'cmake' and 'cuda' modules (in addition to a Python module!) should be loaded on Summit.
 # See inline comments below on other modules that might need to be loaded. 
 
 if __name__ == '__main__':
