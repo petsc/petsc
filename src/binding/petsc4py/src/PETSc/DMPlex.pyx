@@ -434,6 +434,13 @@ cdef class DMPlex(DM):
         CHKERR( DMGetLabel(self.dm, cval, &clbl) )
         CHKERR( DMPlexMarkBoundaryFaces(self.dm, ival, clbl) )
 
+    def labelComplete(self, DMLabel label):
+        CHKERR( DMPlexLabelComplete(self.dm, label.dmlabel) )
+
+    def labelCohesiveComplete(self, DMLabel label, DMLabel bdlabel, flip, DMPlex subdm):
+        cdef PetscBool flg = flip
+        CHKERR( DMPlexLabelCohesiveComplete(self.dm, label.dmlabel, bdlabel.dmlabel, flg, subdm.dm) )
+
     def setAdjacencyUseAnchors(self, useAnchors=True):
         cdef PetscBool flag = useAnchors
         CHKERR( DMPlexSetAdjacencyUseAnchors(self.dm, flag) )

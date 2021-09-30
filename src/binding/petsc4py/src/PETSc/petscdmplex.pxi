@@ -114,8 +114,8 @@ cdef extern from * nogil:
 
     int DMPlexCreateCoarsePointIS(PetscDM,PetscIS*)
     int DMPlexMarkBoundaryFaces(PetscDM,PetscInt,PetscDMLabel)
-    #int DMPlexLabelComplete(PetscDM,PetscDMLabel)
-    #int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscBool,PetscDM)
+    int DMPlexLabelComplete(PetscDM,PetscDMLabel)
+    int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscDMLabel,PetscBool,PetscDM)
 
     int DMPlexGetRefinementLimit(PetscDM,PetscReal*)
     int DMPlexSetRefinementLimit(PetscDM,PetscReal)
