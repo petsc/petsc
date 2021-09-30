@@ -9,8 +9,6 @@ PETSC_DIR=/home/balay/git-repo/petsc-release.clone
 
 #create the tarfile
 maintdir=`dirname $0`
-# use builddist script from current branch origin/release
-git fetch -q origin && git checkout -f origin/release
 ${maintdir}/builddist ${PETSC_DIR} release
 
 #determine tarball version

@@ -28,6 +28,7 @@ Releases of PETSc
   :maxdepth: 1
 
    main - PETSc development version <dev>
+   3.16 - Public Release, Sep 29, 2021 <316>
    3.15 - Public Release, Mar 30, 2021 <315>
    3.14 - Public Release, Sep 29, 2020 <314>
    3.13  - Public Release, Mar 30, 2020 <313>

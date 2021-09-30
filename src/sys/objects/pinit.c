@@ -686,12 +686,12 @@ PetscInt PetscNumOMPThreads;
   PetscInitialize_Common  - shared code between C and Fortran initialization
 
   prog:     program name
-  file:     optional PETSc database file name. Might be in Fortran string format when 'fortran' is true
+  file:     optional PETSc database file name. Might be in Fortran string format when 'ftn' is true
   help:     program help message
-  fortran:  is it called from Fortran initilization (petscinitializef_)?
+  ftn:      is it called from Fortran initilization (petscinitializef_)?
   readarguments,len: used when fortran is true
 */
-PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* file,const char *help,PetscBool fortran,PetscBool readarguments,PetscInt len)
+PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* file,const char *help,PetscBool ftn,PetscBool readarguments,PetscInt len)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -927,7 +927,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
   ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_ShmComm_Attr_Delete_Fn,&Petsc_ShmComm_keyval,(void*)0);CHKERRMPI(ierr);
 
 #if defined(PETSC_HAVE_FORTRAN)
-  if (fortran) {ierr = PetscInitFortran_Private(readarguments,file,len);CHKERRQ(ierr);}
+  if (ftn) {ierr = PetscInitFortran_Private(readarguments,file,len);CHKERRQ(ierr);}
   else
 #endif
   {ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,file);CHKERRQ(ierr);}
@@ -943,7 +943,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
   ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscInitializeSAWs(fortran ? NULL : help);CHKERRQ(ierr);
+  ierr = PetscInitializeSAWs(ftn ? NULL : help);CHKERRQ(ierr);
   flg = PETSC_FALSE;
   ierr = PetscOptionsHasName(NULL,NULL,"-stack_view",&flg);CHKERRQ(ierr);
   if (flg) PetscStackViewSAWs();
