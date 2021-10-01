@@ -6,6 +6,7 @@ static char help[] = "Load and save the mesh and fields to HDF5 and ExodusII\n\n
 
 typedef struct {
   PetscBool compare;                      /* Compare the meshes using DMPlexEqual() */
+  PetscBool compare_labels;               /* Compare labels in the meshes using DMCompareLabels() */
   PetscBool distribute;                   /* Distribute the mesh */
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
@@ -20,6 +21,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBeginUser;
   options->compare = PETSC_FALSE;
+  options->compare_labels = PETSC_FALSE;
   options->distribute = PETSC_TRUE;
   options->interpolate = PETSC_FALSE;
   options->filename[0] = '\0';
@@ -29,6 +31,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex55.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compare_labels", "Compare labels in the meshes using DMCompareLabels()", "ex55.c", options->compare_labels, &options->compare_labels, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex55.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex55.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex55.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
@@ -120,8 +123,12 @@ int main(int argc, char **argv)
   /* This currently makes sense only for sequential meshes. */
   if (user.compare) {
     ierr = DMPlexEqual(dmnew, dm, &flg);CHKERRQ(ierr);
-    if (flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n");CHKERRQ(ierr);}
-    else     {ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs are not equal\n");CHKERRQ(ierr);}
+    if (!flg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n");CHKERRQ(ierr);
+  }
+  if (user.compare_labels) {
+    ierr = DMCompareLabels(dmnew, dm, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"DMLabels equal\n");CHKERRQ(ierr);
   }
 
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -137,12 +144,14 @@ int main(int argc, char **argv)
   #   Have to replace Exodus file, which is creating uninterpolated edges
   test:
     suffix: 0
-    requires: exodusii broken
+    TODO: broken
+    requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -format hdf5_petsc -compare
   test:
     suffix: 1
-    requires: exodusii parmetis !defined(PETSC_USE_64BIT_INDICES) broken
+    TODO: broken
+    requires: exodusii parmetis !defined(PETSC_USE_64BIT_INDICES)
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -petscpartitioner_type parmetis
@@ -165,15 +174,22 @@ int main(int argc, char **argv)
   test:
     suffix: 3
     requires: exodusii
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -compare
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -compare -compare_labels
 
   # Load HDF5 file in XDMF format in parallel, write, read dm1, write, read dm2, and compare dm1 and dm2
-  test:
+  testset:
     suffix: 4
     requires: !complex
-    nsize: {{1 2 3 4 8}}
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5
-    args: -dm_plex_create_from_hdf5_xdmf -distribute 0 -format hdf5_xdmf -second_write_read -compare
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    args: -distribute 0 -second_write_read -compare
+    test:
+      suffix: hdf5_petsc
+      nsize: {{1 2}}
+      args: -format hdf5_petsc -compare_labels
+    test:
+      suffix: hdf5_xdmf
+      nsize: {{1 3 8}}
+      args: -format hdf5_xdmf
 
   # Use low level functions, DMPlexTopologyView()/Load(), DMPlexCoordinatesView()/Load(), and DMPlexLabelsView()/Load()
   # Output must be the same as ex55_2_nsize-2_format-hdf5_petsc_interpolate-0.out
@@ -188,34 +204,44 @@ int main(int argc, char **argv)
     args: -format hdf5_petsc -use_low_level_functions
 
   testset:
+    suffix: 6
+    requires: hdf5 !complex datafilespath
+    nsize: {{1 3}}
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
+    args: -format hdf5_petsc -second_write_read -compare -compare_labels
+    args: -interpolate {{0 1}} -distribute {{0 1}} -petscpartitioner_type simple
+
+  testset:
     # the same data and settings as dm_impls_plex_tests-ex18_9%
+    suffix: 9
     requires: hdf5 !complex datafilespath
     nsize: {{1 2 4}}
     args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
     args: -format hdf5_xdmf -second_write_read -compare
     test:
-      suffix: 9_hdf5_seqload
+      suffix: hdf5_seqload
       args: -distribute -petscpartitioner_type simple
       args: -interpolate {{0 1}}
       args: -dm_plex_hdf5_force_sequential
     test:
-      suffix: 9_hdf5_seqload_metis
+      suffix: hdf5_seqload_metis
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
       args: -interpolate 1
       args: -dm_plex_hdf5_force_sequential
     test:
-      suffix: 9_hdf5
+      suffix: hdf5
       args: -interpolate 1 -petscpartitioner_type simple
     test:
-      suffix: 9_hdf5_repart
+      suffix: hdf5_repart
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
       args: -interpolate 1
     test:
       TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 9_hdf5_repart_ppu
+      suffix: hdf5_repart_ppu
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
       args: -interpolate 0

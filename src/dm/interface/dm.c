@@ -22,6 +22,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DMBoundaryType","DM_BOUNDARY_", NULL};
 const char *const DMBoundaryConditionTypes[] = {"INVALID","ESSENTIAL","NATURAL","INVALID","INVALID","ESSENTIAL_FIELD","NATURAL_FIELD","INVALID","INVALID","ESSENTIAL_BD_FIELD","NATURAL_RIEMANN","DMBoundaryConditionType","DM_BC_", NULL};
 const char *const DMPolytopeTypes[] = {"vertex", "segment", "tensor_segment", "triangle", "quadrilateral", "tensor_quad", "tetrahedron", "hexahedron", "triangular_prism", "tensor_triangular_prism", "tensor_quadrilateral_prism", "pyramid", "FV_ghost_cell", "interior_ghost_cell", "unknown", "invalid", "DMPolytopeType", "DM_POLYTOPE_", NULL};
+const char *const DMCopyLabelsModes[] = {"replace","keep","fail","DMCopyLabelsMode","DM_COPY_LABELS_", NULL};
 
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
@@ -132,7 +133,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), newdm);CHKERRQ(ierr);
-  ierr = DMCopyLabels(dm, *newdm, PETSC_COPY_VALUES, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMCopyLabels(dm, *newdm, PETSC_COPY_VALUES, PETSC_TRUE, DM_COPY_LABELS_FAIL);CHKERRQ(ierr);
   (*newdm)->leveldown  = dm->leveldown;
   (*newdm)->levelup    = dm->levelup;
   (*newdm)->prealloc_only = dm->prealloc_only;
@@ -8158,19 +8159,21 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 
   Input Parameters:
 + dmA - The DM object with initial labels
-. dmB - The DM object with copied labels
+. dmB - The DM object to which labels are copied
 . mode - Copy labels by pointers (PETSC_OWN_POINTER) or duplicate them (PETSC_COPY_VALUES)
-- all  - Copy all labels including "depth", "dim", and "celltype" (PETSC_TRUE) which are otherwise ignored (PETSC_FALSE)
+. all  - Copy all labels including "depth", "dim", and "celltype" (PETSC_TRUE) which are otherwise ignored (PETSC_FALSE)
+- emode - How to behave when a DMLabel in the source and destination DMs with the same name is encountered (see DMCopyLabelsMode)
 
   Level: intermediate
 
-  Note: This is typically used when interpolating or otherwise adding to a mesh
+  Notes:
+  This is typically used when interpolating or otherwise adding to a mesh, or testing.
 
-.seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection(), DMShareLabels()
+.seealso: DMAddLabel(), DMCopyLabelsMode
 @*/
-PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all)
+PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, DMCopyLabelsMode emode)
 {
-  DMLabel        label, labelNew;
+  DMLabel        label, labelNew, labelOld;
   const char    *name;
   PetscBool      flg;
   DMLabelLink    link;
@@ -8194,6 +8197,20 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all)
       ierr = PetscStrcmp(name, "celltype", &flg);CHKERRQ(ierr);
       if (flg) continue;
     }
+    ierr = DMGetLabel(dmB, name, &labelOld);CHKERRQ(ierr);
+    if (labelOld) {
+      switch (emode) {
+        case DM_COPY_LABELS_KEEP:
+          continue;
+        case DM_COPY_LABELS_REPLACE:
+          ierr = DMRemoveLabelBySelf(dmB, &labelOld, PETSC_TRUE);CHKERRQ(ierr);
+          break;
+        case DM_COPY_LABELS_FAIL:
+          SETERRQ1(PetscObjectComm((PetscObject)dmA), PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in destination DM", name);
+        default:
+          SETERRQ1(PetscObjectComm((PetscObject)dmA), PETSC_ERR_ARG_OUTOFRANGE, "Unhandled DMCopyLabelsMode %d", emode);
+      }
+    }
     if (mode==PETSC_COPY_VALUES) {
       ierr = DMLabelDuplicate(label, &labelNew);CHKERRQ(ierr);
     } else {
@@ -8205,9 +8222,88 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMCompareLabels - Compare labels of two DMPlex meshes
+
+  Collective on dmA
+
+  Input Parameters:
++ dm0 - First DM object
+- dm1 - Second DM object
+
+  Output Parameters
++ same    - (Optional) Flag whether labels of dm0 and dm1 are the same
+- message - (Optional) Message describing the difference, or NULL if there is no difference
+
+  Level: intermediate
+
+  Notes:
+  If both same and message is passed as NULL, and difference is found, an error is thrown with a message describing the difference.
+
+  Message must be freed by user.
+
+  Labels are matched by name. If the number of labels and their names are equal,
+  DMLabelCompare() is used to compare each pair of labels with the same name.
+
+  Fortran Notes:
+  This function is currently not available from Fortran.
+
+.seealso: DMAddLabel(), DMCopyLabelsMode, DMLabelCompare()
+@*/
+PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *same, char **message)
+{
+  PetscInt        n0, n1, i;
+  char            msg[PETSC_MAX_PATH_LEN] = "";
+  MPI_Comm        comm;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm0,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm1,DM_CLASSID,2);
+  PetscCheckSameComm(dm0,1,dm1,2);
+  if (same) PetscValidBoolPointer(same,3);
+  if (message) PetscValidPointer(message, 4);
+  ierr = PetscObjectGetComm((PetscObject)dm0, &comm);CHKERRQ(ierr);
+  ierr = DMGetNumLabels(dm0, &n0);CHKERRQ(ierr);
+  ierr = DMGetNumLabels(dm1, &n1);CHKERRQ(ierr);
+  if (n0 != n1) {
+    ierr = PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %D != %D = Number of labels in dm1", n0, n1);CHKERRQ(ierr);
+    goto finish;
+  }
+  for (i=0; i<n0; i++) {
+    DMLabel     l0, l1;
+    const char *name;
+    char       *msgInner;
+
+    /* Ignore label order */
+    ierr = DMGetLabelByNum(dm0, i, &l0);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)l0, &name);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm1, name, &l1);CHKERRQ(ierr);
+    if (!l1) {
+      ierr = PetscSNPrintf(msg, sizeof(msg), "Label \"%s\" (#%D in dm0) not found in dm1", name, i);CHKERRQ(ierr);
+      goto finish;
+    }
+    ierr = DMLabelCompare(l0, l1, NULL, &msgInner);CHKERRQ(ierr);
+    ierr = PetscStrncpy(msg, msgInner, sizeof(msg));CHKERRQ(ierr);
+    ierr = PetscFree(msgInner);CHKERRQ(ierr);
+    if (msg[0]) goto finish;
+  }
+finish:
+  if (msg[0] && !same && !message) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, msg);
+  if (same) *same = (PetscBool) !msg[0];
+  if (message) {
+    *message = NULL;
+    if (msg[0]) {
+      ierr = PetscStrallocpy(msg, message);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMSetLabelValue_Fast(DM dm, DMLabel *label, const char name[], PetscInt point, PetscInt value)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidPointer(label,2);
   if (!*label) {
