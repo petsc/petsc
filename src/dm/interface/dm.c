@@ -8041,7 +8041,7 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
 
   Input Parameters:
 + dm   - The DM object
-. label - (Optional) The DMLabel to be removed from the DM
+. label - The DMLabel to be removed from the DM
 - failNotFound - Should it fail if the label is not found in the DM?
 
   Level: developer
