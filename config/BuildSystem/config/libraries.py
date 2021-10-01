@@ -6,9 +6,10 @@ import re
 class Configure(config.base.Configure):
   def __init__(self, framework, libraries = []):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
-    self.libraries    = libraries
+    self.headerPrefix  = ''
+    self.substPrefix   = ''
+    self.libraries     = libraries
+    self.rpathSkipDirs = [] # do not generate RPATH for dirs in this list; useful when compiling with stub libraries (.so) that do not have corresponding runtime library (.so.1) at this location. Check cuda.py for usage.
     return
 
   def setupDependencies(self, framework):
@@ -47,7 +48,7 @@ class Configure(config.base.Configure):
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
         if dirname in ['/usr/lib','/lib','/usr/lib64','/lib64']:
           return [library]
-        if with_rpath:
+        if with_rpath and not dirname in self.rpathSkipDirs:
           if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
             return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
           if flagSubst in self.argDB:
@@ -64,6 +65,10 @@ class Configure(config.base.Configure):
   def getLibArgument(self, library):
     '''Same as getLibArgumentList - except it returns a string instead of list.'''
     return  ' '.join(self.getLibArgumentList(library))
+
+  def addRpathSkipDir(self, dirname):
+    '''Do not generate RPATH for this dir in getLibArgumentList.'''
+    if dirname not in self.rpathSkipDirs: self.rpathSkipDirs.append(dirname)
 
   def getLibName(library):
     if os.path.basename(library).startswith('lib'):
