@@ -19,8 +19,11 @@ class Configure(config.package.Package):
 
   def getSearchDirectories(self):
     '''Generate list of possible locations of X11'''
+    if self.setCompilers.isDarwin(self.log):
+      yield '/opt/X11'
     yield ''
-    yield '/opt/X11'
+    if not self.setCompilers.isDarwin(self.log):
+      yield '/opt/X11'
     yield '/Developer/SDKs/MacOSX10.5.sdk/usr/X11'
     yield '/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6'
     yield '/usr/X11'
