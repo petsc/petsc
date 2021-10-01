@@ -760,7 +760,9 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"complex",PETSC_BOOL,&tru);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"timestepping",PETSC_BOOL,&timestepping);CHKERRQ(ierr);
+  if (timestepping) {
+    ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"timestepping",PETSC_BOOL,&timestepping);CHKERRQ(ierr);
+  }
   ierr = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
