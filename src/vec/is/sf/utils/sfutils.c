@@ -12,11 +12,15 @@
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
 .  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
 .  localmode - copy mode for ilocal
--  iremote - remote locations (in global indices) of root vertices for each leaf on the current process
+-  iremote - root vertices in global numbering corresponding to leaves in ilocal
 
    Level: intermediate
 
-   Developers Note: Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
+   Notes:
+   Global indices must lie in [0, N) where N is the global size of layout.
+
+   Developers Note:
+   Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
    encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
    needed
 
@@ -565,7 +569,7 @@ $  layout           : [0 1]        [2]          [3]
 $  leafIndices      : [0]          [2]          [0 3]
 $  leafLocalOffset  : 400          500          600
 $
-would build the following SF:
+would build the following SF
 $
 $  [0] 400 <- (0,101)
 $  [1] 500 <- (0,102)
@@ -581,7 +585,7 @@ $  layout           : [0 1]           [2]             [3]
 $  leafIndices      : rootIndices     rootIndices     rootIndices
 $  leafLocalOffset  : rootLocalOffset rootLocalOffset rootLocalOffset
 $
-would build the following SF:
+would build the following SF
 $
 $  [1] 200 <- (2,300)
 $
@@ -598,7 +602,7 @@ $  numLeafIndices   : 1            1            2
 $  leafIndices      : [0]          [2]          [0 3]
 $  leafLocalOffset  : 400          500          600
 $
-would build the following SF:
+would build the following SF
 $
 $  [0] 400 <- (0,100)
 $  [1] 500 <- (0,101)
