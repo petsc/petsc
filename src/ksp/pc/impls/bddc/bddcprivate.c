@@ -1863,36 +1863,33 @@ PetscErrorCode PCBDDCConsistencyCheckIS(PC pc, MPI_Op mop, IS *is)
   IS              nis;
   const PetscInt  *idxs;
   PetscInt        i,nd,n = matis->A->rmap->n,*nidxs,nnd;
-  PetscBool       *ld;
 
   PetscFunctionBegin;
   if (mop != MPI_LAND && mop != MPI_LOR) SETERRQ(PetscObjectComm((PetscObject)(pc)),PETSC_ERR_SUP,"Supported are MPI_LAND and MPI_LOR");
   if (mop == MPI_LAND) {
     /* init rootdata with true */
-    ld   = (PetscBool*) matis->sf_rootdata;
-    for (i=0;i<pc->pmat->rmap->n;i++) ld[i] = PETSC_TRUE;
+    for (i=0;i<pc->pmat->rmap->n;i++) matis->sf_rootdata[i] = 1;
   } else {
     ierr = PetscArrayzero(matis->sf_rootdata,pc->pmat->rmap->n);CHKERRQ(ierr);
   }
   ierr = PetscArrayzero(matis->sf_leafdata,n);CHKERRQ(ierr);
   ierr = ISGetLocalSize(*is,&nd);CHKERRQ(ierr);
   ierr = ISGetIndices(*is,&idxs);CHKERRQ(ierr);
-  ld   = (PetscBool*) matis->sf_leafdata;
   for (i=0;i<nd;i++)
     if (-1 < idxs[i] && idxs[i] < n)
-      ld[idxs[i]] = PETSC_TRUE;
+      matis->sf_leafdata[idxs[i]] = 1;
   ierr = ISRestoreIndices(*is,&idxs);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(matis->sf,MPIU_BOOL,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(matis->sf,MPIU_BOOL,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata,MPI_REPLACE);CHKERRQ(ierr);
   if (mop == MPI_LAND) {
     ierr = PetscMalloc1(nd,&nidxs);CHKERRQ(ierr);
   } else {
     ierr = PetscMalloc1(n,&nidxs);CHKERRQ(ierr);
   }
   for (i=0,nnd=0;i<n;i++)
-    if (ld[i])
+    if (matis->sf_leafdata[i])
       nidxs[nnd++] = i;
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)(*is)),nnd,nidxs,PETSC_OWN_POINTER,&nis);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
