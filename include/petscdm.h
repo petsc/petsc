@@ -95,6 +95,7 @@ PETSC_EXTERN PetscErrorCode DMRefineHookRemove(DM,PetscErrorCode (*)(DM,DM,void*
 PETSC_EXTERN PetscErrorCode DMRestrict(DM,Mat,Vec,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMInterpolate(DM,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMInterpolateSolution(DM,DM,Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode DMExtrude(DM,PetscInt,DM*);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMViewFromOptions(DM,PetscObject,const char[]);
 

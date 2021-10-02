@@ -44,7 +44,7 @@ and the extruded mesh can be visualized using VTK. Here I make the image using P
 
 .. code-block:: console
 
-  > make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_1" EXTRA_OPTIONS="-dm_view hdf5:$PETSC_DIR/mesh.h5 -dm_plex_extrude_layers 3"
+  > make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_1" EXTRA_OPTIONS="-dm_view hdf5:$PETSC_DIR/mesh.h5 -dm_extrude 3"
   > $PETSC_DIR/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
 
 .. figure:: /images/tutorials/meshing/extrusion.png
