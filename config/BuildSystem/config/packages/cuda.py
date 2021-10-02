@@ -173,12 +173,12 @@ class Configure(config.package.Package):
     self.popLanguage()
     self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
     if hasattr(self,'systemNvcc'):
-      self.nvccDir = os.path.dirname(self.systemNvcc)
-      d = os.path.split(self.nvccDir)[0]
-      if os.path.exists(os.path.join(d,'include','cuda.h')):
+      self.nvccDir = os.path.dirname(self.systemNvcc) # /path/bin
+      d = os.path.dirname(self.nvccDir) # /path
+      if os.path.exists(os.path.join(d,'include','cuda.h')): # CUDAToolkit with a structure /path/{bin/nvcc, include/cuda.h}
         self.cudaDir = d
-      elif os.path.exists(os.path.join(d,'..','cuda','include','cuda.h')):
-        self.cudaDir = os.path.join(d,'..','cuda')
+      elif os.path.exists(os.path.normpath(os.path.join(d,'..','cuda','include','cuda.h'))): # NVHPC, see above
+        self.cudaDir = os.path.normpath(os.path.join(d,'..','cuda')) # get rid of .. in path, getting /path/Linux_x86_64/21.5/cuda
         self.isnvhpc = True
     else:
       raise RuntimeError('CUDA compiler not found!')
