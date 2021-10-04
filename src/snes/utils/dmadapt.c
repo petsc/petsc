@@ -43,19 +43,12 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   PetscValidPointer(adaptor, 2);
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(*adaptor, DM_CLASSID, "DMAdaptor", "DM Adaptor", "SNES", comm, DMAdaptorDestroy, DMAdaptorView);CHKERRQ(ierr);
-  ierr = PetscNew(&(*adaptor)->metricCtx);CHKERRQ(ierr);
 
   (*adaptor)->monitor = PETSC_FALSE;
   (*adaptor)->adaptCriterion = DM_ADAPTATION_NONE;
   (*adaptor)->numSeq = 1;
   (*adaptor)->Nadapt = -1;
   (*adaptor)->refinementFactor = 2.0;
-  (*adaptor)->metricCtx->h_min = 1.0e-05;
-  (*adaptor)->metricCtx->h_max = 1.0e+05;
-  (*adaptor)->metricCtx->a_max = 1.0e+05;
-  (*adaptor)->metricCtx->p = 1.0;
-  (*adaptor)->metricCtx->isotropic = PETSC_FALSE;
-  (*adaptor)->metricCtx->restrictAnisotropyFirst = PETSC_FALSE;
   (*adaptor)->ops->computeerrorindicator = DMAdaptorSimpleErrorIndicator_Private;
   refineBox.min = refineBox.max = PETSC_MAX_REAL;
   ierr = VecTaggerCreate(PetscObjectComm((PetscObject) *adaptor), &(*adaptor)->refineTag);CHKERRQ(ierr);
@@ -93,7 +86,6 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
     *adaptor = NULL;
     PetscFunctionReturn(0);
   }
-  ierr = PetscFree((*adaptor)->metricCtx);CHKERRQ(ierr);
   ierr = VecTaggerDestroy(&(*adaptor)->refineTag);CHKERRQ(ierr);
   ierr = VecTaggerDestroy(&(*adaptor)->coarsenTag);CHKERRQ(ierr);
   ierr = PetscFree2((*adaptor)->exactSol, (*adaptor)->exactCtx);CHKERRQ(ierr);
@@ -113,11 +105,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 + -adaptor_monitor <bool>        : Monitor the adaptation process
 . -adaptor_sequence_num <num>    : Number of adaptations to generate an optimal grid
 . -adaptor_target_num <num>      : Set the target number of vertices N_adapt, -1 for automatic determination
-. -adaptor_refinement_factor <r> : Set r such that N_adapt = r^dim N_orig
-. -adaptor_metric_h_min <min>    : Set the minimum tolerated metric magnitude
-. -adaptor_metric_h_max <max>    : Set the maximum tolerated metric magnitude
-. -adaptor_metric_a_max <max>    : Set the maximum tolerated anisotropy
-- -adaptor_metric_p <p>          : Set the L-p normalization order
+- -adaptor_refinement_factor <r> : Set r such that N_adapt = r^dim N_orig
 
   Level: beginner
 
@@ -133,10 +121,6 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
   ierr = PetscOptionsInt("-adaptor_sequence_num", "Number of adaptations to generate an optimal grid", "DMAdaptorSetSequenceLength", adaptor->numSeq, &adaptor->numSeq, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-adaptor_target_num", "Set the target number of vertices N_adapt, -1 for automatic determination", "DMAdaptor", adaptor->Nadapt, &adaptor->Nadapt, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-adaptor_refinement_factor", "Set r such that N_adapt = r^dim N_orig", "DMAdaptor", adaptor->refinementFactor, &adaptor->refinementFactor, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-adaptor_metric_h_min", "Set the minimum eigenvalue of Hessian (sqr max edge length)", "DMAdaptor", adaptor->metricCtx->h_min, &adaptor->metricCtx->h_min, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-adaptor_metric_h_max", "Set the maximum eigenvalue of Hessian (sqr min edge length)", "DMAdaptor", adaptor->metricCtx->h_max, &adaptor->metricCtx->h_max, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-adaptor_metric_a_max", "Set the maximum tolerated anisotropy", "DMAdaptor", adaptor->metricCtx->a_max, &adaptor->metricCtx->a_max, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-adaptor_metric_p", "Set the metric L-p normalization order", "DMAdaptor", adaptor->metricCtx->p, &adaptor->metricCtx->p, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = VecTaggerSetFromOptions(adaptor->refineTag);CHKERRQ(ierr);
   ierr = VecTaggerSetFromOptions(adaptor->coarsenTag);CHKERRQ(ierr);
@@ -687,13 +671,12 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = DMRestoreGlobalVector(dmGrad, &xGrad);CHKERRQ(ierr);
       ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
       /*     Set target metric complexity */
+      ierr = DMClone(dm, &dmMetric);CHKERRQ(ierr);
       N    = adaptor->Nadapt >= 0 ? adaptor->Nadapt : PetscPowRealInt(adaptor->refinementFactor, dim)*((PetscReal) (vEnd - vStart));
       if (adaptor->monitor) {ierr = PetscPrintf(PETSC_COMM_SELF, "N_orig: %D N_adapt: %g\n", vEnd - vStart, N);CHKERRQ(ierr);}
-      adaptor->metricCtx->targetComplexity = (PetscReal) N;
-      ierr = DMClone(dm, &dmMetric);CHKERRQ(ierr);
-      ierr = DMSetApplicationContext(dmMetric, adaptor->metricCtx);CHKERRQ(ierr);
+      ierr = DMPlexMetricSetTargetComplexity(dmMetric, (PetscReal) N);CHKERRQ(ierr);
       /*     Compute L-p normalized metric */
-      ierr = DMPlexMetricNormalize(dmMetric, xHess, PETSC_TRUE, &metric);CHKERRQ(ierr);
+      ierr = DMPlexMetricNormalize(dmMetric, xHess, PETSC_TRUE, PETSC_TRUE, &metric);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmHess, &xHess);CHKERRQ(ierr);
       ierr = DMDestroy(&dmHess);CHKERRQ(ierr);
       /*     Adapt DM from metric */

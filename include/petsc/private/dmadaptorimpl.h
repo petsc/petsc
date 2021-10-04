@@ -26,7 +26,6 @@ struct _p_DMAdaptor {
   PetscInt           numSeq;            /* Number of sequential adaptations */
   PetscInt           Nadapt;            /* Target number of vertices */
   PetscReal          refinementFactor;  /* N_adapt = r^dim N_orig */
-  DMPlexMetricCtx   *metricCtx;
   /*   FVM support */
   PetscBool          computeGradient;
   DM                 cellDM, gradDM;
