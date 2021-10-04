@@ -646,34 +646,39 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
   DMPlexMetricEnforceSPD - Enforce symmetric positive-definiteness of a metric
 
   Input parameters:
-+ dm            - The DM
-. restrictSizes - Should maximum/minimum metric magnitudes and anisotropy be enforced?
-- metric        - The metric
++ dm                 - The DM
+. restrictSizes      - Should maximum/minimum metric magnitudes be enforced?
+. restrictAnisotropy - Should maximum anisotropy be enforced?
+- metric             - The metric
 
   Output parameter:
-. metric        - The metric
+. metric             - The metric
 
   Level: beginner
 
 .seealso: DMPlexMetricNormalize(), DMPlexMetricIntersection()
 */
-PetscErrorCode DMPlexMetricEnforceSPD(DM dm, PetscBool restrictSizes, Vec metric)
+PetscErrorCode DMPlexMetricEnforceSPD(DM dm, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metric)
 {
-  DMPlexMetricCtx *user;
-  PetscErrorCode   ierr;
-  PetscInt         dim, vStart, vEnd, v;
-  PetscScalar     *met;
-  PetscReal        h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0;
+  PetscErrorCode ierr;
+  PetscInt       dim, vStart, vEnd, v;
+  PetscScalar   *met;
+  PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0;
 
   PetscFunctionBegin;
 
   /* Extract metadata from dm */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, (void**)&user);CHKERRQ(ierr);
   if (restrictSizes) {
-    if (user->h_max > h_min) h_max = PetscMin(h_max, user->h_max);
-    if (user->h_min > 0.0) h_min = PetscMax(h_min, user->h_min);
-    if (user->a_max > 1.0) a_max = user->a_max;
+    ierr = DMPlexMetricGetMinimumMagnitude(dm, &h_min);CHKERRQ(ierr);
+    ierr = DMPlexMetricGetMaximumMagnitude(dm, &h_max);CHKERRQ(ierr);
+    h_min = PetscMax(h_min, 1.0e-30);
+    h_max = PetscMin(h_max, 1.0e+30);
+    if (h_min >= h_max) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Incompatible min/max metric magnitudes (%.4e not smaller than %.4e)", h_min, h_max);
+  }
+  if (restrictAnisotropy) {
+    ierr = DMPlexMetricGetMaximumAnisotropy(dm, &a_max);CHKERRQ(ierr);
+    a_max = PetscMin(a_max, 1.0e+30);
   }
 
   /* Enforce SPD */
