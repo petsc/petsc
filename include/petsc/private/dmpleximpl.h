@@ -79,6 +79,15 @@ struct _PetscGridHash {
   DMLabel      cellsSparse; /* Sparse storage for cell map */
 };
 
+typedef struct {
+  PetscBool isotropic;                    /* Is the metric isotropic? */
+  PetscBool restrictAnisotropyFirst;      /* Should anisotropy or normalization come first? */
+  PetscReal h_min, h_max;                 /* Minimum/maximum tolerated metric magnitudes */
+  PetscReal a_max;                        /* Maximum tolerated anisotropy */
+  PetscReal targetComplexity;             /* Target metric complexity */
+  PetscReal p;                            /* Degree for L-p normalization methods */
+} DMPlexMetricCtx;
+
 /* Point Numbering in Plex:
 
    Points are numbered contiguously by stratum. Strate are organized as follows:
@@ -175,6 +184,9 @@ typedef struct {
 
   /* Neighbors */
   PetscMPIInt*         neighbors;
+
+  /* Metric */
+  DMPlexMetricCtx     *metricCtx;
 
   /* Debugging */
   PetscBool            printSetValues;
