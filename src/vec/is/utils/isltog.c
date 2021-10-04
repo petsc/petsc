@@ -614,21 +614,9 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   *mapping = NULL;
   ierr = ISInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(*mapping,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",
-                           comm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
-  (*mapping)->n             = n;
-  (*mapping)->bs            = bs;
-  (*mapping)->info_cached   = PETSC_FALSE;
-  (*mapping)->info_free     = PETSC_FALSE;
-  (*mapping)->info_procs    = NULL;
-  (*mapping)->info_numprocs = NULL;
-  (*mapping)->info_indices  = NULL;
-  (*mapping)->info_nodec    = NULL;
-  (*mapping)->info_nodei    = NULL;
-
-  (*mapping)->ops->globaltolocalmappingapply      = NULL;
-  (*mapping)->ops->globaltolocalmappingapplyblock = NULL;
-  (*mapping)->ops->destroy                        = NULL;
+  ierr = PetscHeaderCreate(*mapping,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",comm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
+  (*mapping)->n  = n;
+  (*mapping)->bs = bs;
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscArraycpy(in,indices,n);CHKERRQ(ierr);
