@@ -16,7 +16,6 @@ sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
 import add_version_header
-import genteamtable
 import build_classic_docs
 import make_links_relative
 
@@ -156,18 +155,7 @@ def _build_classic_docs(app):
     build_classic_docs.main()
 
 
-def _generate_team_table(app):
-    print("============================================")
-    print("    Generating team table from conf.py      ")
-    print("============================================")
-    genDirName = "generated"
-    cwdPath = os.path.dirname(os.path.realpath(__file__))
-    genDirPath = os.path.join(cwdPath, genDirName)
-    genteamtable.main(genDirPath, builderName = app.builder.name)
-
-
 def builder_init_handler(app):
-    _generate_team_table(app)
     _build_classic_docs(app)
 
 
@@ -205,4 +193,3 @@ def setup(app):
     app.connect('builder-inited', builder_init_handler)
     app.connect('build-finished', build_finished_handler)
     app.add_css_file('css/pop-up.css')
-    app.add_css_file('css/petsc-team-container.css')
