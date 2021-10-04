@@ -2316,6 +2316,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = DMDestroy(&mesh->referenceTree);CHKERRQ(ierr);
   ierr = PetscGridHashDestroy(&mesh->lbox);CHKERRQ(ierr);
   ierr = PetscFree(mesh->neighbors);CHKERRQ(ierr);
+  if (mesh->metricCtx) { ierr = PetscFree(mesh->metricCtx);CHKERRQ(ierr); }
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);

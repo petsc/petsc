@@ -1,6 +1,405 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscblaslapack.h>
 
+PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
+{
+  MPI_Comm       comm;
+  PetscBool      isotropic = PETSC_FALSE, restrictAnisotropyFirst = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Riemannian metric options", "DMPlexMetric");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_metric_isotropic", "Is the metric isotropic?", "DMPlexMetricCreateIsotropic", isotropic, &isotropic, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetIsotropic(dm, isotropic);
+  ierr = PetscOptionsBool("-dm_plex_metric_restrict_anisotropy_first", "Should anisotropy be restricted before normalization?", "DMPlexNormalize", restrictAnisotropyFirst, &restrictAnisotropyFirst, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetRestrictAnisotropyFirst(dm, restrictAnisotropyFirst);
+  ierr = PetscOptionsReal("-dm_plex_metric_h_min", "Minimum tolerated metric magnitude", "DMPlexMetricEnforceSPD", h_min, &h_min, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetMinimumMagnitude(dm, h_min);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_plex_metric_h_max", "Maximum tolerated metric magnitude", "DMPlexMetricEnforceSPD", h_max, &h_max, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetMaximumMagnitude(dm, h_max);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_plex_metric_a_max", "Maximum tolerated anisotropy", "DMPlexMetricEnforceSPD", a_max, &a_max, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetMaximumAnisotropy(dm, a_max);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_plex_metric_p", "L-p normalization order", "DMPlexMetricNormalize", p, &p, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetNormalizationOrder(dm, p);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_plex_metric_target_complexity", "Target metric complexity", "DMPlexMetricNormalize", target, &target, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetTargetComplexity(dm, target);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetIsotropic - Record whether a metric is isotropic
+
+  Input parameters:
++ dm        - The DM
+- isotropic - Is the metric isotropic?
+
+  Level: beginner
+
+.seealso: DMPlexMetricIsIsotropic(), DMPlexMetricSetRestrictAnisotropyFirst()
+*/
+PetscErrorCode DMPlexMetricSetIsotropic(DM dm, PetscBool isotropic)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->isotropic = isotropic;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricIsIsotropic - Is a metric is isotropic?
+
+  Input parameters:
+. dm        - The DM
+
+  Output parameters:
+. isotropic - Is the metric isotropic?
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetIsotropic(), DMPlexMetricRestrictAnisotropyFirst()
+*/
+PetscErrorCode DMPlexMetricIsIsotropic(DM dm, PetscBool *isotropic)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *isotropic = plex->metricCtx->isotropic;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetRestrictAnisotropyFirst - Record whether anisotropy should be restricted before normalization
+
+  Input parameters:
++ dm                      - The DM
+- restrictAnisotropyFirst - Should anisotropy be normalized first?
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetIsotropic(), DMPlexMetricRestrictAnisotropyFirst()
+*/
+PetscErrorCode DMPlexMetricSetRestrictAnisotropyFirst(DM dm, PetscBool restrictAnisotropyFirst)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->restrictAnisotropyFirst = restrictAnisotropyFirst;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricRestrictAnisotropyFirst - Is anisotropy restricted before normalization or after?
+
+  Input parameters:
+. dm                      - The DM
+
+  Output parameters:
+. restrictAnisotropyFirst - Is anisotropy be normalized first?
+
+  Level: beginner
+
+.seealso: DMPlexMetricIsIsotropic(), DMPlexMetricSetRestrictAnisotropyFirst()
+*/
+PetscErrorCode DMPlexMetricRestrictAnisotropyFirst(DM dm, PetscBool *restrictAnisotropyFirst)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *restrictAnisotropyFirst = plex->metricCtx->restrictAnisotropyFirst;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetMinimumMagnitude - Set the minimum tolerated metric magnitude
+
+  Input parameters:
++ dm    - The DM
+- h_min - The minimum tolerated metric magnitude
+
+  Level: beginner
+
+.seealso: DMPlexMetricGetMinimumMagnitude(), DMPlexMetricSetMaximumMagnitude()
+*/
+PetscErrorCode DMPlexMetricSetMinimumMagnitude(DM dm, PetscReal h_min)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  if (h_min <= 0.0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Metric magnitudes must be positive, not %.4e", h_min);
+  plex->metricCtx->h_min = h_min;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricGetMinimumMagnitude - Get the minimum tolerated metric magnitude
+
+  Input parameters:
+. dm    - The DM
+
+  Input parameters:
+. h_min - The minimum tolerated metric magnitude
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetMinimumMagnitude(), DMPlexMetricGetMaximumMagnitude()
+*/
+PetscErrorCode DMPlexMetricGetMinimumMagnitude(DM dm, PetscReal *h_min)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *h_min = plex->metricCtx->h_min;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetMaximumMagnitude - Set the maximum tolerated metric magnitude
+
+  Input parameters:
++ dm    - The DM
+- h_max - The maximum tolerated metric magnitude
+
+  Level: beginner
+
+.seealso: DMPlexMetricGetMaximumMagnitude(), DMPlexMetricSetMinimumMagnitude()
+*/
+PetscErrorCode DMPlexMetricSetMaximumMagnitude(DM dm, PetscReal h_max)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  if (h_max <= 0.0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Metric magnitudes must be positive, not %.4e", h_max);
+  plex->metricCtx->h_max = h_max;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricGetMaximumMagnitude - Get the maximum tolerated metric magnitude
+
+  Input parameters:
+. dm    - The DM
+
+  Input parameters:
+. h_max - The maximum tolerated metric magnitude
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetMaximumMagnitude(), DMPlexMetricGetMinimumMagnitude()
+*/
+PetscErrorCode DMPlexMetricGetMaximumMagnitude(DM dm, PetscReal *h_max)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *h_max = plex->metricCtx->h_max;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetMaximumAnisotropy - Set the maximum tolerated metric anisotropy
+
+  Input parameters:
++ dm    - The DM
+- a_max - The maximum tolerated metric anisotropy
+
+  Level: beginner
+
+  Note: If the value zero is given then anisotropy will not be restricted. Otherwise, it should be at least one.
+
+.seealso: DMPlexMetricGetMaximumAnisotropy(), DMPlexMetricSetMaximumMagnitude()
+*/
+PetscErrorCode DMPlexMetricSetMaximumAnisotropy(DM dm, PetscReal a_max)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  if (a_max < 1.0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Anisotropy must be at least one, not %.4e", a_max);
+  plex->metricCtx->a_max = a_max;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricGetMaximumAnisotropy - Get the maximum tolerated metric anisotropy
+
+  Input parameters:
+. dm    - The DM
+
+  Input parameters:
+. a_max - The maximum tolerated metric anisotropy
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetMaximumAnisotropy(), DMPlexMetricGetMaximumMagnitude()
+*/
+PetscErrorCode DMPlexMetricGetMaximumAnisotropy(DM dm, PetscReal *a_max)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *a_max = plex->metricCtx->a_max;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetTargetComplexity - Set the target metric complexity
+
+  Input parameters:
++ dm               - The DM
+- targetComplexity - The target metric complexity
+
+  Level: beginner
+
+.seealso: DMPlexMetricGetTargetComplexity(), DMPlexMetricSetNormalizationOrder()
+*/
+PetscErrorCode DMPlexMetricSetTargetComplexity(DM dm, PetscReal targetComplexity)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  if (targetComplexity <= 0.0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Metric complexity must be positive");
+  plex->metricCtx->targetComplexity = targetComplexity;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricGetTargetComplexity - Get the target metric complexity
+
+  Input parameters:
+. dm               - The DM
+
+  Input parameters:
+. targetComplexity - The target metric complexity
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetTargetComplexity(), DMPlexMetricGetNormalizationOrder()
+*/
+PetscErrorCode DMPlexMetricGetTargetComplexity(DM dm, PetscReal *targetComplexity)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *targetComplexity = plex->metricCtx->targetComplexity;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetNormalizationOrder - Set the order p for L-p normalization
+
+  Input parameters:
++ dm - The DM
+- p  - The normalization order
+
+  Level: beginner
+
+.seealso: DMPlexMetricGetNormalizationOrder(), DMPlexMetricSetTargetComplexity()
+*/
+PetscErrorCode DMPlexMetricSetNormalizationOrder(DM dm, PetscReal p)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  if (p < 1.0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Normalization order must be one or greater");
+  plex->metricCtx->p = p;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricGetNormalizationOrder - Get the order p for L-p normalization
+
+  Input parameters:
+. dm - The DM
+
+  Input parameters:
+. p - The normalization order
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetNormalizationOrder(), DMPlexMetricGetTargetComplexity()
+*/
+PetscErrorCode DMPlexMetricGetNormalizationOrder(DM dm, PetscReal *p)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *p = plex->metricCtx->p;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec *metric)
 {
   MPI_Comm       comm;
@@ -36,16 +435,33 @@ PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec
 
   Level: beginner
 
-  Note: It is assumed that the DM is comprised of simplices.
+  Notes:
+
+  It is assumed that the DM is comprised of simplices.
+
+  Command line options for Riemannian metrics:
+
+  -dm_plex_metric_isotropic                 - Is the metric isotropic?
+  -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
+  -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
+  -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
+  -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
+  -dm_plex_metric_p                         - L-p normalization order
+  -dm_plex_metric_target_complexity         - Target metric complexity
 
 .seealso: DMPlexMetricCreateUniform(), DMPlexMetricCreateIsotropic()
 */
 PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
 {
+  DM_Plex       *plex = (DM_Plex *) dm->data;
   PetscErrorCode ierr;
   PetscInt       coordDim, Nd;
 
   PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
   ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
   Nd = coordDim*coordDim;
   ierr = DMPlexP1FieldCreate_Private(dm, f, Nd, metric);CHKERRQ(ierr);
