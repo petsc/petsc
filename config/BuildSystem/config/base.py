@@ -301,12 +301,12 @@ class Configure(script.Script):
       def logPrintFilesInPath(path):
         for d in path:
           try:
-            self.logWrite('      '+dir+' '+' '.join(os.listdir(d))+'\n')
+            self.logWrite('      '+d+': '+' '.join(os.listdir(d))+'\n')
           except Exception as e:
             self.logWrite('      Warning accessing '+d+' gives errors: '+str(e)+'\n')
         return
       if path:
-        self.logWrite('  Unable to find programs '+str(names)+' providing listing of the specific search path\n')
+        self.logWrite('  Unable to find programs: %s in listing of the specific search path: %s\n' % (names, path))
         logPrintFilesInPath(path)
     return found
 
