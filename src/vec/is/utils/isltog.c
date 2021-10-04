@@ -621,12 +621,16 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscArraycpy(in,indices,n);CHKERRQ(ierr);
     (*mapping)->indices = in;
+    (*mapping)->dealloc_indices = PETSC_TRUE;
     ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) {
     (*mapping)->indices = (PetscInt*)indices;
+    (*mapping)->dealloc_indices = PETSC_TRUE;
     ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else if (mode == PETSC_USE_POINTER) {
+    (*mapping)->indices = (PetscInt*)indices;
   }
-  else SETERRQ(comm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
+  else SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid mode %d", mode);
   PetscFunctionReturn(0);
 }
 
@@ -683,7 +687,9 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   if (!*mapping) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*mapping),IS_LTOGM_CLASSID,1);
   if (--((PetscObject)(*mapping))->refct > 0) {*mapping = NULL;PetscFunctionReturn(0);}
-  ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
+  if ((*mapping)->dealloc_indices) {
+    ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
+  }
   ierr = PetscFree((*mapping)->info_procs);CHKERRQ(ierr);
   ierr = PetscFree((*mapping)->info_numprocs);CHKERRQ(ierr);
   if ((*mapping)->info_indices) {
