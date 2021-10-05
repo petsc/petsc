@@ -789,6 +789,19 @@ class Configure(config.base.Configure):
             self.setCompilers.LIBS = oldLibs
             self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefore will determine needed C++ libraries')
             skipcxxlibraries = 0
+        if self.setCompilers.isNEC(self.getCompiler('C'),self.log):
+          oldLibs = self.setCompilers.LIBS
+          self.setCompilers.LIBS = '-lnc++ '+self.setCompilers.LIBS
+          self.setCompilers.saveLog()
+          if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
+            self.logWrite(self.setCompilers.restoreLog())
+            self.logPrint('C++ requires -lnc++ to link with C compiler', 3, 'compilers')
+            skipcxxlibraries = 1
+          else:
+            self.logWrite(self.setCompilers.restoreLog())
+            self.setCompilers.LIBS = oldLibs
+            self.logPrint('C++ code cannot directly be linked with C linker using -lnc++, therefore will determine needed C++ libraries')
+            skipcxxlibraries = 0
         if not skipcxxlibraries:
           self.setCompilers.saveLog()
           oldLibs = self.setCompilers.LIBS
@@ -827,6 +840,19 @@ class Configure(config.base.Configure):
               self.logWrite(self.setCompilers.restoreLog())
               self.setCompilers.LIBS = oldLibs
               self.logPrint('C++ code cannot directly be linked with C linker using -lc++, therefore will determine needed C++ libraries')
+              skipcxxlibraries = 0
+          if self.setCompilers.isNEC(self.getCompiler('C'),self.log):
+            oldLibs = self.setCompilers.LIBS
+            self.setCompilers.LIBS = '-lnc++ '+self.setCompilers.LIBS
+            self.setCompilers.saveLog()
+            if self.checkCrossLink(body,"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C++',language2='FC'):
+              self.logWrite(self.setCompilers.restoreLog())
+              self.logPrint('C++ requires -lnc++ to link with FC compiler', 3, 'compilers')
+              skipcxxlibraries = 1
+            else:
+              self.logWrite(self.setCompilers.restoreLog())
+              self.setCompilers.LIBS = oldLibs
+              self.logPrint('C++ code cannot directly be linked with C linker using -lnc++, therefore will determine needed C++ libraries')
               skipcxxlibraries = 0
           if not skipcxxlibraries:
             self.logWrite(self.setCompilers.restoreLog())
