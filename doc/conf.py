@@ -77,12 +77,11 @@ copybutton_prompt_text = r"[>]{1,3}"
 copybutton_prompt_is_regexp = True
 
 bibtex_bibfiles = [
-        os.path.join('..', 'src', 'docs', 'tex', 'petsc.bib'),
-        os.path.join('..', 'src', 'docs', 'tex', 'petscapp.bib'),
-        os.path.join('..', 'src', 'docs', 'tao_tex', 'tao.bib'),
-        os.path.join('..', 'src', 'docs', 'tao_tex', 'manual', 'mathprog.bib'),
-        ]
-
+        os.path.join('bibtex', 'petsc.bib'),
+        os.path.join('bibtex', 'petscapp.bib'),
+        os.path.join('bibtex', 'tao.bib'),
+        os.path.join('bibtex', 'tao_mathprog.bib'),
+]
 
 # -- Options for HTML output ---------------------------------------------------
 

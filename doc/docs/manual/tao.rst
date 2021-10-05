@@ -3479,8 +3479,8 @@ either by using the ``TaoSetType()`` function or by using the
 
     <hr>
 
-.. bibliography:: /../src/docs/tao_tex/tao.bib
+.. bibliography:: /bibtex/tao.bib
    :filter: docname in docnames
 
-.. bibliography:: /../src/docs/tao_tex/manual/mathprog.bib
+.. bibliography:: /bibtex/tao_mathprog.bib
    :filter: docname in docnames
