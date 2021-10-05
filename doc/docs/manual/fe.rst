@@ -3,7 +3,7 @@
 PetscFE: Finite Element Infrastructure in PETSc
 -----------------------------------------------
 
-This chapter introduces the ``PetscFE`` class, and related subclasses ``PetscSpace`` and ``PetcsDualSpace``, which are used to represent finite element discretizations. It details there interaction with the ``DMPLEX`` class to assemble functions and operators over computational meshes, and produce optimal solvers by constructing multilevel iterations, for example using ``PCPATCH``. The idea behind these classes is not to encompass all of computational finite elements, but rather to establish an interface and infrastructure that will allow PETSc to leverage the excellent work done in packages such as Firedrake, FEniCS, LibMesh, and Deal.II.
+This chapter introduces the ``PetscFE`` class, and related subclasses ``PetscSpace`` and ``PetscDualSpace``, which are used to represent finite element discretizations. It details there interaction with the ``DMPLEX`` class to assemble functions and operators over computational meshes, and produce optimal solvers by constructing multilevel iterations, for example using ``PCPATCH``. The idea behind these classes is not to encompass all of computational finite elements, but rather to establish an interface and infrastructure that will allow PETSc to leverage the excellent work done in packages such as Firedrake, FEniCS, LibMesh, and Deal.II.
 
 Using Pointwise Functions to Specify Finite Element Problems
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,7 +26,7 @@ The second argument is a ``DMLabel`` object indicating the support of the field 
 
   DMCreateDS(dm);
 
-This divides the computational domain into subdomains, called *regions* in PETSc, each with a unique set of fields supported on it. These subdomain are identified by labels, and each one has a ``PetscsDS`` object describing the discrete system (DS) on that subdomain. There are query functions to get the set of DS objects for the DM, but it is usually easiest to get the proper DS for a given cell using
+This divides the computational domain into subdomains, called *regions* in PETSc, each with a unique set of fields supported on it. These subdomain are identified by labels, and each one has a ``PetscDS`` object describing the discrete system (DS) on that subdomain. There are query functions to get the set of DS objects for the DM, but it is usually easiest to get the proper DS for a given cell using
 
 ::
 

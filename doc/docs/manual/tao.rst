@@ -15,7 +15,7 @@ Getting Started: A Simple TAO Example
 -------------------------------------
 
 To help the user start using TAO immediately, we introduce here a simple
-uniprocessor example. Please read :any:`sec_tao_solver`
+uniprocessor example. Please read :any:`sec_tao_solvers`
 for a more in-depth discussion on using the TAO solvers. The code
 presented `below <#tao-example1>`_ minimizes the
 extended Rosenbrock function :math:`f: \mathbb R^n \to \mathbb R`
@@ -88,7 +88,7 @@ minimization method (e.g., limited-memory variable metric, conjugate
 gradient, Newton with line search or trust region) but also can
 prescribe the convergence tolerance, set various monitoring routines,
 set iterative methods and preconditions for solving the linear systems,
-and so forth. See :any:`sec_tao_solver` for more
+and so forth. See :any:`sec_tao_solvers` for more
 information on the solver methods available in TAO.
 
 Header File
@@ -498,6 +498,7 @@ interface functions
 .. code::
 
       TaoSetEqualityConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
+
 and
 
 .. code::
@@ -835,7 +836,7 @@ and the fifth argument is an optional user-defined context. The Jacobian
 matrix should be created in a way such that the product of it and the
 variable vector can be stored in the constraint vector.
 
-.. _tao-solvers-1:
+.. _sec_tao_solvers:
 
 TAO Algorithms
 --------------
