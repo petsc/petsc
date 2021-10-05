@@ -1288,8 +1288,9 @@ PetscErrorCode  PetscFinalize(void)
 
   PetscFunctionBegin;
   if (PetscUnlikely(!PetscInitializeCalled)) {
-    fprintf(stderr,"PetscInitialize() must be called before PetscFinalize()\n");
-    ierr = PetscStackView(stderr);CHKERRQ(ierr);
+    fprintf(PETSC_STDOUT,"PetscInitialize() must be called before PetscFinalize()\n");
+    ierr = PetscStackView(PETSC_STDOUT);CHKERRQ(ierr);
+    PetscStackClearTop;
     return PETSC_ERR_ARG_WRONGSTATE;
   }
   ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
@@ -1733,6 +1734,8 @@ PetscErrorCode  PetscFinalize(void)
    */
   __gcov_flush();
 #endif
+  /* To match PetscFunctionBegin() at the beginning of this function */
+  PetscStackClearTop;
   return 0;
 }
 
