@@ -221,7 +221,7 @@ endef
 endif
 #
 macos-firewall-register-mpiexec:
-	-$(call macos-firewall-register, $(MPIEXECEXECUTABLE))
+	-$(call macos-firewall-register, $(MPIEXEC))
 
 # Test executables
 $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)

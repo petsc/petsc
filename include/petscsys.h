@@ -2854,7 +2854,12 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,
 
 /* this is a vile hack */
 #if defined(PETSC_HAVE_NECMPI)
+#if !defined(PETSC_NECMPI_VERSION_MAJOR) ||                              \
+    !defined(PETSC_NECMPI_VERSION_MINOR) ||                              \
+    PETSC_NECMPI_VERSION_MAJOR < 2       ||                              \
+    (PETSC_NECMPI_VERSION_MAJOR == 2 && PETSC_NECMPI_VERSION_MINOR < 18)
 #define MPI_Type_free(a) (*(a) = MPI_DATATYPE_NULL,0);
+#endif
 #endif
 
 /*
