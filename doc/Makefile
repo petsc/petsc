@@ -7,7 +7,6 @@ SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
 LINKCHECKDIR  = _build/linkcheck
-GENDIR        = $(SOURCEDIR)/generated
 
 # First so that "make" without arguments is like "make help".
 help:
@@ -20,14 +19,10 @@ checklinks:
 	@echo
 	@echo "Check finished. Report is in $(LINKCHECKDIR)."
 
-clear-generated:
-	@echo "Clearing generated files"
-	@$(RM) -rf $(GENDIR)
-
 clean-classic-docs:
 	./build_classic_docs.py --clean
 
-clean: clean-classic-docs clear-generated
+clean: clean-classic-docs
 
 images:
 	git clone https://gitlab.com/petsc/images.git -b main-1 --depth=1 images
