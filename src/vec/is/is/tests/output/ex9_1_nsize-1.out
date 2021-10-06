@@ -1,0 +1,36 @@
+nGlobal: 3
+ISLocalToGlobalMapping Object: l2g0 1 MPI processes
+  type not yet set
+[0] 0 0
+[0] 1 1
+[0] 2 2
+PetscSF Object: sf1 1 MPI processes
+  type: basic
+  [0] Number of roots=3, leaves=3, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  MultiSF sort=rank-order
+ISLocalToGlobalMapping Object: l2g1 1 MPI processes
+  type not yet set
+[0] 0 0
+[0] 1 1
+[0] 2 2
+IS Object: input 1 MPI processes
+  type: stride
+Number of indices in (stride) set 3
+0 0
+1 1
+2 2
+IS Object: output0 1 MPI processes
+  type: general
+Number of indices in set 3
+0 0
+1 1
+2 2
+IS Object: output1 1 MPI processes
+  type: general
+Number of indices in set 3
+0 0
+1 1
+2 2
