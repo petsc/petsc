@@ -2291,8 +2291,8 @@ or message.
 
    <hr>
 
-.. bibliography:: /../src/docs/tex/petsc.bib
+.. bibliography:: /bibtex/petsc.bib
    :filter: docname in docnames
 
-.. bibliography:: /../src/docs/tex/petscapp.bib
+.. bibliography:: /bibtex/petscapp.bib
    :filter: docname in docnames
