@@ -965,15 +965,11 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
     char      *threads = getenv("OMP_NUM_THREADS");
 
     if (threads) {
-      ierr = PetscInfo1(NULL,"Number of OpenMP threads %s (given by OMP_NUM_THREADS)\n",threads);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Number of OpenMP threads %s (as given by OMP_NUM_THREADS)\n",threads);CHKERRQ(ierr);
       (void) sscanf(threads, "%" PetscInt_FMT,&PetscNumOMPThreads);
     } else {
-      #pragma omp parallel
-      #pragma omp master
-      {
-        PetscNumOMPThreads  = (PetscInt) omp_get_num_threads();
-      }
-      ierr = PetscInfo1(NULL,"Number of OpenMP threads %D (number not set with OMP_NUM_THREADS, chosen by system)\n",PetscNumOMPThreads);CHKERRQ(ierr);
+      PetscNumOMPThreads = (PetscInt) omp_get_max_threads();
+      ierr = PetscInfo1(NULL,"Number of OpenMP threads %D (as given by omp_get_max_threads())\n",PetscNumOMPThreads);CHKERRQ(ierr);
     }
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"OpenMP options","Sys");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-omp_num_threads","Number of OpenMP threads to use (can also use environmental variable OMP_NUM_THREADS","None",PetscNumOMPThreads,&PetscNumOMPThreads,&flg);CHKERRQ(ierr);
