@@ -85,8 +85,8 @@ int main(int argc,char **args)
 
    testset:
       nsize: 1
-      requires: hara
-      args: -pc_type hara
+      requires: h2opus !thrust
+      args: -pc_type h2opus
       test:
          suffix: 3
          output_file: output/ex77_preonly.out

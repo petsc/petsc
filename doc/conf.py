@@ -16,7 +16,6 @@ sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
 import add_version_header
-import genteamtable
 import build_classic_docs
 import make_links_relative
 
@@ -67,6 +66,7 @@ numfig = True
 
 extensions = [
     'sphinx_copybutton',
+    'sphinx_panels',
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
     'sphinxcontrib.rsvgconverter',
@@ -77,12 +77,11 @@ copybutton_prompt_text = r"[>]{1,3}"
 copybutton_prompt_is_regexp = True
 
 bibtex_bibfiles = [
-        os.path.join('..', 'src', 'docs', 'tex', 'petsc.bib'),
-        os.path.join('..', 'src', 'docs', 'tex', 'petscapp.bib'),
-        os.path.join('..', 'src', 'docs', 'tao_tex', 'tao.bib'),
-        os.path.join('..', 'src', 'docs', 'tao_tex', 'manual', 'mathprog.bib'),
-        ]
-
+        os.path.join('bibtex', 'petsc.bib'),
+        os.path.join('bibtex', 'petscapp.bib'),
+        os.path.join('bibtex', 'tao.bib'),
+        os.path.join('bibtex', 'tao_mathprog.bib'),
+]
 
 # -- Options for HTML output ---------------------------------------------------
 
@@ -155,18 +154,7 @@ def _build_classic_docs(app):
     build_classic_docs.main()
 
 
-def _generate_team_table(app):
-    print("============================================")
-    print("    Generating team table from conf.py      ")
-    print("============================================")
-    genDirName = "generated"
-    cwdPath = os.path.dirname(os.path.realpath(__file__))
-    genDirPath = os.path.join(cwdPath, genDirName)
-    genteamtable.main(genDirPath, builderName = app.builder.name)
-
-
 def builder_init_handler(app):
-    _generate_team_table(app)
     _build_classic_docs(app)
 
 
@@ -204,4 +192,3 @@ def setup(app):
     app.connect('builder-inited', builder_init_handler)
     app.connect('build-finished', build_finished_handler)
     app.add_css_file('css/pop-up.css')
-    app.add_css_file('css/petsc-team-container.css')

@@ -19,6 +19,7 @@ Changes: 3.16
 -  Add support for NVIDIA HPC SDK
 
 .. rubric:: Configure/Build:
+
 -  Configure requires Python-2.7 or Python-3.4+.
 -  Remove --with-kokkos-cuda-arch. One can use -with-cuda-gencodearch to specify the cuda arch for Kokkos. Usually not needed since PETSc auto detects that
 -  For --download-hdf5, disable --download-hdf5-fortran-bindings by default
@@ -26,6 +27,7 @@ Changes: 3.16
 -  Add support for hypre in device mode for both NVIDIA and AMD GPUs
 
 .. rubric:: Sys:
+
 -  Add ``PetscDevice`` class to manage discovered GPU devices
 -  Add ``PetscDeviceKind``
 -  Add ``PetscDeviceCreate()``, ``PetscDeviceConfigure()``, and ``PetscDeviceDestroy()``
@@ -143,6 +145,7 @@ Changes: 3.16
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
+
 -  Add ``-ts_type irk`` - fully implicit Runge-Kutta solvers
 
 -  Add ``TSTrajectory`` interface to the CAMS library for optimal offline checkpointing for multistage time stepping schemes
