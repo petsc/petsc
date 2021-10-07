@@ -14,6 +14,12 @@ exit 127
 
 import sys, os
 
+if sys.version_info < (3,0):
+  print('************************************************************************')
+  print('*             python2 support in configure is deprecated               *')
+  print('*         PETSc version 3.18+ will require at least python3.4          *')
+  print('************************************************************************')
+
 if sys.version_info < (2,7) or (sys.version_info >= (3,0) and sys.version_info < (3,4)):
   print('************************************************************************')
   print('*      Python version 2.7 or 3.4+ is required to run ./configure      *')
