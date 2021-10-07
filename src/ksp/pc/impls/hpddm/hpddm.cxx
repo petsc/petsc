@@ -1411,6 +1411,7 @@ PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidLogicalCollectiveEnum(pc, type, 2);
   ierr = PetscTryMethod(pc, "PCHPDDMSetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType), (pc, type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1434,13 +1435,16 @@ PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC pc, PCHPDDMCoarseCorrectionType
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  ierr = PetscUseMethod(pc, "PCHPDDMGetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType*), (pc, type));CHKERRQ(ierr);
+  if (type) {
+    PetscValidPointer(type, 2);
+    ierr = PetscUseMethod(pc, "PCHPDDMGetCoarseCorrectionType_C", (PC, PCHPDDMCoarseCorrectionType*), (pc, type));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCHPDDMSetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseCorrectionType type)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
+  PC_HPDDM *data = (PC_HPDDM*)pc->data;
 
   PetscFunctionBegin;
   if (type < 0 || type > 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PCHPDDMCoarseCorrectionType %d", type);
@@ -1479,7 +1483,10 @@ PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  ierr = PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share));CHKERRQ(ierr);
+  if (share) {
+    PetscValidPointer(share, 2);
+    ierr = PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool*), (pc, share));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
