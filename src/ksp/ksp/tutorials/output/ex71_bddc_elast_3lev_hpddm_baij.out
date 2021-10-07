@@ -116,7 +116,7 @@ PC Object: 8 MPI processes
       type: hpddm
       levels: 2
       Neumann matrix attached? FALSE
-      coarse correction: deflated
+      coarse correction: DEFLATED
       on process #0, value (+ threshold if available) for selecting deflation vectors: 6
       grid and operator complexities: 1.30189 1.15741
       KSP Object: (pc_bddc_coarse_pc_hpddm_levels_1_) 8 MPI processes

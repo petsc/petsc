@@ -114,6 +114,11 @@ cdef extern from * nogil:
         PC_PATCH_USER
         PC_PATCH_PYTHON
 
+    ctypedef enum PetscPCHPDDMCoarseCorrectionType "PCHPDDMCoarseCorrectionType":
+        PC_HPDDM_COARSE_CORRECTION_DEFLATED
+        PC_HPDDM_COARSE_CORRECTION_ADDITIVE
+        PC_HPDDM_COARSE_CORRECTION_BALANCED
+
     int PCCreate(MPI_Comm,PetscPC*)
     int PCDestroy(PetscPC*)
     int PCView(PetscPC,PetscViewer)
@@ -292,6 +297,8 @@ cdef extern from * nogil:
                                              void*) except PETSC_ERR_PYTHON
     int PCHPDDMSetAuxiliaryMat(PetscPC, PetscIS, PetscMat, PetscPCHPDDMAuxiliaryMat, void*)
     int PCHPDDMHasNeumannMat(PetscPC, PetscBool)
+    int PCHPDDMSetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType)
+    int PCHPDDMGetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType*)
 
 # --------------------------------------------------------------------
 

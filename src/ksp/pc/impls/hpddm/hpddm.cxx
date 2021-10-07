@@ -18,7 +18,7 @@ PetscLogEvent PC_HPDDM_Next;
 PetscLogEvent PC_HPDDM_SetUp[PETSC_HPDDM_MAXLEVELS];
 PetscLogEvent PC_HPDDM_Solve[PETSC_HPDDM_MAXLEVELS];
 
-const char *const PCHPDDMCoarseCorrectionTypes[] = { "deflated", "additive", "balanced" };
+const char *const PCHPDDMCoarseCorrectionTypes[] = { "DEFLATED", "ADDITIVE", "BALANCED", "PCHPDDMCoarseCorrectionType", "PC_HPDDM_COARSE_CORRECTION_", NULL };
 
 static PetscErrorCode PCReset_HPDDM(PC pc)
 {
@@ -190,14 +190,15 @@ PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
 
 static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObject, PC pc)
 {
-  PC_HPDDM       *data = (PC_HPDDM*)pc->data;
-  PC_HPDDM_Level **levels = data->levels;
-  char           prefix[256];
-  int            i = 1;
-  PetscMPIInt    size, previous;
-  PetscInt       n;
-  PetscBool      flg = PETSC_TRUE;
-  PetscErrorCode ierr;
+  PC_HPDDM                    *data = (PC_HPDDM*)pc->data;
+  PC_HPDDM_Level              **levels = data->levels;
+  char                        prefix[256];
+  int                         i = 1;
+  PetscMPIInt                 size, previous;
+  PetscInt                    n;
+  PCHPDDMCoarseCorrectionType type;
+  PetscBool                   flg = PETSC_TRUE;
+  PetscErrorCode              ierr;
 
   PetscFunctionBegin;
   if (!data->levels) {
@@ -270,8 +271,10 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
       if (n * size > previous) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%d MPI process%s x %d OpenMP thread%s greater than %d available MPI process%s for the coarsest operator", (int)size, size > 1 ? "es" : "", (int)n, n > 1 ? "s" : "", (int)previous, previous > 1 ? "es" : "");
     }
 #endif
-    ierr = PetscOptionsEList("-pc_hpddm_coarse_correction", "Type of coarse correction applied each iteration", "PCHPDDMSetCoarseCorrectionType", PCHPDDMCoarseCorrectionTypes, 3, PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_DEFLATED], &n, &flg);CHKERRQ(ierr);
-    if (flg) data->correction = PCHPDDMCoarseCorrectionType(n);
+    ierr = PetscOptionsEnum("-pc_hpddm_coarse_correction", "Type of coarse correction applied each iteration", "PCHPDDMSetCoarseCorrectionType", PCHPDDMCoarseCorrectionTypes, (PetscEnum)data->correction, (PetscEnum*)&type, &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCHPDDMSetCoarseCorrectionType(pc, type);CHKERRQ(ierr);
+    }
     ierr = PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_has_neumann");CHKERRQ(ierr);
     ierr = PetscOptionsBool(prefix, "Is the auxiliary Mat the local Neumann matrix?", "PCHPDDMHasNeumannMat", data->Neumann, &data->Neumann, NULL);CHKERRQ(ierr);
     data->log_separate = PETSC_FALSE;

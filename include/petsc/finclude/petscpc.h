@@ -25,6 +25,7 @@
 #define PCGAMGType character*(80)
 #define PCGAMGClassicalType character*(80)
 #define PCGAMGLayoutType PetscEnum
+#define PCHPDDMCoarseCorrectionType PetscEnum
 !
 ! GAMG types
 !
