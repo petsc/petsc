@@ -1,4 +1,3 @@
-
 /*
    Implements the higher-level options database querying methods. These are self-documenting and can attach at runtime to
    GUI code to display the options and get values from the users.
@@ -866,7 +865,7 @@ M*/
 
    Synopsis:
    #include "petscsys.h"
-PetscErrorCode  PetscOptionsInt(const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg))
+PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool *flg))
 
    Input Parameters:
 +  opt - option name
