@@ -15,18 +15,12 @@ static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 int main(int argc, char **argv) {
   DM              dm, dmDist, dmAdapt;
   DMLabel         bdLabel = NULL;
-  DMPlexMetricCtx user;
   MPI_Comm        comm;
-  PetscBool       uniform = PETSC_FALSE;
+  PetscBool       uniform = PETSC_FALSE, isotropic = PETSC_FALSE;
   PetscErrorCode  ierr;
   PetscInt       *faces, dim = 3, numEdges = 4, d;
   PetscReal       scaling = 1.0;
   Vec             metric;
-
-  /* Default parameter values */
-  user.p = 1.0;
-  user.targetComplexity = 100.0;
-  user.isotropic = PETSC_FALSE;
 
   /* Set up */
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
@@ -34,10 +28,8 @@ int main(int argc, char **argv) {
   ierr = PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex60.c", dim, &dim, NULL, 2, 3);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_edges", "Number of edges on each boundary of the initial mesh", "ex60.c", numEdges, &numEdges, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-target", "Target metric complexity", "ex60.c", user.targetComplexity, &user.targetComplexity, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-norm_order", "Metric normalization order", "ex60.c", user.p, &user.p, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-uniform", "Should the metric be assumed uniform?", "ex60.c", uniform, &uniform, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-isotropic", "Should the metric be assumed isotropic, or computed as a recovered Hessian?", "ex60.c", user.isotropic, &user.isotropic, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-isotropic", "Should the metric be assumed isotropic, or computed as a recovered Hessian?", "ex60.c", isotropic, &isotropic, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   /* Create box mesh */
@@ -45,6 +37,7 @@ int main(int argc, char **argv) {
   for (d = 0; d < dim; ++d) faces[d] = numEdges;
   ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = PetscFree(faces);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
@@ -52,13 +45,12 @@ int main(int argc, char **argv) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm = dmDist;
   }
-  ierr = DMSetApplicationContext(dm, (void**)&user);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "DM_init");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-initial_mesh_view");CHKERRQ(ierr);
 
   /* Construct metric */
   if (uniform) {
-    if (user.isotropic) { ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric);CHKERRQ(ierr); }
+    if (isotropic) { ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric);CHKERRQ(ierr); }
     else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported.");
   }
   else {
@@ -73,7 +65,7 @@ int main(int argc, char **argv) {
     ierr = DMCreateDS(dmIndi);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dmIndi, &indicator);CHKERRQ(ierr);
-    if (user.isotropic) {
+    if (isotropic) {
 
       /* Isotropic case: just specify unity */
       ierr = VecSet(indicator, scaling);CHKERRQ(ierr);
@@ -169,7 +161,7 @@ int main(int argc, char **argv) {
     ierr = VecDestroy(&metricComb);CHKERRQ(ierr);
 
     /* Test metric intersection */
-    if (user.isotropic) {
+    if (isotropic) {
       ierr = DMPlexMetricIntersection(dm, 2, metrics, &metricComb);CHKERRQ(ierr);
       ierr = VecAXPY(metricComb, -1, metric1);CHKERRQ(ierr);
       ierr = VecNorm(metricComb, NORM_2, &errornorm);CHKERRQ(ierr);
@@ -181,8 +173,8 @@ int main(int argc, char **argv) {
     ierr = VecCopy(metric, metric1);CHKERRQ(ierr);
 
     /* Test metric SPD enforcement */
-    ierr = DMPlexMetricEnforceSPD(dm, PETSC_TRUE, metric);CHKERRQ(ierr);
-    if (user.isotropic) {
+    ierr = DMPlexMetricEnforceSPD(dm, PETSC_TRUE, PETSC_TRUE, metric);CHKERRQ(ierr);
+    if (isotropic) {
       ierr = VecAXPY(metric1, -1, metric);CHKERRQ(ierr);
       ierr = VecNorm(metric1, NORM_2, &errornorm);CHKERRQ(ierr);
       errornorm /= norm;
@@ -191,9 +183,12 @@ int main(int argc, char **argv) {
     ierr = VecDestroy(&metric1);CHKERRQ(ierr);
 
     /* Test metric normalization */
-    ierr = DMPlexMetricNormalize(dm, metric, PETSC_TRUE, &metric1);CHKERRQ(ierr);
-    if (user.isotropic) {
-      scaling = PetscPowReal(user.targetComplexity, 2.0/dim);
+    ierr = DMPlexMetricNormalize(dm, metric, PETSC_TRUE, PETSC_TRUE, &metric1);CHKERRQ(ierr);
+    if (isotropic) {
+      PetscReal target;
+
+      ierr = DMPlexMetricGetTargetComplexity(dm, &target);CHKERRQ(ierr);
+      scaling = PetscPowReal(target, 2.0/dim);
       ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric2);CHKERRQ(ierr);
       ierr = VecAXPY(metric2, -1, metric1);CHKERRQ(ierr);
       ierr = VecNorm(metric2, NORM_2, &errornorm);CHKERRQ(ierr);
@@ -229,21 +224,21 @@ int main(int argc, char **argv) {
 
   test:
     suffix: uniform_2d
-    args: -dim 2 -uniform -isotropic
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -uniform -isotropic
   test:
     suffix: uniform_3d
-    args: -dim 3 -uniform -isotropic
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -uniform -isotropic
   test:
     suffix: iso_2d
-    args: -dim 2 -isotropic
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -isotropic
   test:
     suffix: iso_3d
-    args: -dim 3 -isotropic
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -isotropic
   test:
     suffix: hessian_2d
-    args: -dim 2
+    args: -dm_plex_metric_target_complexity 100 -dim 2
   test:
     suffix: hessian_3d
-    args: -dim 3
+    args: -dm_plex_metric_target_complexity 100 -dim 3
 
 TEST*/
