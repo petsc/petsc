@@ -579,8 +579,5 @@ where noted, add a newline after the section headings.
 References
 ----------
 
-.. bibliography:: /bibtex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /bibtex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

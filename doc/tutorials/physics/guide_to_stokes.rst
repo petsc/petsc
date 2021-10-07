@@ -999,8 +999,5 @@ We can make the problem harder by increasing the wave number and size of the vis
 
 Bibliography
 ------------
-.. bibliography:: /bibtex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /bibtex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

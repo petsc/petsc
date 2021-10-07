@@ -76,12 +76,7 @@ extensions = [
 copybutton_prompt_text = r"[>]{1,3}"
 copybutton_prompt_is_regexp = True
 
-bibtex_bibfiles = [
-        os.path.join('bibtex', 'petsc.bib'),
-        os.path.join('bibtex', 'petscapp.bib'),
-        os.path.join('bibtex', 'tao.bib'),
-        os.path.join('bibtex', 'tao_mathprog.bib'),
-]
+bibtex_bibfiles = ['petsc.bib']
 
 # -- Options for HTML output ---------------------------------------------------
 

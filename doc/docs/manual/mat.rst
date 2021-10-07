@@ -1167,12 +1167,7 @@ requires a great deal of time.
 
     <hr>
 
-.. bibliography:: /bibtex/petsc.bib
-   :filter: docname in docnames
-   :keyprefix: KEYPREFIX-
-   :labelprefix: ref-
-
-.. bibliography:: /bibtex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames
    :keyprefix: KEYPREFIX-
    :labelprefix: ref-
