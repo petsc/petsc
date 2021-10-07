@@ -810,11 +810,11 @@ typedef struct {
 
 #define PetscStackPopNoCheck(funct)                    do {             \
     PetscStackSAWsTakeAccess();                                         \
-    if (PetscUnlikely(petscstack.currentsize < 0) &&                    \
-        petscstack.check) {                                             \
-      printf("Invalid stack size %d, pop %s\n",                         \
-             petscstack.currentsize,funct);                             \
-      MPI_Abort(MPI_COMM_WORLD,1);                                      \
+    if (PetscUnlikely(petscstack.currentsize <= 0)) {                   \
+      if (PetscUnlikely(petscstack.check)) {                            \
+        printf("Invalid stack size %d, pop %s\n",                       \
+               petscstack.currentsize,funct);                           \
+      }                                                                 \
     } else {                                                            \
       if (--petscstack.currentsize < PETSCSTACKSIZE) {                  \
         if (PetscUnlikely(                                              \
@@ -837,8 +837,8 @@ typedef struct {
 
 #define PetscStackClearTop                             do {             \
     PetscStackSAWsTakeAccess();                                         \
-    if (petscstack.currentsize > 0) {                                   \
-      --petscstack.currentsize;                                         \
+    if (petscstack.currentsize > 0 &&                                   \
+        --petscstack.currentsize < PETSCSTACKSIZE) {                    \
       petscstack.function[petscstack.currentsize]     = PETSC_NULLPTR;  \
       petscstack.file[petscstack.currentsize]         = PETSC_NULLPTR;  \
       petscstack.line[petscstack.currentsize]         = 0;              \
