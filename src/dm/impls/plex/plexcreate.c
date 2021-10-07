@@ -3857,7 +3857,7 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   char            line[PETSC_MAX_PATH_LEN];
   PetscInt        dim = 3, cdim = 3, coordSize, v, c, d;
   PetscMPIInt     rank;
-  int             snum, Nv, Nc;
+  int             snum, Nv, Nc, Ncn, Nl;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -3867,11 +3867,11 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   if (rank == 0) {
-    ierr = PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING);CHKERRQ(ierr);
-    snum = sscanf(line, "%d %d", &Nc, &Nv);
-    if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
+    ierr = PetscViewerRead(viewer, line, 4, NULL, PETSC_STRING);CHKERRQ(ierr);
+    snum = sscanf(line, "%d %d %d %d", &Nc, &Nv, &Ncn, &Nl);
+    if (snum != 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
   } else {
-    Nc = Nv = 0;
+    Nc = Nv = Ncn = Nl = 0;
   }
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
@@ -3880,18 +3880,28 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   ierr = DMSetCoordinateDim(*dm, cdim);CHKERRQ(ierr);
   /* Read topology */
   if (rank == 0) {
-    PetscInt cone[8], corners = 8;
+    char     format[PETSC_MAX_PATH_LEN];
+    PetscInt cone[8];
     int      vbuf[8], v;
 
-    for (c = 0; c < Nc; ++c) {ierr = DMPlexSetConeSize(*dm, c, corners);CHKERRQ(ierr);}
+    for (c = 0; c < Ncn; ++c) {format[c*3+0] = '%'; format[c*3+1] = 'd'; format[c*3+2] = ' ';}
+    format[Ncn*3-1] = '\0';
+    for (c = 0; c < Nc; ++c) {ierr = DMPlexSetConeSize(*dm, c, Ncn);CHKERRQ(ierr);}
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for (c = 0; c < Nc; ++c) {
-      ierr = PetscViewerRead(viewer, line, corners, NULL, PETSC_STRING);CHKERRQ(ierr);
-      snum = sscanf(line, "%d %d %d %d %d %d %d %d", &vbuf[0], &vbuf[1], &vbuf[2], &vbuf[3], &vbuf[4], &vbuf[5], &vbuf[6], &vbuf[7]);
-      if (snum != corners) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
-      for (v = 0; v < corners; ++v) cone[v] = vbuf[v] + Nc;
+      ierr = PetscViewerRead(viewer, line, Ncn, NULL, PETSC_STRING);CHKERRQ(ierr);
+      switch (Ncn) {
+        case 2: snum = sscanf(line, format, &vbuf[0], &vbuf[1]);break;
+        case 3: snum = sscanf(line, format, &vbuf[0], &vbuf[1], &vbuf[2]);break;
+        case 4: snum = sscanf(line, format, &vbuf[0], &vbuf[1], &vbuf[2], &vbuf[3]);break;
+        case 6: snum = sscanf(line, format, &vbuf[0], &vbuf[1], &vbuf[2], &vbuf[3], &vbuf[4], &vbuf[5]);break;
+        case 8: snum = sscanf(line, format, &vbuf[0], &vbuf[1], &vbuf[2], &vbuf[3], &vbuf[4], &vbuf[5], &vbuf[6], &vbuf[7]);break;
+        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No cell shape with %D vertices", Ncn);
+      }
+      if (snum != Ncn) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
+      for (v = 0; v < Ncn; ++v) cone[v] = vbuf[v] + Nc;
       /* Hexahedra are inverted */
-      {
+      if (Ncn == 8) {
         PetscInt tmp = cone[1];
         cone[1] = cone[3];
         cone[3] = tmp;
@@ -3919,17 +3929,30 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (rank == 0) {
+    char   format[PETSC_MAX_PATH_LEN];
     double x[3];
-    int    val;
+    int    l, val[3];
 
-    ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "marker", &marker);CHKERRQ(ierr);
+    if (Nl) {
+      for (l = 0; l < Nl; ++l) {format[l*3+0] = '%'; format[l*3+1] = 'd'; format[l*3+2] = ' ';}
+      format[Nl*3-1] = '\0';
+      ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
+      ierr = DMGetLabel(*dm, "marker", &marker);CHKERRQ(ierr);
+    }
     for (v = 0; v < Nv; ++v) {
-      ierr = PetscViewerRead(viewer, line, 4, NULL, PETSC_STRING);CHKERRQ(ierr);
-      snum = sscanf(line, "%lg %lg %lg %d", &x[0], &x[1], &x[2], &val);
-      if (snum != 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
+      ierr = PetscViewerRead(viewer, line, 3+Nl, NULL, PETSC_STRING);CHKERRQ(ierr);
+      snum = sscanf(line, "%lg %lg %lg", &x[0], &x[1], &x[2]);
+      if (snum != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
+      switch (Nl) {
+        case 0: snum = 0;break;
+        case 1: snum = sscanf(line, format, &val[0]);break;
+        case 2: snum = sscanf(line, format, &val[0], &val[1]);break;
+        case 3: snum = sscanf(line, format, &val[0], &val[1], &val[2]);break;
+        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Request support for %D labels", Nl);
+      }
+      if (snum != Nl) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse cell-vertex file: %s", line);
       for (d = 0; d < cdim; ++d) coords[v*cdim+d] = x[d];
-      if (val) {ierr = DMLabelSetValue(marker, v+Nc, val);CHKERRQ(ierr);}
+      for (l = 0; l < Nl; ++l) {ierr = DMLabelSetValue(marker, v+Nc, val[l]);CHKERRQ(ierr);}
     }
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
@@ -3944,9 +3967,12 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
 
-    ierr = DMGetLabel(*dm, "marker", &bdlabel);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(*dm, PETSC_DETERMINE, bdlabel);CHKERRQ(ierr);
-    ierr = DMPlexLabelComplete(*dm, bdlabel);CHKERRQ(ierr);
+    if (!Nl) {
+      ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
+      ierr = DMGetLabel(*dm, "marker", &bdlabel);CHKERRQ(ierr);
+      ierr = DMPlexMarkBoundaryFaces(*dm, PETSC_DETERMINE, bdlabel);CHKERRQ(ierr);
+      ierr = DMPlexLabelComplete(*dm, bdlabel);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
