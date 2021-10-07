@@ -9,6 +9,7 @@
 #include "compat/hpddm.h"
 #include "compat/viennacl.h"
 #include "compat/cuda.h"
+#include "compat/hip.h"
 #include "compat/tao.h"
 #include "compat/h2opus.h"
 

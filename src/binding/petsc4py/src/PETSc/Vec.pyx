@@ -11,6 +11,9 @@ class VecType(object):
     SEQCUDA    = S_(VECSEQCUDA)
     MPICUDA    = S_(VECMPICUDA)
     CUDA       = S_(VECCUDA)
+    SEQHIP     = S_(VECSEQHIP)
+    MPIHIP     = S_(VECMPIHIP)
+    HIP        = S_(VECHIP)
     NEST       = S_(VECNEST)
     SEQKOKKOS  = S_(VECSEQKOKKOS)
     MPIKOKKOS  = S_(VECMPIKOKKOS)
@@ -245,6 +248,46 @@ cdef class Vec(Object):
             CHKERR( VecCreateSeqCUDAWithArrays(ccomm,bs,N,sa,gpuarray,&newvec) )
         else:
             CHKERR( VecCreateMPICUDAWithArrays(ccomm,bs,n,N,sa,gpuarray,&newvec) )
+        PetscCLEAR(self.obj); self.vec = newvec
+
+        if cpuarray is not None:
+            self.set_attr('__array__', cpuarray)
+        return self
+
+    def createHIPWithArrays(self, cpuarray=None, hiphandle=None, size=None, bsize=None, comm=None):
+        """
+        Returns an instance of :class:`Vec`, a VECHIP with user provided
+        memory spaces for CPU and GPU arrays.
+
+        :arg cpuarray: A :class:`numpy.ndarray`. Will be lazily allocated if
+            *None*.
+        :arg hiphandle: Address of the array on the GPU. Will be lazily
+            allocated if *None*.
+        :arg size: A :class:`int` denoting the size of the Vec.
+        :arg bsize: A :class:`int` denoting the block size.
+        """
+        cdef PetscInt na=0
+        cdef PetscScalar *sa=NULL
+        cdef PetscScalar *gpuarray = NULL
+        if hiphandle:
+            gpuarray = <PetscScalar*>(<Py_uintptr_t>hiphandle)
+        if cpuarray is not None:
+            cpuarray = iarray_s(cpuarray, &na, &sa)
+
+        if size is None: size = (toInt(na), toInt(PETSC_DECIDE))
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs=0, n=0, N=0
+        Vec_Sizes(size, bsize, &bs, &n, &N)
+        Sys_Layout(ccomm, bs, &n, &N)
+        if bs == PETSC_DECIDE: bs = 1
+        if na < n:  raise ValueError(
+            "array size %d and vector local size %d block size %d" %
+            (toInt(na), toInt(n), toInt(bs)))
+        cdef PetscVec newvec = NULL
+        if comm_size(ccomm) == 1:
+            CHKERR( VecCreateSeqHIPWithArrays(ccomm,bs,N,sa,gpuarray,&newvec) )
+        else:
+            CHKERR( VecCreateMPIHIPWithArrays(ccomm,bs,n,N,sa,gpuarray,&newvec) )
         PetscCLEAR(self.obj); self.vec = newvec
 
         if cpuarray is not None:
@@ -696,6 +739,33 @@ cdef class Vec(Object):
             CHKERR( VecCUDARestoreArrayRead(self.vec, <const PetscScalar**>&hdl) )
         elif m[0] == c'w':
             CHKERR( VecCUDARestoreArrayWrite(self.vec, &hdl) )
+        else:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
+
+    def getHIPHandle(self, mode='rw'):
+        cdef PetscScalar *hdl = NULL
+        cdef const char *m = NULL
+        if mode is not None: mode = str2bytes(mode, &m)
+        if m == NULL or (m[0] == c'r' and m[1] == c'w'):
+            CHKERR( VecHIPGetArray(self.vec, &hdl) )
+        elif m[0] == c'r':
+            CHKERR( VecHIPGetArrayRead(self.vec, <const PetscScalar**>&hdl) )
+        elif m[0] == c'w':
+            CHKERR( VecHIPGetArrayWrite(self.vec, &hdl) )
+        else:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
+        return <Py_uintptr_t>hdl
+
+    def restoreHIPHandle(self, handle, mode='rw'):
+        cdef PetscScalar *hdl = <PetscScalar*>(<Py_uintptr_t>handle)
+        cdef const char *m = NULL
+        if mode is not None: mode = str2bytes(mode, &m)
+        if m == NULL or (m[0] == c'r' and m[1] == c'w'):
+            CHKERR( VecHIPRestoreArray(self.vec, &hdl) )
+        elif m[0] == c'r':
+            CHKERR( VecHIPRestoreArrayRead(self.vec, <const PetscScalar**>&hdl) )
+        elif m[0] == c'w':
+            CHKERR( VecHIPRestoreArrayWrite(self.vec, &hdl) )
         else:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
 

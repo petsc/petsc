@@ -13,6 +13,9 @@ cdef extern from * nogil:
     PetscVecType VECSEQCUDA
     PetscVecType VECMPICUDA
     PetscVecType VECCUDA
+    PetscVecType VECSEQHIP
+    PetscVecType VECMPIHIP
+    PetscVecType VECHIP
     PetscVecType VECNEST
     PetscVecType VECSEQKOKKOS
     PetscVecType VECMPIKOKKOS
@@ -34,10 +37,12 @@ cdef extern from * nogil:
     int VecCreateSeq(MPI_Comm,PetscInt,PetscVec*)
     int VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscVec*)
     int VecCreateSeqCUDAWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
+    int VecCreateSeqHIPWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
     int VecCreateSeqViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
     int VecCreateMPI(MPI_Comm,PetscInt,PetscInt,PetscVec*)
     int VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscVec*)
     int VecCreateMPICUDAWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
+    int VecCreateMPIHIPWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
     int VecCreateMPIViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*)
     int VecCreateGhost(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscVec*)
     int VecCreateGhostWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscScalar[],PetscVec*)
@@ -168,6 +173,13 @@ cdef extern from * nogil:
     int VecCUDARestoreArrayWrite(PetscVec,PetscScalar*[])
     int VecCUDARestoreArray(PetscVec,PetscScalar*[])
 
+    int VecHIPGetArrayRead(PetscVec,const PetscScalar*[])
+    int VecHIPGetArrayWrite(PetscVec,PetscScalar*[])
+    int VecHIPGetArray(PetscVec,PetscScalar*[])
+    int VecHIPRestoreArrayRead(PetscVec,const PetscScalar*[])
+    int VecHIPRestoreArrayWrite(PetscVec,PetscScalar*[])
+    int VecHIPRestoreArray(PetscVec,PetscScalar*[])
+
     int VecBindToCPU(PetscVec,PetscBool)
     int VecGetOffloadMask(PetscVec,PetscOffloadMask*)
 
@@ -181,6 +193,9 @@ cdef extern from * nogil:
 
     int VecCreateSeqCUDAWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
     int VecCreateMPICUDAWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
+    int VecCreateSeqHIPWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
+    int VecCreateMPIHIPWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
+
 # --------------------------------------------------------------------
 
 cdef inline Vec ref_Vec(PetscVec vec):
