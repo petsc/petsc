@@ -150,11 +150,11 @@ class BaseTestPlex(object):
 
         self.assertFalse(self.plex.metricIsIsotropic())
         self.assertFalse(self.plex.metricRestrictAnisotropyFirst())
-        self.assertEqual(self.plex.metricGetMinimumMagnitude(), h_min)
-        self.assertEqual(self.plex.metricGetMaximumMagnitude(), h_max)
-        self.assertEqual(self.plex.metricGetMaximumAnisotropy(), a_max)
-        self.assertEqual(self.plex.metricGetTargetComplexity(), target)
-        self.assertEqual(self.plex.metricGetNormalizationOrder(), p)
+        assert np.isclose(self.plex.metricGetMinimumMagnitude(), h_min)
+        assert np.isclose(self.plex.metricGetMaximumMagnitude(), h_max)
+        assert np.isclose(self.plex.metricGetMaximumAnisotropy(), a_max)
+        assert np.isclose(self.plex.metricGetTargetComplexity(), target)
+        assert np.isclose(self.plex.metricGetNormalizationOrder(), p)
 
         metric1 = self.plex.metricCreateUniform(1.0)
         metric2 = self.plex.metricCreateUniform(2.0)
@@ -167,14 +167,11 @@ class BaseTestPlex(object):
         assert np.allclose(metric.array, metric1.array)
 
     def testAdapt(self):
-        dim = self.plex.getDimension()
-        if dim == 1: return
-        vStart, vEnd = self.plex.getDepthStratum(0)
-        numVertices = vEnd-vStart
-        metric_array = np.zeros([numVertices,dim,dim],dtype=PETSc.ScalarType)
-        for met in metric_array:
-            met[:,:] = np.diag([9]*dim)
-        metric = PETSc.Vec().createWithArray(metric_array)
+        if self.DIM == 1: return
+        self.plex.distribute()
+        if self.CELLS is None and not self.plex.isSimplex(): return
+        if sum(self.DOFS) > 1: return
+        metric = self.plex.metricCreateUniform(9.0)
         try:
             newplex = self.plex.adaptMetric(metric,"")
         except PETSc.Error as exc:
