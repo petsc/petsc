@@ -879,6 +879,7 @@ int main(int argc, char **argv)
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   }
+  ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
   user.numComponents = user.numComponents < 0 ? dim : user.numComponents;
   ierr = PetscFECreateDefault(PETSC_COMM_WORLD, dim, user.numComponents, simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
