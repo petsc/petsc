@@ -1,5 +1,6 @@
 #include <../src/vec/is/sf/impls/basic/sfbasic.h>
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
+#include <petsc/private/viewerimpl.h>
 
 /*===================================================================================*/
 /*              SF public interface implementations                                  */
@@ -131,30 +132,39 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic_PatternAndSizes(PetscSF sf,PetscVi
 {
   PetscErrorCode       ierr;
   PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
-  PetscSFLink          link = bas->avail;
-  PetscInt             i,nrootranks,ndrootranks,myrank;
+  PetscInt             i,nrootranks,ndrootranks;
   const PetscInt       *rootoffset;
   PetscMPIInt          rank,size;
+  const PetscMPIInt    *rootranks;
   MPI_Comm             comm = PetscObjectComm((PetscObject)sf);
+  PetscScalar          unitbytes;
   Mat                  A;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  myrank = rank;
-  if (sf->persistent) {
-    /* amount of data I send to other ranks - global to local */
-    ierr = MatCreateAIJ(comm,1,1,size,size,20,NULL,20,NULL,&A);CHKERRQ(ierr);
-    ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,NULL,&rootoffset,NULL);CHKERRQ(ierr);
-    for (i=0; i<nrootranks; i++) {
-      ierr = MatSetValue(A,myrank,bas->iranks[i],(rootoffset[i+1] - rootoffset[i])*link->unitbytes,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-    ierr = MatView(A,viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+  /* PetscSFView is most useful for the SF used in VecScatterBegin/End in MatMult etc, where we do
+    PetscSFBcast, i.e., roots send data to leaves.  We dump the communication pattern into a matrix
+    in senders' view point: how many bytes I will send to my neighbors.
+
+    Looking at a column of the matrix, one can also know how many bytes the rank will receive from others.
+
+    If PetscSFLink bas->inuse is available, we can use that to get tree vertex size. But that would give
+    different interpretations for the same SF for different data types. Since we most care about VecScatter,
+    we uniformly treat each vertex as a PetscScalar.
+  */
+  unitbytes = (PetscScalar)sizeof(PetscScalar);
+
+  ierr = PetscSFGetRootInfo_Basic(sf,&nrootranks,&ndrootranks,&rootranks,&rootoffset,NULL);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(comm,1,1,size,size,1,NULL,nrootranks-ndrootranks,NULL,&A);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(A,"__petsc_internal__");CHKERRQ(ierr); /* To prevent the internal A from taking any command line options */
+  for (i=0; i<nrootranks; i++) {
+    ierr = MatSetValue(A,(PetscInt)rank,bas->iranks[i],(rootoffset[i+1]-rootoffset[i])*unitbytes,INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatView(A,viewer);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -162,18 +172,21 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic_PatternAndSizes(PetscSF sf,PetscVi
 PETSC_INTERN PetscErrorCode PetscSFView_Basic(PetscSF sf,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      iascii;
+  PetscBool      isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscViewerASCIIPrintf(viewer,"  MultiSF sort=%s\n",sf->rankorder ? "rank-order" : "unordered");CHKERRQ(ierr);}
- #if defined(PETSC_USE_SINGLE_LIBRARY)
-  {
-    PetscBool ibinary;
-    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&ibinary);CHKERRQ(ierr);
-    if (ibinary) {ierr = PetscSFView_Basic_PatternAndSizes(sf,viewer);CHKERRQ(ierr);}
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii && viewer->format != PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"  MultiSF sort=%s\n",sf->rankorder ? "rank-order" : "unordered");CHKERRQ(ierr);}
+#if defined(PETSC_USE_SINGLE_LIBRARY)
+  else {
+    PetscBool  isdraw,isbinary;
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+    if ((isascii && viewer->format == PETSC_VIEWER_ASCII_MATLAB) || isdraw || isbinary) {
+      ierr = PetscSFView_Basic_PatternAndSizes(sf,viewer);CHKERRQ(ierr);
+    }
   }
- #endif
+#endif
   PetscFunctionReturn(0);
 }
 
