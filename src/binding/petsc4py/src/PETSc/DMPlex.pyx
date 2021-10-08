@@ -501,6 +501,11 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexIsDistributed(self.dm, &flag) )
         return toBool(flag)
 
+    def isSimplex(self):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( DMPlexIsSimplex(self.dm, &flag) )
+        return toBool(flag)
+
     def interpolate(self):
         cdef PetscDM newdm = NULL
         CHKERR( DMPlexInterpolate(self.dm, &newdm) )
