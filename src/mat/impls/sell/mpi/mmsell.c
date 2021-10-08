@@ -194,6 +194,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,sell->lvec,to,&sell->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterViewFromOptions(sell->Mvctx,(PetscObject)mat,"-matmult_vecscatter_view");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sell->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sell->lvec);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
