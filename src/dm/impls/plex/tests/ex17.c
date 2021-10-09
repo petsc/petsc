@@ -71,9 +71,15 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: seg
+  testset:
     args: -dm_plex_dim 1 -dm_plex_box_faces 10
+
+    test:
+      suffix: seg
+
+    test:
+      suffix: seg_hash
+      args: -dm_refine 2 -dm_plex_hash_location
 
   testset:
     args: -dm_plex_box_faces 5,5
