@@ -599,7 +599,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
       for (p = 0; p < numCIndices; ++p) rowIDXs[p] = cindices[p] + rStart;
       if (0) {ierr = DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat);CHKERRQ(ierr);}
       /* Block diagonal */
-      {
+      if (numCIndices) {
         PetscBLASInt blasn, blask;
         PetscScalar  one = 1.0, zero = 0.0;
 
