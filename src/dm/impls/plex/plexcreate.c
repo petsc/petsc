@@ -3034,8 +3034,6 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->coarsen                         = DMCoarsen_Plex;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Plex;
   dm->ops->coarsenhierarchy                = DMCoarsenHierarchy_Plex;
-  dm->ops->adaptlabel                      = DMAdaptLabel_Plex;
-  dm->ops->adaptmetric                     = DMAdaptMetric_Plex;
   dm->ops->extrude                         = DMExtrude_Plex;
   dm->ops->globaltolocalbegin              = NULL;
   dm->ops->globaltolocalend                = NULL;

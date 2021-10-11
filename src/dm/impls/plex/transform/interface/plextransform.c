@@ -1989,7 +1989,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformAdaptLabel(DM dm, DMLabel adaptLabel, DM *rdm)
+PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, DM *rdm)
 {
   DMPlexTransform tr;
   DM              cdm, rcdm;
@@ -2013,5 +2013,6 @@ PetscErrorCode DMPlexTransformAdaptLabel(DM dm, DMLabel adaptLabel, DM *rdm)
   ierr = DMPlexTransformCreateDiscLabels(tr, *rdm);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *rdm);CHKERRQ(ierr);
   ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
+  ((DM_Plex *) (*rdm)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
   PetscFunctionReturn(0);
 }

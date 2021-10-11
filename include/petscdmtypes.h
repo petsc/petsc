@@ -171,4 +171,6 @@ typedef struct _p_DMField* DMField;
 S*/
 typedef struct _p_UniversalLabel* DMUniversalLabel;
 
+typedef struct _n_DMGeneratorFunctionList *DMGeneratorFunctionList;
+
 #endif

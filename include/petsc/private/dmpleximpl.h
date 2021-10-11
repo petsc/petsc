@@ -58,16 +58,6 @@ PETSC_EXTERN PetscLogEvent DMPLEX_SectionLoad;
 PETSC_EXTERN PetscLogEvent DMPLEX_GlobalVectorLoad;
 PETSC_EXTERN PetscLogEvent DMPLEX_LocalVectorLoad;
 
-typedef struct _n_PlexGeneratorFunctionList *PlexGeneratorFunctionList;
-struct _n_PlexGeneratorFunctionList {
-  PetscErrorCode    (*generate)(DM, PetscBool, DM*);
-  PetscErrorCode    (*refine)(DM, PetscReal*, DM*);
-  PetscErrorCode    (*adaptlabel)(DM, DMLabel, DM*);
-  char              *name;
-  PetscInt          dim;
-  PlexGeneratorFunctionList next;
-};
-
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
   int          index;    /* Type of section */
@@ -253,8 +243,7 @@ PETSC_INTERN PetscErrorCode DMCoarsen_Plex(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_Plex(DM, PetscInt, DM []);
 PETSC_INTERN PetscErrorCode DMRefine_Plex(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMRefineHierarchy_Plex(DM, PetscInt, DM []);
-PETSC_INTERN PetscErrorCode DMAdaptLabel_Plex(DM, DMLabel, DM *);
-PETSC_INTERN PetscErrorCode DMAdaptMetric_Plex(DM, Vec, DMLabel, DM *);
+PETSC_INTERN PetscErrorCode DMAdaptLabel_Plex(DM, Vec, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMExtrude_Plex(DM, PetscInt, DM *);
 PETSC_INTERN PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec);
@@ -301,8 +290,8 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateNumbering_Plex(DM, PetscInt, PetscInt, P
 
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
-PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, DMLabel, DM *);
-PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, DMLabel, DM *);
+PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, Vec, DMLabel, DM *);
+PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, Vec, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);
 
 PETSC_INTERN PetscErrorCode DMPlexGetOverlap_Plex(DM, PetscInt *);
