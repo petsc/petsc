@@ -1,6 +1,12 @@
-#include <petscsys.h>
+#include <petsc/private/drawimpl.h>
+#include <petsc/private/viewerimpl.h>
+#include <petsc/private/randomimpl.h>
 
-void testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+#ifndef DMDA
+  #define DMDA "da"
+#endif
+
+PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
 {
   /* incorrect */
   PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
@@ -37,5 +43,5 @@ void testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a
   PetscValidHeader(v, 2);
   PetscValidHeader(d, 3);
   PetscValidHeader(a, 4);
-  return;
+  return 0;
 }

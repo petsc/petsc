@@ -761,11 +761,12 @@ checkbadFileChange:
 vermin:
 	@vermin -vvv -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 
+PYTHON3 ?= $(shell command -v python3)
 lint:
-	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --verbose=${V} $(LINTER_OPTIONS)
+	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --verbose=${V} $(LINTER_OPTIONS)
 
 help-lint:
-	@${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --help
+	@${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --help
 	-@echo "Basic usage:"
 	-@echo "   make lint      <options>"
 	-@echo "   make test-lint <options> <test only options>"
@@ -779,7 +780,7 @@ help-lint:
 	-@echo
 
 test-lint:
-	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --src-dir ${PETSC_DIR}/src/sys/tests/linter --test -j0 --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
+	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petsclinter --src-path ${PETSC_DIR}/src/sys/tests/linter --test -j0 --werror --replace=${REPLACE} --verbose=${V} $(LINTER_OPTIONS)
 
 check_petsc4py_rst:
 	@${RM} -f petsc4py_rst.log

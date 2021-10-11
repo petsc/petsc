@@ -1,0 +1,319 @@
+<--- FIXED --->
+[ROOT] -------------------------------------------------------------------------------------
+ERROR 0: ./src/sys/tests/linter/testValidHeaders.c:12:32
+'r' of type 'PetscRandom' (a.k.a. '_p_PetscRandom *')
+  10: {
+  11:   /* incorrect */
+> 12:   PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
+                                     ^
+  13:   PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
+  14:   PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
+
+Classid doesn't match. Expected 'PETSC_RANDOM_CLASSID' found 'PETSC_VIEWER_CLASSID' [-fincompatible-classid]
+
+ERROR 1: ./src/sys/tests/linter/testValidHeaders.c:12:57
+'0' of type 'int'
+  10: {
+  11:   /* incorrect */
+> 12:   PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
+                                                              ^
+  13:   PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
+  14:   PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
+
+Argument number doesn't match for 'r'. Expected '1', found '0' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:33 Note: 'r' is traceable to argument #1 'r' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                      ^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 2: ./src/sys/tests/linter/testValidHeaders.c:13:32
+'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
+  11: /* incorrect */
+  12: PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
+> 13: PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
+                                   ^
+  14: PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
+  15: PetscValidHeaderSpecificType(a, PETSC_RANDOM_CLASSID, 0, DMDA);
+
+Classid doesn't match. Expected 'PETSC_VIEWER_CLASSID' found 'PETSC_DRAW_CLASSID' [-fincompatible-classid]
+
+ERROR 3: ./src/sys/tests/linter/testValidHeaders.c:13:55
+'0' of type 'int'
+  11: /* incorrect */
+  12: PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
+> 13: PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
+                                                          ^
+  14: PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
+  15: PetscValidHeaderSpecificType(a, PETSC_RANDOM_CLASSID, 0, DMDA);
+
+Argument number doesn't match for 'v'. Expected '2', found '0' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:48 Note: 'v' is traceable to argument #2 'v' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                     ^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 4: ./src/sys/tests/linter/testValidHeaders.c:14:32
+'d' of type 'PetscDraw' (a.k.a. '_p_PetscDraw *')
+  12: PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
+  13: PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
+> 14: PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
+                                   ^
+  15: PetscValidHeaderSpecificType(a, PETSC_RANDOM_CLASSID, 0, DMDA);
+  16: 
+
+Classid doesn't match. Expected 'PETSC_DRAW_CLASSID' found 'PETSC_DRAWAXIS_CLASSID' [-fincompatible-classid]
+
+ERROR 5: ./src/sys/tests/linter/testValidHeaders.c:14:59
+'0' of type 'int'
+  12: PetscValidHeaderSpecificType(r, PETSC_VIEWER_CLASSID, 0, DMDA);
+  13: PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
+> 14: PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
+                                                              ^
+  15: PetscValidHeaderSpecificType(a, PETSC_RANDOM_CLASSID, 0, DMDA);
+  16: 
+
+Argument number doesn't match for 'd'. Expected '3', found '0' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:63 Note: 'd' is traceable to argument #3 'd' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                                    ^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 6: ./src/sys/tests/linter/testValidHeaders.c:15:32
+'a' of type 'PetscDrawAxis' (a.k.a. '_p_PetscDrawAxis *')
+  13: PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
+  14: PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
+> 15: PetscValidHeaderSpecificType(a, PETSC_RANDOM_CLASSID, 0, DMDA);
+                                   ^
+  16: 
+  17: /* correct */
+
+Classid doesn't match. Expected 'PETSC_DRAWAXIS_CLASSID' found 'PETSC_RANDOM_CLASSID' [-fincompatible-classid]
+
+ERROR 7: ./src/sys/tests/linter/testValidHeaders.c:15:57
+'0' of type 'int'
+  13: PetscValidHeaderSpecificType(v, PETSC_DRAW_CLASSID, 0, DMDA);
+  14: PetscValidHeaderSpecificType(d, PETSC_DRAWAXIS_CLASSID, 0, DMDA);
+> 15: PetscValidHeaderSpecificType(a, PETSC_RANDOM_CLASSID, 0, DMDA);
+                                                            ^
+  16: 
+  17: /* correct */
+
+Argument number doesn't match for 'a'. Expected '4', found '0' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:76 Note: 'a' is traceable to argument #4 'a' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                                                 ^^^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 8: ./src/sys/tests/linter/testValidHeaders.c:24:28
+'r' of type 'PetscRandom' (a.k.a. '_p_PetscRandom *')
+  22: 
+  23: /* incorrect */
+> 24: PetscValidHeaderSpecific(r, PETSC_DRAW_CLASSID, 0);
+                               ^
+  25: PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
+  26: PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
+
+Classid doesn't match. Expected 'PETSC_RANDOM_CLASSID' found 'PETSC_DRAW_CLASSID' [-fincompatible-classid]
+
+ERROR 9: ./src/sys/tests/linter/testValidHeaders.c:24:51
+'0' of type 'int'
+  22: 
+  23: /* incorrect */
+> 24: PetscValidHeaderSpecific(r, PETSC_DRAW_CLASSID, 0);
+                                                      ^
+  25: PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
+  26: PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
+
+Argument number doesn't match for 'r'. Expected '1', found '0' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:33 Note: 'r' is traceable to argument #1 'r' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                      ^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 10: ./src/sys/tests/linter/testValidHeaders.c:25:28
+'v' of type 'PetscViewer' (a.k.a. '_p_PetscViewer *')
+  23: /* incorrect */
+  24: PetscValidHeaderSpecific(r, PETSC_DRAW_CLASSID, 0);
+> 25: PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
+                               ^
+  26: PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
+  27: PetscValidHeaderSpecific(a, PETSC_VIEWER_CLASSID, 0);
+
+Classid doesn't match. Expected 'PETSC_VIEWER_CLASSID' found 'PETSC_DRAWAXIS_CLASSID' [-fincompatible-classid]
+
+ERROR 11: ./src/sys/tests/linter/testValidHeaders.c:25:55
+'0' of type 'int'
+  23: /* incorrect */
+  24: PetscValidHeaderSpecific(r, PETSC_DRAW_CLASSID, 0);
+> 25: PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
+                                                          ^
+  26: PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
+  27: PetscValidHeaderSpecific(a, PETSC_VIEWER_CLASSID, 0);
+
+Argument number doesn't match for 'v'. Expected '2', found '0' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:48 Note: 'v' is traceable to argument #2 'v' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                     ^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 12: ./src/sys/tests/linter/testValidHeaders.c:26:28
+'d' of type 'PetscDraw' (a.k.a. '_p_PetscDraw *')
+  24: PetscValidHeaderSpecific(r, PETSC_DRAW_CLASSID, 0);
+  25: PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
+> 26: PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
+                               ^
+  27: PetscValidHeaderSpecific(a, PETSC_VIEWER_CLASSID, 0);
+  28: 
+
+Classid doesn't match. Expected 'PETSC_DRAW_CLASSID' found 'PETSC_RANDOM_CLASSID' [-fincompatible-classid]
+
+ERROR 13: ./src/sys/tests/linter/testValidHeaders.c:26:53
+'0' of type 'int'
+  24: PetscValidHeaderSpecific(r, PETSC_DRAW_CLASSID, 0);
+  25: PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
+> 26: PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
+                                                        ^
+  27: PetscValidHeaderSpecific(a, PETSC_VIEWER_CLASSID, 0);
+  28: 
+
+Argument number doesn't match for 'd'. Expected '3', found '0' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:63 Note: 'd' is traceable to argument #3 'd' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                                    ^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 14: ./src/sys/tests/linter/testValidHeaders.c:27:28
+'a' of type 'PetscDrawAxis' (a.k.a. '_p_PetscDrawAxis *')
+  25: PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
+  26: PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
+> 27: PetscValidHeaderSpecific(a, PETSC_VIEWER_CLASSID, 0);
+                               ^
+  28: 
+  29: /* correct */
+
+Classid doesn't match. Expected 'PETSC_DRAWAXIS_CLASSID' found 'PETSC_VIEWER_CLASSID' [-fincompatible-classid]
+
+ERROR 15: ./src/sys/tests/linter/testValidHeaders.c:27:53
+'0' of type 'int'
+  25: PetscValidHeaderSpecific(v, PETSC_DRAWAXIS_CLASSID, 0);
+  26: PetscValidHeaderSpecific(d, PETSC_RANDOM_CLASSID, 0);
+> 27: PetscValidHeaderSpecific(a, PETSC_VIEWER_CLASSID, 0);
+                                                        ^
+  28: 
+  29: /* correct */
+
+Argument number doesn't match for 'a'. Expected '4', found '0' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:76 Note: 'a' is traceable to argument #4 'a' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                                                 ^^^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 16: ./src/sys/tests/linter/testValidHeaders.c:36:23
+'55' of type 'int'
+  34: 
+  35: /* incorrect */
+> 36: PetscValidHeader(r, 55);
+                          ^^
+  37: PetscValidHeader(v, 56);
+  38: PetscValidHeader(d, 57);
+
+Argument number doesn't match for 'r'. Expected '1', found '55' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:33 Note: 'r' is traceable to argument #1 'r' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                      ^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 17: ./src/sys/tests/linter/testValidHeaders.c:37:23
+'56' of type 'int'
+  35: /* incorrect */
+  36: PetscValidHeader(r, 55);
+> 37: PetscValidHeader(v, 56);
+                          ^^
+  38: PetscValidHeader(d, 57);
+  39: PetscValidHeader(a, 58);
+
+Argument number doesn't match for 'v'. Expected '2', found '56' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:48 Note: 'v' is traceable to argument #2 'v' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                     ^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 18: ./src/sys/tests/linter/testValidHeaders.c:38:23
+'57' of type 'int'
+  36: PetscValidHeader(r, 55);
+  37: PetscValidHeader(v, 56);
+> 38: PetscValidHeader(d, 57);
+                          ^^
+  39: PetscValidHeader(a, 58);
+  40: 
+
+Argument number doesn't match for 'd'. Expected '3', found '57' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:63 Note: 'd' is traceable to argument #3 'd' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                                    ^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 19: ./src/sys/tests/linter/testValidHeaders.c:39:23
+'58' of type 'int'
+  37: PetscValidHeader(v, 56);
+  38: PetscValidHeader(d, 57);
+> 39: PetscValidHeader(a, 58);
+                          ^^
+  40: 
+  41: /* correct */
+
+Argument number doesn't match for 'a'. Expected '4', found '58' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidHeaders.c:9:76 Note: 'a' is traceable to argument #4 'a' in enclosing function here:
+  7 : #endif
+  8 : 
+> 9 : PetscErrorCode testValidHeaders(PetscRandom r, PetscViewer v, PetscDraw d, PetscDrawAxis a)
+                                                                                 ^^^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+[ROOT] -------------------------------------------------------------------------------------
+<--- LEFT --->

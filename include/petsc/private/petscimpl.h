@@ -9,9 +9,9 @@
 /* SUBMANSEC = Sys */
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr)
+  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...)
 #else
-  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr) expr
+  #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...) __VA_ARGS__
 #endif
 
 #if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)

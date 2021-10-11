@@ -1,0 +1,476 @@
+<--- FIXED --->
+[ROOT] -------------------------------------------------------------------------------------
+ERROR 0: ./src/sys/tests/linter/testDuplicates.c:10:24
+'b' of type 'PetscScalar *' (a.k.a. 'double *')
+  8 : PetscValidIntPointer(a, 1);
+  9 : /* no remove */
+> 10: PetscValidIntPointer(b, 5);
+                           ^
+  11: /* ~should~ be removed but won't be */
+  12: PetscValidScalarPointer(b, 7);
+
+Incorrect use of PetscValidIntPointer(), use PetscValidScalarPointer() instead [-fincompatible-function]
+
+ERROR 1: ./src/sys/tests/linter/testDuplicates.c:10:27
+'5' of type 'int'
+  8 : PetscValidIntPointer(a, 1);
+  9 : /* no remove */
+> 10: PetscValidIntPointer(b, 5);
+                              ^
+  11: /* ~should~ be removed but won't be */
+  12: PetscValidScalarPointer(b, 7);
+
+Argument number doesn't match for 'b'. Expected '2', found '5' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testDuplicates.c:3:55 Note: 'b' is traceable to argument #2 'b' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testDuplicatesWithChanges(PetscInt *a, PetscScalar *b)
+                                                           ^^^^^^^^^^^^^^
+  4: {
+  5:   /* no remove */
+
+ERROR 2: ./src/sys/tests/linter/testDuplicates.c:12:30
+'7' of type 'int'
+  10: PetscValidIntPointer(b, 5);
+  11: /* ~should~ be removed but won't be */
+> 12: PetscValidScalarPointer(b, 7);
+                                 ^
+  13: PetscValidScalarPointer(b, 3);
+  14: return 0;
+
+Argument number doesn't match for 'b'. Expected '2', found '7' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testDuplicates.c:3:55 Note: 'b' is traceable to argument #2 'b' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testDuplicatesWithChanges(PetscInt *a, PetscScalar *b)
+                                                           ^^^^^^^^^^^^^^
+  4: {
+  5:   /* no remove */
+
+ERROR 3: ./src/sys/tests/linter/testDuplicates.c:13:30
+'3' of type 'int'
+  11:   /* ~should~ be removed but won't be */
+  12:   PetscValidScalarPointer(b, 7);
+> 13:   PetscValidScalarPointer(b, 3);
+                                   ^
+  14:   return 0;
+  15: }
+
+Argument number doesn't match for 'b'. Expected '2', found '3' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testDuplicates.c:3:55 Note: 'b' is traceable to argument #2 'b' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testDuplicatesWithChanges(PetscInt *a, PetscScalar *b)
+                                                           ^^^^^^^^^^^^^^
+  4: {
+  5:   /* no remove */
+
+ERROR 4: ./src/sys/tests/linter/testDuplicates.c:8:3
+'PetscValidIntPointer' of type 'void'
+  6 : PetscValidIntPointer(a, 1);
+  7 : /* remove */
+> 8 : PetscValidIntPointer(a, 1);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  9 : /* no remove */
+  10: PetscValidIntPointer(b, 5);
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  4: {
+  5:   /* no remove */
+> 6:   PetscValidIntPointer(a, 1);
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7:   /* remove */
+  8:   PetscValidIntPointer(a, 1);
+
+ERROR 5: ./src/sys/tests/linter/testDuplicates.c:23:3
+'PetscValidIntPointer' of type 'void'
+  21: PetscValidScalarPointer(b, 2);
+  22: /* remove */
+> 23: PetscValidIntPointer(a, 1);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  24: PetscValidScalarPointer(b, 2);
+  25: {
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  18: {
+  19:   /* no remove */
+> 20:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  21:   PetscValidScalarPointer(b, 2);
+  22:   /* remove */
+  23:   PetscValidIntPointer(a, 1);
+
+ERROR 6: ./src/sys/tests/linter/testDuplicates.c:24:3
+'PetscValidScalarPointer' of type 'void'
+  22: /* remove */
+  23: PetscValidIntPointer(a, 1);
+> 24: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  25: {
+  26:   /* remove */
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  19: /* no remove */
+  20: PetscValidIntPointer(a, 1);
+> 21: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  22: /* remove */
+  23: PetscValidIntPointer(a, 1);
+  24: PetscValidScalarPointer(b, 2);
+
+ERROR 7: ./src/sys/tests/linter/testDuplicates.c:27:5
+'PetscValidIntPointer' of type 'void'
+  25: {
+  26:   /* remove */
+> 27:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  28:   PetscValidScalarPointer(b, 2);
+  29: }
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  18: {
+  19:   /* no remove */
+> 20:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  21:   PetscValidScalarPointer(b, 2);
+  22:   /* remove */
+  23:   PetscValidIntPointer(a, 1);
+  24:   PetscValidScalarPointer(b, 2);
+  25:   {
+  26:     /* remove */
+  27:     PetscValidIntPointer(a, 1);
+
+ERROR 8: ./src/sys/tests/linter/testDuplicates.c:28:5
+'PetscValidScalarPointer' of type 'void'
+  26:   /* remove */
+  27:   PetscValidIntPointer(a, 1);
+> 28:   PetscValidScalarPointer(b, 2);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  29: }
+  30: return 0;
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  19: /* no remove */
+  20: PetscValidIntPointer(a, 1);
+> 21: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  22: /* remove */
+  23: PetscValidIntPointer(a, 1);
+  24: PetscValidScalarPointer(b, 2);
+  25: {
+  26:   /* remove */
+  27:   PetscValidIntPointer(a, 1);
+  28:   PetscValidScalarPointer(b, 2);
+
+ERROR 9: ./src/sys/tests/linter/testDuplicates.c:39:3
+'PetscValidIntPointer' of type 'void'
+  37: PetscValidScalarPointer(b, 2);
+  38: /* remove */
+> 39: PetscValidIntPointer(a, 1);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  40: PetscValidScalarPointer(b, 2);
+  41: {
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  34: {
+  35:   /* no remove */
+> 36:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  37:   PetscValidScalarPointer(b, 2);
+  38:   /* remove */
+  39:   PetscValidIntPointer(a, 1);
+
+ERROR 10: ./src/sys/tests/linter/testDuplicates.c:40:3
+'PetscValidScalarPointer' of type 'void'
+  38: /* remove */
+  39: PetscValidIntPointer(a, 1);
+> 40: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  41: {
+  42:   /* remove */
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  35: /* no remove */
+  36: PetscValidIntPointer(a, 1);
+> 37: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  38: /* remove */
+  39: PetscValidIntPointer(a, 1);
+  40: PetscValidScalarPointer(b, 2);
+
+ERROR 11: ./src/sys/tests/linter/testDuplicates.c:43:5
+'PetscValidIntPointer' of type 'void'
+  41: {
+  42:   /* remove */
+> 43:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  44:   PetscValidScalarPointer(b, 2);
+  45: }
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  34: {
+  35:   /* no remove */
+> 36:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  37:   PetscValidScalarPointer(b, 2);
+  38:   /* remove */
+  39:   PetscValidIntPointer(a, 1);
+  40:   PetscValidScalarPointer(b, 2);
+  41:   {
+  42:     /* remove */
+  43:     PetscValidIntPointer(a, 1);
+
+ERROR 12: ./src/sys/tests/linter/testDuplicates.c:44:5
+'PetscValidScalarPointer' of type 'void'
+  42:   /* remove */
+  43:   PetscValidIntPointer(a, 1);
+> 44:   PetscValidScalarPointer(b, 2);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  45: }
+  46: {
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  35: /* no remove */
+  36: PetscValidIntPointer(a, 1);
+> 37: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  38: /* remove */
+  39: PetscValidIntPointer(a, 1);
+  40: PetscValidScalarPointer(b, 2);
+  41: {
+  42:   /* remove */
+  43:   PetscValidIntPointer(a, 1);
+  44:   PetscValidScalarPointer(b, 2);
+
+ERROR 13: ./src/sys/tests/linter/testDuplicates.c:48:5
+'PetscValidIntPointer' of type 'void'
+  46: {
+  47:   /* remove */
+> 48:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  49:   PetscValidScalarPointer(b, 2);
+  50: }
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  34: {
+  35:   /* no remove */
+> 36:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  37:   PetscValidScalarPointer(b, 2);
+  38:   /* remove */
+  39:   PetscValidIntPointer(a, 1);
+  40:   PetscValidScalarPointer(b, 2);
+  41:   {
+  42:     /* remove */
+  43:     PetscValidIntPointer(a, 1);
+  44:     PetscValidScalarPointer(b, 2);
+  45:   }
+  46:   {
+  47:     /* remove */
+  48:     PetscValidIntPointer(a, 1);
+
+ERROR 14: ./src/sys/tests/linter/testDuplicates.c:49:5
+'PetscValidScalarPointer' of type 'void'
+  47:   /* remove */
+  48:   PetscValidIntPointer(a, 1);
+> 49:   PetscValidScalarPointer(b, 2);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  50: }
+  51: return 0;
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  35: /* no remove */
+  36: PetscValidIntPointer(a, 1);
+> 37: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  38: /* remove */
+  39: PetscValidIntPointer(a, 1);
+  40: PetscValidScalarPointer(b, 2);
+  41: {
+  42:   /* remove */
+  43:   PetscValidIntPointer(a, 1);
+  44:   PetscValidScalarPointer(b, 2);
+  45: }
+  46: {
+  47:   /* remove */
+  48:   PetscValidIntPointer(a, 1);
+  49:   PetscValidScalarPointer(b, 2);
+
+ERROR 15: ./src/sys/tests/linter/testDuplicates.c:79:5
+'PetscValidIntPointer' of type 'void'
+  77: case PETSC_TRUE:
+  78:   /* remove */
+> 79:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  80:   PetscValidScalarPointer(b, 2);
+  81:   break;
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  72: {
+  73:   /* no remove */
+> 74:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  75:   PetscValidScalarPointer(b, 2);
+  76:   switch (cond) {
+  77:   case PETSC_TRUE:
+  78:     /* remove */
+  79:     PetscValidIntPointer(a, 1);
+
+ERROR 16: ./src/sys/tests/linter/testDuplicates.c:80:5
+'PetscValidScalarPointer' of type 'void'
+  78:   /* remove */
+  79:   PetscValidIntPointer(a, 1);
+> 80:   PetscValidScalarPointer(b, 2);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  81:   break;
+  82: case PETSC_FALSE:
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  73: /* no remove */
+  74: PetscValidIntPointer(a, 1);
+> 75: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  76: switch (cond) {
+  77: case PETSC_TRUE:
+  78:   /* remove */
+  79:   PetscValidIntPointer(a, 1);
+  80:   PetscValidScalarPointer(b, 2);
+
+ERROR 17: ./src/sys/tests/linter/testDuplicates.c:84:5
+'PetscValidIntPointer' of type 'void'
+  82: case PETSC_FALSE:
+  83:   /* remove */
+> 84:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  85:   PetscValidScalarPointer(b, 2);
+  86:   break;
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  72: {
+  73:   /* no remove */
+> 74:   PetscValidIntPointer(a, 1);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  75:   PetscValidScalarPointer(b, 2);
+  76:   switch (cond) {
+  77:   case PETSC_TRUE:
+  78:     /* remove */
+  79:     PetscValidIntPointer(a, 1);
+  80:     PetscValidScalarPointer(b, 2);
+  81:     break;
+  82:   case PETSC_FALSE:
+  83:     /* remove */
+  84:     PetscValidIntPointer(a, 1);
+
+ERROR 18: ./src/sys/tests/linter/testDuplicates.c:85:5
+'PetscValidScalarPointer' of type 'void'
+  83:   /* remove */
+  84:   PetscValidIntPointer(a, 1);
+> 85:   PetscValidScalarPointer(b, 2);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  86:   break;
+  87: }
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  73: /* no remove */
+  74: PetscValidIntPointer(a, 1);
+> 75: PetscValidScalarPointer(b, 2);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  76: switch (cond) {
+  77: case PETSC_TRUE:
+  78:   /* remove */
+  79:   PetscValidIntPointer(a, 1);
+  80:   PetscValidScalarPointer(b, 2);
+  81:   break;
+  82: case PETSC_FALSE:
+  83:   /* remove */
+  84:   PetscValidIntPointer(a, 1);
+  85:   PetscValidScalarPointer(b, 2);
+
+ERROR 19: ./src/sys/tests/linter/testDuplicates.c:112:5
+'PetscValidIntPointer' of type 'void'
+  110: if (cond) {
+  111:   /* remove */
+> 112:   PetscValidIntPointer(a, 1);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  113:   PetscValidScalarPointer(b, 2);
+  114: } else {
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  106: {
+  107:   /* no remove */
+> 108:   PetscValidIntPointer(a, 1);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  109:   PetscValidScalarPointer(b, 2);
+  110:   if (cond) {
+  111:     /* remove */
+  112:     PetscValidIntPointer(a, 1);
+
+ERROR 20: ./src/sys/tests/linter/testDuplicates.c:113:5
+'PetscValidScalarPointer' of type 'void'
+  111:   /* remove */
+  112:   PetscValidIntPointer(a, 1);
+> 113:   PetscValidScalarPointer(b, 2);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  114: } else {
+  115:   /* remove */
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  107: /* no remove */
+  108: PetscValidIntPointer(a, 1);
+> 109: PetscValidScalarPointer(b, 2);
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  110: if (cond) {
+  111:   /* remove */
+  112:   PetscValidIntPointer(a, 1);
+  113:   PetscValidScalarPointer(b, 2);
+
+ERROR 21: ./src/sys/tests/linter/testDuplicates.c:116:5
+'PetscValidIntPointer' of type 'void'
+  114: } else {
+  115:   /* remove */
+> 116:   PetscValidIntPointer(a, 1);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  117:   PetscValidScalarPointer(b, 2);
+  118: }
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  106: {
+  107:   /* no remove */
+> 108:   PetscValidIntPointer(a, 1);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  109:   PetscValidScalarPointer(b, 2);
+  110:   if (cond) {
+  111:     /* remove */
+  112:     PetscValidIntPointer(a, 1);
+  113:     PetscValidScalarPointer(b, 2);
+  114:   } else {
+  115:     /* remove */
+  116:     PetscValidIntPointer(a, 1);
+
+ERROR 22: ./src/sys/tests/linter/testDuplicates.c:117:5
+'PetscValidScalarPointer' of type 'void'
+  115:   /* remove */
+  116:   PetscValidIntPointer(a, 1);
+> 117:   PetscValidScalarPointer(b, 2);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  118: }
+  119: return 0;
+
+Duplicate function found previous identical usage [-fduplicate-function]:
+  107: /* no remove */
+  108: PetscValidIntPointer(a, 1);
+> 109: PetscValidScalarPointer(b, 2);
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  110: if (cond) {
+  111:   /* remove */
+  112:   PetscValidIntPointer(a, 1);
+  113:   PetscValidScalarPointer(b, 2);
+  114: } else {
+  115:   /* remove */
+  116:   PetscValidIntPointer(a, 1);
+  117:   PetscValidScalarPointer(b, 2);
+[ROOT] -------------------------------------------------------------------------------------
+<--- LEFT --->

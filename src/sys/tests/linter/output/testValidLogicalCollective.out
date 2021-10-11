@@ -1,0 +1,183 @@
+<--- FIXED --->
+[ROOT] -------------------------------------------------------------------------------------
+ERROR 0: ./src/sys/tests/linter/testValidLogicalCollective.c:8:37
+'d' of type 'PetscBool'
+  6 : 
+  7 : /* incorrect */
+> 8 : PetscValidLogicalCollectiveInt(v, d, 2);
+                                        ^
+  9 : PetscValidLogicalCollectiveEnum(v, e, 3);
+  10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+
+Incorrect use of PetscValidLogicalCollectiveInt(), use PetscValidLogicalCollectiveBool() instead [-fincompatible-function]
+
+ERROR 1: ./src/sys/tests/linter/testValidLogicalCollective.c:8:40
+'2' of type 'int'
+  6 : 
+  7 : /* incorrect */
+> 8 : PetscValidLogicalCollectiveInt(v, d, 2);
+                                           ^
+  9 : PetscValidLogicalCollectiveEnum(v, e, 3);
+  10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+
+Argument number doesn't match for 'd'. Expected '4', found '2' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidLogicalCollective.c:3:82 Note: 'd' is traceable to argument #4 'd' in enclosing function here:
+  1: #include <petsc/private/viewerimpl.h>
+  2: 
+> 3: PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
+                                                                                      ^^^^^^^^^^^
+  4: {
+  5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
+
+ERROR 2: ./src/sys/tests/linter/testValidLogicalCollective.c:9:38
+'e' of type 'PetscScalar' (a.k.a. 'double')
+  7 : /* incorrect */
+  8 : PetscValidLogicalCollectiveInt(v, d, 2);
+> 9 : PetscValidLogicalCollectiveEnum(v, e, 3);
+                                         ^
+  10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+  11: PetscValidLogicalCollectiveScalar(v, a, 5);
+
+Incorrect use of PetscValidLogicalCollectiveEnum(), use PetscValidLogicalCollectiveScalar() instead [-fincompatible-function]
+
+ERROR 3: ./src/sys/tests/linter/testValidLogicalCollective.c:9:41
+'3' of type 'int'
+  7 : /* incorrect */
+  8 : PetscValidLogicalCollectiveInt(v, d, 2);
+> 9 : PetscValidLogicalCollectiveEnum(v, e, 3);
+                                            ^
+  10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+  11: PetscValidLogicalCollectiveScalar(v, a, 5);
+
+Argument number doesn't match for 'e'. Expected '5', found '3' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidLogicalCollective.c:3:95 Note: 'e' is traceable to argument #5 'e' in enclosing function here:
+  1: #include <petsc/private/viewerimpl.h>
+  2: 
+> 3: PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
+                                                                                                   ^^^^^^^^^^^^^
+  4: {
+  5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
+
+ERROR 4: ./src/sys/tests/linter/testValidLogicalCollective.c:10:40
+'f' of type 'PetscReal' (a.k.a. 'double')
+  8 : PetscValidLogicalCollectiveInt(v, d, 2);
+  9 : PetscValidLogicalCollectiveEnum(v, e, 3);
+> 10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+                                           ^
+  11: PetscValidLogicalCollectiveScalar(v, a, 5);
+  12: PetscValidLogicalCollectiveReal(v, b, 6);
+
+Incorrect use of PetscValidLogicalCollectiveMPIInt(), use PetscValidLogicalCollectiveReal() instead [-fincompatible-function]
+
+ERROR 5: ./src/sys/tests/linter/testValidLogicalCollective.c:10:43
+'4' of type 'int'
+  8 : PetscValidLogicalCollectiveInt(v, d, 2);
+  9 : PetscValidLogicalCollectiveEnum(v, e, 3);
+> 10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+                                              ^
+  11: PetscValidLogicalCollectiveScalar(v, a, 5);
+  12: PetscValidLogicalCollectiveReal(v, b, 6);
+
+Argument number doesn't match for 'f'. Expected '6', found '4' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidLogicalCollective.c:3:110 Note: 'f' is traceable to argument #6 'f' in enclosing function here:
+  1: #include <petsc/private/viewerimpl.h>
+  2: 
+> 3: PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
+                                                                                                                  ^^^^^^^^^^^
+  4: {
+  5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
+
+ERROR 6: ./src/sys/tests/linter/testValidLogicalCollective.c:11:40
+'a' of type 'PetscInt' (a.k.a. 'int')
+  9 : PetscValidLogicalCollectiveEnum(v, e, 3);
+  10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+> 11: PetscValidLogicalCollectiveScalar(v, a, 5);
+                                           ^
+  12: PetscValidLogicalCollectiveReal(v, b, 6);
+  13: PetscValidLogicalCollectiveEnum(v, c, 7);
+
+Incorrect use of PetscValidLogicalCollectiveScalar(), use PetscValidLogicalCollectiveInt() instead [-fincompatible-function]
+
+ERROR 7: ./src/sys/tests/linter/testValidLogicalCollective.c:11:43
+'5' of type 'int'
+  9 : PetscValidLogicalCollectiveEnum(v, e, 3);
+  10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+> 11: PetscValidLogicalCollectiveScalar(v, a, 5);
+                                              ^
+  12: PetscValidLogicalCollectiveReal(v, b, 6);
+  13: PetscValidLogicalCollectiveEnum(v, c, 7);
+
+Argument number doesn't match for 'a'. Expected '1', found '5' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidLogicalCollective.c:3:43 Note: 'a' is traceable to argument #1 'a' in enclosing function here:
+  1: #include <petsc/private/viewerimpl.h>
+  2: 
+> 3: PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
+                                               ^^^^^^^^^^
+  4: {
+  5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
+
+ERROR 8: ./src/sys/tests/linter/testValidLogicalCollective.c:12:38
+'b' of type 'PetscMPIInt' (a.k.a. 'int')
+  10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+  11: PetscValidLogicalCollectiveScalar(v, a, 5);
+> 12: PetscValidLogicalCollectiveReal(v, b, 6);
+                                         ^
+  13: PetscValidLogicalCollectiveEnum(v, c, 7);
+  14: 
+
+Incorrect use of PetscValidLogicalCollectiveReal(), use PetscValidLogicalCollectiveMPIInt() instead [-fincompatible-function]
+
+ERROR 9: ./src/sys/tests/linter/testValidLogicalCollective.c:12:41
+'6' of type 'int'
+  10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
+  11: PetscValidLogicalCollectiveScalar(v, a, 5);
+> 12: PetscValidLogicalCollectiveReal(v, b, 6);
+                                            ^
+  13: PetscValidLogicalCollectiveEnum(v, c, 7);
+  14: 
+
+Argument number doesn't match for 'b'. Expected '2', found '6' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidLogicalCollective.c:3:55 Note: 'b' is traceable to argument #2 'b' in enclosing function here:
+  1: #include <petsc/private/viewerimpl.h>
+  2: 
+> 3: PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
+                                                           ^^^^^^^^^^^^^
+  4: {
+  5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
+
+ERROR 10: ./src/sys/tests/linter/testValidLogicalCollective.c:13:38
+'c' of type 'PetscInt' (a.k.a. 'int')
+  11: PetscValidLogicalCollectiveScalar(v, a, 5);
+  12: PetscValidLogicalCollectiveReal(v, b, 6);
+> 13: PetscValidLogicalCollectiveEnum(v, c, 7);
+                                         ^
+  14: 
+  15: /* correct */
+
+Incorrect use of PetscValidLogicalCollectiveEnum(), use PetscValidLogicalCollectiveInt() instead [-fincompatible-function]
+
+ERROR 11: ./src/sys/tests/linter/testValidLogicalCollective.c:13:41
+'7' of type 'int'
+  11: PetscValidLogicalCollectiveScalar(v, a, 5);
+  12: PetscValidLogicalCollectiveReal(v, b, 6);
+> 13: PetscValidLogicalCollectiveEnum(v, c, 7);
+                                            ^
+  14: 
+  15: /* correct */
+
+Argument number doesn't match for 'c'. Expected '3', found '7' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidLogicalCollective.c:3:70 Note: 'c' is traceable to argument #3 'c' in enclosing function here:
+  1: #include <petsc/private/viewerimpl.h>
+  2: 
+> 3: PetscErrorCode testValidLogicalCollective(PetscInt a, PetscMPIInt b, PetscInt c, PetscBool d, PetscScalar e, PetscReal f)
+                                                                          ^^^^^^^^^^
+  4: {
+  5:   PetscViewer v; /* dummy variable to satisfy the PetscObject for the following */
+[ROOT] -------------------------------------------------------------------------------------
+<--- LEFT --->

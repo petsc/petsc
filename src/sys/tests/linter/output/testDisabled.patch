@@ -1,3 +1,7 @@
-@@ -6 +6 @@
+@@ -7,5 +7,5 @@
+ {
+   /* incorrect */
 -  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 2);
 +  PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
+ 
+   /* correct by being disabled */
