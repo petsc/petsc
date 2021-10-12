@@ -83,6 +83,15 @@ static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscViewerFlush_HDF5(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)viewer->data;
+
+  PetscFunctionBegin;
+  if (hdf5->file_id) PetscStackCallHDF5(H5Fflush,(hdf5->file_id, H5F_SCOPE_LOCAL));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
@@ -470,7 +479,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   v->ops->setfromoptions = PetscViewerSetFromOptions_HDF5;
   v->ops->setup          = PetscViewerSetUp_HDF5;
   v->ops->view           = PetscViewerView_HDF5;
-  v->ops->flush          = NULL;
+  v->ops->flush          = PetscViewerFlush_HDF5;
   hdf5->btype            = FILE_MODE_UNDEFINED;
   hdf5->filename         = NULL;
   hdf5->timestep         = -1;
