@@ -116,6 +116,11 @@ class PCPatchConstructType(object):
     USER                     = PC_PATCH_USER
     PYTHON                   = PC_PATCH_PYTHON
 
+class PCHPDDMCoarseCorrectionType(object):
+    DEFLATED                 = PC_HPDDM_COARSE_CORRECTION_DEFLATED
+    ADDITIVE                 = PC_HPDDM_COARSE_CORRECTION_ADDITIVE
+    BALANCED                 = PC_HPDDM_COARSE_CORRECTION_BALANCED
+
 # --------------------------------------------------------------------
 
 cdef class PC(Object):
@@ -123,15 +128,16 @@ cdef class PC(Object):
     Type = PCType
     Side = PCSide
 
-    ASMType            = PCASMType
-    GASMType           = PCGASMType
-    MGType             = PCMGType
-    MGCycleType        = PCMGCycleType
-    GAMGType           = PCGAMGType
-    CompositeType      = PCCompositeType
-    SchurFactType      = PCFieldSplitSchurFactType
-    SchurPreType       = PCFieldSplitSchurPreType
-    PatchConstructType = PCPatchConstructType
+    ASMType                   = PCASMType
+    GASMType                  = PCGASMType
+    MGType                    = PCMGType
+    MGCycleType               = PCMGCycleType
+    GAMGType                  = PCGAMGType
+    CompositeType             = PCCompositeType
+    SchurFactType             = PCFieldSplitSchurFactType
+    SchurPreType              = PCFieldSplitSchurPreType
+    PatchConstructType        = PCPatchConstructType
+    HPDDMCoarseCorrectionType = PCHPDDMCoarseCorrectionType
 
     # --- xxx ---
 
@@ -801,6 +807,15 @@ cdef class PC(Object):
         cdef PetscBool phas = has
         CHKERR( PCHPDDMHasNeumannMat(self.pc, phas) )
 
+    def getHPDDMCoarseCorrectionType(self):
+        cdef PetscPCHPDDMCoarseCorrectionType cval = PC_HPDDM_COARSE_CORRECTION_DEFLATED
+        CHKERR( PCHPDDMGetCoarseCorrectionType(self.pc, &cval) )
+        return cval
+
+    def setHPDDMCoarseCorrectionType(self, correction_type):
+        cdef PetscPCHPDDMCoarseCorrectionType ctype = correction_type
+        CHKERR( PCHPDDMSetCoarseCorrectionType(self.pc, ctype) )
+
 # --------------------------------------------------------------------
 
 del PCType
@@ -814,5 +829,6 @@ del PCCompositeType
 del PCFieldSplitSchurPreType
 del PCFieldSplitSchurFactType
 del PCPatchConstructType
+del PCHPDDMCoarseCorrectionType
 
 # --------------------------------------------------------------------
