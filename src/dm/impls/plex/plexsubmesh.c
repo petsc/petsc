@@ -596,39 +596,58 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dmNew)
+static PetscErrorCode DMPlexShiftSF_Single(DM dm, PetscInt depthShift[], PetscSF sf, PetscSF sfNew)
 {
-  PetscInt           depth = 0;
-  PetscSF            sfPoint, sfPointNew;
   const PetscSFNode *remotePoints;
   PetscSFNode       *gremotePoints;
   const PetscInt    *localPoints;
   PetscInt          *glocalPoints, *newLocation, *newRemoteLocation;
-  PetscInt           numRoots, numLeaves, l, pStart, pEnd, totShift = 0;
+  PetscInt           numRoots, numLeaves, l, pStart, pEnd, depth = 0, totShift = 0;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  /* Step 9: Convert pointSF */
-  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
-  ierr = DMGetPointSF(dmNew, &sfPointNew);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  totShift = DMPlexShiftPoint_Internal(pEnd,depth,depthShift) - pEnd;
+  ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+  totShift = DMPlexShiftPoint_Internal(pEnd, depth, depthShift) - pEnd;
   if (numRoots >= 0) {
-    ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
-    for (l=0; l<numRoots; l++) newLocation[l] = DMPlexShiftPoint_Internal(l, depth, depthShift);
-    ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numLeaves,    &glocalPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numRoots, &newLocation, pEnd-pStart, &newRemoteLocation);CHKERRQ(ierr);
+    for (l = 0; l < numRoots; ++l) newLocation[l] = DMPlexShiftPoint_Internal(l, depth, depthShift);
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, newLocation, newRemoteLocation, MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, newLocation, newRemoteLocation, MPI_REPLACE);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeaves, &glocalPoints);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeaves, &gremotePoints);CHKERRQ(ierr);
     for (l = 0; l < numLeaves; ++l) {
       glocalPoints[l]        = DMPlexShiftPoint_Internal(localPoints[l], depth, depthShift);
       gremotePoints[l].rank  = remotePoints[l].rank;
       gremotePoints[l].index = newRemoteLocation[localPoints[l]];
     }
-    ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sfPointNew, numRoots + totShift, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscFree2(newLocation, newRemoteLocation);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sfNew, numRoots + totShift, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dmNew)
+{
+  PetscSF        sfPoint, sfPointNew;
+  PetscBool      useNatural;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Step 9: Convert pointSF */
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dmNew, &sfPointNew);CHKERRQ(ierr);
+  ierr = DMPlexShiftSF_Single(dm, depthShift, sfPoint, sfPointNew);CHKERRQ(ierr);
+  /* Step 9b: Convert naturalSF */
+  ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
+  if (useNatural) {
+    PetscSF sfNat, sfNatNew;
+
+    ierr = DMSetUseNatural(dmNew, useNatural);CHKERRQ(ierr);
+    ierr = DMGetNaturalSF(dm, &sfNat);CHKERRQ(ierr);
+    ierr = DMGetNaturalSF(dmNew, &sfNatNew);CHKERRQ(ierr);
+    ierr = DMPlexShiftSF_Single(dm, depthShift, sfNat, sfNatNew);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
