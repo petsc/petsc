@@ -921,6 +921,10 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   }
 #endif
 
+#if PETSC_PKG_HYPRE_VERSION_LE(9,9,9)
+  if (jac->Rtype && jac->agg_nl) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"-pc_hypre_boomeramg_restriction_type (%D) and -pc_hypre_boomeramg_agg_nl (%D)",jac->Rtype,jac->agg_nl);
+#endif
+
   /* new 3/07 */
   ierr = PetscOptionsEList("-pc_hypre_boomeramg_interp_type","Interpolation type","None",HYPREBoomerAMGInterpType,ALEN(HYPREBoomerAMGInterpType),HYPREBoomerAMGInterpType[0],&indx,&flg);CHKERRQ(ierr);
   if (flg || jac->Rtype) {
