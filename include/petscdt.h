@@ -68,6 +68,8 @@ PETSC_EXTERN PetscErrorCode PetscDTJacobiNorm(PetscReal,PetscReal,PetscInt,Petsc
 PETSC_EXTERN PetscErrorCode PetscDTJacobiEval(PetscInt,PetscReal,PetscReal,const PetscReal*,PetscInt,const PetscInt*,PetscReal*,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTJacobiEvalJet(PetscReal,PetscReal,PetscInt,const PetscReal[],PetscInt,PetscInt,PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscDTPKDEvalJet(PetscInt,PetscInt,const PetscReal[],PetscInt,PetscInt,PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscDTPTrimmedSize(PetscInt,PetscInt,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscDTPTrimmedEvalJet(PetscInt,PetscInt,const PetscReal[],PetscInt,PetscInt,PetscInt,PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscDTGaussQuadrature(PetscInt,PetscReal,PetscReal,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal*,PetscReal*);

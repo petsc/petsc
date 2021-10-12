@@ -90,4 +90,6 @@ Changes: Development
 
 .. rubric:: DT:
 
+- Add ``PetscDTPTrimmedEvalJet()`` to evaluate a stable basis for trimmed polynomials, and ``PetscDTPTrimmedSize()`` for the size of that space
+
 .. rubric:: Fortran:
