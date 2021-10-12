@@ -25,6 +25,16 @@ contributions, adding new implementations for solver components:
 * `Add a new KSP type <https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/ksp/impls/cg/cg.c.html>`__
 * `Add a new subclass of a matrix type (implementation inheritence) <https://gitlab.com/petsc/petsc/-/blob/main/src/mat/impls/aij/seq/superlu/superlu.c.html>`__
 
+.. _sec_doc_fixes:
+
+Documentation fixes
+===================
+We welcome corrections for our :doc:`documentation </developers/documentation>`.
+You can submit corrections to petsc-maint@mcs.anl.gov or `post an issue <https://gitlab.com/petsc/petsc/-/issues>`__.
+Add the label "docs".
+You can also supply corrections to many web pages directly by clicking "Edit this page",
+making your edits, following the instructions to make a merge request, and following the :doc:`integration process </developers/integration>`.
+
 Browsing Source
 ===============
 
