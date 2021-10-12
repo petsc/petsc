@@ -4,13 +4,3 @@ Or you can supply corrections to PETSc document directly when viewing it online.
 Once you have edited the document, at the bottom of the page, type a summary of your
 changes in the ``Commit Message`` box, type a unique branch name in ``Target Branch`` box, and press ``Commit Changes``.
 On the resulting Merge Commit page select the ``Labels`` ``Workflow:Review`` and ``docs-only`` then press  ``Submit``. The following movie demonstrates the needed steps - note that the first step is outdated.
-
-.. raw::  html
-
-          <iframe width="560" height="315" src="https://www.youtube.com/embed/JAqEWUotGks?rel=0" frameborder="0" allowfullscreen></iframe>
-
-
-
-
-
-
