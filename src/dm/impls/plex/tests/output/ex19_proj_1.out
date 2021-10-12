@@ -5,19 +5,21 @@ DMinit in 2 dimensions:
   1-cells: 56
   2-cells: 32
 Labels:
-  Face Sets: 1 strata with value/size (1 (16))
-  marker: 1 strata with value/size (1 (32))
+  celltype: 3 strata with value/size (0 (25), 3 (32), 1 (56))
   depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
+  marker: 1 strata with value/size (1 (32))
+  Face Sets: 1 strata with value/size (1 (16))
 DM Object: DMadapt (adapt_) 1 MPI processes
   type: plex
 DMadapt in 2 dimensions:
-  0-cells: 45
-  1-cells: 112
-  2-cells: 68
+  0-cells: 25
+  1-cells: 56
+  2-cells: 32
 Labels:
-  _boundary_: 1 strata with value/size (1 (20))
-  depth: 3 strata with value/size (0 (45), 1 (112), 2 (68))
-Original L2 Error: 1.7043e-16
-Interpolated L2 Error: 2.54341e-16
-Lumped (rhs) L2 Error: 6.96114e+13
-Projected L2 Error: 4.23351e-16
+  celltype: 3 strata with value/size (0 (25), 3 (32), 1 (56))
+  depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
+  marker: 1 strata with value/size (1 (16))
+Original L2 Error: 9.83628e-17
+Adapted L2 Error: 1.13224e-16
+Interpolated L2 Error: 1.07456e-16
+Projected L2 Error: 3.13459e-16

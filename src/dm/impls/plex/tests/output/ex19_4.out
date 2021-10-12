@@ -18,4 +18,4 @@ DMadapt in 2 dimensions:
 Labels:
   celltype: 3 strata with value/size (0 (6), 3 (4), 1 (9))
   depth: 3 strata with value/size (0 (6), 1 (9), 2 (4))
-  _boundary_: 1 strata with value/size (1 (4))
+  marker: 1 strata with value/size (1 (4))

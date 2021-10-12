@@ -19,4 +19,4 @@ DMadapt in 3 dimensions:
 Labels:
   celltype: 4 strata with value/size (0 (1000), 6 (4081), 3 (8683), 1 (5601))
   depth: 4 strata with value/size (0 (1000), 1 (5601), 2 (8683), 3 (4081))
-  _boundary_: 1 strata with value/size (1 (871))
+  marker: 1 strata with value/size (1 (871))
