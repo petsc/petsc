@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://www.tetgen.org/1.5/src/tetgen1.5.1.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.5.1.tar.gz']
+    self.download     = ['http://www.tetgen.org/1.5/src/tetgen1.6.0.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.6.0.tar.gz']
     self.liblist      = [['libtet.a']]
     self.includes     = ['tetgen.h']
     self.cxx          = 1
