@@ -4699,6 +4699,54 @@ PetscErrorCode DMSetPointSF(DM dm, PetscSF sf)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMGetNaturalSF - Get the PetscSF encoding the map back to the original mesh ordering
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. sf - The PetscSF
+
+  Level: intermediate
+
+  Note: This gets a borrowed reference, so the user should not destroy this PetscSF.
+
+.seealso: DMSetNaturalSF(), DMSetUseNatural(), DMGetUseNatural(), DMPlexCreateGlobalToNaturalSF(), DMPlexDistribute()
+@*/
+PetscErrorCode DMGetNaturalSF(DM dm, PetscSF *sf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(sf, 2);
+  *sf = dm->sfNatural;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetNaturalSF - Set the PetscSF encoding the map back to the original mesh ordering
+
+  Input Parameters:
++ dm - The DM
+- sf - The PetscSF
+
+  Level: intermediate
+
+.seealso: DMGetNaturalSF(), DMSetUseNatural(), DMGetUseNatural(), DMPlexCreateGlobalToNaturalSF(), DMPlexDistribute()
+@*/
+PetscErrorCode DMSetNaturalSF(DM dm, PetscSF sf)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (sf) PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject) sf);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&dm->sfNatural);CHKERRQ(ierr);
+  dm->sfNatural = sf;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMSetDefaultAdjacency_Private(DM dm, PetscInt f, PetscObject disc)
 {
   PetscClassId   id;
