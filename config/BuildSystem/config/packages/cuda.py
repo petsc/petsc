@@ -69,45 +69,67 @@ class Configure(config.package.Package):
     return
 
   def getIncludeDirs(self, prefix, includeDir):
+    ''' Generate cuda include dirs'''
+    # See comments below in generateLibList() for different prefix formats.
+    # format A, prefix = /path/cuda-11.4.0/, includeDir = 'include'. The superclass's method handles this well.
     incDirs = config.package.Package.getIncludeDirs(self, prefix, includeDir)
-    nvhpcDir        = os.path.dirname(prefix) # /path/Linux_x86_64/21.5
+
+    if not isinstance(incDirs, list):
+      incDirs = [incDirs]
+
+    # format B and C, prefix = /path/nvhpc/Linux_x86_64/21.7/compilers or  /path/nvhpc/Linux_x86_64/21.7/cuda
+    nvhpcDir        = os.path.dirname(prefix) # /path/nvhpc/Linux_x86_64/21.7
     nvhpcCudaIncDir = os.path.join(nvhpcDir,'cuda','include')
     nvhpcMathIncDir = os.path.join(nvhpcDir,'math_libs','include')
     if os.path.isdir(nvhpcCudaIncDir) and os.path.isdir(nvhpcMathIncDir):
-      if isinstance(incDirs, list):
-        return incDirs.extend([nvhpcCudaIncDir,nvhpcMathIncDir])
-      else:
-        return [incDirs,nvhpcCudaIncDir,nvhpcMathIncDir]
+      incDirs.extend([nvhpcCudaIncDir,nvhpcMathIncDir])
+
+    # format D, prefix = /path/nvhpc/Linux_x86_64/21.7/cuda/11.4
+    nvhpcDir           = os.path.dirname(os.path.dirname(prefix))  # /path/nvhpc/Linux_x86_64/21.7
+    ver                = os.path.basename(prefix) # 11.4
+    nvhpcCudaVerIncDir = os.path.join(nvhpcDir,'cuda',ver,'include')
+    nvhpcMathVerIncDir = os.path.join(nvhpcDir,'math_libs',ver,'include')
+    if os.path.isdir(nvhpcCudaVerIncDir) and os.path.isdir(nvhpcMathVerIncDir):
+      incDirs.extend([nvhpcCudaVerIncDir,nvhpcMathVerIncDir])
     return incDirs
 
   def generateLibList(self, directory):
-    '''NVHPC separated the libraries into a different math_libs directory and the directory with the basic CUDA library'''
-    '''Thus configure needs to support finding both sets of libraries and include files given a single directory that points to CUDA directory'''
-    '''Note the difficulty comes from the fact that math libraries are ABOVE the CUDA version in the directory tree'''
+    ''' Generate cuda liblist. The difficulty comes from NVIDIA providing two different directory structures through CUDAToolkit and NVHPC'''
 
-    verdir = os.path.dirname(directory)
-    ver = os.path.basename(verdir)
-    mdir = os.path.join('..','..','math_libs',ver)
-    if os.path.isdir(os.path.join(verdir,mdir,'include')):
-      self.includedir = [os.path.join(mdir,'include'), 'include']
+    # NVIDIA provides
+    # 1) CUDAToolkit, with a directory structure like
+    #   /path/cuda-11.4.0/{lib64, lib64/stubs}, here lib64/ contains all basic and math libraries
+    #                   +/include
+    #                   +/bin/{nvcc,..}
+    #
+    # 2) NVHPC, with a directory structure like
+    # /path/nvhpc/Linux_x86_64/21.7/compilers/bin/{nvcc,nvc,nvc++}
+    #                             +/cuda/{include,bin/nvcc,lib64,lib64/stubs}, just symbol links to what in cuda/11.4
+    #                             +/cuda/11.4/{include,bin/nvcc,lib64,lib64/stubs}
+    #                             +/math_libs/{include,lib64,lib64/stubs}, just symbol links to what in math_libs/11.4
+    #                             +/math_libs/11.4/{include,lib64,lib64/stubs}
+    #                             +/comm_libs/mpi/bin/{mpicc,mpicxx,mpifort}
 
-    # first try the standard list with all libraries in one directory
-    self.liblist = [self.basicliblist[0]+self.mathliblist[0]] + [self.basicliblist[1]+self.mathliblist[1]]
-    liblist      = config.package.Package.generateLibList(self, directory)
-    # Check the stub
-    stubLibDir   = os.path.join(directory,'stubs')
-    if os.path.isdir(stubLibDir):
-      self.libraries.addRpathSkipDir(stubLibDir)
+    # The input argument 'directory' could be in these formats:
+    # A) /path/cuda-11.4.0/lib64,                       by loading a CUDAToolkit or --with-cuda-dir=/path/cuda-11.4.0
+    # B) /path/nvhpc/Linux_x86_64/21.7/compilers/lib64, by loading a NVHPC module
+    # C) /path/nvhpc/Linux_x86_64/21.7/cuda/lib64,      by --with-cuda-dir=/path/Linux_x86_64/21.7/cuda/
+    # D) /path/nvhpc/Linux_x86_64/21.7/cuda/11.4/lib64, by --with-cuda-dir=/path/Linux_x86_64/21.7/cuda/11.4
+
+    # 'directory' is in format A, with basic and math libraries in one directory.
+    liblist           = [] # initialize
+    toolkitCudaLibDir = directory
+    toolkitStubLibDir = os.path.join(toolkitCudaLibDir,'stubs')
+    if os.path.isdir(toolkitCudaLibDir) and os.path.isdir(toolkitStubLibDir):
+      self.libraries.addRpathSkipDir(toolkitStubLibDir)
+      self.liblist = [self.basicliblist[0]+self.mathliblist[0]] + [self.basicliblist[1]+self.mathliblist[1]]
+      liblist      = config.package.Package.generateLibList(self, toolkitCudaLibDir)
       self.liblist = self.stubliblist
-      stubliblist  = config.package.Package.generateLibList(self,stubLibDir)
+      stubliblist  = config.package.Package.generateLibList(self,toolkitStubLibDir)
       liblist      = [liblist[0]+stubliblist[0],liblist[1]+stubliblist[1]]
 
-    # When 'directory' is in a format like /path/Linux_x86_64/21.5/compilers/lib64, NVHPC directory structure is like
-    # /path/Linux_x86_64/21.5/compilers/bin/{nvcc,nvc,nvc++}
-    #                       +/comm_libs/mpi/bin/{mpicc,mpicxx,mpifort}
-    #                       +/cuda/{include,lib64,lib64/stubs}
-    #                       +/math_libs/{include,lib64,lib64/stubs}
-    nvhpcDir        = os.path.normpath(os.path.dirname(os.path.dirname(directory))) # /path/Linux_x86_64/21.5
+    # 'directory' is in format B or C, and we peel 'directory' two times.
+    nvhpcDir        = os.path.dirname(os.path.dirname(directory)) # /path/nvhpc/Linux_x86_64/21.7
     nvhpcCudaLibDir = os.path.join(nvhpcDir,'cuda','lib64')
     nvhpcMathLibDir = os.path.join(nvhpcDir,'math_libs','lib64')
     nvhpcStubLibDir = os.path.join(nvhpcDir,'cuda','lib64','stubs')
@@ -119,7 +141,26 @@ class Configure(config.package.Package):
       mathliblist  = config.package.Package.generateLibList(self, nvhpcMathLibDir)
       self.liblist = self.stubliblist
       stubliblist  = config.package.Package.generateLibList(self, nvhpcStubLibDir)
-      liblist      = [liblist[0], liblist[1], mathliblist[0]+cudaliblist[0]+stubliblist[0], mathliblist[1]+cudaliblist[1]+stubliblist[1]]
+      liblist.append(mathliblist[0]+cudaliblist[0]+stubliblist[0])
+      liblist.append(mathliblist[1]+cudaliblist[1]+stubliblist[1])
+
+    # 'directory' is in format D, and we peel 'directory' three times.
+    # We preserve the version info in case a NVHPC installation provides multiple cuda versions and we'd like to respect user's choice
+    nvhpcDir           = os.path.dirname(os.path.dirname(os.path.dirname(directory))) # /path/nvhpc/Linux_x86_64/21.7
+    ver                = os.path.basename(os.path.dirname(directory)) # 11.4
+    nvhpcCudaVerLibDir = os.path.join(nvhpcDir,'cuda',ver,'lib64')
+    nvhpcMathVerLibDir = os.path.join(nvhpcDir,'math_libs',ver,'lib64')
+    nvhpcStubVerLibDir = os.path.join(nvhpcDir,'cuda',ver,'lib64','stubs')
+    if os.path.isdir(nvhpcCudaVerLibDir) and os.path.isdir(nvhpcMathVerLibDir) and os.path.isdir(nvhpcStubVerLibDir):
+      self.libraries.addRpathSkipDir(nvhpcStubVerLibDir)
+      self.liblist = self.basicliblist
+      cudaliblist  = config.package.Package.generateLibList(self, nvhpcCudaVerLibDir)
+      self.liblist = self.mathliblist
+      mathliblist  = config.package.Package.generateLibList(self, nvhpcMathVerLibDir)
+      self.liblist = self.stubliblist
+      stubliblist  = config.package.Package.generateLibList(self, nvhpcStubVerLibDir)
+      liblist.append(mathliblist[0]+cudaliblist[0]+stubliblist[0])
+      liblist.append(mathliblist[1]+cudaliblist[1]+stubliblist[1])
     return liblist
 
   def checkSizeofVoidP(self):
