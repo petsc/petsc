@@ -12,7 +12,7 @@ LINKCHECKDIR  = _build/linkcheck
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
 
-.PHONY: help Makefile checklinks
+.PHONY: help makefile checklinks
 
 checklinks:
 	@$(SPHINXBUILD) -b linkcheck "$(SOURCEDIR)" "$(LINKCHECKDIR)" $(SPHINXOPTS)
@@ -32,6 +32,6 @@ website-deploy: images
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.
-%: Makefile images
+%: makefile images
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) -j auto
 

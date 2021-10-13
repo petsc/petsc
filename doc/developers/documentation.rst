@@ -219,7 +219,7 @@ Adding new images
 
 * Note the URL and currently-used branch (after ``-b``) for the upstream images repository, as used by the documentation build:
 
-.. literalinclude:: /../doc/Makefile
+.. literalinclude:: /../doc/makefile
    :language: makefile
    :start-at: images:
    :lines: 2
