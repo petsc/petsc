@@ -15,8 +15,8 @@ PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscInt
 
 # else
 
-PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*);
-PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],PetscVec*);
+PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscScalar[],PetscScalar[],Vec*);
+PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscScalar[],PetscScalar[],Vec*);
 
 #endif
 
