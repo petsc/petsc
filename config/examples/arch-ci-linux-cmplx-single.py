@@ -10,6 +10,7 @@ configure_options = [
   'CXXOPTFLAGS=-g -O',
   '--with-scalar-type=complex',
   '--with-precision=single',
+  '--with-petsc4py=1',
    ]
 
 if __name__ == '__main__':

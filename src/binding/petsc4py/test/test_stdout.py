@@ -18,7 +18,7 @@ class TestStdout(unittest.TestCase):
         if not (__name__ == '__main__'):
             PETSc._push_python_vfprintf()
 
-        a = np.array([0.,0.,0.])
+        a = np.array([0.,0.,0.],dtype=PETSc.ScalarType)
         a_vec = PETSc.Vec().createWithArray(a,comm=PETSc.COMM_SELF)
         a_vec.view()
         v = PETSc.Viewer.STDERR(PETSc.COMM_SELF)

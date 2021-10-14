@@ -269,7 +269,7 @@ class TestVecWithArray(unittest.TestCase):
         v.setSizes((5,None))
         ghosts = [i % v.size for i in range(v.owner_range[1],v.owner_range[1]+3)]
         v.setMPIGhost(ghosts)
-        v.setArray(numpy.array(range(*v.owner_range)))
+        v.setArray(numpy.array(range(*v.owner_range),dtype=PETSc.ScalarType))
         v.ghostUpdate()
         with v.localForm() as loc:
             self.assertTrue((loc[0:v.local_size] == range(*v.owner_range)).all())

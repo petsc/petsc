@@ -193,7 +193,7 @@ class TestIdentity(TestMatrix):
         h.destroy()
 
         # with coordinates
-        coords = numpy.linspace((1,2,3),(10,20,30),self.A.getSize()[0])
+        coords = numpy.linspace((1,2,3),(10,20,30),self.A.getSize()[0],dtype=PETSc.RealType)
         h.createH2OpusFromMat(self.A,coords,leafsize=2)
         h.assemble()
         h.destroy()

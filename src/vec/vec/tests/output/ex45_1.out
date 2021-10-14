@@ -1,40 +1,25 @@
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
 1.
 2.
-Process [1]
 5.
 6.
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
 0.
 101.
 202.
 3.
-Process [1]
 4.
 505.
 606.
 7.
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
 202.
 101.
-Process [1]
 606.
 505.
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
 0.
 10201.
 20402.
 3.
-Process [1]
 4.
 51005.
 61206.
 7.
+Min/Max: 5 51005., 1 10201.

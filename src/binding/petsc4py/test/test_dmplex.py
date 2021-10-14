@@ -136,7 +136,7 @@ class BaseTestPlex(object):
         if dim == 1: return
         vStart, vEnd = self.plex.getDepthStratum(0)
         numVertices = vEnd-vStart
-        metric_array = np.zeros([numVertices,dim,dim])
+        metric_array = np.zeros([numVertices,dim,dim],dtype=PETSc.ScalarType)
         for met in metric_array:
             met[:,:] = np.diag([9]*dim)
         metric = PETSc.Vec().createWithArray(metric_array)

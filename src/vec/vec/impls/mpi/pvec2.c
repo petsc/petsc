@@ -86,7 +86,9 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
   PetscFunctionBegin;
   /* Find the local max */
   ierr = VecMax_Seq(xin,idx,&work);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_MPIUNI)
+  *z = work;
+#else
   /* Find the global max */
   if (!idx) {
     ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
@@ -99,6 +101,7 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     *z    = out.v;
     *idx  = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +113,9 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
   PetscFunctionBegin;
   /* Find the local Min */
   ierr = VecMin_Seq(xin,idx,&work);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_MPIUNI)
+  *z = work;
+#else
   /* Find the global Min */
   if (!idx) {
     ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
@@ -123,5 +128,6 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     *z    = out.v;
     *idx  = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }

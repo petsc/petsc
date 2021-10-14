@@ -43,26 +43,27 @@ int main(int argc,char **argv)
 
    testset:
       diff_args: -j
-      filter: grep -v type
+      filter: grep -v type | grep -v "MPI processes" | grep -v Process
       output_file: output/ex21_1.out
 
       test:
          suffix: 1
+         args: -vec_type {{seq mpi}}
 
       test:
          requires: cuda
          suffix: 1_cuda
-         args: -vec_type cuda
+         args: -vec_type {{cuda mpicuda}}
 
       test:
          requires: kokkos_kernels
          suffix: 1_kokkos
-         args: -vec_type kokkos
+         args: -vec_type {{kokkos mpikokkos}}
 
       test:
          requires: hip
          suffix: 1_hip
-         args: -vec_type hip
+         args: -vec_type {{hip mpihip}}
 
    testset:
       diff_args: -j
