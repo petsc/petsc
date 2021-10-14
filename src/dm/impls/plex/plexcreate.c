@@ -4088,7 +4088,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   DMPlexShape    shape   = DM_SHAPE_BOX;
   DMPolytopeType cell    = DM_POLYTOPE_TRIANGLE;
   PetscInt       dim     = 2;
-  PetscBool      simplex = PETSC_TRUE, interpolate = PETSC_TRUE, adjCone = PETSC_FALSE, adjClosure = PETSC_TRUE, refDomain = PETSC_FALSE;
+  PetscBool      simplex = PETSC_TRUE, interpolate = PETSC_TRUE, orient = PETSC_FALSE, adjCone = PETSC_FALSE, adjClosure = PETSC_TRUE, refDomain = PETSC_FALSE;
   PetscBool      flg, flg2, fflg, strflg, bdfflg, nameflg;
   MPI_Comm       comm;
   char           filename[PETSC_MAX_PATH_LEN]   = "<unspecified>";
@@ -4110,6 +4110,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscCall(PetscOptionsBoundedInt("-dm_plex_dim", "Topological dimension of the mesh", "DMGetDimension", dim, &dim, &flg, 0));
   PetscCall(PetscOptionsBool("-dm_plex_simplex", "Mesh cell shape", "", simplex, &simplex, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_interpolate", "Flag to create edges and faces automatically", "", interpolate, &interpolate, &flg));
+  PetscCall(PetscOptionsBool("-dm_plex_orient", "Orient the constructed mesh", "DMPlexOrient", orient, &orient, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_adj_cone", "Set adjacency direction", "DMSetBasicAdjacency", adjCone, &adjCone, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_adj_closure", "Set adjacency size", "DMSetBasicAdjacency", adjClosure, &adjClosure, &flg2));
   if (flg || flg2) PetscCall(DMSetBasicAdjacency(dm, adjCone, adjClosure));
@@ -4348,6 +4349,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   }
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   if (!((PetscObject)dm)->name && nameflg) PetscCall(PetscObjectSetName((PetscObject)dm, plexname));
+  if (orient) PetscCall(DMPlexOrient(dm));
   // Allow label creation
   PetscCall(PetscOptionsFindPairPrefix_Private(NULL, ((PetscObject)dm)->prefix, "-dm_plex_label_", &option, NULL, &flg));
   if (flg) {
