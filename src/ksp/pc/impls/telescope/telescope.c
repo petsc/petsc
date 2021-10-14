@@ -1,4 +1,3 @@
-
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/matimpl.h>
 #include <petsc/private/pcimpl.h>
@@ -1322,9 +1321,9 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    VecPlaceArray() could be used within PCApply() to improve efficiency and reduce memory usage.
    A unified mechanism to query for user contexts as required by KSPSetComputeOperators() and MatNullSpaceSetFunction().
 
-   The symmetric permutation used when a DMDA is encountered is performed via explicitly assmbleming a permutation matrix P,
+   The symmetric permutation used when a DMDA is encountered is performed via explicitly assembling a permutation matrix P,
    and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). We opted to use P^T.A.P as it appears
-   VecPermute() does not supported for the use case required here. By computing P, one can permute both the operator and RHS in a
+   VecPermute() does not support the use case required here. By computing P, one can permute both the operator and RHS in a
    consistent manner.
 
    Mapping of vectors (default setup mode) is performed in the following way.
