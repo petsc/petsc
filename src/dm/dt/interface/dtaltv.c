@@ -33,7 +33,7 @@
    The wedge product is implemented for either two inputs (f and g) in `PetscDTAltVWedge()`, or for one (just f, giving a
    matrix to multiply against multiple choices of g) in `PetscDTAltVWedgeMatrix()`.
 
-   If k > 0, a k-form w and a vector v can combine to make a (k-1)-formm through the interior product, (w int v),
+   If k > 0, a k-form w and a vector v can combine to make a (k-1)-form through the interior product, (w int v),
    defined by (w int v)(v_1,...,v_{k-1}) = w(v,v_1,...,v_{k-1}).
 
    The interior product is implemented for either two inputs (w and v) in PetscDTAltVInterior, for one (just v, giving a

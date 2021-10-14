@@ -512,7 +512,7 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 }
 
 /*MC
-   PetscDTEnumSubset - Split the integers [0, ..., n - 1] into two complementary ordered subsets, the first subset of size k and being the jth subset of that size in lexicographic order.
+   PetscDTEnumSplit - Split the integers [0, ..., n - 1] into two complementary ordered subsets, the first subset of size k and being the jth subset of that size in lexicographic order.
 
    Input Parameters:
 +  n - a non-negative integer (see note about limits below)
