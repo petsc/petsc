@@ -122,6 +122,9 @@ Changes: Development
 
 .. rubric:: FE/FV:
 
+- Deprecate ``PetscSpacePolynomialGetSymmetric()`` and ``PetscSpacePolynomialSetSymmetric()``: symmetric polynomials were never supported and support is no longer planned
+- Remove ``PetscSpacePolynomialType`` enum and associated array of strings ``PetscSpacePolynomialTypes``: other polynomial spaces are now handled by other implementations of ``PetscSpace``
+
 .. rubric:: DMNetwork:
 
 .. rubric:: DMStag:
