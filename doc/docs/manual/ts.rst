@@ -1226,8 +1226,5 @@ may be set in the options database with ``-ts_sundials_maxl`` ``maxl``.
 
     <hr>
 
-.. bibliography:: /bibtex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /bibtex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

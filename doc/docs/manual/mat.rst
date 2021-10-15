@@ -557,7 +557,7 @@ choices below:
    The number of updates to be used in the :math:`S` and :math:`Y`
    matrices is 1 by default (i.e.: the latest update only) and can be
    changed via ``-mat_lmvm_scalar_hist``. This technique is inspired by
-   Gilbert and Lemarechal :cite:`KEYPREFIX-gilbert-lemarechal`.
+   Gilbert and Lemarechal :cite:`KEYPREFIX-Gilbert-Lemarechal`.
 
 -  ``diagonal`` – Uses a full-memory restricted Broyden update formula
    to construct a diagonal matrix for the Jacobian initialization.
@@ -565,7 +565,7 @@ choices below:
    footprint is restricted to only the vector representing the diagonal
    and some additional work vectors used in its construction. The
    diagonal terms are also re-scaled with every update as suggested in
-   :cite:`KEYPREFIX-gilbert-lemarechal`. This initialization requires
+   :cite:`KEYPREFIX-Gilbert-Lemarechal`. This initialization requires
    the most computational effort of the available choices but typically
    results in a significant reduction in the number of function
    evaluations taken to compute a solution.
@@ -1167,12 +1167,7 @@ requires a great deal of time.
 
     <hr>
 
-.. bibliography:: /bibtex/petsc.bib
-   :filter: docname in docnames
-   :keyprefix: KEYPREFIX-
-   :labelprefix: ref-
-
-.. bibliography:: /bibtex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames
    :keyprefix: KEYPREFIX-
    :labelprefix: ref-
