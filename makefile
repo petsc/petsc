@@ -449,32 +449,6 @@ srchtml:
 dist:
 	${PETSC_DIR}/lib/petsc/bin/maint/builddist ${PETSC_DIR} main
 
-# This target works only if you can do 'ssh petsc@login.mcs.anl.gov'
-# also copy the file over to ftp site.
-web-snapshot:
-	@if [ ! -f "${HOME}/petsc-with-docs-main.tar.gz" ]; then \
-	    echo "~/petsc-with-docs-main.tar.gz missing! cannot update petsc-main snapshot on mcs-web-site"; \
-	  else \
-            echo "updating petsc-main snapshot on mcs-web-site"; \
-	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
-	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-with-docs-main.tar.gz; \
-	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-main/ \
-              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-main ;\
-	    /bin/cp -f /home/petsc/petsc-main.tar.gz /mcs/ftp/pub/petsc/petsc-main.tar.gz;\
-	    ${RM} -rf $${tmpdir} ;\
-	  fi
-
-# build the tarfile - and then update petsc-main snapshot on mcs-web-site
-update-web-snapshot: dist web-snapshot
-
-# This target updates website main pages
-update-web:
-	@cd ${PETSC_DIR}/src/docs; make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
-	/usr/bin/rsync -az -C --exclude=documentation/index.html \
-          --exclude=documentation/installation.html --exclude=download/index.html \
-	  ${PETSC_DIR}/src/docs/website/ petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc
-	@cd ${PETSC_DIR}/src/docs/tex; /usr/bin/rsync -az petscapp.bib petsc.bib petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/publications
-
 ###########################################################
 #
 #  See script for details
