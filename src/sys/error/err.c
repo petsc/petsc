@@ -30,19 +30,16 @@ PetscErrorCode PetscAbortFindSourceFile_Private(const char* filepath, PetscInt *
   PetscErrorCode  ierr;
   PetscInt        i,n = sizeof(PetscAbortSourceFiles)/sizeof(PetscAbortSourceFiles[0]);
   PetscBool       match;
-  char            subpath[256];
+  char            subpath[PETSC_MAX_PATH_LEN];
 
-  PetscFunctionBegin;
-  PetscValidCharPointer(filepath,1);
-  PetscValidIntPointer(idx,2);
-  ierr = PetscStackView(stderr);CHKERRQ(ierr);
+  ierr = PetscStackView(stderr);if (ierr) return ierr;
   *idx = 1;
   for (i=2; i<n; i++) {
-    ierr = PetscFixFilename(PetscAbortSourceFiles[i],subpath);CHKERRQ(ierr);
-    ierr = PetscStrendswith(filepath,subpath,&match);CHKERRQ(ierr);
+    ierr = PetscFixFilename(PetscAbortSourceFiles[i],subpath);if (ierr) return ierr;
+    ierr = PetscStrendswith(filepath,subpath,&match);if (ierr) return ierr;
     if (match) {*idx = i; break;}
   }
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 typedef struct _EH *EH;

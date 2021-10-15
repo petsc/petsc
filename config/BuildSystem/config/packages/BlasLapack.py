@@ -385,6 +385,7 @@ class Configure(config.package.Package):
           for libdir in [dir,os.path.join(dir,'lib')]:
             yield ('User specified installation root BLIS/AMD-AOCL', os.path.join(libdir,lib), os.path.join(libdir,lapack), 'unknown', 'unknown')
       # NEC
+      yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), [os.path.join(dir, 'lib', 'liblapack.a'), os.path.join(dir, 'lib', 'libasl_sequential.a')], 'unknown', 'unknown')
       yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), os.path.join(dir, 'lib', 'liblapack.a'), 'unknown', 'unknown')
       # Search for OpenBLAS
       for libdir in ['lib','']:
@@ -415,6 +416,7 @@ class Configure(config.package.Package):
 
     # Try compiler defaults
     yield ('Default compiler libraries', '', '','unknown','unknown')
+    yield ('Default NEC', 'libblas_sequential.a', ['liblapack.a','libasl_sequential.a'],'unknown','unknown')
     yield ('Default NEC', 'libblas_sequential.a', 'liblapack.a','unknown','unknown')
     for lib in blislib:
       for lapack in ['libflame.a','liblapack.a']:

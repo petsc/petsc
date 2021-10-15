@@ -103,9 +103,7 @@ class CompilerOptions(config.base.Configure):
         if bopt == '':
           flags.extend(['-Wall', '-fdiag-vector=0', '-fdiag-parallel=0', '-fdiag-inline=0'])
         elif bopt == 'O':
-          flags.append('-O2') # defaults to O2, which is quite buggy (as of version 3.2.1)
-          flags.append('-fnamed-alias')
-          flags.append('-mno-vector-dependency-test') # vector dependency test seems buggy
+          flags.append('-O1') # defaults to O2, which is quite buggy (as of version 3.3.1)
         elif bopt == 'g':
           flags.append('-g')
           flags.append('-traceback=verbose')
@@ -214,9 +212,7 @@ class CompilerOptions(config.base.Configure):
         if bopt == '':
           flags.extend(['-Wall', '-fdiag-vector=0', '-fdiag-parallel=0', '-fdiag-inline=0'])
         elif bopt == 'O':
-          flags.append('-O2') # defaults to O2, which is quite buggy (as of version 3.2.1)
-          flags.append('-fnamed-alias')
-          flags.append('-mno-vector-dependency-test') # vector dependency test seems buggy
+          flags.append('-O1') # defaults to O2, which is quite buggy (as of version 3.3.1)
         elif bopt == 'g':
           flags.append('-g')
           flags.append('-traceback=verbose')

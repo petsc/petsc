@@ -56,8 +56,11 @@ class Configure(config.package.Package):
     self.support_mpi3_nbc = 0
     self.mpi_pkg_version  = ''
     self.mpi_pkg          = '' # mpich,mpich2,mpich3,openmpi,intel,intel2,intel3
-    self.mpiexec          = None
+
+    # mpiexec, absolute path, and sequential run
+    self.mpiexec           = None
     self.mpiexecExecutable = None
+    self.mpiexecseq        = None
     return
 
   def setupHelp(self, help):
@@ -80,7 +83,7 @@ class Configure(config.package.Package):
 
   def __str__(self):
     output  = config.package.Package.__str__(self)
-    if self.mpiexec: output  += '  mpiexec: '+self.mpiexec.replace(' -n 1','')+'\n'
+    if self.mpiexec: output  += '  mpiexec: '+self.mpiexec+'\n'
     if self.mpi_pkg: output  += '  Implementation: '+self.mpi_pkg+'\n'
     if hasattr(self,'includepaths'):
       output  += '  MPI C++ include paths: '+ self.includepaths+'\n'
@@ -174,7 +177,7 @@ compiles go through - but one might get run-time errors.  Either\n\
 reconfigure PETSc with --with-shared-libraries=0 or provide MPI with\n\
 shared libraries and run with --known-mpi-shared-libraries=1')
       return
-    self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
+    self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexecseq)
 
     # TODO: Turn this on once shared library checks are working again
     #if self.argDB['with-shared-libraries'] and not self.shared:
@@ -184,10 +187,12 @@ shared libraries and run with --known-mpi-shared-libraries=1')
 
   def configureMPIEXEC(self):
     '''Checking for location of mpiexec'''
+    mpiexecargs = ''
     if self.argDB['with-batch']:
       if 'with-mpiexec' in self.argDB:
         self.logPrintBox('--with-mpiexec is ignored since --with-batch is provided; one cannot run generated executables on the compile server')
       self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
+      self.mpiexecseq = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
       self.addMakeMacro('MPIEXEC', self.mpiexec)
       return
     if 'with-mpiexec' in self.argDB:
@@ -223,15 +228,12 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       # Support for spaces and () in executable names; also needs to handle optional arguments at the end
       # TODO: This support for spaces and () should be moved to core BuildSystem
       self.mpiexec = self.mpiexec.replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
-      self.mpiexecExecutable = self.mpiexec
       if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
         (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log, threads = 1)
         if out.find('--oversubscribe') >=0:
-          self.mpiexec = self.mpiexec + ' --oversubscribe'
+          mpiexecargs += ' --oversubscribe'
 
-    if not self.mpiexecExecutable:
-      self.mpiexecExecutable = self.mpiexec
-    self.getExecutable(self.mpiexecExecutable, getFullPath=1, resultName='mpiexecExecutable')
+    self.getExecutable(self.mpiexec, getFullPath=1, resultName='mpiexecExecutable',setMakeMacro=0)
 
     if not 'with-mpiexec' in self.argDB and hasattr(self,'isNecMPI') and hasattr(self,'mpiexecExecutable'):
       self.getExecutable('venumainfo', getFullPath=1, path = os.path.dirname(self.mpiexecExecutable))
@@ -239,13 +241,13 @@ shared libraries and run with --known-mpi-shared-libraries=1')
         try:
           (out, err, ret) = Configure.executeShellCommand(self.venumainfo + ' | grep "available"',timeout = 60, log = self.log, threads = 1)
         except Exception as e:
-          self.log.write('NEC utility venumainfo failed '+str(e)+'\n')
+          self.logWrite('NEC utility venumainfo failed '+str(e)+'\n')
         else:
           try:
-            nve = out.split(' ')[1]
-            self.mpiexecExecutable = self.mpiexecExecutable + ' -nve ' + nve
-          except:
-            self.log.write('Unable to parse the number of VEs from the NEC utility venumainfo\n')
+            nve = len(out.split('\n'))
+            mpiexecargs += ' -nve ' + str(nve)
+          except Exception as e:
+            self.logWrite('Unable to parse the number of VEs from the NEC utility venumainfo\n'+str(e)+'\n')
 
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
@@ -263,9 +265,26 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       elif out.find('OMPI_COMM_WORLD_SIZE') > -1:
         if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from OpenMPI");
         self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'OMP')
+    if hasattr(self,'isNecMPI'):
+      (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 -V /usr/bin/true', checkCommand = noCheck, timeout = 120, threads = 1, log = self.log)
+      if ret:
+        self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 -V /usr/bin/true"\n'+str(out)+'\n'+str(err))
+      else:
+        try:
+          necmpimajor = out.split(' ')[4].split('.')[0]
+          necmpiminor = out.split(' ')[4].split('.')[1]
+          self.addDefine('NECMPI_VERSION_MAJOR', necmpimajor)
+          self.addDefine('NECMPI_VERSION_MINOR', necmpiminor)
+        except Exception as e:
+            self.logWrite('Unable to parse the output of '+self.mpiexec+' with option "-n 1 -V /usr/bin/true"\n'+str(e)+'\n'+str(out)+'\n'+str(err))
 
-    self.addMakeMacro('MPIEXEC', self.mpiexec)
-    self.mpiexec = self.mpiexec + ' -n 1'
+    # use full path if found
+    if self.mpiexecExecutable:
+      self.mpiexec = self.mpiexecExecutable
+    self.addMakeMacro('MPIEXEC', self.mpiexec + mpiexecargs)
+
+    # use sequential runs for testing
+    self.mpiexecseq = self.mpiexec + mpiexecargs + ' -n 1'
 
     if hasattr(self,'mpich_numversion') or hasattr(self,'ompi_major_version'):
 
@@ -335,7 +354,7 @@ Unable to run hostname to check the network')
           self.logPrintDivider()
 
     # check that mpiexec runs an MPI program correctly
-    error_message = 'Unable to run MPI program with '+self.mpiexec+'\n\
+    error_message = 'Unable to run MPI program with '+self.mpiexecseq+'\n\
     (1) make sure this is the correct program to run MPI jobs\n\
     (2) your network may be misconfigured; see https://petsc.org/release/faq/#mpi-network-misconfigure\n\
     (3) you may have VPN running whose network settings may not play nice with MPI\n'
@@ -343,7 +362,7 @@ Unable to run hostname to check the network')
     includes = '#include <mpi.h>'
     body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
     try:
-      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 120, threads = 1)
+      ok = self.checkRun(includes, body, executor = self.mpiexecseq, timeout = 120, threads = 1)
       if not ok: raise RuntimeError(error_message)
     except RuntimeError as e:
       if str(e).find('Runaway process exceeded time limit') > -1:
@@ -471,6 +490,7 @@ Unable to run hostname to check the network')
     self.addMakeMacro('MPI_IS_MPIUNI', 1)
     self.framework.packages.append(self)
     self.mpiexec = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
+    self.mpiexecseq = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni')
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
     self.addDefine('HAVE_MPI_TYPE_DUP', 1)
