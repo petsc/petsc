@@ -344,7 +344,6 @@ alldoc: allcite sphinx-docs-all alldoc1 alldoc2 docsetdate
 
 # Build just citations
 allcite: chk_loc deletemanualpages
-	-${PYTHON} lib/petsc/bin/maint/countpetsccits.py
 	-${OMAKE_SELF} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
