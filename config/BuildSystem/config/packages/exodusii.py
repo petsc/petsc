@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v2021-01-20'
+    self.gitcommit         = 'v2021-09-30'
     self.download          = ['git://https://github.com/gsjaardema/seacas.git','https://github.com/gsjaardema/seacas/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['seacas']
     self.functions         = ['ex_close']
@@ -46,7 +46,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32:BOOL=OFF')
     args.append('-DSEACASProj_ENABLE_SEACASExodus:BOOL=ON')
     # exodiff and exotxt are convenient tools to debug exodusII functionalities
-    args.append('-DSEACASProj_ENABLE_SEACASExodif:BOOL=ON')
+    args.append('-DSEACASProj_ENABLE_SEACASExodiff:BOOL=ON')
     if hasattr(self.setCompilers, 'FC'):
       args.append('-DSEACASProj_ENABLE_SEACASExotxt:BOOL=ON')
     else:
@@ -72,6 +72,8 @@ class Configure(config.package.CMakePackage):
       args.append('-DPnetcdf_INCLUDE_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'include'))
     if self.checkSharedLibrariesEnabled():
       args.append('-DSEACASExodus_ENABLE_SHARED:BOOL=ON')
+      args.append('-DCMAKE_SHARED_LINKER_FLAGS:STRING="'+self.libraries.toString(self.dlib)+' '+self.compilers.LIBS+'"')
+      args.append('-DSEACASProj_EXTRA_LINK_FLAGS:STRING="'+self.libraries.toString(self.dlib)+' '+self.compilers.LIBS+'"')
     return args
 
   def generateLibList(self, framework):
