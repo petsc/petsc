@@ -254,13 +254,17 @@ extern "C" {
             break
 
     if found and self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
-      # define the symbol as found
-      if functionDefine: [self.addDefine(self.getDefineNameFunc(fname), 1) for f, fname in enumerate(funcs)]
-      # add to list of found libraries
-      elif libName:
-        for lib in libName:
-          shortlib = self.getShortLibName(lib)
-          if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
+      if hasattr(self.compilers, 'FC') and self.language[-1] == 'C':
+        if self.compilers.checkCrossLink(includes+'\nvoid dummy(void) {'+body+'}\n',"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C',language2='FC'):
+          # define the symbol as found
+          if functionDefine: [self.addDefine(self.getDefineNameFunc(fname), 1) for f, fname in enumerate(funcs)]
+          # add to list of found libraries
+          elif libName:
+            for lib in libName:
+              shortlib = self.getShortLibName(lib)
+              if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
+        else:
+          found = 0
     else:
       found = 0
     self.setCompilers.LIBS = oldLibs
