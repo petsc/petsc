@@ -339,8 +339,7 @@ allfortranstubs:
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 
-# Builds all the documentation - should be done every night
-alldoc: allcite sphinx-docs-all alldoc1 alldoc2 docsetdate
+alldoc: sphinx-docs-all
 
 # Build just citations
 allcite: chk_loc deletemanualpages
@@ -359,7 +358,7 @@ allmanpages: chk_loc allcite
 allmanexamples: chk_loc allmanpages
 	-${OMAKE_SELF} ACTION=manexamples tree_basic LOC=${LOC}
 
-# Build everything that goes into 'doc' dir except html sources
+# Build all classic docs except html sources
 alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
 	-${OMAKE_SELF} manimplementations LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
@@ -368,51 +367,12 @@ alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
 	-${PYTHON} lib/petsc/bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source
-# html overwrites some stuff created by update-docs - hence this is done later.
+# html overwrites some stuff - hence this is done later.
 alldoc2: chk_loc allcite
 	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 
 alldoc12: alldoc1 alldoc2
-#
-# Makes links for all manual pages in $LOC/docs/manualpages/all
-allman:
-	@cd ${LOC}/docs/manualpages; rm -rf all ; mkdir all ; find *  -type d -wholename all -prune -o -name index.html -prune  -o -type f -name \*.html -exec ln -s  -f ../{} all \;
-
-DOCSETDATE_PRUNE_LIST=-o -type f -wholename share/petsc/saws/linearsolveroptions.html -prune -o -type f -wholename tutorials/HandsOnExercise.html -prune -o -type f -wholename tutorials/TAOHandsOnExercise.html -prune
-
-# modify all generated html files and add in version number, date, canonical URL info.
-docsetdate: chk_petscdir
-	@echo "Updating generated html files with petsc version, date, canonical URL info";\
-        version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
-        version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
-        version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
-        version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
-        if  [ $${version_release} = 0 ]; then \
-          petscversion=petsc-main; \
-          export petscversion; \
-        elif [ $${version_release} = 1 ]; then \
-          petscversion=petsc-$${version_major}.$${version_minor}.$${version_subminor}; \
-          export petscversion; \
-        else \
-          echo "Unknown PETSC_VERSION_RELEASE: $${version_release}"; \
-          exit; \
-        fi; \
-        datestr=`git log -1 --pretty=format:%ci | cut -d ' ' -f 1`; \
-        export datestr; \
-        gitver=`git describe --match "v*"`; \
-        export gitver; \
-        find * -type d -wholename src/docs/website \
-          -prune -o -type d -wholename src/benchmarks/results \
-          -prune -o -type d -wholename config/BuildSystem/docs/website \
-          -prune -o -type d -wholename include/web \
-          -prune -o -type d -wholename 'arch-*' \
-          -prune -o -type d -wholename lib/petsc/bin/maint \
-          -prune -o -type d -wholename externalpackages \
-          -prune ${DOCSETDATE_PRUNE_LIST} -o -type f -name \*.html \
-          -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>\n   <div id="bugreport" align=right><a href="mailto:petsc-maint\@mcs.anl.gov?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: $$ENV{petscversion} $$ENV{gitver} {} "><small>Report Typos and Errors</small></a></div>^i' {} \; \
-          -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
-        echo "Done fixing version number, date, canonical URL info"
 
 # Use Sphinx to build some documentation.  This uses Python's venv, which should
 # behave similarly to what happens on e.g. ReadTheDocs. You may prefer to use
@@ -477,7 +437,7 @@ chk_concepts_dir: chk_loc
 	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 
-# Builds simple html versions of the source without links into the $PETSC_ARCH/obj directory, used by make mergecov
+# Builds simple html versions of the source without links into the $PETSC_ARCH/obj directory, used by make mergegcov
 srchtml:
 	-${OMAKE_SELF} ACTION=simplehtml PETSC_DIR=${PETSC_DIR} alltree_src
 
