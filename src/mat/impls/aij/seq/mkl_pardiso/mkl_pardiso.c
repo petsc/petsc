@@ -691,7 +691,7 @@ PetscErrorCode PetscSetMKL_PARDISOFromOptions(Mat F, Mat A)
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_PARDISO Options","Mat");CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-mat_mkl_pardiso_65","Number of threads to use within PARDISO","None",threads,&threads,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mkl_pardiso_65","Suggested number of threads to use within PARDISO","None",threads,&threads,&flg);CHKERRQ(ierr);
   if (flg) PetscSetMKL_PARDISOThreads((int)threads);
 
   ierr = PetscOptionsInt("-mat_mkl_pardiso_66","Maximum number of factors with identical sparsity structure that must be kept in memory at the same time","None",mat_mkl_pardiso->maxfct,&icntl,&flg);CHKERRQ(ierr);
@@ -1050,10 +1050,10 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
   Use -pc_type lu -pc_factor_mat_solver_type mkl_pardiso to use this direct solver
 
   Options Database Keys:
-+ -mat_mkl_pardiso_65 - Number of threads to use within MKL_PARDISO
++ -mat_mkl_pardiso_65 - Suggested number of threads to use within MKL_PARDISO
 . -mat_mkl_pardiso_66 - Maximum number of factors with identical sparsity structure that must be kept in memory at the same time
 . -mat_mkl_pardiso_67 - Indicates the actual matrix for the solution phase
-. -mat_mkl_pardiso_68 - Message level information
+. -mat_mkl_pardiso_68 - Message level information, use 1 to get detailed information on the solver options
 . -mat_mkl_pardiso_69 - Defines the matrix type. IMPORTANT: When you set this flag, iparm parameters are going to be set to the default ones for the matrix type
 . -mat_mkl_pardiso_1  - Use default values
 . -mat_mkl_pardiso_2  - Fill-in reducing ordering for the input matrix
@@ -1077,7 +1077,11 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 
   Level: beginner
 
-  For more information please check  mkl_pardiso manual
+  Notes:
+    Use -mat_mkl_pardiso_68 1 to display the number of threads the solver is using. MKL does not provide a way to directly access this
+    information.
+
+    For more information on the options check the MKL_Pardiso manual
 
 .seealso: PCFactorSetMatSolverType(), MatSolverType
 

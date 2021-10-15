@@ -76,12 +76,7 @@ extensions = [
 copybutton_prompt_text = r"[>]{1,3}"
 copybutton_prompt_is_regexp = True
 
-bibtex_bibfiles = [
-        os.path.join('bibtex', 'petsc.bib'),
-        os.path.join('bibtex', 'petscapp.bib'),
-        os.path.join('bibtex', 'tao.bib'),
-        os.path.join('bibtex', 'tao_mathprog.bib'),
-]
+bibtex_bibfiles = ['petsc.bib']
 
 # -- Options for HTML output ---------------------------------------------------
 
@@ -107,7 +102,6 @@ html_context = {
     "doc_path": "doc",
 }
 
-html_static_path = ['_static']
 html_logo = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc-TAO', 'web', 'PETSc-TAO_RGB.svg')
 html_favicon = os.path.join('images', 'logos', 'PETSc_TAO_logos', 'PETSc', 'petsc_favicon.png')
 html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'

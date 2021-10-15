@@ -111,9 +111,13 @@ python3 -m venv $VENV
 source $VENV/bin/activate
 cd $PETSC_DIR/doc
 python3 -m pip install -r requirements.txt
-sphinx-build -T -E -b html -D language=en -j auto . ../docs
 make html BUILDDIR="../docs" SPHINXOPTS="-T -E"
+mv ../docs/html/* ../docs/html/.[!.]* ../docs
 make latexpdf && cp _build/latex/manual.pdf ../docs/html/docs/manual/
+rm -rf ../docs/doctrees
+make clean
+rm -rf images
+
 
 # petsc4py docs and tarball
 cd $PETSC_DIR

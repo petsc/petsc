@@ -120,19 +120,19 @@ Citing PETSc
 
 When citing PETSc in a publication please cite the following:
 
-.. literalinclude:: /bibtex/petscapp.bib
+.. literalinclude:: /petsc.bib
    :language: none
    :start-at: @misc{petsc-web-page
    :end-at: year
    :append: }
 
-.. literalinclude:: /bibtex/petscapp.bib
+.. literalinclude:: /petsc.bib
    :language: none
    :start-at: @techreport{petsc-user-ref
    :end-at: year
    :append: }
 
-.. literalinclude:: /bibtex/petsc.bib
+.. literalinclude:: /petsc.bib
    :language: none
    :start-at: @inproceedings{petsc-efficient
    :end-at: year
@@ -140,7 +140,7 @@ When citing PETSc in a publication please cite the following:
 
 If you use the TS component of PETSc please cite the following:
 
-.. literalinclude:: /bibtex/petscapp.bib
+.. literalinclude:: petsc.bib
    :language: none
    :start-at: @techreport{AbhyankarEtAl2018
    :end-at: year
@@ -148,7 +148,7 @@ If you use the TS component of PETSc please cite the following:
 
 If you utilize the TS adjoint solver please cite
 
-.. literalinclude:: /bibtex/petscapp.bib
+.. literalinclude:: /petsc.bib
    :language: none
    :start-at: @techreport{ZhangConstantinescuSmith2019
    :end-at: year
