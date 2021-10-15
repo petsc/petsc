@@ -235,6 +235,8 @@ application objects will never access this structure, so the application
 developer has complete freedom to define it. If no such structure or
 needed by the application then a NULL pointer can be used.
 
+.. _sec_fghj:
+
 Objective Function and Gradient Routines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -732,6 +734,7 @@ function pointer, and the sixth argument is an optional user-defined
 context. Since no solve is performed with the design Jacobian, there is
 no need to provide preconditioner or inverse matrices.
 
+.. _sec_evalsof:
 
 Nonlinear Least Squares
 ^^^^^^^^^^^^^^^^^^^^^^^

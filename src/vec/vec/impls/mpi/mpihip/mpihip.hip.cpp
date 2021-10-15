@@ -366,6 +366,9 @@ PetscErrorCode VecMax_MPIHIP(Vec xin,PetscInt *idx,PetscReal *z)
 
   PetscFunctionBegin;
   ierr = VecMax_SeqHIP(xin,idx,&work);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIUNI)
+  *z = work;
+#else
   if (!idx) {
     ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   } else {
@@ -377,6 +380,7 @@ PetscErrorCode VecMax_MPIHIP(Vec xin,PetscInt *idx,PetscReal *z)
     *z    = out.v;
     *idx  = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -387,6 +391,9 @@ PetscErrorCode VecMin_MPIHIP(Vec xin,PetscInt *idx,PetscReal *z)
 
   PetscFunctionBegin;
   ierr = VecMin_SeqHIP(xin,idx,&work);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIUNI)
+  *z = work;
+#else
   if (!idx) {
     ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   } else {
@@ -398,6 +405,7 @@ PetscErrorCode VecMin_MPIHIP(Vec xin,PetscInt *idx,PetscReal *z)
     *z    = out.v;
     *idx  = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 

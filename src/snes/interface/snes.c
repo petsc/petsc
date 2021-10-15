@@ -5739,7 +5739,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
 .ve
 
     Options Database Keys:
-.   -snes_pc_side <right,left>
+.   -snes_npc_side <right,left>
 
     Notes:
     SNESNRICHARDSON and SNESNCG only support left preconditioning.
