@@ -1,5 +1,6 @@
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 #include <petsc/private/hashseti.h>
+#include <petsc/private/viewerimpl.h>
 #include <petscctable.h>
 
 #if defined(PETSC_HAVE_CUDA)
@@ -885,7 +886,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   PetscCheckSameComm(sf,1,viewer,2);
   if (sf->graphset) {ierr = PetscSFSetUp(sf);CHKERRQ(ierr);}
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
+  if (iascii && viewer->format != PETSC_VIEWER_ASCII_MATLAB) {
     PetscMPIInt rank;
     PetscInt    ii,i,j;
 
