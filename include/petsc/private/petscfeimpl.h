@@ -66,8 +66,10 @@ typedef struct {
 typedef struct {
   PetscSpace *sumspaces;
   PetscInt    numSumSpaces;
+  PetscBool   uniform;
   PetscBool   concatenate;
   PetscBool   setupCalled;
+  PetscSpace *heightsubspaces;    /* Height subspaces */
 } PetscSpace_Sum;
 
 typedef struct {
