@@ -1408,14 +1408,16 @@ class Configure(config.base.Configure):
 
   def checkPragma(self):
     '''Check for all available applicable languages whether they complain (including warnings!) about potentially unknown pragmas'''
-    usePragma = {'C':False}
-    if hasattr(self,'Cxx'):
-      usePragma['Cxx'] = False
-    for language in usePragma.keys():
-      with self.Language(language):
+    usePragma = {}
+    langMap = {'C':'CC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
+    for lang in langMap:
+      if hasattr(self,langMap[lang]):
+        usePragma[lang] = False
+    for lang in usePragma.keys():
+      with self.Language(lang):
         with self.extraCompilerFlags(['-Wunknown-pragmas']) as skipFlags:
           if not skipFlags:
-            usePragma[language] = self.checkCompile('#pragma GCC poison TEST')
+            usePragma[lang] = self.checkCompile('#pragma GCC poison TEST')
     if all(usePragma.values()): self.framework.enablepoison = True
     return
 
