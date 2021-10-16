@@ -2233,7 +2233,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 
 .seealso: PetscCuBLASInt, PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscMPIIntCast(), PetscIntCast()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscBLASInt *b)
+PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscCuBLASInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)
