@@ -100,15 +100,6 @@ Sphinx Documentation Guidelines
         output1
         output2
 
-  which renders as
-
-  ::
-
-     output1
-     output2
-
-  Notice that now "output1" and "output2" are not greyed out as previously.
-
 * Any code blocks that show command line invocations must be preceded by the ">"
   character. E.g.
 
