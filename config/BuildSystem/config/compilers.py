@@ -605,38 +605,41 @@ class Configure(config.base.Configure):
       ]).format(opt=configureArg))
 
     includes03 = """
-    // C++03 includes
+    // c++03 includes
     #include <iostream>
-    template<class T> void ignore(const T&) {} // silence unused variable warnings
+
+    template<class T> void ignore(const T&) { } // silence unused variable warnings
     class valClass
     {
     public:
       int i;
-      valClass() { i = 3;}
+      valClass() { i = 3; }
     };
     """
     # this really just tests whether we have a working c++ compiler, c++03 only introduced
     # value initialization
     body03 = """
-    // C++03 body
+    // c++03 body
     valClass cls = valClass(); // value initialization
     int i = cls.i;             // i is not declared const
     const int& rci = i;        // but rci is
     const_cast<int&>(rci) = 4;
     """
     includes11 = includes03+"""
-    // C++11 includes
+    // c++11 includes
     #include <random>
     #include <complex>
+
     template<typename T> constexpr T Cubed( T x ) { return x*x*x; }
-    auto trailing(int x) -> int { return x+2;}
+    auto trailing(int x) -> int { return x+2; }
     enum class Shapes : int {SQUARE,CIRCLE};
-    template<class ... Types> struct Tuple {};
+    template<class ... Types> struct Tuple { };
     using PetscErrorCode = int;
     """
     body11 = body03+"""
-    // C++11 body
-    PetscErrorCode ierr = 0;
+    // c++11 body
+    constexpr int big_value = 1234;
+    decltype(big_value) ierr = big_value;
     auto ret = trailing(ierr);
     Tuple<> t0;ignore(t0);
     Tuple<long> t1;ignore(t1);
@@ -648,25 +651,28 @@ class Configure(config.base.Configure):
     std::cout << x << ret << std::endl;
     """
     includes14 = includes11+"""
-    // C++14 includes
-    template<class T>
-    constexpr T pi = T(3.1415926535897932385L);  // variable template
+    // c++14 includes
+    #include <memory>
+
+    template<class T> constexpr T pi = T(3.1415926535897932385L);  // variable template
     """
     body14 = body11+"""
-    // C++14 body
-    std::cout<<pi<double><<std::endl;
-    constexpr std::complex<double> I(0.0,1.0);
-    auto lambda = [](auto x, auto y) {return x + y;};
-    std::cout<<lambda(3,4) + (int)std::real(I)<<std::endl;
+    // c++14 body
+    auto ptr = std::make_unique<int>();
+    *ptr = 1;
+    std::cout << pi<double> << std::endl;
+    constexpr const std::complex<double> const_i(0.0,1.0);
+    auto lambda = [](auto x, auto y) { return x + y; };
+    std::cout << lambda(3,4) << std::real(const_i) << std::endl;
     """
     includes17 = includes14+"""
-    // C++17 includes
+    // c++17 includes
     #include <string_view>
     #include <any>
     #include <optional>
     #include <variant>
 
-    [[nodiscard]] int nodiscardFunc() { return 0;}
+    [[nodiscard]] int nodiscardFunc() { return 0; }
     struct S2
     {
       // static inline member variables since c++17
@@ -675,14 +681,14 @@ class Configure(config.base.Configure):
     };
     void S2::f(int i)
     {
-      // until C++17: Error: invalid syntax
-      // since C++17: OK: captures the enclosing S2 by copy
-      auto lmbd = [=, *this] {std::cout<<i<<" "<<this->var<<std::endl;};
+      // until c++17: Error: invalid syntax
+      // since c++17: OK: captures the enclosing S2 by copy
+      auto lmbd = [=, *this] { std::cout << i << " " << this->var << std::endl; };
       lmbd();
     }
     """
     body17 = body14+"""
-    // C++17 body
+    // c++17 body
     std::variant<int,float> v,w;
     v = 42;               // v contains int
     int ivar = std::get<int>(v);
