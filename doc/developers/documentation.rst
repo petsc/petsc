@@ -183,6 +183,12 @@ Sphinx Documentation Guidelines
 
       `link text <https://external.org>`__
 
+* To pluralize something with inline markup, e.g. ``DM``\s, escape the trailing character to avoid ``WARNING: Inline literal start-string without end-string``.
+
+  .. code-block:: rst
+
+      ``DM``\s
+
 * Use restraint in adding new Sphinx extensions, in particular those which aren't
   widely-used and well-supported, or those with hidden system dependencies.
 
