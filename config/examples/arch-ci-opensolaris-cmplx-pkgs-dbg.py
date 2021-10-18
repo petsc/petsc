@@ -26,6 +26,10 @@ configure_options = [
   '--download-hdf5-fortran-bindings=0', # as the compiler is not F2003 compilant
   '--download-suitesparse',
   '--download-chaco',
+  # opensolaris throws warning
+  # CC: Warning: Option -std=c++03 passed to ld, if ld is invoked, ignored otherwise
+  # to stderr, so don't use flag at all
+  '--with-cxx-dialect=0',
   ]
 
 if __name__ == '__main__':
