@@ -141,6 +141,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   MPI_Comm       comm,subcomm;
   VecScatter     scatter;
   IS             isin;
+  VecType        vectype;
 
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: setup (default)\n");CHKERRQ(ierr);
@@ -151,6 +152,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   ierr = MatGetSize(B,&M,NULL);CHKERRQ(ierr);
   ierr = MatGetBlockSize(B,&bs);CHKERRQ(ierr);
   ierr = MatCreateVecs(B,&x,NULL);CHKERRQ(ierr);
+  ierr = MatGetVecType(B,&vectype);CHKERRQ(ierr);
 
   xred = NULL;
   m    = 0;
@@ -158,6 +160,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
     ierr = VecCreate(subcomm,&xred);CHKERRQ(ierr);
     ierr = VecSetSizes(xred,PETSC_DECIDE,M);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xred,bs);CHKERRQ(ierr);
+    ierr = VecSetType(xred,vectype);CHKERRQ(ierr); /* Use the preconditioner matrix's vectype by default */
     ierr = VecSetFromOptions(xred);CHKERRQ(ierr);
     ierr = VecGetLocalSize(xred,&m);CHKERRQ(ierr);
   }
@@ -170,7 +173,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   ierr = VecCreate(comm,&xtmp);CHKERRQ(ierr);
   ierr = VecSetSizes(xtmp,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(xtmp,bs);CHKERRQ(ierr);
-  ierr = VecSetType(xtmp,((PetscObject)x)->type_name);CHKERRQ(ierr);
+  ierr = VecSetType(xtmp,vectype);CHKERRQ(ierr);
 
   if (PCTelescope_isActiveRank(sred)) {
     ierr = VecGetOwnershipRange(xred,&st,&ed);CHKERRQ(ierr);
