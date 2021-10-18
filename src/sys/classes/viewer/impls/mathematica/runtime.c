@@ -134,7 +134,7 @@ static int processPackets(MLINK link)
   int packetType;
   int loop   = 1;
   int errors = 0;
-  int ierr;
+  int err;
 
   PetscFunctionBegin;
   while (loop) {
@@ -210,9 +210,9 @@ static int processPackets(MLINK link)
       printf("ERROR: %s\n", (char*) MLErrorMessage(link));
       errors++;
     } else if (packetType == RETURNPKT) {
-      ierr = processPacket(link, 0);
-      if (ierr == 1) CHKERRQ(ierr);
-      if (ierr == 2) loop = 0;
+      err = processPacket(link, 0);
+      if (err == 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from Mathematica");
+      if (err == 2) loop = 0;
     } else {
       fprintf(stderr, "Invalid packet type %d\n", packetType);
       loop = 0;

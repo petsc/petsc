@@ -5373,11 +5373,11 @@ PetscErrorCode  MatSeqAIJRegisterAll(void)
 
 /* Change these macros so can be used in void function */
 #undef CHKERRQ
-#define CHKERRQ(ierr) CHKERRABORT(PetscObjectComm((PetscObject)A),ierr)
+#define CHKERRQ(err) CHKERRABORT(PetscObjectComm((PetscObject)A),err)
 #undef SETERRQ2
-#define SETERRQ2(comm,ierr,b,c,d) CHKERRABORT(comm,ierr)
+#define SETERRQ2(comm,err,b,c,d) CHKERRABORT(comm,err)
 #undef SETERRQ3
-#define SETERRQ3(comm,ierr,b,c,d,e) CHKERRABORT(comm,ierr)
+#define SETERRQ3(comm,err,b,c,d,e) CHKERRABORT(comm,err)
 
 PETSC_EXTERN void matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
 {
