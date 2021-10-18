@@ -50,8 +50,10 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
+      requires: !saws
 
    test:
+      requires: !saws
       suffix: 2
       nsize: 2
       output_file: output/ex26_1.out

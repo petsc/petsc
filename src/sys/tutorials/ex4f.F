@@ -79,6 +79,6 @@
 !      nsize: 5
 !      filter: sort -b
 !      filter_output: sort -b
-!      requires: !cuda
+!      requires: !cuda !saws
 !
 !TEST*/
