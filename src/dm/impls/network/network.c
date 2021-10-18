@@ -1023,9 +1023,9 @@ PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 
 static PetscErrorCode DMNetworkGetIndex(DM dm,PetscInt p,PetscInt *index)
 {
-  PetscErrorCode    ierr;
-  DM_Network        *network = (DM_Network*)dm->data;
-  PetscInt          offsetp;
+  PetscErrorCode           ierr;
+  DM_Network               *network = (DM_Network*)dm->data;
+  PetscInt                 offsetp;
   DMNetworkComponentHeader header;
 
   PetscFunctionBegin;
@@ -1170,9 +1170,9 @@ PetscErrorCode DMNetworkGetLocalVecOffset(DM dm,PetscInt p,PetscInt compnum,Pets
 @*/
 PetscErrorCode DMNetworkGetGlobalVecOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offsetg)
 {
-  PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       offsetp,offsetd;
+  PetscErrorCode           ierr;
+  DM_Network               *network = (DM_Network*)dm->data;
+  PetscInt                 offsetp,offsetd;
   DMNetworkComponentHeader header;
 
   PetscFunctionBegin;

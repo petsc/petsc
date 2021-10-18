@@ -9480,8 +9480,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
           i[off + q + 1] = i[off + q] + annz;
         }
       }
-    }
-    else {
+    } else {
       annz = 0;
       ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
       for (q = 0; q < dof; q++) {
@@ -9521,8 +9520,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
           }
         }
       }
-    }
-    else {
+    } else {
       ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
       for (q = 0; q < dof; q++) {
         PetscInt rDof, rOff, r;

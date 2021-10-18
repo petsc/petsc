@@ -267,10 +267,10 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
 
       ierr = PetscDualSpaceGetInteriorData(sp, &intNodes, &intMat);CHKERRQ(ierr);
       if (intMat && intMat != allMat) {
-        PetscInt intNodeIdxDim, intNodeVecDim, intNnodes;
-        const PetscInt *intNodeIdx;
+        PetscInt        intNodeIdxDim, intNodeVecDim, intNnodes;
+        const PetscInt  *intNodeIdx;
         const PetscReal *intNodeVec;
-        PetscBool same;
+        PetscBool       same;
 
         ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior nodes:\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

@@ -4184,7 +4184,7 @@ PetscErrorCode MatSOR(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal sh
 
   MatCheckPreallocated(mat,1);
   ierr = PetscLogEventBegin(MAT_SOR,mat,b,x,0);CHKERRQ(ierr);
-  ierr =(*mat->ops->sor)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
+  ierr = (*mat->ops->sor)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SOR,mat,b,x,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

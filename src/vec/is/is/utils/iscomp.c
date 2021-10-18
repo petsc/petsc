@@ -1,5 +1,6 @@
 
 #include <petsc/private/isimpl.h>    /*I "petscis.h"  I*/
+#include <petscviewer.h>
 
 /*@
    ISEqual  - Compares if two index sets have the same set of indices.

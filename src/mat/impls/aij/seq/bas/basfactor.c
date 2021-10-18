@@ -108,12 +108,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   const PetscInt *rip,*riip;
   PetscInt       mbs=A->rmap->n,*bi=b->i,*bj=b->j;
 
-  MatScalar    *ba     = b->a;
-  PetscReal    shiftnz = info->shiftamount;
-  PetscReal    droptol = -1;
-  PetscBool    perm_identity;
-  spbas_matrix Pattern, matrix_L,matrix_LT;
-  PetscReal    mem_reduction;
+  MatScalar      *ba     = b->a;
+  PetscReal      shiftnz = info->shiftamount;
+  PetscReal      droptol = -1;
+  PetscBool      perm_identity;
+  spbas_matrix   Pattern, matrix_L,matrix_LT;
+  PetscReal      mem_reduction;
 
   PetscFunctionBegin;
   /* Reduce memory requirements:   erase values of B-matrix */

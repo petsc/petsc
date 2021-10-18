@@ -891,7 +891,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
   const PetscInt    *leaves;
   PetscScalar       *x, *fx;
   PetscInt           dim, nleaves, loc, fStart, fEnd, pdim, i;
-  PetscErrorCode     ierr, ierru = 0;
+  PetscErrorCode     ierr,ierru = 0;
 
   PetscFunctionBegin;
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
