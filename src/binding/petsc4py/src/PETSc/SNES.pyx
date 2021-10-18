@@ -274,7 +274,7 @@ cdef class SNES(Object):
     def getInitialGuess(self):
         return self.get_attr('__initialguess__')
 
-    def setFunction(self, function, Vec f, args=None, kargs=None):
+    def setFunction(self, function, Vec f or None, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         if function is not None:
