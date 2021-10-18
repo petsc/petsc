@@ -134,8 +134,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   }
   for (ierr = NEGATIVE_DIAGONAL; ierr == NEGATIVE_DIAGONAL;)
   {
-    ierr = spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz,&matrix_LT);CHKERRQ(ierr);
-    if (ierr == NEGATIVE_DIAGONAL) {
+    PetscBool success;
+    ierr = spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz,&matrix_LT,&success);CHKERRQ(ierr);
+    if (!success) {
       shiftnz *= 1.5;
       if (shiftnz < 1e-5) shiftnz=1e-5;
       ierr = PetscInfo1(NULL,"spbas_incomplete_cholesky found a negative diagonal. Trying again with Manteuffel shift=%g\n",(double)shiftnz);CHKERRQ(ierr);
