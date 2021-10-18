@@ -71,7 +71,7 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm,VecTagger *tagger)
 
   Level: advanced
 
-.seealso: VecTaggerType, VecTaggerCreate()
+.seealso: VecTaggerType, VecTaggerCreate(), VecTagger
 @*/
 PetscErrorCode VecTaggerSetType(VecTagger tagger,VecTaggerType type)
 {
@@ -111,7 +111,7 @@ PetscErrorCode VecTaggerSetType(VecTagger tagger,VecTaggerType type)
 
   Level: advanced
 
-.seealso: VecTaggerSetType(), VecTaggerCreate()
+.seealso: VecTaggerSetType(), VecTaggerCreate(), VecTaggerSetFromOptions(), VecTagger, VecTaggerType
 @*/
 PetscErrorCode  VecTaggerGetType(VecTagger tagger, VecTaggerType *type)
 {
@@ -135,7 +135,7 @@ PetscErrorCode  VecTaggerGetType(VecTagger tagger, VecTaggerType *type)
 
    Level: advanced
 
-.seealso: VecTaggerCreate()
+.seealso: VecTaggerCreate(), VecTaggerSetType(), VecTagger
 @*/
 PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
 {
@@ -160,7 +160,7 @@ PetscErrorCode VecTaggerDestroy(VecTagger *tagger)
 
    Level: advanced
 
-.seealso: VecTaggerSetFromOptions(), VecTaggerSetType()
+.seealso: VecTaggerSetFromOptions(), VecTaggerSetType(), VecTagger, VecTaggerCreate(), VecTaggerSetUp()
 @*/
 PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 {
@@ -188,6 +188,8 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 -  -vec_tagger_invert     - invert the index set returned by VecTaggerComputeIS()
 
    Level: advanced
+
+.seealso: VecTagger, VecTaggerCreate(), VecTaggerSetUp()
 
 @*/
 PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
@@ -231,7 +233,7 @@ PetscErrorCode VecTaggerSetFromOptions(VecTagger tagger)
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTaggerGetBlockSize(), VecSetBlockSize(), VecGetBlockSize()
+.seealso: VecTaggerComputeIS(), VecTaggerGetBlockSize(), VecSetBlockSize(), VecGetBlockSize(), VecTagger, VecTaggerCreate()
 @*/
 PetscErrorCode VecTaggerSetBlockSize(VecTagger tagger, PetscInt blocksize)
 {
@@ -248,13 +250,15 @@ PetscErrorCode VecTaggerSetBlockSize(VecTagger tagger, PetscInt blocksize)
 
    Logically Collective
 
-   Input Parameters:
-+  tagger - vec tagger
--  blocksize - block size of the vectors the tagger operates on
+   Input Parameter:
+.  tagger - vec tagger
+
+   Output Parameter:
+.  blocksize - block size of the vectors the tagger operates on
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTaggerSetBlockSize(),
+.seealso: VecTaggerComputeIS(), VecTaggerSetBlockSize(), VecTagger, VecTaggerCreate()
 @*/
 PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 {
@@ -279,7 +283,7 @@ PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTaggerGetInvert()
+.seealso: VecTaggerComputeIS(), VecTaggerGetInvert(), VecTagger, VecTaggerCreate()
 @*/
 PetscErrorCode VecTaggerSetInvert(VecTagger tagger, PetscBool invert)
 {
@@ -296,13 +300,15 @@ PetscErrorCode VecTaggerSetInvert(VecTagger tagger, PetscBool invert)
 
    Logically Collective
 
-   Input Parameters:
-+  tagger - vec tagger
--  invert - PETSC_TRUE to invert, PETSC_FALSE to use the indices as is
+   Input Parameter:
+.  tagger - vec tagger
+
+   Output Parameter:
+.  invert - PETSC_TRUE to invert, PETSC_FALSE to use the indices as is
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS(), VecTaggerSetInvert()
+.seealso: VecTaggerComputeIS(), VecTaggerSetInvert(), VecTagger, VecTaggerCreate()
 @*/
 PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
 {
@@ -325,7 +331,7 @@ PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
 
    Level: advanced
 
-.seealso: VecTaggerCreate()
+.seealso: VecTaggerCreate(), VecTagger, VecTaggerCreate()
 @*/
 PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 {
@@ -350,7 +356,8 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 }
 
 /*@C
-   VecTaggerComputeBoxes - If the tagged index set can be summarized as a list of boxes of values, returns that list
+   VecTaggerComputeBoxes - If the tagged index set can be summarized as a list of boxes of values, returns that list, otherwise returns
+         in listed PETSC_FALSE
 
    Collective on VecTagger
 
@@ -360,16 +367,17 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 
    Output Parameters:
 +  numBoxes - the number of boxes in the tag definition
--  boxes - a newly allocated list of boxes.  This is a flat array of (BlockSize * numBoxes) pairs that the user can free with PetscFree().
+.  boxes - a newly allocated list of boxes.  This is a flat array of (BlockSize * numBoxes) pairs that the user can free with PetscFree().
+-  listed - PETSC_TRUE if a list was created, pass in NULL if not needed
 
    Notes:
 .  A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the boxes.
 
    Level: advanced
 
-.seealso: VecTaggerComputeIS()
+.seealso: VecTaggerComputeIS(), VecTagger, VecTaggerCreate()
 @*/
-PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
+PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes,PetscBool *listed)
 {
   PetscInt       vls, tbs;
   PetscErrorCode ierr;
@@ -382,12 +390,10 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes
   ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
   if (vls % tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %D is not a multiple of tagger block size %D",vls,tbs);
-  if (tagger->ops->computeboxes) {ierr = (*tagger->ops->computeboxes) (tagger,vec,numBoxes,boxes);CHKERRQ(ierr);}
-  else {
-    const char *type;
-    ierr = PetscObjectGetType ((PetscObject)tagger,&type);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"VecTagger type %s does not compute value boxes",type);
-  }
+  if (tagger->ops->computeboxes) {
+    *listed = PETSC_TRUE;
+    ierr    = (*tagger->ops->computeboxes) (tagger,vec,numBoxes,boxes,listed);CHKERRQ(ierr);
+  }  else *listed = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -400,14 +406,15 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes
 +  tagger - the VecTagger context
 -  vec - the vec to tag
 
-   Output Parameter:
-.  IS - a list of the indices tagged by the tagger, i.e., if the number of local indices will be n / bs, where n is VecGetLocalSize() and bs is VecTaggerGetBlockSize().
+   Output Parameters:
++  IS - a list of the indices tagged by the tagger, i.e., if the number of local indices will be n / bs, where n is VecGetLocalSize() and bs is VecTaggerGetBlockSize().
+-  listed - routine was able to compute the IS, pass in NULL if not needed
 
    Level: advanced
 
-.seealso: VecTaggerComputeBoxes()
+.seealso: VecTaggerComputeBoxes(), VecTagger, VecTaggerCreate()
 @*/
-PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is)
+PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is,PetscBool *listed)
 {
   PetscInt       vls, tbs;
   PetscErrorCode ierr;
@@ -419,26 +426,32 @@ PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is)
   ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
   if (vls % tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %D is not a multiple of tagger block size %D",vls,tbs);
-  if (tagger->ops->computeis) {ierr = (*tagger->ops->computeis) (tagger,vec,is);CHKERRQ(ierr);}
+  if (tagger->ops->computeis) {ierr = (*tagger->ops->computeis) (tagger,vec,is,listed);CHKERRQ(ierr);}
   else {
-    SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"VecTagger type does not compute ISs");
+    if (listed) *listed = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is)
-{ PetscInt       numBoxes;
-  VecTaggerBox   *boxes;
-  PetscInt       numTagged, offset;
-  PetscInt       *tagged;
-  PetscInt       bs, b, i, j, k, n;
-  PetscBool      invert;
+PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is,PetscBool *listed)
+{
+  PetscInt          numBoxes;
+  VecTaggerBox      *boxes;
+  PetscInt          numTagged, offset;
+  PetscInt          *tagged;
+  PetscInt          bs, b, i, j, k, n;
+  PetscBool         invert;
   const PetscScalar *vecArray;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
+  PetscBool         boxlisted;
 
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
-  ierr = VecTaggerComputeBoxes(tagger,vec,&numBoxes,&boxes);CHKERRQ(ierr);
+  ierr = VecTaggerComputeBoxes(tagger,vec,&numBoxes,&boxes,&boxlisted);CHKERRQ(ierr);
+  if (!boxlisted) {
+    if (listed) *listed = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
   ierr = VecGetArrayRead(vec, &vecArray);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec, &n);CHKERRQ(ierr);
   invert = tagger->invert;
@@ -483,5 +496,6 @@ PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is)
   ierr = PetscFree(boxes);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)vec),numTagged,tagged,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
   ierr = ISSort(*is);CHKERRQ(ierr);
+  if (listed) *listed = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

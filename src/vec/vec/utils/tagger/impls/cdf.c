@@ -362,7 +362,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger,Vec v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
+static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes,PetscBool *listed)
 {
   VecTagger_CDF  *cuml = (VecTagger_CDF *)tagger->data;
   PetscMPIInt    size;
@@ -391,6 +391,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscIn
     SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Unknown CDF calculation/estimation method.");
   }
   *boxes = bxs;
+  if (listed) *listed = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
