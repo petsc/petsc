@@ -113,20 +113,12 @@ Sphinx Documentation Guidelines
         > ./ex1 --some-args
 
 
-* All environment variables such as ``$PETSC_DIR`` or ``$PATH`` must be preceded by the
-  "$" character and be enclosed in double backticks "``". E.g.
+* Environment variables such as ``$PETSC_DIR`` or ``$PATH`` must be preceded by
+  ``$`` and be enclosed in double backticks, e.g.
 
   .. code-block:: rst
 
-     Lorem ipsum dolor sit ``$PETSC_DIR``, consectetur adipiscing ``$PETSC_ARCH``...
-
-* When referring to configuration of PETSc, specifically the ``$PETSC_DIR/configure``
-  script in plain text (not code blocks), it should always be lower-case, enclosed in
-  double backticks "``" and not include "./". E.g.
-
-  .. code-block:: rst
-
-     Lorem ipsum dolor sit ``configure``, consectetur adipiscing elit...
+     Set ``$PETSC_DIR`` and ``$PETSC_ARCH``
 
 * For internal links, use explicit labels and namespace them, e.g
 
