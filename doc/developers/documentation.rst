@@ -132,10 +132,7 @@ Sphinx Documentation Guidelines
 
      Lorem ipsum dolor sit ``configure``, consectetur adipiscing elit...
 
-* If using internal section links to to jump to other places within the documentation, use
-  explicit labels and namespace them appropriately. Do not use `autosectionlabel
-  <https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html>`__
-  extension, and do not use implicit links. E.g.
+* For internal links, use explicit labels and namespace them, e.g
 
   .. code-block:: rst
 
@@ -150,15 +147,9 @@ Sphinx Documentation Guidelines
      Internal Headline
      =================
 
-  And in some other file
+  and in some other file
 
   .. code-block:: rst
-
-     .. _tut_mytutorial:
-
-     ======================
-     Start Tutorial Heading
-     ======================
 
      A link- :ref:`my link name <doc_mydoc_internalheadline>`
 
