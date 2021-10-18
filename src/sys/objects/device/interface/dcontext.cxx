@@ -234,6 +234,8 @@ PetscErrorCode PetscDeviceContextSetDevice(PetscDeviceContext dctx, PetscDevice 
   Notes:
   This is a borrowed reference, the user should not destroy the device.
 
+  Level: intermediate
+
 .seealso: PetscDeviceContextSetDevice(), PetscDevice
 @*/
 PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice *device)

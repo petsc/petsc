@@ -170,8 +170,9 @@ def modifylevel(filename,secname):
         loc =m.group(1)
         if loc:
           re_loc = re.compile('<BODY .*>')
-          branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).rstrip()
-          edit_branch = 'release' if branch == b'release' else 'main'
+          git_ref = subprocess.check_output(['git', 'rev-parse', 'HEAD']).rstrip()
+          git_ref_release = subprocess.check_output(['git', 'rev-parse', 'origin/release']).rstrip()
+          edit_branch = 'release' if git_ref == git_ref_release else 'main'
           replacementtext = '<BODY BGCOLOR="FFFFFF">\n<div id="edit" align=right><a href="https://gitlab.com/petsc/petsc/-/edit/'+edit_branch+'/'+loc+'"><small>Fix/Edit manual page</small></a></div>'
           buf = re_loc.sub(replacementtext,buf)
       else:
