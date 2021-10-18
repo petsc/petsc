@@ -57,11 +57,16 @@ Notes:
 Sphinx Documentation Guidelines
 -------------------------------
 
-* Use the ``.. code-block::`` `directive
-  <https://www.sphinx-doc.org/en/1.5/markup/code.html>`__ instead of the ``.. code::``
-  `directive <https://docutils.sourceforge.io/docs/ref/rst/directives.html#code>`__ for
-  any example code that is not included literally using ``.. literalinclude::``. See
-  :ref:`below <doc_devdoc_guide_litinc>` for more details on ``.. literalinclude``.
+* Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code. Use an "absolute" path, beginning with ``/``, which means relative to the root for the Sphinx docs (where ``conf.py`` is found).
+
+  .. code-block:: rst
+
+      .. literalinclude:: /../src/sys/error/err.c
+         :start-at: PetscErrorCode PetscError(
+         :end-at: PetscFunctionReturn(0)
+         :append: }
+
+  For robustness to changes in the source files, Use ``:start-at:`` and related options when possible, noting that you can also use (positive) values of ``:lines:`` relative to this. For languages other than C, use the ``:language:`` option to appropriately highlight.
 
 * Any invocable command line statements longer than a few words should be in
   ``.. code-block::`` sections. Any such statements not in code-block statements must be
@@ -152,21 +157,6 @@ Sphinx Documentation Guidelines
   .. code-block:: rst
 
      A link- :ref:`my link name <doc_mydoc_internalheadline>`
-
-.. _doc_devdoc_guide_litinc:
-
-* Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code, as in
-  the following example. Note that an "absolute" path has been used, which means
-  relative to the root for the Sphinx docs (where ``conf.py`` is found).
-
-  .. code-block:: rst
-
-      .. literalinclude:: /../src/sys/error/err.c
-         :start-at: PetscErrorCode PetscError(
-         :end-at: PetscFunctionReturn(0)
-         :append: }
-
-  For robustness to changes in the source files, Use ``:start-at:`` and related options when possible, noting that you can also use (positive) values of ``:lines:`` relative to this. For languages other than C, use the ``:language:`` option to appropriately highlight.
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
