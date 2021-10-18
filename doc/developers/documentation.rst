@@ -35,14 +35,14 @@ Building the HTML docs locally
 
 We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__.
 
-  .. code-block:: console
+.. code-block:: console
 
-     > cd $PETSC_DIR
-     > python3 -m venv petsc-doc-env
-     > . petsc-doc-env/bin/activate
-     > pip install -r doc/requirements.txt
-     > cd doc
-     > make html  # may take several minutes
+   > cd $PETSC_DIR
+   > python3 -m venv petsc-doc-env
+   > . petsc-doc-env/bin/activate
+   > pip install -r doc/requirements.txt
+   > cd doc
+   > make html  # may take several minutes
 
 Then open ``_build/html/index.html`` with your browser.
 
