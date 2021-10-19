@@ -554,4 +554,18 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
      args: -tao_smonitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls -tao_bqnls_mat_lmvm_scale_type none -tao_view
      requires: !single
 
+   test:
+     suffix: 19
+     args: -tao_smonitor -mx 8 -my 12 -tao_type bnls -tao_gatol 1e-5 -tao_mf_hessian
+     requires: !single
+
+   test:
+      suffix: 20
+      args: -tao_smonitor -mx 8 -my 12 -tao_type bntr -tao_gatol 1e-5 -tao_mf_hessian
+      requires: !single
+
+   test:
+      suffix: 21
+      args: -tao_smonitor -mx 8 -my 12 -tao_type bntl -tao_gatol 1e-5 -tao_mf_hessian
+      requires: !single
 TEST*/
