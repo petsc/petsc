@@ -980,4 +980,18 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
      args: -tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3 -tao_gatol 1e-4 -tao_type bqnkls -tao_bqnk_mat_type lmvmbfgs
      requires: !single
 
+   test:
+     suffix: 18
+     args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bnls -tao_gatol 1e-5 -tao_mf_hessian
+     requires: !single
+
+   test:
+     suffix: 19
+     args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntr -tao_gatol 1e-5 -tao_mf_hessian
+     requires: !single
+
+   test:
+     suffix: 20
+     args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntl -tao_gatol 1e-5 -tao_mf_hessian
+
 TEST*/
