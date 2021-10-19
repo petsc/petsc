@@ -123,10 +123,11 @@ def processDir(flist, dirpath, dirnames, filenames):
       newls.append(l)
   if newls: flist.extend([os.path.join(dirpath,name) for name in newls])
 
-  # exclude 'docs' but not 'src/docs'
+  # exclude 'petsc/docs/' only (and not docs/ in other locations)
   for exname in ['docs']:
-    if exname in dirnames and dirpath.find('src') <0:
+    if exname in dirnames and os.path.realpath(dirpath) == os.path.realpath(os.getcwd()):
       dirnames.remove(exname)
+
   # One-level unique dirs
   for exname in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','systems']:
     if exname in dirnames:

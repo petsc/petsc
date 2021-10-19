@@ -29,6 +29,7 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 /src/vec/vscat/           @jczhang07 @BarrySmith
 
 /src/docs/                @psanan @sbalay @BarrySmith @knepley @jedbrown
+/doc/                     @psanan @sbalay @BarrySmith @knepley @jedbrown
 
 /config/*                 @krugers @knepley @sbalay @BarrySmith
 gmakefile*                @krugers @jedbrown @BarrySmith
