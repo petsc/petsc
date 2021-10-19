@@ -442,8 +442,8 @@ chk_manualpage_dir:
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
-	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/doctext; export TEXTFILTER_PATH; \
+          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext; export DOCTEXT_PATH; \
+	  TEXTFILTER_PATH=${PETSC_DIR}/doc/classic/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../$${LMANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/$${LMANSEC} ${SOURCED};  fi
@@ -452,10 +452,10 @@ manualpages_buildcite: chk_manualpage_dir
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
+          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext; export DOCTEXT_PATH; \
           ${DOCTEXT} -html \
             -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
-            -defn ${PETSC_DIR}/src/docs/doctext/html.def \
+            -defn ${PETSC_DIR}/doc/classic/doctext/html.def \
             -locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit -Wargdesc ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
           chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
 #
@@ -590,7 +590,7 @@ simplehtml: chk_c2html
 html: chk_c2html
 	-@export htmlmap_tmp=$$(mktemp) ;\
           sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > $$htmlmap_tmp ;\
-          cat ${PETSC_DIR}/src/docs/mpi.www.index >> $$htmlmap_tmp ;\
+          cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
@@ -617,7 +617,7 @@ html: chk_c2html
           done ;\
           ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
-          cat ${PETSC_DIR}/src/docs/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          cat ${PETSC_DIR}/doc/classic/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
           echo "<p>" >> $${loc}/index.html ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
           if [ "${EXAMPLESC}" != "" ] ; then \

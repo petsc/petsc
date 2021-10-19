@@ -15,9 +15,6 @@
 
     For doing runtime checking off supported versions we recommend using PetscGetVersionNumber() instead of this routine.
 
-    Developer Note: The version information is also listed in
-$    src/docs/website/index.html.
-
 .seealso: PetscGetProgramName(), PetscGetVersionNumber()
 
 @*/
