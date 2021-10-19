@@ -1785,14 +1785,17 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
     ierr = MatMumpsResetSchur_Private(mumps);CHKERRQ(ierr);
   }
 
-  /* MPICH Fortran MPI_IN_PLACE binding has a bug that prevents the use of 'mpi4py + mpich + mumps', e.g., by Firedrake.
-     So we turn off distributed RHS for MPICH. See https://bitbucket.org/mpi4py/mpi4py/issues/162/mpi4py-initialization-breaks-fortran
+  /* Two MPICH Fortran MPI_IN_PLACE binding bugs prevented the use of 'mpich + mumps'. One happened with "mpi4py + mpich + mumps",
+     and was reported by Firedrake. See https://bitbucket.org/mpi4py/mpi4py/issues/162/mpi4py-initialization-breaks-fortran
      and a petsc-maint mailing list thread with subject 'MUMPS segfaults in parallel because of ...'
+     This bug was fixed by https://github.com/pmodels/mpich/pull/4149. But the fix brought a new bug,
+     see https://github.com/pmodels/mpich/issues/5589. This bug was fixed by https://github.com/pmodels/mpich/pull/5590.
+     In short, we could not use distributed RHS with MPICH until v4.0b1.
    */
-#if PETSC_PKG_MUMPS_VERSION_GE(5,3,0) && defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
-  mumps->ICNTL20 = 10; /* Distributed dense RHS*/
-#else
+#if PETSC_PKG_MUMPS_VERSION_LT(5,3,0) || (defined(PETSC_HAVE_MPICH_NUMVERSION) && (PETSC_HAVE_MPICH_NUMVERSION < 40000101))
   mumps->ICNTL20 = 0;  /* Centralized dense RHS*/
+#else
+  mumps->ICNTL20 = 10; /* Distributed dense RHS*/
 #endif
   ierr = PetscOptionsMUMPSInt("-mat_mumps_icntl_20","ICNTL(20): give mumps centralized (0) or distributed (10) dense right-hand sides","None",mumps->ICNTL20,&mumps->ICNTL20,&flg);CHKERRQ(ierr);
   if (flg && mumps->ICNTL20 != 10 && mumps->ICNTL20 != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"ICNTL(20)=%d is not supported by the PETSc/MUMPS interface. Allowed values are 0, 10\n",(int)mumps->ICNTL20);
