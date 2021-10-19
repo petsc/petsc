@@ -165,12 +165,12 @@ class Configure(config.package.CMakePackage):
       args.append('-DKokkos_ARCH_'+deviceArchName+'=ON')
       args.append('-DKokkos_ENABLE_HIP_RELOCATABLE_DEVICE_CODE=OFF')
 
-    # set -DCMAKE_CXX_STANDARD=
-    if not hasattr(self.compilers,lang+'dialect'): # lang can be cuda, hip, or cxx
-      raise RuntimeError('Did not properly determine C++ dialect for the '+lang.upper()+' compiler')
-    langdialect = getattr(self.compilers,lang+'dialect')
-    args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
-    args.append('-DCMAKE_CXX_STANDARD='+langdialect.split("C++",1)[1]) # e.g., extract 14 from C++14
+    langdialect = getattr(self.compilers,lang+'dialect',None)
+    if langdialect:
+      # langdialect is only set as an attribute if the user specifically chose a dialect
+      # (see config/compilers.py::checkCxxDialect())
+      args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
+      args.append('-DCMAKE_CXX_STANDARD='+langdialect[-2:]) # e.g., extract 14 from C++14
     return args
 
   def configureLibrary(self):

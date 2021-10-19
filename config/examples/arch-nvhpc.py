@@ -8,7 +8,6 @@ if __name__ == '__main__':
     '--download-kokkos',
     '--download-kokkos-kernels',
     '--with-cuda=1',
-    '--with-cxx-dialect=c++14',
     '--with-debugging=0',
     # Need to use g++ as host compiler for NVCC (tested with 7.5.0) to compile kokkos lambdas
     'CUDAFLAGS=-ccbin g++',
