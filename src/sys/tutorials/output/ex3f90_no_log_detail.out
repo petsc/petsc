@@ -1,0 +1,4 @@
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There is one unused database option. It is:
+Option left: name:-log_view value: ascii:filename.txt:ascii_info_detail
