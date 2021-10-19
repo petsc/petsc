@@ -27,6 +27,7 @@ Changes: Development
 .. rubric:: AO:
 
 .. rubric:: IS:
+
 -  ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
 
 .. rubric:: VecScatter / PetscSF:
@@ -58,7 +59,7 @@ Changes: Development
 
 -  Add ``DMLabelGetNonEmptyStratumValuesIS()``, similar to ``DMLabelGetValueIS()`` but counts only nonempty strata
 -  Add ``DMLabelCompare()`` for ``DMLabel`` comparison
--  Add ``DMCompareLabels()`` comparing ``DMLabel``s of two ``DM``s
+-  Add ``DMCompareLabels()`` comparing ``DMLabel``\s of two ``DM``\s
 -  ``DMCopyLabels()`` now takes DMCopyLabelsMode argument determining duplicity handling
 
 .. rubric:: DMSwarm:
