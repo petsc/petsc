@@ -21,6 +21,7 @@ Changes: Development
 .. rubric:: Sys:
 
 - Add ``MPI_Comm_get_name()`` and ``MPI_Comm_set_name()`` to MPIUNI
+- Remove ``petsccublas.h`` and ``petschipblas.h``
 - Remove ``-petsc_use_default_null_stream`` and ``-[cuda|hip]_synchronize`` options
 - Remove ``PetscCUDASynchronize`` and ``PetscHIPSynchronize``. Their operation is now managed by ``PetscDeviceContext`` via its ``PetscStreamType`` attribute
 - Remove ``PetscCUDAInitialize()``, ``PetscCUDAInitializeCheck()``, ``PetscHIPInitialize()``, and ``PetscHIPInitializeCheck()``. Their function is now handled by ``PetscDeviceInitialize()`` and ``PetscDeviceInitialized()``
