@@ -116,24 +116,33 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  define PETSC_SINGLE_LIBRARY_INTERN PETSC_EXTERN
 #endif
 
+/* C++11 features */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX11)
 #  define PETSC_NULLPTR             nullptr
 #  define PETSC_CONSTEXPR           constexpr
 #  define PETSC_NOEXCEPT            noexcept
 #  define PETSC_NOEXCEPT_ARG(cond_) noexcept(cond_)
-#  define PETSC_CXX_DEFAULT(func_)  func_ = default
 #else
 #  define PETSC_NULLPTR             NULL
 #  define PETSC_CONSTEXPR
 #  define PETSC_NOEXCEPT
 #  define PETSC_NOEXCEPT_ARG(cond_)
-#  define PETSC_CXX_DEFAULT(func_)
+#endif /* __cplusplus && PETSC_HAVE_CXX_DIALECT_CXX11 */
+
+/* C++14 features */
+#if defined(PETSC_HAVE_CXX_DIALECT_CXX14)
+#  define PETSC_CONSTEXPR_14 PETSC_CONSTEXPR
+#else
+#  define PETSC_CONSTEXPR_14
 #endif
 
+/* C++17 features */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17)
-#  define PETSC_NODISCARD [[nodiscard]]
+#  define PETSC_NODISCARD    [[nodiscard]]
+#  define PETSC_CONSTEXPR_17 PETSC_CONSTEXPR
 #else
 #  define PETSC_NODISCARD
+#  define PETSC_CONSTEXPR_17
 #endif
 
 #include <petscversion.h>
