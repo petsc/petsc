@@ -385,8 +385,10 @@ class PetscCursor(object):
   @staticmethod
   def findCursorReferencesFromCursor(cursor):
     __doc__="""
-    Brute force find and collect all references in a file that pertain to a particular cursor. Essentially refers to finding every cursor that contains the symbol
-    that the cursor represents, so this function is only useful for first-class symbols (i.e. variables, functions)
+    Brute force find and collect all references in a file that pertain to a particular
+    cursor. Essentially refers to finding every reference to the symbol that the cursor
+    represents, so this function is only useful for first-class symbols (i.e. variables,
+    functions)
     """
     import ctypes
 
@@ -418,6 +420,11 @@ class PetscCursor(object):
           foundCursors.append(cursor)
         except ParsingError:
           pass
+        except RuntimeError as re:
+          string = "Full error full error message below:"
+          print('='*30,"CXCursorAndRangeVisitor Error",'='*30)
+          print("It is possible that this is a false positive! E.g. some 'unexpected number of tokens' errors are due to macro instantiation locations being misattributed.\n",string,"\n","-"*len(string),"\n",re,sep="")
+          print('='*30,"CXCursorAndRangeVisitor End Error",'='*26)
         return 1 # continue
 
     if not hasattr(clx.conf.lib,"clang_findReferencesInFile"):
@@ -982,14 +989,17 @@ class WorkerPool(mp.queues.JoinableQueue):
       self.linter = PetscLinter(compilerFlags,clangOptions=clangOptions,prefix=self.prefix,verbose=self.verbose,werror=werror)
     return
 
-  def walk(self,srcDir,excludeDirs=excludeDirNames,excludeDirSuff=excludeDirSuffixes,allowFileSuff=allowFileExtensions):
-    for root,dirs,files in os.walk(srcDir):
-      if self.verbose: print(self.prefix,"Processing directory",root)
-      dirs[:] = [d for d in dirs if d not in excludeDirs]
-      dirs[:] = [d for d in dirs if not d.endswith(excludeDirSuff)]
-      files   = [os.path.join(root,f) for f in files if f.endswith(allowFileSuff)]
-      for filename in files:
-        self.put(filename)
+  def walk(self,srcLoc,excludeDirs=excludeDirNames,excludeDirSuff=excludeDirSuffixes,allowFileSuff=allowFileExtensions):
+    if os.path.isfile(srcLoc):
+      self.put(srcLoc)
+    else:
+      for root,dirs,files in os.walk(srcLoc):
+        if self.verbose: print(self.prefix,"Processing directory",root)
+        dirs[:] = [d for d in dirs if d not in excludeDirs]
+        dirs[:] = [d for d in dirs if not d.endswith(excludeDirSuff)]
+        files   = [os.path.join(root,f) for f in files if f.endswith(allowFileSuff)]
+        for filename in files:
+          self.put(filename)
     return
 
   def put(self,filename,*args):
@@ -1289,10 +1299,16 @@ def checkTraceableToParentArgs(obj,parentArgNames):
     # we just tried those and they didn't work, also more importantly weeds out the
     # instantiation line if this is an intermediate cursor in a recursive call to this
     # function
-    refsAll = [r for r in refsAll if r.kind not in {clx.CursorKind.VAR_DECL,clx.CursorKind.FIELD_DECL}]
-    assert len(refsAll), "Could not determine the origin of cursor {}".format(obj)
+    argRefs = [r for r in refsAll if r.kind not in {clx.CursorKind.VAR_DECL,clx.CursorKind.FIELD_DECL}]
+    if not len(argRefs):
+      # it's not traceable to a function argument, so maybe its a global static variable
+      if len([r for r in refsAll if r.storage_class in {clx.StorageClass.STATIC}]):
+        # a global variable is not a function argumment, so this is unhandleable
+        raise ParsingError("PETSC_CLANG_STATIC_ANALYZER_IGNORE")
+
+    assert len(argRefs), "Could not determine the origin of cursor {}".format(obj)
     # take the first, as this is the earliest
-    firstRef  = refsAll[0]
+    firstRef  = argRefs[0]
     tu,loc    = firstRef.translation_unit,firstRef.location
     srcLen    = len(firstRef.getRawSource())
     # why the following song and dance? Because you cannot walk the AST backwards, and
@@ -1350,7 +1366,7 @@ def checkMatchingArgNum(linter,obj,idx,parentArgs):
   Is the Arg # correct w.r.t. the function arguments
   """
   if idx.canonical.kind not in mathCursors:
-    # sometimes it is impossible to tell if the index is correct so this is a warnning not
+    # sometimes it is impossible to tell if the index is correct so this is a warning not
     # an error. For example in the case of a loop:
     # for (i = 0; i < n; ++i) PetscValidIntPointer(arr+i,i);
     linter.addWarningFromCursor(idx,"Index value is of unexpected type '{}'".format(idx.canonical.kind))
@@ -1366,12 +1382,21 @@ def checkMatchingArgNum(linter,obj,idx,parentArgs):
   except ValueError:
     try:
       matchLoc = checkTraceableToParentArgs(obj,parentArgNames)
-    except ParsingError:
+    except ParsingError as pe:
       # If the parent arguments don't contain the symbol and we couldn't determine a
       # definition then we cannot check for correct numbering, so we cannot do
       # anything here but emit a warning
-      parentFunc = PetscCursor(parentArgs[0].semantic_parent)
-      linter.addWarningFromCursor(obj,"Cannot determine index correctness, parent function '{}()' seemingly does not contain the object:\n\n{}".format(parentFunc.name,parentFunc.getFormattedSource()))
+      if "PETSC_CLANG_STATIC_ANALYZER_IGNORE" in pe.args:
+        return
+      if len(parentArgs):
+        parentFunc = PetscCursor(parentArgs[0].semantic_parent)
+        parentFuncName = parentFunc.name+"()"
+        parentFuncSrc  = parentFunc.getFormattedSource()
+      else:
+        # parent function has no arguments (very likely that "obj" is a global variable)
+        parentFuncName = "UNKNOWN FUNCTION"
+        parentFuncSrc  = "  <could not determine parent function signature from arguments>"
+      linter.addWarningFromCursor(obj,"Cannot determine index correctness, parent function '{}' seemingly does not contain the object:\n\n{}".format(parentFuncName,parentFuncSrc))
       return
   if idxNum != parentArgs[matchLoc].argidx:
     errMess = "Argument number doesn't match for '{}'. Found '{}' expected '{}' from\n\n{}".format(obj.name,str(idxNum),str(parentArgs[matchLoc].argidx),parentArgs[matchLoc].getFormattedSource())
@@ -1931,7 +1956,7 @@ def queueMain(clangLib,checkFunctionMapU,classIdMapU,compilerFlags,clangOptions,
     lockPrint(printPrefix,15*"=","Performing setup",15*"=")
     initializeLibclang(clangLib=clangLib)
     linter = PetscLinter(compilerFlags,clangOptions=clangOptions,prefix=printPrefix,verbose=verbose,werror=werror,lock=lock)
-    lockPrint(printPrefix,15*"=","Entering queue",15*"=")
+    lockPrint(printPrefix,15*"=","Entering queue  ",15*"=")
     while True:
       filename = fileQueue.get()
       if filename == QueueSignal.EXIT_QUEUE:
@@ -1945,7 +1970,7 @@ def queueMain(clangLib,checkFunctionMapU,classIdMapU,compilerFlags,clangOptions,
       returnQueue.put((QueueSignal.WARNING     ,linter.getAllWarnings()))
       linter.clear()
       fileQueue.task_done()
-    lockPrint(printPrefix,15*"=","Exiting queue",15*"=")
+    lockPrint(printPrefix,15*"=","Exiting queue   ",15*"=")
   except:
     try:
       # attempt to send the traceback back to parent
