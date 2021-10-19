@@ -23,6 +23,7 @@ def setup(app: Sphinx) -> None:
     _check_version(app)
 
     app.connect('builder-inited', _setup_translators)
+    return {'parallel_read_safe': True}
 
 
 def _check_version(app: Sphinx) -> None:

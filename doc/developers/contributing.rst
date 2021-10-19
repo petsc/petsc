@@ -238,7 +238,7 @@ otherwise you will lose those changes. Never do a ``git pull`` after you rebase 
 
 You can use ``git log`` to see the recent changes to your branch and help determine what commits should be rearranged, combined, or split.
 You may also find it helpful to use an additional tool such as
-`git-gui <https://git-scm.com/docs/git-gui/>`__, `lazygit <https://github.com/jesseduffield/lazygit>`__, or `various GUI tools https://git-scm.com/downloads/guis`__.
+`git-gui <https://git-scm.com/docs/git-gui/>`__, `lazygit <https://github.com/jesseduffield/lazygit>`__, or `various GUI tools <https://git-scm.com/downloads/guis>`__.
 
 
 
