@@ -1,28 +1,36 @@
 #if !defined(PETSCDEVICETYPES_H)
 #define PETSCDEVICETYPES_H
 
-#include <petscsys.h> /* for PETSC_HAVE_CUDA/HIP/KOKKOS etc */
+/* for PETSC_HAVE_CUDA/HIP/KOKKOS etc */
+#include <petscsys.h> /*I petscsys.h I*/
 
 /*E
   PetscMemType - Memory type of a pointer
 
-  Level: beginner
-
   Developer Note:
-   Encoding of the bitmask in binary: xxxxyyyz
-   z = 0:                Host memory
-   z = 1:                Device memory
-   yyy = 000:            CUDA-related memory
-   yyy = 001:            HIP-related memory
-   xxxxyyy1 = 0000,0001: CUDA memory
-   xxxxyyy1 = 0001,0001: CUDA NVSHMEM memory
-   xxxxyyy1 = 0000,0011: HIP memory
+  Encoding of the bitmask in binary: xxxxyyyz
+
+$ z = 0                - Host memory
+$ z = 1                - Device memory
+$ yyy = 000            - CUDA-related memory
+$ yyy = 001            - HIP-related memory
+$ xxxxyyy1 = 0000,0001 - CUDA memory
+$ xxxxyyy1 = 0001,0001 - CUDA NVSHMEM memory
+$ xxxxyyy1 = 0000,0011 - HIP memory
 
   Other types of memory, e.g., CUDA managed memory, can be added when needed.
 
+  Level: beginner
+
 .seealso: VecGetArrayAndMemType(), PetscSFBcastWithMemTypeBegin(), PetscSFReduceWithMemTypeBegin()
 E*/
-typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=0x01, PETSC_MEMTYPE_CUDA=0x01, PETSC_MEMTYPE_NVSHMEM=0x11,PETSC_MEMTYPE_HIP=0x03} PetscMemType;
+typedef enum {
+  PETSC_MEMTYPE_HOST    = 0,
+  PETSC_MEMTYPE_DEVICE  = 0x01,
+  PETSC_MEMTYPE_CUDA    = 0x01,
+  PETSC_MEMTYPE_NVSHMEM = 0x11,
+  PETSC_MEMTYPE_HIP     = 0x03
+} PetscMemType;
 
 #define PetscMemTypeHost(m)    (((m) & 0x1) == PETSC_MEMTYPE_HOST)
 #define PetscMemTypeDevice(m)  (((m) & 0x1) == PETSC_MEMTYPE_DEVICE)
@@ -31,17 +39,23 @@ typedef enum {PETSC_MEMTYPE_HOST=0, PETSC_MEMTYPE_DEVICE=0x01, PETSC_MEMTYPE_CUD
 #define PetscMemTypeNVSHMEM(m) ((m) == PETSC_MEMTYPE_NVSHMEM)
 
 /*E
-    PetscOffloadMask - indicates which memory (CPU, GPU, or none) contains valid data
+  PetscOffloadMask - indicates which memory (CPU, GPU, or none) contains valid data
 
-   PETSC_OFFLOAD_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
-   PETSC_OFFLOAD_GPU - GPU has valid vector/matrix entries
-   PETSC_OFFLOAD_CPU - CPU has valid vector/matrix entries
-   PETSC_OFFLOAD_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
-   PETSC_OFFLOAD_VECKOKKOS - Reserved for Vec_Kokkos. The offload is managed by Kokkos, thus this flag is not used in Vec_Kokkos.
+$ PETSC_OFFLOAD_UNALLOCATED - no memory contains valid matrix entries; NEVER used for vectors
+$ PETSC_OFFLOAD_GPU         - GPU has valid vector/matrix entries
+$ PETSC_OFFLOAD_CPU         - CPU has valid vector/matrix entries
+$ PETSC_OFFLOAD_BOTH        - Both GPU and CPU have valid vector/matrix entries and they match
+$ PETSC_OFFLOAD_VECKOKKOS   - Reserved for Vec_Kokkos. The offload is managed by Kokkos, thus this flag is not used in Vec_Kokkos.
 
-   Level: developer
+  Level: developer
 E*/
-typedef enum {PETSC_OFFLOAD_UNALLOCATED=0x0,PETSC_OFFLOAD_CPU=0x1,PETSC_OFFLOAD_GPU=0x2,PETSC_OFFLOAD_BOTH=0x3,PETSC_OFFLOAD_VECKOKKOS=0x100} PetscOffloadMask;
+typedef enum {
+  PETSC_OFFLOAD_UNALLOCATED = 0x0,
+  PETSC_OFFLOAD_CPU         = 0x1,
+  PETSC_OFFLOAD_GPU         = 0x2,
+  PETSC_OFFLOAD_BOTH        = 0x3,
+  PETSC_OFFLOAD_VECKOKKOS   = 0x100
+} PetscOffloadMask;
 
 /*E
   PetscDeviceKind - Kind of accelerator device backend
