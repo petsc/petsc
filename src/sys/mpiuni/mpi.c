@@ -216,6 +216,29 @@ int MPI_Comm_get_attr(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
   return MPI_SUCCESS;
 }
 
+static char all_comm_names[MAX_COMM][MPI_MAX_OBJECT_NAME] = {
+  "MPI_COMM_SELF",
+  "MPI_COMM_WORLD"
+};
+
+int MPI_Comm_get_name(MPI_Comm comm,char *comm_name,int *resultlen)
+{
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  if (!comm_name || !resultlen) return MPI_FAILURE;
+  strncpy(comm_name,all_comm_names[CommIdx(comm)],MPI_MAX_OBJECT_NAME-1);
+  *resultlen = (int)strlen(comm_name);
+  return MPI_SUCCESS;
+}
+
+int MPI_Comm_set_name(MPI_Comm comm,const char *comm_name)
+{
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  if (!comm_name) return MPI_FAILURE;
+  if (strlen(comm_name) > MPI_MAX_OBJECT_NAME-1) return MPI_FAILURE;
+  strncpy(all_comm_names[CommIdx(comm)],comm_name,MPI_MAX_OBJECT_NAME-1);
+  return MPI_SUCCESS;
+}
+
 int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 {
   int j;
