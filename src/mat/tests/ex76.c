@@ -36,7 +36,7 @@ int main(int argc,char **args)
     ierr     = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,nz,NULL,&A);CHKERRQ(ierr);
     TestBAIJ = PETSC_FALSE;
   } else { /* A is in baij format */
-    ierr    =MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,NULL,&A);CHKERRQ(ierr);
+    ierr    = MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,NULL,&A);CHKERRQ(ierr);
     TestAIJ = PETSC_FALSE;
   }
 

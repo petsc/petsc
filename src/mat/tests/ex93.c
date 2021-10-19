@@ -139,8 +139,7 @@ PetscErrorCode testPTAPRectangular(void)
   actualC = 0.0;
   for (int i=0; i<cols; i++) {
     for (int j=0; j<cols; j++) {
-      ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j));
-      CHKERRQ(ierr); ;
+      ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j));CHKERRQ(ierr);
     }
   }
   blitz::Array<double,2> expectedC(cols, cols);

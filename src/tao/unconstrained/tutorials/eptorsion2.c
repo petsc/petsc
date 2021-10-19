@@ -323,11 +323,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr)
   floc = area * (p5 * fquad + flin);
   ierr = VecScale(G, area);CHKERRQ(ierr);
 
-  /* Sum function contributions from all processes */
+  /* Sum function contributions from all processes */  /* TODO: Change to CHKERRMPI() */
   ierr = (PetscErrorCode)MPI_Allreduce((void*)&floc,(void*)f,1,MPIU_REAL,MPIU_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

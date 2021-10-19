@@ -53,7 +53,7 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
       }
     }
     if (!hasdiag) {++newcols; ++dnnz[r-rStart];}
-    colMax = PetscMax(colMax, newcols);CHKERRQ(ierr);
+    colMax = PetscMax(colMax, newcols);
     ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
   }
   ierr = MatSetFromOptions(*L);CHKERRQ(ierr);

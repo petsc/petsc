@@ -778,9 +778,10 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
         PetscInt  ls = 0;
         Node      n[8],ndot[8],*fn[8];
         PetscReal zn[8],etabase = 0;
+
         PrmHexGetZ(pn,k,zm,zn);
         HexExtract(x,i,j,k,n);
-        HexExtract(xdot,i,j,k,ndot);CHKERRQ(ierr);
+        HexExtract(xdot,i,j,k,ndot);
         HexExtractRef(f,i,j,k,fn);
         if (thi->no_slip && k == 0) {
           for (l=0; l<4; l++) n[l].u = n[l].v = 0;

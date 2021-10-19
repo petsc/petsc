@@ -2111,7 +2111,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = ISDestroy(&isedgeOv);CHKERRQ(ierr);
   ierr = PetscFree(eIdxOv);CHKERRQ(ierr);
 
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of edges before pruning: %D, half=%D\n",rank,PETSC_FUNCTION_NAME,nedgeOv,nedgeOv/2);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of edges before pruning: %D, half=%D\n",rank,PETSC_FUNCTION_NAME,nedgeOv,nedgeOv/2);CHKERRQ(ierr);
 
   /* Create the non-scalable global-to-local index map. Yuck, but it has already been used elsewhere. */
   ierr = PetscMalloc1(nnodes,&p2l);CHKERRQ(ierr);
@@ -2120,7 +2120,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   if (1) {
     PetscInt m = 0;
     for (i=0; i<nnodes; i++) m += (p2l[i] >= 0);
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of global indices that map to local indices: %D; nvertices=%D nnodesLoc=%D nnodes=%D\n",rank,PETSC_FUNCTION_NAME,m,nvertices,nnodesLoc,nnodes);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of global indices that map to local indices: %D; nvertices=%D nnodesLoc=%D nnodes=%D\n",rank,PETSC_FUNCTION_NAME,m,nvertices,nnodesLoc,nnodes);CHKERRQ(ierr);
   }
 
   /* Log each edge connecting nodes in owned+ghosted exactly once */

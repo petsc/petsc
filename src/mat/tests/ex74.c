@@ -199,7 +199,7 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetSize(sB,&i,&j);CHKERRQ(ierr);
   if (i-Ii || j-J) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");CHKERRQ(ierr);
   }
 
   ierr = MatGetBlockSize(A, &Ii);CHKERRQ(ierr);

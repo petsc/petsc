@@ -90,7 +90,7 @@ typedef struct {
 PetscErrorCode spbas_compress_pattern(PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,spbas_matrix*,PetscReal*);
 size_t         spbas_memory_requirement(spbas_matrix);
 PetscErrorCode spbas_delete(spbas_matrix);
-PetscErrorCode spbas_incomplete_cholesky(Mat,const PetscInt*,const PetscInt*,spbas_matrix,PetscReal,PetscReal,spbas_matrix*);
+PetscErrorCode spbas_incomplete_cholesky(Mat,const PetscInt*,const PetscInt*,spbas_matrix,PetscReal,PetscReal,spbas_matrix*,PetscBool*);
 PetscErrorCode spbas_matrix_to_crs(spbas_matrix, MatScalar **,PetscInt **,PetscInt**);
 PetscErrorCode spbas_dump(const char*,spbas_matrix);
 PetscErrorCode spbas_transpose(spbas_matrix,spbas_matrix*);

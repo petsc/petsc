@@ -188,7 +188,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
 
     /* Check for convergence */
     ksp->rnorm = dp;
-    KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,ksp->its,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) PetscFunctionReturn(0);

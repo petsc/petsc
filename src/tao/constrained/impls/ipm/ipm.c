@@ -981,7 +981,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
         newrow = i;
         newcol = i-r2+c1;
         newval = -1.0;
-        MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
 

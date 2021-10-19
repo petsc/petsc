@@ -238,7 +238,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 
     /* Check for convergence */
     ksp->rnorm = dp;
-    KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;

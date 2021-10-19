@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
   ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
   ierr = PetscMalloc1(m ,&idx);CHKERRQ(ierr);
-  for (i = 0; i < m; i++) {idx[i] = i;CHKERRQ(ierr);}
+  for (i = 0; i < m; i++) {idx[i] = i;}
 
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {

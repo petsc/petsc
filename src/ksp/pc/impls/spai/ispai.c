@@ -662,9 +662,9 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   }
 
   if (AT) {
-    M->lines = new_compressed_lines(M->mnls[rank],1);CHKERRQ(ierr);
+    M->lines = new_compressed_lines(M->mnls[rank],1);
   } else {
-    M->lines = new_compressed_lines(M->mnls[rank],0);CHKERRQ(ierr);
+    M->lines = new_compressed_lines(M->mnls[rank],0);
   }
 
   rows = M->lines;

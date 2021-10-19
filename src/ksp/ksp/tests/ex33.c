@@ -55,11 +55,11 @@ int main(int argc,char **args)
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
     for (II=Istart; II<Iend; II++) {
       v = -1.0; i = II/n; j = II-i*n;
-      if (i>0) { J=II-n; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if (i<m-1) { J=II+n; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if (j>0) { J=II-1; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if (j<n-1) { J=II+1; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      v=4.0; MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
+      if (i>0) { J=II-n; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
+      if (i<m-1) { J=II+n; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
+      if (j>0) { J=II-1; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
+      if (j<n-1) { J=II+1; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
+      v=4.0; ierr = MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
 
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -76,8 +76,7 @@ int main(int argc,char **args)
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
     for (II=Istart; II<Iend; II++) {
-      /* v=4.0; MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr); */
-      v=1.0; MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
+      v=1.0; ierr = MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

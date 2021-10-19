@@ -107,7 +107,7 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
     ierr = VecGetValuesSection(vecLocal, section, p, &values);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(section, p, &cSize);CHKERRQ(ierr);
     for (c = 0; c < cSize; c++) {
-      PetscReal absDiff = PetscAbsScalar(values[c]);CHKERRQ(ierr);
+      PetscReal absDiff = PetscAbsScalar(values[c]);
       if (absDiff > tol) {bad = PETSC_TRUE; break;}
     }
     if (!bad) continue;
@@ -128,7 +128,7 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
     }
     ierr = DMPlexRestoreTransitiveClosure(dmplex, p, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (c = 0; c < cSize; c++) {
-      PetscReal absDiff = PetscAbsScalar(values[c]);CHKERRQ(ierr);
+      PetscReal absDiff = PetscAbsScalar(values[c]);
       if (absDiff > tol) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "  Bad dof %D\n", c);CHKERRQ(ierr);
       }

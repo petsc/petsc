@@ -1357,7 +1357,7 @@ static PetscErrorCode PointSFGetInterfacePoints_Private(PetscSF pointSF, IS *is)
   PetscFunctionReturn(0);
 }
 
-#define MYCHKERRQ(ierr) do {if (PetscUnlikely(ierr)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PointSF is wrong. Unable to show details!");} while (0)
+#define CHKERRMY(ierr) do {if (PetscUnlikely(ierr)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PointSF is wrong. Unable to show details!");} while (0)
 
 static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewer v)
 {
@@ -1478,14 +1478,14 @@ static PetscErrorCode DMPlexComparePointSFWithInterface_Private(DM ipdm, IS inte
   if (!flg) {
     IS pointsf_extra_is, pointsf_missing_is;
     PetscViewer errv = PETSC_VIEWER_STDERR_(comm);
-    ierr = ISDifference(interface_is, pointsf_is, &pointsf_missing_is);MYCHKERRQ(ierr);
-    ierr = ISDifference(pointsf_is, interface_is, &pointsf_extra_is);MYCHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(errv, "Points missing in PointSF:\n");MYCHKERRQ(ierr);
-    ierr = ViewPointsWithType(ipdm, pointsf_missing_is, errv);MYCHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(errv, "Extra points in PointSF:\n");MYCHKERRQ(ierr);
-    ierr = ViewPointsWithType(ipdm, pointsf_extra_is, errv);MYCHKERRQ(ierr);
-    ierr = ISDestroy(&pointsf_extra_is);MYCHKERRQ(ierr);
-    ierr = ISDestroy(&pointsf_missing_is);MYCHKERRQ(ierr);
+    ierr = ISDifference(interface_is, pointsf_is, &pointsf_missing_is);CHKERRMY(ierr);
+    ierr = ISDifference(pointsf_is, interface_is, &pointsf_extra_is);CHKERRMY(ierr);
+    ierr = PetscViewerASCIIPrintf(errv, "Points missing in PointSF:\n");CHKERRMY(ierr);
+    ierr = ViewPointsWithType(ipdm, pointsf_missing_is, errv);CHKERRMY(ierr);
+    ierr = PetscViewerASCIIPrintf(errv, "Extra points in PointSF:\n");CHKERRMY(ierr);
+    ierr = ViewPointsWithType(ipdm, pointsf_extra_is, errv);CHKERRMY(ierr);
+    ierr = ISDestroy(&pointsf_extra_is);CHKERRMY(ierr);
+    ierr = ISDestroy(&pointsf_missing_is);CHKERRMY(ierr);
     SETERRQ(comm, PETSC_ERR_PLIB, "PointSF is wrong! See details above.");
   }
   ierr = ISDestroy(&pointsf_is);CHKERRQ(ierr);
@@ -1507,7 +1507,7 @@ static PetscErrorCode DMPlexISFilterVertices_Private(DM dm, IS points)
 }
 
 /*
-  DMPlexCheckPointSFHeavy - Thorough test that the PointSF after parallel DMPlexInterpolate() includes exactly all interface points.
+  DMPlexCheckPointSFHeavy - Thoroughly test that the PointSF after parallel DMPlexInterpolate() includes exactly all interface points.
 
   Collective
 

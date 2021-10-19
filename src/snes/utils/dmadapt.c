@@ -605,8 +605,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = PetscGlobalMinMaxReal(PetscObjectComm((PetscObject) adaptor), minMaxInd, minMaxIndGlobal);CHKERRQ(ierr);
       ierr = PetscInfo2(adaptor, "DMAdaptor: error indicator range (%E, %E)\n", minMaxIndGlobal[0], minMaxIndGlobal[1]);CHKERRQ(ierr);
       /*     Compute IS from VecTagger */
-      ierr = VecTaggerComputeIS(adaptor->refineTag, errVec, &refineIS);CHKERRQ(ierr);
-      ierr = VecTaggerComputeIS(adaptor->coarsenTag, errVec, &coarsenIS);CHKERRQ(ierr);
+      ierr = VecTaggerComputeIS(adaptor->refineTag, errVec, &refineIS,NULL);CHKERRQ(ierr);
+      ierr = VecTaggerComputeIS(adaptor->coarsenTag, errVec, &coarsenIS,NULL);CHKERRQ(ierr);
       ierr = ISGetSize(refineIS, &nRefine);CHKERRQ(ierr);
       ierr = ISGetSize(coarsenIS, &nCoarsen);CHKERRQ(ierr);
       ierr = PetscInfo2(adaptor, "DMAdaptor: numRefine %D, numCoarsen %D\n", nRefine, nCoarsen);CHKERRQ(ierr);

@@ -278,7 +278,7 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (linesearch->ops->reset) (*linesearch->ops->reset)(linesearch);
+  if (linesearch->ops->reset) {ierr = (*linesearch->ops->reset)(linesearch);CHKERRQ(ierr);}
 
   ierr = VecDestroy(&linesearch->vec_sol_new);CHKERRQ(ierr);
   ierr = VecDestroy(&linesearch->vec_func_new);CHKERRQ(ierr);
@@ -841,7 +841,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   ierr = PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,NULL);CHKERRQ(ierr);
 
   if (linesearch->ops->setfromoptions) {
-    (*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)linesearch);CHKERRQ(ierr);

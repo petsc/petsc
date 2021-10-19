@@ -4,10 +4,7 @@ static char help[] = "Test PETSc integer hash set.\n\n";
 #include <petscsys.h>
 
 #define PetscAssert(expr) do {            \
-if (PetscUnlikely(!(expr)))               \
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, \
-           "Assertion: `%s' failed.",     \
-           PetscStringize(expr));         \
+  if (PetscUnlikely(!(expr))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Assertion: `%s' failed.", PetscStringize(expr));  \
 } while (0)
 
 int main(int argc,char **argv)
@@ -131,7 +128,7 @@ int main(int argc,char **argv)
   ierr = PetscHSetIUpdate(ht,hd);CHKERRQ(ierr);
   ierr = PetscHSetIDestroy(&hd);CHKERRQ(ierr);
   ierr = PetscHSetIGetSize(ht,&size);CHKERRQ(ierr);
-  PetscAssert(size==(2*n));CHKERRQ(ierr);
+  PetscAssert(size==(2*n));
   ierr = PetscMalloc1(n*2,&marray);CHKERRQ(ierr);
   off = 0;
   ierr = PetscHSetIGetElems(ht,&off,marray);CHKERRQ(ierr);

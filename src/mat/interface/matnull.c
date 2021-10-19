@@ -278,7 +278,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
         if (PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to vector %D, inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
       }
     }
-    PetscFree(dots);CHKERRQ(ierr);
+    ierr = PetscFree(dots);CHKERRQ(ierr);
   }
 
   *SP = NULL;

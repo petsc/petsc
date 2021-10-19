@@ -229,7 +229,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->rnorm = rnorm;
     ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-    KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) PetscFunctionReturn(0);

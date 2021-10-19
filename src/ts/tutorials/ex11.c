@@ -1338,8 +1338,8 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   ierr = VecDestroy(&locX);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
 
-  ierr = VecTaggerComputeIS(refineTag,errVec,&refineIS);CHKERRQ(ierr);
-  ierr = VecTaggerComputeIS(coarsenTag,errVec,&coarsenIS);CHKERRQ(ierr);
+  ierr = VecTaggerComputeIS(refineTag,errVec,&refineIS,NULL);CHKERRQ(ierr);
+  ierr = VecTaggerComputeIS(coarsenTag,errVec,&coarsenIS,NULL);CHKERRQ(ierr);
   ierr = ISGetSize(refineIS,&nRefine);CHKERRQ(ierr);
   ierr = ISGetSize(coarsenIS,&nCoarsen);CHKERRQ(ierr);
   if (nRefine) {ierr = DMLabelSetStratumIS(adaptLabel,DM_ADAPT_REFINE,refineIS);CHKERRQ(ierr);}
