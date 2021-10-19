@@ -2,7 +2,7 @@
 #define __HIPVECIMPL
 
 #include <petscvec.h>
-#include <petscdevice.h>
+#include <petsc/private/deviceimpl.h>
 #include <petsc/private/vecimpl.h>
 
 typedef struct {

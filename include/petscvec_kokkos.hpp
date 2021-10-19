@@ -16,10 +16,11 @@
 #if defined(PETSC_HAVE_KOKKOS)
   #include <Kokkos_Core.hpp>
 
+  /* REMOVE ME (?) */
   #if defined(PETSC_HAVE_CUDA)
-    #define WaitForKokkos() PetscCUDASynchronize ? (Kokkos::fence(),0) : 0
+    #define WaitForKokkos() (Kokkos::fence(),0)
   #elif defined(PETSC_HAVE_HIP)
-    #define WaitForKokkos() PetscHIPSynchronize ? (Kokkos::fence(),0) : 0
+    #define WaitForKokkos() (Kokkos::fence(),0)
   #else
     #define WaitForKokkos() 0
   #endif

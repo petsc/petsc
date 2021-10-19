@@ -13,6 +13,10 @@
 #include <_hypre_parcsr_ls.h>
 #include <petscmathypre.h>
 
+#if defined(PETSC_HAVE_HYPRE_DEVICE)
+#include <petsc/private/deviceimpl.h>
+#endif
+
 static PetscBool cite = PETSC_FALSE;
 static const char hypreCitation[] = "@manual{hypre-web-page,\n  title  = {{\\sl hypre}: High Performance Preconditioners},\n  organization = {Lawrence Livermore National Laboratory},\n  note  = {\\url{https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods}}\n}\n";
 
@@ -2214,10 +2218,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",PCHYPRESetPoissonMatrix_HYPRE);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
 #if defined(HYPRE_USING_HIP)
-  ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);
 #endif
 #if defined(HYPRE_USING_CUDA)
-  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
 #endif
 #endif
   PetscFunctionReturn(0);

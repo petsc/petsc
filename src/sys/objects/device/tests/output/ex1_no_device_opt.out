@@ -1,0 +1,5 @@
+[0]PETSC ERROR: No support for this operation for this object type
+[0]PETSC ERROR: PETSc is not configured with device support (PETSC_DEVICE_DEFAULT = 'invalid')
+[0]PETSC ERROR: #1 PetscDeviceInitializePackage()
+[0]PETSC ERROR: #2 PetscDeviceCreate()
+[0]PETSC ERROR: #3 main()

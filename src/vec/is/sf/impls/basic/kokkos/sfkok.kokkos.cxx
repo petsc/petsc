@@ -400,14 +400,14 @@ static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSFLink link)
 */
 
 /* Some device-specific utilities */
-static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink link)
+static PetscErrorCode PetscSFLinkSyncDevice_Kokkos(PetscSFLink PETSC_UNUSED link)
 {
   PetscFunctionBegin;
   Kokkos::fence();
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink link)
+static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink PETSC_UNUSED link)
 {
   DeviceExecutionSpace    exec;
   PetscFunctionBegin;
@@ -415,7 +415,7 @@ static PetscErrorCode PetscSFLinkSyncStream_Kokkos(PetscSFLink link)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink link,PetscMemType dstmtype,void* dst,PetscMemType srcmtype,const void*src,size_t n)
+static PetscErrorCode PetscSFLinkMemcpy_Kokkos(PetscSFLink PETSC_UNUSED link,PetscMemType dstmtype,void* dst,PetscMemType srcmtype,const void*src,size_t n)
 {
   DeviceExecutionSpace    exec;
 
@@ -477,7 +477,7 @@ static PetscErrorCode PetscSFLinkDestroy_Kokkos(PetscSF sf,PetscSFLink link)
 }
 
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
-PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
+PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf,PetscSFLink link,MPI_Datatype unit)
 {
   PetscErrorCode     ierr;
   PetscInt           nSignedChar=0,nUnsignedChar=0,nInt=0,nPetscInt=0,nPetscReal=0;

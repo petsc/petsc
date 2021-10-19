@@ -58,28 +58,50 @@ typedef enum {
 } PetscOffloadMask;
 
 /*E
-  PetscDeviceKind - Kind of accelerator device backend
+  PetscDeviceInitType - Initialization strategy for PetscDevice
+
+$ PETSC_DEVICE_INIT_NONE  - PetscDevice is never initialized
+$ PETSC_DEVICE_INIT_LAZY  - PetscDevice is initialized on demand
+$ PETSC_DEVICE_INIT_EAGER - PetscDevice is initialized as soon as possible
+
+  Notes:
+  PETSC_DEVICE_INIT_NONE implies that any initialization of PetscDevice is disallowed and
+  doing so results in an error. Useful to ensure that no accelerator is used in a program.
+
+  Level: beginner
+
+.seealso: PetscDevice, PetscDeviceType, PetscDeviceInitialize(), PetscDeviceInitialized(), PetscDeviceCreate()
+E*/
+typedef enum {
+  PETSC_DEVICE_INIT_NONE,
+  PETSC_DEVICE_INIT_LAZY,
+  PETSC_DEVICE_INIT_EAGER
+} PetscDeviceInitType;
+PETSC_EXTERN const char *const PetscDeviceInitTypes[];
+
+/*E
+  PetscDeviceType - Kind of accelerator device backend
 
 $ PETSC_DEVICE_INVALID - Invalid type, do not use
 $ PETSC_DEVICE_CUDA    - CUDA enabled GPU
 $ PETSC_DEVICE_HIP     - ROCM/HIP enabled GPU
 $ PETSC_DEVICE_DEFAULT - Automatically select backend based on availability
-$ PETSC_DEVICE_MAX     - Always 1 greater than the largest valid PetscDeviceKInd, invalid type, do not use
+$ PETSC_DEVICE_MAX     - Always 1 greater than the largest valid PetscDeviceType, invalid type, do not use
 
   Notes:
   PETSC_DEVICE_DEFAULT is selected in the following order: PETSC_DEVICE_HIP, PETSC_DEVICE_CUDA, PETSC_DEVICE_INVALID.
 
   Level: beginner
 
-.seealso: PetscDevice, PetscDeviceCreate()
+.seealso: PetscDevice, PetscDeviceInitType, PetscDeviceCreate()
 E*/
 typedef enum {
-  PETSC_DEVICE_INVALID = 0,
-  PETSC_DEVICE_CUDA    = 1,
-  PETSC_DEVICE_HIP     = 2,
-  PETSC_DEVICE_MAX     = 3
-} PetscDeviceKind;
-PETSC_EXTERN const char *const PetscDeviceKinds[];
+  PETSC_DEVICE_INVALID,
+  PETSC_DEVICE_CUDA,
+  PETSC_DEVICE_HIP,
+  PETSC_DEVICE_MAX
+} PetscDeviceType;
+PETSC_EXTERN const char *const PetscDeviceTypes[];
 #if PetscDefined(HAVE_HIP)
 #  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_HIP
 #elif PetscDefined(HAVE_CUDA)
@@ -97,7 +119,7 @@ PETSC_EXTERN const char *const PetscDeviceKinds[];
 
   Level: beginner
 
-.seealso: PetscDeviceKind, PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceDestroy(), PetscDeviceContext, PetscDeviceContextSetDevice(), PetscDeviceContextGetDevice()
+.seealso: PetscDeviceType, PetscDeviceInitType, PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceDestroy(), PetscDeviceContext, PetscDeviceContextSetDevice(), PetscDeviceContextGetDevice()
 S*/
 typedef struct _n_PetscDevice *PetscDevice;
 
@@ -115,10 +137,10 @@ $ PETSC_STREAM_MAX                - Always 1 greater than the largest PetscStrea
 .seealso: PetscDeviceContextSetStreamType(), PetscDeviceContextGetStreamType()
 E*/
 typedef enum {
-  PETSC_STREAM_GLOBAL_BLOCKING    = 0,
-  PETSC_STREAM_DEFAULT_BLOCKING   = 1,
-  PETSC_STREAM_GLOBAL_NONBLOCKING = 2,
-  PETSC_STREAM_MAX                = 3
+  PETSC_STREAM_GLOBAL_BLOCKING,
+  PETSC_STREAM_DEFAULT_BLOCKING,
+  PETSC_STREAM_GLOBAL_NONBLOCKING,
+  PETSC_STREAM_MAX
 } PetscStreamType;
 PETSC_EXTERN const char *const PetscStreamTypes[];
 
@@ -131,7 +153,7 @@ $ PETSC_CONTEXT_JOIN_NO_SYNC   - Do not synchronize incoming sub-contexts after 
 
   Level: beginner
 
-.seealso: PetscDeviceContextFork(), PetscDeviceContextJoin()
+.seealso: PetscDeviceContext, PetscDeviceContextFork(), PetscDeviceContextJoin()
 E*/
 typedef enum {
   PETSC_DEVICE_CONTEXT_JOIN_DESTROY,

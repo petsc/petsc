@@ -9,12 +9,8 @@
 
 #include <petsc/private/petscimpl.h> /* for PetscCUPMInitialized */
 
-#if defined(PETSC_HAVE_CUDA)
-  #include <cuda_runtime.h>
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-  #include <hip/hip_runtime.h>
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#include <petscdevice.h>
 #endif
 
 #define MPI_SUCCESS 0
@@ -69,9 +65,9 @@ int MPIUNI_Memcpy(void *dst,const void *src,int n)
 
   /* GPU-aware MPIUNI. Use synchronous copy per MPI semantics */
 #if defined(PETSC_HAVE_CUDA)
-  if (PetscCUDAInitialized) {cudaError_t cerr = cudaMemcpy(dst,src,n,cudaMemcpyDefault);if (cerr != cudaSuccess) return MPI_FAILURE;} else
+  if (PetscDeviceInitialized(PETSC_DEVICE_CUDA)) {cudaError_t cerr = cudaMemcpy(dst,src,n,cudaMemcpyDefault);if (cerr != cudaSuccess) return MPI_FAILURE;} else
 #elif defined(PETSC_HAVE_HIP)
-  if (PetscHIPInitialized)  {hipError_t  cerr = hipMemcpy(dst,src,n,hipMemcpyDefault);  if (cerr != hipSuccess)  return MPI_FAILURE;} else
+  if (PetscDeviceInitialized(PETSC_DEVICE_HIP))  {hipError_t  cerr = hipMemcpy(dst,src,n,hipMemcpyDefault);  if (cerr != hipSuccess)  return MPI_FAILURE;} else
 #endif
   {memcpy(dst,src,n);}
   return MPI_SUCCESS;

@@ -566,18 +566,6 @@ PETSC_EXTERN PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_
 PETSC_EXTERN PetscErrorCode PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 
-#if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscBool      PetscCUDASynchronize;
-PETSC_EXTERN PetscErrorCode PetscCUDAInitialize(MPI_Comm,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCUDAInitializeCheck(void);
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-PETSC_EXTERN PetscBool      PetscHIPSynchronize;
-PETSC_EXTERN PetscErrorCode PetscHIPInitialize(MPI_Comm,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscHIPInitializeCheck(void);
-#endif
-
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Initialize Kokkos if not yet. */
 #endif
