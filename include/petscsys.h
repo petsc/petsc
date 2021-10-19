@@ -196,10 +196,11 @@ M*/
 #  define PetscDefined__take_second_expanded(ignored, val, ...) val
 #  define PetscDefined__take_second_expand(args) PetscDefined__take_second_expanded args
 #  define PetscDefined__take_second(...) PetscDefined__take_second_expand((__VA_ARGS__))
-#  define PetscDefined___(arg1_or_junk) PetscDefined__take_second(arg1_or_junk 1, 0, at_)
-#  define PetscDefined__(value) PetscDefined___(PetscDefined_arg_ ## value)
-#  define PetscDefined_(d)      PetscDefined__(d)
-#  define PetscDefined(d)       PetscDefined_(PETSC_ ## d)
+#  define PetscDefined____(arg1_or_junk) PetscDefined__take_second(arg1_or_junk 1, 0, at_)
+#  define PetscDefined___(value) PetscDefined____(PetscDefined_arg_ ## value)
+#  define PetscDefined__(d)      PetscDefined___(d)
+#  define PetscDefined_(d)       PetscDefined__(PETSC_ ## d)
+#  define PetscDefined(d)        PetscDefined_(d)
 #endif
 
 /*
