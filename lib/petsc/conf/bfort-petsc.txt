@@ -98,6 +98,8 @@ nativeptr MatPartitioning
 nativeptr PC
 nativeptr PetscBag
 nativeptr PetscBagItem
+nativeptr PetscDevice
+nativeptr PetscDeviceContext
 nativeptr PetscDraw
 nativeptr PetscDrawAxis
 nativeptr PetscDrawHG
