@@ -22,6 +22,7 @@ class Configure(config.package.CMakePackage):
     self.hastests         = 1
     self.requiresrpath    = 1
     self.precisions       = ['single','double']
+    self.devicePackage    = 1
     return
 
   def __str__(self):

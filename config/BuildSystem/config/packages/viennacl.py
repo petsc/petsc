@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     self.cxx               = 1
     self.downloadonWindows = 1
     self.complex           = 0
+    self.devicePackage     = 1
     return
 
   def setupDependencies(self, framework):

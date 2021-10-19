@@ -33,7 +33,8 @@ class Configure(config.package.Package):
     self.hastests          = 0
     self.hastestsdatafiles = 0
     self.functionsDefine   = ['cusolverDnDpotri']
-    self.isnvhpc           = False
+    self.isnvhpc           = 0
+    self.devicePackage     = 1
     return
 
   def setupHelp(self, help):
@@ -221,7 +222,7 @@ class Configure(config.package.Package):
         self.cudaDir = d
       elif os.path.exists(os.path.normpath(os.path.join(d,'..','cuda','include','cuda.h'))): # NVHPC, see above
         self.cudaDir = os.path.normpath(os.path.join(d,'..','cuda')) # get rid of .. in path, getting /path/Linux_x86_64/21.5/cuda
-        self.isnvhpc = True
+        self.isnvhpc = 1
     else:
       raise RuntimeError('CUDA compiler not found!')
     if not hasattr(self,'cudaDir'):
