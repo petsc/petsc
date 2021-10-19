@@ -130,6 +130,41 @@ class BaseTestPlex(object):
         self.assertNotEqual(numInterior, pEnd - pStart)
         self.assertEqual(numBoundary + numInterior, pEnd - pStart)
 
+    def testMetric(self):
+        if self.DIM == 1: return
+        self.plex.distribute()
+        if self.CELLS is None and not self.plex.isSimplex(): return
+
+        h_min = 1.0e-30
+        h_max = 1.0e+30
+        a_max = 1.0e+10
+        target = 10.0
+        p = 1.0
+        self.plex.metricSetIsotropic(False)
+        self.plex.metricSetRestrictAnisotropyFirst(False)
+        self.plex.metricSetMinimumMagnitude(h_min)
+        self.plex.metricSetMaximumMagnitude(h_max)
+        self.plex.metricSetMaximumAnisotropy(a_max)
+        self.plex.metricSetTargetComplexity(target)
+        self.plex.metricSetNormalizationOrder(p)
+
+        self.assertFalse(self.plex.metricIsIsotropic())
+        self.assertFalse(self.plex.metricRestrictAnisotropyFirst())
+        self.assertEqual(self.plex.metricGetMinimumMagnitude(), h_min)
+        self.assertEqual(self.plex.metricGetMaximumMagnitude(), h_max)
+        self.assertEqual(self.plex.metricGetMaximumAnisotropy(), a_max)
+        self.assertEqual(self.plex.metricGetTargetComplexity(), target)
+        self.assertEqual(self.plex.metricGetNormalizationOrder(), p)
+
+        metric1 = self.plex.metricCreateUniform(1.0)
+        metric2 = self.plex.metricCreateUniform(2.0)
+        metric = self.plex.metricAverage2(metric1, metric2)
+        metric2.array[:] *= 0.75
+        assert np.allclose(metric.array, metric2.array)
+        metric = self.plex.metricIntersection2(metric1, metric2)
+        assert np.allclose(metric.array, metric1.array)
+        self.plex.metricEnforceSPD(metric)
+        assert np.allclose(metric.array, metric1.array)
 
     def testAdapt(self):
         dim = self.plex.getDimension()
