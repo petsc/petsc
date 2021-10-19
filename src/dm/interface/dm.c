@@ -8644,12 +8644,12 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 . X - vector
 
    Calling sequence of func:
-$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
 
 +  dim - The spatial dimension
 .  time - The time at which to sample
 .  x   - The coordinates
-.  Nf  - The number of fields
+.  Nc  - The number of components
 .  u   - The output field values
 -  ctx - optional user-defined function context
 
@@ -8688,11 +8688,11 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
 . localX - vector
 
    Calling sequence of func:
-$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
 
 +  dim - The spatial dimension
 .  x   - The coordinates
-.  Nf  - The number of fields
+.  Nc  - The number of components
 .  u   - The output field values
 -  ctx - optional user-defined function context
 
@@ -8729,11 +8729,11 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
 . X - vector
 
    Calling sequence of func:
-$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
 
 +  dim - The spatial dimension
 .  x   - The coordinates
-.  Nf  - The number of fields
+.  Nc  - The number of components
 .  u   - The output field values
 -  ctx - optional user-defined function context
 
@@ -8773,11 +8773,11 @@ PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, Pets
 . localX - vector
 
    Calling sequence of func:
-$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+$    func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
 
 +  dim - The spatial dimension
 .  x   - The coordinates
-.  Nf  - The number of fields
+.  Nc  - The number of components
 .  u   - The output field values
 -  ctx - optional user-defined function context
 
