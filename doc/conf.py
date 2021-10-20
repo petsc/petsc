@@ -73,8 +73,7 @@ extensions = [
     'html5_petsc',
 ]
 
-copybutton_prompt_text = r"[>]{1,3}"
-copybutton_prompt_is_regexp = True
+copybutton_prompt_text = '$ '
 
 bibtex_bibfiles = ['petsc.bib']
 

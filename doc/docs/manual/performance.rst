@@ -201,9 +201,9 @@ implementation. The following discussion is based on how processor
 placement is done with MPICH and OpenMPI, where one needs to pass
 ``--bind-to core --map-by socket`` to ``mpirun``:
 
-.. code-block:: none
+.. code-block:: console
 
-   $> mpirun -n 6 --bind-to core --map-by socket ./stream
+   $ mpirun -n 6 --bind-to core --map-by socket ./stream
    process 0 binding: 100000000000100000000000
    process 1 binding: 000000100000000000100000
    process 2 binding: 010000000000010000000000
@@ -220,9 +220,9 @@ practical peak of about 50 GB/sec available on the machine. If, however,
 all MPI processes are located on the same socket, memory bandwidth drops
 significantly:
 
-.. code-block:: none
+.. code-block:: console
 
-   $> mpirun -n 6 --bind-to core --map-by core ./stream
+   $ mpirun -n 6 --bind-to core --map-by core ./stream
    process 0 binding: 100000000000100000000000
    process 1 binding: 010000000000010000000000
    process 2 binding: 001000000000001000000000
@@ -240,9 +240,9 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
   the results on the right obtained by passing
   ``--bind-to core --map-by socket``:
 
-.. code-block:: none
+.. code-block:: console
 
-   $> make streams
+   $ make streams
    np  speedup
    1 1.0
    2 1.58
@@ -269,9 +269,9 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
    23 3.79
    24 3.71
 
-.. code-block:: none
+.. code-block:: console
 
-   $> make streams MPI_BINDING="--bind-to core --map-by socket"
+   $ make streams MPI_BINDING="--bind-to core --map-by socket"
    np  speedup
    1 1.0
    2 1.59

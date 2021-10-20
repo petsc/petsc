@@ -10,7 +10,7 @@ Recommended Download
 
 .. code-block:: console
 
-   > git clone -b release https://gitlab.com/petsc/petsc.git petsc
+   $ git clone -b release https://gitlab.com/petsc/petsc.git petsc
 
 Use ``git pull`` to download any new patches or changes that have been added since your
 ``git clone`` or last ``git pull``. Use ``git checkout vMAJOR.MINOR.PATCH`` to download a
@@ -41,7 +41,7 @@ To extract the sources use:
 
 .. code-block:: console
 
-   > tar xf petsc-<version number>.tar.gz
+   $ tar xf petsc-<version number>.tar.gz
 
 Use mirror if GitLab and our primary download server are unavailable:
 

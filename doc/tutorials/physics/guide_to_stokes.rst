@@ -210,8 +210,10 @@ Investigating convergence
 
 In order to look at the convergence of some harder problems, we will examine ``SNES ex69``. This example provides an exact solution to the variable viscosity Stokes equation. The sharp viscosity variation will allow us to investigate convergence of the solver and discretization. Briefly, a sharp viscosity variation is created across the unit square, imposed on a background pressure with given fundamental frequency. For example, we can create examples with period one half and viscosity :math:`e^{2 B x}` (solKx)
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 5 -dm_view hdf5:$PETSC_DIR/sol.h5 -snes_view_solution hdf5:$PETSC_DIR/sol.h5::append -exact_vec_view hdf5:$PETSC_DIR/sol.h5::append -m 2 -n 2 -B 1"
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 5 -dm_view hdf5:$PETSC_DIR/sol.h5 -snes_view_solution hdf5:$PETSC_DIR/sol.h5::append -exact_vec_view hdf5:$PETSC_DIR/sol.h5::append -m 2 -n 2 -B 3.75"
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 5 -dm_view hdf5:$PETSC_DIR/sol.h5 -snes_view_solution hdf5:$PETSC_DIR/sol.h5::append -exact_vec_view hdf5:$PETSC_DIR/sol.h5::append -m 2 -n 2 -B 1"
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 5 -dm_view hdf5:$PETSC_DIR/sol.h5 -snes_view_solution hdf5:$PETSC_DIR/sol.h5::append -exact_vec_view hdf5:$PETSC_DIR/sol.h5::append -m 2 -n 2 -B 3.75"
 
 which are show in the figure below.
 
@@ -268,7 +270,10 @@ Suppose that we have made an error in the Jacobian. For instance, let us acciden
 
 When we run, we get a failure of the nonlinear solver. Our checking reveals that the Jacobian is wrong because it is converging at order 1 instead of 2, meaning the linear term is not correct in our model.
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason"
+
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason"
   L_2 Error: [0.000439127, 0.0376629]
   L_2 Residual: 0.0453958
   Taylor approximation converging at order 1.00
@@ -282,7 +287,10 @@ When we run, we get a failure of the nonlinear solver. Our checking reveals that
 
 In order to track down the error, we can use ``-snes_test_jacobian`` which computes a finite difference approximation to the Jacobian and compares that to the analytic Jacobian. We ignore the first test, which occurs during our testing of the Jacobian, and look at the test that happens during the first Newton iterate. We see that the relative error in the Frobenius norm is about one percent, which indicates we have a real problem.
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -snes_test_jacobian"
+
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -snes_test_jacobian"
   L_2 Error: [0.000439127, 0.0376629]
   L_2 Residual: 0.0453958
     ---------- Testing Jacobian -------------
@@ -308,7 +316,10 @@ In order to track down the error, we can use ``-snes_test_jacobian`` which compu
 
 At this point, we could just go back and check the code. However, PETSc will also print out the differences between the analytic and approximate Jacobians. When we give the ``-snes_test_jacobian_view`` option, the code will print both Jacobians (which we omit) and then their difference, and will also do this for the preconditioning matrix (which we omit). It is clear from the output that the :math:`u-p` block of the Jacobian is wrong, and thus we know right where to look for our error. Moreover, if we look at the values in row 15, we see that the values just differ by a sign.
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -snes_test_jacobian"
+
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -snes_test_jacobian"
   	  Hand-coded minus finite-difference Jacobian with tolerance 1e-05 ----------
   Mat Object: 1 MPI processes
     type: seqaij
@@ -365,7 +376,10 @@ Optimizing the Solver
 
 In order to see exactly what solver we have employed, we can use the ``-snes_view`` option. When checking :math:`P_2-P_1` convergence, we use an exact solver, but it must have several parts in order to deal with the saddle-point in the Jacobian. Using the test system to provide our extra option, we get
 
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
+
+.. code-block:: console
+
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
    SNES Object: 1 MPI processes
      type: newtonls
      maximum iterations=50, maximum function evaluations=10000
@@ -535,11 +549,12 @@ In order to see exactly what solver we have employed, we can use the ``-snes_vie
          total: nonzeros=653, allocated nonzeros=653
          total number of mallocs used during MatSetValues calls=0
            using I-node routines: found 24 nodes, limit used is 5
-   >>>
 
 Going through this piece-by-piece, we can see all the parts of our solver. At the top level, we have a ``SNES`` using Newton's method
 
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
+.. code-block:: console
+
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
    SNES Object: 1 MPI processes
      type: newtonls
      maximum iterations=50, maximum function evaluations=10000
@@ -554,11 +569,12 @@ Going through this piece-by-piece, we can see all the parts of our solver. At th
        maxstep=1.000000e+08, minlambda=1.000000e-12
        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
        maximum iterations=40
-   >>>
 
 For each nonlinear step, we use ``KSPGMRES`` to solve the Newton equation, preconditioned by ``PCFIELDSPLIT``. We split the problem into two blocks, with the split determined by our ``DM``, and combine those blocks using a Schur complement. The Schur complement is faithful since we use the ``FULL`` factorization type.
 
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
+.. code-block:: console
+
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
      KSP Object: 1 MPI processes
        type: gmres
          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -574,7 +590,6 @@ For each nonlinear step, we use ``KSPGMRES`` to solve the Newton equation, preco
          Split info:
          Split number 0 Defined by IS
          Split number 1 Defined by IS
-   >>>
 
 We form the preconditioner for the Schur complement from the (1,1) block of our preconditioning matrix, which we have set to be the viscosity-weighted mass matrix
 
@@ -584,7 +599,9 @@ We form the preconditioner for the Schur complement from the (1,1) block of our 
 
 The solver for the first block, representing the velocity, is GMRES/LU. Note that the prefix is ``fieldsplit_velocity_``, constructed automatically from the name of the field in our DM. Also note that there are two matrices, one from our original matrix, and one from our preconditioning matrix, but they are identical. In an optimized, scalable solver, this block would likely be solved by multigrid, but here we use LU for verification purposes.
 
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
+.. code-block:: console
+
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
          KSP solver for A00 block
            KSP Object: (fieldsplit_velocity_) 1 MPI processes
              type: gmres
@@ -620,11 +637,12 @@ The solver for the first block, representing the velocity, is GMRES/LU. Note tha
                total: nonzeros=368, allocated nonzeros=368
                total number of mallocs used during MatSetValues calls=0
                  using I-node routines: found 20 nodes, limit used is 5
-   >>>
 
 The solver for the second block, with prefix ``fieldsplit_pressure_``, is also GMRES/LU, however we cannot factor the Schur complement operator since we never explicitly assemble it. Thus we assemble the viscosity-weighted mass matrix on the pressure space as an approximation. Notice that the Schur complement has the velocity solver embedded in it.
 
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
+.. code-block:: console
+
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
          KSP solver for S = A11 - A10 inv(A00) A01
            KSP Object: (fieldsplit_pressure_) 1 MPI processes
              type: gmres
@@ -716,11 +734,12 @@ The solver for the second block, with prefix ``fieldsplit_pressure_``, is also G
                total: nonzeros=41, allocated nonzeros=41
                total number of mallocs used during MatSetValues calls=0
                  not using I-node routines
-   >>>
 
 Finally, the SNES viewer reports the system matrix and preconditioning matrix
 
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
+.. code-block:: console
+
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
        linear system matrix followed by preconditioner matrix:
        Mat Object: 1 MPI processes
          type: seqaij
@@ -735,11 +754,12 @@ Finally, the SNES viewer reports the system matrix and preconditioning matrix
          total: nonzeros=653, allocated nonzeros=653
          total number of mallocs used during MatSetValues calls=0
            using I-node routines: found 24 nodes, limit used is 5
-   >>>
 
 We see that they have the same nonzero pattern, even though the preconditioning matrix only contains the diagonal blocks. This is because zeros were inserted to define the nonzero structure. We can remove these nonzeros by telling the DM not to insert zero at preallocation time, and also telling the matrix itself to ignore the zeros from the assembly process.
 
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view -dm_preallocate_only -prec_mat_ignore_zero_entries"
+.. code-block:: console
+
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view -dm_preallocate_only -prec_mat_ignore_zero_entries"
        linear system matrix followed by preconditioner matrix:
        Mat Object: 1 MPI processes
          type: seqaij
@@ -754,13 +774,14 @@ We see that they have the same nonzero pattern, even though the preconditioning 
          total: nonzeros=409, allocated nonzeros=653
          total number of mallocs used during MatSetValues calls=0
            using I-node routines: found 29 nodes, limit used is 5
-   >>>
 
 We can see a sparsity portrait of the system and preconditioning matrices if the installation supports X-windows visualization
 
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-ksp_view_mat draw -prec_mat_view draw -draw_pause -1"
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-ksp_view_mat draw -prec_mat_view draw -draw_save $PETSC_DIR/mat.png"
-   >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_preallocate_only -mat_ignore_zero_entries -prec_mat_ignore_zero_entries -ksp_view_mat draw -prec_mat_view draw -draw_save $PETSC_DIR/mat_sparse.png"
+.. code-block:: console
+
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-ksp_view_mat draw -prec_mat_view draw -draw_pause -1"
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-ksp_view_mat draw -prec_mat_view draw -draw_save $PETSC_DIR/mat.png"
+   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_preallocate_only -mat_ignore_zero_entries -prec_mat_ignore_zero_entries -ksp_view_mat draw -prec_mat_view draw -draw_save $PETSC_DIR/mat_sparse.png"
 
 
 .. list-table::
@@ -783,7 +804,9 @@ We can see a sparsity portrait of the system and preconditioning matrices if the
 
 If we want to check the convergence of the solver, we can also do that using options. Both the linear and nonlinear solvers converge in a single iteration, which is exactly what we want. In order to have this happen, we must have the tolerance on both the outer KSP solver and the inner Schur complement solver be low enough. Notice that the sure complement solver is used twice, and converges in seven iterates each time.
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason"
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason"
   0 SNES Function norm 1.170604545948e-01
     Linear fieldsplit_pressure_ solve converged due to CONVERGED_RTOL iterations 7
     0 KSP preconditioned resid norm 4.965098891419e-01 true resid norm 1.170604545948e-01 ||r(i)||/||b|| 1.000000000000e+00
@@ -791,11 +814,12 @@ If we want to check the convergence of the solver, we can also do that using opt
     1 KSP preconditioned resid norm 9.236813926190e-11 true resid norm 1.460072673561e-12 ||r(i)||/||b|| 1.247280884579e-11
   Linear solve converged due to CONVERGED_ATOL iterations 1
   1 SNES Function norm 1.460070661322e-12
-  >>>
 
 We can look at the scalability of the solve by refining the mesh. We see that the Schur complement solve looks robust to grid refinement.
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason"
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason"
   0 SNES Function norm 3.503062983054e-02
     Linear fieldsplit_pressure_ solve converged due to CONVERGED_RTOL iterations 8
     0 KSP preconditioned resid norm 9.943095979973e-01 true resid norm 3.503062983054e-02 ||r(i)||/||b|| 1.000000000000e+00
@@ -803,7 +827,7 @@ We can look at the scalability of the solve by refining the mesh. We see that th
     1 KSP preconditioned resid norm 1.148772629230e-10 true resid norm 2.693482255004e-13 ||r(i)||/||b|| 7.688934706664e-12
   Linear solve converged due to CONVERGED_RTOL iterations 1
   1 SNES Function norm 2.693649920420e-13
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 4 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason"
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 4 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason"
   0 SNES Function norm 8.969202737759e-03
     Linear fieldsplit_pressure_ solve converged due to CONVERGED_RTOL iterations 6
     0 KSP preconditioned resid norm 3.322375727167e+00 true resid norm 8.969202737759e-03 ||r(i)||/||b|| 1.000000000000e+00
@@ -811,11 +835,12 @@ We can look at the scalability of the solve by refining the mesh. We see that th
     1 KSP preconditioned resid norm 6.112282404006e-10 true resid norm 8.543800889926e-14 ||r(i)||/||b|| 9.525708292843e-12
   Linear solve converged due to CONVERGED_RTOL iterations 1
   1 SNES Function norm 8.543893996362e-14
-  >>>
 
 Starting off with an exact solver allows us to check that the discretization, equations, and boundary conditions are correct. Moreover, choosing the Schur complement formulation, rather than a sparse direct solve, gives us a path to incremental boost the scalability. Our first step will be to replace the direct solve of the momentum operator, which has cost superlinear in :math:`N`, with a more scalable alternative. Since the operator is still elliptic, despite the viscosity variation, we should be able to use some form of multigrid. We will start with algebraic multigrid because it handles coefficient variation well, even if the setup time is larger than the geometric variant.
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_velocity_pc_type gamg -fieldsplit_velocity_ksp_converged_reason"
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-dm_refine 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_velocity_pc_type gamg -fieldsplit_velocity_ksp_converged_reason"
   0 SNES Function norm 3.503062983054e-02
     Linear fieldsplit_velocity_ solve converged due to CONVERGED_RTOL iterations 8
     Linear fieldsplit_velocity_ solve converged due to CONVERGED_RTOL iterations 9
@@ -867,7 +892,9 @@ We can instead use geometric multigrid, and we would hope get more accurate coar
 
 This behaves well for the initial mesh,
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_velocity_ksp_converged_reason"
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_velocity_ksp_converged_reason"
   0 SNES Function norm 3.503062983054e-02
     0 KSP unpreconditioned resid norm 3.503062983054e-02 true resid norm 3.503062983054e-02 ||r(i)||/||b|| 1.000000000000e+00
     Linear fieldsplit_velocity_ solve converged due to CONVERGED_RTOL iterations 4
@@ -900,7 +927,9 @@ This behaves well for the initial mesh,
 
 and is also stable under refinement
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 4 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_velocity_ksp_converged_reason"
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 4 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_velocity_ksp_converged_reason"
   0 SNES Function norm 3.503062983054e-02
   0 SNES Function norm 3.503062983054e-02
     0 KSP unpreconditioned resid norm 3.503062983054e-02 true resid norm 3.503062983054e-02 ||r(i)||/||b|| 1.000000000000e+00
@@ -934,7 +963,9 @@ and is also stable under refinement
 
 Finally, we can back off the pressure solve. ``ILU(0)`` is good enough to maintain a constant number of iterates as we refine the grid. We could continue to refine our preconditioner by playing with the tolerance of the inner multigrid and Schur complement solves, trading fewer inner iterates for more outer iterates.
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu"
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu"
   0 SNES Function norm 3.503062983054e-02
     0 KSP unpreconditioned resid norm 3.503062983054e-02 true resid norm 3.503062983054e-02 ||r(i)||/||b|| 1.000000000000e+00
     Linear fieldsplit_pressure_ solve converged due to CONVERGED_RTOL iterations 10
@@ -943,7 +974,7 @@ Finally, we can back off the pressure solve. ``ILU(0)`` is good enough to mainta
     2 KSP unpreconditioned resid norm 1.521944777036e-11 true resid norm 1.521942998859e-11 ||r(i)||/||b|| 4.344606437913e-10
   Linear solve converged due to CONVERGED_ATOL iterations 2
   1 SNES Function norm 1.521943449163e-11
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 4 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu"
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 4 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu"
   0 SNES Function norm 8.969202737759e-03
     0 KSP unpreconditioned resid norm 8.969202737759e-03 true resid norm 8.969202737759e-03 ||r(i)||/||b|| 1.000000000000e+00
     Linear fieldsplit_pressure_ solve converged due to CONVERGED_RTOL iterations 10
@@ -954,7 +985,7 @@ Finally, we can back off the pressure solve. ``ILU(0)`` is good enough to mainta
     3 KSP unpreconditioned resid norm 1.461086575333e-15 true resid norm 2.284323415523e-15 ||r(i)||/||b|| 2.546852247977e-13
   Linear solve converged due to CONVERGED_ATOL iterations 3
   1 SNES Function norm 2.317901194143e-15
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 6 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu"
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 6 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu"
   0 SNES Function norm 2.252260693635e-03
     0 KSP unpreconditioned resid norm 2.252260693635e-03 true resid norm 2.252260693635e-03 ||r(i)||/||b|| 1.000000000000e+00
     Linear fieldsplit_pressure_ solve converged due to CONVERGED_RTOL iterations 9
@@ -968,7 +999,9 @@ Finally, we can back off the pressure solve. ``ILU(0)`` is good enough to mainta
 
 We can make the problem harder by increasing the wave number and size of the viscosity perturbation. If we set the :math:`B` parameter to 6.9, we have a factor of one million increase in viscosity across the cell. At this scale, we see that we lose enough accuracy in our Jacobian calculation to defeat our Taylor test, but we are still able to solve the problem efficiently.
 
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu -m 2 -n 2 -B 6.9"
+.. code-block:: console
+
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 2 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu -m 2 -n 2 -B 6.9"
   L_2 Error: [4.07817e-06, 0.0104694]
   L_2 Residual: 0.0145403
   Taylor approximation converging at order 1.00
@@ -982,7 +1015,7 @@ We can make the problem harder by increasing the wave number and size of the vis
     3 KSP unpreconditioned resid norm 1.954355290546e-15 true resid norm 1.954135246291e-15 ||r(i)||/||b|| 5.711729786858e-14
   Linear solve converged due to CONVERGED_ATOL iterations 3
   1 SNES Function norm 1.946196473520e-15
-  >>> make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 6 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu -m 2 -n 2 -B 6.9"
+  $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 6 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_pressure_pc_type ilu -m 2 -n 2 -B 6.9"
   L_2 Error: [1.52905e-09, 4.72606e-05]
   L_2 Residual: 7.18836e-06
   Taylor approximation converging at order 1.00
