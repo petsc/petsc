@@ -264,8 +264,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 
 PetscErrorCode TaoBNKComputeHessian(Tao tao)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode ierr;
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
   /* Compute the Hessian */
@@ -275,12 +275,8 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
     ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   }
   /* Prepare the reduced sub-matrices for the inactive set */
-  if (bnk->Hpre_inactive) {
-    ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
-  }
-  if (bnk->H_inactive) {
-    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
+  ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   if (bnk->active_idx) {
     ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
@@ -315,9 +311,9 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
 
 PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  PetscBool                    hessComputed, diagExists;
+  PetscErrorCode ierr;
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  PetscBool      hessComputed, diagExists;
 
   PetscFunctionBegin;
   switch (asType) {
@@ -449,7 +445,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   }
 
   /* Shift the reduced Hessian matrix */
-  if ((shift) && (bnk->pert > 0)) {
+  if (shift && bnk->pert > 0) {
     ierr = PetscObjectTypeCompare((PetscObject)tao->hessian, MATLMVM, &is_lmvm);CHKERRQ(ierr);
     if (is_lmvm) {
       ierr = MatShift(tao->hessian, bnk->pert);CHKERRQ(ierr);

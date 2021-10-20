@@ -555,8 +555,7 @@ static PetscErrorCode SNESTSFormJacobian_IRK(SNES snes,Vec ZC,Mat JC,Mat JCpre,T
       for (j=0; j<nstages; j++)
         S[i+nstages*j] = tab->A_inv[i+nstages*j]/ts->time_step;
     ierr = MatKAIJRestoreS(JC,&S);CHKERRQ(ierr);
-  } else
-    SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not support implicit formula",irk->method_name); /* ToDo: need the mass matrix for DAE  */
+  } else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not support implicit formula",irk->method_name); /* TODO: need the mass matrix for DAE  */
   ts->dm = dmsave;
   PetscFunctionReturn(0);
 }

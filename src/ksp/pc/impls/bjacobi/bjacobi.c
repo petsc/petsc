@@ -631,7 +631,7 @@ static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = VecGetLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
   ierr = VecGetLocalVector(y, bjac->y);CHKERRQ(ierr);
- /* Since the inner KSP matrix may point directly to the diagonal block of an MPI matrix the inner
+  /* Since the inner KSP matrix may point directly to the diagonal block of an MPI matrix the inner
      matrix may change even if the outer KSP/PC has not updated the preconditioner, this will trigger a rebuild
      of the inner preconditioner automatically unless we pass down the outer preconditioners reuse flag.*/
   ierr = KSPSetReusePreconditioner(jac->ksp[0],pc->reusepreconditioner);CHKERRQ(ierr);
@@ -649,7 +649,7 @@ static PetscErrorCode PCMatApply_BJacobi_Singleblock(PC pc,Mat X,Mat Y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
- /* Since the inner KSP matrix may point directly to the diagonal block of an MPI matrix the inner
+  /* Since the inner KSP matrix may point directly to the diagonal block of an MPI matrix the inner
      matrix may change even if the outer KSP/PC has not updated the preconditioner, this will trigger a rebuild
      of the inner preconditioner automatically unless we pass down the outer preconditioners reuse flag.*/
   ierr = KSPSetReusePreconditioner(jac->ksp[0],pc->reusepreconditioner);CHKERRQ(ierr);
