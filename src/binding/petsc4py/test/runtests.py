@@ -17,6 +17,9 @@ def getoptionparser():
     parser.add_option("-e", "--exclude", type="string",
                       action="append", dest="exclude", default=[],
                       help="exclude tests matching PATTERN", metavar="PATTERN")
+    parser.add_option("-k", "--pattern", type="string",
+                      action="append", dest="patterns", default=[],
+                      help="only run tests which match the given substring")
     parser.add_option("-f", "--failfast",
                       action="store_true", dest="failfast", default=False,
                       help="Stop on first failure")
@@ -137,6 +140,10 @@ def load_tests(options, args):
     testfiles.sort()
     testsuite = unittest.TestSuite()
     testloader = unittest.TestLoader()
+    if options.patterns:
+        testloader.testNamePatterns = [
+            ('*%s*' % p) if ('*' not in p) else p
+            for p in options.patterns]
     include = exclude = None
     if options.include:
         include = re.compile('|'.join(options.include)).search
