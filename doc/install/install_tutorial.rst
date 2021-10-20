@@ -73,8 +73,6 @@ Prerequisites
 Before beginning, make sure you have the following pre-requisites installed and up to
 date:
 
-- `git <https://git-scm.com/>`__
-
 - `make <https://www.gnu.org/software/make/>`__
 
 - `python3 <https://www.python.org/>`__ [#]_
@@ -82,6 +80,8 @@ date:
 - C Compiler (e.g. `gcc <https://gcc.gnu.org/>`__ or `clang <https://clang.llvm.org/>`__)
 
 - [OPTIONAL] Fortran Compiler (e.g. `gfortran <https://gcc.gnu.org/wiki/GFortran>`__)
+
+- [OPTIONAL] `git <https://git-scm.com/>`__
 
 It is important to make sure that your compilers are correctly installed [#]_ (i.e. functional
 and in your ``$PATH``). To test the compilers, run the following commands:
@@ -119,10 +119,16 @@ release branch of the repository.
 
 .. code-block:: console
 
-   $ mkdir -p ~/my/petsc/dir/
-   $ cd ~/my/petsc/dir/
+   $ mkdir ~/projects
+   $ cd ~/projects
    $ git clone -b release https://gitlab.com/petsc/petsc
    $ cd petsc
+
+.. note::
+
+  If git is not available - or if pre-generated Fortran stubs are required (i.e avoid download and
+  install of sowing package - that also requires a C++ compiler) one can download a release tarball.
+  See :ref:`download documentation <doc_download>` for additional details.
 
 .. Warning::
 
