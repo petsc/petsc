@@ -3,7 +3,7 @@
 
 #include <petscvec.h>
 #include <petscsf.h>
-#include <petscdevice.h>
+#include <petsc/private/deviceimpl.h>
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;

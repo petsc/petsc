@@ -13,26 +13,10 @@
 #include <petsc/private/fortranimpl.h>
 #endif
 
-#if defined(PETSC_HAVE_CUDA)
-#include <petsc/private/deviceimpl.h>
-PETSC_EXTERN cudaEvent_t petsc_gputimer_begin;
-PETSC_EXTERN cudaEvent_t petsc_gputimer_end;
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-#include <petsc/private/deviceimpl.h>
-PETSC_EXTERN hipEvent_t petsc_gputimer_begin;
-PETSC_EXTERN hipEvent_t petsc_gputimer_end;
-#endif
-
 #if defined(PETSC_USE_GCOV)
 EXTERN_C_BEGIN
 void  __gcov_flush(void);
 EXTERN_C_END
-#endif
-
-#if PetscDefined(USE_LOG)
-PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -668,18 +652,37 @@ PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_ADIOS)
+#if PetscDefined(HAVE_ADIOS)
 #include <adios.h>
 #include <adios_read.h>
 int64_t Petsc_adios_group;
 #endif
-#if defined(PETSC_HAVE_OPENMP)
+#if PetscDefined(HAVE_OPENMP)
 #include <omp.h>
 PetscInt PetscNumOMPThreads;
 #endif
 
+#if PetscDefined(HAVE_DEVICE)
+#include <petsc/private/deviceimpl.h>
+#  if PetscDefined(HAVE_CUDA)
+// REMOVE ME
+cudaStream_t PetscDefaultCudaStream = NULL;
+#  endif
+#  if PetscDefined(HAVE_HIP)
+// REMOVE ME
+hipStream_t PetscDefaultHipStream = NULL;
+#  endif
+#endif
+
 #if PetscDefined(HAVE_DLFCN_H)
 #include <dlfcn.h>
+#endif
+#if PetscDefined(USE_LOG)
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
+#endif
+#if PetscDefined(HAVE_VIENNACL)
+PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
+PetscBool PetscViennaCLSynchronize = PETSC_FALSE;
 #endif
 
 /*
@@ -940,6 +943,37 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
   */
   ierr = PetscOptionsCheckInitial_Private(help);CHKERRQ(ierr);
 
+  /*
+   Initialize PetscDevice and PetscDeviceContext
+
+   Note to any future devs thinking of moving this, proper initialization requires:
+   1. MPI initialized
+   2. Options DB initialized
+   3. Petsc error handling initialized, specifically signal handlers. This expects to set up its own SIGSEV handler via
+      the push/pop interface.
+  */
+#if (PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP))
+  ierr = PetscDeviceInitializeFromOptions_Internal(PETSC_COMM_WORLD);CHKERRQ(ierr);
+#endif
+
+#if PetscDefined(HAVE_VIENNACL)
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&flg);CHKERRQ(ierr);
+  if (!flg) {ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg);CHKERRQ(ierr);}
+  if (!flg) {ierr = PetscOptionsGetBool(NULL,NULL,"-viennacl_synchronize",&flg,NULL);CHKERRQ(ierr);}
+  PetscViennaCLSynchronize = flg;
+  ierr = PetscViennaCLInit();CHKERRQ(ierr);
+#endif
+
+  /*
+     Creates the logging data structures; this is enabled even if logging is not turned on
+     This is the last thing we do before returning to the user code to prevent having the
+     logging numbers contaminated by any startup time associated with MPI
+  */
+#if defined(PETSC_USE_LOG)
+  ierr = PetscLogInitialize();CHKERRQ(ierr);
+#endif
+
   ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SAWS)
@@ -1030,12 +1064,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
     }
 #endif
 #endif
-
-#if (defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)) && defined(PETSC_EXPERIMENTAL)
-  ierr = PetscDeviceInitializeDefaultDevices_Internal();CHKERRQ(ierr);
-  ierr = PetscDeviceContextInitializeRootContext_Internal(PETSC_COMM_WORLD,NULL);CHKERRQ(ierr);
-#endif
-
   /*
       Set flag that we are completely initialized
   */
@@ -1204,7 +1232,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_LOG)
+#if PetscDefined(USE_LOG)
 PETSC_INTERN PetscObject *PetscObjects;
 PETSC_INTERN PetscInt    PetscObjectsCounts;
 PETSC_INTERN PetscInt    PetscObjectsMaxCounts;
@@ -1247,6 +1275,10 @@ PetscErrorCode  PetscFreeMPIResources(void)
   ierr = MPI_Op_free(&MPIU_MAXSUM_OP);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
+
+#if PetscDefined(USE_LOG)
+PETSC_INTERN PetscErrorCode PetscLogFinalize(void);
+#endif
 
 /*@C
    PetscFinalize - Checks for options to be called at the conclusion
@@ -1629,26 +1661,6 @@ PetscErrorCode  PetscFinalize(void)
   if (PetscBeganNvshmem) {
     ierr = PetscNvshmemFinalize();CHKERRQ(ierr);
     PetscBeganNvshmem = PETSC_FALSE;
-  }
-#endif
-
-#if defined(PETSC_HAVE_CUDA)
-  if (PetscDefaultCudaStream) {cudaError_t cerr = cudaStreamDestroy(PetscDefaultCudaStream);CHKERRCUDA(cerr);}
-  if (petsc_gputimer_begin) {
-    cudaError_t cerr = cudaEventDestroy(petsc_gputimer_begin);CHKERRCUDA(cerr);
-  }
-  if (petsc_gputimer_end) {
-    cudaError_t cerr = cudaEventDestroy(petsc_gputimer_end);CHKERRCUDA(cerr);
-  }
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-  if (PetscDefaultHipStream)  {hipError_t cerr  = hipStreamDestroy(PetscDefaultHipStream);CHKERRHIP(cerr);}
-  if (petsc_gputimer_begin) {
-    hipError_t cerr = hipEventDestroy(petsc_gputimer_begin);CHKERRHIP(cerr);
-  }
-  if (petsc_gputimer_end) {
-    hipError_t cerr = hipEventDestroy(petsc_gputimer_end);CHKERRHIP(cerr);
   }
 #endif
 

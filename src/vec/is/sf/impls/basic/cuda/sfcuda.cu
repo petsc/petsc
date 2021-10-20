@@ -895,8 +895,8 @@ PetscErrorCode PetscSFMalloc_CUDA(PetscMemType mtype,size_t size,void** ptr)
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
   else if (PetscMemTypeDevice(mtype)) {
-    if (!PetscCUDAInitialized) {PetscErrorCode ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);}
-    cudaError_t err = cudaMalloc(ptr,size);CHKERRCUDA(err);
+    PetscErrorCode ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
+    cudaError_t    err  = cudaMalloc(ptr,size);CHKERRCUDA(err);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
 }

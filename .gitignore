@@ -29,12 +29,14 @@ bmake/*/*
 lib/petsc/conf/petscvariables
 configure.log*
 externalpackages/*
+petscLintPatches/
 ftn-auto
 ftn-auto-interfaces
 make_log_*
 test_log_*
 src/python/*
 *.o
+*.pch
 *.pyc
 *~
 *.orig

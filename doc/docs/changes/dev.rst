@@ -20,6 +20,21 @@ Changes: Development
 
 .. rubric:: Sys:
 
+- Add ``MPI_Comm_get_name()`` and ``MPI_Comm_set_name()`` to MPIUNI
+- Remove ``petsccublas.h`` and ``petschipblas.h``
+- Remove ``-petsc_use_default_null_stream`` and ``-[cuda|hip]_synchronize`` options
+- Remove ``PetscCUDASynchronize`` and ``PetscHIPSynchronize``. Their operation is now managed by ``PetscDeviceContext`` via its ``PetscStreamType`` attribute
+- Remove ``PetscCUDAInitialize()``, ``PetscCUDAInitializeCheck()``, ``PetscHIPInitialize()``, and ``PetscHIPInitializeCheck()``. Their function is now handled by ``PetscDeviceInitialize()`` and ``PetscDeviceInitialized()``
+- Remove ``PetscCUBLASInitializeHandle()``, ``PetscCUSOLVERDnInitializeHandle()``, ``PetscHIPBLASInitializeHandle()``, and ``PetscHIPSOLVERInitializeHandle()``. Their function is now handled implicitly by ``PetscDeviceContext``
+- Remove ``petsc_gputimer_begin`` and ``petsc_gputimer_begin``
+- Add ``-device_enable``, ``-device_select`` and ``-device_view`` startup-options to control coarse-grained device initialization strategy
+- Replace ``-[cuda|hip]_device`` with split options ``-device_enable_[cuda|hip]`` and ``-device_select_[cuda|hip]`` to enable fine-grained control of device selection and initialization strategy
+- Replace ``-[cuda|hip]_view`` with ``-device_view_[cuda|hip]``
+- Add ``PetscDeviceInitType`` to enumerate PETSc device initialization strategies
+- Add ``PetscDeviceInitialize()`` to eagerly initialize a ``PetscDeviceType``, and ``PetscDeviceInitialized()`` to query the corresponding initialization state
+- Change ``PetscDeviceCreate()`` to also accept a ``PetscInt devid``, to create a ``PetscDevice`` for a specific device
+- Add ``PetscDeviceView()``
+
 .. rubric:: PetscViewer:
 
 .. rubric:: PetscDraw:

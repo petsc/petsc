@@ -7,6 +7,7 @@
 #include <petsc/private/petschypre.h>
 #include <petscmathypre.h>
 #include <petsc/private/matimpl.h>
+#include <petsc/private/deviceimpl.h>
 #include <../src/mat/impls/hypre/mhypre.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/vec/vec/impls/hypre/vhyp.h>
@@ -2287,11 +2288,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatHYPREGetParCSR_C",MatHYPREGetParCSR_HYPRE);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
 #if defined(HYPRE_USING_HIP)
-  ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);
   ierr = MatSetVecType(B,VECHIP);CHKERRQ(ierr);
 #endif
 #if defined(HYPRE_USING_CUDA)
-  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
   ierr = MatSetVecType(B,VECCUDA);CHKERRQ(ierr);
 #endif
 #endif

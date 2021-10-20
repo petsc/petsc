@@ -2,6 +2,7 @@
 static char help[] = "Tests I/O of vectors for different data formats (binary,HDF5)\n\n";
 
 #include <petscvec.h>
+#include <petscdevice.h>
 #include <petscviewerhdf5.h>
 
 /* Note:  Most applications would not read and write a vector within
@@ -27,7 +28,12 @@ int main(int argc,char **args)
   PetscScalar const *values;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscCUDAInitialize(PETSC_COMM_WORLD, PETSC_DEFAULT);CHKERRQ(ierr);
+  {
+    PetscDeviceContext dctx; /* unused, only there to force initialization of device */
+
+    ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
+  }
+
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-binary",&isbinary,NULL);CHKERRQ(ierr);

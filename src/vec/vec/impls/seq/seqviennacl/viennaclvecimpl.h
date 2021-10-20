@@ -3,6 +3,7 @@
 
 #include <petscviennacl.h>
 #include <petsc/private/vecimpl.h>
+#include <petsc/private/deviceimpl.h>
 
 #include <algorithm>
 #include <vector>

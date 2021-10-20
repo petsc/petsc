@@ -41,6 +41,8 @@ class Package(config.base.Configure):
 
     # These are specified for the package
     self.required               = 0    # 1 means the package is required
+    self.devicePackage          = 0    # 1 if PETSC_HAVE_DEVICE should be defined by
+                                       # inclusion of this package
     self.lookforbydefault       = 0    # 1 means the package is not required, but always look for and use if found
                                        # cannot tell the difference between user requiring it with --with-PACKAGE=1 and
                                        # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of

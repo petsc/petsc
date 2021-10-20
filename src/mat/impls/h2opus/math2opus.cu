@@ -12,6 +12,7 @@
 #include <h2opus/util/boxentrygen.h>
 #include <petsc/private/matimpl.h>
 #include <petsc/private/vecimpl.h>
+#include <petsc/private/deviceimpl.h>
 #include <petscsf.h>
 
 /* math2opusutils */
@@ -1301,7 +1302,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
 
   PetscFunctionBegin;
 #if defined(PETSC_H2OPUS_USE_GPU)
-  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
 #endif
   ierr = PetscNewLog(A,&a);CHKERRQ(ierr);
   A->data = (void*)a;

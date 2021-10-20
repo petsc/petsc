@@ -175,6 +175,7 @@ MPIUni_PETSC_EXTERN void *MPIUNI_TMP;
 
 #define MPI_MAX_PROCESSOR_NAME 1024
 #define MPI_MAX_ERROR_STRING   2056
+#define MPI_MAX_OBJECT_NAME    1024
 
 typedef int MPI_Comm;
 #define MPI_COMM_NULL  0
@@ -344,6 +345,8 @@ typedef int (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 #define MPI_Comm_get_attr             Petsc_MPI_Attr_get
 #define MPI_Comm_set_attr             Petsc_MPI_Attr_put
 #define MPI_Comm_delete_attr          Petsc_MPI_Attr_delete
+#define MPI_Comm_get_name             Petsc_MPI_Comm_get_name
+#define MPI_Comm_set_name             Petsc_MPI_Comm_set_name
 
 MPIUni_PETSC_EXTERN int    MPIUni_Abort(MPI_Comm,int);
 MPIUni_PETSC_EXTERN int    MPI_Abort(MPI_Comm,int);
@@ -369,7 +372,8 @@ MPIUni_PETSC_EXTERN int MPI_Type_get_envelope(MPI_Datatype,int*,int*,int*,int*);
 MPIUni_PETSC_EXTERN int MPI_Type_get_contents(MPI_Datatype,int,int,int,int*,MPI_Aint*,MPI_Datatype*);
 MPIUni_PETSC_EXTERN int MPI_Add_error_class(int*);
 MPIUni_PETSC_EXTERN int MPI_Add_error_code(int,int*);
-
+MPIUni_PETSC_EXTERN int MPI_Comm_get_name(MPI_Comm,char*,int*);
+MPIUni_PETSC_EXTERN int MPI_Comm_set_name(MPI_Comm,const char*);
 /*
     Routines we have replace with macros that do nothing
     Some return error codes others return success

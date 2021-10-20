@@ -389,6 +389,8 @@ prepend-path PATH "%s"
     self.packagelibs = []
     for i in self.framework.packages:
       if not i.required:
+        if i.devicePackage:
+          self.addDefine('HAVE_DEVICE',1)
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]

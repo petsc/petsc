@@ -16,10 +16,6 @@
 #include <petscconf_poison.h>
 #include <petscfix.h>
 
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP) || defined(PETSC_HAVE_KOKKOS)
-   #define PETSC_HAVE_DEVICE
-#endif
-
 #if defined(PETSC_DESIRE_FEATURE_TEST_MACROS)
 /*
    Feature test macros must be included before headers defined by IEEE Std 1003.1-2001
@@ -114,24 +110,39 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  define PETSC_INTERN extern PETSC_VISIBILITY_INTERNAL
 #endif
 
+#if defined(PETSC_USE_SINGLE_LIBRARY)
+#  define PETSC_SINGLE_LIBRARY_INTERN PETSC_INTERN
+#else
+#  define PETSC_SINGLE_LIBRARY_INTERN PETSC_EXTERN
+#endif
+
+/* C++11 features */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX11)
 #  define PETSC_NULLPTR             nullptr
 #  define PETSC_CONSTEXPR           constexpr
 #  define PETSC_NOEXCEPT            noexcept
 #  define PETSC_NOEXCEPT_ARG(cond_) noexcept(cond_)
-#  define PETSC_CXX_DEFAULT(func_)  func_ = default
 #else
 #  define PETSC_NULLPTR             NULL
 #  define PETSC_CONSTEXPR
 #  define PETSC_NOEXCEPT
 #  define PETSC_NOEXCEPT_ARG(cond_)
-#  define PETSC_CXX_DEFAULT(func_)
+#endif /* __cplusplus && PETSC_HAVE_CXX_DIALECT_CXX11 */
+
+/* C++14 features */
+#if defined(PETSC_HAVE_CXX_DIALECT_CXX14)
+#  define PETSC_CONSTEXPR_14 PETSC_CONSTEXPR
+#else
+#  define PETSC_CONSTEXPR_14
 #endif
 
+/* C++17 features */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17)
-#  define PETSC_NODISCARD [[nodiscard]]
+#  define PETSC_NODISCARD    [[nodiscard]]
+#  define PETSC_CONSTEXPR_17 PETSC_CONSTEXPR
 #else
 #  define PETSC_NODISCARD
+#  define PETSC_CONSTEXPR_17
 #endif
 
 #include <petscversion.h>
@@ -200,10 +211,11 @@ M*/
 #  define PetscDefined__take_second_expanded(ignored, val, ...) val
 #  define PetscDefined__take_second_expand(args) PetscDefined__take_second_expanded args
 #  define PetscDefined__take_second(...) PetscDefined__take_second_expand((__VA_ARGS__))
-#  define PetscDefined___(arg1_or_junk) PetscDefined__take_second(arg1_or_junk 1, 0, at_)
-#  define PetscDefined__(value) PetscDefined___(PetscDefined_arg_ ## value)
-#  define PetscDefined_(d)      PetscDefined__(d)
-#  define PetscDefined(d)       PetscDefined_(PETSC_ ## d)
+#  define PetscDefined____(arg1_or_junk) PetscDefined__take_second(arg1_or_junk 1, 0, at_)
+#  define PetscDefined___(value) PetscDefined____(PetscDefined_arg_ ## value)
+#  define PetscDefined__(d)      PetscDefined___(d)
+#  define PetscDefined_(d)       PetscDefined__(PETSC_ ## d)
+#  define PetscDefined(d)        PetscDefined_(d)
 #endif
 
 /*
@@ -553,18 +565,6 @@ PETSC_EXTERN PetscBool PetscViennaCLSynchronize;
 PETSC_EXTERN PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 PETSC_EXTERN PetscErrorCode PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
-
-#if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscBool      PetscCUDASynchronize;
-PETSC_EXTERN PetscErrorCode PetscCUDAInitialize(MPI_Comm,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscCUDAInitializeCheck(void);
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-PETSC_EXTERN PetscBool      PetscHIPSynchronize;
-PETSC_EXTERN PetscErrorCode PetscHIPInitialize(MPI_Comm,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscHIPInitializeCheck(void);
-#endif
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Initialize Kokkos if not yet. */
