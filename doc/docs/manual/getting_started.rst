@@ -127,7 +127,7 @@ example, under the UNIX bash shell a command of the form
 
 .. code-block:: console
 
-   > export PETSC_DIR=$HOME/petsc
+   $ export PETSC_DIR=$HOME/petsc
 
 can be placed in the user’s ``.bashrc`` or other startup file. In
 addition, the user may need to set the environment variable
@@ -151,14 +151,14 @@ processors:
 
 .. code-block:: console
 
-   > mpiexec -n 8 ./petsc_program_name petsc_options
+   $ mpiexec -n 8 ./petsc_program_name petsc_options
 
 PETSc also comes with a script that automatically uses the correct
 ``mpiexec`` for your configuration.
 
 .. code-block:: console
 
-   > $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 8 ./petsc_program_name petsc_options
+   $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 8 ./petsc_program_name petsc_options
 
 All PETSc-compliant programs support the use of the ``-help``
 option as well as the ``-version`` option.
@@ -705,7 +705,7 @@ information needed by your makefile:
 
 .. code-block:: console
 
-   > make getlinklibs getincludedirs getcflags getcxxflags getfortranflags getccompiler getfortrancompiler getcxxcompiler
+   $ make getlinklibs getincludedirs getcflags getcxxflags getfortranflags getccompiler getfortrancompiler getcxxcompiler
 
 All the libraries listed need to be linked into your executable and the
 include directories and flags need to be passed to the compiler. Usually

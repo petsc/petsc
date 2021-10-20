@@ -37,12 +37,12 @@ We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tuto
 
 .. code-block:: console
 
-   > cd $PETSC_DIR
-   > python3 -m venv petsc-doc-env
-   > . petsc-doc-env/bin/activate
-   > pip install -r doc/requirements.txt
-   > cd doc
-   > make html  # may take several minutes
+   $ cd $PETSC_DIR
+   $ python3 -m venv petsc-doc-env
+   $ . petsc-doc-env/bin/activate
+   $ pip install -r doc/requirements.txt
+   $ cd doc
+   $ make html  # may take several minutes
 
 Then open ``_build/html/index.html`` with your browser.
 
@@ -74,7 +74,7 @@ Sphinx Documentation Guidelines
 
   .. code-block:: console
 
-     > make PETSC_DIR=/my/path/to/petsc PETSC_ARCH=my-petsc-arch all
+     $ make PETSC_DIR=/my/path/to/petsc PETSC_ARCH=my-petsc-arch all
 
   should be in a block.
 
@@ -85,8 +85,8 @@ Sphinx Documentation Guidelines
 
      .. code-block:: console
 
-        > cd $PETSC_DIR/src/snes/interface
-        > ./someprog
+        $ cd $PETSC_DIR/src/snes/interface
+        $ ./someprog
         output1
         output2
 
@@ -107,10 +107,10 @@ Sphinx Documentation Guidelines
 
      .. code-block:: console
 
-        > ./configure --some-args
-        > make libs
-        > make ./ex1
-        > ./ex1 --some-args
+        $ ./configure --some-args
+        $ make libs
+        $ make ./ex1
+        $ ./ex1 --some-args
 
 
 * Environment variables such as ``$PETSC_DIR`` or ``$PATH`` must be preceded by
@@ -244,15 +244,15 @@ cygwin packages]
 
 .. code-block:: console
 
-    > make alldoc LOC=${PETSC_DIR}
+    $ make alldoc LOC=${PETSC_DIR}
 
 To get a quick preview of manual pages from a single source directory (mainly to debug the manual page syntax):
 
 .. code-block:: console
 
-    > cd $PETSC_DIR/src/snes/interface
-    > make LOC=$PETSC_DIR manualpages_buildcite
-    > browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
+    $ cd $PETSC_DIR/src/snes/interface
+    $ make LOC=$PETSC_DIR manualpages_buildcite
+    $ browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
 
 
 .. rubric:: Footnotes

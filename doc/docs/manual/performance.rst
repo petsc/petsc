@@ -203,7 +203,7 @@ placement is done with MPICH and OpenMPI, where one needs to pass
 
 .. code-block:: none
 
-   $> mpirun -n 6 --bind-to core --map-by socket ./stream
+   $ mpirun -n 6 --bind-to core --map-by socket ./stream
    process 0 binding: 100000000000100000000000
    process 1 binding: 000000100000000000100000
    process 2 binding: 010000000000010000000000
@@ -222,7 +222,7 @@ significantly:
 
 .. code-block:: none
 
-   $> mpirun -n 6 --bind-to core --map-by core ./stream
+   $ mpirun -n 6 --bind-to core --map-by core ./stream
    process 0 binding: 100000000000100000000000
    process 1 binding: 010000000000010000000000
    process 2 binding: 001000000000001000000000
@@ -242,7 +242,7 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
 
 .. code-block:: none
 
-   $> make streams
+   $ make streams
    np  speedup
    1 1.0
    2 1.58
@@ -271,7 +271,7 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
 
 .. code-block:: none
 
-   $> make streams MPI_BINDING="--bind-to core --map-by socket"
+   $ make streams MPI_BINDING="--bind-to core --map-by socket"
    np  speedup
    1 1.0
    2 1.59
