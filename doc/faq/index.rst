@@ -56,7 +56,7 @@ batch system), run the following from ``$PETSC_DIR``:
 
 .. code-block:: console
 
-   > make streams [NPMAX=maximum_number_of_mpi_processes_you_plan_to_use]
+   $ make streams [NPMAX=maximum_number_of_mpi_processes_you_plan_to_use]
 
 
 This will provide a summary of the bandwidth with different number of MPI
@@ -64,12 +64,12 @@ processes and potential speedups. If you have a batch system:
 
 .. code-block:: console
 
-   > cd $PETSC_DIR/src/benchmarks/streams
-   > make MPIVersion
+   $ cd $PETSC_DIR/src/benchmarks/streams
+   $ make MPIVersion
    submit MPIVersion to the batch system a number of times with 1, 2, 3, etc MPI processes
    collecting all of the output from the runs into the single file scaling.log. Copy
    scaling.log into the src/benchmarks/streams directory.
-   > ./process.py createfile ; process.py
+   $ ./process.py createfile ; process.py
 
 Even if you have enough memory bandwidth if the OS switches processes between cores
 performance can degrade. Smart process to core/socket binding (this just means locking a
@@ -82,13 +82,13 @@ uses a different memory bus:
 
   .. code-block:: console
 
-     > mpiexec.hydra -n 4 --binding cpu:sockets
+     $ mpiexec.hydra -n 4 --binding cpu:sockets
 
 - `Open MPI binding <http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8>`__
 
   .. code-block:: console
 
-     > mpiexec -n 4 --bysocket --bind-to-socket --report-bindings
+     $ mpiexec -n 4 --bysocket --bind-to-socket --report-bindings
 
 - ``taskset``, part of the `util-linux <https://github.com/karelzak/util-linux>`__ package
 
@@ -445,8 +445,8 @@ from ``$PETSC_DIR``:
 
 .. code-block:: console
 
-   > make -f gmakefile PCC_FLAGS="-O1" $PETSC_ARCH/obj/src/mat/impls/baij/seq/baijsolvtrannat.o
-   > make all
+   $ make -f gmakefile PCC_FLAGS="-O1" $PETSC_ARCH/obj/src/mat/impls/baij/seq/baijsolvtrannat.o
+   $ make all
 
 How do I enable Python bindings (petsc4py) with PETSc?
 ------------------------------------------------------
@@ -473,7 +473,7 @@ How can I find the URL locations of the packages you install using ``--download-
 
 .. code-block:: console
 
-   > grep "self.download " $PETSC_DIR/config/BuildSystem/config/packages/*.py
+   $ grep "self.download " $PETSC_DIR/config/BuildSystem/config/packages/*.py
 
 How to fix the problem: PETSc was configured with one MPICH (or OpenMPI) ``mpi.h`` version but now appears to be compiling using a different MPICH (or OpenMPI) ``mpi.h`` version
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -486,8 +486,8 @@ This happens for generally one of two reasons:
 
   .. code-block:: console
 
-     > rm -rf $PETSC_DIR/$PETSC_ARCH
-     > ./configure --your-args
+     $ rm -rf $PETSC_DIR/$PETSC_ARCH
+     $ ./configure --your-args
 
 .. _mpi-network-misconfigure:
 
@@ -801,7 +801,7 @@ with reading and writing. If you just want to convert ``MatrixMarket``, you can 
 
 .. code-block:: console
 
-   > python -m $PETSC_DIR/lib/petsc/bin/PetscBinaryIO convert matrix.mtx
+   $ python -m $PETSC_DIR/lib/petsc/bin/PetscBinaryIO convert matrix.mtx
 
 To produce ``matrix.petsc``.
 
@@ -1270,14 +1270,14 @@ following options:
 
 .. code-block:: console
 
-   > ./configure --download-superlu_dist --download-parmetis --download-metis --with-openmp
+   $ ./configure --download-superlu_dist --download-parmetis --download-metis --with-openmp
 
 Your compiler must support OpenMP. To have the linear solver run in parallel run your
 program with
 
 .. code-block:: console
 
-   > OMP_NUM_THREADS=n ./myprog -pc_type lu -pc_factor_mat_solver superlu_dist
+   $ OMP_NUM_THREADS=n ./myprog -pc_type lu -pc_factor_mat_solver superlu_dist
 
 where ``n`` is the number of threads and should be less than or equal to the number of cores
 available.
@@ -1534,9 +1534,9 @@ computing facility for more.
 
       .. code-block:: console
 
-         > export MPICH_MAX_THREAD_SAFETY=multiple
-         > export MPICH_ASYNC_PROGRESS=1
-         > export MPICH_NEMESIS_ASYNC_PROGRESS=1
+         $ export MPICH_MAX_THREAD_SAFETY=multiple
+         $ export MPICH_ASYNC_PROGRESS=1
+         $ export MPICH_NEMESIS_ASYNC_PROGRESS=1
 
    MPICH
     MPICH version 3.0 and later implements the MPI-3 standard and the default
@@ -1545,7 +1545,7 @@ computing facility for more.
 
     .. code-block:: console
 
-       > export MPICH_ASYNC_PROGRESS=1
+       $ export MPICH_ASYNC_PROGRESS=1
 
 When using PETSc in single precision mode (``--with-precision=single`` when running ``configure``) are the operations done in single or double precision?
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1634,7 +1634,7 @@ Here are some ways to help the Newton process if everything above checks out:
 
   .. code-block:: console
 
-     > ./configure --with-precision=__float128 --download-f2cblaslapack
+     $ ./configure --with-precision=__float128 --download-f2cblaslapack
 
   .. note::
 
@@ -1860,7 +1860,7 @@ On newer Ubuntu linux machines - one has to disable ``ptrace_scope`` with
 
 .. code-block:: console
 
-   > sudo echo 0 > /proc/sys/kernel/yama/ptrace_scope
+   $ sudo echo 0 > /proc/sys/kernel/yama/ptrace_scope
 
 to get start in debugger working.
 
@@ -1927,9 +1927,9 @@ debugger since there is likely a way to have it catch exceptions.
 Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory
 ----------------------------------------------------------------------------------------------------------
 
-The Intel compilers use shared libraries (like libimf) that cannot by default at run
+The Intel compilers use shared libraries (like libimf) that cannot be found, by default, at run
 time. When using the Intel compilers (and running the resulting code) you must make sure
-that the proper Intel initialization scripts are run. This is usually done by putting some
+that the proper Intel initialization scripts are run. This is usually done by adding some
 code into your ``.cshrc``, ``.bashrc``, ``.profile`` etc file. Sometimes on batch file
 systems that do now access your initialization files (like .cshrc) you must include the
 initialization calls in your batch file submission.
@@ -2030,13 +2030,13 @@ use `valgrind <http://valgrind.org>`__. Follow the below instructions:
 
    .. code-block:: console
 
-      > $PETSC_DIR/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME PROGRAMOPTIONS
+      $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME PROGRAMOPTIONS
 
    or
 
    .. code-block:: console
 
-      > mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 \
+      $ mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 \
       --suppressions=$PETSC_DIR/share/petsc/valgrind/petsc-val.supp \
       --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS
 
@@ -2229,7 +2229,7 @@ Git bisect can be done as follows:
 
    .. code-block:: console
 
-      > git clone https://gitlab.com/petsc/petsc.git
+      $ git clone https://gitlab.com/petsc/petsc.git
 
 #. Find the good and bad markers to start the bisection process. This can be done either
    by checking ``git log`` or ``gitk`` or https://gitlab.com/petsc/petsc or the web
@@ -2241,19 +2241,19 @@ Git bisect can be done as follows:
 
    .. code-block:: console
 
-      > git bisect start 21af4baa815c 5ae5ab319844
+      $ git bisect start 21af4baa815c 5ae5ab319844
 
    build/test, perhaps discover that this new state is bad
 
    .. code-block:: console
 
-      > git bisect bad
+      $ git bisect bad
 
    build/test, perhaps discover that this state is good
 
    .. code-block:: console
 
-      > git bisect good
+      $ git bisect good
 
    Now until done - keep bisecting, building PETSc, and testing your code with it and
    determine if the code is working or not. After something like 5-15 iterations, ``git
@@ -2275,7 +2275,7 @@ packages that use threads).
 
 .. code-block:: console
 
-   > export PMIX_MCA_gds=hash
+   $ export PMIX_MCA_gds=hash
 
 Should resolve the problem.
 
@@ -2293,7 +2293,7 @@ Yes. Use
 
 .. code-block:: console
 
-   > ./configure --with-shared-libraries
+   $ ./configure --with-shared-libraries
 
 Why should I use shared libraries?
 ----------------------------------

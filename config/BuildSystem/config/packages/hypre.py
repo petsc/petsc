@@ -140,7 +140,6 @@ class Configure(config.package.GNUPackage):
     args.append('--with-fmangle-lapack='+mang)
 
     args.append('--without-mli')
-    args.append('--without-fei')
     args.append('--without-superlu')
 
     if self.getDefaultIndexSize() == 64:

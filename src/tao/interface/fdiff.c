@@ -197,11 +197,9 @@ PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao,Vec X,Mat H,Mat B,void *ctx)
     ierr = MatSetSizes(H,n,n,N,N);CHKERRQ(ierr);
     ierr = MatSetType(H,MATMFFD);CHKERRQ(ierr);
     ierr = MatSetUp(H);CHKERRQ(ierr);
-    ierr = MatMFFDSetBase(H,X,NULL);CHKERRQ(ierr);
     ierr = MatMFFDSetFunction(H,(PetscErrorCode (*)(void*,Vec,Vec))TaoComputeGradient,tao);CHKERRQ(ierr);
-  } else {
-    ierr = MatMFFDSetBase(H,X,NULL);CHKERRQ(ierr);
   }
+  ierr = MatMFFDSetBase(H,X,NULL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

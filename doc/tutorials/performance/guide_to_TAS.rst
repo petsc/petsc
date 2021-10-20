@@ -10,15 +10,15 @@ Below is the guide to running TAS using ex13, which is a Poisson Problem in 2D a
   a. This example source file, and the corresponding ``makefile`` are located in ``PETSC_DIR/src/snes/tutorials/``
   b. Compile with the command:
 
-      .. code-block::
+      .. code-block:: console
 
-         make ex13
+         $ make ex13
 
 2. Run ex13 with the following command:
 
-   .. code-block::
+   .. code-block:: console
 
-      mpiexec -n 2 ./ex13 -log_view :/home/<user name>/PETSC_DIR/lib/petsc/bin/ex_13_test.py:ascii_info_detail \
+      $ mpiexec -n 2 ./ex13 -log_view :/home/<user name>/PETSC_DIR/lib/petsc/bin/ex_13_test.py:ascii_info_detail \
         -dm_distribute \
         -dm_plex_box_faces 8,8 \
         -potential_petscspace_degree 1 \
@@ -29,13 +29,13 @@ Below is the guide to running TAS using ex13, which is a Poisson Problem in 2D a
 
 4. Now run ``petsc_tas_analysis.py``:
 
-   .. code-block::
+   .. code-block:: console
 
-      ./petsc_tas_analysis.py -f ex_13_test
+      $ ./petsc_tas_analysis.py -f ex_13_test
 
 5. You should see something similar to the following in your terminal window:
 
-   .. code-block:: console
+   ::
 
       ex_13Test
           *******************Data for ex_13Test***************************

@@ -35,6 +35,3 @@ class Configure(config.package.CMakePackage):
     args.append('-DMETIS_DIR:STRING="'+self.metis.directory+'"')
     args.append('-DMMG_DIR:STRING="'+self.mmg.directory+'"')
     return args
-
-  def configureLibrary(self):
-    config.package.CMakePackage.configureLibrary(self)

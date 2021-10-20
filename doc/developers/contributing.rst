@@ -272,8 +272,8 @@ After the tarballs is obtained - do the following:
 
 .. code-block:: console
 
-   > tar zxf petsc-petsc-CHANGESET.tar.gz
-   > mv petsc-petsc-CHANGESET petsc
+   $ tar zxf petsc-petsc-CHANGESET.tar.gz
+   $ mv petsc-petsc-CHANGESET petsc
 
 To update this copy of petsc, re-download the above tarball.
 The URL above gets the latest changes immediately when they are pushed to the repository.

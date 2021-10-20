@@ -12,8 +12,8 @@ are installed, :ref:`download <doc_download>` PETSc and build with:
 
 .. code-block:: console
 
-   > ./configure
-   > make all check
+   $ ./configure
+   $ make all check
 
 Or to specify compilers and have PETSc download and install `MPICH
 <https://www.mpich.org/>`__ and `BLAS/LAPACK
@@ -22,8 +22,8 @@ your machine):
 
 .. code-block:: console
 
-   > ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --download-fblaslapack
-   > make all check
+   $ ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --download-fblaslapack
+   $ make all check
 
 Don't need Fortran? Use ``--with-fortran-bindings=0`` to reduce the build times. If you
 are not using :ref:`external packages <doc_externalsoftware>` that use Fortran (for
@@ -73,8 +73,6 @@ Prerequisites
 Before beginning, make sure you have the following pre-requisites installed and up to
 date:
 
-- `git <https://git-scm.com/>`__
-
 - `make <https://www.gnu.org/software/make/>`__
 
 - `python3 <https://www.python.org/>`__ [#]_
@@ -83,12 +81,14 @@ date:
 
 - [OPTIONAL] Fortran Compiler (e.g. `gfortran <https://gcc.gnu.org/wiki/GFortran>`__)
 
+- [OPTIONAL] `git <https://git-scm.com/>`__
+
 It is important to make sure that your compilers are correctly installed [#]_ (i.e. functional
 and in your ``$PATH``). To test the compilers, run the following commands:
 
 .. code-block:: console
 
-   > printf '#include<stdio.h>\nint main(){printf("cc OK!\\n");}' > t.c && cc t.c && ./a.out && rm -f t.c a.out
+   $ printf '#include<stdio.h>\nint main(){printf("cc OK!\\n");}' > t.c && cc t.c && ./a.out && rm -f t.c a.out
 
 .. note::
 
@@ -99,8 +99,8 @@ and in your ``$PATH``). To test the compilers, run the following commands:
 
    .. code-block:: console
 
-      > printf '#include<iostream>\nint main(){std::cout<<"c++ OK!"<<std::endl;}' > t.cpp && c++ t.cpp && ./a.out && rm -f t.cpp a.out
-      > printf 'program t\nprint"(a)","gfortran OK!"\nend program' > t.f90 && gfortran t.f90 && ./a.out && rm -f t.f90 a.out
+      $ printf '#include<iostream>\nint main(){std::cout<<"c++ OK!"<<std::endl;}' > t.cpp && c++ t.cpp && ./a.out && rm -f t.cpp a.out
+      $ printf 'program t\nprint"(a)","gfortran OK!"\nend program' > t.f90 && gfortran t.f90 && ./a.out && rm -f t.f90 a.out
 
 If compilers are working, each command should print out ``<compiler_name> OK!`` on the command
 line.
@@ -119,10 +119,16 @@ release branch of the repository.
 
 .. code-block:: console
 
-   > mkdir -p ~/my/petsc/dir/
-   > cd ~/my/petsc/dir/
-   > git clone -b release https://gitlab.com/petsc/petsc
-   > cd petsc
+   $ mkdir ~/projects
+   $ cd ~/projects
+   $ git clone -b release https://gitlab.com/petsc/petsc
+   $ cd petsc
+
+.. note::
+
+  If git is not available - or if pre-generated Fortran stubs are required (i.e avoid download and
+  install of sowing package - that also requires a C++ compiler) one can download a release tarball.
+  See :ref:`download documentation <doc_download>` for additional details.
 
 .. Warning::
 
@@ -139,7 +145,7 @@ should yield a similar output:
 
 .. code-block:: console
 
-   > git clone -b release https://gitlab.com/petsc/petsc.git petsc
+   $ git clone -b release https://gitlab.com/petsc/petsc.git petsc
    Cloning into 'petsc'...
    remote: Enumerating objects: 862597, done.
    remote: Counting objects: 100% (862597/862597), done.
@@ -148,8 +154,8 @@ should yield a similar output:
    Receiving objects: 100% (862597/862597), 205.11 MiB | 3.17 MiB/s, done.
    Resolving deltas: 100% (660708/660708), done.
    Updating files: 100% (7748/7748), done.
-   > cd petsc
-   > git pull # Not strictly necessary, but nice to check
+   $ cd petsc
+   $ git pull # Not strictly necessary, but nice to check
    Already up to date.
 
 .. _tut_install_config:
@@ -191,7 +197,7 @@ customize their PETSc installation. Common configuration options are:
 
    .. code-block:: console
 
-      > ./configure --help
+      $ ./configure --help
 
 All PETSc options and flags follow the standard CLI formats ``--option-string=<value>`` or
 ``--option-string``, where ``<value>`` is typically either ``1`` (for true) or ``0`` (for
@@ -205,7 +211,7 @@ as download and install `MPICH <https://www.mpich.org/>`__ and a `BLAS/LAPACK
 
 .. code-block:: console
 
-   > ./configure --download-mpich --download-fblaslapack
+   $ ./configure --download-mpich --download-fblaslapack
 
 PETSc will begin configuring and printing its progress. A successful ``configure`` will
 have the following general structure as its output:
@@ -282,7 +288,7 @@ resources as the PETSc is compiled in parallel.
 
 .. code-block:: console
 
-   > make all check
+   $ make all check
 
 A successful ``make`` will provide an output of the following structure:
 
@@ -348,10 +354,10 @@ You now have a working PETSc installation and are ready to start using the libra
 
 .. code-block:: console
 
-   > brew update
-   > brew list            # Show all packages installed through brew
-   > brew upgrade         # Update packages already installed through brew
-   > brew install python3
+   $ brew update
+   $ brew list            # Show all packages installed through brew
+   $ brew upgrade         # Update packages already installed through brew
+   $ brew install python3
 
 .. [#blas] The `BLAS/LAPACK <https://www.netlib.org/lapack/lug/node11.html>`__ package
    installed as part of this tutorial is a `reference implementation
