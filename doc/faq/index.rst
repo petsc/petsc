@@ -1927,9 +1927,9 @@ debugger since there is likely a way to have it catch exceptions.
 Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory
 ----------------------------------------------------------------------------------------------------------
 
-The Intel compilers use shared libraries (like libimf) that cannot by default at run
+The Intel compilers use shared libraries (like libimf) that cannot be found, by default, at run
 time. When using the Intel compilers (and running the resulting code) you must make sure
-that the proper Intel initialization scripts are run. This is usually done by putting some
+that the proper Intel initialization scripts are run. This is usually done by adding some
 code into your ``.cshrc``, ``.bashrc``, ``.profile`` etc file. Sometimes on batch file
 systems that do now access your initialization files (like .cshrc) you must include the
 initialization calls in your batch file submission.
