@@ -100,8 +100,7 @@ Sphinx Documentation Guidelines
         output1
         output2
 
-* Any code blocks that show command line invocations must be preceded by the ">"
-  character. E.g.
+* Any code blocks that show command line invocations must be preceded by ``$``, e.g.
 
   .. code-block:: rst
 
