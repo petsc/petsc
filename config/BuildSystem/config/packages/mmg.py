@@ -29,6 +29,3 @@ class Configure(config.package.CMakePackage):
     args.append('-DUSE_POINTMAP=ON')
     args.append('-DSCOTCH_DIR:STRING="'+self.ptscotch.directory+'"')
     return args
-
-  def configureLibrary(self):
-    config.package.CMakePackage.configureLibrary(self)
