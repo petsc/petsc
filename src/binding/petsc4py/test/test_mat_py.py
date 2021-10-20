@@ -22,6 +22,177 @@ class Identity(Matrix):
     def getDiagonal(self, mat, vd):
         vd.set(1)
 
+    def productSetFromOptions(self, mat, producttype, A, B, C):
+        return True
+
+    def productSymbolic(self, mat, product, producttype, A, B, C):
+        if producttype == 'AB':
+            if mat is A: # product = identity * B
+                product.setType(B.getType())
+                product.setSizes(B.getSizes())
+                product.setUp()
+                product.assemble()
+                B.copy(product)
+            elif mat is B: # product = A * identity
+                product.setType(A.getType())
+                product.setSizes(A.getSizes())
+                product.setUp()
+                product.assemble()
+                A.copy(product)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'AtB':
+            if mat is A: # product = identity^T * B
+                product.setType(B.getType())
+                product.setSizes(B.getSizes())
+                product.setUp()
+                product.assemble()
+                B.copy(product)
+            elif mat is B: # product = A^T * identity
+                tmp = PETSc.Mat()
+                A.transpose(tmp)
+                product.setType(tmp.getType())
+                product.setSizes(tmp.getSizes())
+                product.setUp()
+                product.assemble()
+                tmp.copy(product)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'ABt':
+            if mat is A: # product = identity * B^T
+                tmp = PETSc.Mat()
+                B.transpose(tmp)
+                product.setType(tmp.getType())
+                product.setSizes(tmp.getSizes())
+                product.setUp()
+                product.assemble()
+                tmp.copy(product)
+            elif mat is B: # product = A * identity^T
+                product.setType(A.getType())
+                product.setSizes(A.getSizes())
+                product.setUp()
+                product.assemble()
+                A.copy(product)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'PtAP':
+            if mat is A: # product = P^T * identity * P
+                self.tmp = PETSc.Mat()
+                B.transposeMatMult(B, self.tmp)
+                product.setType(self.tmp.getType())
+                product.setSizes(self.tmp.getSizes())
+                product.setUp()
+                product.assemble()
+                self.tmp.copy(product)
+            elif mat is B: # product = identity^T * A * identity
+                product.setType(A.getType())
+                product.setSizes(A.getSizes())
+                product.setUp()
+                product.assemble()
+                A.copy(product)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'RARt':
+            if mat is A: # product = R * identity * R^t
+                self.tmp = PETSc.Mat()
+                B.matTransposeMult(B, self.tmp)
+                product.setType(self.tmp.getType())
+                product.setSizes(self.tmp.getSizes())
+                product.setUp()
+                product.assemble()
+                self.tmp.copy(product)
+            elif mat is B: # product = identity * A * identity^T
+                product.setType(A.getType())
+                product.setSizes(A.getSizes())
+                product.setUp()
+                product.assemble()
+                A.copy(product)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'ABC':
+            if mat is A: # product = identity * B * C
+                self.tmp = PETSc.Mat()
+                B.matMult(C, self.tmp)
+                product.setType(self.tmp.getType())
+                product.setSizes(self.tmp.getSizes())
+                product.setUp()
+                product.assemble()
+                self.tmp.copy(product)
+            elif mat is B: # product = A * identity * C
+                self.tmp = PETSc.Mat()
+                A.matMult(C, self.tmp)
+                product.setType(self.tmp.getType())
+                product.setSizes(self.tmp.getSizes())
+                product.setUp()
+                product.assemble()
+                self.tmp.copy(product)
+            elif mat is C: # product = A * B * identity
+                self.tmp = PETSc.Mat()
+                A.matMult(B, self.tmp)
+                product.setType(self.tmp.getType())
+                product.setSizes(self.tmp.getSizes())
+                product.setUp()
+                product.assemble()
+                self.tmp.copy(product)
+            else:
+                raise RuntimeError('wrong configuration')
+        else:
+            raise RuntimeError('Product {} not implemented'.format(producttype))
+        product.zeroEntries()
+
+    def productNumeric(self, mat, product, producttype, A, B, C):
+        if producttype == 'AB':
+            if mat is A: # product = identity * B
+                B.copy(product, structure=True)
+            elif mat is B: # product = A * identity
+                A.copy(product, structure=True)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'AtB':
+            if mat is A: # product = identity^T * B
+                B.copy(product, structure=True)
+            elif mat is B: # product = A^T * identity
+                A.transpose(product)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'ABt':
+            if mat is A: # product = identity * B^T
+                B.transpose(product)
+            elif mat is B: # product = A * identity^T
+                A.copy(product, structure=True)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'PtAP':
+            if mat is A: # product = P^T * identity * P
+                B.transposeMatMult(B, self.tmp)
+                self.tmp.copy(product, structure=True)
+            elif mat is B: # product = identity^T * A * identity
+                A.copy(product, structure=True)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'RARt':
+            if mat is A: # product = R * identity * R^t
+                B.matTransposeMult(B, self.tmp)
+                self.tmp.copy(product, structure=True)
+            elif mat is B: # product = identity * A * identity^T
+                A.copy(product, structure=True)
+            else:
+                raise RuntimeError('wrong configuration')
+        elif producttype == 'ABC':
+            if mat is A: # product = identity * B * C
+                B.matMult(C, self.tmp)
+                self.tmp.copy(product, structure=True)
+            elif mat is B: # product = A * identity * C
+                A.matMult(C, self.tmp)
+                self.tmp.copy(product, structure=True)
+            elif mat is C: # product = A * B * identity
+                A.matMult(B, self.tmp)
+                self.tmp.copy(product, structure=True)
+            else:
+                raise RuntimeError('wrong configuration')
+        else:
+            raise RuntimeError('Product {} not implemented'.format(producttype))
+
 class Diagonal(Matrix):
 
     def create(self, mat):
@@ -178,8 +349,46 @@ class TestIdentity(TestMatrix):
         self.A.getDiagonal(d)
         self.assertTrue(o.equal(d))
 
+    def testMatMat(self):
+        R = PETSc.Random().create(self.COMM)
+        R.setFromOptions()
+        A = PETSc.Mat().create(self.COMM)
+        A.setSizes(self.A.getSizes())
+        A.setType(PETSc.Mat.Type.AIJ)
+        A.setUp()
+        A.setRandom(R)
+        B = PETSc.Mat().create(self.COMM)
+        B.setSizes(self.A.getSizes())
+        B.setType(PETSc.Mat.Type.AIJ)
+        B.setUp()
+        B.setRandom(R)
+        I = PETSc.Mat().create(self.COMM)
+        I.setSizes(self.A.getSizes())
+        I.setType(PETSc.Mat.Type.AIJ)
+        I.setUp()
+        I.assemble()
+        I.shift(1.)
+
+        self.assertTrue(self.A.matMult(A).equal(I.matMult(A)))
+        self.assertTrue(A.matMult(self.A).equal(A.matMult(I)))
+        if self.A.getComm().Get_size() == 1:
+            self.assertTrue(self.A.matTransposeMult(A).equal(I.matTransposeMult(A)))
+            self.assertTrue(A.matTransposeMult(self.A).equal(A.matTransposeMult(I)))
+        self.assertTrue(self.A.transposeMatMult(A).equal(I.transposeMatMult(A)))
+        self.assertTrue(A.transposeMatMult(self.A).equal(A.transposeMatMult(I)))
+        self.assertAlmostEqual((self.A.ptap(A) - I.ptap(A)).norm(), 0.0, places=5)
+        self.assertAlmostEqual((A.ptap(self.A) - A.ptap(I)).norm(), 0.0, places=5)
+        if self.A.getComm().Get_size() == 1:
+            self.assertAlmostEqual((self.A.rart(A) - I.rart(A)).norm(), 0.0, places=5)
+            self.assertAlmostEqual((A.rart(self.A) - A.rart(I)).norm(), 0.0, places=5)
+        self.assertAlmostEqual((self.A.matMatMult(A,B)-I.matMatMult(A,B)).norm(), 0.0, places=5)
+        self.assertAlmostEqual((A.matMatMult(self.A,B)-A.matMatMult(I,B)).norm(), 0.0, places=5)
+        self.assertAlmostEqual((A.matMatMult(B,self.A)-A.matMatMult(B,I)).norm(), 0.0, places=5)
+
     def testH2Opus(self):
         if not PETSc.Sys.hasExternalPackage("h2opus"):
+            return
+        if self.A.getComm().Get_size() > 1:
             return
         h = PETSc.Mat()
 

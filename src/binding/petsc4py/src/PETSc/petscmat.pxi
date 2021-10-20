@@ -303,6 +303,7 @@ cdef extern from * nogil:
     int MatScale(PetscMat,PetscScalar)
     int MatShift(PetscMat,PetscScalar)
     int MatChop(PetscMat,PetscReal)
+    int MatSetRandom(PetscMat,PetscRandom)
     int MatAXPY(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatAYPX(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
@@ -310,6 +311,8 @@ cdef extern from * nogil:
     int MatTransposeMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
 
     int MatPtAP(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    int MatRARt(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    int MatMatMatMult(PetscMat,PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
     int MatSeqAIJKron(PetscMat,PetscMat,PetscMatReuse,PetscMat*)
 
     int MatInterpolate(PetscMat,PetscVec,PetscVec)

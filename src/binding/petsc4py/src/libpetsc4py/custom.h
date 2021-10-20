@@ -8,6 +8,58 @@
 PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 
 PETSC_STATIC_INLINE
+PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject o, PetscInt id, PetscInt *v, PetscBool *exist)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectComposedDataGetInt(o,id,*v,*exist);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE
+PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject o, PetscInt id, PetscInt v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectComposedDataSetInt(o,id,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE
+PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt *id)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectComposedDataRegister(id);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE
+PetscErrorCode MatProductGetType(Mat mat,MatProductType *mtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(mtype,2);
+  *mtype = MATPRODUCT_UNSPECIFIED;
+  if (mat->product) *mtype = mat->product->type;
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE
+PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (A) *A = mat->product ? mat->product->A : NULL;
+  if (B) *B = mat->product ? mat->product->B : NULL;
+  if (C) *C = mat->product ? mat->product->C : NULL;
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE
 PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
 {
   PetscErrorCode ierr;
@@ -20,7 +72,7 @@ PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
 PETSC_STATIC_INLINE
 PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
 {
-    PetscErrorCode ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESLogConvergenceHistory(snes,rnorm,lits);CHKERRQ(ierr);

@@ -21,7 +21,7 @@ cdef extern from "Python.h":
     object PyModule_New(char*)
     bint PyModule_Check(object)
     object PyImport_Import(object)
-
+    ctypedef size_t Py_uintptr_t
 # --------------------------------------------------------------------
 
 cdef extern from "custom.h":
@@ -41,6 +41,7 @@ cdef extern from * nogil:
     int MPI_Comm_rank(MPI_Comm,int*)
 
     ctypedef int PetscErrorCode
+    enum: PETSC_ERR_PLIB
     enum: PETSC_ERR_SUP
     enum: PETSC_ERR_USER
     enum: PETSC_ERROR_INITIAL
@@ -456,7 +457,6 @@ cdef extern from * nogil:
         MAT_IGNORE_MATRIX
         MAT_INITIAL_MATRIX
         MAT_REUSE_MATRIX
-
     ctypedef enum MatSORType:
         SOR_FORWARD_SWEEP
         SOR_BACKWARD_SWEEP
@@ -468,6 +468,14 @@ cdef extern from * nogil:
         SOR_EISENSTAT
         SOR_APPLY_UPPER
         SOR_APPLY_LOWER
+    ctypedef enum PetscMatProductType "MatProductType":
+        MATPRODUCT_UNSPECIFIED
+        MATPRODUCT_AB
+        MATPRODUCT_AtB
+        MATPRODUCT_ABt
+        MATPRODUCT_PtAP
+        MATPRODUCT_RARt
+        MATPRODUCT_ABC
 
 cdef extern from * nogil:
     struct _MatOps:
@@ -506,13 +514,20 @@ cdef extern from * nogil:
         PetscErrorCode (*realpart)(PetscMat) except IERR
         PetscErrorCode (*imagpart"imaginarypart")(PetscMat) except IERR
         PetscErrorCode (*conjugate)(PetscMat) except IERR
+        PetscErrorCode (*productsetfromoptions)(PetscMat) except IERR
+        PetscErrorCode (*productsymbolic)(PetscMat) except IERR
+        PetscErrorCode (*productnumeric)(PetscMat) except IERR
     ctypedef _MatOps *MatOps
+    ctypedef struct Mat_Product:
+        void *data
     struct _p_Mat:
         void *data
         MatOps ops
         PetscBool assembled
         PetscBool preallocated
         PetscLayout rmap, cmap
+        Mat_Product *product
+
 cdef extern from * nogil:
     PetscErrorCode MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
     PetscErrorCode MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
@@ -522,6 +537,11 @@ cdef extern from * nogil:
     PetscErrorCode MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatSolve(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatSolveTranspose(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatProductGetType(PetscMat,PetscMatProductType*)
+    PetscErrorCode MatProductGetMats(PetscMat,PetscMat*,PetscMat*,PetscMat*)
+    PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt*)
+    PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject,PetscInt,PetscInt*,PetscBool*)
+    PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject,PetscInt,PetscInt)
 
 @cython.internal
 cdef class _PyMat(_PyObj): pass
@@ -594,6 +614,8 @@ cdef PetscErrorCode MatCreate_Python(
     ops.realpart          = MatRealPart_Python
     ops.imagpart          = MatImagPart_Python
     ops.conjugate         = MatConjugate_Python
+
+    ops.productsetfromoptions = MatProductSetFromOptions_Python
     #
     mat.assembled    = PETSC_TRUE  # XXX
     mat.preallocated = PETSC_FALSE # XXX
@@ -604,6 +626,9 @@ cdef PetscErrorCode MatCreate_Python(
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat,b"MatPythonSetType_C",
             <PetscVoidFunction>MatPythonSetType_PYTHON) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>mat,b"MatProductSetFromOptions_anytype_C",
+            <PetscVoidFunction>MatProductSetFromOptions_Python) )
     CHKERR( PetscObjectChangeTypeName(
             <PetscObject>mat,MATPYTHON) )
     #
@@ -622,6 +647,9 @@ cdef PetscErrorCode MatDestroy_Python(
             <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat,b"MatPythonSetType_C",
+            <PetscVoidFunction>NULL) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>mat,b"MatProductSetFromOptions_anytype_C",
             <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectChangeTypeName(
             <PetscObject>mat,NULL) )
@@ -1175,6 +1203,149 @@ cdef PetscErrorCode MatConjugate_Python(
     cdef conjugate = PyMat(mat).conjugate
     if conjugate is None: return UNSUPPORTED(b"conjugate")
     conjugate(Mat_(mat))
+    return FunctionEnd()
+
+cdef PetscErrorCode MatProductNumeric_Python(
+    PetscMat mat
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatProductNumeric_Python")
+    cdef PetscMat A = NULL
+    cdef PetscMat B = NULL
+    cdef PetscMat C = NULL
+    cdef PetscMatProductType mtype = MATPRODUCT_UNSPECIFIED
+    CHKERR( MatProductGetMats(mat, &A, &B, &C) )
+    CHKERR( MatProductGetType(mat, &mtype) )
+
+    mtypes = {MATPRODUCT_AB : 'AB', MATPRODUCT_ABt : 'ABt', MATPRODUCT_AtB : 'AtB', MATPRODUCT_PtAP : 'PtAP', MATPRODUCT_RARt: 'RARt', MATPRODUCT_ABC: 'ABC'}
+
+    cdef Mat_Product *product = mat.product
+    cdef PetscInt i = <PetscInt> <Py_uintptr_t> product.data
+    if i < 0 or i > 2:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Corrupted composed id")
+    cdef PetscMat pM = C if i == 2 else B if i == 1 else A
+
+    cdef Mat PyA = Mat_(A)
+    cdef Mat PyB = Mat_(B)
+    cdef Mat PyC = Mat_(C)
+    if mtype == MATPRODUCT_ABC:
+      mats = (PyA, PyB, PyC)
+    else:
+      mats = (PyA, PyB, None)
+
+    cdef productNumeric = PyMat(pM).productNumeric
+    if productNumeric is None: return UNSUPPORTED(b"productNumeric")
+    productNumeric(PyC if C == pM else PyB if B == pM else PyA, Mat_(mat), mtypes[mtype], *mats)
+
+    return FunctionEnd()
+
+cdef PetscInt matmatid = -1
+
+cdef PetscErrorCode MatProductSymbolic_Python(
+    PetscMat mat
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatProductSymbolic_Python")
+    cdef PetscMat A = NULL
+    cdef PetscMat B = NULL
+    cdef PetscMat C = NULL
+    cdef PetscMatProductType mtype = MATPRODUCT_UNSPECIFIED
+    CHKERR( MatProductGetMats(mat, &A, &B, &C) )
+    CHKERR( MatProductGetType(mat, &mtype) )
+
+    mtypes = {MATPRODUCT_AB : 'AB', MATPRODUCT_ABt : 'ABt', MATPRODUCT_AtB : 'AtB', MATPRODUCT_PtAP : 'PtAP', MATPRODUCT_RARt: 'RARt', MATPRODUCT_ABC: 'ABC'}
+
+    global matmatid
+    cdef PetscInt i = -1
+    cdef PetscBool flg = PETSC_FALSE
+    CHKERR( PetscObjectComposedDataGetIntPy(<PetscObject>mat, matmatid, &i, &flg) )
+    if flg is not PETSC_TRUE:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Missing composed id")
+    if i < 0 or i > 2:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Corrupted composed id")
+    cdef PetscMat pM = C if i == 2 else B if i == 1 else A
+
+    cdef Mat PyA = Mat_(A)
+    cdef Mat PyB = Mat_(B)
+    cdef Mat PyC = Mat_(C)
+    if mtype == MATPRODUCT_ABC:
+      mats = (PyA, PyB, PyC)
+    else:
+      mats = (PyA, PyB, None)
+
+    cdef productSymbolic = PyMat(pM).productSymbolic
+    if productSymbolic is None: return UNSUPPORTED(b"productSymbolic")
+    productSymbolic(PyC if C == pM else PyB if B == pM else PyA, Mat_(mat), mtypes[mtype], *mats)
+
+    # Store id in matrix product
+    cdef Mat_Product *product = mat.product
+    product.data = <void*> <Py_uintptr_t> i
+
+    cdef MatOps ops = mat.ops
+    ops.productnumeric = MatProductNumeric_Python
+    return FunctionEnd()
+
+cdef PetscErrorCode MatProductSetFromOptions_Python(
+    PetscMat mat
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatProductSetFromOptions_Python")
+    cdef PetscMat A = NULL
+    cdef PetscMat B = NULL
+    cdef PetscMat C = NULL
+    CHKERR( MatProductGetMats(mat, &A, &B, &C) )
+    if A == NULL or B == NULL:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Missing matrices")
+
+    cdef PetscMatProductType mtype = MATPRODUCT_UNSPECIFIED
+    CHKERR( MatProductGetType(mat, &mtype) )
+    if mtype == MATPRODUCT_UNSPECIFIED:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Unknown product type")
+
+    mtypes = {MATPRODUCT_AB : 'AB', MATPRODUCT_ABt : 'ABt', MATPRODUCT_AtB : 'AtB', MATPRODUCT_PtAP : 'PtAP', MATPRODUCT_RARt: 'RARt', MATPRODUCT_ABC: 'ABC'}
+
+    cdef Mat PyA = Mat_(A)
+    cdef Mat PyB = Mat_(B)
+    cdef Mat PyC = Mat_(C)
+    if mtype == MATPRODUCT_ABC:
+      mats = (PyA, PyB, PyC)
+    else:
+      mats = (PyA, PyB, None)
+
+    # Find Python matrix in mats able to perform the product
+    found = False
+    cdef PetscBool mispy = PETSC_FALSE
+    cdef PetscMat pM = NULL
+    cdef Mat mm
+    cdef PetscInt i = -1
+    for i in range(len(mats)):
+      if mats[i] is None: continue
+      mm = mats[i]
+      pM = <PetscMat>mm.mat
+      CHKERR( PetscObjectTypeCompare(<PetscObject>pM, MATPYTHON,  &mispy)  )
+      if mispy:
+        if PyMat(pM).productSetFromOptions is not None:
+          found = PyMat(pM).productSetFromOptions(PyC if C == pM else PyB if B == pM else PyA, mtypes[mtype], *mats)
+          if found: break
+    if not found:
+      return FunctionEnd()
+
+    cdef MatOps ops = mat.ops
+    ops.productsymbolic = MatProductSymbolic_Python
+
+    # Store index (within the product) of the Python matrix which is capable of performing the operation
+    # Cannot be stored in mat.product.data at this stage
+    # Symbolic operation will get this index and store it in the product data
+    global matmatid
+    if matmatid < 0:
+      CHKERR( PetscObjectComposedDataRegisterPy(&matmatid) )
+    CHKERR( PetscObjectComposedDataSetIntPy(<PetscObject>mat, matmatid, i) )
+
     return FunctionEnd()
 
 # --------------------------------------------------------------------

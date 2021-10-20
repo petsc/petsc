@@ -1364,6 +1364,11 @@ cdef class Mat(Object):
         cdef PetscReal rval = asReal(tol)
         CHKERR( MatChop(self.mat, rval) )
 
+    def setRandom(self, Random random=None):
+        cdef PetscRandom rnd = NULL
+        if random is not None: rnd = random.rnd
+        CHKERR( MatSetRandom(self.mat, rnd) )
+
     def axpy(self, alpha, Mat X, structure=None):
         cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)
@@ -1409,7 +1414,7 @@ cdef class Mat(Object):
         CHKERR( MatTransposeMatMult(self.mat, mat.mat, reuse, rval, &result.mat) )
         return result
 
-    def PtAP(self, Mat P, Mat result=None, fill=None):
+    def ptap(self, Mat P, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscReal cfill = PETSC_DEFAULT
         if result is None:
@@ -1418,6 +1423,28 @@ cdef class Mat(Object):
             reuse = MAT_REUSE_MATRIX
         if fill is not None: cfill = asReal(fill)
         CHKERR( MatPtAP(self.mat, P.mat, reuse, cfill, &result.mat) )
+        return result
+
+    def rart(self, Mat R, Mat result=None, fill=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        cdef PetscReal cfill = PETSC_DEFAULT
+        if result is None:
+            result = Mat()
+        elif result.mat != NULL:
+            reuse = MAT_REUSE_MATRIX
+        if fill is not None: cfill = asReal(fill)
+        CHKERR( MatRARt(self.mat, R.mat, reuse, cfill, &result.mat) )
+        return result
+
+    def matMatMult(self, Mat B, Mat C, Mat result=None, fill=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        cdef PetscReal cfill = PETSC_DEFAULT
+        if result is None:
+            result = Mat()
+        elif result.mat != NULL:
+            reuse = MAT_REUSE_MATRIX
+        if fill is not None: cfill = asReal(fill)
+        CHKERR( MatMatMatMult(self.mat, B.mat, C.mat, reuse, cfill, &result.mat) )
         return result
 
     def kron(self, Mat mat, Mat result=None):
