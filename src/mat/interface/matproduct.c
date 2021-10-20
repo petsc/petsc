@@ -438,8 +438,9 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   if (fA == fB && fA == fC && fA) {
     ierr = PetscInfo(mat,"  matching op\n");CHKERRQ(ierr);
     ierr = (*fA)(mat);CHKERRQ(ierr);
-  } else {
-    /* query MatProductSetFromOptions_Atype_Btype_Ctype */
+  }
+  /* We may have found f but it did not succeed */
+  if (!mat->ops->productsymbolic) { /* query MatProductSetFromOptions_Atype_Btype_Ctype */
     char  mtypes[256];
     ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_",sizeof(mtypes));CHKERRQ(ierr);
     ierr = PetscStrlcat(mtypes,((PetscObject)A)->type_name,sizeof(mtypes));CHKERRQ(ierr);
@@ -496,7 +497,7 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     } else if (product->type != MATPRODUCT_ABt) { /* use MatProductSymbolic/Numeric_Unsafe() for triple products only */
       /*
          TODO: this should be changed to a proper setfromoptions, not setting the symbolic pointer here, because we do not know if
-               the compination will succeed. In order to be sure, we need MatProductGetProductType to return the type of the result
+               the combination will succeed. In order to be sure, we need MatProductGetProductType to return the type of the result
                before computing the symbolic phase
       */
       ierr = PetscInfo(mat,"  symbolic product not supported, using MatProductSymbolic_Unsafe() implementation\n");CHKERRQ(ierr);
@@ -690,6 +691,7 @@ PetscErrorCode MatProductNumeric(Mat mat)
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[mat->product->type]);
   }
+
   if (mat->ops->productnumeric) {
     ierr = PetscLogEventBegin(eventtype,mat,0,0,0);CHKERRQ(ierr);
     ierr = (*mat->ops->productnumeric)(mat);CHKERRQ(ierr);
