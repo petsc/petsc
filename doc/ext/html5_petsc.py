@@ -27,7 +27,7 @@ def setup(app: Sphinx) -> None:
 
 
 def _check_version(app: Sphinx) -> None:
-    sphinx_version_info_source = (3, 5, 4, 'final', 0)
+    sphinx_version_info_source = (4, 2, 0, 'final', 0)
     app.require_sphinx('%s.%s' % (sphinx_version_info_source[0], sphinx_version_info_source[1]))
     if sphinx_version_info[:2] != sphinx_version_info_source[:2]:
         print('Warning: A custom extension duplicates code from Sphinx %s ' % (sphinx_version_info_source,),
