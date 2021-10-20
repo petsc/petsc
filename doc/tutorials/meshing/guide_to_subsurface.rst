@@ -9,7 +9,7 @@ Reading the ASCII Output
 
 For example, a very simple mesh would start with a square surface mesh divided into two triangles, which is then extruded to form two triangular prisms. This is the first test in the DMPlex tutorial code ex10,
 
-::
+.. code-block:: console
 
   $ make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_0"
 
@@ -29,7 +29,7 @@ Regular Refinement
 
 We can regularly refine the surface before extrusion using `-dm_refine <k>`, where `k` is the number of refinements,
 
-::
+.. code-block:: console
 
   $ make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_1" EXTRA_OPTIONS="-srf_dm_refine 2 -srf_dm_view draw -draw_save $PETSC_DIR/surface.png -draw_save_single_file"
 
@@ -103,7 +103,7 @@ We can look at a parallel run using extra options for the test system
 
 By turning on `PetscInfo`, we can see what decisions the refiner is making
 
-::
+.. code-block:: console
 
   $ make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_3" EXTRA_OPTIONS="-info :dm"
   #       > [0] AdaptMesh(): Adapted mesh, marking 12 cells for refinement, and 0 cells for coarsening
