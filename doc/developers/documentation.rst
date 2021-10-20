@@ -35,14 +35,14 @@ Building the HTML docs locally
 
 We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__.
 
-  .. code-block:: console
+.. code-block:: console
 
-     > cd $PETSC_DIR
-     > python3 -m venv petsc-doc-env
-     > . petsc-doc-env/bin/activate
-     > pip install -r doc/requirements.txt
-     > cd doc
-     > make html  # may take several minutes
+   > cd $PETSC_DIR
+   > python3 -m venv petsc-doc-env
+   > . petsc-doc-env/bin/activate
+   > pip install -r doc/requirements.txt
+   > cd doc
+   > make html  # may take several minutes
 
 Then open ``_build/html/index.html`` with your browser.
 
@@ -57,11 +57,16 @@ Notes:
 Sphinx Documentation Guidelines
 -------------------------------
 
-* Use the ``.. code-block::`` `directive
-  <https://www.sphinx-doc.org/en/1.5/markup/code.html>`__ instead of the ``.. code::``
-  `directive <https://docutils.sourceforge.io/docs/ref/rst/directives.html#code>`__ for
-  any example code that is not included literally using ``.. literalinclude::``. See
-  :ref:`below <doc_devdoc_guide_litinc>` for more details on ``.. literalinclude``.
+* Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code. Use an "absolute" path, beginning with ``/``, which means relative to the root for the Sphinx docs (where ``conf.py`` is found).
+
+  .. code-block:: rst
+
+      .. literalinclude:: /../src/sys/error/err.c
+         :start-at: PetscErrorCode PetscError(
+         :end-at: PetscFunctionReturn(0)
+         :append: }
+
+  For robustness to changes in the source files, Use ``:start-at:`` and related options when possible, noting that you can also use (positive) values of ``:lines:`` relative to this. For languages other than C, use the ``:language:`` option to appropriately highlight.
 
 * Any invocable command line statements longer than a few words should be in
   ``.. code-block::`` sections. Any such statements not in code-block statements must be
@@ -95,15 +100,6 @@ Sphinx Documentation Guidelines
         output1
         output2
 
-  which renders as
-
-  ::
-
-     output1
-     output2
-
-  Notice that now "output1" and "output2" are not greyed out as previously.
-
 * Any code blocks that show command line invocations must be preceded by the ">"
   character. E.g.
 
@@ -117,25 +113,14 @@ Sphinx Documentation Guidelines
         > ./ex1 --some-args
 
 
-* All environment variables such as ``$PETSC_DIR`` or ``$PATH`` must be preceded by the
-  "$" character and be enclosed in double backticks "``". E.g.
+* Environment variables such as ``$PETSC_DIR`` or ``$PATH`` must be preceded by
+  ``$`` and be enclosed in double backticks, e.g.
 
   .. code-block:: rst
 
-     Lorem ipsum dolor sit ``$PETSC_DIR``, consectetur adipiscing ``$PETSC_ARCH``...
+     Set ``$PETSC_DIR`` and ``$PETSC_ARCH``
 
-* When referring to configuration of PETSc, specifically the ``$PETSC_DIR/configure``
-  script in plain text (not code blocks), it should always be lower-case, enclosed in
-  double backticks "``" and not include "./". E.g.
-
-  .. code-block:: rst
-
-     Lorem ipsum dolor sit ``configure``, consectetur adipiscing elit...
-
-* If using internal section links to to jump to other places within the documentation, use
-  explicit labels and namespace them appropriately. Do not use `autosectionlabel
-  <https://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html>`__
-  extension, and do not use implicit links. E.g.
+* For internal links, use explicit labels and namespace them, e.g
 
   .. code-block:: rst
 
@@ -150,32 +135,11 @@ Sphinx Documentation Guidelines
      Internal Headline
      =================
 
-  And in some other file
+  and in some other file
 
   .. code-block:: rst
-
-     .. _tut_mytutorial:
-
-     ======================
-     Start Tutorial Heading
-     ======================
 
      A link- :ref:`my link name <doc_mydoc_internalheadline>`
-
-.. _doc_devdoc_guide_litinc:
-
-* Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code, as in
-  the following example. Note that an "absolute" path has been used, which means
-  relative to the root for the Sphinx docs (where ``conf.py`` is found).
-
-  .. code-block:: rst
-
-      .. literalinclude:: /../src/sys/error/err.c
-         :start-at: PetscErrorCode PetscError(
-         :end-at: PetscFunctionReturn(0)
-         :append: }
-
-  For robustness to changes in the source files, Use ``:start-at:`` and related options when possible, noting that you can also use (positive) values of ``:lines:`` relative to this. For languages other than C, use the ``:language:`` option to appropriately highlight.
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
@@ -191,6 +155,12 @@ Sphinx Documentation Guidelines
   .. code-block:: rst
 
       `link text <https://external.org>`__
+
+* To pluralize something with inline markup, e.g. ``DM``\s, escape the trailing character to avoid ``WARNING: Inline literal start-string without end-string``.
+
+  .. code-block:: rst
+
+      ``DM``\s
 
 * Use restraint in adding new Sphinx extensions, in particular those which aren't
   widely-used and well-supported, or those with hidden system dependencies.

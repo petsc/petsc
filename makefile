@@ -339,13 +339,11 @@ allfortranstubs:
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 
-alldoc: sphinx-docs-all
-
 # Build just citations
 allcite: chk_loc deletemanualpages
 	-${OMAKE_SELF} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
-	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
+	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 
 # Build just manual pages + prerequisites
 allmanpages: chk_loc allcite
@@ -373,52 +371,7 @@ alldoc2: chk_loc allcite
 
 alldoc12: alldoc1 alldoc2
 
-# Use Sphinx to build some documentation.  This uses Python's venv, which should
-# behave similarly to what happens on e.g. ReadTheDocs. You may prefer to use
-# your own Python environment and directly build the Sphinx docs by using
-# the makefile in ${PETSC_SPHINX_ROOT}, paying attention to the requirements.txt
-# there.
-PETSC_SPHINX_ROOT=doc
-PETSC_SPHINX_ENV=${PETSC_ARCH}/sphinx_docs_env
-PETSC_SPHINX_DEST=docs/sphinx_docs
-
-sphinx-docs-all: sphinx-docs-manual sphinx-docs-html
-
-sphinx-docs-fast: chk_loc sphinx-docs-env
-	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
-		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} html
-
-sphinx-docs-html: chk_loc allcite sphinx-docs-env
-	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT} \
-		BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} html
-
-sphinx-docs-manual: chk_loc sphinx-docs-env
-	@. ${PETSC_SPHINX_ENV}/bin/activate && ${OMAKE} -C ${PETSC_SPHINX_ROOT}  BUILDDIR=${LOC}/${PETSC_SPHINX_DEST} latexpdf
-	@mv ${LOC}/${PETSC_SPHINX_DEST}/latex/manual.pdf ${LOC}/docs/manual.pdf
-	@${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}/latex
-
-sphinx-docs-env: sphinx-docs-check-python sphinx-docs-check-rsvg-convert
-	@if [ ! -d  "${PETSC_SPHINX_ENV}" ]; then \
-        ${PYTHON} -m venv ${PETSC_SPHINX_ENV}; \
-        . ${PETSC_SPHINX_ENV}/bin/activate; \
-        pip install -r ${PETSC_SPHINX_ROOT}/requirements.txt; \
-      fi
-
-sphinx-docs-check-rsvg-convert:
-	@if ! command -v rsvg-convert 2>&1 > /dev/null; then \
-		    printf "rsvg-convert is required for the sphinxcontrib-svg2pdfconverter extension for the Sphinx docs\n"; \
-			  false; \
-	    fi
-
-sphinx-docs-check-python:
-	@${PYTHON} -c 'import sys; sys.exit(sys.version_info[:2] < (3,3))' || \
-    (printf 'Working Python 3.3 or later is required to build the Sphinx docs in a virtual environment\nTry e.g.\n  make ... PYTHON=python3\n' && false)
-
-sphinx-docs-clean: chk_loc
-	${RM} -rf ${PETSC_SPHINX_ENV}
-	${RM} -rf ${LOC}/${PETSC_SPHINX_DEST}
-
-alldocclean: deletemanualpages allcleanhtml sphinx-docs-clean
+alldocclean: deletemanualpages allcleanhtml
 
 # Deletes man pages (HTML version)
 deletemanualpages: chk_loc

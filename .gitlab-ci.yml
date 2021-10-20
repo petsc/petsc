@@ -987,7 +987,6 @@ analyze-pipeline:
       . $VENV/bin/activate &&
       cd doc &&
       pip install -r requirements.txt
-  allow_failure: true
 
 #
 # Build documentation and make available for review using GitLab pages
@@ -997,8 +996,9 @@ docs-review:
     - .docs
     - .test-basic
   script:
-    - make html BUILDDIR="../public" SPHINXOPTS="-T -E"
-    - make latexpdf && mkdir -p ../public/docs/manual && cp _build/latex/manual.pdf ../public/html/docs/manual/
+    - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (make latexpdf SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - cp _build/latex/manual.pdf ../public/html/docs/manual/
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/public/html/index.html
