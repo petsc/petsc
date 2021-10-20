@@ -12,13 +12,13 @@ Below is the guide to running TAS using ex13, which is a Poisson Problem in 2D a
 
       .. code-block::
 
-         make ex13
+         $ make ex13
 
 2. Run ex13 with the following command:
 
    .. code-block::
 
-      mpiexec -n 2 ./ex13 -log_view :/home/<user name>/PETSC_DIR/lib/petsc/bin/ex_13_test.py:ascii_info_detail \
+      $ mpiexec -n 2 ./ex13 -log_view :/home/<user name>/PETSC_DIR/lib/petsc/bin/ex_13_test.py:ascii_info_detail \
         -dm_distribute \
         -dm_plex_box_faces 8,8 \
         -potential_petscspace_degree 1 \
@@ -31,7 +31,7 @@ Below is the guide to running TAS using ex13, which is a Poisson Problem in 2D a
 
    .. code-block::
 
-      ./petsc_tas_analysis.py -f ex_13_test
+      $ ./petsc_tas_analysis.py -f ex_13_test
 
 5. You should see something similar to the following in your terminal window:
 

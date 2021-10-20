@@ -11,7 +11,7 @@ For example, a very simple mesh would start with a square surface mesh divided i
 
 ::
 
-  make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_0"
+  $ make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_0"
 
 which outputs
 
@@ -31,7 +31,7 @@ We can regularly refine the surface before extrusion using `-dm_refine <k>`, whe
 
 ::
 
-  make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_1" EXTRA_OPTIONS="-srf_dm_refine 2 -srf_dm_view draw -draw_save $PETSC_DIR/surface.png -draw_save_single_file"
+  $ make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_1" EXTRA_OPTIONS="-srf_dm_refine 2 -srf_dm_view draw -draw_save $PETSC_DIR/surface.png -draw_save_single_file"
 
 which produces the following surface
 
@@ -105,7 +105,7 @@ By turning on `PetscInfo`, we can see what decisions the refiner is making
 
 ::
 
-  make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_3" EXTRA_OPTIONS="-info :dm"
+  $ make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_3" EXTRA_OPTIONS="-info :dm"
   #       > [0] AdaptMesh(): Adapted mesh, marking 12 cells for refinement, and 0 cells for coarsening
   #       > [0] AdaptMesh(): Adapted mesh, marking 29 cells for refinement, and 0 cells for coarsening
   #       > [0] AdaptMesh(): Adapted mesh, marking 84 cells for refinement, and 0 cells for coarsening
