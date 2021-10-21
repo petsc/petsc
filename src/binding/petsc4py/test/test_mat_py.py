@@ -422,7 +422,6 @@ class TestDiagonal(TestMatrix):
         D.assemble()
         self.A.setDiagonal(D)
 
-
     def testZeroEntries(self):
         self.A.zeroEntries()
         D = self._getCtx().D
@@ -493,6 +492,11 @@ class TestDiagonal(TestMatrix):
         self.assertTrue(xt.equal(y))
         del A
 
+    def testConvert(self):
+        self.assertTrue(self.A.convert(PETSc.Mat.Type.AIJ,PETSc.Mat()).equal(self.A))
+        self.assertTrue(self.A.convert(PETSc.Mat.Type.BAIJ,PETSc.Mat()).equal(self.A))
+        self.assertTrue(self.A.convert(PETSc.Mat.Type.SBAIJ,PETSc.Mat()).equal(self.A))
+        self.assertTrue(self.A.convert(PETSc.Mat.Type.DENSE,PETSc.Mat()).equal(self.A))
 
 # --------------------------------------------------------------------
 

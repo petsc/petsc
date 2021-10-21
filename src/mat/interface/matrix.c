@@ -5391,7 +5391,7 @@ PetscErrorCode MatPermute(Mat mat,IS row,IS col,Mat *B)
    Level: intermediate
 
 @*/
-PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
+PetscErrorCode MatEqual(Mat A,Mat B,PetscBool *flg)
 {
   PetscErrorCode ierr;
 
@@ -5402,16 +5402,16 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
   PetscValidType(B,2);
   PetscValidBoolPointer(flg,3);
   PetscCheckSameComm(A,1,B,2);
+  MatCheckPreallocated(A,1);
   MatCheckPreallocated(B,2);
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->rmap->N != B->rmap->N || A->cmap->N != B->cmap->N) SETERRQ4(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %D %D %D %D",A->rmap->N,B->rmap->N,A->cmap->N,B->cmap->N);
-  if (!A->ops->equal) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type %s",((PetscObject)A)->type_name);
-  if (!B->ops->equal) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type %s",((PetscObject)B)->type_name);
-  if (A->ops->equal != B->ops->equal) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"A is type: %s\nB is type: %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
-  MatCheckPreallocated(A,1);
-
-  ierr = (*A->ops->equal)(A,B,flg);CHKERRQ(ierr);
+  if (A->ops->equal && A->ops->equal == B->ops->equal) {
+    ierr = (*A->ops->equal)(A,B,flg);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultEqual(A,B,10,flg);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
