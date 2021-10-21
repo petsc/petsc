@@ -312,7 +312,6 @@ class TestMatrix(unittest.TestCase):
         f = lambda : self.A.diagonalScale(x, y)
         self.assertRaises(Exception, f)
 
-
 class TestIdentity(TestMatrix):
 
     PYCLS = 'Identity'

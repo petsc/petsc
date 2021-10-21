@@ -476,6 +476,8 @@ cdef extern from * nogil:
         MATPRODUCT_PtAP
         MATPRODUCT_RARt
         MATPRODUCT_ABC
+    ctypedef enum MatOperation:
+        pass
 
 cdef extern from * nogil:
     struct _MatOps:
@@ -514,9 +516,11 @@ cdef extern from * nogil:
         PetscErrorCode (*realpart)(PetscMat) except IERR
         PetscErrorCode (*imagpart"imaginarypart")(PetscMat) except IERR
         PetscErrorCode (*conjugate)(PetscMat) except IERR
+        PetscErrorCode (*getdiagonalblock)(PetscMat,PetscMat*) except IERR
         PetscErrorCode (*productsetfromoptions)(PetscMat) except IERR
         PetscErrorCode (*productsymbolic)(PetscMat) except IERR
         PetscErrorCode (*productnumeric)(PetscMat) except IERR
+        PetscErrorCode (*hasoperation)(PetscMat,MatOperation,PetscBool*) except IERR
     ctypedef _MatOps *MatOps
     ctypedef struct Mat_Product:
         void *data
@@ -530,13 +534,14 @@ cdef extern from * nogil:
 
 cdef extern from * nogil:
     PetscErrorCode MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
-    PetscErrorCode MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
-    PetscErrorCode MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
+    PetscErrorCode MatGetDiagonalBlock(PetscMat,PetscMat*)
     PetscErrorCode MatMult(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatMultTranspose(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
-    PetscErrorCode MatSolve(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
     PetscErrorCode MatSolveTranspose(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatSolveAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatSolveTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     PetscErrorCode MatProductGetType(PetscMat,PetscMatProductType*)
     PetscErrorCode MatProductGetMats(PetscMat,PetscMat*,PetscMat*,PetscMat*)
     PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt*)
@@ -571,6 +576,37 @@ cdef PetscErrorCode MatPythonSetType_PYTHON(PetscMat mat, char name[]) \
     MatPythonSetContext(mat, <void*>ctx)
     PyMat(mat).setname(name)
     return FunctionEnd()
+
+cdef dict dMatOps = {   3 : 'mult',
+                        4 : 'multAdd',
+                        5 : 'multTranspose',
+                        6 : 'multTransposeAdd',
+                        7 : 'solve',
+                        8 : 'solveAdd',
+                        9 : 'solveTranspose',
+                       10 : 'solveTransposeAdd',
+                       13 : 'SOR',
+                       17 : 'getDiagonal',
+                       18 : 'diagonalScale',
+                       19 : 'norm',
+                       23 : 'zeroEntries',
+                       32 : 'getDiagonalBlock',
+                       34 : 'duplicate',
+                       43 : 'copy',
+                       45 : 'scale',
+                       46 : 'shift',
+                       47 : 'setDiagonal',
+                       48 : 'zeroRowsColumns',
+                       59 : 'createSubMatrix',
+                       88 : 'getVecs',
+                      102 : 'conjugate',
+                      105 : 'realPart',
+                      106 : 'imagPart',
+                      113 : 'missingDiagonal',
+                      119 : 'multDiagonalBlock',
+                      121 : 'multHermitian',
+                      122 : 'multHermitianAdd',
+                    }
 
 cdef PetscErrorCode MatCreate_Python(
     PetscMat mat,
@@ -614,15 +650,15 @@ cdef PetscErrorCode MatCreate_Python(
     ops.realpart          = MatRealPart_Python
     ops.imagpart          = MatImagPart_Python
     ops.conjugate         = MatConjugate_Python
+    ops.hasoperation      = MatHasOperation_Python
+    ops.getdiagonalblock  = MatGetDiagonalBlock_Python
 
     ops.productsetfromoptions = MatProductSetFromOptions_Python
+
     #
     mat.assembled    = PETSC_TRUE  # XXX
     mat.preallocated = PETSC_FALSE # XXX
     #
-    CHKERR( PetscObjectComposeFunction(
-            <PetscObject>mat,b"MatGetDiagonalBlock_C",
-            <PetscVoidFunction>MatGetDiagonalBlock_Python) )
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat,b"MatPythonSetType_C",
             <PetscVoidFunction>MatPythonSetType_PYTHON) )
@@ -642,9 +678,6 @@ cdef PetscErrorCode MatDestroy_Python(
     ) \
     except IERR with gil:
     FunctionBegin(b"MatDestroy_Python")
-    CHKERR( PetscObjectComposeFunction(
-            <PetscObject>mat,b"MatGetDiagonalBlock_C",
-            <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat,b"MatPythonSetType_C",
             <PetscVoidFunction>NULL) )
@@ -730,9 +763,12 @@ cdef PetscErrorCode MatGetDiagonalBlock_Python(
     FunctionBegin(b"MatGetDiagonalBlock_Python")
     cdef getDiagonalBlock = PyMat(mat).getDiagonalBlock
     if getDiagonalBlock is None:
-        if getCommSize(mat) == 1:
-            out[0] = mat
-            return FunctionEnd()
+        try:
+            mat.ops.getdiagonalblock = NULL
+            CHKERR( MatGetDiagonalBlock(mat,out) )
+        finally:
+            mat.ops.getdiagonalblock = MatGetDiagonalBlock_Python
+        return FunctionEnd()
     if getDiagonalBlock is None: return UNSUPPORTED(b"getDiagonalBlock")
     cdef Mat sub = getDiagonalBlock(Mat_(mat))
     if sub is not None: out[0] = sub.mat
@@ -930,11 +966,12 @@ cdef PetscErrorCode MatMultTranspose_Python(
     cdef multTranspose = PyMat(mat).multTranspose
     cdef PetscBool symmset, symmknown
     if multTranspose is None:
-        symmset = symmknown = PETSC_FALSE
-        CHKERR( MatIsSymmetricKnown(mat,&symmset,&symmknown) )
-        if symmset and symmknown:
-            CHKERR( MatMult(mat,x,y) )
-            return FunctionEnd()
+        try:
+            mat.ops.multtranspose = NULL
+            CHKERR( MatMultTranspose(mat,x,y) )
+        finally:
+            mat.ops.multtranspose = MatMultTranspose_Python
+        return FunctionEnd()
     if multTranspose is None: return UNSUPPORTED(b"multTranspose")
     multTranspose(Mat_(mat), Vec_(x), Vec_(y))
     return FunctionEnd()
@@ -949,11 +986,12 @@ cdef PetscErrorCode MatMultHermitian_Python(
     cdef multHermitian = PyMat(mat).multHermitian
     cdef PetscBool hermset, hermknown
     if multHermitian is None:
-        hermset = hermknown = PETSC_FALSE
-        CHKERR( MatIsHermitianKnown(mat,&hermset,&hermknown) )
-        if hermset and hermknown:
-            CHKERR( MatMult(mat,x,y) )
-            return FunctionEnd()
+        try:
+            mat.ops.multhermitian = NULL
+            CHKERR( MatMultHermitian(mat,x,y) )
+        finally:
+            mat.ops.multhermitian = MatMultHermitian_Python
+        return FunctionEnd()
     if multHermitian is None: return UNSUPPORTED(b"multHermitian")
     multHermitian(Mat_(mat), Vec_(x), Vec_(y))
     return FunctionEnd()
@@ -968,7 +1006,6 @@ cdef PetscErrorCode MatMultAdd_Python(
     FunctionBegin(b"MatMultAdd_Python")
     cdef multAdd = PyMat(mat).multAdd
     cdef PetscVec t = NULL
-
     if multAdd is None:
         if v == y:
             CHKERR( VecDuplicate(y, &t) )
@@ -992,9 +1029,16 @@ cdef PetscErrorCode MatMultTransposeAdd_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultTransposeAdd_Python")
     cdef multTransposeAdd = PyMat(mat).multTransposeAdd
+    cdef PetscVec t = NULL
     if multTransposeAdd is None:
-        CHKERR( MatMultTranspose(mat,x,y) )
-        CHKERR( VecAXPY(y,1.0,v)          )
+        if v == y:
+            CHKERR( VecDuplicate(y, &t) )
+            CHKERR( MatMultTranspose(mat,x,t) )
+            CHKERR( VecAXPY(y,1.0,t) )
+            CHKERR( VecDestroy(&t) )
+        else:
+            CHKERR( MatMultTranspose(mat,x,y) )
+            CHKERR( VecAXPY(y,1.0,v) )
         return FunctionEnd()
     if multTransposeAdd is None: return UNSUPPORTED(b"multTransposeAdd")
     multTransposeAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
@@ -1010,8 +1054,11 @@ cdef PetscErrorCode MatMultHermitianAdd_Python(
     FunctionBegin(b"MatMultHermitianAdd_Python")
     cdef multHermitianAdd = PyMat(mat).multHermitianAdd
     if multHermitianAdd is None:
-        CHKERR( MatMultHermitian(mat,x,y) )
-        CHKERR( VecAXPY(y,1.0,v)          )
+        try:
+            mat.ops.multhermitianadd = NULL
+            CHKERR( MatMultHermitianAdd(mat,x,v,y) )
+        finally:
+            mat.ops.multhermitianadd = MatMultHermitianAdd_Python
         return FunctionEnd()
     if multHermitianAdd is None: return UNSUPPORTED(b"multHermitianAdd")
     multHermitianAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
@@ -1049,13 +1096,12 @@ cdef PetscErrorCode MatSolveTranspose_Python(
     except IERR with gil:
     FunctionBegin(b"MatSolveTranspose_Python")
     cdef solveTranspose = PyMat(mat).solveTranspose
-    cdef PetscBool symmset, symmknown
     if solveTranspose is None:
-        symmset = symmknown = PETSC_FALSE
-        CHKERR( MatIsSymmetricKnown(mat,&symmset,&symmknown) )
-        if symmset and symmknown:
-            CHKERR( MatSolve(mat,b,x) )
-            return FunctionEnd()
+        try:
+            mat.ops.solvetranspose = NULL
+            CHKERR( MatSolveTranspose(mat,b,x) )
+        finally:
+            mat.ops.solvetranspose = MatSolveTranspose_Python
     if solveTranspose is None: return UNSUPPORTED(b"solveTranspose")
     solveTranspose(Mat_(mat), Vec_(b), Vec_(x))
     return FunctionEnd()
@@ -1070,8 +1116,11 @@ cdef PetscErrorCode MatSolveAdd_Python(
     FunctionBegin(b"MatSolveAdd_Python")
     cdef solveAdd = PyMat(mat).solveAdd
     if solveAdd is None:
-        CHKERR( MatSolve(mat,b,x) )
-        CHKERR( VecAXPY(x,1.0,y)  )
+        try:
+            mat.ops.solveadd = NULL
+            CHKERR( MatSolveAdd(mat,b,y,x) )
+        finally:
+            mat.ops.solveadd = MatSolveAdd_Python
         return FunctionEnd()
     if solveAdd is None: return UNSUPPORTED(b"solveAdd")
     solveAdd(Mat_(mat), Vec_(b), Vec_(y), Vec_(x))
@@ -1087,8 +1136,11 @@ cdef PetscErrorCode MatSolveTransposeAdd_Python(
     FunctionBegin(b"MatSolveTransposeAdd_Python")
     cdef solveTransposeAdd = PyMat(mat).solveTransposeAdd
     if solveTransposeAdd is None:
-        CHKERR( MatSolveTranspose(mat,b,x) )
-        CHKERR( VecAXPY(x,1.0,y)           )
+        try:
+            mat.ops.solvetransposeadd = NULL
+            CHKERR( MatSolveTransposeAdd(mat,b,y,x) )
+        finally:
+            mat.ops.solvetransposeadd = MatSolveTransposeAdd_Python
         return FunctionEnd()
     if solveTransposeAdd is None: return UNSUPPORTED(b"solveTransposeAdd")
     solveTransposeAdd(Mat_(mat), Vec_(b), Vec_(y), Vec_(x))
@@ -1203,6 +1255,25 @@ cdef PetscErrorCode MatConjugate_Python(
     cdef conjugate = PyMat(mat).conjugate
     if conjugate is None: return UNSUPPORTED(b"conjugate")
     conjugate(Mat_(mat))
+    return FunctionEnd()
+
+cdef PetscErrorCode MatHasOperation_Python(
+    PetscMat mat,
+    MatOperation op,
+    PetscBool *flag
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatHasOperation_Python")
+    flag[0] = PETSC_FALSE
+    cdef int i  = <int> op
+    global dMatOps
+    name = dMatOps.get(i,None)
+    cdef void** ops = NULL
+    if name is None:
+        ops = <void**> mat.ops
+        if ops and ops[i]: flag[0] = PETSC_TRUE
+    else:
+        flag[0] = PETSC_TRUE if getattr(PyMat(mat),name) else PETSC_FALSE
     return FunctionEnd()
 
 cdef PetscErrorCode MatProductNumeric_Python(
