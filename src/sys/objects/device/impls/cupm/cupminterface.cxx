@@ -49,9 +49,10 @@ PETSC_CUPM_DEFINE_STATIC_VARIABLE_EXACT(ErrorDeviceAlreadyInUse,ErrorContextAlre
 #  endif
 #endif
 
-#if !defined(petscCudaErrStubLib)
-#  define PetscCudaErrorStubLibrary ErrorInsufficientDriver
+#ifndef PetscCudaErrorStubLibrary
+#define PetscCudaErrorStubLibrary ErrorInsufficientDriver
 #endif
+
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_EXACT(PetscCudaErrorStubLibrary,ErrorInsufficientDriver,ErrorStubLibrary);
 
 // enums
