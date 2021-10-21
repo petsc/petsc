@@ -133,7 +133,7 @@ def processDir(flist, dirpath, dirnames, filenames):
     if exname in dirnames:
       dirnames.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
-  for exname in ['src/python/PETSc','client/c++','client/c','client/python','src/docs/website/documentation/changes']:
+  for exname in ['src/python/PETSc','client/c++','client/c','client/python']:
     for name in dirnames:
       filename=os.path.join(dirpath,name)
       if filename.find(exname) >=0:
@@ -151,7 +151,7 @@ def processFiles(dirname,flist):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
-  lists=['petsc/conf/*','src/docs/website/documentation/changes/dev.html']
+  lists=['petsc/conf/*']
 
   for glist in lists:
     gfiles = glob.glob(glist)
