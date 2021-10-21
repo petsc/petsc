@@ -128,8 +128,10 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  define PETSC_CXX_DEFAULT(func_)
 #endif
 
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17)
-#  define PETSC_NODISCARD [[nodiscard]]
+/* C++17 features */
+/* We met cases that the host CXX compiler (say mpicxx) supports C++17, but nvcc does not agree, even with -ccbin mpicxx! */
+#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17) && (!defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_CUDA_DIALECT_CXX17))
+#  define PETSC_NODISCARD    [[nodiscard]]
 #else
 #  define PETSC_NODISCARD
 #endif
