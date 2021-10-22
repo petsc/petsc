@@ -367,7 +367,6 @@ alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
 # html overwrites some stuff - hence this is done later.
 alldoc2: chk_loc allcite
 	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
-	-${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 
 alldoc12: alldoc1 alldoc2
 
@@ -379,7 +378,6 @@ deletemanualpages: chk_loc
           find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \; ;\
           ${RM} ${LOC}/docs/exampleconcepts ;\
           ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
-          ${PYTHON} lib/petsc/bin/maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
         fi
 
 allcleanhtml:
