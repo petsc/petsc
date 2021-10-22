@@ -45,16 +45,18 @@ $ PETSC_OFFLOAD_UNALLOCATED - no memory contains valid matrix entries; NEVER use
 $ PETSC_OFFLOAD_GPU         - GPU has valid vector/matrix entries
 $ PETSC_OFFLOAD_CPU         - CPU has valid vector/matrix entries
 $ PETSC_OFFLOAD_BOTH        - Both GPU and CPU have valid vector/matrix entries and they match
-$ PETSC_OFFLOAD_VECKOKKOS   - Reserved for Vec_Kokkos. The offload is managed by Kokkos, thus this flag is not used in Vec_Kokkos.
+$ PETSC_OFFLOAD_KOKKOS      - Reserved for Kokkos matrix and vector. It means the offload is managed by Kokkos, thus this flag itself cannot tell you where the valid data is.
 
   Level: developer
 E*/
+#define PETSC_OFFLOAD_VECKOKKOS_DPRECATED PETSC_OFFLOAD_VECKOKKOS PETSC_DEPRECATED_ENUM("Use PETSC_OFFLOAD_KOKKOS (since version 3.17.0)")
 typedef enum {
   PETSC_OFFLOAD_UNALLOCATED = 0x0,
   PETSC_OFFLOAD_CPU         = 0x1,
   PETSC_OFFLOAD_GPU         = 0x2,
   PETSC_OFFLOAD_BOTH        = 0x3,
-  PETSC_OFFLOAD_VECKOKKOS   = 0x100
+  PETSC_OFFLOAD_VECKOKKOS_DPRECATED = 0x100,
+  PETSC_OFFLOAD_KOKKOS      = 0x100
 } PetscOffloadMask;
 
 /*E
