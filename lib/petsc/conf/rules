@@ -220,7 +220,7 @@ getautoconfargs:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx
 
 #
 #
@@ -230,9 +230,6 @@ getautoconfargs:
 
 .make.tex:
 	${LGRIND} -lmake -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
-
-.tex.mtex:
-	PYTHONPATH=${PETSC_DIR}/lib/petsc/bin/maint;export PYTHONPATH;cat $< | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/mapnameslatex.py > $*.mtex
 
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
