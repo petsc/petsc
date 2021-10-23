@@ -1289,7 +1289,7 @@ year = 2003,
   author        = {Albert Moll\'en and Mark F. Adams and Matthew G. Knepley and Robert Hager and C. S. Chang},
   journal       = {Journal of Plasma Physics},
   eprint        = {2012.11764},
-  note          = {accepted},
+  doi           = {10.1017/S0022377821000441},
   year          = {2021},
   petsc_uses={KSP},
 }
@@ -11035,7 +11035,7 @@ KEY       = "Latex Manual"
   volume =	 11,
   pages =	 "450-481"
 }
-a
+
 @book{using-mpi,
   author = 	 "William Gropp and Ewing Lusk and Anthony Skjellum",
   title = 	 "Using MPI: Portable Parallel Programming with the Message
@@ -11898,7 +11898,14 @@ Booktitle = "Supercomputing '95 Proceedings",
   MONTH = "November",
   ADDRESS = "Baltimore"
 }
-
+@article{BeckerBraackRannacher1999,
+  title   = {Numerical simulation of laminar flames at low Mach number by adaptive finite elements},
+  author  = {Roland Becker and Malte Braack and Rolf Rannacher},
+  journal = {Combustion Theory and Modelling},
+  volume  = {3},
+  pages   = {503--534},
+  year    = {1999}
+}
 @article{BeckerRannacher01,
   author  = "R. Becker and R. Rannacher",
   title   = "An optimal control approach to a posteriori error estimation in finite element methods",
@@ -14822,7 +14829,7 @@ year = {1993}
   number  = {6},
   pages   = {145--210},
   year    = {1890},
-  url     = {http://math-doc.ujf-grenoble.fr/JMPA/PDF/JMPA_1890_4_6_A3_0.pdf}}
+  url     = {http://math-doc.ujf-grenoble.fr/JMPA/PDF/JMPA_1890_4_6_A3_0.pdf}
 }
 
 @book{Rall1969,
@@ -15010,7 +15017,7 @@ summarize challenges and forecast opportunities.}
   year={2007},
   publisher={Springer}
 }
-@article{BrannickFalgout2007,
+@article{BrannickFalgout2010,
   title   = {{Compatible Relaxation and Coarsening in Algebraic Multigrid}},
   author  = {James J. Brannick and Robert D. Falgout},
   journal = {SIAM Journal on Scientific Computing},
@@ -20239,8 +20246,6 @@ year    = {2009}
   year =         "1983",
 }
 
-}
-
 @TechReport{more:92,
   author =       "Jorge J. Mor\'{e} and David Thuente",
   title =        "Line search algorithms with guaranteed sufficient
@@ -20722,9 +20727,9 @@ year    = {2009}
 @Article{czyzyk.mesnier.ea:neos,
   author =       "J. Czyzyk and M. P. Mesnier and J. J. Mor\'e",
   title =        "The {NEOS} Server",
-  journal =  "IEEE Journal on Computational Science and Engineering", 
+  journal =  "IEEE Journal on Computational Science and Engineering",
   volume = 5,
-  year =  "1998", 
+  year =  "1998",
   pages = "68--75"
 }
 
@@ -21056,31 +21061,21 @@ year    = {2009}
 }
 
 @Article{anderson.ferris:direct,
-  author =       "E. J. Anderson and M. C. Ferris",
-  title =        "A Direct Search Algorithm for Optimization with Noisy
-                 Function Evaluations",
-  year = 2001,
+  author  = "E. J. Anderson and M. C. Ferris",
+  title   = "A Direct Search Algorithm for Optimization with Noisy Function Evaluations",
+  year    = 2001,
   journal = "SIAM Journal on Optimization, forthcoming",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/96-11.ps",
-  key =          "55",
+  URL     = "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/96-11.ps",
+  key     = "55",
 }
-  institution =  uwcs,
-  address =      madison,
-  year =         "1996",
-  type =         mptr,
-  number =       "96--11",
 
 @InProceedings{anderson.ferris:genetic,
   author =       "E. J. Anderson and M. C. Ferris",
-  title =        "A Genetic Algorithm for the Assembly Line Balancing
-                 Problem",
-  booktitle =    "Proceedings of the Integer Programming / Combinatorial
-                 Optimization Conference, Waterloo, Ontario, Canada, May
-                 28--30",
-  year =         "1990",
+  title =        "A Genetic Algorithm for the Assembly Line Balancing Problem",
+  booktitle =    "Proceedings of the Integer Programming / Combinatorial Optimization Conference, Waterloo, Ontario, Canada, May 28--30",
   publisher =    "University of Waterloo Press",
   key =          "14",
+  year =         "1990"
 }
 
 @Article{anderson.ferris:genetic*1,
@@ -21935,23 +21930,17 @@ year    = {2009}
   volume =       "24",
   pages =        "219--236",
   year =         "1999",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/94-15.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/94-15.ps",
   key =          "42",
-}
-
-institution =  uwcs,
-  year =         "1994",
+  institution =  uwcs,
   address =      madison,
   type =         mptr,
   number =       "94--15",
+}
 
 @TechReport{billups.murata.ea:users,
-  author =       "S. C. Billups and K. K. Murata and K. E. Washington
-                 and D. L. Y. Louie",
-  title =        "User's manual for {CONTAIN--HWR/0}, Rev. 1: {A}
-                 Computer Code for the Analysis of Heavy Water Nuclear
-                 Reactor Containments Under Accident Conditions",
+  author =       "S. C. Billups and K. K. Murata and K. E. Washington and D. L. Y. Louie",
+  title =        "User's manual for {CONTAIN--HWR/0}, Rev. 1: {A} Computer Code for the Analysis of Heavy Water Nuclear Reactor Containments Under Accident Conditions",
   institution =  "SNL",
   year =         "1994",
   month =        jan,
@@ -21989,8 +21978,7 @@ institution =  uwcs,
 
 @TechReport{billups:homotopy,
   author =       "S. C. Billups",
-  title =        "A Homotopy Based Algorithm for 
-                  Mixed Complementarity Problems",
+  title =        "A Homotopy Based Algorithm for Mixed Complementarity Problems",
   institution =  "Department of Mathematics, University of Colorado",
   year =         "1998",
   address =      "Denver, Colorado",
@@ -21998,8 +21986,7 @@ institution =  uwcs,
 
 @Article{billups:improving,
   author =       "S. C. Billups",
-  title =        "Improving the Robustness of Descent-Based Methods for 
-Semi-Smooth Equations Using Proximal Perturbations",
+  title =        "Improving the Robustness of Descent-Based Methods for Semi-Smooth Equations Using Proximal Perturbations",
   year =         "2000",
   journal = mathprog,
   volume = 87,
@@ -22304,8 +22291,7 @@ Semi-Smooth Equations Using Proximal Perturbations",
 
 @Article{bradley.mangasarian:massive,
 	author = "P. S. Bradley and O. L. Mangasarian",
-	title =  "Massive Data Discrimination via Linear Support 
-	Vector Machines",
+	title =  "Massive Data Discrimination via Linear Support Vector Machines",
 	year =         2000,
 	journal =       {Optimization Methods and Software},
 	volume = 13,
@@ -22532,7 +22518,7 @@ Semi-Smooth Equations Using Proximal Perturbations",
 	title = "A Tutorial on Support Vector Machines for Pattern Recognition",
 	journal = "Data Mining and Knowledge Discovery",
 	volume = 2,
-	number = 2, 
+	number = 2,
 	pages = {121-167},
 	year = 1998
 }
@@ -22588,7 +22574,7 @@ Semi-Smooth Equations Using Proximal Perturbations",
   year =         "1993",
   volume =       "31",
   pages =        "1340--1359",
-  URL =          "ftp: 
+  URL =          "ftp:
                  //ftp.cs.wisc.edu/tech-reports/reports/1991/tr1050a.ps",
   key =          "23",
 }
@@ -23087,19 +23073,16 @@ year  = 1999,
 
 @Article{chen.ferris.ea:fatcop,
   author =       "Q. Chen and M. C. Ferris and J. T. Linderoth",
-  title =        "{FATCOP} 2.0: Advanced Features in an Opportunistic
-                 Mixed Integer Programming Solver",
+  title =        "{FATCOP} 2.0: Advanced Features in an Opportunistic Mixed Integer Programming Solver",
   journal = "Annals of Operations Research, forthcoming",
   year = "2000",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/pub/dmi/tech-reports/99-11.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/pub/dmi/tech-reports/99-11.ps",
   key =          "89",
-}
   type =         dmitr,
   institution =  uwcs,
   address =      madison,
-  year =         "1999",
   number =       "99-11",
+}
 
 @TechReport{chen.ferris:fatcop,
   author =       "Q. Chen and M. C. Ferris",
@@ -23677,7 +23660,7 @@ year  = 1999,
       title = "An Introduction to Support Vector Machines",
       publisher = "Cambridge University Press",
       address = {Cambridge},
-      year = 2000 
+      year = 2000
 }
 
 @Article{cromme:strong,
@@ -23937,42 +23920,32 @@ year  = 1999,
 
 @Article{debremaecker.ferris.ea:compressional,
   author =       "J.--C. {De~Bremaecker} and M. C. Ferris and D. Ralph",
-  title =        "Compressional Fractures considered as Contact Problems
-                 and Mixed Complementarity Problems",
+  title =        "Compressional Fractures considered as Contact Problems and Mixed Complementarity Problems",
   year =         "2000",
   key =          "82",
   journal =       "Engineering Fracture Mechanics",
   volume = 66,
-  pages = "287--303"
+  pages = "287--303",
 }
-  type =         mptr,
-  institution =  uwcs,
-  address =      madison,
 
 @Article{debremaecker.ferris:comparison,
   author =       "J.--C. {De~Bremaecker} and M. C. Ferris",
-  title =        "A Comparison of Two Algorithms for Solving Closed
-                  Crack Problems",
+  title =        "A Comparison of Two Algorithms for Solving Closed Crack Problems",
   year =         "2000",
   key =          "90",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/00-01.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/00-01.ps",
   journal =       "Engineering Fracture Mechanics",
   volume = 66,
-  pages = "601--605"
-}
-  type =         mptr,
+  pages = "601--605",
   institution =  uwcs,
   address =      madison,
   number =       "00-01",
+}
 
 @Article{dedonato.maier:mathematical,
   author =       "O. {De~Donato} and G. Maier",
-  title =        "Mathematical programming methods for the inelastic
-                 analysis of reinforced concrete frames allowing for
-                 limited rotation capacity",
-  journal =      "International Journal for Numerical Methods in
-                 Engineering",
+  title =        "Mathematical programming methods for the inelastic analysis of reinforced concrete frames allowing for limited rotation capacity",
+  journal =      "International Journal for Numerical Methods in Engineering",
   volume =       "4",
   year =         "1972",
   pages =        "307--329",
@@ -24437,26 +24410,17 @@ year  = 1999,
 }
 
 @Article{dsouza.meyer.ea:iterative,
-  author =       "W. D. D'Souza and R. R. Meyer and B.
-                 R. Thomadsen and M. C. Ferris",
-  title =        "An Iterative Sequential Mixed-Integer Approach to
-                 Automated Prostate Brachytherapy Treatment Optimization",
+  author =       "W. D. D'Souza and R. R. Meyer and B. R. Thomadsen and M. C. Ferris",
+  title =        "An Iterative Sequential Mixed-Integer Approach to Automated Prostate Brachytherapy Treatment Optimization",
   year =         "2000",
   key =          "96",
   journal =       "Physics and Medicine in Biology, forthcoming",
 }
-  institution =  uwcs,
-  address =      madison,
-  type =         mptr,
 
 @Article{du.yu.ea:multileaf,
-  author =       "M. N. Du and C. X. Yu and M. Symons and D. Yan and R.
-                 Taylor and R. C. Matter and G. Gustafson and A.
-                 Martinez and J. W. Wong",
-  title =        "A multileaf collimator field prescription preparation
-                 system for conventional radiotherapy",
-  journal =      "International Journal of Radiation Oncology, Biology
-                 and Physics",
+  author =       "M. N. Du and C. X. Yu and M. Symons and D. Yan and R. Taylor and R. C. Matter and G. Gustafson and A. Martinez and J. W. Wong",
+  title =        "A multileaf collimator field prescription preparation system for conventional radiotherapy",
+  journal =      "International Journal of Radiation Oncology, Biology and Physics",
   year =         "1994",
   volume =       "30",
   number =       "3",
@@ -24565,46 +24529,27 @@ year  = 1999,
 
 @InProceedings{eager.ferris.ea:optimized,
   author =       "D. L. Eager and M. C. Ferris and M. K. Vernon",
-  title =        "Optimized Regional Caching for On-Demand Data
-                 Delivery",
+  title =        "Optimized Regional Caching for On-Demand Data Delivery",
   year =         "1999",
-  booktitle =    "Multimedia Computing and Networking, Proceedings of
-                 {SPIE}",
+  booktitle =    "Multimedia Computing and Networking, Proceedings of {SPIE}",
   volume =       "3654",
   address =      "Bellingham, Washington",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-10.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-10.ps",
   key =          "69",
   pages =        "301--316",
   annote =       "18 percent acceptance rate",
 }
 
-institution =  uwcs,
-  address =      madison,
-  number =       "1385",
-  type =        "Technical Report",
-
-
 @Article{eager.ferris.ea:optimized*1,
   author = 	 {D. L. Eager and M. C. Ferris and M. K. Vernon},
-  title = 	 {Optimized Caching in Systems with Heterogeneous
-                 Client Populations},
+  title = 	 {Optimized Caching in Systems with Heterogeneous Client Populations},
   journal = 	 {Performance Evaluation},
   year = 	 {2000},
   key = 	 {72},
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-15.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-15.ps",
   volume = 	 {42},
   pages = 	 {163--185},
 }
-
-  title =        "Optimized Regional Caching in Heterogeneous
-                 Video-On-Demand Systems",
-  institution =  uwcs,
-  year =         "1999",
-  type =         "Technical Report",
-  number =       "1401",
-  address =      madison,
 
 @InProceedings{eager.vernon:dynamic,
   author =       "D. L. Eager and M. K. Vernon",
@@ -24793,14 +24738,6 @@ institution =  uwcs,
   volume =       "86",
   pages =        "65--90",
 }
-
-institution =  uwcs,
-  address =      madison,
-  type =         mptr,
-  number =       "97--01",
-  note =         "Also available as: Research Report 27-96, Rutgers
-                 Center for Operations Research, Rutgers University, New
-                 Brunswick, NJ",
 
 @InProceedings{eckstein.hart.ea:resource,
   author =       "J. Eckstein and W. E. Hart and C. A. Phillips",
@@ -25098,8 +25035,7 @@ institution =  uwcs,
 @InProceedings{fahlman.lebiere:cascade-correlation,
   author =       "S. E. Fahlman and C. Lebiere",
   title =        "The cascade-correlation learning architecture",
-  booktitle =    "Advances in Neural Information Processing Systems II
-                 {(Denver 1989)}",
+  booktitle =    "Advances in Neural Information Processing Systems II {(Denver 1989)}",
   year =         "1990",
   editor =       "D. S. Touretzky",
   publisher =    "Morgan Kaufmann",
@@ -25110,8 +25046,7 @@ institution =  uwcs,
 @InProceedings{fang.geiser.ea:software,
   author =       "G. Fang and B. Geiser and T. R. Mackie",
   title =        "Software system for {UW}/{GE} tomotherapy prototype",
-  booktitle =    "Proceedings of the XII International Conference on the
-                 Use of Computers in Radiation Therapy, Salt Lake City",
+  booktitle =    "Proceedings of the XII International Conference on the Use of Computers in Radiation Therapy, Salt Lake City",
   year =         "1997",
   editor =       "D. D. Leavitt and G. Starkshall",
   publisher =    "Medical Physics Publishing",
@@ -25129,8 +25064,7 @@ institution =  uwcs,
 
 @Article{fayard.plateau:algorithm,
   author =       "D. Fayard and G. Plateau",
-  title =        "An Algorithm for the Solution of the 0--1 Knapsack
-                 Problem",
+  title =        "An Algorithm for the Solution of the 0--1 Knapsack Problem",
   journal =      "Computing",
   year =         "1982",
   volume =       "28",
@@ -25148,21 +25082,18 @@ institution =  uwcs,
 
 @Article{ferris.fourer.ea:expressing,
   author =       "M. C. Ferris and R. Fourer and D. M. Gay",
-  title =        "Expressing Complementarity Problems and Communicating
-                 them to Solvers",
+  title =        "Expressing Complementarity Problems and Communicating them to Solvers",
   journal =      siopt,
   volume =       "9",
   pages =        "991--1009",
   year =         "1999",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-02.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-02.ps",
   key =          "65",
-}
-
-institution =  uwcs,
+  institution =  uwcs,
   address =      madison,
   number =       "98-02",
   type =         mptr,
+}
 
 @TechReport{ferris.horn:NLP2MCP,
   author =       "M. C. Ferris and J. D. Horn",
@@ -25188,14 +25119,12 @@ institution =  uwcs,
 
 @Article{ferris.kanzow.ea:feasible,
   author =       "M. C. Ferris and C. Kanzow and T. S. Munson",
-  title =        "Feasible Descent Algorithms for Mixed Complementarity
-                 Problems",
+  title =        "Feasible Descent Algorithms for Mixed Complementarity Problems",
   year =         "1999",
   journal =      mathprog,
   volume =       "86",
   pages =        "475--497",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-04.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-04.ps",
   key =          "67",
 }
 
@@ -25207,14 +25136,12 @@ institution =  uwcs,
   publisher =    "Oxford University Press",
   year =         "2000",
   editor =       "P. M. Pardalos and M. G. C. Resende",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-17.ps",
-}
-
-institution =  uwcs,
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-17.ps",
+  institution =  uwcs,
   address =      madison,
   number =       "98-17",
   type =         mptr
+}
 
 @Article{ferris.lucidi.ea:nonmonotone,
   author =       "M. C. Ferris and S. Lucidi and M. Roma",
@@ -25270,8 +25197,7 @@ institution =  uwcs,
   year =         "1993",
   volume =       "47",
   pages =        "293--305",
-  URL =          "ftp: 
-                 //ftp.cs.wisc.edu/tech-reports/reports/1991/tr1056a.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/tech-reports/reports/1991/tr1056a.ps",
   key =          "24",
 }
 
@@ -25310,8 +25236,7 @@ institution =  uwcs,
   year =         "1991",
   volume =       "1",
   pages =        "487--500",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/tech-reports/reports/1990/tr971a.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/tech-reports/reports/1990/tr971a.ps",
   key =          "18",
 }
 
@@ -25322,8 +25247,7 @@ institution =  uwcs,
   year =         "1994",
   volume =       "4",
   pages =        "815--832",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/tech-reports/reports/1993/tr1175.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/tech-reports/reports/1993/tr1175.ps",
   key =          "31",
 }
 
@@ -25335,44 +25259,33 @@ institution =  uwcs,
   year =         "1999",
   volume =       "10",
   pages =        "669--685",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/95-03.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/95-03.ps",
   key =          "45",
 }
 
 @Article{ferris.mesnier.ea:neos,
   author =       "M. C. Ferris and M. P. Mesnier and J. Mor\'{e}",
-  title =        "{NEOS} and {C}ondor: Solving Nonlinear Optimization
-                 Problems over the {I}nternet",
+  title =        "{NEOS} and {C}ondor: Solving Nonlinear Optimization Problems over the {I}nternet",
   year =         "2000",
   journal =      "{ACM} Transactions on Mathematical Software",
   key =          "54",
   volume = 26,
   pages = "1--18",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/96-08.ps",
-}
-
-institution =  uwcs,
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/96-08.ps",
+  institution =  uwcs,
   address =      madison,
   number =       "96-08",
   type =         mptr,
-  note =         "Also available as ANL/MCS-P708-0398, Mathematics and
-                 Computer Science Division, Argonne National
-                 Laboratory",
-  annote =       "Revised version of: The {NEOS} System for Complementarity Problems:
-                 {PATH}, 1996",
-
+  note =         "Also available as ANL/MCS-P708-0398, Mathematics and Computer Science Division, Argonne National Laboratory",
+  annote =       "Revised version of: The {NEOS} System for Complementarity Problems: {PATH}, 1996",
+}
 
 @InCollection{ferris.meyer:models,
   author =       "M. C. Ferris and R. R. Meyer",
-  title =        "Models and Solution for On-Demand Data Delivery
-                 Problems",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/99-04.ps",
+  title =        "Models and Solution for On-Demand Data Delivery Problems",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/99-04.ps",
   key =          "80",
-  booktitle =    "Approximation and Complexity in Numerical
-                 Optimization: Continuous and Discrete Problems",
+  booktitle =    "Approximation and Complexity in Numerical Optimization: Continuous and Discrete Problems",
   editor = "P. M. Pardalos",
   series = "Nonconvex Optimization and its Applications",
   volume = "42",
@@ -25380,34 +25293,27 @@ institution =  uwcs,
   year =         "2000",
   pages = "175--188",
   publisher =    "Kluwer",
-}
   type =         mptr,
   institution =  uwcs,
-  address =      madison,
   number =       "99-04",
-  year =         "1999",
-
-
+}
 
 @InProceedings{ferris.munson.ea:homotopy,
   author = 	 {M. C. Ferris and T. S. Munson and D. Ralph},
-  title = 	 {A Homotopy Method for Mixed Complementarity Problems
-                 based on the {PATH} Solver},
+  title = 	 {A Homotopy Method for Mixed Complementarity Problems based on the {PATH} Solver},
   booktitle = 	 {Numerical Analysis 1999},
   key =		 88,
   year =	 2000,
   editor =	 {D. F. Griffiths and G. A. Watson},
   series =	 {Research Notes in Mathematics},
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/99-09.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/99-09.ps",
   address =	 {London},
   pages = "143--167",
-  publisher =	 {Chapman and Hall}
-}
+  publisher =	 {Chapman and Hall},
   institution =  uwcs,
-  address =      madison,
   number =       "99-09",
   type =         mptr,
+}
 
 @TechReport{ferris.munson.ea:practical,
   author =       "M. C. Ferris and T. S. Munson and K. Sinapiromsaran",
@@ -25416,8 +25322,7 @@ institution =  uwcs,
   institution =  uwcs,
   address =      madison,
   year =         "2000",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/pub/dmi/tech-reports/00-03.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/pub/dmi/tech-reports/00-03.ps",
   number =       "00-03",
   key =          "92",
   annote =       "To appear in WSC 2000",
@@ -25425,10 +25330,8 @@ institution =  uwcs,
 
 @InCollection{ferris.munson:case,
   author =       "M. C. Ferris and T. S. Munson",
-  title =        "Case Studies in Complementarity: Improving Model
-                 Formulation",
-  booktitle =    "Ill--Posed Variational Problems and Regularization
-                 Techniques",
+  title =        "Case Studies in Complementarity: Improving Model Formulation",
+  booktitle =    "Ill--Posed Variational Problems and Regularization Techniques",
   key =          "73",
   pages =        "79--98",
   publisher =    "Springer Verlag",
@@ -25437,32 +25340,25 @@ institution =  uwcs,
   number =       "477",
   series =       "Lecture Notes in Economics and Mathematical Systems",
   address =      "Berlin",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-16.ps",
-}
-
-type =         mptr,
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-16.ps",
+  type =         mptr,
   institution =  uwcs,
-  address =      madison,
-  year =         "1998",
+}
 
 @Article{ferris.munson:complementarity,
   author =       "M. C. Ferris and T. S. Munson",
-  title =        "Complementarity Problems in {GAMS} and the {PATH}
-                 Solver",
+  title =        "Complementarity Problems in {GAMS} and the {PATH} Solver",
   year =         "2000",
   volume =       "24",
   pages =        "165--188",
   journal =      "Journal of Economic Dynamics and Control",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-12.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-12.ps",
   key =          "70",
-}
-
-type =         mptr,
+  type =         mptr,
   institution =  uwcs,
   address =      madison,
   number =       "98-12",
+}
 
 @Misc{ferris.munson:condor,
   author =       "M. C. Ferris and T. S. Munson",
@@ -25475,29 +25371,23 @@ type =         mptr,
 @Manual{ferris.munson:gams,
   author =       "M. C. Ferris and T. S. Munson",
   title =        "{GAMS}/{PATH} User Guide: Version 4.3",
-  organization = "Department of Computer Sciences, University of Wisconsin, 
-                  Madison",
+  organization = "Department of Computer Sciences, University of Wisconsin, Madison",
 }
 
 @Article{ferris.munson:interfaces,
   author =       "M. C. Ferris and T. S. Munson",
-  title =        "Interfaces to {PATH} 3.0: Design, Implementation and
-                 Usage",
+  title =        "Interfaces to {PATH} 3.0: Design, Implementation and Usage",
   journal =      coap,
   volume =       "12",
   pages =        "207--227",
   year =         "1999",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/97-12.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/97-12.ps",
   key =          "63",
-}
-
-institution =  uwcs,
+  institution =  uwcs,
   address =      madison,
   number =       "97-12",
   type =         mptr,
-
-
+}
 
 @TechReport{ferris.munson:interior,
   author = 	 {M. C. Ferris and T. S. Munson},
@@ -25507,8 +25397,7 @@ institution =  uwcs,
   key =		 94,
   type =	 dmitr,
   number =	 {00-05},
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/pub/dmi/tech-reports/00-05.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/pub/dmi/tech-reports/00-05.ps",
   address =	 madison,
   annote =	 {Submitted to SIOPT}
 }
@@ -25520,32 +25409,28 @@ institution =  uwcs,
   journal =      "{SIAG/OPT} Newsletter",
   volume =       "10",
   pages =        "6--8",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-20.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-20.ps",
   key =          "76",
-}
-
-type =         mptr,
+  type =         mptr,
   institution =  uwcs,
   address =      madison,
   number =       "98-20",
+}
 
 @Article{ferris.munson:modeling,
   author =       "M. C. Ferris and T. S. Munson",
-  title =        "Modeling Languages and {C}ondor: Metacomputing for
-                 Optimization",
+  title =        "Modeling Languages and {C}ondor: Metacomputing for Optimization",
   year =         "2000",
   journal = mathprog,
   volume = 88,
   pages = "487--506",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-13.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-13.ps",
   key =          "71",
-}
   type =         mptr,
   institution =  uwcs,
   address =      madison,
   number =       "98-13",
+}
 
 @TechReport{ferris.munson:preprocessing,
   author =       "M. C. Ferris and T. S. Munson",
@@ -25554,8 +25439,7 @@ type =         mptr,
   institution =  uwcs,
   address =      madison,
   year =         "1999",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/99-07.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/99-07.ps",
   number =       "99-07",
   key =          "86",
   annote =       "Submitted to ICCP 99",
@@ -25569,16 +25453,14 @@ type =         mptr,
   key =		 97,
   type =	 dmitr,
   number =	 {00-09},
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/pub/dmi/tech-reports/00-09.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/pub/dmi/tech-reports/00-09.ps",
   address =	 madison,
   annote =	 {Submitted to Math Prog B}
 }
 
 @Article{ferris.pang:engineering,
   author =       "M. C. Ferris and J. S. Pang",
-  title =        "Engineering and Economic Applications of
-                 Complementarity Problems",
+  title =        "Engineering and Economic Applications of Complementarity Problems",
   year =         "1997",
   journal =      "SIAM Review",
   volume =       "39",
@@ -25589,14 +25471,12 @@ type =         mptr,
 
 @Article{ferris.pang:nondegenerate,
   author =       "M. C. Ferris and J. S. Pang",
-  title =        "Nondegenerate Solutions and Related Concepts in Affine
-                 Variational Inequalities",
+  title =        "Nondegenerate Solutions and Related Concepts in Affine Variational Inequalities",
   journal =      sicon,
   year =         "1996",
   volume =       "34",
   pages =        "244--263",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/tech-reports/reports/1994/tr1203.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/tech-reports/reports/1994/tr1203.ps",
   key =          "35",
 }
 
@@ -25612,8 +25492,7 @@ type =         mptr,
 
 @Article{ferris.philpott:interior,
   author =       "M. C. Ferris and A. B. Philpott",
-  title =        "An Interior Point Algorithm for Semi--Infinite Linear
-                 Programming",
+  title =        "An Interior Point Algorithm for Semi--Infinite Linear Programming",
   journal =      mathprog,
   year =         "1989",
   volume =       "43",
@@ -25633,39 +25512,33 @@ type =         mptr,
 
 @InCollection{ferris.ralph:projected,
   author =       "M. C. Ferris and D. Ralph",
-  title =        "Projected Gradient Methods for Nonlinear
-                 Complementarity Problems via Normal Maps",
+  title =        "Projected Gradient Methods for Nonlinear Complementarity Problems via Normal Maps",
   booktitle =    "Recent Advances in Nonsmooth Optimization",
   publisher =    "World Scientific Publishers",
   year =         "1995",
   pages =        "57--87",
   editor =       "D. Du and L. Qi and R. Womersley",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/94-08.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/94-08.ps",
   key =          "41",
 }
 
 @Article{ferris.ruszczynski:robust,
   author =       "M. C. Ferris and A. Ruszczy{\'{n}}ski",
-  title =        "Robust Path Choice and Vehicle Guidance in Networks
-                 with Failures",
+  title =        "Robust Path Choice and Vehicle Guidance in Networks with Failures",
   year =         "2000",
   journal =      "Networks",
   volume = 35,
   pages = "181--194",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/97-04.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/97-04.ps",
   key =          "60",
 }
 
 @InCollection{ferris.rutherford:accessing,
   author =       "M. C. Ferris and T. F. Rutherford",
-  title =        "Accessing Realistic Complementarity Problems within
-                 {Matlab}",
+  title =        "Accessing Realistic Complementarity Problems within {Matlab}",
   booktitle =    "Nonlinear Optimization and Applications",
   key =          "48",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/95-10.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/95-10.ps",
   editor =       "G. Di Pillo and F. Giannessi",
   year =         "1996",
   pages =        "141--153",
@@ -25681,19 +25554,17 @@ type =         mptr,
   publisher = {AMS},
   year =         "2000",
   OPTseries = 	 {DIMACS},
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/pub/dmi/tech-reports/00-01.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/pub/dmi/tech-reports/00-01.ps",
   key =          "91",
-}
   type =         dmitr,
   institution =  uwcs,
   address =      madison,
   number =       "00-01",
+}
 
 @InCollection{ferris.sinapiromsaran:formulating,
   author = 	 {M. C. Ferris and K. Sinapiromsaran},
-  title = 	 {Formulating and Solving Nonlinear Programs as Mixed
-                 Complementarity Problems},
+  title = 	 {Formulating and Solving Nonlinear Programs as Mixed Complementarity Problems},
   booktitle = 	 {Optimization},
   key =		 77,
   publisher =	 springer,
@@ -25701,36 +25572,31 @@ type =         mptr,
   editor =	 {V.H. Nguyen and J. J. Strodiot and P. Tossings},
   volume =	 481,
   series =       "Lecture Notes in Economics and Mathematical Systems",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-21.ps"
-}
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-21.ps",
   type =         mptr,
   institution =  uwcs,
   address =      madison,
   number =       "98-21",
-  year =         "1998",
+}
 
 @Article{ferris.tin-loi:limit,
   author =       "M. C. Ferris and F. Tin-Loi",
-  title =        "Limit Analysis of Frictional Block Assemblies as a
-                 Mathematical Program with Complementarity Constraints",
+  title =        "Limit Analysis of Frictional Block Assemblies as a Mathematical Program with Complementarity Constraints",
   year =         "2001",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/99-01.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/99-01.ps",
   key =          "78",
   journal = "International Journal of Mechanical Sciences",
   pages = "209--224",
-  volume = "43"
-}
+  volume = "43",
   type =         mptr,
   institution =  uwcs,
   address =      madison,
   number =       "99-01",
+}
 
 @Article{ferris.tin-loi:nonlinear,
   author =       "M. C. Ferris and F. Tin-Loi",
-  title =        "Nonlinear Programming Approach for a Class of Inverse
-                 Problems in Elastoplasticity",
+  title =        "Nonlinear Programming Approach for a Class of Inverse Problems in Elastoplasticity",
   year =         "1998",
   key =          "64",
   volume =       "6",
@@ -25740,16 +25606,12 @@ type =         mptr,
 
 @Article{ferris.tin-loi:solution,
   author =       "M. C. Ferris and F. Tin-Loi",
-  title =        "On the Solution of a Minimum Weight Elastoplastic
-                 Problem involving Displacement and Complementarity
-                 Constraints",
+  title =        "On the Solution of a Minimum Weight Elastoplastic Problem involving Displacement and Complementarity Constraints",
   year =         "1999",
-  journal =      "Computer Methods in Applied Mechanics and
-                 Engineering",
+  journal =      "Computer Methods in Applied Mechanics and Engineering",
   volume =       "174",
   pages =        "107--120",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/minwt.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/minwt.ps",
   key =          "66",
 }
 
@@ -25765,16 +25627,14 @@ type =         mptr,
 
 @TechReport{ferris.zavriev:linear,
   author =       "M. C. Ferris and S. K Zavriev",
-  title =        "The Linear Convergence of a Successive Linear
-                 Programming Algorithm",
+  title =        "The Linear Convergence of a Successive Linear Programming Algorithm",
   institution =  uwcs,
   year =         "1996",
   key =          "56",
   address =      madison,
   type =         mptr,
   number =       "96--12",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/96-12.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/96-12.ps",
 }
 
 @Article{ferris:finite,
@@ -25789,8 +25649,7 @@ type =         mptr,
 
 @Article{ferris:iterative,
   author =       "M. C. Ferris",
-  title =        "Iterative Linear Programming Solution of Convex
-                 Programs",
+  title =        "Iterative Linear Programming Solution of Convex Programs",
   journal =      jota,
   year =         "1990",
   volume =       "65",
@@ -25810,9 +25669,7 @@ type =         mptr,
 
 @MastersThesis{ferris:linear*1,
   author =       "M. C. Ferris",
-  title =        "Linear Programming and Minimum Weight Design -- {A}
-                 Comparison of Methods for Solving a Class of Structural
-                 Optimization Problems",
+  title =        "Linear Programming and Minimum Weight Design -- {A} Comparison of Methods for Solving a Class of Structural Optimization Problems",
   year =         "1985",
   school =       "University of Cambridge",
   address =      "England",
@@ -25821,35 +25678,30 @@ type =         mptr,
 
 @TechReport{ferris:matlab,
   author =       "M. C. Ferris",
-  title =        "{MATLAB} and {GAMS}: Interfacing Optimization and
-                 Visualization Software",
+  title =        "{MATLAB} and {GAMS}: Interfacing Optimization and Visualization Software",
   institution =  uwcs,
   year =         "1998",
   address =      madison,
   type =         mptr,
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-19.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-19.ps",
   number =       "98-19",
   key =          "75",
 }
 
 @Article{ferris:parallel,
   author =       "M. C. Ferris",
-  title =        "Parallel Constraint Distribution for Convex Quadratic
-                 Programs",
+  title =        "Parallel Constraint Distribution for Convex Quadratic Programs",
   journal =      mathor,
   year =         "1994",
   volume =       "19",
   pages =        "645--658",
-  URL =          "ftp: 
-                 //ftp.cs.wisc.edu/tech-reports/reports/1991/tr1009a.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/tech-reports/reports/1991/tr1009a.ps",
   key =          "20",
 }
 
 @TechReport{ferris:parallel*1,
   author =       "M. C. Ferris",
-  title =        "Parallel Solution of Extremely Large Knapsack
-                 Problems",
+  title =        "Parallel Solution of Extremely Large Knapsack Problems",
   institution =  uwcs,
   year =         "1989",
   address =      madison,
@@ -25859,8 +25711,7 @@ type =         mptr,
 
 @PhdThesis{ferris:weak,
   author =       "M. C. Ferris",
-  title =        "Weak Sharp Minima and Penalty Functions in
-                 Mathematical Programming",
+  title =        "Weak Sharp Minima and Penalty Functions in Mathematical Programming",
   year =         "1988",
   school =       "University of Cambridge",
   address =      "England",
@@ -25869,8 +25720,7 @@ type =         mptr,
 
 @TechReport{ferris:weak*1,
   author =       "M. C. Ferris",
-  title =        "Weak Sharp Minima and Penalty Functions in
-                 Mathematical Programming",
+  title =        "Weak Sharp Minima and Penalty Functions in Mathematical Programming",
   institution =  uwcs,
   year =         "1988",
   address =      madison,
@@ -25880,19 +25730,16 @@ type =         mptr,
 
 @Book{fiacco.mccormick:nonlinear,
   author =       "A. V. Fiacco and G. P. McCormick",
-  title =        "Nonlinear Programming: Sequential Unconstrained
-                 Minimization Techniques",
+  title =        "Nonlinear Programming: Sequential Unconstrained Minimization Techniques",
   year =         "1968",
   publisher =    wiley,
   address =      "New York",
-  note =         "SIAM Classics in Applied Mathematics 4, SIAM,
-                 Philadelphia, 1990",
+  note =         "SIAM Classics in Applied Mathematics 4, SIAM, Philadelphia, 1990",
 }
 
 @Book{fiacco:introduction,
   author =       "A. V. Fiacco",
-  title =        "Introduction to Sensitivity and Stability Analysis in
-                 Nonlinear Programming",
+  title =        "Introduction to Sensitivity and Stability Analysis in Nonlinear Programming",
   year =         "1983",
   publisher =    academic,
   address =      "New York",
@@ -25900,8 +25747,7 @@ type =         mptr,
 
 @Article{fiedler.ptak:matrices,
   author =       "M. Fiedler and V. Pt\'{a}k",
-  title =        "On matrices with nonpositive off-diagonal elements and
-                  positive principal minors",
+  title =        "On matrices with nonpositive off-diagonal elements and positive principal minors",
   journal =      "Czechoslovak Mathematics Journal",
   volume =       "12",
   pages =        "382--400",
@@ -26755,7 +26601,7 @@ type =         mptr,
 
 @TechReport{gertz.linderoth.ea:object-oriented,
   author =       "M. Gertz and J. Linderoth and S. Wright",
-  title =        "Object-Oriented Software for Linear Complementarity and 
+  title =        "Object-Oriented Software for Linear Complementarity and
                  Quadratic Programming",
   institution =  "MCS Division, Argonne National Laboratory",
   year =         "in preparation",
@@ -26782,8 +26628,7 @@ type =         mptr,
 
 @ARTICLE{Gilbert-Lemarechal,
   author =       "J. C. Gilbert and C. Lemarechal",
-  title =        "Some Numerical Experiments with Variable-Storage
-                  Quasi-Newton Algorithms",
+  title =        "Some Numerical Experiments with Variable-Storage Quasi-Newton Algorithms",
   journal =       mathprog,
   year =          "1989",
   volume =        "45",
@@ -27104,9 +26949,9 @@ type =         mptr,
 
 @Article{gowda.pang:stability,
   author =       "M. S. Gowda and J. S. Pang",
-  title =        "Stability analysis of variational inequalities and 
-                  nonlinear complementarity problems, via the mixed linear 
-                  complementarity problem and degree theory", 
+  title =        "Stability analysis of variational inequalities and
+                  nonlinear complementarity problems, via the mixed linear
+                  complementarity problem and degree theory",
   journal =       mathor,
   year =          "1994",
   volume =        "19",
@@ -27745,15 +27590,6 @@ type =         mptr,
   year =         "1987",
   volume =       "29",
   pages =        "345--351",
-}
-
-@Article{hestenes:multiplier,
-  author =       "M. R. Hestenes",
-  title =        "Multiplier and Gradient Methods",
-  journal =      jota,
-  year =         "1969",
-  volume =       "4",
-  pages =        "303--330",
 }
 
 @InCollection{hettich:review,
@@ -30343,7 +30179,7 @@ type =         mptr,
 @TechReport{mangasarian.musicant:lagrangian,
 	author = "O. L. Mangasarian and D. R. Musicant",
 	title =  "Lagrangian Support Vector Machines",
-	institution =  "Data Mining Institute, Computer Sciences Department, 
+	institution =  "Data Mining Institute, Computer Sciences Department,
 		University of Wisconsin",
 	year =         2000,
 	number =       {00-06},
@@ -30568,7 +30404,7 @@ type =         mptr,
 	year =         2000,
 	pages = "135-146",
 	booktitle = "Advances in Large Margin Classifiers",
-	editor = "A. Smola and P.~Bartlett and B.~Sch{\"o}lkopf and 
+	editor = "A. Smola and P.~Bartlett and B.~Sch{\"o}lkopf and
 		 D.~Schuurmans",
 	publisher =  "MIT Press",
 	address =      "Cambridge, MA",
@@ -31784,12 +31620,12 @@ type =         mptr,
 }
 
 @Article{nelder.mead:simplex,
-  author =       "J. A. Nelder and R. Mead",
-  title =        "A Simplex Method for Function Minimization",
-  journal =      "Computer Journal",
-  year =         "1965",
-  volume =       "7",
-  pages =        "308--313",
+  title   = {A Simplex Method for Function Minimization},
+  author  = {J. A. Nelder and R. Mead},
+  journal = {Computer Journal},
+  volume  = {7},
+  pages   = {308--313},
+  year    = {1965}
 }
 
 @Article{nemhauser.savelsbergh.ea:minto,
@@ -32748,12 +32584,12 @@ type =         mptr,
 	author = "J. Platt",
 	title = "Sequential Minimal Optimization: A Fast Algorithm for Training
 	Support Vector Machines",
-	editor = {Bernhard {Sch\"olkopf} and Christopher J. C. Burges and 
+	editor = {Bernhard {Sch\"olkopf} and Christopher J. C. Burges and
 	Alexander J. Smola},
 	booktitle = {Advances in Kernel Methods {-} Support Vector Learning},
 	publisher = {MIT Press},
 	pages = {185-208},
-	year= {1999}, 
+	year= {1999},
 }
 
 @Book{poincare:sur,
@@ -33106,10 +32942,10 @@ type =         mptr,
      {N}ewton Methods",
   year =         "1999",
   editor = "A. Eberhard and B. Glover and R. Hill and D. Ralph",
-  booktitle = "Progress in Optimization", 
-  pages = "121--146", 
-  series = "Applied Optimization", 
-  volume = "30", 
+  booktitle = "Progress in Optimization",
+  pages = "121--146",
+  series = "Applied Optimization",
+  volume = "30",
   publisher = kluwer,
   address = "Dordrecht"
 }
@@ -33157,7 +32993,7 @@ type =         mptr,
 }
 
 @Article{radstrom:embedding,
-  author =       "H. R\a{a}dstr{\"{o}}m",
+  author =       "H. R{\aa}dstr{\"{o}}m",
   title =        "An embedding theorem for spaces of convex sets",
   journal =      "Proc. Amer. Math. Soc.",
   year =         "1952",
@@ -33223,8 +33059,6 @@ type =         mptr,
   year =         "1993",
   school =       "Department of Chemical Engineering, Carnegie Mellon
                  University",
-}
-
 }
 
 @PhdThesis{rangaraj:nonsmooth,
@@ -34403,15 +34237,14 @@ type =         mptr,
   volume =       "41",
   pages =        "721--744",
   year =         "1999",
-  URL =          "ftp:
-                 //ftp.cs.wisc.edu/math-prog/tech-reports/98-07.ps",
+  URL =          "ftp://ftp.cs.wisc.edu/math-prog/tech-reports/98-07.ps",
   key =          "68",
-}
-
-institution =  uwcs,
+  institution =  uwcs,
   address =      madison,
   number =       "98-07",
   type =         mptr,
+}
+
 
 @Article{sherali.shetty:finitely,
   author =       "H. D. Sherali and C. M. Shetty",
@@ -35038,13 +34871,11 @@ institution =  uwcs,
   URL =          "ftp:
                  //ftp.cs.wisc.edu/math-prog/tech-reports/99-02.ps",
   publisher =    "Elsevier Science Ltd",
-}
-
-type =         mptr,
+  type =         mptr,
   institution =  uwcs,
   address =      madison,
-  year =         "1999",
   number =       "99-02",
+}
 
 @InProceedings{tin-loi.ferris:holonomic,
   author =       "F. Tin-Loi and M. C. Ferris",
@@ -35926,7 +35757,7 @@ type =         mptr,
 
 @TechReport{wright:reduced,
   author =       "S. J. Wright",
-  title =        "On Reduced Convex QP Formulations of Monotone 
+  title =        "On Reduced Convex QP Formulations of Monotone
 	LCP Problems",
   institution =  "Argonne National Laboratory",
   year =         "2000",
@@ -36444,9 +36275,9 @@ type =         mptr,
 }
 
 @Proceedings{ferris.mangasarian.ea:complementarity,
-  title =        "Complementarity: Applications, Algorithms and 
+  title =        "Complementarity: Applications, Algorithms and
                  Extensions",
-  booktitle =        "Complementarity: Applications, Algorithms and 
+  booktitle =        "Complementarity: Applications, Algorithms and
                  Extensions",
   year =         "2001",
   key =          "95",
@@ -36534,8 +36365,8 @@ type =         mptr,
 }
 
 @ARTICLE{UNEDF0,
-    author = {{Kortelainen}, M. and {Lesinski}, T. and {Mor{\'e}}, J. and 
-        {Nazarewicz}, W. and {Sarich}, J. and {Schunck}, N. and {Stoitsov}, M.~V. and 
+    author = {{Kortelainen}, M. and {Lesinski}, T. and {Mor{\'e}}, J. and
+        {Nazarewicz}, W. and {Sarich}, J. and {Schunck}, N. and {Stoitsov}, M.~V. and
         {Wild}, S.~M.},
     title = "Nuclear Energy Density Optimization",
     journal = {Physical Review C},
@@ -36582,4 +36413,38 @@ type =         mptr,
   pages={268--285},
   year={1974},
   publisher={SIAM}
+}
+@article{Bacuta2006,
+  title   = {A unified approach for Uzawa algorithms},
+  author  = {Constantin Bacuta},
+  journal = {SIAM Journal on Numerical Analysis},
+  volume  = {44},
+  number  = {6},
+  pages   = {2633--2649},
+  year    = {2006},
+}
+@article{ManteuffelRugeSouthworth2018,
+  title   = {Nonsymmetric algebraic multigrid based on local approximate ideal restriction (AIR)},
+  author  = {Thomas A Manteuffel and John Ruge and Ben S Southworth},
+  journal = {SIAM Journal on Scientific Computing},
+  volume  = {40},
+  number  = {6},
+  pages   = {A4105--A4130},
+  year    = {2018},
+}
+@article{ManteuffelMunzenmaierRugeSouthworth2019,
+  title   = {Nonsymmetric reduction-based algebraic multigrid},
+  author  = {Thomas A Manteuffel and Steffen M\"unzenmaier and John Ruge and Ben S Southworth},
+  journal = {SIAM Journal on Scientific Computing},
+  volume  = {41},
+  number  = {5},
+  pages   = {S242--S268},
+  year    = {2019},
+}
+@thesis{Sivas2021,
+  title       = {Preconditioning of HDG for the Navier–Stokes Equations},
+  author      = {Abdullah Ali Sivas},
+  department  = {Applied Mathematics},
+  institution = {University of Waterloo},
+  year        = {2021}
 }

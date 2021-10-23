@@ -89,6 +89,7 @@ GRTAGS
 GSYMS
 GTAGS
 CMakeLists.txt
+petsc-doc-env
 src/binding/petsc4py/.eggs
 src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc.h
 src/binding/petsc4py/src/include/petsc4py/petsc4py.PETSc_api.h
