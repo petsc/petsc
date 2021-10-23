@@ -114,6 +114,18 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexIntegralFEM",      DM_CLASSID,&DMPLEX_IntegralFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexRebalance",        DM_CLASSID,&DMPLEX_RebalanceSharedPoints);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexLocatePoints",     DM_CLASSID,&DMPLEX_LocatePoints);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexTopologyView",     DM_CLASSID,&DMPLEX_TopologyView);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexLabelsView",       DM_CLASSID,&DMPLEX_LabelsView);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexCoordinatesView",  DM_CLASSID,&DMPLEX_CoordinatesView);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexSectionView",      DM_CLASSID,&DMPLEX_SectionView);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexGlobalVectorView", DM_CLASSID,&DMPLEX_GlobalVectorView);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexLocalVectorView",  DM_CLASSID,&DMPLEX_LocalVectorView);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexTopologyLoad",     DM_CLASSID,&DMPLEX_TopologyLoad);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexLabelsLoad",       DM_CLASSID,&DMPLEX_LabelsLoad);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexCoordinatesLoad",  DM_CLASSID,&DMPLEX_CoordinatesLoad);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexSectionLoad",      DM_CLASSID,&DMPLEX_SectionLoad);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexGlobalVectorLoad", DM_CLASSID,&DMPLEX_GlobalVectorLoad);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexLocalVectorLoad",  DM_CLASSID,&DMPLEX_LocalVectorLoad);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup);CHKERRQ(ierr);
