@@ -553,7 +553,7 @@ Memory Allocation for Sparse Matrix Factorization
 
 When symbolically factoring an AIJ matrix, PETSc has to guess how much
 fill there will be. Careful use of the fill parameter in the
-``MatILUInfo`` structure when calling ``MatLUFactorSymbolic()`` or
+``MatFactorInfo`` structure when calling ``MatLUFactorSymbolic()`` or
 ``MatILUFactorSymbolic()`` can reduce greatly the number of mallocs and
 copies required, and thus greatly improve the performance of the
 factorization. One way to determine a good value for the fill parameter
@@ -562,7 +562,7 @@ factorization phase will then print information such as
 
 .. code-block:: none
 
-   Info:MatILUFactorSymbolic_AIJ:Realloc 12 Fill ratio:given 1 needed 2.16423
+   Info:MatILUFactorSymbolic_SeqAIJ:Reallocs 12 Fill ratio:given 1 needed 2.16423
 
 This indicates that the user should have used a fill estimate factor of
 about 2.17 (instead of 1) to prevent the 12 required mallocs and copies.
@@ -570,11 +570,10 @@ The command line option
 
 .. code-block:: none
 
-   -pc_ilu_fill 2.17
+   -pc_factor_fill 2.17
 
 will cause PETSc to preallocate the correct amount of space for
-incomplete (ILU) factorization. The corresponding option for direct (LU)
-factorization is ``-pc_factor_fill <fill_amount>``.
+the factorization.
 
 .. _detecting-memory-problems:
 
