@@ -9,7 +9,10 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
-#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ > 600 && PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#define AIJBANDUSEGROUPS 1
+#endif
+#if defined(AIJBANDUSEGROUPS)
 #include <cooperative_groups.h>
 #endif
 
@@ -123,7 +126,7 @@ void __launch_bounds__(1024,1)
   const PetscInt  Nf = gridDim.x, Nblk = gridDim.y, nloc = n/Nf;
   const PetscInt  field = blockIdx.x, blkIdx = blockIdx.y;
   const PetscInt  start = field*nloc, end = start + nloc;
-#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#if defined(AIJBANDUSEGROUPS)
   auto g = cooperative_groups::this_grid();
 #endif
   // A22 panel update for each row A(1,:) and col A(:,1)
@@ -151,7 +154,7 @@ void __launch_bounds__(1024,1)
         Aij[jIdx] -= Lid*baUd[jIdx];
       }
     }
-#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#if defined(AIJBANDUSEGROUPS)
     if (use_group_sync) {
       g.sync();
     } else {
@@ -214,7 +217,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   {
     int bw = (int)(2.*(double)n-1. - (double)(PetscSqrtReal(1.+4.*((double)n*(double)n-(double)b->nz))+PETSC_MACHINE_EPSILON))/2, bm1=bw-1,nl=n/Nf;
-#if PETSC_PKG_CUDA_VERSION_LT(11,0,0)
+#if !defined(AIJBANDUSEGROUPS)
     Ni = 1/nconcurrent;
     Ni = 1;
 #else
@@ -235,7 +238,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
       dim3 dimBlockLeague(Nf,Ni);
       mat_lu_factor_band_copy_aij_aij<<<dimBlockLeague,dimBlockTeam>>>(n, bw, r, ic, ai_d, aj_d, aa_d, bi_t, ba_t);
       CHECK_LAUNCH_ERROR(); // does a sync
-#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#if defined(AIJBANDUSEGROUPS)
       if (Ni > 1) {
         void *kernelArgs[] = { (void*)&n, (void*)&bw, (void*)&bi_t, (void*)&ba_t, (void*)&nsm };
         cudaLaunchCooperativeKernel((void*)mat_lu_factor_band, dimBlockLeague, dimBlockTeam, kernelArgs, 0, NULL);
