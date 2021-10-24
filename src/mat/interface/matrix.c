@@ -9733,16 +9733,16 @@ static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fi
     ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
   } else { /* scall == MAT_REUSE_MATRIX */
     Mat_Product *product = (*C)->product;
+    PetscBool isdense;
 
+    ierr = PetscObjectBaseTypeCompareAny((PetscObject)(*C),&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    if (isdense && product && product->type != ptype) {
+      ierr = MatProductClear(*C);CHKERRQ(ierr);
+      product = NULL;
+    }
     ierr = PetscInfo2(A,"Calling MatProduct API with MAT_REUSE_MATRIX %s product present and product type %s\n",product ? "with" : "without",MatProductTypes[ptype]);CHKERRQ(ierr);
-    if (!product) {
-      /* user provide the dense matrix *C without calling MatProductCreate() */
-      PetscBool isdense;
-
-      ierr = PetscObjectBaseTypeCompareAny((PetscObject)(*C),&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    if (!product) { /* user provide the dense matrix *C without calling MatProductCreate() or reusing it from previous calls */
       if (isdense) {
-        /* user wants to reuse an assembled dense matrix */
-        /* Create product -- see MatCreateProduct() */
         ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
         product = (*C)->product;
         product->fill     = fill;
