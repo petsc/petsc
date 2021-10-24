@@ -769,7 +769,6 @@ cdef PetscErrorCode MatGetDiagonalBlock_Python(
         finally:
             mat.ops.getdiagonalblock = MatGetDiagonalBlock_Python
         return FunctionEnd()
-    if getDiagonalBlock is None: return UNSUPPORTED(b"getDiagonalBlock")
     cdef Mat sub = getDiagonalBlock(Mat_(mat))
     if sub is not None: out[0] = sub.mat
     return FunctionEnd()
@@ -933,7 +932,6 @@ cdef PetscErrorCode MatCreateVecs_Python(
         finally:
             mat.ops.getvecs = MatCreateVecs_Python
         return FunctionEnd()
-    if createVecs is None: return UNSUPPORTED(b"createVecs")
     cdef Vec u, v
     u, v = createVecs(Mat_(mat))
     if x != NULL:
@@ -964,7 +962,6 @@ cdef PetscErrorCode MatMultTranspose_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultTranspose_Python")
     cdef multTranspose = PyMat(mat).multTranspose
-    cdef PetscBool symmset, symmknown
     if multTranspose is None:
         try:
             mat.ops.multtranspose = NULL
@@ -972,7 +969,6 @@ cdef PetscErrorCode MatMultTranspose_Python(
         finally:
             mat.ops.multtranspose = MatMultTranspose_Python
         return FunctionEnd()
-    if multTranspose is None: return UNSUPPORTED(b"multTranspose")
     multTranspose(Mat_(mat), Vec_(x), Vec_(y))
     return FunctionEnd()
 
@@ -984,7 +980,6 @@ cdef PetscErrorCode MatMultHermitian_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultHermitian_Python")
     cdef multHermitian = PyMat(mat).multHermitian
-    cdef PetscBool hermset, hermknown
     if multHermitian is None:
         try:
             mat.ops.multhermitian = NULL
@@ -992,7 +987,6 @@ cdef PetscErrorCode MatMultHermitian_Python(
         finally:
             mat.ops.multhermitian = MatMultHermitian_Python
         return FunctionEnd()
-    if multHermitian is None: return UNSUPPORTED(b"multHermitian")
     multHermitian(Mat_(mat), Vec_(x), Vec_(y))
     return FunctionEnd()
 
@@ -1060,7 +1054,6 @@ cdef PetscErrorCode MatMultHermitianAdd_Python(
         finally:
             mat.ops.multhermitianadd = MatMultHermitianAdd_Python
         return FunctionEnd()
-    if multHermitianAdd is None: return UNSUPPORTED(b"multHermitianAdd")
     multHermitianAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
     return FunctionEnd()
 
@@ -1102,7 +1095,6 @@ cdef PetscErrorCode MatSolveTranspose_Python(
             CHKERR( MatSolveTranspose(mat, b, x) )
         finally:
             mat.ops.solvetranspose = MatSolveTranspose_Python
-    if solveTranspose is None: return UNSUPPORTED(b"solveTranspose")
     solveTranspose(Mat_(mat), Vec_(b), Vec_(x))
     return FunctionEnd()
 
@@ -1122,7 +1114,6 @@ cdef PetscErrorCode MatSolveAdd_Python(
         finally:
             mat.ops.solveadd = MatSolveAdd_Python
         return FunctionEnd()
-    if solveAdd is None: return UNSUPPORTED(b"solveAdd")
     solveAdd(Mat_(mat), Vec_(b), Vec_(y), Vec_(x))
     return FunctionEnd()
 
@@ -1142,7 +1133,6 @@ cdef PetscErrorCode MatSolveTransposeAdd_Python(
         finally:
             mat.ops.solvetransposeadd = MatSolveTransposeAdd_Python
         return FunctionEnd()
-    if solveTransposeAdd is None: return UNSUPPORTED(b"solveTransposeAdd")
     solveTransposeAdd(Mat_(mat), Vec_(b), Vec_(y), Vec_(x))
     return FunctionEnd()
 
@@ -1273,7 +1263,7 @@ cdef PetscErrorCode MatHasOperation_Python(
         ops = <void**> mat.ops
         if ops and ops[i]: flag[0] = PETSC_TRUE
     else:
-        flag[0] = PETSC_TRUE if getattr(PyMat(mat), name) else PETSC_FALSE
+        flag[0] = PETSC_TRUE if getattr(PyMat(mat), name) is not None else PETSC_FALSE
     return FunctionEnd()
 
 cdef PetscErrorCode MatProductNumeric_Python(
