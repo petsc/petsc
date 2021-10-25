@@ -222,7 +222,8 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
 
    Notes:
      To reuse the symbolic phase, input matrices must have exactly the same data structure as the replaced one.
-     If the type of any of the input matrices is different than what previously used, the product is cleared and MatProductSetFromOptions()/MatProductSymbolic() are invoked again.
+     If the type of any of the input matrices is different than what was previously used, or their symmetry changed but
+     the symbolic phase took advantage of their symmetry, the product is cleared and MatProductSetFromOptions()/MatProductSymbolic() are invoked again.
 
 .seealso: MatProductCreate(), MatProductSetFromOptions(), MatProductSymbolic(). MatProductClear()
 @*/
@@ -240,6 +241,10 @@ PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
     PetscValidHeaderSpecific(A,MAT_CLASSID,1);
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)product->A,((PetscObject)A)->type_name,&flgA);CHKERRQ(ierr);
+    if (product->symbolic_used_the_fact_A_is_symmetric && !A->symmetric) { /* symbolic was built around a symmetric A, but the new A is not anymore */
+      flgA = PETSC_FALSE;
+      product->symbolic_used_the_fact_A_is_symmetric = PETSC_FALSE; /* reinit */
+    }
     ierr = MatDestroy(&product->A);CHKERRQ(ierr);
     product->A = A;
   }
@@ -247,6 +252,10 @@ PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
     PetscValidHeaderSpecific(B,MAT_CLASSID,2);
     ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)product->B,((PetscObject)B)->type_name,&flgB);CHKERRQ(ierr);
+    if (product->symbolic_used_the_fact_B_is_symmetric && !B->symmetric) {
+      flgB = PETSC_FALSE;
+      product->symbolic_used_the_fact_B_is_symmetric = PETSC_FALSE; /* reinit */
+    }
     ierr = MatDestroy(&product->B);CHKERRQ(ierr);
     product->B = B;
   }
@@ -254,6 +263,10 @@ PetscErrorCode MatProductReplaceMats(Mat A,Mat B,Mat C,Mat D)
     PetscValidHeaderSpecific(C,MAT_CLASSID,3);
     ierr = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)product->C,((PetscObject)C)->type_name,&flgC);CHKERRQ(ierr);
+    if (product->symbolic_used_the_fact_C_is_symmetric && !C->symmetric) {
+      flgC = PETSC_FALSE;
+      product->symbolic_used_the_fact_C_is_symmetric = PETSC_FALSE; /* reinit */
+    }
     ierr = MatDestroy(&product->C);CHKERRQ(ierr);
     product->C = C;
   }
