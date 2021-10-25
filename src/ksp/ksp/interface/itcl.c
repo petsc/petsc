@@ -323,6 +323,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 .   -ksp_monitor_singular_value - monitor extreme singular values at each iteration
 .   -ksp_converged_reason - view the convergence state at the end of the solve
 .   -ksp_use_explicittranspose - transpose the system explicitly in KSPSolveTranspose
+.   -ksp_error_if_not_converged - stop the program as soon as an error is detected in a KSPSolve(), KSP_DIVERGED_ITS is not treated as an error on inner KSPSolves
 -   -ksp_converged_rate - view the convergence rate at the end of the solve
 
    Notes:
