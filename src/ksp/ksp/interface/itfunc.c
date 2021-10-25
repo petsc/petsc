@@ -6,6 +6,9 @@
 #include <petsc/private/matimpl.h>   /*I "petscmat.h" I*/
 #include <petscdm.h>
 
+/* number of nested levels of KSPSetUp/Solve(). This is used to determine if KSP_DIVERGED_ITS should be fatal. */
+static PetscInt level = 0;
+
 PETSC_STATIC_INLINE PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, PetscViewerFormat format)
 {
   PetscErrorCode ierr;
@@ -29,7 +32,7 @@ PETSC_STATIC_INLINE PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewe
 .  emin, emax - extreme singular values
 
    Options Database Keys:
-.  -ksp_view_singularvalues - compute extreme singular values and print when KSPSolve completes.
+.  -ksp_view_singularvalues - compute extreme singular values and print when KSPSolve() completes.
 
    Notes:
    One must call KSPSetComputeSingularValues() before calling KSPSetUp()
@@ -212,10 +215,12 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  level++;
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
   ierr = PCGetFailedReasonRank(pc,&pcreason);CHKERRQ(ierr);
-  /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
+  level--;
+  /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; there is no code to handle a ksp->reason on only some ranks */
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   }
@@ -320,6 +325,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  level++;
 
   /* reset the convergence flag from the previous solves */
   ksp->reason = KSP_CONVERGED_ITERATING;
@@ -359,7 +365,10 @@ PetscErrorCode KSPSetUp(KSP ksp)
     }
   }
 
-  if (ksp->setupstage == KSP_SETUP_NEWRHS) PetscFunctionReturn(0);
+  if (ksp->setupstage == KSP_SETUP_NEWRHS) {
+    level--;
+    PetscFunctionReturn(0);
+  }
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   switch (ksp->setupstage) {
@@ -421,6 +430,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
     }
   }
   ksp->setupstage = KSP_SETUP_NEWRHS;
+  level--;
   PetscFunctionReturn(0);
 }
 
@@ -800,14 +810,15 @@ static PetscErrorCode KSPMonitorPauseFinal_Internal(KSP ksp)
 
 static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 {
-  PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
-  Mat            mat,pmat;
-  MPI_Comm       comm;
-  MatNullSpace   nullsp;
-  Vec            btmp,vec_rhs=NULL;
+  PetscErrorCode  ierr;
+  PetscBool       flg = PETSC_FALSE,inXisinB = PETSC_FALSE,guess_zero;
+  Mat             mat,pmat;
+  MPI_Comm        comm;
+  MatNullSpace    nullsp;
+  Vec             btmp,vec_rhs = NULL;
 
   PetscFunctionBegin;
+  level++;
   comm = PetscObjectComm((PetscObject)ksp);
   if (x && x == b) {
     if (!ksp->guess_zero) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
@@ -998,13 +1009,14 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
   ierr = PetscObjectSAWsBlock((PetscObject)ksp);CHKERRQ(ierr);
-  if (ksp->errorifnotconverged && ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS) {
+  if (ksp->errorifnotconverged && ksp->reason < 0 && ((level == 1) || (ksp->reason != KSP_DIVERGED_ITS))) {
     if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
       PCFailedReason reason;
       ierr = PCGetFailedReason(ksp->pc,&reason);CHKERRQ(ierr);
       SETERRQ2(comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged, reason %s PC failed due to %s",KSPConvergedReasons[ksp->reason],PCFailedReasons[reason]);
     } else SETERRQ1(comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged, reason %s",KSPConvergedReasons[ksp->reason]);
   }
+  level--;
   PetscFunctionReturn(0);
 }
 
@@ -1030,6 +1042,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 .  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 .  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
 .  -ksp_view_final_residual - print 2-norm of true linear system residual at the end of the solution process
+.  -ksp_error_if_not_converged - stop the program as soon as an error is detected in a KSPSolve()
 -  -ksp_view - print the ksp data structure at the end of the system solution
 
    Notes:
@@ -1038,8 +1051,12 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 
    The operator is specified with KSPSetOperators().
 
-   Call KSPGetConvergedReason() to determine if the solver converged or failed and
-   why. The number of iterations can be obtained from KSPGetIterationNumber().
+   KSPSolve() will normally return without generating an error regardless of whether the linear system was solved or if constructing the preconditioner failed.
+   Call KSPGetConvergedReason() to determine if the solver converged or failed and why. The option -ksp_error_if_not_converged or function KSPSetErrorIfNotConverged()
+   will cause KSPSolve() to error as soon as an error occurs in the linear solver.  In inner KSPSolves() KSP_DIVERGED_ITS is not treated as an error because when using nested solvers
+   it may be fine that inner solvers in the preconditioner do not converge during the solution process.
+
+   The number of iterations can be obtained from KSPGetIterationNumber().
 
    If you provide a matrix that has a MatSetNullSpace() and MatSetTransposeNullSpace() this will use that information to solve singular systems
    in the least squares sense with a norm minimizing solution.
@@ -1072,7 +1089,7 @@ $    If nullspace(A) != nullspace(A') then left preconditioning will work but ri
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber(), MatNullSpaceCreate(), MatSetNullSpace(), MatSetTransposeNullSpace(), KSP,
-          KSPConvergedReasonView()
+          KSPConvergedReasonView(), KSPCheckSolve(), KSPSetErrorIfNotConverged()
 @*/
 PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
@@ -1716,6 +1733,8 @@ PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
    Notes:
     Normally PETSc continues if a linear solver fails to converge, you can call KSPGetConvergedReason() after a KSPSolve()
     to determine if it has converged.
+
+   A KSP_DIVERGED_ITS will not generate an error in a KSPSolve() inside a nested linear solver
 
 .seealso: KSPGetErrorIfNotConverged(), KSP
 @*/

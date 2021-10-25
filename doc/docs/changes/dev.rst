@@ -63,6 +63,8 @@ Changes: Development
 
 .. rubric:: KSP:
 
+-  Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
+
 .. rubric:: SNES:
 
 .. rubric:: SNESLineSearch:

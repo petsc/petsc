@@ -1937,7 +1937,7 @@ int main(int argc, char **argv)
     args: -dm_plex_separate_marker -mod_type conducting \
           -div_petscdualspace_lagrange_use_moments -div_petscdualspace_lagrange_moment_order 3 \
           -snes_error_if_not_converged -snes_max_linear_solve_fail 5 \
-          -ksp_type fgmres -ksp_max_it 2 -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+          -ksp_type fgmres -ksp_max_it 2 -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 \
           -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 \
           -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
             -fieldsplit_0_pc_type lu \
