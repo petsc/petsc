@@ -256,9 +256,14 @@ def do_query(use_source, startdir, srcdir, testdir, petsc_dir, petsc_arch,
     # Filter results using searchin
     newresList=[]
     if searchin.strip():
-        for key in resList:
-            if fnmatch.filter([key],searchin):
-              newresList.append(key)
+        if not searchin.startswith('!'):
+            for key in resList:
+                if fnmatch.filter([key],searchin):
+                  newresList.append(key)
+        else:
+            for key in resList:
+                if not fnmatch.filter([key],searchin[1:]):
+                  newresList.append(key)
         resList=newresList
 
     # Print in flat list suitable for use by gmakefile.test
