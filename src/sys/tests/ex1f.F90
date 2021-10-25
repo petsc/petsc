@@ -21,7 +21,8 @@
       MPI_Comm comm
       character*(*) fun,file,mess
 
-      print*,'My error handler ',mess
+      write(6,*) 'My error handler ',mess
+      call flush(6)
       return
       end
 
@@ -32,7 +33,8 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
-        print*,'Unable to initialize PETSc'
+        write(6,*) 'Unable to initialize PETSc'
+        call flush(6)
         stop
       endif
 

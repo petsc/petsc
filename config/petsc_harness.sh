@@ -180,7 +180,7 @@ function petsc_testrun() {
   error=$5
   cmd="$1 > $2 2> $3"
   if test -n "$error"; then
-    cmd="$1 2>&1 | cat > $2"
+    cmd="$1 1> $2  2>&1"
   fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
   if $printcmd; then
@@ -189,6 +189,10 @@ function petsc_testrun() {
 
   eval "{ time -p $cmd ; } 2>> timing.out"
   cmd_res=$?
+  # If testing the error output then we don't test the error code itself
+  if test -n "$error"; then
+     cmd_res=0
+  fi
   #  If it is a lack of GPU resources or MPI failure (Intel) then try once more
   #  See: src/sys/error/err.c
   #  Error #134 added to handle problems with the Radeon card for hip testing
