@@ -19,6 +19,9 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatSeqAIJRegisterAll(void);
 
+/* Gets the root type of the input matrix's type (e.g., MATAIJ for MATSEQAIJ) */
+PETSC_INTERN PetscErrorCode MatGetRootType_Private(Mat, MatType*);
+
 /*
   This file defines the parts of the matrix data structure that are
   shared by all matrix types.
