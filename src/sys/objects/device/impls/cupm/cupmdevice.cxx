@@ -261,8 +261,8 @@ static constexpr const std::array<const char*const,4> cupmOptions() noexcept;
 #define CUPM_DECLARE_OPTIONS_IF_PETSC_DEFINED(TYPE,type)                \
   CAT(CUPM_DECLARE_OPTIONS_IF_PETSC_DEFINED_,PetscDefined(CAT(HAVE_,TYPE)))(TYPE,type)
 
-CUPM_DECLARE_OPTIONS_IF_PETSC_DEFINED(CUDA,cuda);
-CUPM_DECLARE_OPTIONS_IF_PETSC_DEFINED(HIP,hip);
+CUPM_DECLARE_OPTIONS_IF_PETSC_DEFINED(CUDA,cuda)
+CUPM_DECLARE_OPTIONS_IF_PETSC_DEFINED(HIP,hip)
 
 template <CUPMDeviceType T>
 PetscErrorCode CUPMDevice<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscDeviceInitType *defaultInitType) noexcept
