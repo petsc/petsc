@@ -119,26 +119,20 @@ Sphinx Documentation Guidelines
 
      Set ``$PETSC_DIR`` and ``$PETSC_ARCH``
 
-* For internal links, use explicit labels and namespace them, e.g
+* For internal links, use explicit labels, e.g
 
   .. code-block:: rst
 
-     .. _doc_mydoc:
+     .. _sec_short_name:
 
-     ======================
-     Start Document Heading
-     ======================
+     Section name
+     ============
 
-     .. _doc_mydoc_internalheadline:
-
-     Internal Headline
-     =================
-
-  and in some other file
+  and elsewhere (in any document),
 
   .. code-block:: rst
 
-     A link- :ref:`my link name <doc_mydoc_internalheadline>`
+     See :ref:`link text <sec_short_name>`
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
