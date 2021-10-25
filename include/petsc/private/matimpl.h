@@ -421,6 +421,9 @@ typedef struct { /* used by MatProduct() */
   MatProductType type;
   char           *alg;
   Mat            A,B,C,Dwork;
+  PetscBool      symbolic_used_the_fact_A_is_symmetric; /* Symbolic phase took advantage of the fact that A is symmetric, and optimized e.g. AtB as AB. Then, .. */
+  PetscBool      symbolic_used_the_fact_B_is_symmetric; /* .. in the numeric phase, if a new A is not symmetric (but has the same sparsity as the old A therefore .. */
+  PetscBool      symbolic_used_the_fact_C_is_symmetric; /* MatMatMult(A,B,MAT_REUSE_MATRIX,..&C) is still legitimate), we need to redo symbolic! */
   PetscReal      fill;
   PetscBool      api_user; /* used to distinguish command line options and to indicate the matrix values are ready to be consumed at symbolic phase if needed */
 

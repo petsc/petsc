@@ -17,10 +17,9 @@
 #echo "(2) Set the version number and release date in petscversion.h?"
 #echo "(3) Made sure Fortran include files match C ones?"
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on login.mcs"
-#echo "(5) Update update-docs.py with additional docs on the petsc web page (for eg new changes file)"
-#echo "(6) Update version info on all petsc web pages"
-#echo "(7) tag the new release with git and make a new clone for the release"
-#echo "(8) got the users manual CLEARED by ANL publications for release"
+#echo "(5) Update version info on all petsc web pages"
+#echo "(6) tag the new release with git and make a new clone for the release"
+#echo "(7) got the users manual CLEARED by ANL publications for release"
 
 # If version specified on the commandline, set the version
 echo "Starting date: `date +'%a, %d %b %Y %H:%M:%S %z'`"

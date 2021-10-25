@@ -1205,7 +1205,7 @@ struct PetscScalarToPetscInt
   }
 };
 
-static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTransposeForMult(Mat A)
+static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTranspose(Mat A)
 {
   Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct *matstruct, *matstructT;
@@ -1216,7 +1216,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTransposeForMult(Mat A)
   PetscErrorCode               ierr;
 
   PetscFunctionBegin;
-  if (!A->form_explicit_transpose || !A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
   if (!matstruct) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"Missing mat struct");
@@ -1257,12 +1256,34 @@ static PetscErrorCode MatSeqAIJCUSPARSEFormExplicitTransposeForMult(Mat A)
       cusparsestruct->rowoffsets_gpu->assign(a->i,a->i+A->rmap->n+1);
 
      #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
-      stat = cusparseCreateCsr(&matstructT->matDescr,
+      #if PETSC_PKG_CUDA_VERSION_GE(11,2,1)
+        stat = cusparseCreateCsr(&matstructT->matDescr,
                                matrixT->num_rows, matrixT->num_cols, matrixT->num_entries,
                                matrixT->row_offsets->data().get(), matrixT->column_indices->data().get(),
                                matrixT->values->data().get(),
                                CUSPARSE_INDEX_32I,CUSPARSE_INDEX_32I, /* row offset, col idx type due to THRUSTINTARRAY32 */
                                indexBase,cusparse_scalartype);CHKERRCUSPARSE(stat);
+      #else
+        /* cusparse-11.x returns errors with zero-sized matrices until 11.2.1,
+           see https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cusparse-11.2.1
+
+           I don't know what a proper value should be for matstructT->matDescr with empty matrices, so I just set
+           it to NULL to blow it up if one relies on it. Per https://docs.nvidia.com/cuda/cusparse/index.html#csr2cscEx2,
+           when nnz = 0, matrixT->row_offsets[] should be filled with indexBase. So I also set it accordingly.
+        */
+        if (matrixT->num_entries) {
+          stat = cusparseCreateCsr(&matstructT->matDescr,
+                                 matrixT->num_rows, matrixT->num_cols, matrixT->num_entries,
+                                 matrixT->row_offsets->data().get(), matrixT->column_indices->data().get(),
+                                 matrixT->values->data().get(),
+                                 CUSPARSE_INDEX_32I,CUSPARSE_INDEX_32I,
+                                 indexBase,cusparse_scalartype);CHKERRCUSPARSE(stat);
+
+        } else {
+          matstructT->matDescr = NULL;
+          matrixT->row_offsets->assign(matrixT->row_offsets->size(),indexBase);
+        }
+      #endif
      #endif
     } else if (cusparsestruct->format == MAT_CUSPARSE_ELL || cusparsestruct->format == MAT_CUSPARSE_HYB) {
    #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
@@ -2029,7 +2050,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
       mat = cusp->mat;
       opA = CUSPARSE_OPERATION_TRANSPOSE;
     } else {
-      ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(A);CHKERRQ(ierr);
+      ierr = MatSeqAIJCUSPARSEFormExplicitTranspose(A);CHKERRQ(ierr);
       mat  = cusp->matTranspose;
       opA  = CUSPARSE_OPERATION_NON_TRANSPOSE;
     }
@@ -2288,8 +2309,14 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   ierr = MatSeqAIJCUSPARSECopyToGPU(B);CHKERRQ(ierr);
 
   ptype = product->type;
-  if (A->symmetric && ptype == MATPRODUCT_AtB) ptype = MATPRODUCT_AB;
-  if (B->symmetric && ptype == MATPRODUCT_ABt) ptype = MATPRODUCT_AB;
+  if (A->symmetric && ptype == MATPRODUCT_AtB) {
+    ptype = MATPRODUCT_AB;
+    if (!product->symbolic_used_the_fact_A_is_symmetric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Symbolic should have been built using the fact that A is symmetric");
+  }
+  if (B->symmetric && ptype == MATPRODUCT_ABt) {
+    ptype = MATPRODUCT_AB;
+    if (!product->symbolic_used_the_fact_B_is_symmetric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Symbolic should have been built using the fact that B is symmetric");
+  }
   switch (ptype) {
   case MATPRODUCT_AB:
     Amat = Acusp->mat;
@@ -2394,11 +2421,6 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   if (!flg) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Not for B of type %s",((PetscObject)B)->type_name);
   a = (Mat_SeqAIJ*)A->data;
   b = (Mat_SeqAIJ*)B->data;
-  Acusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
-  Bcusp = (Mat_SeqAIJCUSPARSE*)B->spptr;
-  if (Acusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
-  if (Bcusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
-
   /* product data */
   ierr = PetscNew(&mmdata);CHKERRQ(ierr);
   C->product->data    = mmdata;
@@ -2406,9 +2428,20 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
 
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   ierr = MatSeqAIJCUSPARSECopyToGPU(B);CHKERRQ(ierr);
+  Acusp = (Mat_SeqAIJCUSPARSE*)A->spptr; /* Access spptr after MatSeqAIJCUSPARSECopyToGPU, not before */
+  Bcusp = (Mat_SeqAIJCUSPARSE*)B->spptr;
+  if (Acusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
+  if (Bcusp->format != MAT_CUSPARSE_CSR) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_GPU,"Only for MAT_CUSPARSE_CSR format");
+
   ptype = product->type;
-  if (A->symmetric && ptype == MATPRODUCT_AtB) ptype = MATPRODUCT_AB;
-  if (B->symmetric && ptype == MATPRODUCT_ABt) ptype = MATPRODUCT_AB;
+  if (A->symmetric && ptype == MATPRODUCT_AtB) {
+    ptype = MATPRODUCT_AB;
+    product->symbolic_used_the_fact_A_is_symmetric = PETSC_TRUE;
+  }
+  if (B->symmetric && ptype == MATPRODUCT_ABt) {
+    ptype = MATPRODUCT_AB;
+    product->symbolic_used_the_fact_B_is_symmetric = PETSC_TRUE;
+  }
   biscompressed = PETSC_FALSE;
   ciscompressed = PETSC_FALSE;
   switch (ptype) {
@@ -2425,7 +2458,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
     m = A->cmap->n;
     n = B->cmap->n;
     k = A->rmap->n;
-    ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(A);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEFormExplicitTranspose(A);CHKERRQ(ierr);
     Amat = Acusp->matTranspose;
     Bmat = Bcusp->mat;
     if (b->compressedrow.use) biscompressed = PETSC_TRUE;
@@ -2434,7 +2467,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
     m = A->rmap->n;
     n = B->rmap->n;
     k = A->cmap->n;
-    ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(B);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSEFormExplicitTranspose(B);CHKERRQ(ierr);
     Amat = Acusp->mat;
     Bmat = Bcusp->matTranspose;
     if (a->compressedrow.use) ciscompressed = PETSC_TRUE;
@@ -2959,7 +2992,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz
       opA = herm ? CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE : CUSPARSE_OPERATION_TRANSPOSE;
       matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
     } else {
-      if (!cusparsestruct->matTranspose) {ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(A);CHKERRQ(ierr);}
+      if (!cusparsestruct->matTranspose) {ierr = MatSeqAIJCUSPARSEFormExplicitTranspose(A);CHKERRQ(ierr);}
       matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->matTranspose;
     }
   }
@@ -3039,7 +3072,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz
 
       stat = cusparseSpMV(cusparsestruct->handle, opA,
                                matstruct->alpha_one,
-                               matstruct->matDescr, /* built in MatSeqAIJCUSPARSECopyToGPU() or MatSeqAIJCUSPARSEFormExplicitTransposeForMult() */
+                               matstruct->matDescr, /* built in MatSeqAIJCUSPARSECopyToGPU() or MatSeqAIJCUSPARSEFormExplicitTranspose() */
                                matstruct->cuSpMV[opA].vecXDescr,
                                beta,
                                matstruct->cuSpMV[opA].vecYDescr,
@@ -4287,8 +4320,6 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
     cerr = cudaMemcpy(Cmat->beta_one, &PETSC_CUSPARSE_ONE, sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
     ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
     ierr = MatSeqAIJCUSPARSECopyToGPU(B);CHKERRQ(ierr);
-    ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(A);CHKERRQ(ierr);
-    ierr = MatSeqAIJCUSPARSEFormExplicitTransposeForMult(B);CHKERRQ(ierr);
     if (!Acusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
     if (!Bcusp->mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Mat_SeqAIJCUSPARSEMultStruct");
 
@@ -4389,6 +4420,8 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A,Mat B,MatReuse reuse,Mat* C)
                                CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype);CHKERRCUSPARSE(stat);
 #endif
       if (A->form_explicit_transpose && B->form_explicit_transpose) { /* if A and B have the transpose, generate C transpose too */
+        ierr = MatSeqAIJCUSPARSEFormExplicitTranspose(A);CHKERRQ(ierr);
+        ierr = MatSeqAIJCUSPARSEFormExplicitTranspose(B);CHKERRQ(ierr);
         PetscBool AT = Acusp->matTranspose ? PETSC_TRUE : PETSC_FALSE, BT = Bcusp->matTranspose ? PETSC_TRUE : PETSC_FALSE;
         Mat_SeqAIJCUSPARSEMultStruct *CmatT = new Mat_SeqAIJCUSPARSEMultStruct;
         CsrMatrix *CcsrT = new CsrMatrix;

@@ -137,7 +137,8 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #endif
 
 /* C++17 features */
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17)
+/* We met cases that the host CXX compiler (say mpicxx) supports C++17, but nvcc does not agree, even with -ccbin mpicxx! */
+#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17) && (!defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_CUDA_DIALECT_CXX17))
 #  define PETSC_NODISCARD    [[nodiscard]]
 #  define PETSC_CONSTEXPR_17 PETSC_CONSTEXPR
 #else
@@ -2233,7 +2234,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 
 .seealso: PetscCuBLASInt, PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscMPIIntCast(), PetscIntCast()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscBLASInt *b)
+PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscCuBLASInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)

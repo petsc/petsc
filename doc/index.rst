@@ -43,7 +43,7 @@ Main Topics
    Installation <install/index>
    FAQ <faq/index>
    Documentation <docs/index>
-   Tutorials <tutorials/guide_to_examples>
+   Tutorials <tutorials/index>
    Community <community/index>
    Developers <developers/index>
    Misc. <miscellaneous/index>
