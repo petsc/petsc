@@ -137,7 +137,8 @@ responsibility to fix the errors.
 
 Reviewers will comment on the MR, either in the overview or by clicking next to specific lines
 in the changes for a commit or the overall MR [#review_click_comment]_ [#review_on_line]_.
-Often, the submitter will need to update their branch in response to these comments.
+Often, the submitter will need to update their branch in response to these comments,
+and re-run the pipeline.
 
 Gitlab MRs use "threads" to track these discussions.
 When responding to a thread make sure to use "Reply" box for that
