@@ -235,10 +235,7 @@ PetscErrorCode VecCreate_SeqHIP(Vec V)
   ierr = PetscLayoutSetUp(V->map);CHKERRQ(ierr);
   ierr = VecHIPAllocateCheck(V);CHKERRQ(ierr);
   ierr = VecCreate_SeqHIP_Private(V,((Vec_HIP*)V->spptr)->GPUarray_allocated);CHKERRQ(ierr);
-  ierr = VecHIPAllocateCheckHost(V);CHKERRQ(ierr);
-  ierr = VecSet(V,0.0);CHKERRQ(ierr);
-  ierr = VecSet_Seq(V,0.0);CHKERRQ(ierr);
-  V->offloadmask = PETSC_OFFLOAD_BOTH;
+  ierr = VecSet_SeqHIP(V,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
