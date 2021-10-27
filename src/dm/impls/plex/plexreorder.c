@@ -156,8 +156,8 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data, *plexNew;
-  PetscSection   section, sectionNew;
   PetscInt       dim;
+  const char    *name;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -166,11 +166,15 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   PetscValidPointer(pdm, 3);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), pdm);CHKERRQ(ierr);
   ierr = DMSetType(*pdm, DMPLEX);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *pdm, name);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(*pdm, dim);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *pdm);CHKERRQ(ierr);
-  ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-  if (section) {
+  if (dm->localSection) {
+    PetscSection section, sectionNew;
+
+    ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionPermute(section, perm, &sectionNew);CHKERRQ(ierr);
     ierr = DMSetLocalSection(*pdm, sectionNew);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&sectionNew);CHKERRQ(ierr);
