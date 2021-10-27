@@ -386,7 +386,13 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(udm, &maxConeSize, NULL);CHKERRQ(ierr);
-  numCells    = cEnd - cStart;
+  numCells = cEnd - cStart;
+  if (numCells == 0) {
+    PetscMPIInt rank;
+
+    ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot perform mesh adaptation because process %d does not own any cells.", rank);
+  }
   numVertices = vEnd - vStart;
   ierr = PetscCalloc5(numVertices, &x, numVertices, &y, numVertices, &z, numVertices*PetscSqr(dim), &metric, numCells*maxConeSize, &cells);CHKERRQ(ierr);
   for (c = 0, coff = 0; c < numCells; ++c) {
