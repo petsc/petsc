@@ -16,7 +16,7 @@ stages:
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
-  PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -checkstack
+  PETSC_OPTIONS: -checkstack
   TIMEOUT: 450
 
 #
@@ -446,7 +446,7 @@ freebsd-cxx-pkgs-opt:
   tags:
     - os:fbsd
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack
     TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
 
 freebsd-pkgs-opt:
@@ -486,7 +486,6 @@ linux-c-exodus-dbg:
   tags:
     - gpu:nvidia, os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0 -checkstack
     TEST_ARCH: arch-ci-linux-c-exodus-dbg
     RUN_GCOV: 1
     TEST_OPTS: -j1 query=requires queryval=cuda
@@ -498,7 +497,6 @@ linux-cuda11-double:
   tags:
     - gpu:nvidia, os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0 -checkstack
     TEST_ARCH: arch-ci-linux-cuda11-double
     TEST_OPTS: -j1 query=requires queryval=cuda
 
@@ -509,7 +507,6 @@ linux-cuda11-complex:
   tags:
     - gpu:nvidia, os:linux, name:frog
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0 -checkstack
     TEST_ARCH: arch-ci-linux-cuda11-complex
     TEST_OPTS: -j1 query=requires queryval=cuda
 
@@ -530,7 +527,6 @@ linux-cuda-single-cxx:
   tags:
     - gpu:nvidia, os:linux
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -use_gpu_aware_mpi 0 -checkstack
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
     TEST_OPTS: -j1 query=requires queryval=cuda
 
@@ -639,7 +635,6 @@ linux-pkgs-cxx-mlib:
   tags:
     - gce-nfs
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -checkstack
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
     LOAD_MODULES: gcc/11.1.0-5ikoznk cmake/3.20.5-yjp2hz6
 
@@ -661,7 +656,6 @@ linux-pkgs-opt:
   tags:
     - gce-nfs, linux-fast
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -checkstack
     TEST_ARCH: arch-ci-linux-pkgs-opt
     LOAD_MODULES: gcc/10.1.0-5hiqhdh
 
@@ -682,7 +676,7 @@ linux-cmplx-gcov:
   tags:
     - gce-nfs, linux-gcov
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -vecscatter_mpi1 false -options_left false -checkstack
+    PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkstack
     TEST_ARCH: arch-ci-linux-cmplx-gcov
     LOAD_MODULES: gcc/8.3.0-fjpc5ys
     RUN_GCOV: 1
@@ -923,7 +917,7 @@ osx-cxx-pkgs-opt:
   tags:
     - os:macos, opt
   variables:
-    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump -saws_port_auto_select -saws_port_auto_select_silent -vecscatter_mpi1 false -options_left false
+    PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false -checkstack
     TEST_ARCH: arch-ci-osx-cxx-pkgs-opt
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
 

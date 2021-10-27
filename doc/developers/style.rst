@@ -438,21 +438,30 @@ Usage of PETSc Functions and Macros
 #. Before removing or renaming an API function, type, or enumerator,
    ``PETSC_DEPRECATED_XXX()`` should be used in the relevant header file
    to indicate the new, correct usage and the version number where the
-   deprecation will first appear. For example,
+   deprecation will first appear. The old function or type, with the
+   deprecation warning, should remain for at least one major release.
+   The function or type’s manual page should be updated (see :ref:`manual_page_format`).
+   For example,
 
    ::
 
        typedef NewType OldType PETSC_DEPRECATED_TYPEDEF("Use NewType (since version 3.9)");
+
        PETSC_DEPRECATED_FUNCTION("Use NewFunction() (since version 3.9)") PetscErrorCode OldFunction();
+
        #define OLD_ENUMERATOR_DEPRECATED  OLD_ENUMERATOR PETSC_DEPRECATED_ENUM("Use NEW_ENUMERATOR (since version 3.9)")
        typedef enum {
          OLD_ENUMERATOR_DEPRECATED = 3,
          NEW_ENUMERATOR = 3
        } MyEnum;
 
-   The old function or type, with the deprecation warning, should remain
-   for at least one major release. The function or type’s manual page
-   should be updated (see :ref:`manual_page_format`).
+   Note that after compiler preprocessing, the enum above would be transformed to something like
+   ::
+
+       typedef enum {
+         OLD_ENUMERATOR __attribute((deprecated)) = 3,
+         NEW_ENUMERATOR = 3
+       } MyEnum;
 
 #. Before removing or renaming an options database key,
    ``PetscOptionsDeprecated()`` should be used for at least one major

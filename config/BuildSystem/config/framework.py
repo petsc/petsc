@@ -853,9 +853,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputMakeMacros(f, self)
     for child in self.childGraph.vertices:
       self.outputMakeMacros(f, child)
+    # The testoptions are provided in packages/
+    testoptions = ''
+    for child in self.childGraph.vertices:
+        if hasattr(child,'found') and child.found and hasattr(child,'testoptions') and child.testoptions:
+          testoptions += ' '+child.testoptions
+    f.write('PETSC_TEST_OPTIONS = '+testoptions+'\n')
     if not hasattr(name, 'close'):
       f.close()
-    return
 
   def outputMakeRuleHeader(self, name):
     '''Write the make configuration header (bmake file)'''

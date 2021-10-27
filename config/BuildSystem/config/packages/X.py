@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     self.liblist          = [['libX11.a']]
     self.lookforbydefault = 1
     self.pkgname          = 'x11'
+    self.testoptions      = '-nox -nox_warning'
     return
 
   def versionToStandardForm(self,ver):
