@@ -28,6 +28,7 @@ configure_options = [
   '--download-libjpeg=1',
   '--download-h2opus=1',
   '--download-thrust=1',
+  '--download-hcephes=1',
   '--with-zlib=1',
   ]
 
