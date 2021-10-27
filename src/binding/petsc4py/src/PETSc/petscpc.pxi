@@ -136,6 +136,7 @@ cdef extern from * nogil:
     int PCSetUpOnBlocks(PetscPC)
 
     int PCApply(PetscPC,PetscVec,PetscVec)
+    int PCMatApply(PetscPC,PetscMat,PetscMat)
     int PCApplyTranspose(PetscPC,PetscVec,PetscVec)
     int PCApplySymmetricLeft(PetscPC,PetscVec,PetscVec)
     int PCApplySymmetricRight(PetscPC,PetscVec,PetscVec)

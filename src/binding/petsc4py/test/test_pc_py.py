@@ -23,9 +23,13 @@ class BaseMyPC(object):
         self.applyS(pc, x, y)
     def applyRich(self, pc, x, y, w, tols):
         self.apply(pc, x, y)
+    def applyM(self, pc, x, y):
+        raise NotImplementedError
 
 class MyPCNone(BaseMyPC):
     def apply(self, pc, x, y):
+        x.copy(y)
+    def applyM(self, pc, x, y):
         x.copy(y)
 
 class MyPCJacobi(BaseMyPC):
@@ -42,6 +46,9 @@ class MyPCJacobi(BaseMyPC):
         self.diag.copy(y)
         y.sqrtabs()
         y.pointwiseMult(y, x)
+    def applyM(self, pc, x, y):
+        x.copy(y)
+        y.diagonalScale(L=self.diag)
 
 class PC_PYTHON_CLASS(object):
 
@@ -102,7 +109,12 @@ class PC_PYTHON_CLASS(object):
         assert isinstance(x,  PETSc.Vec)
         assert isinstance(y,  PETSc.Vec)
         self.impl.applyT(pc, x, y)
-
+    def matApply(self, pc, x, y):
+        self._log('matApply', pc, x, y)
+        assert isinstance(pc, PETSc.PC)
+        assert isinstance(x,  PETSc.Mat)
+        assert isinstance(y,  PETSc.Mat)
+        self.impl.applyM(pc, x, y)
     def applyRichardson(self, pc, x, y, w, tols):
         self._log('applyRichardson', pc, x, y, w, tols)
         assert isinstance(pc, PETSc.PC)
@@ -152,26 +164,36 @@ class TestPCPYTHON(unittest.TestCase):
         x, y = A.createVecs()
         x.setRandom()
         self.pc.setOperators(A, A)
+        X = PETSc.Mat().createDense([3,5], comm=PETSc.COMM_SELF).setUp()
+        X.assemble()
+        Y = PETSc.Mat().createDense([3,5], comm=PETSc.COMM_SELF).setUp()
+        Y.assemble()
         assert (A,A) == self.pc.getOperators()
-        return A, x, y
+        return A, x, y, X, Y
 
     def _getCtx(self):
         return self.pc.getPythonContext()
 
     def _applyMeth(self, meth):
-        A, x, y = self._prepare()
-        getattr(self.pc, meth)(x,y)
+        A, x, y, X, Y = self._prepare()
+        if meth == 'matApply':
+            getattr(self.pc, meth)(X,Y)
+            x.copy(y)
+        else:
+            getattr(self.pc, meth)(x,y)
+            X.copy(Y)
         if 'reset' not in self._getCtx().log:
             assert self._getCtx().log['setUp'] == 1
             assert self._getCtx().log[meth] == 1
         else:
             nreset = self._getCtx().log['reset']
             nsetup = self._getCtx().log['setUp']
-            nmeth  = self._getCtx().log[meth] 
+            nmeth  = self._getCtx().log[meth]
             assert (nreset == nsetup)
             assert (nreset == nmeth)
         if isinstance(self._getCtx().impl, MyPCNone):
             self.assertTrue(y.equal(x))
+            self.assertTrue(Y.equal(X))
     def testApply(self):
         self._applyMeth('apply')
     def testApplySymmetricLeft(self):
@@ -180,6 +202,8 @@ class TestPCPYTHON(unittest.TestCase):
         self._applyMeth('applySymmetricRight')
     def testApplyTranspose(self):
         self._applyMeth('applyTranspose')
+    def testApplyMat(self):
+        self._applyMeth('matApply')
     ## def testApplyRichardson(self):
     ##     x, y = self._prepare()
     ##     w = x.duplicate()
@@ -205,7 +229,7 @@ class TestPCPYTHON(unittest.TestCase):
         self.pc.reset()
 
     def testKSPSolve(self):
-        A, x, y = self._prepare()
+        A, x, y, _, _ = self._prepare()
         ksp = PETSc.KSP().create(self.pc.comm)
         ksp.setType(PETSc.KSP.Type.PREONLY)
         assert self.pc.getRefCount() == 1

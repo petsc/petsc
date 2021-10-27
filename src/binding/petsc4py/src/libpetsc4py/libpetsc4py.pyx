@@ -1421,6 +1421,7 @@ cdef extern from * nogil:
       PetscErrorCode (*presolve)(PetscPC,PetscKSP,PetscVec,PetscVec) except IERR
       PetscErrorCode (*postsolve)(PetscPC,PetscKSP,PetscVec,PetscVec) except IERR
       PetscErrorCode (*apply)(PetscPC,PetscVec,PetscVec) except IERR
+      PetscErrorCode (*matapply)(PetscPC,PetscMat,PetscMat) except IERR
       PetscErrorCode (*applytranspose)(PetscPC,PetscVec,PetscVec) except IERR
       PetscErrorCode (*applysymmetricleft)(PetscPC,PetscVec,PetscVec) except IERR
       PetscErrorCode (*applysymmetricright)(PetscPC,PetscVec,PetscVec) except IERR
@@ -1428,6 +1429,9 @@ cdef extern from * nogil:
     struct _p_PC:
         void *data
         PCOps ops
+
+cdef extern from * nogil:
+    PetscErrorCode PCMatApply(PetscPC,PetscMat,PetscMat)
 
 @cython.internal
 cdef class _PyPC(_PyObj): pass
@@ -1473,6 +1477,7 @@ cdef PetscErrorCode PCCreate_Python(
     ops.presolve            = PCPreSolve_Python
     ops.postsolve           = PCPostSolve_Python
     ops.apply               = PCApply_Python
+    ops.matapply            = PCMatApply_Python
     ops.applytranspose      = PCApplyTranspose_Python
     ops.applysymmetricleft  = PCApplySymmetricLeft_Python
     ops.applysymmetricright = PCApplySymmetricRight_Python
@@ -1654,6 +1659,25 @@ cdef PetscErrorCode PCApplySymmetricRight_Python(
     cdef applySymmetricRight = PyPC(pc).applySymmetricRight
     applySymmetricRight(PC_(pc), Vec_(x), Vec_(y))
     return FunctionEnd()
+
+cdef PetscErrorCode PCMatApply_Python(
+    PetscPC  pc,
+    PetscMat X,
+    PetscMat Y,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"PCMatApply_Python")
+    cdef matApply = PyPC(pc).matApply
+    if matApply is None:
+        try:
+            pc.ops.matapply = NULL
+            CHKERR( PCMatApply(pc, X, Y) )
+        finally:
+            pc.ops.matapply = PCMatApply_Python
+        return FunctionEnd()
+    matApply(PC_(pc), Mat_(X), Mat_(Y))
+    return FunctionEnd()
+
 
 # --------------------------------------------------------------------
 

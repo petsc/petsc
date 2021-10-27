@@ -231,6 +231,9 @@ cdef class PC(Object):
     def apply(self, Vec x, Vec y):
         CHKERR( PCApply(self.pc, x.vec, y.vec) )
 
+    def matApply(self, Mat x, Mat y):
+        CHKERR( PCMatApply(self.pc, x.mat, y.mat) )
+
     def applyTranspose(self, Vec x, Vec y):
         CHKERR( PCApplyTranspose(self.pc, x.vec, y.vec) )
 
