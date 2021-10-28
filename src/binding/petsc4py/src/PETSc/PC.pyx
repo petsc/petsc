@@ -213,6 +213,11 @@ cdef class PC(Object):
             cflag = PETSC_TRUE
         CHKERR( PCSetUseAmat(self.pc, cflag) )
 
+    def getUseAmat(self):
+        cdef PetscBool cflag = PETSC_FALSE
+        CHKERR( PCGetUseAmat(self.pc, &cflag) )
+        return toBool(cflag)
+
     def setReusePreconditioner(self, flag):
         cdef PetscBool cflag = PETSC_FALSE
         if flag:

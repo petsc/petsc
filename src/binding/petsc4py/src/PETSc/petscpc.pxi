@@ -155,6 +155,7 @@ cdef extern from * nogil:
     int PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)
     int PCSetCoordinates(PetscPC,PetscInt,PetscInt,PetscReal[])
     int PCSetUseAmat(PetscPC,PetscBool)
+    int PCGetUseAmat(PetscPC,PetscBool*)
 
     int PCComputeExplicitOperator(PetscPC,PetscMat*)
 
