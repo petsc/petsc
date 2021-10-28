@@ -544,6 +544,7 @@ cdef extern from * nogil:
     PetscErrorCode MatSolveTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     PetscErrorCode MatProductGetType(PetscMat,PetscMatProductType*)
     PetscErrorCode MatProductGetMats(PetscMat,PetscMat*,PetscMat*,PetscMat*)
+    PetscErrorCode MatCreateSubMatrix(PetscMat,PetscIS,PetscIS,MatReuse,PetscMat*)
     PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt*)
     PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject,PetscInt,PetscInt*,PetscBool*)
     PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject,PetscInt,PetscInt)
@@ -783,7 +784,13 @@ cdef PetscErrorCode MatCreateSubMatrix_Python(
     except IERR with gil:
     FunctionBegin(b"MatCreateSubMatrix_Python")
     cdef createSubMatrix = PyMat(mat).createSubMatrix
-    if createSubMatrix is None: return UNSUPPORTED(b"createSubMatrix")
+    if createSubMatrix is None:
+       try:
+           mat.ops.createsubmatrix = NULL
+           CHKERR( MatCreateSubMatrix(mat, row, col, op, out) )
+       finally:
+           mat.ops.createsubmatrix = MatCreateSubMatrix_Python
+       return FunctionEnd()
     cdef Mat sub = None
     if op == MAT_IGNORE_MATRIX:
         sub = None
