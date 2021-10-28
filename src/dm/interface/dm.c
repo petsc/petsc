@@ -848,11 +848,12 @@ PetscErrorCode  DMSetUp(DM dm)
 . -dm_plex_ball_radius <r>          - Radius of the ball
 . -dm_plex_cylinder_bd <bz>         - Boundary type in the z direction
 . -dm_plex_cylinder_num_wedges <n>  - Number of wedges around the cylinder
+. -dm_plex_reorder <order>          - Reorder the mesh using the specified algorithm
 . -dm_refine_pre <n>                - The number of refinements before distribution
 . -dm_refine_uniform_pre <bool>     - Flag for uniform refinement before distribution
 . -dm_refine_volume_limit_pre <v>   - The maximum cell volume after refinement before distribution
 . -dm_refine <n>                    - The number of refinements after distribution
-. -dm_extrude <l>                   - Acticate extrusion and apecify the number of layers to extrude
+. -dm_extrude <l>                   - Activate extrusion and specify the number of layers to extrude
 . -dm_plex_transform_extrude_thickness <t>           - The total thickness of extruded layers
 . -dm_plex_transform_extrude_use_tensor <bool>       - Use tensor cells when extruding
 . -dm_plex_transform_extrude_symmetric <bool>        - Extrude layers symmetrically about the surface
