@@ -4241,7 +4241,6 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
    Level: intermediate
 
 .seealso: MatConvert(), MatDuplicate()
-
 @*/
 PetscErrorCode MatCopy(Mat A,Mat B,MatStructure str)
 {
@@ -4828,8 +4827,6 @@ PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type,MatFactorType f
   PetscFunctionReturn(0);
 }
 
-#include <petscdmtypes.h>
-
 /*@
    MatDuplicate - Duplicates a matrix including the non-zero structure.
 
@@ -4856,7 +4853,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   PetscErrorCode ierr;
   Mat            B;
   PetscInt       i;
-  DM             dm;
+  PetscObject    dm;
   void           (*viewf)(void);
 
   PetscFunctionBegin;
@@ -4871,6 +4868,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   if (!mat->ops->duplicate) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not written for matrix type %s\n",((PetscObject)mat)->type_name);
   ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->duplicate)(mat,op,M);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   B    = *M;
 
   ierr = MatGetOperation(mat,MATOP_VIEW,&viewf);CHKERRQ(ierr);
@@ -4888,11 +4886,10 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   B->nooffproczerorows = mat->nooffproczerorows;
   B->nooffprocentries  = mat->nooffprocentries;
 
-  ierr = PetscObjectQuery((PetscObject) mat, "__PETSc_dm", (PetscObject*) &dm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) mat, "__PETSc_dm", &dm);CHKERRQ(ierr);
   if (dm) {
-    ierr = PetscObjectCompose((PetscObject) B, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) B, "__PETSc_dm", dm);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
