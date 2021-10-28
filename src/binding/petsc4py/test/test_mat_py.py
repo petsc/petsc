@@ -14,13 +14,22 @@ class Matrix(object):
     def destroy(self, mat):
         pass
 
-class Identity(Matrix):
+class ScaledIdentity(Matrix):
+
+    s = 2.0
+
+    def scale(self, mat, s):
+        self.s *= s
+
+    def shift(self, mat, s):
+        self.s += s
 
     def mult(self, mat, x, y):
         x.copy(y)
+        y.scale(self.s)
 
     def getDiagonal(self, mat, vd):
-        vd.set(1)
+        vd.set(self.s)
 
     def productSetFromOptions(self, mat, producttype, A, B, C):
         return True
@@ -148,6 +157,7 @@ class Identity(Matrix):
                 A.copy(product, structure=True)
             else:
                 raise RuntimeError('wrong configuration')
+            product.scale(self.s)
         elif producttype == 'AtB':
             if mat is A: # product = identity^T * B
                 B.copy(product, structure=True)
@@ -155,6 +165,7 @@ class Identity(Matrix):
                 A.transpose(product)
             else:
                 raise RuntimeError('wrong configuration')
+            product.scale(self.s)
         elif producttype == 'ABt':
             if mat is A: # product = identity * B^T
                 B.transpose(product)
@@ -162,20 +173,25 @@ class Identity(Matrix):
                 A.copy(product, structure=True)
             else:
                 raise RuntimeError('wrong configuration')
+            product.scale(self.s)
         elif producttype == 'PtAP':
             if mat is A: # product = P^T * identity * P
                 B.transposeMatMult(B, self.tmp)
                 self.tmp.copy(product, structure=True)
+                product.scale(self.s)
             elif mat is B: # product = identity^T * A * identity
                 A.copy(product, structure=True)
+                product.scale(self.s**2)
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'RARt':
             if mat is A: # product = R * identity * R^t
                 B.matTransposeMult(B, self.tmp)
                 self.tmp.copy(product, structure=True)
+                product.scale(self.s)
             elif mat is B: # product = identity * A * identity^T
                 A.copy(product, structure=True)
+                product.scale(self.s**2)
             else:
                 raise RuntimeError('wrong configuration')
         elif producttype == 'ABC':
@@ -190,6 +206,7 @@ class Identity(Matrix):
                 self.tmp.copy(product, structure=True)
             else:
                 raise RuntimeError('wrong configuration')
+            product.scale(self.s)
         else:
             raise RuntimeError('Product {} not implemented'.format(producttype))
 
@@ -312,43 +329,48 @@ class TestMatrix(unittest.TestCase):
         f = lambda : self.A.diagonalScale(x, y)
         self.assertRaises(Exception, f)
 
-class TestIdentity(TestMatrix):
+class TestScaledIdentity(TestMatrix):
 
-    PYCLS = 'Identity'
+    PYCLS = 'ScaledIdentity'
 
     def testMult(self):
+        s = self._getCtx().s
         x, y = self.A.createVecs()
         x.setRandom()
         self.A.mult(x,y)
-        self.assertTrue(y.equal(x))
+        self.assertTrue(y.equal(s*x))
 
     def testMultTransposeSymmKnown(self):
+        s = self._getCtx().s
         x, y = self.A.createVecs()
         x.setRandom()
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, True)
         self.A.multTranspose(x,y)
-        self.assertTrue(y.equal(x))
+        self.assertTrue(y.equal(s*x))
         self.A.setOption(PETSc.Mat.Option.SYMMETRIC, False)
         f = lambda : self.A.multTranspose(x, y)
         self.assertRaises(Exception, f)
 
     def testMultTransposeNewMeth(self):
+        s = self._getCtx().s
         x, y = self.A.createVecs()
         x.setRandom()
         AA = self.A.getPythonContext()
         AA.multTranspose = AA.mult
         self.A.multTranspose(x,y)
         del AA.multTranspose
-        self.assertTrue(y.equal(x))
+        self.assertTrue(y.equal(s*x))
 
     def testGetDiagonal(self):
+        s = self._getCtx().s
         d = self.A.createVecLeft()
         o = d.duplicate()
-        o.set(1)
+        o.set(s)
         self.A.getDiagonal(d)
         self.assertTrue(o.equal(d))
 
     def testMatMat(self):
+        s = self._getCtx().s
         R = PETSc.Random().create(self.COMM)
         R.setFromOptions()
         A = PETSc.Mat().create(self.COMM)
@@ -366,7 +388,7 @@ class TestIdentity(TestMatrix):
         I.setType(PETSc.Mat.Type.AIJ)
         I.setUp()
         I.assemble()
-        I.shift(1.)
+        I.shift(s)
 
         self.assertTrue(self.A.matMult(A).equal(I.matMult(A)))
         self.assertTrue(A.matMult(self.A).equal(A.matMult(I)))
@@ -407,6 +429,18 @@ class TestIdentity(TestMatrix):
         h.destroy()
 
         del AA.multTranspose
+
+    def testShift(self):
+        sold = self._getCtx().s
+        self.A.shift(-0.5)
+        s = self._getCtx().s
+        self.assertTrue(s == sold - 0.5)
+
+    def testScale(self):
+        sold = self._getCtx().s
+        self.A.scale(-0.5)
+        s = self._getCtx().s
+        self.assertTrue(s == sold * -0.5)
 
 class TestDiagonal(TestMatrix):
 
@@ -496,6 +530,19 @@ class TestDiagonal(TestMatrix):
         self.assertTrue(self.A.convert(PETSc.Mat.Type.BAIJ,PETSc.Mat()).equal(self.A))
         self.assertTrue(self.A.convert(PETSc.Mat.Type.SBAIJ,PETSc.Mat()).equal(self.A))
         self.assertTrue(self.A.convert(PETSc.Mat.Type.DENSE,PETSc.Mat()).equal(self.A))
+
+    def testShift(self):
+        old = self._getCtx().D.copy()
+        self.A.shift(-0.5)
+        D = self._getCtx().D
+        self.assertTrue(D.equal(old-0.5))
+
+    def testScale(self):
+        old = self._getCtx().D.copy()
+        self.A.scale(-0.5)
+        D = self._getCtx().D
+        self.assertTrue(D.equal(-0.5*old))
+
 
 # --------------------------------------------------------------------
 
