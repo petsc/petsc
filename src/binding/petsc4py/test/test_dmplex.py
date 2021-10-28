@@ -7,7 +7,7 @@ import numpy as np
 
 # --------------------------------------------------------------------
 
-ERR_SUP = 56
+ERR_ARG_OUTOFRANGE = 63
 
 class BaseTestPlex(object):
 
@@ -188,7 +188,7 @@ class BaseTestPlex(object):
         try:
             newplex = self.plex.adaptMetric(metric,"")
         except PETSc.Error as exc:
-            if exc.ierr != ERR_SUP: raise
+            if exc.ierr != ERR_ARG_OUTOFRANGE: raise
 
 
 # --------------------------------------------------------------------
