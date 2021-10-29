@@ -218,8 +218,16 @@ shared libraries and run with --known-mpi-shared-libraries=1')
         for lib in self.lib:
           path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
         self.pushLanguage('C')
-        if (os.path.basename(self.getCompiler()) == 'mpicc' or os.path.basename(self.getCompiler()) == 'mpiicc') and os.path.dirname(self.getCompiler()):
-          path.append(os.path.dirname(self.getCompiler()))
+        if (os.path.basename(self.getCompiler()) == 'mpicc' or os.path.basename(self.getCompiler()) == 'mpiicc'):
+          if os.path.dirname(self.getCompiler()):
+            path.append(os.path.dirname(self.getCompiler()))
+          else:
+            try:
+              (out,err,status) = config.base.Configure.executeShellCommand('which '+self.getCompiler())
+              if not status and not err:
+                path.append(os.path.dirname(out))
+            except:
+              pass
         self.popLanguage()
         useDefaultPath = 1
       if not self.getExecutable(mpiexecs, path = path, useDefaultPath = useDefaultPath, resultName = 'mpiexec',setMakeMacro=0):
