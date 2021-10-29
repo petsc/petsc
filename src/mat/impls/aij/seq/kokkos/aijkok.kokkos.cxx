@@ -900,41 +900,80 @@ PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat A,PetscScalarKokkosView* kv)
   PetscFunctionReturn(0);
 }
 
-/* Computes Y += a*X */
-static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar a,Mat X,MatStructure str)
+/* Computes Y += alpha X */
+static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar alpha,Mat X,MatStructure pattern)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
+  PetscErrorCode             ierr;
+  Mat_SeqAIJ                 *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
+  Mat_SeqAIJKokkos           *xkok,*ykok,*zkok;
+  ConstMatScalarKokkosView   Xa;
+  MatScalarKokkosView        Ya;
 
   PetscFunctionBegin;
-  if (X->ops->axpy != Y->ops->axpy) {
-    ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  PetscCheckTypeName(Y,MATSEQAIJKOKKOS);
+  PetscCheckTypeName(X,MATSEQAIJKOKKOS);
+  ierr = MatSeqAIJKokkosSyncDevice(Y);CHKERRQ(ierr);
+  ierr = MatSeqAIJKokkosSyncDevice(X);CHKERRQ(ierr);
 
-  if (str != SAME_NONZERO_PATTERN && x->nz == y->nz) {
+  if (pattern != SAME_NONZERO_PATTERN && x->nz == y->nz) {
+    /* We could compare on device, but have to get the comparison result on host. So compare on host instead. */
     PetscBool e;
     ierr = PetscArraycmp(x->i,y->i,Y->rmap->n+1,&e);CHKERRQ(ierr);
     if (e) {
       ierr = PetscArraycmp(x->j,y->j,y->nz,&e);CHKERRQ(ierr);
-      if (e) str = SAME_NONZERO_PATTERN;
+      if (e) pattern = SAME_NONZERO_PATTERN;
     }
   }
 
-  if (str != SAME_NONZERO_PATTERN) {
-    /* TODO: do MatAXPY on device */
-    ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else {
-    ConstPetscScalarKokkosView xv;
-    PetscScalarKokkosView      yv;
+  /* cusparseDcsrgeam2() computes C = alpha A + beta B. If one knew sparsity pattern of C, one can skip
+    cusparseScsrgeam2_bufferSizeExt() / cusparseXcsrgeam2Nnz(), and directly call cusparseScsrgeam2().
+    If X is SUBSET_NONZERO_PATTERN of Y, we could take advantage of this cusparse feature. However,
+    KokkosSparse::spadd(alpha,A,beta,B,C) has symbolic and numeric phases, MatAXPY does not.
+  */
+  ykok = static_cast<Mat_SeqAIJKokkos*>(Y->spptr);
+  xkok = static_cast<Mat_SeqAIJKokkos*>(X->spptr);
+  Xa   = xkok->a_dual.view_device();
+  Ya   = ykok->a_dual.view_device();
 
-    ierr = MatSeqAIJGetKokkosView(X,&xv);CHKERRQ(ierr);
-    ierr = MatSeqAIJGetKokkosView(Y,&yv);CHKERRQ(ierr);
-    KokkosBlas::axpy(a,xv,yv);
-    ierr = MatSeqAIJRestoreKokkosView(X,&xv);CHKERRQ(ierr);
-    ierr = MatSeqAIJRestoreKokkosView(Y,&yv);CHKERRQ(ierr);
+  if (pattern == SAME_NONZERO_PATTERN) {
+    KokkosBlas::axpy(alpha,Xa,Ya);
+    ierr = MatSeqAIJKokkosModifyDevice(Y);
+  } else if (pattern == SUBSET_NONZERO_PATTERN) {
+    MatRowMapKokkosView  Xi = xkok->i_dual.view_device(),Yi = ykok->i_dual.view_device();
+    MatColIdxKokkosView  Xj = xkok->j_dual.view_device(),Yj = ykok->j_dual.view_device();
+
+    Kokkos::parallel_for(Kokkos::TeamPolicy<>(Y->rmap->n, 1),KOKKOS_LAMBDA(const KokkosTeamMemberType& t) {
+      PetscInt i = t.league_rank(); /* row i */
+      Kokkos::single(Kokkos::PerTeam(t), [=] () { /* Only one thread works in a team */
+        PetscInt p,q = Yi(i);
+        for (p=Xi(i); p<Xi(i+1); p++) { /* For each nonzero on row i of X */
+          while (Xj(p) != Yj(q) && q < Yi(i+1)) q++; /* find the matching nonzero on row i of Y */
+          if (Xj(p) == Yj(q)) { /* Found it */
+            Ya(q) += alpha * Xa(p);
+            q++;
+          } else {
+            /* If not found, it indicates the input is wrong (X is not a SUBSET_NONZERO_PATTERN of Y).
+               Just insert a NaN at the beginning of row i if it is not empty, to make the result wrong.
+            */
+            if (Yi(i) != Yi(i+1)) Ya(Yi(i)) = Kokkos::Experimental::nan("1"); /* auto promote the double NaN if needed */
+          }
+        }
+      });
+    });
+    ierr = MatSeqAIJKokkosModifyDevice(Y);
+  } else { /* different nonzero patterns */
+    Mat             Z;
+    KokkosCsrMatrix zcsr;
+    KernelHandle    kh;
+    kh.create_spadd_handle(false);
+    KokkosSparse::spadd_symbolic(&kh,xkok->csrmat,ykok->csrmat,zcsr);
+    KokkosSparse::spadd_numeric(&kh,alpha,xkok->csrmat,(PetscScalar)1.0,ykok->csrmat,zcsr);
+    zkok = new Mat_SeqAIJKokkos(zcsr);
+    ierr = MatCreateSeqAIJKokkosWithCSRMatrix(PETSC_COMM_SELF,zkok,&Z);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(Y,&Z);CHKERRQ(ierr);
+    kh.destroy_spadd_handle();
   }
+
   PetscFunctionReturn(0);
 }
 
