@@ -2,6 +2,8 @@
 PETSc Development Team
 ======================
 
+.. _sec_core_developers:
+
 Current Core Developers
 =======================
 
