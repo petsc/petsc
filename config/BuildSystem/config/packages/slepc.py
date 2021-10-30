@@ -27,6 +27,9 @@ class Configure(config.package.Package):
     self.installdir      = framework.require('PETSc.options.installDir',self)
     self.parch           = framework.require('PETSc.options.arch',self)
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
+    self.cuda            = framework.require('config.packages.cuda',self)
+    self.thrust          = framework.require('config.packages.thrust',self)
+    self.odeps           = [self.cuda,self.thrust]
     return
 
   def Install(self):
@@ -51,6 +54,8 @@ class Configure(config.package.Package):
     else:
       configargs = ''
 
+    self.include = [os.path.join(prefix,'include')]
+    self.lib = [os.path.join(prefix,'lib','libslepc.'+self.setCompilers.sharedLibraryExt)]
     self.addDefine('HAVE_SLEPC',1)
     self.addMakeMacro('SLEPC','yes')
     self.addMakeRule('slepcbuild','', \

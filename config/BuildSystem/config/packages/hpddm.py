@@ -23,13 +23,14 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self,framework)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries',self)
-    self.mathlib         = framework.require('config.packages.mathlib',self)
-    self.cxxlibs         = framework.require('config.packages.cxxlibs',self)
-    self.mpi             = framework.require('config.packages.MPI',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
+    self.cxxlibs         = framework.require('config.packages.cxxlibs',self)
+    self.mathlib         = framework.require('config.packages.mathlib',self)
+    self.flibs           = framework.require('config.packages.flibs',self)
+    self.deps            = [self.blasLapack,self.cxxlibs,self.mathlib,self.flibs] # KSPHPDDM
+    self.mpi             = framework.require('config.packages.MPI',self)
     self.slepc           = framework.require('config.packages.slepc',self)
-    self.deps            = [self.blasLapack,self.cxxlibs,self.mathlib]
-    self.odeps           = [self.mpi,self.slepc]
+    self.odeps           = [self.mpi,self.slepc] # KSPHPDDM + PCHPDDM
     return
 
   def Install(self):
@@ -68,13 +69,8 @@ class Configure(config.package.Package):
         if self.checkSharedLibrariesEnabled():
           slepcbuilddep = ''
           ldflags = ' '.join(self.setCompilers.sharedLibraryFlags)
-          # how can we get the slepc lib? Eventually, we may want to use the variables from the framework
-          #cxxflags += self.headers.toStringNoDupes(self.slepc.dinclude)
-          #ldflags += self.libraries.toString(self.slepc.dlib)
-          dinclude = [incDir]+self.dinclude+[os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include'),os.path.join(self.petscdir.dir,'include'),os.path.join(self.packageDir,'include')]
-          dlib = [os.path.join(libDir,'libslepc.'+self.setCompilers.sharedLibraryExt)]
-          cxxflags += ' '+self.headers.toStringNoDupes(dinclude)
-          ldflags += ' '+self.libraries.toStringNoDupes(dlib)
+          cxxflags += ' '+self.headers.toStringNoDupes(self.dinclude+[os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include')])
+          ldflags += ' '+self.libraries.toStringNoDupes(self.dlib)
           slepcbuilddep = 'slepc-install slepc-build'
           oldFlags = self.compilers.CXXPPFLAGS
           self.compilers.CXXPPFLAGS += ' -I'+incDir
@@ -88,7 +84,7 @@ class Configure(config.package.Package):
           self.addMakeRule('hpddmbuild',slepcbuilddep,\
                              ['@echo "*** Building and installing HPDDM ***"',\
                               '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
-                              '@'+cxx+' '+cxxflags+' '+self.packageDir+'/interface/hpddm_petsc.cpp '+ldflags+' -o '+libDir+os.path.join('/libhpddm_petsc.'+self.setCompilers.sharedLibraryExt)+' > ${PETSC_ARCH}/lib/petsc/conf/hpddm.log 2>&1 || \\\n\
+                              '@'+cxx+' '+cxxflags+' '+os.path.join(self.packageDir,'interface','hpddm_petsc.cpp')+' '+ldflags+' -o '+os.path.join(libDir,'libhpddm_petsc.'+self.setCompilers.sharedLibraryExt)+' > ${PETSC_ARCH}/lib/petsc/conf/hpddm.log 2>&1 || \\\n\
                    (echo "**************************ERROR*************************************" && \\\n\
                    echo "Error building HPDDM. Check ${PETSC_ARCH}/lib/petsc/conf/hpddm.log" && \\\n\
                    echo "********************************************************************" && \\\n\
