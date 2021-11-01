@@ -46,7 +46,7 @@ class Mistakes(object):
         smdirs = set(mdirs)
         sdirs  = set(dirs).difference(AUTODIRS)
         if not smdirs.issubset(sdirs):
-            self.mistakes.append('The makefile in %s contains a directory not on the filesystem: %r' % (root, sorted(smdirs - sdirs)))
+            self.mistakes.append('%s/makefile contains a directory not on the filesystem: %r' % (root, sorted(smdirs - sdirs)))
         if not self.verbose: return
         if smdirs != sdirs:
             from sys import stderr
