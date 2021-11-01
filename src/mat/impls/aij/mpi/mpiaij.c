@@ -59,6 +59,17 @@ static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A,PetscBool flg)
   if (a->B) {
     ierr = MatBindToCPU(a->B,flg);CHKERRQ(ierr);
   }
+
+  /* In addition to binding the diagonal and off-diagonal matrices, bind the local vectors used for matrix-vector products.
+   * This maybe seems a little odd for a MatBindToCPU() call to do, but it makes no sense for the binding of these vectors
+   * to differ from the parent matrix. */
+  if (a->lvec) {
+    ierr = VecBindToCPU(a->lvec,flg);CHKERRQ(ierr);
+  }
+  if (a->diag) {
+    ierr = VecBindToCPU(a->diag,flg);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 

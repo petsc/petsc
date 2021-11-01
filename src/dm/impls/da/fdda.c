@@ -708,6 +708,10 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  if (dof*nx*ny*nz < da->bind_below) {
+    ierr = MatSetBindingPropagates(A,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatBindToCPU(A,PETSC_TRUE);CHKERRQ(ierr);
+  }
   ierr = MatSetDM(A,da);CHKERRQ(ierr);
   if (da->structure_only) {
     ierr = MatSetOption(A,MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);
@@ -1130,7 +1134,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J,PetscBool isIS)
   DMBoundaryType         bx,by;
   ISLocalToGlobalMapping ltog,mltog;
   DMDAStencilType        st;
-  PetscBool              removedups = PETSC_FALSE;
+  PetscBool              removedups = PETSC_FALSE,alreadyboundtocpu = PETSC_TRUE;
 
   PetscFunctionBegin;
   /*
@@ -1230,10 +1234,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J,PetscBool isIS)
       }
     }
     /* do not copy values to GPU since they are all zero and not yet needed there */
+    ierr = MatBoundToCPU(J,&alreadyboundtocpu);CHKERRQ(ierr);
     ierr = MatBindToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatBindToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
+    if (!alreadyboundtocpu) {ierr = MatBindToCPU(J,PETSC_FALSE);CHKERRQ(ierr);}
     ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
     if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
       ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);

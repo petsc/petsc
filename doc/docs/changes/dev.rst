@@ -52,12 +52,19 @@ Changes: Development
 .. rubric:: Vec:
 
 -  Change ``VecTaggerComputeBoxes()`` and ``VecTaggerComputeIS()`` to return a boolean whose value is true if the list was created
+-  Add ``-vec_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` operations
+-  Add ``VecSetBindingPropagates()``
+-  Add ``VecGetBindingPropagates()``
 
 .. rubric:: PetscSection:
 
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
+
+-  Add ``-mat_bind_below`` option for specifying size threshold below which GPU is not used for ``Mat`` operations
+-  Add ``MatSetBindingPropagates()``
+-  Add ``MatGetBindingPropagates()``
 
 .. rubric:: PC:
 
@@ -79,6 +86,7 @@ Changes: Development
 -  Add ``DMLabelCompare()`` for ``DMLabel`` comparison
 -  Add ``DMCompareLabels()`` comparing ``DMLabel``\s of two ``DM``\s
 -  ``DMCopyLabels()`` now takes DMCopyLabelsMode argument determining duplicity handling
+-  Add ``-dm_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` and ``Mat`` objects associated with a DM
 
 .. rubric:: DMSwarm:
 

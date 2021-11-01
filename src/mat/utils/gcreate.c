@@ -203,6 +203,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   const char     *deft = MATAIJ;
   char           type[256];
   PetscBool      flg,set;
+  PetscInt       bind_below = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
@@ -247,6 +248,14 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-mat_form_explicit_transpose","Hint to form an explicit transpose for operations like MatMultTranspose","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = MatSetOption(B,MAT_FORM_EXPLICIT_TRANSPOSE,flg);CHKERRQ(ierr);}
+
+  /* Bind to CPU if below a user-specified size threshold.
+   * This perhaps belongs in the options for the GPU Mat types, but MatBindToCPU() does nothing when called on non-GPU types,
+   * and putting it here makes is more maintainable than duplicating this for all. */
+  ierr = PetscOptionsInt("-mat_bind_below","Set the size threshold (in local rows) below which the Mat is bound to the CPU","MatBindToCPU",bind_below,&bind_below,&flg);CHKERRQ(ierr);
+  if (flg && B->rmap->n < bind_below) {
+    ierr = MatBindToCPU(B,PETSC_TRUE);CHKERRQ(ierr);
+  }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B);CHKERRQ(ierr);
@@ -637,5 +646,63 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
   }
   ierr = PetscLogEventEnd(MAT_SetVCOO,A,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatSetBindingPropagates - Sets whether the state of being bound to the CPU for a GPU matrix type propagates to child and some other associated objects
+
+   Input Parameters:
++  A - the matrix
+-  flg - flag indicating whether the boundtocpu flag should be propagated
+
+   Level: developer
+
+   Notes:
+   If the value of flg is set to true, the following will occur:
+
+   MatCreateSubMatrices() and MatCreateRedundantMatrix() will bind created matrices to CPU if the input matrix is bound to the CPU.
+   MatCreateVecs() will bind created vectors to CPU if the input matrix is bound to the CPU.
+   The bindingpropagates flag itself is also propagated by the above routines.
+
+   Developer Notes:
+   If the fine-scale DMDA has the -dm_bind_below option set to true, then DMCreateInterpolationScale() calls MatSetBindingPropagates()
+   on the restriction/interpolation operator to set the bindingpropagates flag to true.
+
+.seealso: VecSetBindingPropagates(), MatGetBindingPropagates()
+@*/
+PetscErrorCode MatSetBindingPropagates(Mat A,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  A->bindingpropagates = flg;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatGetBindingPropagates - Gets whether the state of being bound to the CPU for a GPU matrix type propagates to child and some other associated objects
+
+   Input Parameter:
+.  A - the matrix
+
+   Output Parameter:
+.  flg - flag indicating whether the boundtocpu flag will be propagated
+
+   Level: developer
+
+.seealso: MatSetBindingPropagates()
+@*/
+PetscErrorCode MatGetBindingPropagates(Mat A,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidBoolPointer(flg,2);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  *flg = A->bindingpropagates;
+#else
+  *flg = PETSC_FALSE;
+#endif
   PetscFunctionReturn(0);
 }

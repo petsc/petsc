@@ -151,6 +151,7 @@ struct _p_Vec {
 #if defined(PETSC_HAVE_DEVICE)
   void                   *spptr; /* this is the special pointer to the array on the GPU */
   PetscBool              boundtocpu;
+  PetscBool              bindingpropagates;
   size_t                 minimum_bytes_pinned_memory; /* minimum data size in bytes for which pinned memory will be allocated */
   PetscBool              pinned_memory; /* PETSC_TRUE if the current host allocation has been made from pinned memory. */
 #endif

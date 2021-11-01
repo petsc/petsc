@@ -58,6 +58,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->setupcalled              = PETSC_FALSE;
   v->setfromoptionscalled     = PETSC_FALSE;
   v->ltogmap                  = NULL;
+  v->bind_below               = 0;
   v->bs                       = 1;
   v->coloringtype             = IS_COLORING_GLOBAL;
   ierr                        = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
@@ -828,7 +829,8 @@ PetscErrorCode  DMSetUp(DM dm)
 +   -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
 .   -dm_vec_type <type>  - type of vector to create inside DM
 .   -dm_mat_type <type>  - type of matrix to create inside DM
--   -dm_is_coloring_type - <global or local>
+.   -dm_is_coloring_type - <global or local>
+-   -dm_bind_below <n>   - bind (force execution on CPU) for Vec and Mat objects with local size (number of vector entries or matrix rows) below n; currently only supported for DMDA
 
     DMPLEX Specific creation options
 + -dm_plex_filename <str>           - File containing a mesh
@@ -903,6 +905,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
     ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","DMSetISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_bind_below","Set the size threshold (in entries) below which the Vec is bound to the CPU","VecBindToCPU",dm->bind_below,&dm->bind_below,&flg);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
     ierr = (*dm->ops->setfromoptions)(PetscOptionsObject,dm);CHKERRQ(ierr);
   }
@@ -1218,6 +1221,10 @@ PetscErrorCode  DMCreateInterpolation(DM dmc,DM dmf,Mat *mat,Vec *vec)
 
   Level: developer
 
+  Developer Notes:
+  If the fine-scale DMDA has the -dm_bind_below option set to true, then DMCreateInterpolationScale() calls MatSetBindingPropagates()
+  on the restriction/interpolation operator to set the bindingpropagates flag to true.
+
 .seealso: DMCreateInterpolation()
 
 @*/
@@ -1226,11 +1233,25 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   PetscErrorCode ierr;
   Vec            fine;
   PetscScalar    one = 1.0;
+#if defined(PETSC_HAVE_CUDA)
+  PetscBool      bindingpropagates,isbound;
+#endif
 
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(daf,&fine);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dac,scale);CHKERRQ(ierr);
   ierr = VecSet(fine,one);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  /* If the 'fine' Vec is bound to the CPU, it makes sense to bind 'mat' as well.
+   * Note that we only do this for the CUDA case, right now, but if we add support for MatMultTranspose() via ViennaCL,
+   * we'll need to do it for that case, too.*/
+  ierr = VecGetBindingPropagates(fine,&bindingpropagates);CHKERRQ(ierr);
+  if (bindingpropagates) {
+    ierr = MatSetBindingPropagates(mat,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = VecBoundToCPU(fine,&isbound);CHKERRQ(ierr);
+    ierr = MatBindToCPU(mat,isbound);CHKERRQ(ierr);
+  }
+#endif
   ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
   ierr = VecDestroy(&fine);CHKERRQ(ierr);
   ierr = VecReciprocal(*scale);CHKERRQ(ierr);
@@ -3132,6 +3153,7 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   ierr = PetscLogEventBegin(DM_Coarsen,dm,0,0,0);CHKERRQ(ierr);
   ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
   if (*dmc) {
+    (*dmc)->bind_below = dm->bind_below; /* Propagate this from parent DM; otherwise -dm_bind_below will be useless for multigrid cases. */
     ierr = DMSetCoarseDM(dm,*dmc);CHKERRQ(ierr);
     (*dmc)->ops->creatematrix = dm->ops->creatematrix;
     ierr                      = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
