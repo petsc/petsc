@@ -484,6 +484,37 @@ static PetscErrorCode MatDuplicate_SeqAIJKokkos(Mat A,MatDuplicateOption dupOpti
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatTranspose_SeqAIJKokkos(Mat A,MatReuse reuse,Mat *B)
+{
+  PetscErrorCode    ierr;
+  Mat               At;
+  KokkosCsrMatrix   *internT,*csrmatT;
+  Mat_SeqAIJKokkos  *atkok,*bkok;
+
+  PetscFunctionBegin;
+  ierr = MatSeqAIJKokkosGenerateTranspose_Private(A,&internT);CHKERRQ(ierr); /* Generate a transpose internally */
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
+    CHKERRCXX(csrmatT = new KokkosCsrMatrix("csrmat",*internT)); /* Deep copy internT to csrmatT, as we want to isolate the internal transpose */
+    CHKERRCXX(atkok   = new Mat_SeqAIJKokkos(*csrmatT));
+    ierr = MatCreateSeqAIJKokkosWithCSRMatrix(PetscObjectComm((PetscObject)A),atkok,&At);CHKERRQ(ierr);
+    if (reuse == MAT_INITIAL_MATRIX) *B = At;
+    else {ierr = MatHeaderMerge(A,&At);CHKERRQ(ierr);} /* Replace A with At inplace */
+  } else { /* MAT_REUSE_MATRIX, just need to copy values to B on device */
+    if ((*B)->assembled) {
+      bkok = static_cast<Mat_SeqAIJKokkos*>((*B)->spptr);
+      CHKERRCXX(Kokkos::deep_copy(bkok->a_dual.view_device(),internT->values));
+      ierr = MatSeqAIJKokkosModifyDevice(*B);CHKERRQ(ierr);
+    } else if ((*B)->preallocated) { /* It is ok for B to be only preallocated, as needed in MatTranspose_MPIAIJ */
+      Mat_SeqAIJ              *bseq = static_cast<Mat_SeqAIJ*>((*B)->data);
+      MatScalarKokkosViewHost a_h(bseq->a,internT->nnz()); /* bseq->nz = 0 if unassembled */
+      MatColIdxKokkosViewHost j_h(bseq->j,internT->nnz());
+      CHKERRCXX(Kokkos::deep_copy(a_h,internT->values));
+      CHKERRCXX(Kokkos::deep_copy(j_h,internT->graph.entries));
+    } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"B must be assembled or preallocated");
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
 {
   PetscErrorCode             ierr;
@@ -1010,6 +1041,7 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   A->ops->multhermitiantranspose    = MatMultHermitianTranspose_SeqAIJKokkos;
   A->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_SeqAIJKokkos;
   A->ops->productnumeric            = MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos;
+  A->ops->transpose                 = MatTranspose_SeqAIJKokkos;
   A->ops->setoption                 = MatSetOption_SeqAIJKokkos;
   a->ops->getarray                  = MatSeqAIJGetArray_SeqAIJKokkos;
   a->ops->restorearray              = MatSeqAIJRestoreArray_SeqAIJKokkos;
