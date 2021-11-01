@@ -325,6 +325,17 @@ cdef class Mat(Object):
         cdef PetscInt rbs = asInt(row_bsize)
         cdef PetscInt cbs = asInt(col_bsize)
         CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
+
+    def setVecType(self, vec_type):
+        cdef PetscVecType cval = NULL
+        vec_type = str2bytes(vec_type, &cval)
+        CHKERR( MatSetVecType(self.mat, cval) )
+
+    def getVecType(self):
+        cdef PetscVecType cval = NULL
+        CHKERR( MatGetVecType(self.mat, &cval) )
+        return bytes2str(cval)
+
     #
 
     def createAIJ(self, size, bsize=None, nnz=None, csr=None, comm=None):

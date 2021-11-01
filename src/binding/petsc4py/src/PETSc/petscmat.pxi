@@ -211,6 +211,8 @@ cdef extern from * nogil:
     int MatSetBlockSize(PetscMat,PetscInt)
     int MatSetBlockSizes(PetscMat,PetscInt,PetscInt)
     int MatSetType(PetscMat,PetscMatType)
+    int MatSetVecType(PetscMat,PetscVecType)
+    int MatGetVecType(PetscMat,PetscVecType*)
     int MatSetOption(PetscMat,PetscMatOption,PetscBool)
 
     enum: MAT_SKIP_ALLOCATION

@@ -329,6 +329,10 @@ class TestMatrix(unittest.TestCase):
         f = lambda : self.A.diagonalScale(x, y)
         self.assertRaises(Exception, f)
 
+    def testSetVecType(self):
+        self.A.setVecType('mpi')
+        self.assertTrue('mpi' == self.A.getVecType())
+
 class TestScaledIdentity(TestMatrix):
 
     PYCLS = 'ScaledIdentity'
