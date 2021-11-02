@@ -85,9 +85,8 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
   DMPlexCreateGlobalToNaturalSF - Creates the SF for mapping Global Vec to the Natural Vec
 
   Input Parameters:
-+ dm          - The DM
-. section     - The PetscSection describing the Vec before the mesh was distributed,
-                or NULL if not available
++ dm          - The redistributed DM
+. section     - The local PetscSection describing the Vec before the mesh was distributed, or NULL if not available
 - sfMigration - The PetscSF used to distribute the mesh, or NULL if it cannot be computed
 
   Output Parameter:
@@ -101,25 +100,22 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
  @*/
 PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscSF sfMigration, PetscSF *sfNatural)
 {
-  MPI_Comm       comm;
-  Vec            gv, tmpVec;
-  PetscSF        sf, sfEmbed, sfSeqToNatural, sfField, sfFieldInv;
-  PetscSection   gSection, sectionDist, gLocSection;
-  PetscInt      *spoints, *remoteOffsets;
-  PetscInt       ssize, pStart, pEnd, p, globalSize;
-  PetscLayout    map;
-  PetscBool      destroyFlag = PETSC_FALSE;
+  MPI_Comm     comm;
+  Vec          tmpVec;
+  PetscSF      sf, sfEmbed, sfField;
+  PetscSection gSection, sectionDist, gLocSection;
+  PetscInt    *spoints, *remoteOffsets;
+  PetscInt     ssize, pStart, pEnd, p, globalSize;
+  PetscBool    destroyFlag = PETSC_FALSE, debug = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject) dm, &comm));
   if (!sfMigration) {
-    /* If sfMigration is missing,
-    sfNatural cannot be computed and is set to NULL */
+    /* If sfMigration is missing, sfNatural cannot be computed and is set to NULL */
     *sfNatural = NULL;
     PetscFunctionReturn(0);
   } else if (!section) {
-    /* If the sequential section is not provided (NULL),
-    it is reconstructed from the parallel section */
+    /* If the sequential section is not provided (NULL), it is reconstructed from the parallel section */
     PetscSF sfMigrationInv;
     PetscSection localSection;
 
@@ -130,22 +126,26 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
     PetscCall(PetscSFDestroy(&sfMigrationInv));
     destroyFlag = PETSC_TRUE;
   }
-  /* PetscCall(PetscPrintf(comm, "Point migration SF\n"));
-   PetscCall(PetscSFView(sfMigration, 0)); */
+  if (debug) PetscCall(PetscSFView(sfMigration, NULL));
   /* Create a new section from distributing the original section */
   PetscCall(PetscSectionCreate(comm, &sectionDist));
   PetscCall(PetscSFDistributeSection(sfMigration, section, &remoteOffsets, sectionDist));
-  /* PetscCall(PetscPrintf(comm, "Distributed Section\n"));
-   PetscCall(PetscSectionView(sectionDist, PETSC_VIEWER_STDOUT_WORLD)); */
+  PetscCall(PetscObjectSetName((PetscObject) sectionDist, "Migrated Section"));
+  if (debug) PetscCall(PetscSectionView(sectionDist, NULL));
   PetscCall(DMSetLocalSection(dm, sectionDist));
-  /* If a sequential section is provided but no dof is affected,
-  sfNatural cannot be computed and is set to NULL */
+  /* If a sequential section is provided but no dof is affected, sfNatural cannot be computed and is set to NULL */
   PetscCall(DMCreateGlobalVector(dm, &tmpVec));
   PetscCall(VecGetSize(tmpVec, &globalSize));
   PetscCall(DMRestoreGlobalVector(dm, &tmpVec));
   if (globalSize) {
-  /* Get a pruned version of migration SF */
+    const PetscInt *leaves;
+    PetscInt       *sortleaves, *indices;
+    PetscInt        Nl;
+
+    /* Get a pruned version of migration SF */
     PetscCall(DMGetGlobalSection(dm, &gSection));
+    if (debug) PetscCall(PetscSectionView(gSection, NULL));
+    PetscCall(PetscSFGetGraph(sfMigration, NULL, &Nl, &leaves, NULL));
     PetscCall(PetscSectionGetChart(gSection, &pStart, &pEnd));
     for (p = pStart, ssize = 0; p < pEnd; ++p) {
       PetscInt dof, off;
@@ -154,46 +154,40 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
       PetscCall(PetscSectionGetOffset(gSection, p, &off));
       if ((dof > 0) && (off >= 0)) ++ssize;
     }
-    PetscCall(PetscMalloc1(ssize, &spoints));
+    PetscCall(PetscMalloc3(ssize, &spoints, Nl, &sortleaves, Nl, &indices));
+    for (p = 0; p < Nl; ++p) {sortleaves[p] = leaves ? leaves[p] : p; indices[p] = p;}
+    PetscCall(PetscSortIntWithArray(Nl, sortleaves, indices));
     for (p = pStart, ssize = 0; p < pEnd; ++p) {
-      PetscInt dof, off;
+      PetscInt dof, off, loc;
 
       PetscCall(PetscSectionGetDof(gSection, p, &dof));
       PetscCall(PetscSectionGetOffset(gSection, p, &off));
-      if ((dof > 0) && (off >= 0)) spoints[ssize++] = p;
+      if ((dof > 0) && (off >= 0)) {
+        PetscCall(PetscFindInt(p, Nl, sortleaves, &loc));
+        PetscCheck(loc >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " with nonzero dof is not a leaf of the migration SF", p);
+        spoints[ssize++] = indices[loc];
+      }
     }
     PetscCall(PetscSFCreateEmbeddedLeafSF(sfMigration, ssize, spoints, &sfEmbed));
-    PetscCall(PetscFree(spoints));
-    /* PetscCall(PetscPrintf(comm, "Embedded SF\n"));
-    PetscCall(PetscSFView(sfEmbed, 0)); */
-    /* Create the SF for seq to natural */
-    PetscCall(DMGetGlobalVector(dm, &gv));
-    PetscCall(VecGetLayout(gv,&map));
-    /* Note that entries of gv are leaves in sfSeqToNatural, entries of the seq vec are roots */
-    PetscCall(PetscSFCreate(comm, &sfSeqToNatural));
-    PetscCall(PetscSFSetGraphWithPattern(sfSeqToNatural, map, PETSCSF_PATTERN_GATHER));
-    PetscCall(DMRestoreGlobalVector(dm, &gv));
-    /* PetscCall(PetscPrintf(comm, "Seq-to-Natural SF\n"));
-    PetscCall(PetscSFView(sfSeqToNatural, 0)); */
-    /* Create the SF associated with this section */
+    PetscCall(PetscObjectSetName((PetscObject) sfEmbed, "Embedded SF"));
+    PetscCall(PetscFree3(spoints, sortleaves, indices));
+    if (debug) PetscCall(PetscSFView(sfEmbed, NULL));
+    /* Create the SF associated with this section
+         Roots are natural dofs, leaves are global dofs */
     PetscCall(DMGetPointSF(dm, &sf));
     PetscCall(PetscSectionCreateGlobalSection(sectionDist, sf, PETSC_FALSE, PETSC_TRUE, &gLocSection));
     PetscCall(PetscSFCreateSectionSF(sfEmbed, section, remoteOffsets, gLocSection, &sfField));
     PetscCall(PetscSFDestroy(&sfEmbed));
     PetscCall(PetscSectionDestroy(&gLocSection));
-    /* PetscCall(PetscPrintf(comm, "Field SF\n"));
-    PetscCall(PetscSFView(sfField, 0)); */
-    /* Invert the field SF so it's now from distributed to sequential */
-    PetscCall(PetscSFCreateInverseSF(sfField, &sfFieldInv));
-    PetscCall(PetscSFDestroy(&sfField));
-    /* PetscCall(PetscPrintf(comm, "Inverse Field SF\n"));
-    PetscCall(PetscSFView(sfFieldInv, 0)); */
-    /* Multiply the sfFieldInv with the */
-    PetscCall(PetscSFComposeInverse(sfFieldInv, sfSeqToNatural, sfNatural));
+    PetscCall(PetscObjectSetName((PetscObject) sfField, "Natural-to-Global SF"));
+    if (debug) PetscCall(PetscSFView(sfField, NULL));
+    /* Invert the field SF
+         Roots are global dofs, leaves are natural dofs */
+    PetscCall(PetscSFCreateInverseSF(sfField, sfNatural));
+    PetscCall(PetscObjectSetName((PetscObject) *sfNatural, "Global-to-Natural SF"));
     PetscCall(PetscObjectViewFromOptions((PetscObject) *sfNatural, NULL, "-globaltonatural_sf_view"));
     /* Clean up */
-    PetscCall(PetscSFDestroy(&sfFieldInv));
-    PetscCall(PetscSFDestroy(&sfSeqToNatural));
+    PetscCall(PetscSFDestroy(&sfField));
   } else {
     *sfNatural = NULL;
   }
