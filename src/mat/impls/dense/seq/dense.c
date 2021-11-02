@@ -2144,7 +2144,7 @@ PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetLDA - gets the leading dimension of the array returned from MatDenseGetArray()
 
    Not collective
@@ -2170,7 +2170,7 @@ PetscErrorCode  MatDenseGetLDA(Mat A,PetscInt *lda)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseSetLDA - Sets the leading dimension of the array used by the dense matrix
 
    Not collective
@@ -3493,7 +3493,7 @@ PetscErrorCode MatDenseRestoreColumn(Mat A,PetscScalar **vals)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetColumnVec - Gives read-write access to a column of a dense matrix, represented as a Vec.
 
    Collective
@@ -3528,7 +3528,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseRestoreColumnVec - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVec().
 
    Collective
@@ -3557,7 +3557,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetColumnVecRead - Gives read-only access to a column of a dense matrix, represented as a Vec.
 
    Collective
@@ -3593,7 +3593,7 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseRestoreColumnVecRead - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecRead().
 
    Collective
@@ -3622,7 +3622,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetColumnVecWrite - Gives write-only access to a column of a dense matrix, represented as a Vec.
 
    Collective
@@ -3657,7 +3657,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseRestoreColumnVecWrite - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecWrite().
 
    Collective
@@ -3686,7 +3686,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetSubMatrix - Gives access to a block of columns of a dense matrix, represented as a Mat.
 
    Collective
@@ -3723,7 +3723,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseRestoreSubMatrix - Returns access to a block of columns of a dense matrix obtained from MatDenseGetSubMatrix().
 
    Collective
