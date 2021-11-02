@@ -9,7 +9,7 @@ class Configure(config.package.CMakePackage):
     self.download         = ['git://https://github.com/kokkos/kokkos.git']
     self.downloaddirnames = ['kokkos']
     self.excludedDirs     = ['kokkos-kernels'] # Do not wrongly think kokkos-kernels as kokkos-vernum
-    # TODO: Currently the BuildSystem checks C++ headers blindly using CXX. However, when Kokkos is compiled by CUDAC for example, using
+    # TODO: BuildSystem checks C++ headers blindly using CXX. However, when Kokkos is compiled by CUDAC, for example, using
     # CXX to compile a Kokkos code raises an error. As a workaround, we set this field to skip checking headers in includes.
     self.doNotCheckIncludes = 1
     self.includes         = ['Kokkos_Macros.hpp']
@@ -17,7 +17,7 @@ class Configure(config.package.CMakePackage):
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.cxx              = 1
-    self.minCxxxVersion   = 'c++14'
+    self.minCxxVersion    = 'c++14'
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
