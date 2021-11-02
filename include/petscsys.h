@@ -2497,9 +2497,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 
     PETSC_VERSION_DATE_GIT is the date of the last git commit to the repository
 
-    Level: intermediate
+    PETSC_VERSION_() is deprecated and will eventually be removed.
 
-    PETSC_VERSION_() and PETSC_VERSION_PATCH are deprecated and will eventually be removed. For several releases PETSC_VERSION_PATCH is always 0
+    Level: intermediate
 
 M*/
 
