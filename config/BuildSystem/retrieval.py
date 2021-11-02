@@ -118,7 +118,7 @@ Unable to download package %s from: %s
     self.removeTarget(newgitrepo)
 
     try:
-      config.base.Configure.executeShellCommand('%s clone %s %s' % (self.sourceControl.git, d, newgitrepo), log = self.log)
+      config.base.Configure.executeShellCommand('%s clone --recursive %s %s' % (self.sourceControl.git, d, newgitrepo), log = self.log)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
       err = str(e)

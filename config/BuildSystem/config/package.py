@@ -1258,6 +1258,21 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     self.logPrint('Removing configure arguments '+str(rejects))
     return [arg for arg in args if not arg in rejects]
 
+  def rmArgsPair(self,args,rejects):
+    '''Remove an argument and the next argument from a list of arguments'''
+    '''For example: --ccbin compiler'''
+    self.logPrint('Removing paired configure arguments '+str(rejects))
+    nargs = []
+    rmnext = 0
+    for arg in args:
+      if rmnext:
+        rmnext = 0
+      elif arg in rejects:
+        rmnext = 1
+      else:
+        nargs.append(arg)
+    return nargs
+
   def rmArgsStartsWith(self,args,rejectstarts):
     rejects = []
     if not isinstance(rejectstarts, list): rejectstarts = [rejectstarts]

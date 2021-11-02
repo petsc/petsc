@@ -188,6 +188,7 @@ class generateExamples(Petsc):
     if srcext in ".F".split(): langReq="F"
     if srcext in ".cxx".split(): langReq="cxx"
     if srcext in ".kokkos.cxx".split(): langReq="kokkos_cxx"
+    if srcext in ".raja.cxx".split(): langReq="raja_cxx"    
     if srcext in ".cpp".split(): langReq="cpp"
     if srcext == ".cu": langReq="cu"
     if srcext == ".c": langReq="c"
@@ -671,6 +672,8 @@ class generateExamples(Petsc):
       srcDict["SKIP"].append("SYCL required for this test")
     if lang=="kokkos_cxx" and 'PETSC_HAVE_KOKKOS' not in self.conf:
       srcDict["SKIP"].append("KOKKOS required for this test")
+    if lang=="raja_cxx" and 'PETSC_HAVE_RAJA' not in self.conf:
+      srcDict["SKIP"].append("RAJA required for this test")
     if lang=="cxx" and 'PETSC_HAVE_CXX' not in self.conf:
       srcDict["SKIP"].append("C++ required for this test")
     if lang=="cpp" and 'PETSC_HAVE_CXX' not in self.conf:
