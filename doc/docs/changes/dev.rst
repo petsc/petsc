@@ -55,6 +55,7 @@ Changes: Development
 -  Add ``-vec_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` operations
 -  Add ``VecSetBindingPropagates()``
 -  Add ``VecGetBindingPropagates()``
+-  For CUDA and ViennaCL and HIP GPU vectors, ``VecCreate()`` no longer allocates the array on CPU eagerly, it is only allocated if it is needed
 
 .. rubric:: PetscSection:
 
