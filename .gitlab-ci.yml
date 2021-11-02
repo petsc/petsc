@@ -217,6 +217,7 @@ pause-for-approval:
 .stage-23:
   extends: .test
   script:
+    - if [ -d ${HOME}/petsc-hash-pkgs/ ]; then find ${HOME}/petsc-hash-pkgs/ -maxdepth 1 -mindepth 1 -type d -mtime +25 -exec rm -rf {} \; ; fi
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
