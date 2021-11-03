@@ -67,7 +67,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscOptionItems *PetscOpt
 
     if (Nv % Ns) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Cannot use %D uniform subspaces for %D variable space\n", Ns, Nv);
     Ncs = (PetscInt) PetscPowReal((PetscReal) Nc, 1./Ns);
-    if (PetscPowInt(Ncs, Ns) != Nc) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Cannot use %D uniform subspaces for %D component space\n", Ns, Nc);
+    if (Nc % PetscPowInt(Ncs, Ns)) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Cannot use %D uniform subspaces for %D component space\n", Ns, Nc);
     ierr = PetscSpaceTensorGetSubspace(sp, 0, &subspace);CHKERRQ(ierr);
     if (!subspace) {ierr = PetscSpaceTensorCreateSubspace(sp, Nvs, Ncs, &subspace);CHKERRQ(ierr);}
     else           {ierr = PetscObjectReference((PetscObject)subspace);CHKERRQ(ierr);}
@@ -135,6 +135,7 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
   PetscInt           Nc, Nv, Ns;
   PetscBool          uniform = PETSC_TRUE;
   PetscInt           deg, maxDeg;
+  PetscInt           Ncprod;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -165,15 +166,17 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
 
       if (Nv % Ns) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Cannot use %D uniform subspaces for %D variable space\n", Ns, Nv);
       Ncs = (PetscInt) (PetscPowReal((PetscReal) Nc, 1./Ns));
-      if (PetscPowInt(Ncs, Ns) != Nc) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Cannot use %D uniform subspaces for %D component space\n", Ns, Nc);
+      if (Nc % PetscPowInt(Ncs, Ns)) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Cannot use %D uniform subspaces for %D component space\n", Ns, Nc);
       if (!s0) {ierr = PetscSpaceTensorCreateSubspace(sp, Nvs, Ncs, &s0);CHKERRQ(ierr);}
       else     {ierr = PetscObjectReference((PetscObject) s0);CHKERRQ(ierr);}
       ierr = PetscSpaceSetUp(s0);CHKERRQ(ierr);
       for (PetscInt i = 0; i < Ns; i++) {ierr = PetscSpaceTensorSetSubspace(sp, i, s0);CHKERRQ(ierr);}
       ierr = PetscSpaceDestroy(&s0);CHKERRQ(ierr);
+      Ncprod = PetscPowInt(Ncs, Ns);
     } else {
       PetscInt Nvsum = 0;
-      PetscInt Ncprod = 1;
+
+      Ncprod = 1;
       for (PetscInt i = 0 ; i < Ns; i++) {
         PetscInt   Nvs, Ncs;
         PetscSpace si;
@@ -192,7 +195,46 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
       }
 
       if (Nvsum != Nv) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Sum of subspace variables %D does not equal the number of variables %D\n", Nvsum, Nv);
-      if (Ncprod != Nc) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Product of subspace components %D does not equal the number of components %D\n", Ncprod, Nc);
+      if (Nc % Ncprod) SETERRQ2(PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONG,"Product of subspace components %D does not divide the number of components %D\n", Ncprod, Nc);
+    }
+    if (Ncprod != Nc) {
+      PetscInt    Ncopies = Nc / Ncprod;
+      PetscInt    Nv = sp->Nv;
+      const char *prefix;
+      const char *name;
+      char        subname[PETSC_MAX_PATH_LEN];
+      PetscSpace  subsp;
+
+      ierr = PetscSpaceCreate(PetscObjectComm((PetscObject)sp), &subsp);CHKERRQ(ierr);
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)sp, &prefix);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)subsp, prefix);CHKERRQ(ierr);
+      ierr = PetscObjectAppendOptionsPrefix((PetscObject)subsp, "sumcomp_");CHKERRQ(ierr);
+      if (((PetscObject)sp)->name) {
+        ierr = PetscObjectGetName((PetscObject)sp, &name);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(subname, PETSC_MAX_PATH_LEN-1, "%s sum component", name);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject)subsp, subname);CHKERRQ(ierr);
+      } else {
+        ierr = PetscObjectSetName((PetscObject)subsp, "sum component");CHKERRQ(ierr);
+      }
+      ierr = PetscSpaceSetType(subsp, PETSCSPACETENSOR);CHKERRQ(ierr);
+      ierr = PetscSpaceSetNumVariables(subsp, Nv);CHKERRQ(ierr);
+      ierr = PetscSpaceSetNumComponents(subsp, Ncprod);CHKERRQ(ierr);
+      ierr = PetscSpaceTensorSetNumSubspaces(subsp, Ns);CHKERRQ(ierr);
+      for (PetscInt i = 0; i < Ns; i++) {
+        PetscSpace ssp;
+
+        ierr = PetscSpaceTensorGetSubspace(sp, i, &ssp);CHKERRQ(ierr);
+        ierr = PetscSpaceTensorSetSubspace(subsp, i, ssp);CHKERRQ(ierr);
+      }
+      ierr = PetscSpaceSetUp(subsp);CHKERRQ(ierr);
+      ierr = PetscSpaceSetType(sp, PETSCSPACESUM);CHKERRQ(ierr);
+      ierr = PetscSpaceSumSetNumSubspaces(sp, Ncopies);CHKERRQ(ierr);
+      for (PetscInt i = 0; i < Ncopies; i++) {
+        ierr = PetscSpaceSumSetSubspace(sp, i, subsp);CHKERRQ(ierr);
+      }
+      ierr = PetscSpaceDestroy(&subsp);CHKERRQ(ierr);
+      ierr = PetscSpaceSetUp(sp);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
     }
   }
   deg = PETSC_MAX_INT;
