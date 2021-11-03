@@ -2,8 +2,10 @@
 
 static PetscErrorCode PetscSpaceTensorCreateSubspace(PetscSpace space, PetscInt Nvs, PetscInt Ncs, PetscSpace *subspace)
 {
-  PetscInt    degree;
-  const char *prefix;
+  PetscInt       degree;
+  const char    *prefix;
+  const char    *name;
+  char           subname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -15,7 +17,14 @@ static PetscErrorCode PetscSpaceTensorCreateSubspace(PetscSpace space, PetscInt 
   ierr = PetscSpaceSetNumComponents(*subspace, Ncs);CHKERRQ(ierr);
   ierr = PetscSpaceSetDegree(*subspace, degree, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)*subspace, prefix);CHKERRQ(ierr);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)*subspace, "subspace_");CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)*subspace, "tensorcomp_");CHKERRQ(ierr);
+  if (((PetscObject) space)->name) {
+    ierr = PetscObjectGetName((PetscObject)space, &name);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(subname, PETSC_MAX_PATH_LEN-1, "%s tensor component", name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)*subspace, subname);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectSetName((PetscObject)*subspace, "tensor component");CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

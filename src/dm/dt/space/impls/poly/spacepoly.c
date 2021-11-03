@@ -66,15 +66,28 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
     poly->tensor = PETSC_FALSE;
   }
   if (sp->Nc != 1) {
-    PetscInt  Nc = sp->Nc;
-    PetscBool tensor = poly->tensor;
-    PetscInt  Nv = sp->Nv;
-    PetscInt  degree = sp->degree;
-    PetscSpace subsp;
+    PetscInt    Nc = sp->Nc;
+    PetscBool   tensor = poly->tensor;
+    PetscInt    Nv = sp->Nv;
+    PetscInt    degree = sp->degree;
+    const char *prefix;
+    const char *name;
+    char        subname[PETSC_MAX_PATH_LEN];
+    PetscSpace  subsp;
 
     ierr = PetscSpaceSetType(sp, PETSCSPACESUM);CHKERRQ(ierr);
     ierr = PetscSpaceSumSetNumSubspaces(sp, Nc);CHKERRQ(ierr);
     ierr = PetscSpaceCreate(PetscObjectComm((PetscObject)sp), &subsp);CHKERRQ(ierr);
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)sp, &prefix);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)subsp, prefix);CHKERRQ(ierr);
+    ierr = PetscObjectAppendOptionsPrefix((PetscObject)subsp, "sumcomp_");CHKERRQ(ierr);
+    if (((PetscObject)sp)->name) {
+      ierr = PetscObjectGetName((PetscObject)sp, &name);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(subname, PETSC_MAX_PATH_LEN-1, "%s sum component", name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)subsp, subname);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectSetName((PetscObject)subsp, "sum component");CHKERRQ(ierr);
+    }
     ierr = PetscSpaceSetType(subsp, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
     ierr = PetscSpaceSetDegree(subsp, degree, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = PetscSpaceSetNumComponents(subsp, 1);CHKERRQ(ierr);
