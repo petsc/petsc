@@ -2066,8 +2066,8 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
 
    Input Parameters:
 +  x - the matrix
-.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()   or ISLocalToGlobalMappingCreateIS()
-- cmapping - column mapping
+.  rmapping - row mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
+-  cmapping - column mapping
 
    Level: intermediate
 
@@ -2080,9 +2080,8 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_CLASSID,1);
   PetscValidType(x,1);
-  PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
-  PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
-
+  if (rmapping) PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
+  if (cmapping) PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,rmapping,cmapping);CHKERRQ(ierr);
   } else {

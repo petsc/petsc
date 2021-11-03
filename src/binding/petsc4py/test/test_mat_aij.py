@@ -47,7 +47,7 @@ class BaseTestMatAnyAIJ(object):
             rbs = cbs = BS or 1
         sdt = dtype = PETSc.ScalarType
         self.rows, self.xadj, self.adjy = mkgraph(COMM, GM, GN)
-        self.vals = N.array(range(1, 1 + len(self.adjy)* rbs*cbs), dtype=sdt)
+        self.vals = N.array(range(1, 1 + len(self.adjy)*rbs*cbs), dtype=sdt)
         self.vals.shape = (-1, rbs, cbs)
         #
         m, n = GM, GN
@@ -94,6 +94,7 @@ class BaseTestMatAnyAIJ(object):
         self._chk_aij(self.A, ai, aj)
 
     def testSetPreallocCSR(self):
+        if 'is' in self.A.getType(): return # XXX
         _, ai, aj, _ = self._get_aijv()
         csr = [ai, aj]
         self.A.setPreallocationCSR(csr)
@@ -109,6 +110,7 @@ class BaseTestMatAnyAIJ(object):
         self._chk_aij(self.A, ai, aj)
 
     def testSetPreallocCSR_2(self):
+        if 'is' in self.A.getType(): return # XXX
         _, ai, aj, av =self._get_aijv()
         csr = [ai, aj, av]
         self.A.setPreallocationCSR(csr)
@@ -150,6 +152,7 @@ class BaseTestMatAnyAIJ(object):
         self._chk_aij(self.A, ai, aj)
 
     def testGetValuesCSR(self):
+        if 'is' in self.A.getType(): return # XXX
         self._preallocate()
         self._set_values_ijv()
         A = self.A
@@ -215,6 +218,7 @@ class BaseTestMatAnyAIJ(object):
         self.assertTrue(np.allclose(y.array, z.array))
 
     def testGetDiagonalBlock(self):
+        if 'is' in self.A.getType(): return # XXX
         self._preallocate()
         self._set_values_ijv()
         self.A.assemble()
@@ -223,6 +227,7 @@ class BaseTestMatAnyAIJ(object):
         B.destroy()
 
     def testInvertBlockDiagonal(self):
+        if 'is' in self.A.getType(): return # XXX
         try:
             _ = len(self.BSIZE)
             return
@@ -273,6 +278,7 @@ class BaseTestMatAnyAIJ(object):
 
     def testCreateSubMatrices(self):
         if 'baij' in self.A.getType(): return # XXX
+        if 'is' in self.A.getType(): return # XXX
         self._preallocate()
         self._set_values_ijv()
         self.A.assemble()
@@ -311,6 +317,7 @@ class BaseTestMatAnyAIJ(object):
     def testGetRedundantMatrix(self):
         if 'aijcrl' in self.A.getType(): return # duplicate not supported
         if 'mpisbaij' in self.A.getType(): return # not working
+        if 'is' in self.A.getType(): return # XXX
         self._preallocate()
         self._set_values_ijv()
         self.A.assemble()
@@ -927,6 +934,18 @@ class TestMatMPIAIJCRL_B_G45_B5(TestMatMPIAIJCRL_B_G45):
     BSIZE = 5
 class TestMatMPIAIJCRL_B_G89_B5(TestMatMPIAIJCRL_B_G89):
     BSIZE = 5
+
+# -- MATIS --
+
+class TestMatIS(BaseTestMatAIJ):
+    COMM = PETSc.COMM_WORLD
+    TYPE = PETSc.Mat.Type.IS
+class TestMatIS_G23(TestMatIS):
+    GRID  = 2, 3
+class TestMatIS_G45(TestMatIS):
+    GRID  = 4, 5
+class TestMatIS_G89(TestMatIS):
+    GRID  = 8, 9
 
 # -----
 

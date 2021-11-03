@@ -582,19 +582,28 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    ##def createIS(self, size, LGMap lgmap, comm=None):
-    ##    # communicator and sizes
-    ##    if comm is None: comm = lgmap.getComm()
-    ##    cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-    ##    cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
-    ##    Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
-    ##    Sys_Layout(ccomm, rbs, &m, &M)
-    ##    Sys_Layout(ccomm, cbs, &n, &N)
-    ##    # create matrix
-    ##    cdef PetscMat newmat = NULL
-    ##    CHKERR( MatCreateIS(ccomm, m, n, M, N, lgmap.lgm, &newmat) )
-    ##    PetscCLEAR(self.obj); self.mat = newmat
-    ##    return self
+    def createIS(self, size, LGMap lgmapr=None, LGMap lgmapc=None, comm=None):
+        # communicator and sizes
+        if comm is None and lgmapr is not None: comm = lgmapr.getComm()
+        if comm is None and lgmapc is not None: comm = lgmapc.getComm()
+        cdef PetscLGMap lgmr = NULL
+        cdef PetscLGMap lgmc = NULL
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
+        # create matrix
+        cdef PetscMat newmat = NULL
+        cdef PetscInt bs = 1
+        if rbs == cbs: bs = rbs
+        if lgmapr is not None:
+           lgmr = lgmapr.lgm
+        if lgmapc is not None:
+           lgmc = lgmapc.lgm
+        CHKERR( MatCreateIS(ccomm, bs, m, n, M, N, lgmr, lgmc, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
 
     def createPython(self, size, context=None, comm=None):
         # communicator and sizes

@@ -47,7 +47,9 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(A,MATIS);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  /* This is not the proper setting for MATIS for finite elements, it is just used to test the routines */
+  /* This is not the proper setting for MATIS for finite elements, it is just used to test the routines
+     Here we use a one-to-one correspondence between local row/column spaces and global row/column spaces
+     Equivalent to passing NULL for the mapping */
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,0,1,&is);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(is,&cmap);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
@@ -594,7 +596,7 @@ int main(int argc,char **args)
           ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
           ierr = ISCreateBlock(PETSC_COMM_WORLD,bs,nl,idxs2,PETSC_OWN_POINTER,&bis);CHKERRQ(ierr);
           ierr = ISLocalToGlobalMappingCreateIS(bis,&map);CHKERRQ(ierr);
-          ierr = MatCreateIS(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,bs*n,bs*n,map,NULL,&Abd);CHKERRQ(ierr);
+          ierr = MatCreateIS(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,bs*n,bs*n,map,map,&Abd);CHKERRQ(ierr);
           ierr = ISLocalToGlobalMappingDestroy(&map);CHKERRQ(ierr);
           ierr = MatISSetPreallocation(Abd,bs,NULL,0,NULL);CHKERRQ(ierr);
           for (i=0;i<nl;i++) {

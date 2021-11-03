@@ -187,7 +187,7 @@ cdef extern from * nogil:
     int MatDestroy(PetscMat*)
     int MatCreate(MPI_Comm,PetscMat*)
 
-    int MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscMat*)
+    int MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscLGMap,PetscMat*)
     int MatISGetLocalMat(PetscMat,PetscMat*)
     int MatISGetMPIXAIJ(PetscMat,PetscMatReuse,PetscMat*)
 
@@ -448,7 +448,7 @@ cdef extern from * nogil:
 
 cdef extern from "custom.h" nogil:
     int MatIsPreallocated(PetscMat,PetscBool*)
-    int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*)
+    int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*,PetscBool*)
 
 cdef extern from "libpetsc4py.h":
     PetscMatType MATPYTHON
@@ -684,8 +684,8 @@ cdef inline int Mat_Create(
 
 cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
     #
-    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE
-    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij))
+    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE, aijis=PETSC_FALSE
+    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij, &aijis))
     # local row size and block size
     cdef PetscInt m=0, bs=1
     CHKERR( MatGetLocalSize(A, &m, NULL) )
@@ -729,12 +729,14 @@ cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
     if sbaij == PETSC_TRUE:
         CHKERR( MatSeqSBAIJSetPreallocation(A, bs, d_nz, d_nnz) )
         CHKERR( MatMPISBAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
+    if aijis == PETSC_TRUE:
+        CHKERR( MatISSetPreallocation(A, d_nz, d_nnz, o_nz, o_nnz) )
     return 0
 
 cdef inline int Mat_AllocAIJ_CSR(PetscMat A, object CSR) except -1:
     #
-    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE
-    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij))
+    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE, aijis=PETSC_FALSE
+    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij, &aijis))
     # local row size and block size
     cdef PetscInt m=0, bs = 1
     CHKERR( MatGetLocalSize(A, &m, NULL) )
