@@ -29,6 +29,8 @@ if __name__ == '__main__':
     # break linkage of static constexpr member variables
     '--with-cxx-dialect=c++14',
     '--with-shared-libraries=1',
+    '--download-slepc',
+    '--download-hpddm',
   ]
   configure.petsc_configure(configure_options)
 
