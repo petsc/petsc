@@ -1166,6 +1166,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   Vec            tmp;
   Vec            *tmpv;
   PetscBool      tmpvout = PETSC_FALSE;
+  VecType        roottype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_CLASSID,1);
@@ -1179,15 +1180,17 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
     tmpv    = &tmp;
   }
 
-  /* Create seq vec on each proc, with the same size of the original mpi vec */
+  /* Create seq vec on each proc, with the same size of the original vec */
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,tmpv);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(*tmpv);CHKERRQ(ierr);
+  ierr = VecGetRootType_Private(vin,&roottype);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,tmpv);CHKERRQ(ierr);
+  ierr = VecSetSizes(*tmpv,N,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(*tmpv,roottype);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-  if (tmpvout) {ierr = VecDestroy(tmpv);CHKERRQ(ierr);}
+  if (tmpvout) { ierr = VecDestroy(tmpv);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -1237,6 +1240,7 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
   Vec            tmp;
   Vec            *tmpv;
   PetscBool      tmpvout = PETSC_FALSE;
+  VecType        roottype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_CLASSID,1);
@@ -1250,17 +1254,19 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
     tmpv    = &tmp;
   }
 
-  /* Create vec on each proc, with the same size of the original mpi vec (all on process 0)*/
+  /* Create vec on each proc, with the same size of the original vec all on process 0 */
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)vin),&rank);CHKERRMPI(ierr);
   if (rank) N = 0;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,tmpv);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(*tmpv);CHKERRQ(ierr);
+  ierr = VecGetRootType_Private(vin,&roottype);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,tmpv);CHKERRQ(ierr);
+  ierr = VecSetSizes(*tmpv,N,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(*tmpv,roottype);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-  if (tmpvout) {ierr = VecDestroy(tmpv);CHKERRQ(ierr);}
+  if (tmpvout) { ierr = VecDestroy(tmpv);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

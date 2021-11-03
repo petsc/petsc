@@ -231,12 +231,15 @@ PETSC_INTERN PetscErrorCode VecLockWriteSet_Private(Vec,PetscBool);
 #define VecLockWriteSet_Private(x,flg) 0
 #endif
 
+/* Get Root type of vector. e.g. VECSEQ -> VECSTANDARD, VECMPICUDA -> VECCUDA */
+PETSC_EXTERN PetscErrorCode VecGetRootType_Private(Vec,VecType*);
+
 /* Default obtain and release vectors; can be used by any implementation */
-PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
-PETSC_EXTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
-PETSC_EXTERN PetscErrorCode VecView_Binary(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec*[]);
+PETSC_EXTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec[]);
+PETSC_EXTERN PetscErrorCode VecView_Binary(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Binary(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec,PetscViewer);
 
 PETSC_EXTERN PetscInt  NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 
