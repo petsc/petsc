@@ -15,12 +15,13 @@ static PetscErrorCode PetscSpaceSetFromOptions_Ptrimmed(PetscOptionItems *PetscO
 static PetscErrorCode PetscSpacePTrimmedView_Ascii(PetscSpace sp, PetscViewer v)
 {
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *) sp->data;
-  PetscInt             f;
+  PetscInt             f, tdegree;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   f = pt->formDegree;
-  ierr = PetscViewerASCIIPrintf(v, "Trimmed polynomials %D%s-forms of degree %D\n", PetscAbsInt(f), f < 0 ? "*" : "", sp->maxDegree);CHKERRQ(ierr);
+  tdegree = f == 0 ? sp->degree : sp->degree + 1;
+  ierr = PetscViewerASCIIPrintf(v, "Trimmed polynomials %D%s-forms of degree %D (P-%D/\\%D)\n", PetscAbsInt(f), f < 0 ? "*" : "", sp->degree, tdegree, PetscAbsInt(f));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -114,6 +115,7 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
   } else if (sp->degree < 0) {
     SETERRQ1(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Invalid negative degree %D\n", sp->degree);
   }
+  sp->maxDegree = (pt->formDegree == 0 || PetscAbsInt(pt->formDegree) == sp->Nv) ? sp->degree : sp->degree + 1;
   if (pt->formDegree == 0 || PetscAbsInt(pt->formDegree) == sp->Nv) {
     // Convert to regular polynomial space
     ierr = PetscSpaceSetType(sp, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
@@ -198,9 +200,8 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
     }
   }
   if (D) {
-    PetscInt p_strl = dim*Nb*Ncopies*Nc;
-    PetscInt b_strl = dim*Nb*Nc;
-    PetscInt c_strl = dim*(Nc + Nf);
+    PetscInt p_strl = dim*Nf*Nb;
+    PetscInt b_strl = dim*Nf;
     PetscInt v_strl = dim;
     PetscInt d_strl = 1;
 
@@ -209,23 +210,20 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
     PetscInt d_strr = npoints;
     PetscInt p_strr = 1;
 
-    for (PetscInt c = 0; c < Ncopies; c++) {
-      for (PetscInt v = 0; v < Nf; v++) {
-        for (PetscInt d = 0; d < dim; d++) {
-          for (PetscInt b = 0; b < Nb; b++) {
-            for (PetscInt p = 0; p < npoints; p++) {
-              D[p*p_strl + b*b_strl + c*c_strl + v*v_strl + d*d_strl] = eval[b*b_strr + v*v_strr + (1+d)*d_strr + p*p_strr];
-            }
+    for (PetscInt v = 0; v < Nf; v++) {
+      for (PetscInt d = 0; d < dim; d++) {
+        for (PetscInt b = 0; b < Nb; b++) {
+          for (PetscInt p = 0; p < npoints; p++) {
+            D[p*p_strl + b*b_strl + v*v_strl + d*d_strl] = eval[b*b_strr + v*v_strr + (1+d)*d_strr + p*p_strr];
           }
         }
       }
     }
   }
   if (H) {
-    PetscInt p_strl  = dim*dim*Nb*Ncopies*Nc;
-    PetscInt b_strl  = dim*dim*Nb*Nc;
-    PetscInt c_strl  = dim*dim*(Nc + Nf);
-    PetscInt v_strl  = dim*dim*1;
+    PetscInt p_strl  = dim*dim*Nf*Nb;
+    PetscInt b_strl  = dim*dim*Nf;
+    PetscInt v_strl  = dim*dim;
     PetscInt d1_strl = dim;
     PetscInt d2_strl = 1;
 
@@ -244,12 +242,10 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
         ierr = PetscDTGradedOrderToIndex(dim, derivs, &j);CHKERRQ(ierr);
         derivs[d1]--;
         derivs[d2]--;
-        for (PetscInt c = 0; c < Ncopies; c++) {
-          for (PetscInt v = 0; v < Nf; v++) {
-            for (PetscInt b = 0; b < Nb; b++) {
-              for (PetscInt p = 0; p < npoints; p++) {
-                H[p*p_strl + b*b_strl + c*c_strl + v*v_strl + d1*d1_strl + d2*d2_strl] = eval[b*b_strr + v*v_strr + j*j_strr + p*p_strr];
-              }
+        for (PetscInt v = 0; v < Nf; v++) {
+          for (PetscInt b = 0; b < Nb; b++) {
+            for (PetscInt p = 0; p < npoints; p++) {
+              H[p*p_strl + b*b_strl + v*v_strl + d1*d1_strl + d2*d2_strl] = eval[b*b_strr + v*v_strr + j*j_strr + p*p_strr];
             }
           }
         }
