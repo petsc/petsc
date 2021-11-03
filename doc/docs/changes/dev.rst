@@ -124,6 +124,7 @@ Changes: Development
 
 - Deprecate ``PetscSpacePolynomialGetSymmetric()`` and ``PetscSpacePolynomialSetSymmetric()``: symmetric polynomials were never supported and support is no longer planned
 - Remove ``PetscSpacePolynomialType`` enum and associated array of strings ``PetscSpacePolynomialTypes``: other polynomial spaces are now handled by other implementations of ``PetscSpace``
+- Add ``PETSCSPACEPTRIMMED`` that implements trimmed polynomial spaces (also known as the spaces in Nedelec face / edge elements of the first kind)
 
 .. rubric:: DMNetwork:
 

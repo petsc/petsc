@@ -40,6 +40,7 @@ PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 J*/
 typedef const char* PetscSpaceType;
 #define PETSCSPACEPOLYNOMIAL "poly"
+#define PETSCSPACEPTRIMMED   "ptrimmed"
 #define PETSCSPACETENSOR     "tensor"
 #define PETSCSPACESUM        "sum"
 #define PETSCSPACEPOINT      "point"
@@ -76,6 +77,9 @@ PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)")
 PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *s) {*s = PETSC_FALSE; return 0;}
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSpacePTrimmedGetFormDegree(PetscSpace, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode PetscSpaceTensorSetNumSubspaces(PetscSpace, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSpaceTensorGetNumSubspaces(PetscSpace, PetscInt *);

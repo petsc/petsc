@@ -52,6 +52,12 @@ typedef struct {
 } PetscSpace_Poly;
 
 typedef struct {
+  PetscInt    formDegree;
+  PetscBool   setupCalled;
+  PetscSpace *subspaces;
+} PetscSpace_Ptrimmed;
+
+typedef struct {
   PetscSpace *tensspaces;
   PetscInt    numTensSpaces;
   PetscInt    dim;
