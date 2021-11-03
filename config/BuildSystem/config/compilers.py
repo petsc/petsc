@@ -364,7 +364,7 @@ class Configure(config.base.Configure):
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
           lib = next(argIter)
-          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
+          if lib.startswith('-') or lib.startswith('@loader_path'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in skipdefaultpaths: continue
@@ -964,7 +964,7 @@ class Configure(config.base.Configure):
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
           lib = next(argIter)
-          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
+          if lib.startswith('-') or lib.startswith('@loader_path'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in skipdefaultpaths: continue
@@ -1394,7 +1394,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         if arg == '-rpath' or arg == '-R':
           lib = next(argIter)
           if lib == '\\': lib = next(argIter)
-          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
+          if lib.startswith('-') or lib.startswith('@loader_path'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in skipdefaultpaths: continue
