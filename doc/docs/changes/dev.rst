@@ -37,6 +37,8 @@ Changes: Development
 
 .. rubric:: PetscViewer:
 
+- Add  ``PetscViewerHDF5SetDefaultTimestepping`` and ``PetscViewerHDF5SetDefaultTimestepping`` to deal with HDF5 files missing the timestepping attribute
+
 .. rubric:: PetscDraw:
 
 .. rubric:: AO:
