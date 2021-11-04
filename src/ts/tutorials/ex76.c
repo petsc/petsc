@@ -20,6 +20,11 @@ For visualization, use
 
   -dm_view hdf5:$PWD/sol.h5 -sol_vec_view hdf5:$PWD/sol.h5::append -exact_vec_view hdf5:$PWD/sol.h5::append
 
+To look at nonlinear solver convergence, use
+
+  -dm_refine <k> -ts_max_steps 1 \
+  -ts_view -ts_monitor -snes_monitor -snes_converged_reason -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason
+
 [1] https://ubchrest.github.io/ablate/content/formulations/lowMachFlow/
 [2] https://github.com/UBCHREST/ablate/blob/main/ablateCore/flow/lowMachFlow.c
 [3] J. Principe and R. Codina, "Mathematical models for thermally coupled low speed flows", Adv. in Theo. and App. Mech., 2(1), pp.93--112, 2009.
