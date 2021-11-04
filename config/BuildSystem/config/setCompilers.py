@@ -255,7 +255,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gcc-11.0.x or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('gcc\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -271,7 +271,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-4.5.x'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       if re.match(r'GNU Fortran \(.*\) (4.5.\d+|4.6.0 20100703)', output):
         if log: log.write('Detected GFortran45x compiler\n')
@@ -284,7 +284,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-4.6.x or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -300,7 +300,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-4.7.x or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -316,7 +316,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-10.0.x or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -332,7 +332,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-8 or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
