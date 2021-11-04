@@ -58,6 +58,7 @@
 #define DMPLEXREFINESBR           'refine_sbr'
 #define DMPLEXREFINETOBOX         'refine_tobox'
 #define DMPLEXREFINETOSIMPLEX     'refine_tosimplex'
+#define DMPLEXREFINE1D            'refine_1d'
 #define DMPLEXEXTRUDE             'extrude'
 #define DMPLEXTRANSFORMFILTER     'transform_filter'
 

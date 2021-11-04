@@ -1,0 +1,63 @@
+DM Object: box 1 MPI processes
+  type: plex
+box in 1 dimension:
+  0-cells: 6
+  1-cells: 5
+Labels:
+  marker: 1 strata with value/size (1 (2))
+  Face Sets: 2 strata with value/size (1 (1), 2 (1))
+  depth: 2 strata with value/size (0 (6), 1 (5))
+  celltype: 2 strata with value/size (1 (5), 0 (6))
+Function tests pass at tolerance 1e-10
+DM Object: Adapted Mesh 1 MPI processes
+  type: plex
+Adapted Mesh in 1 dimension:
+  0-cells: 8
+  1-cells: 7
+Labels:
+  celltype: 2 strata with value/size (1 (7), 0 (8))
+  depth: 2 strata with value/size (0 (8), 1 (7))
+  marker: 1 strata with value/size (1 (2))
+  Face Sets: 2 strata with value/size (1 (1), 2 (1))
+Field scalar:
+  adjacency FEM
+Function tests pass at tolerance 1e-10
+DM Object: Adapted Mesh 1 MPI processes
+  type: plex
+Adapted Mesh in 1 dimension:
+  0-cells: 11
+  1-cells: 10
+Labels:
+  celltype: 2 strata with value/size (1 (10), 0 (11))
+  depth: 2 strata with value/size (0 (11), 1 (10))
+  marker: 1 strata with value/size (1 (2))
+  Face Sets: 2 strata with value/size (1 (1), 2 (1))
+Field scalar:
+  adjacency FEM
+Function tests pass at tolerance 1e-10
+DM Object: Adapted Mesh 1 MPI processes
+  type: plex
+Adapted Mesh in 1 dimension:
+  0-cells: 16
+  1-cells: 15
+Labels:
+  celltype: 2 strata with value/size (1 (15), 0 (16))
+  depth: 2 strata with value/size (0 (16), 1 (15))
+  marker: 1 strata with value/size (1 (2))
+  Face Sets: 2 strata with value/size (1 (1), 2 (1))
+Field scalar:
+  adjacency FEM
+Function tests pass at tolerance 1e-10
+DM Object: Adapted Mesh 1 MPI processes
+  type: plex
+Adapted Mesh in 1 dimension:
+  0-cells: 23
+  1-cells: 22
+Labels:
+  celltype: 2 strata with value/size (1 (22), 0 (23))
+  depth: 2 strata with value/size (0 (23), 1 (22))
+  marker: 1 strata with value/size (1 (2))
+  Face Sets: 2 strata with value/size (1 (1), 2 (1))
+Field scalar:
+  adjacency FEM
+Function tests pass at tolerance 1e-10

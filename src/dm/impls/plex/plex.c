@@ -1412,12 +1412,41 @@ static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const
 {
   DMPolytopeType ct;
   PetscMPIInt    rank;
+  PetscInt       cdim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
   ierr = DMPlexGetCellType(dm, cell, &ct);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
   switch (ct) {
+  case DM_POLYTOPE_SEGMENT:
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    switch (cdim) {
+    case 1:
+    {
+      const PetscReal y  = 0.5;  /* TODO Put it in the middle of the viewport */
+      const PetscReal dy = 0.05; /* TODO Make it a fraction of the total length */
+
+      ierr = PetscDrawLine(draw, PetscRealPart(coords[0]), y,    PetscRealPart(coords[1]), y,    PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, PetscRealPart(coords[0]), y+dy, PetscRealPart(coords[0]), y-dy, PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, PetscRealPart(coords[1]), y+dy, PetscRealPart(coords[1]), y-dy, PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    }
+    break;
+    case 2:
+    {
+      const PetscReal dx = (PetscRealPart(coords[3]) - PetscRealPart(coords[1]));
+      const PetscReal dy = (PetscRealPart(coords[2]) - PetscRealPart(coords[0]));
+      const PetscReal l  = 0.1/PetscSqrtReal(dx*dx + dy*dy);
+
+      ierr = PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, PetscRealPart(coords[0])+l*dx, PetscRealPart(coords[1])+l*dy, PetscRealPart(coords[0])-l*dx, PetscRealPart(coords[1])-l*dy, PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw, PetscRealPart(coords[2])+l*dx, PetscRealPart(coords[3])+l*dy, PetscRealPart(coords[2])-l*dx, PetscRealPart(coords[3])-l*dy, PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    }
+    break;
+    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of dimension %D", cdim);
+    }
+    break;
   case DM_POLYTOPE_TRIANGLE:
     ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]),
                              PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS-2) + 2,
@@ -1499,7 +1528,7 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
-  if (dim != 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D", dim);
+  if (dim > 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D", dim);
   ierr = PetscOptionsGetBool(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_view_draw_affine", &drawAffine, NULL);CHKERRQ(ierr);
   if (!drawAffine) {ierr = PetscMalloc2((edgeDiv+1)*dim, &refCoords, (edgeDiv+1)*dim, &edgeCoords);CHKERRQ(ierr);}
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);

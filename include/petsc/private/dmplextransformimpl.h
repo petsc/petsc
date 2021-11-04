@@ -83,6 +83,10 @@ typedef struct {
 } DMPlexRefine_SBR;
 
 typedef struct {
+  PetscInt dummy;
+} DMPlexRefine_1D;
+
+typedef struct {
   PetscInt       n;         /* The number of divisions to produce, so n = 1 gives 2 new cells */
   PetscReal      r;         /* The factor increase for cell height */
   PetscScalar    *h;        /* The computed cell heights, based on r */
