@@ -29,11 +29,11 @@ PETSc comes with a large number of example codes to illustrate usage. Here, we h
    ``--download-trilinos``,  ``--download-hypre``, and/or
    ``--download-superlu_dist``.
 
-   -  `Nonlinear PDE Example <#ML>`__ using `Trilinos preconditioner
+   -  :any:`Nonlinear PDE Example <handson_example_3>` using `Trilinos preconditioner
       ML <http://trilinos.org/packages/ml>`__
-   -  `Nonlinear PDE Example <#HYPRE>`__ using BoomerAMG from
+   -  :any:`Nonlinear PDE Example <handson_example_3>` using BoomerAMG from
       `HYPRE <https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods>`__
-   -  `Linear Equation Example <#SuperLU>`__ using direct solver
+   -  `Linear Equation Example <handson_example_1>` using direct solver
       `SuperLU_DIST <https://crd-legacy.lbl.gov/~xiaoye/SuperLU/>`__
 
 .. _handson_example_1:

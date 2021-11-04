@@ -17,7 +17,7 @@ Getting Started: A Simple TAO Example
 To help the user start using TAO immediately, we introduce here a simple
 uniprocessor example. Please read :any:`sec_tao_solvers`
 for a more in-depth discussion on using the TAO solvers. The code
-presented `below <#tao-example1>`_ minimizes the
+presented :any:`below <tao-example1>` minimizes the
 extended Rosenbrock function :math:`f: \mathbb R^n \to \mathbb R`
 defined by
 
@@ -31,7 +31,7 @@ usable from C++ and Fortran 77/90.
 :any:`chapter_fortran` discusses additional
 issues concerning Fortran usage.
 
-The code in `the example <#tao-example1>`_ contains many of
+The code in :any:`the example <tao-example1>` contains many of
 the components needed to write most TAO programs and thus is
 illustrative of the features present in complex optimization problems.
 Note that for display purposes we have omitted some nonessential lines
@@ -41,7 +41,7 @@ the code for ``FormHessian``, which evaluates the Hessian matrix for
 Rosenbrock’s function. The complete code is available in
 `$TAO_DIR/src/unconstrained/tutorials/rosenbrock1.c <../../src/tao/unconstrained/tutorials/rosenbrock1.c.html>`__.
 The following sections annotate the lines of code in
-`the example <#tao-example1>`_.
+:any:`the example <tao-example1>`.
 
 .. admonition:: Listing: ``src/tao/unconstrained/tutorials/rosenbrock1.c``
    :name: tao-example1

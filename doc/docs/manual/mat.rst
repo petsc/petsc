@@ -705,7 +705,7 @@ for a simple example using this interface.
 Basic Matrix Operations
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Table `2.2 <#fig_matrixops>`__ summarizes basic PETSc matrix operations.
+Table :any:`2.2 <fig_matrixops>` summarizes basic PETSc matrix operations.
 We briefly discuss a few of these routines in more detail below.
 
 The parallel matrix can multiply a vector with ``n`` local entries,

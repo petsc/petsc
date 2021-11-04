@@ -1063,6 +1063,7 @@ The error tolerances are satisfied when :math:`\rm wlte\le 1.0`.
 The next step size is based on this error estimate, and determined by
 
 .. math::
+   :label: hnew
 
    \begin{aligned}
     \Delta t_{\rm new}(t)&=&\Delta t_{\rm{old}} \min(\alpha_{\max},
@@ -1078,8 +1079,8 @@ rejection is decreased.
 This adaptive controller works in the following way. After completing
 step :math:`k`, if :math:`\rm wlte_{k+1} \le 1.0`, then the step is
 accepted and the next step is modified according to
-(`[eq:hnew] <#eq:hnew>`__); otherwise, the step is rejected and retaken
-with the step length computed in (`[eq:hnew] <#eq:hnew>`__).
+eq:`hnew`; otherwise, the step is rejected and retaken
+with the step length computed in :eq:`hnew`.
 
 ``TSADAPTGLEE`` is an extension of the basic
 adaptor to treat :math:`{\rm Tol}_{\rm A}` and :math:`{\rm Tol}_{\rm R}`
