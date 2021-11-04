@@ -15,13 +15,13 @@ typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
 PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  PetscBool        timestepping=PETSC_FALSE;
+  PetscBool        timestepping = PETSC_FALSE;
   const char       *group;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"timestepping",PETSC_BOOL,&timestepping,&timestepping);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"timestepping",PETSC_BOOL,&hdf5->defTimestepping,&timestepping);CHKERRQ(ierr);
   if (timestepping != hdf5->timestepping) SETERRQ4(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
   PetscFunctionReturn(0);
 }
