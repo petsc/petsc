@@ -94,6 +94,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_ToBox(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Alfeld(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_BL(DMPlexTransform);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_1D(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform);
 
 /*@C
@@ -119,6 +120,7 @@ PetscErrorCode DMPlexTransformRegisterAll(void)
   ierr = DMPlexTransformRegister(DMPLEXREFINEALFELD,        DMPlexTransformCreate_Alfeld);CHKERRQ(ierr);
   ierr = DMPlexTransformRegister(DMPLEXREFINEBOUNDARYLAYER, DMPlexTransformCreate_BL);CHKERRQ(ierr);
   ierr = DMPlexTransformRegister(DMPLEXREFINESBR,           DMPlexTransformCreate_SBR);CHKERRQ(ierr);
+  ierr = DMPlexTransformRegister(DMPLEXREFINE1D,            DMPlexTransformCreate_1D);CHKERRQ(ierr);
   ierr = DMPlexTransformRegister(DMPLEXEXTRUDE,             DMPlexTransformCreate_Extrude);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
