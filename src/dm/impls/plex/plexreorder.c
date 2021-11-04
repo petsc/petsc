@@ -157,7 +157,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data, *plexNew;
   PetscSection   section, sectionNew;
-  PetscInt       dim;
+  PetscInt       dim, cdim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -168,6 +168,8 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   ierr = DMSetType(*pdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(*pdm, dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(*pdm, cdim);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *pdm);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   if (section) {
