@@ -130,7 +130,6 @@ class PetscConfig:
             'major'  : re.compile(r"#define\s+PETSC_VERSION_MAJOR\s+(\d+)"),
             'minor'  : re.compile(r"#define\s+PETSC_VERSION_MINOR\s+(\d+)"),
             'micro'  : re.compile(r"#define\s+PETSC_VERSION_SUBMINOR\s+(\d+)"),
-            'patch'  : re.compile(r"#define\s+PETSC_VERSION_PATCH\s+(\d+)"),
             'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(-*\d+)"),
             }
         petscversion_h = os.path.join(petsc_dir, 'include', 'petscversion.h')
