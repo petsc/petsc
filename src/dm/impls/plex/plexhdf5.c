@@ -160,9 +160,9 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
     for (f = 0; f < numFields; ++f) {
       Vec         subv;
       IS          is;
-      const char *fname, *fgroup;
+      const char *fname, *fgroup, *componentName;
       char        subname[PETSC_MAX_PATH_LEN];
-      PetscInt    pStart, pEnd;
+      PetscInt    pStart, pEnd, Nc, c;
 
       ierr = DMPlexGetFieldType_Internal(dm, section, f, &pStart, &pEnd, &ft);CHKERRQ(ierr);
       fgroup = (ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
@@ -172,7 +172,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       if (cutLabel) {
         const PetscScalar *ga;
         PetscScalar       *suba;
-        PetscInt           Nc, gstart, subSize = 0, extSize = 0, subOff = 0, newOff = 0, p;
+        PetscInt          gstart, subSize = 0, extSize = 0, subOff = 0, newOff = 0, p;
 
         ierr = DMPlexCreateCutVertexLabel_Private(dm, cutLabel, &cutVertexLabel);CHKERRQ(ierr);
         ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
@@ -230,6 +230,16 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       } else {
         ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject) subv, "vector_field_type", PETSC_STRING, "scalar");CHKERRQ(ierr);
       }
+
+      /* Output the component names in the field if available */
+      ierr = PetscSectionGetFieldComponents(section, f, &Nc);
+      for (c = 0; c < Nc; ++c){
+        char componentNameLabel[PETSC_MAX_PATH_LEN];
+        ierr = PetscSectionGetComponentName(section, f, c, &componentName);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(componentNameLabel, sizeof(componentNameLabel), "componentName%D", c);CHKERRQ(ierr);
+        ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject) subv, componentNameLabel, PETSC_STRING, componentName);CHKERRQ(ierr);
+      }
+
       if (cutLabel) {ierr = VecDestroy(&subv);CHKERRQ(ierr);}
       else          {ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);}
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
