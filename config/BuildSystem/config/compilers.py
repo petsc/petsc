@@ -1156,6 +1156,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     self.setCompilers.saveLog()
     asub=self.mangleFortranFunction("asub")
     cbody = "extern void "+asub+"(void);\nint main(int argc,char **args)\n{\n  "+asub+"();\n  return 0;\n}\n";
+    cxxbody = 'extern "C" void '+asub+'(void);\nint main(int argc,char **args)\n{\n  '+asub+'();\n  return 0;\n}\n';
     self.pushLanguage('FC')
     if self.checkLink(includes='#include <mpif.h>',body='      call MPI_Allreduce()\n'):
       fbody = "      subroutine asub()\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
@@ -1178,7 +1179,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     if skipfortranlibraries and hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
-        if self.checkCrossLink(fbody,cbody,language1='FC',language2='C++'):
+        if self.checkCrossLink(fbody,cxxbody,language1='FC',language2='C++'):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('Fortran libraries are not needed when using C++ linker')
         else:
