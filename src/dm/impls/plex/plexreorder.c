@@ -156,7 +156,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data, *plexNew;
-  PetscInt       dim;
+  PetscInt       dim, cdim;
   const char    *name;
   PetscErrorCode ierr;
 
@@ -170,6 +170,8 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   ierr = PetscObjectSetName((PetscObject) *pdm, name);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(*pdm, dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(*pdm, cdim);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *pdm);CHKERRQ(ierr);
   if (dm->localSection) {
     PetscSection section, sectionNew;

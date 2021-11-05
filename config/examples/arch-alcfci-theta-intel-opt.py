@@ -20,6 +20,7 @@ configure_options = [
   '--with-mkl_sparse_optimize=0',
   '--download-chaco=1',
   '--download-exodusii=1',
+  '--download-exodusii-cmake-arguments=-DCMAKE_C_FLAGS:STRING="-DADDC_ -fPIC -g -xMIC-AVX512 -O3"', # workaround exodusii cmake failure 'cannot automatically determine Fortran mangling'
   '--download-metis=1',
   '--download-parmetis=1',
   '--with-hdf5=1',
