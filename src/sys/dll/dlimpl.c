@@ -1,4 +1,3 @@
-
 /*
    Low-level routines for managing dynamic link libraries (DLLs).
 */
@@ -11,12 +10,6 @@
 #endif
 
 #include <petsc/private/petscimpl.h>
-
-/* XXX Should be done better !!!*/
-#if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-#undef PETSC_HAVE_WINDOWS_H
-#undef PETSC_HAVE_DLFCN_H
-#endif
 
 #if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
@@ -252,7 +245,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   if (handle) dlhandle = (dlhandle_t) handle;
   else {
 
-#if defined(PETSC_HAVE_DLOPEN) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DLOPEN)
     /* Attempt to retrieve the main executable's dlhandle. */
     { int dlflags1 = 0, dlflags2 = 0;
 #if defined(PETSC_HAVE_RTLD_LAZY)
