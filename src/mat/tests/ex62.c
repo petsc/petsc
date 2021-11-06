@@ -476,7 +476,8 @@ int main(int argc,char **args)
      output_file: output/ex62_1.out
 
    test:
-     suffix: 14_seqaijkokkos
+     nsize: {{1 3}}
+     suffix: 14_aijkokkos
      requires: kokkos_kernels !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type aijkokkos -B_mat_type aijkokkos -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
      output_file: output/ex62_1.out
