@@ -549,7 +549,8 @@ class Configure(config.base.Configure):
     {
     public:
       int i;
-      valClass() { i = 3;}
+      valClass() { i = 3; }
+      valClass(int x) : i(x) { }
     };
     """
     # this really just tests whether we have a working c++ compiler, c++03 only introduced
@@ -562,9 +563,19 @@ class Configure(config.base.Configure):
     const_cast<int&>(rci) = 4;
     """
     includes11 = includes03+"""
-    // C++11 includes
+    // c++11 includes
+    #include <memory>
     #include <random>
     #include <complex>
+
+    class MoveSemantics
+    {
+      std::unique_ptr<valClass> _member;
+
+    public:
+      MoveSemantics(int val = 4) : _member(new valClass(val)) { }
+      MoveSemantics& operator=(MoveSemantics &&other) noexcept = default;
+    };
     template<typename T> constexpr T Cubed( T x ) { return x*x*x; }
     auto trailing(int x) -> int { return x+2;}
     enum class Shapes : int {SQUARE,CIRCLE};
@@ -575,6 +586,9 @@ class Configure(config.base.Configure):
     // C++11 body
     PetscErrorCode ierr = 0;
     auto ret = trailing(ierr);
+    MoveSemantics bob;
+    MoveSemantics alice;
+    alice = std::move(bob);ignore(alice);
     Tuple<> t0;ignore(t0);
     Tuple<long> t1;ignore(t1);
     Tuple<int,float> t2;ignore(t2);
@@ -585,9 +599,9 @@ class Configure(config.base.Configure):
     std::cout << x << ret << std::endl;
     """
     includes14 = includes11+"""
-    // C++14 includes
-    template<class T>
-    constexpr T pi = T(3.1415926535897932385L);  // variable template
+    // c++14 includes
+
+    template<class T> constexpr T pi = T(3.1415926535897932385L);  // variable template
     """
     body14 = body11+"""
     // C++14 body
