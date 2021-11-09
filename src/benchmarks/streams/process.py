@@ -27,7 +27,7 @@ def process(streamstype,fileoutput):
 
   if size < 2: return
 
-  triads = triads.values()
+  triads = list(triads.values())
   speedups = {}
   for i in range(0,size):
     speedups[i] = triads[i]/triads[0]
