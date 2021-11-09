@@ -500,7 +500,7 @@ PetscErrorCode  TSSundialsSetMaxl_Sundials(TS ts,PetscInt maxl)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  TSSundialsSetLinearTolerance_Sundials(TS ts,double tol)
+PetscErrorCode  TSSundialsSetLinearTolerance_Sundials(TS ts,PetscReal tol)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
 
@@ -518,7 +518,7 @@ PetscErrorCode  TSSundialsSetGramSchmidtType_Sundials(TS ts,TSSundialsGramSchmid
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  TSSundialsSetTolerance_Sundials(TS ts,double aabs,double rel)
+PetscErrorCode  TSSundialsSetTolerance_Sundials(TS ts,PetscReal aabs,PetscReal rel)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
 
@@ -712,13 +712,13 @@ PetscErrorCode  TSSundialsSetMaxl(TS ts,PetscInt maxl)
           TSSetExactFinalTime()
 
 @*/
-PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,double tol)
+PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,PetscReal tol)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ts,tol,2);
-  ierr = PetscTryMethod(ts,"TSSundialsSetLinearTolerance_C",(TS,double),(ts,tol));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSSundialsSetLinearTolerance_C",(TS,PetscReal),(ts,tol));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -773,12 +773,12 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
           TSSetExactFinalTime()
 
 @*/
-PetscErrorCode  TSSundialsSetTolerance(TS ts,double aabs,double rel)
+PetscErrorCode  TSSundialsSetTolerance(TS ts,PetscReal aabs,PetscReal rel)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ts,"TSSundialsSetTolerance_C",(TS,double,double),(ts,aabs,rel));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSSundialsSetTolerance_C",(TS,PetscReal,PetscReal),(ts,aabs,rel));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
