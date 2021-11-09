@@ -2769,6 +2769,7 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
 
     ierr = DMExtrude(dm, extLayers, &edm);CHKERRQ(ierr);
     ierr = DMPlexReplace_Static(dm, &edm);CHKERRQ(ierr);
+    ((DM_Plex *) dm->data)->coordFunc = NULL;
     ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
     extLayers = 0;
   }
