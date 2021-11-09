@@ -652,7 +652,7 @@ PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 
    Logically Collective on TS
 
-   Input parameters:
+   Input Parameters:
 +    ts     - the time-step context
 -    type   - one of  SUNDIALS_ADAMS or SUNDIALS_BDF
 
@@ -678,7 +678,7 @@ PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 
    Logically Collective on TS
 
-   Input parameters:
+   Input Parameters:
 +    ts      - the time-step context
 -    maxord  - maximum order of BDF / Adams method
 
@@ -708,7 +708,7 @@ PetscErrorCode  TSSundialsSetMaxord(TS ts,PetscInt maxord)
 
    Logically Collective on TS
 
-   Input parameters:
+   Input Parameters:
 +    ts      - the time-step context
 -    maxl - number of direction vectors (the dimension of Krylov subspace).
 
@@ -737,7 +737,7 @@ PetscErrorCode  TSSundialsSetMaxl(TS ts,PetscInt maxl)
 
    Logically Collective on TS
 
-   Input parameters:
+   Input Parameters:
 +    ts     - the time-step context
 -    tol    - the factor by which the tolerance on the nonlinear solver is
              multiplied to get the tolerance on the linear solver, .05 by default.
@@ -767,7 +767,7 @@ PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,PetscReal tol)
 
    Logically Collective on TS
 
-   Input parameters:
+   Input Parameters:
 +    ts  - the time-step context
 -    type - either SUNDIALS_MODIFIED_GS or SUNDIALS_CLASSICAL_GS
 
@@ -795,7 +795,7 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
 
    Logically Collective on TS
 
-   Input parameters:
+   Input Parameters:
 +    ts  - the time-step context
 .    aabs - the absolute tolerance
 -    rel - the relative tolerance
