@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
             self.addDefine('_DEFAULT_SOURCE', '1')
         if self.checkCompile('#define _GNU_SOURCE\n#include <sched.h>','cpu_set_t mset;\nCPU_ZERO(&mset);'):
             self.addDefine('_GNU_SOURCE', '1')
-        if self.checkCompile('#define _GNU_SOURCE\n#include <stdlib.h>\n#include <dlfcn.h>','Dl_info info;\nif (dladdr(exit, &info));'):
+        if self.checkCompile('#define _GNU_SOURCE\n#include <stdlib.h>\n#include <dlfcn.h>','Dl_info info;\nif (dladdr(exit, &info)) return 0;'):
             self.addDefine('_GNU_SOURCE', '1')
 
     def configure(self):
