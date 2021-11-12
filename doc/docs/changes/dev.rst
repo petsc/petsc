@@ -82,6 +82,8 @@ Changes: Development
 
 .. rubric:: TS:
 
+- Add ``TSSundialsSetUseDense()`` and options database option ``-ts_sundials_use_dense`` to use a dense linear solver (serial only) within CVODE, instead of the default iterative solve.
+
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:
