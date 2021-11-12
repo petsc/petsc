@@ -129,10 +129,16 @@ class Configure(config.package.Package):
             try:
               s = set([i for i in out.split() if 'gfx' in i])
               self.hipArch = list(s)[0]
+              self.log.write('ROCM utility ' + self.rocminfo + ' said the HIP arch is ' + self.hipArch + '\n')
             except:
               self.log.write('Unable to parse the ROCM utility ' + self.rocminfo + '\n')
-        if hasattr(self,'hipArch'):
-          self.setCompilers.HIPFLAGS += ' --amdgpu-target=' + self.hipArch +' '
+      if hasattr(self,'hipArch'):
+        self.hipArch.lower() # to have a uniform format even if user set hip arch in weird cases
+        if not self.hipArch.startswith('gfx'):
+          raise RuntimeError('HIP arch name ' + self.hipArch + ' is not in the supported gfxnnn format')
+        self.setCompilers.HIPFLAGS += ' --amdgpu-target=' + self.hipArch +' '
+      else:
+        raise RuntimeError('You must set --with-hip-arch=gfx900, gfx906, gfx908, gfx90a etc or make ROCM utility "rocminfo" available on your PATH')
 
     config.package.Package.configureLibrary(self)
     #self.checkHIPDoubleAlign()
