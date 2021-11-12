@@ -110,7 +110,7 @@ class Configure(config.base.Configure):
     if self.headers.haveHeader('dlfcn.h') and self.functions.haveFunction('dlerror'):
       ftm = ''
       if self.ftm.defines.get('_GNU_SOURCE'): ftm = '#define _GNU_SOURCE\n'
-      if self.checkCompile('%s#include<stdlib.h>\n#include <dlfcn.h>\n' % ftm, 'Dl_info info;\n\nif (dladdr(exit, &info));\n'):
+      if self.checkCompile('%s#include<stdlib.h>\n#include <dlfcn.h>\n' % ftm, 'Dl_info info;\n\nif (dladdr(exit, &info)) return 0;\n'):
         self.addDefine('HAVE_DLADDR', 1)
         self.headers.check('cxxabi.h')
 

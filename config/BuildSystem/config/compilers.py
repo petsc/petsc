@@ -614,6 +614,7 @@ class Configure(config.base.Configure):
     public:
       int i;
       valClass() { i = 3; }
+      valClass(int x) : i(x) { }
     };
     """
     # this really just tests whether we have a working c++ compiler, c++03 only introduced
@@ -627,9 +628,18 @@ class Configure(config.base.Configure):
     """
     includes11 = includes03+"""
     // c++11 includes
+    #include <memory>
     #include <random>
     #include <complex>
 
+    class MoveSemantics
+    {
+      std::unique_ptr<valClass> _member;
+
+    public:
+      MoveSemantics(int val = 4) : _member(new valClass(val)) { }
+      MoveSemantics& operator=(MoveSemantics &&other) noexcept = default;
+    };
     template<typename T> constexpr T Cubed( T x ) { return x*x*x; }
     auto trailing(int x) -> int { return x+2; }
     enum class Shapes : int {SQUARE,CIRCLE};
@@ -641,6 +651,9 @@ class Configure(config.base.Configure):
     constexpr int big_value = 1234;
     decltype(big_value) ierr = big_value;
     auto ret = trailing(ierr);
+    MoveSemantics bob;
+    MoveSemantics alice;
+    alice = std::move(bob);ignore(alice);
     Tuple<> t0;ignore(t0);
     Tuple<long> t1;ignore(t1);
     Tuple<int,float> t2;ignore(t2);
@@ -1306,6 +1319,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     self.setCompilers.saveLog()
     asub=self.mangleFortranFunction("asub")
     cbody = "extern void "+asub+"(void);\nint main(int argc,char **args)\n{\n  "+asub+"();\n  return 0;\n}\n";
+    cxxbody = 'extern "C" void '+asub+'(void);\nint main(int argc,char **args)\n{\n  '+asub+'();\n  return 0;\n}\n';
     self.pushLanguage('FC')
     if self.checkLink(includes='#include <mpif.h>',body='      call MPI_Allreduce()\n'):
       fbody = "      subroutine asub()\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
@@ -1328,7 +1342,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     if skipfortranlibraries and hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
-        if self.checkCrossLink(fbody,cbody,language1='FC',language2='C++'):
+        if self.checkCrossLink(fbody,cxxbody,language1='FC',language2='C++'):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('Fortran libraries are not needed when using C++ linker')
         else:

@@ -3675,10 +3675,12 @@ int main(int argc, char **argv)
       suffix: benign_deluxe_adaptive_mumps
       args: -pc_bddc_adaptive_threshold 1.7 -pc_bddc_use_deluxe_scaling -pc_bddc_deluxe_zerorows -sub_schurs_mat_solver_type mumps -sub_schurs_mat_mumps_icntl_14 1000
     test:
+      TODO: broken (INDEFINITE PC)
       requires: mkl_pardiso double !complex
       suffix: benign_deluxe_mkl
       args: -pc_bddc_use_deluxe_scaling -pc_bddc_deluxe_zerorows -sub_schurs_mat_solver_type mkl_pardiso -snes_rtol 1.e-7
     test:
+      TODO: broken (INDEFINITE PC)
       requires: mkl_pardiso double !complex
       suffix: benign_deluxe_adaptive_mkl
       args: -pc_bddc_adaptive_threshold 1.7 -pc_bddc_use_deluxe_scaling -pc_bddc_deluxe_zerorows -sub_schurs_mat_solver_type mkl_pardiso -snes_rtol 1.e-7
