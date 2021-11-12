@@ -95,27 +95,38 @@ class Configure(config.package.Package):
     return incDirs
 
   def generateLibList(self, directory):
-    ''' Generate cuda liblist. The difficulty comes from NVIDIA providing two different directory structures through CUDAToolkit and NVHPC'''
+    ''' Generate cuda liblist. The difficulty comes from that cuda can be in different directory structures through system, CUDAToolkit or NVHPC'''
 
-    # NVIDIA provides
-    # 1) CUDAToolkit, with a directory structure like
+    # 1) From system installation (ex. Ubuntu 21.10), all libraries are on the compiler (nvcc)'s default search paths
+    #   /usr/bin/nvcc
+    #   /usr/include
+    #   /usr/lib/x86_64-linux-gnu/{libcudart.so,..,libcuda.so,..,stubs}.  See https://wiki.ubuntu.com/MultiarchSpec for info on this new directory structure
+    #
+    # 2) CUDAToolkit, with a directory structure like
     #   /path/cuda-11.4.0/{lib64, lib64/stubs}, here lib64/ contains all basic and math libraries
     #                   +/include
     #                   +/bin/{nvcc,..}
     #
-    # 2) NVHPC, with a directory structure like
+    # 3) NVHPC, with a directory structure like
     # /path/nvhpc/Linux_x86_64/21.7/compilers/bin/{nvcc,nvc,nvc++}
     #                             +/cuda/{include,bin/nvcc,lib64,lib64/stubs}, just symbol links to what in cuda/11.4
     #                             +/cuda/11.4/{include,bin/nvcc,lib64,lib64/stubs}
     #                             +/math_libs/{include,lib64,lib64/stubs}, just symbol links to what in math_libs/11.4
     #                             +/math_libs/11.4/{include,lib64,lib64/stubs}
     #                             +/comm_libs/mpi/bin/{mpicc,mpicxx,mpifort}
-
+    #
     # The input argument 'directory' could be in these formats:
+    # 0) ''                                             We are checking if the compiler by default supports the libraries
     # A) /path/cuda-11.4.0/lib64,                       by loading a CUDAToolkit or --with-cuda-dir=/path/cuda-11.4.0
     # B) /path/nvhpc/Linux_x86_64/21.7/compilers/lib64, by loading a NVHPC module
     # C) /path/nvhpc/Linux_x86_64/21.7/cuda/lib64,      by --with-cuda-dir=/path/Linux_x86_64/21.7/cuda/
     # D) /path/nvhpc/Linux_x86_64/21.7/cuda/11.4/lib64, by --with-cuda-dir=/path/Linux_x86_64/21.7/cuda/11.4
+
+    # directory is None (''). Test if the compiler by default supports all libraries including the stub
+    if not directory:
+      self.liblist = [self.basicliblist[0]+self.mathliblist[0]+self.stubliblist[0]] + [self.basicliblist[1]+self.mathliblist[1]+self.stubliblist[1]]
+      liblist      = config.package.Package.generateLibList(self, directory)
+      return liblist
 
     # 'directory' is in format A, with basic and math libraries in one directory.
     liblist           = [] # initialize
