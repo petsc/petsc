@@ -4545,12 +4545,41 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat);
 PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 {
   PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-  ierr = PetscUseMethod(A,"MatSeqAIJGetArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DEVICE)
-  if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
+  if (aij->ops->getarray) {
+    ierr = (*aij->ops->getarray)(A,array);CHKERRQ(ierr);
+  } else {
+    *array = aij->a;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSeqAIJRestoreArray - returns access to the array where the data for a MATSEQAIJ matrix is stored obtained by MatSeqAIJGetArray()
+
+   Not Collective
+
+   Input Parameters:
++  mat - a MATSEQAIJ matrix
+-  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatSeqAIJGetArray(), MatSeqAIJRestoreArrayF90()
+@*/
+PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  if (aij->ops->restorearray) {
+    ierr = (*aij->ops->restorearray)(A,array);CHKERRQ(ierr);
+  } else {
+    *array = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4571,19 +4600,15 @@ PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 @*/
 PetscErrorCode  MatSeqAIJGetArrayRead(Mat A,const PetscScalar **array)
 {
-#if defined(PETSC_HAVE_DEVICE)
-  PetscOffloadMask oval;
-#endif
   PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_DEVICE)
-  oval = A->offloadmask;
-#endif
-  ierr = MatSeqAIJGetArray(A,(PetscScalar**)array);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DEVICE)
-  if (oval == PETSC_OFFLOAD_GPU || oval == PETSC_OFFLOAD_BOTH) A->offloadmask = PETSC_OFFLOAD_BOTH;
-#endif
+  if (aij->ops->getarrayread) {
+    ierr = (*aij->ops->getarrayread)(A,array);CHKERRQ(ierr);
+  } else {
+    *array = aij->a;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4604,19 +4629,73 @@ PetscErrorCode  MatSeqAIJGetArrayRead(Mat A,const PetscScalar **array)
 @*/
 PetscErrorCode  MatSeqAIJRestoreArrayRead(Mat A,const PetscScalar **array)
 {
-#if defined(PETSC_HAVE_DEVICE)
-  PetscOffloadMask oval;
-#endif
   PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_DEVICE)
-  oval = A->offloadmask;
-#endif
-  ierr = MatSeqAIJRestoreArray(A,(PetscScalar**)array);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DEVICE)
-  A->offloadmask = oval;
-#endif
+  if (aij->ops->restorearrayread) {
+    ierr = (*aij->ops->restorearrayread)(A,array);CHKERRQ(ierr);
+  } else {
+    *array = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSeqAIJGetArrayWrite - gives write-only access to the array where the data for a MATSEQAIJ matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.  mat - a MATSEQAIJ matrix
+
+   Output Parameter:
+.   array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatSeqAIJGetArray(), MatSeqAIJRestoreArrayRead()
+@*/
+PetscErrorCode  MatSeqAIJGetArrayWrite(Mat A,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  if (aij->ops->getarraywrite) {
+    ierr = (*aij->ops->getarraywrite)(A,array);CHKERRQ(ierr);
+  } else {
+    *array = aij->a;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSeqAIJRestoreArrayWrite - restore the read-only access array obtained from MatSeqAIJGetArrayRead
+
+   Not Collective
+
+   Input Parameter:
+.  mat - a MATSEQAIJ matrix
+
+   Output Parameter:
+.   array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatSeqAIJGetArray(), MatSeqAIJGetArrayRead()
+@*/
+PetscErrorCode  MatSeqAIJRestoreArrayWrite(Mat A,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  if (aij->ops->restorearraywrite) {
+    ierr = (*aij->ops->restorearraywrite)(A,array);CHKERRQ(ierr);
+  } else {
+    *array = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4641,28 +4720,6 @@ PetscErrorCode  MatSeqAIJGetMaxRowNonzeros(Mat A,PetscInt *nz)
 
   PetscFunctionBegin;
   *nz = aij->rmax;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   MatSeqAIJRestoreArray - returns access to the array where the data for a MATSEQAIJ matrix is stored obtained by MatSeqAIJGetArray()
-
-   Not Collective
-
-   Input Parameters:
-+  mat - a MATSEQAIJ matrix
--  array - pointer to the data
-
-   Level: intermediate
-
-.seealso: MatSeqAIJGetArray(), MatSeqAIJRestoreArrayF90()
-@*/
-PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscUseMethod(A,"MatSeqAIJRestoreArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4711,8 +4768,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->keepnonzeropattern = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJGetArray_C",MatSeqAIJGetArray_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJRestoreArray_C",MatSeqAIJRestoreArray_SeqAIJ);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"PetscMatlabEnginePut_C",MatlabEnginePut_SeqAIJ);CHKERRQ(ierr);

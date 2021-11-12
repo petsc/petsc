@@ -69,6 +69,7 @@ Changes: Development
 -  Add ``-mat_bind_below`` option for specifying size threshold below which GPU is not used for ``Mat`` operations
 -  Add ``MatSetBindingPropagates()``
 -  Add ``MatGetBindingPropagates()``
+-  Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
 
 .. rubric:: PC:
 
