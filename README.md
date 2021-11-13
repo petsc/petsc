@@ -2,12 +2,12 @@
 
 ### What is this repository for? ###
 
-Host the PETSc numerical library package. http://www.mcs.anl.gov/petsc
+Host the PETSc numerical library package: https://petsc.org
 
 ### How do I get set up? ###
 
-* Download http://www.mcs.anl.gov/petsc/download/index.html
-* Install http://www.mcs.anl.gov/petsc/documentation/installation.html
+* Download: https://petsc.org/release/download
+* Install: https://petsc.org/release/install
 
 ### Contribution guidelines ###
 
