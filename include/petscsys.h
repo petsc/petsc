@@ -16,6 +16,65 @@
 #include <petscconf_poison.h>
 #include <petscfix.h>
 
+/*MC
+  PetscHasAttribute - determine whether a particular __attribute__ is supported by the compiler
+
+  Synopsis:
+  #include <petscsys.h>
+  boolean PetscHasAttribute(name)
+
+  Input Parameter:
+. name - the name of the attribute to test
+
+  Notes:
+  name should be identical to what you might pass to the __attribute__ declaration itself --
+  plain, unbroken text.
+
+  As PetscHasAttribute() is wrapper over the function-like macro __has_attribute(), the exact
+  type and value returned is implementation defined. In practice however, it usually returns
+  the integer literal 1 if the attribute is supported, and integer literal 0 if the attribute
+  is not supported.
+
+  Sample usage:
+  Typical usage is usually using the preprocessor
+
+.vb
+  #if PetscHasAttribute(always_inline)
+  #  define MY_ALWAYS_INLINE __attribute__((always_inline))
+  #else
+  #  define MY_ALWAYS_INLINE
+  #endif
+
+  void foo(void) MY_ALWAYS_INLINE;
+.ve
+
+  but can also be used in regular code
+
+.vb
+  if (PetscHasAttribute(some_attribute)) {
+    foo();
+  } else {
+    bar();
+  }
+.ve
+
+  Level: advanced
+
+.seealso: PetscDefined(), PetscLikely(), PetscUnlikely()
+M*/
+#if defined(__has_attribute)
+#  define PetscHasAttribute(x) __has_attribute(x)
+#else
+#  define PetscHasAttribute(x) 0
+#endif
+
+/* placeholder defines */
+#if PetscHasAttribute(format)
+#  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx)
+#else
+#  define PETSC_ATTRIBUTE_FORMAT(strIdx,vaArgIdx)
+#endif
+
 #if defined(PETSC_DESIRE_FEATURE_TEST_MACROS)
 /*
    Feature test macros must be included before headers defined by IEEE Std 1003.1-2001
@@ -205,6 +264,7 @@ $  #define FooDefined(d) PetscDefined_(FOO_ ## d)
   implementation of variadic macros.
 
   Level: developer
+.seealso: PetscHasAttribute(), PetscUnlikely(), PetscLikely()
 M*/
 #if !defined(PETSC_SKIP_VARIADIC_MACROS)
 #  define PetscDefined_arg_1    shift,
@@ -362,7 +422,7 @@ PETSC_EXTERN FILE* PETSC_STDERR;
 
     Level: advanced
 
-.seealso: PetscUnlikelyDebug(), PetscLikely(), CHKERRQ
+.seealso: PetscUnlikelyDebug(), PetscLikely(), CHKERRQ, PetscDefined(), PetscHasAttribute()
 M*/
 
 /*MC
@@ -383,7 +443,7 @@ M*/
 
     Level: advanced
 
-.seealso: PetscUnlikely()
+.seealso: PetscUnlikely(), PetscDefined(), PetscHasAttribute()
 M*/
 #if defined(PETSC_HAVE_BUILTIN_EXPECT)
 #  define PetscUnlikely(cond)   __builtin_expect(!!(cond),0)
