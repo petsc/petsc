@@ -500,7 +500,7 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
   ierr = PetscMemoryGetMaximumUsage(&residentmax);CHKERRQ(ierr);
   if (residentmax > 0) residentmax = PetscMax(resident,residentmax);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,message);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s",message);CHKERRQ(ierr);
   if (resident && residentmax && allocated) {
     ierr = MPI_Reduce(&residentmax,&gresidentmax,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,0,comm);CHKERRMPI(ierr);
     ierr = MPI_Reduce(&residentmax,&maxgresidentmax,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,0,comm);CHKERRMPI(ierr);

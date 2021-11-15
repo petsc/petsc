@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePPM(const char filename[],unsigned
   }
   /* open file and write PPM header */
   ierr = PetscBinaryOpen(filename,FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(header,sizeof(header),"P6\n%d %d\n255\n\0",(int)w,(int)h);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(header,sizeof(header),"P6\n%d %d\n255\n%c",(int)w,(int)h,'\0');CHKERRQ(ierr);
   ierr = PetscStrlen(header,&hdrlen);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(fd,header,hdrlen,PETSC_CHAR);CHKERRQ(ierr);
   /* write image data and close file */

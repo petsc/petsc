@@ -502,14 +502,14 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
           goto destroy;
         } else if (tokens[0][0] == '-') {
           ierr = PetscOptionsValidKey(tokens[0],&valid);CHKERRQ(ierr);
-          if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: invalid option %s",fname,line,tokens[0]);
+          if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid option %s",fname,line,tokens[0]);
           ierr = PetscStrlen(tokens[0],&len);CHKERRQ(ierr);
           ierr = PetscSegBufferGet(vseg,len+1,&vstring);CHKERRQ(ierr);
           ierr = PetscArraycpy(vstring,tokens[0],len);CHKERRQ(ierr);
           vstring[len] = ' ';
           if (tokens[1]) {
             ierr = PetscOptionsValidKey(tokens[1],&valid);CHKERRQ(ierr);
-            if (valid) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: cannot specify two options per line (%s %s)",fname,line,tokens[0],tokens[1]);
+            if (valid) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": cannot specify two options per line (%s %s)",fname,line,tokens[0],tokens[1]);
             ierr = PetscStrlen(tokens[1],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(vseg,len+3,&vstring);CHKERRQ(ierr);
             vstring[0] = '"';
@@ -521,10 +521,10 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
           ierr = PetscStrcasecmp(tokens[0],"alias",&alias);CHKERRQ(ierr);
           if (alias) {
             ierr = PetscOptionsValidKey(tokens[1],&valid);CHKERRQ(ierr);
-            if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: invalid aliased option %s",fname,line,tokens[1]);
-            if (!tokens[2]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: alias missing for %s",fname,line,tokens[1]);
+            if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid aliased option %s",fname,line,tokens[1]);
+            if (!tokens[2]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": alias missing for %s",fname,line,tokens[1]);
             ierr = PetscOptionsValidKey(tokens[2],&valid);CHKERRQ(ierr);
-            if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: invalid aliasee option %s",fname,line,tokens[2]);
+            if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid aliasee option %s",fname,line,tokens[2]);
             ierr = PetscStrlen(tokens[1],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
             ierr = PetscArraycpy(astring,tokens[1],len);CHKERRQ(ierr);
@@ -534,11 +534,11 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
             ierr = PetscArraycpy(astring,tokens[2],len);CHKERRQ(ierr);
             astring[len] = ' ';
-          } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown first token in options file %s line %D: %s",fname,line,tokens[0]);
+          } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown first token in options file %s line %" PetscInt_FMT ": %s",fname,line,tokens[0]);
         }
         {
           const char *extraToken = alias ? tokens[3] : tokens[2];
-          if (extraToken) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %D: extra token %s",fname,line,extraToken);
+          if (extraToken) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": extra token %s",fname,line,extraToken);
         }
 destroy:
         free(string);
@@ -1030,7 +1030,7 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
   if (!valid) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter%s, do not include leading '-')",prefix,options->prefixind?" or digit":"");
   start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
   ierr = PetscStrlen(prefix,&n);CHKERRQ(ierr);
-  if (n+1 > sizeof(options->prefix)-start) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum prefix length %d exceeded",sizeof(options->prefix));
+  if (n+1 > sizeof(options->prefix)-start) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum prefix length %zu exceeded",sizeof(options->prefix));
   ierr = PetscArraycpy(options->prefix+start,prefix,n+1);CHKERRQ(ierr);
   options->prefixstack[options->prefixind++] = start+n;
   PetscFunctionReturn(0);
@@ -1840,7 +1840,7 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
       toptions = toptions->previous;
     }
     if (cnt) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: You may have forgotten some calls to PetscOptionsPop(),\n             PetscOptionsPop() has been called %D less times than PetscOptionsPush()\n",cnt);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: You may have forgotten some calls to PetscOptionsPop(),\n             PetscOptionsPop() has been called %" PetscInt_FMT " less times than PetscOptionsPush()\n",cnt);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1956,7 +1956,7 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[],const char value[],v
   if (ctx) {
     PetscViewer viewer = (PetscViewer)ctx;
     if (!value) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Removing option: %s\n",name,value);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Removing option: %s\n",name);CHKERRQ(ierr);
     } else if (!value[0]) {
       ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s (no value)\n",name);CHKERRQ(ierr);
     } else {
@@ -1965,7 +1965,7 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[],const char value[],v
   } else {
     MPI_Comm comm = PETSC_COMM_WORLD;
     if (!value) {
-      ierr = PetscPrintf(comm,"Removing option: %s\n",name,value);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Removing option: %s\n",name);CHKERRQ(ierr);
     } else if (!value[0]) {
       ierr = PetscPrintf(comm,"Setting option: %s (no value)\n",name);CHKERRQ(ierr);
     } else {
@@ -2822,7 +2822,7 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
     else i=1;
     for (;i<(int)len; i++) {
       if (value[i] == '-') {
-        if (i == (int)len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
+        if (i == (int)len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s\n",n,value);
         value[i] = 0;
 
         ierr = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);
@@ -2833,14 +2833,14 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
             value[j] = 0;
 
             ierr = PetscOptionsStringToInt(value+j+1,&inc);CHKERRQ(ierr);
-            if (inc <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry,%s cannot have negative increment",n,value+j+1);
+            if (inc <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry,%s cannot have negative increment",n,value+j+1);
             break;
           }
         }
         ierr = PetscOptionsStringToInt(value+i+1,&end);CHKERRQ(ierr);
-        if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
+        if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
         nvalues = (end-start)/inc + (end-start)%inc;
-        if (n + nvalues  > *nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, not enough space left in array (%D) to contain entire range from %D to %D",n,*nmax-n,start,end);
+        if (n + nvalues  > *nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, not enough space left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT,n,*nmax-n,start,end);
         for (;start<end; start+=inc) {
           *ivalue = start; ivalue++;n++;
         }
@@ -3124,7 +3124,7 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
       ierr = PetscStrcat(msg," (Silence this warning with ");CHKERRQ(ierr);
       ierr = PetscStrcat(msg,quietopt);CHKERRQ(ierr);
       ierr = PetscStrcat(msg,")\n");CHKERRQ(ierr);
-      ierr = PetscPrintf(comm,msg);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"%s",msg);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

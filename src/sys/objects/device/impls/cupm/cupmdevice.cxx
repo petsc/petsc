@@ -348,7 +348,7 @@ PetscErrorCode CUPMDevice<T>::getDevice(PetscDevice device, PetscInt id) const n
   if (id == PETSC_DECIDE) id = _defaultDevice;
   if (PetscUnlikelyDebug(static_cast<std::size_t>(id) >= _devices.size())) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,_devices.size(),id);
   if (_devices[id]) {
-    if (PetscUnlikelyDebug(id != _devices[id]->id())) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %" PetscInt_FMT,id,_devices[id]->id());
+    if (PetscUnlikelyDebug(id != _devices[id]->id())) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %d",id,_devices[id]->id());
   } else _devices[id] = CUPMDeviceInternal::makeDevice(id);
   ierr = _devices[id]->initialize();CHKERRQ(ierr);
   device->deviceId           = _devices[id]->id(); // technically id = _devices[id]->_id here

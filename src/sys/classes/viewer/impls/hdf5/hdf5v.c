@@ -963,7 +963,7 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer, timestep, 2);
-  if (timestep < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestep %D is negative", timestep);
+  if (timestep < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestep %" PetscInt_FMT " is negative", timestep);
   if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   hdf5->timestep = timestep;
   PetscFunctionReturn(0);

@@ -37,7 +37,7 @@ PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
   case 2:
     petsc_checkpointer_intensity = intensity;
     break;
-  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Intensity %D not in 0,1,2",intensity);
+  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Intensity %" PetscInt_FMT " not in 0,1,2",intensity);
   }
   PetscFunctionReturn(0);
 }

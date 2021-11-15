@@ -34,11 +34,10 @@
     PetscStackPop;                                              \
   } while (0)
 
-PETSC_STATIC_INLINE void PetscMissingLapack(const char *fname,...)
+static inline void PetscMissingLapack(const char *fname,...)
 {
-  char mesg[1024];
-  PetscSNPrintf(mesg,1024,"%s - Lapack routine is unavailable.",fname);
-  SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_SUP,mesg);
+  PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_SUP,PETSC_ERROR_INITIAL,"%s - Lapack routine is unavailable.",fname);
+  MPI_Abort(PETSC_COMM_SELF,PETSC_ERR_SUP);
 }
 
 #include <petscblaslapack_mangle.h>

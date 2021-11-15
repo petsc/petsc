@@ -306,12 +306,12 @@ cdef class Viewer(Object):
     def printfASCII(self, msg):
         cdef const char *cmsg = NULL
         msg = str2bytes(msg, &cmsg)
-        CHKERR( PetscViewerASCIIPrintf(self.vwr, cmsg) )
+        CHKERR( PetscViewerASCIIPrintf(self.vwr, '%s', cmsg) )
 
     def printfASCIISynchronized(self, msg):
         cdef const char *cmsg = NULL
         msg = str2bytes(msg, &cmsg)
-        CHKERR( PetscViewerASCIISynchronizedPrintf(self.vwr, cmsg) )
+        CHKERR( PetscViewerASCIISynchronizedPrintf(self.vwr, '%s', cmsg) )
 
     # --- methods specific to file viewers ---
 

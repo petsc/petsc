@@ -270,7 +270,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
 
   PetscFunctionBegin;
   if (count) *count = 0;
-  if (num < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to read a negative amount of data %D",num);
+  if (num < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to read a negative amount of data %" PetscInt_FMT,num);
   if (!num) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
@@ -390,7 +390,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
   PetscDataType  wtype = type;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
@@ -500,7 +500,7 @@ PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
   case FILE_MODE_APPEND: *fd = open(name,O_BINARY|O_WRONLY|O_APPEND,0); break;
   default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[mode]);
   }
-  if (*fd == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for %s: %s",name,PetscFileModes[mode]);
+  if (*fd == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for %s",name,PetscFileModes[mode]);
   PetscFunctionReturn(0);
 }
 
