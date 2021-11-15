@@ -27,27 +27,27 @@ int main(int argc,char **argv)
   for (i=0; i<10; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %g\n",(double)x[i]);CHKERRQ(ierr);}
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n3rd test\n");CHKERRQ(ierr);
-  for (i=0; i<5; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %2D     %g\n",index2[i], (double)x2[i]);CHKERRQ(ierr);}
+  for (i=0; i<5; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %2" PetscInt_FMT "     %g\n",index2[i], (double)x2[i]);CHKERRQ(ierr);}
   ierr = PetscPrintf(PETSC_COMM_SELF,"---------------\n");CHKERRQ(ierr);
   ierr = PetscSortRealWithArrayInt(5, x2, index2);CHKERRQ(ierr);
-  for (i=0; i<5; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %2D     %g\n",index2[i], (double)x2[i]);CHKERRQ(ierr);}
+  for (i=0; i<5; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %2" PetscInt_FMT "     %g\n",index2[i], (double)x2[i]);CHKERRQ(ierr);}
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n4th test\n");CHKERRQ(ierr);
-  for (i=0; i<10; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %2D     %g\n",index3[i], (double)x3[i]);CHKERRQ(ierr);}
+  for (i=0; i<10; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %2" PetscInt_FMT "     %g\n",index3[i], (double)x3[i]);CHKERRQ(ierr);}
   ierr = PetscPrintf(PETSC_COMM_SELF,"---------------\n");CHKERRQ(ierr);
   ierr = PetscSortRealWithArrayInt(10, x3, index3);CHKERRQ(ierr);
-  for (i=0; i<10; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %2D     %g\n",index3[i], (double)x3[i]);CHKERRQ(ierr);}
+  for (i=0; i<10; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %2" PetscInt_FMT "     %g\n",index3[i], (double)x3[i]);CHKERRQ(ierr);}
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n5th test\n");CHKERRQ(ierr);
   val  = 44;
   ierr = PetscFindReal(val,10,x3,PETSC_SMALL,&loc);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF," %g in array: loc %D\n",(double)val,loc);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF," %g in array: loc %" PetscInt_FMT "\n",(double)val,loc);CHKERRQ(ierr);
   val  = 309.2;
   ierr = PetscFindReal(val,10,x3,PETSC_SMALL,&loc);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF," %g in array: loc %D\n",(double)val,loc);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF," %g in array: loc %" PetscInt_FMT "\n",(double)val,loc);CHKERRQ(ierr);
   val  = 309.2;
   ierr = PetscFindReal(val,10,x3,0.21,&loc);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF," %g in array: loc %D\n",(double)val,loc);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF," %g in array: loc %" PetscInt_FMT "\n",(double)val,loc);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;

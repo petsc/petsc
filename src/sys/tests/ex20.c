@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsGetInt(NULL,0,"-a_three",&opts[3],0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,0,"-a_cc_ddd_four",&opts[4],0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,0,"-five",&opts[5],0);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"opts = {%D %D %D %D %D %D}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"opts = {%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,0,"-cl",&hascl,0);CHKERRQ(ierr);
   if (hascl) {
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsGetInt(NULL,0,"-cl_a_three",&opts[3],0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,0,"-cl_a_cc_ddd_four",&opts[4],0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,0,"-cl_five",&opts[5],0);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"cl_opts = {%D %D %D %D %D %D}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"cl_opts = {%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsGetBool(NULL,0,"-str",&hasstr,0);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsGetInt(NULL,0,"-str_a_three",&opts[3],0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,0,"-str_a_cc_ddd_four",&opts[4],0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,0,"-str_five",&opts[5],0);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"str_opts = {%D %D %D %D %D %D}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"str_opts = {%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]);CHKERRQ(ierr);
   }
 
   ierr = PetscFinalize();
