@@ -311,7 +311,7 @@ PetscErrorCode PetscDeviceContextSetUp(PetscDeviceContext dctx)
 . dctx - The PetscDeviceContext to duplicate
 
   Output Paramter:
-. strmdup - The duplicated PetscDeviceContext
+. dctxdup - The duplicated PetscDeviceContext
 
   Notes:
   This is a shorthand method for creating a PetscDeviceContext with the exact same
@@ -412,6 +412,10 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   PetscFunctionReturn(0);
 }
 
+#define PETSC_USE_DEBUG_AND_INFO (PetscDefined(USE_DEBUG) && PetscDefined(USE_INFO))
+#if PETSC_USE_DEBUG_AND_INFO
+#include <string>
+#endif
 /*@C
   PetscDeviceContextFork - Create a set of dependent child contexts from a parent context
 
@@ -448,7 +452,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
 @*/
 PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, PetscDeviceContext **dsub)
 {
-#if defined(PETSC_USE_DEBUG) && defined(PETSC_USE_INFO)
+#if PETSC_USE_DEBUG_AND_INFO
   const PetscInt      nBefore = n;
   static std::string  idList;
 #endif
@@ -490,7 +494,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
       ierr = PetscDeviceContextWaitForContext(dsubTmp[i],dctx);CHKERRQ(ierr);
       /* register the child with its parent */
       dctx->childIDs[i] = dsubTmp[i]->id;
-#if defined(PETSC_USE_DEBUG) && defined(PETSC_USE_INFO)
+#if PETSC_USE_DEBUG_AND_INFO
       idList += std::to_string(dsubTmp[i]->id);
       if (n != 1) idList += ", ";
 #endif
