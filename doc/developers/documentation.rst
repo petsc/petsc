@@ -18,22 +18,24 @@ General Guidelines
 Documentation with Sphinx
 =========================
 
-`Sphinx <https://www.sphinx-doc.org/en/master/>`__ is a `well-documented <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`__ and widely-used set of Python-based tools
-for building documentation. Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
-
-We use Sphinx to coordinate building the documentation for our web page, as well
-as a PDF of the Users Manual. To create this PDF, you must have a working
-LaTeX installation.
+We use `Sphinx <https://www.sphinx-doc.org/en/master/>`__ to build our web page and documentation.  Most content is written using `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`__, a simple markup language.
 
 `These slides <https://gitlab.com/psanan/petsc-sphinx-slides>`__ contain an overview of Sphinx and how we use(d) it, as of October, 2020.
 
-The documentation build with Sphinx involves configuring a minimal build
-of PETSc and building some of the :any:`classic docs <classic_docs_build>`.
+
+.. _sec_local_html_docs:
 
 Building the HTML docs locally
 ------------------------------
 
-We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__.
+.. admonition:: Note
+
+    The documentation build with Sphinx involves configuring a minimal build
+    of PETSc and building some of the :any:`classic docs <classic_docs_build>`,
+    which requires local working ``flex``, ``gcc``, and  ``g++`` before
+    you follow the instructions below.
+
+We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tutorial/venv.html>`__  [#venv_footnote]_.
 
 .. code-block:: console
 
@@ -41,21 +43,41 @@ We suggest using a `Python 3 virtual environment <https://docs.python.org/3/tuto
    $ python3 -m venv petsc-doc-env
    $ . petsc-doc-env/bin/activate
    $ pip install -r doc/requirements.txt
+
+Then,
+
+.. code-block:: console
+
    $ cd doc
-   $ make html  # may take several minutes
-
-Then open ``_build/html/index.html`` with your browser.
-
-Notes:
-
-- The above assumes that ``python3`` is Python 3.3 or later. Check with ``python3 --version``.
-- You may need to install a package like ``python3-venv``.
+   $ make html                      # may take several minutes
+   $ browse _build/html/index.html  # or otherwise open in browser
 
 
 .. _sphinx_guidelines:
 
+
+Building the manual locally as a PDF via LaTeX
+----------------------------------------------
+
+.. admonition:: Note
+
+   Before following these instructions, you should have a working
+   local LaTeX installation and the ability to install additional packages,
+   if needbe, to resolve LaTeX errors.
+
+Set up your local Python environment (e.g. :ref:`as above <sec_local_html_docs>`), then
+
+.. code-block:: console
+
+   $ cd doc
+   $ make latexpdf
+   $ open _build/latex/manual.pdf  # or otherwise open in PDF viewer
+
+
 Sphinx Documentation Guidelines
 -------------------------------
+
+Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for general information on how to use Sphinx, and note the following additional guidelines.
 
 * Use the `literalinclude directive <https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude>`__ to directly include pieces of source code. Use an "absolute" path, beginning with ``/``, which means relative to the root for the Sphinx docs (where ``conf.py`` is found).
 
@@ -231,24 +253,29 @@ automatically downloaded and installed by ``configure``.
 * `Sowing <http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz>`__: a text processing tool developed by Bill Gropp.  This produces the PETSc manual pages; see the `Sowing documentation <http://wgropp.cs.illinois.edu/projects/software/sowing/doctext/doctext.htm>`__ and :ref:`manual_page_format`.
 * `C2html <http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz>`__: A text processing package. This generates the HTML versions of all the source code.
 
-Note: Sowing and c2html have additional dependencies like gcc, g++, and flex and do not
-use compilers specified to PETSc configure. [Windows users please install the corresponding
-cygwin packages]
+Note that Sowing and C2html are build tools that do not use the compilers specified to PETSc's ``configure``, as they
+need to work in cross-compilation environments. Thus, they default to using ``gcc``, ``g++``, and ``flex`` from
+the user's environment (or ``configure`` options like ``--download-sowing-cxx``). Windows users should install ``gcc``
+etc. from Cygwin as these tools don't build with MS compilers.
+
+One can run this process in-tree with
 
 .. code-block:: console
 
-    $ make alldoc LOC=${PETSC_DIR}
+    $ make alldoc12 LOC=${PETSC_DIR}
 
-To get a quick preview of manual pages from a single source directory (mainly to debug the manual page syntax):
+For debugging, a quick preview of manual pages from a single source directory can be obtained, e.g.
 
 .. code-block:: console
 
     $ cd $PETSC_DIR/src/snes/interface
     $ make LOC=$PETSC_DIR manualpages_buildcite
-    $ browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or suitable command to open the HTML page in a browser
+    $ browse $PETSC_DIR/docs/manualpages/SNES/SNESCreate.html  # or otherwise open in browser
 
 
 .. rubric:: Footnotes
+
+.. [#venv_footnote] This requires Python 3.3 or later, and you maybe need to install a package like ``python3-venv``.
 
 .. [#bibtex_footnote] The extensions's `development branch <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__ `supports our use case better <https://github.com/mcmtroffaes/sphinxcontrib-bibtex/pull/185>`__ (``:footcite:``), which can be investigated if a release is ever made.
 
