@@ -269,8 +269,8 @@ PetscErrorCode CUPMDevice<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceI
 {
   PetscInt       initTypeCUPM = *defaultInitType,id = *defaultDeviceId;
   PetscBool      view = PETSC_FALSE,flg;
-  cupmError_t    cerr;
   int            ndev;
+  cupmError_t    cerr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -288,21 +288,23 @@ PetscErrorCode CUPMDevice<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceI
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
   }
 
-  // post-process the options and lay the groundwork for initialization if needs be
   cerr = cupmGetDeviceCount(&ndev);
-  if (PetscUnlikely(cerr == cupmErrorStubLibrary)) {
+  // post-process the options and lay the groundwork for initialization if needs be
+  if (PetscUnlikely((cerr == cupmErrorStubLibrary) || (cerr == cupmErrorNoDevice))) {
     if (PetscUnlikely((initTypeCUPM == PETSC_DEVICE_INIT_EAGER) || (view && flg))) {
       const auto name    = cupmGetErrorName(cerr);
       const auto desc    = cupmGetErrorString(cerr);
       const auto backend = cupmName();
       SETERRQ5(comm,PETSC_ERR_USER_INPUT,"Cannot eagerly initialize %s, as doing so results in %s error %d (%s) : %s",backend,backend,static_cast<PetscErrorCode>(cerr),name,desc);
     }
+    id   = -cerr;
     cerr = cupmGetLastError(); // reset error
     initTypeCUPM = PETSC_DEVICE_INIT_NONE;
-  } else {CHKERRCUPM(cerr);}
+  } else CHKERRCUPM(cerr);
 
-  if (initTypeCUPM == PETSC_DEVICE_INIT_NONE) id = PETSC_CUPM_DEVICE_NONE;
-  else {
+  if (initTypeCUPM == PETSC_DEVICE_INIT_NONE) {
+    if ((id > 0) || (id == PETSC_DECIDE)) id = PETSC_CUPM_DEVICE_NONE;
+  } else {
     ierr = PetscDeviceCheckDeviceCount_Internal(ndev);CHKERRQ(ierr);
     if (id == PETSC_DECIDE) {
       if (ndev) {
@@ -316,8 +318,8 @@ PetscErrorCode CUPMDevice<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceI
     if (view) initTypeCUPM = PETSC_DEVICE_INIT_EAGER;
   }
 
-  // id is PetscInt, _defaultDevice is int
   static_assert(std::is_same<PetscMPIInt,decltype(_defaultDevice)>::value,"");
+  // id is PetscInt, _defaultDevice is int
   ierr = PetscMPIIntCast(id,&_defaultDevice);CHKERRQ(ierr);
   if (initTypeCUPM == PETSC_DEVICE_INIT_EAGER) {
     _devices[_defaultDevice] = CUPMDeviceInternal::makeDevice(_defaultDevice);
@@ -344,7 +346,12 @@ PetscErrorCode CUPMDevice<T>::getDevice(PetscDevice device, PetscInt id) const n
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscUnlikelyDebug(_defaultDevice == PETSC_CUPM_DEVICE_NONE)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a %s PetscDevice when it has been disabled",cupmName());
+  if (PetscUnlikelyDebug(_defaultDevice < 0)) {
+    if (_defaultDevice == PETSC_CUPM_DEVICE_NONE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a %s PetscDevice when it has been disabled",cupmName());
+    const auto cerr = static_cast<cupmError_t>(-_defaultDevice);
+
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_GPU,"Cannot lazily initialize PetscDevice: %s error %d (%s) : %s",cupmName(),static_cast<PetscErrorCode>(cerr),cupmGetErrorName(cerr),cupmGetErrorString(cerr));
+  }
   if (id == PETSC_DECIDE) id = _defaultDevice;
   if (PetscUnlikelyDebug(static_cast<std::size_t>(id) >= _devices.size())) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,_devices.size(),id);
   if (_devices[id]) {
