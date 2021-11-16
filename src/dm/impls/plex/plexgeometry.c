@@ -1885,6 +1885,58 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexComputeGeometryFVM_0D_Internal(DM dm, PetscInt dim, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
+{
+  PetscSection        coordSection;
+  Vec                 coordinates;
+  const PetscScalar  *coords = NULL;
+  PetscInt            d, dof, off;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+
+  /* for a point the centroid is just the coord */
+  if (centroid) {
+    ierr = PetscSectionGetDof(coordSection, cell, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(coordSection, cell, &off);CHKERRQ(ierr);
+    for (d = 0; d < dof; d++){
+      centroid[d] = PetscRealPart(coords[off + d]);
+    }
+  }
+  if (normal) {
+    const PetscInt *support, *cones;
+    PetscInt        supportSize;
+    PetscReal       norm, sign;
+
+    /* compute the norm based upon the support centroids */
+    ierr = DMPlexGetSupportSize(dm, cell, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, cell, &support);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFVM(dm, support[0], NULL, normal, NULL);CHKERRQ(ierr);
+
+    /* Take the normal from the centroid of the support to the vertex*/
+    ierr = PetscSectionGetDof(coordSection, cell, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(coordSection, cell, &off);CHKERRQ(ierr);
+    for (d = 0; d < dof; d++){
+      normal[d] -= PetscRealPart(coords[off + d]);
+    }
+
+    /* Determine the sign of the normal based upon its location in the support */
+    ierr = DMPlexGetCone(dm, support[0], &cones);CHKERRQ(ierr);
+    sign = cones[0] == cell ? 1.0 : -1.0;
+
+    norm = DMPlex_NormD_Internal(dim, normal);
+    for (d = 0; d < dim; ++d) normal[d] /= (norm*sign);
+  }
+  if (vol) {
+    *vol = 1.0;
+  }
+  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
   PetscSection   coordSection;
@@ -2133,6 +2185,9 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
   if (depth != dim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
   ierr = DMPlexGetPointDepth(dm, cell, &depth);CHKERRQ(ierr);
   switch (depth) {
+  case 0:
+    ierr = DMPlexComputeGeometryFVM_0D_Internal(dm, dim, cell, vol, centroid, normal);CHKERRQ(ierr);
+    break;
   case 1:
     ierr = DMPlexComputeGeometryFVM_1D_Internal(dm, dim, cell, vol, centroid, normal);CHKERRQ(ierr);
     break;

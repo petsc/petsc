@@ -45,14 +45,16 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   if (options->runType == RUN_FILE) {
     PetscInt  dim, cStart, cEnd, numCells, n;
-    PetscBool flg, feFlg, fvFlg;
+    PetscBool flg, feFlg;
 
     ierr = ReadMesh(PETSC_COMM_WORLD, options, &options->dm);CHKERRQ(ierr);
     ierr = DMGetDimension(options->dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(options->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     numCells = cEnd-cStart;
     ierr = PetscMalloc4(numCells*dim, &options->v0, numCells*dim*dim, &options->J, numCells*dim*dim, &options->invJ, numCells, &options->detJ);CHKERRQ(ierr);
-    ierr = PetscMalloc3(numCells*dim, &options->centroid, numCells*dim, &options->normal, numCells, &options->vol);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numCells*dim, &options->centroid);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numCells*dim, &options->normal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numCells, &options->vol);CHKERRQ(ierr);
     n    = numCells*dim;
     ierr = PetscOptionsRealArray("-v0", "Input v0 for each cell", "ex8.c", options->v0, &n, &feFlg);CHKERRQ(ierr);
     if (feFlg && n != numCells*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of v0 %D should be %D", n, numCells*dim);
@@ -70,17 +72,25 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
       ierr = PetscFree4(options->v0, options->J, options->invJ, options->detJ);CHKERRQ(ierr);
       options->v0 = options->J = options->invJ = options->detJ = NULL;
     }
-    ierr = PetscOptionsRealArray("-centroid", "Input centroid for each cell", "ex8.c", options->centroid, &n, &fvFlg);CHKERRQ(ierr);
-    if (fvFlg && n != numCells*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of centroid %D should be %D", n, numCells*dim);
+    ierr = PetscOptionsRealArray("-centroid", "Input centroid for each cell", "ex8.c", options->centroid, &n, &flg);CHKERRQ(ierr);
+    if (flg && n != numCells*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of centroid %D should be %D", n, numCells*dim);
+    if (!flg) {
+      ierr = PetscFree(options->centroid);CHKERRQ(ierr);
+      options->centroid = NULL;
+    }
     n    = numCells*dim;
     ierr = PetscOptionsRealArray("-normal", "Input normal for each cell", "ex8.c", options->normal, &n, &flg);CHKERRQ(ierr);
     if (flg && n != numCells*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of normal %D should be %D", n, numCells*dim);
+    if (!flg) {
+      ierr = PetscFree(options->normal);CHKERRQ(ierr);
+      options->normal = NULL;
+    }
     n    = numCells;
     ierr = PetscOptionsRealArray("-vol", "Input volume for each cell", "ex8.c", options->vol, &n, &flg);CHKERRQ(ierr);
     if (flg && n != numCells) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of vol %D should be %D", n, numCells);
-    if (!fvFlg) {
-      ierr = PetscFree3(options->centroid, options->normal, options->vol);CHKERRQ(ierr);
-      options->centroid = options->normal = options->vol = NULL;
+    if (!flg) {
+      ierr = PetscFree(options->vol);CHKERRQ(ierr);
+      options->vol = NULL;
     }
   } else if (options->runType == RUN_DISPLAY) {
     ierr = ReadMesh(PETSC_COMM_WORLD, options, &options->dm);CHKERRQ(ierr);
@@ -169,12 +179,15 @@ static PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometryFVM(dm, cell, &vol, centroid, normal);CHKERRQ(ierr);
+  ierr = DMPlexComputeCellGeometryFVM(dm, cell, volEx? &vol : NULL, centroidEx? centroid : NULL, normalEx? normal : NULL);CHKERRQ(ierr);
   for (d = 0; d < spaceDim; ++d) {
-    if (RelativeError(centroid[d],centroidEx[d]) > tol) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid centroid[%D]: %g != %g diff %g", cell, d, (double)centroid[d], (double)centroidEx[d],(double)(centroid[d]-centroidEx[d]));
-    if (RelativeError(normal[d],normalEx[d]) > tol) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid normal[%D]: %g != %g", cell, d, (double)normal[d], (double)normalEx[d]);
+    if (centroidEx)
+      if (RelativeError(centroid[d],centroidEx[d]) > tol) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid centroid[%D]: %g != %g diff %g", cell, d, (double)centroid[d], (double)centroidEx[d],(double)(centroid[d]-centroidEx[d]));
+    if (normalEx)
+      if (RelativeError(normal[d],normalEx[d]) > tol) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid normal[%D]: %g != %g", cell, d, (double)normal[d], (double)normalEx[d]);
   }
-  if (RelativeError(volEx,vol) > tol) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid volume = %g != %g diff %g", cell, (double)vol, (double)volEx,(double)(vol - volEx));
+  if (volEx)
+    if (RelativeError(volEx,vol) > tol) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D, Invalid volume = %g != %g diff %g", cell, (double)vol, (double)volEx,(double)(vol - volEx));
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +210,7 @@ static PetscErrorCode CheckGaussLaw(DM dm, PetscInt cell)
   ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
   ierr = DMPlexGetConeOrientation(dm, cell, &ornt);CHKERRQ(ierr);
   for (f = 0; f < coneSize; ++f) {
-    const PetscInt sgn = ornt[f] < 0 ? -1 : 1;
+    const PetscInt sgn = dim == 1? (f == 0 ? -1 : 1) : (ornt[f] < 0 ? -1 : 1);
 
     ierr = DMPlexComputeCellGeometryFVM(dm, cone[f], &area, NULL, normal);CHKERRQ(ierr);
     for (d = 0; d < cdim; ++d) integral[d] += sgn*area*normal[d];
@@ -662,7 +675,9 @@ int main(int argc, char **argv)
       ierr = CheckCell(user.dm, c+cStart, PETSC_FALSE, v0, J, invJ, detJ, centroid, normal, vol, NULL, NULL, NULL);CHKERRQ(ierr);
     }
     ierr = PetscFree4(user.v0,user.J,user.invJ,user.detJ);CHKERRQ(ierr);
-    ierr = PetscFree3(user.centroid,user.normal,user.vol);CHKERRQ(ierr);
+    ierr = PetscFree(user.centroid);CHKERRQ(ierr);
+    ierr = PetscFree(user.normal);CHKERRQ(ierr);
+    ierr = PetscFree(user.vol);CHKERRQ(ierr);
     ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   } else if (user.runType == RUN_DISPLAY) {
     DM                 gdm, dmCell;
@@ -720,5 +735,7 @@ int main(int argc, char **argv)
   test:
     suffix: 5
     args: -run_type file -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 3,1,1 -dm_plex_box_lower -1.5,-0.5,-0.5 -dm_plex_box_upper 1.5,0.5,0.5 -dm_view ascii::ascii_info_detail -centroid -1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0 -normal 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 -vol 1.0,1.0,1.0
-
+  test:
+    suffix: 6
+    args: -run_type file -dm_plex_dim 1 -dm_plex_simplex 0 -dm_plex_box_faces 3 -dm_plex_box_lower -1.5 -dm_plex_box_upper 1.5 -dm_view ascii::ascii_info_detail -centroid -1.0,0.0,1.0 -vol 1.0,1.0,1.0
 TEST*/
