@@ -90,13 +90,16 @@ def chkenable():
   #enable-fortran is a special case, the resulting --with-fortran is ambiguous.
   #Would it mean --with-fc=
   en_dash = u'\N{EN DASH}'
+  no_break_space = u'\N{NO-BREAK SPACE}'
   if sys.version_info < (3, 0):
     en_dash = en_dash.encode('utf-8')
+    no_break_space = no_break_space.encode('utf-8')
 
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-    if name.find(en_dash)  >= 0:
-      name = name.replace(en_dash,'-')
+    if name.find(no_break_space) >= 0:
+      sys.exit(ValueError('Unicode NO-BREAK SPACE char found in arguments! Please rerun configure using regular space chars: %s' % [name]))
+    name = name.replace(en_dash,'-')
     if name.lstrip('-').startswith('enable-cxx'):
       if name.find('=') == -1:
         name = name.replace('enable-cxx','with-clanguage=C++',1)
