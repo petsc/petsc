@@ -685,6 +685,46 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricRestrictAnisotropyFirst(self.dm, &restrictAnisotropyFirst) )
         return toBool(restrictAnisotropyFirst)
 
+    def metricSetNoInsertion(self, PetscBool noInsert):
+        CHKERR( DMPlexMetricSetNoInsertion(self.dm, noInsert) )
+
+    def metricNoInsertion(self):
+        cdef PetscBool noInsert = PETSC_FALSE
+        CHKERR( DMPlexMetricNoInsertion(self.dm, &noInsert) )
+        return toBool(noInsert)
+
+    def metricSetNoSwapping(self, PetscBool noSwap):
+        CHKERR( DMPlexMetricSetNoSwapping(self.dm, noSwap) )
+
+    def metricNoSwapping(self):
+        cdef PetscBool noSwap = PETSC_FALSE
+        CHKERR( DMPlexMetricNoSwapping(self.dm, &noSwap) )
+        return toBool(noSwap)
+
+    def metricSetNoMovement(self, PetscBool noMove):
+        CHKERR( DMPlexMetricSetNoMovement(self.dm, noMove) )
+
+    def metricNoMovement(self):
+        cdef PetscBool noMove = PETSC_FALSE
+        CHKERR( DMPlexMetricNoMovement(self.dm, &noMove) )
+        return toBool(noMove)
+
+    def metricSetVerbosity(self, PetscInt verbosity):
+        CHKERR( DMPlexMetricSetVerbosity(self.dm, verbosity) )
+
+    def metricGetVerbosity(self):
+        cdef PetscInt verbosity
+        CHKERR( DMPlexMetricGetVerbosity(self.dm, &verbosity) )
+        return verbosity
+
+    def metricSetNumIterations(self, PetscInt numIter):
+        CHKERR( DMPlexMetricSetNumIterations(self.dm, numIter) )
+
+    def metricGetNumIterations(self):
+        cdef PetscInt numIter
+        CHKERR( DMPlexMetricGetNumIterations(self.dm, &numIter) )
+        return numIter
+
     def metricSetMinimumMagnitude(self, PetscReal h_min):
         CHKERR( DMPlexMetricSetMinimumMagnitude(self.dm, h_min) )
 
@@ -724,6 +764,14 @@ cdef class DMPlex(DM):
         cdef PetscReal p
         CHKERR( DMPlexMetricGetNormalizationOrder(self.dm, &p) )
         return p
+
+    def metricSetGradationFactor(self, PetscReal beta):
+        CHKERR( DMPlexMetricSetGradationFactor(self.dm, beta) )
+
+    def metricGetGradationFactor(self):
+        cdef PetscReal beta
+        CHKERR( DMPlexMetricGetGradationFactor(self.dm, &beta) )
+        return beta
 
     def metricCreate(self, field=0):
         cdef Vec metric = Vec()

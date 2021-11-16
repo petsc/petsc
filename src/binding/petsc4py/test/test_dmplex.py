@@ -140,21 +140,34 @@ class BaseTestPlex(object):
         a_max = 1.0e+10
         target = 10.0
         p = 1.0
+        beta = 1.3
         self.plex.metricSetIsotropic(False)
         self.plex.metricSetRestrictAnisotropyFirst(False)
+        self.plex.metricSetNoInsertion(False)
+        self.plex.metricSetNoSwapping(False)
+        self.plex.metricSetNoMovement(False)
+        self.plex.metricSetVerbosity(-1)
+        self.plex.metricSetNumIterations(3)
         self.plex.metricSetMinimumMagnitude(h_min)
         self.plex.metricSetMaximumMagnitude(h_max)
         self.plex.metricSetMaximumAnisotropy(a_max)
         self.plex.metricSetTargetComplexity(target)
         self.plex.metricSetNormalizationOrder(p)
+        self.plex.metricSetGradationFactor(beta)
 
         self.assertFalse(self.plex.metricIsIsotropic())
         self.assertFalse(self.plex.metricRestrictAnisotropyFirst())
+        self.assertFalse(self.plex.metricNoInsertion())
+        self.assertFalse(self.plex.metricNoSwapping())
+        self.assertFalse(self.plex.metricNoMovement())
+        assert self.plex.metricGetVerbosity() == -1
+        assert self.plex.metricGetNumIterations() == 3
         assert np.isclose(self.plex.metricGetMinimumMagnitude(), h_min)
         assert np.isclose(self.plex.metricGetMaximumMagnitude(), h_max)
         assert np.isclose(self.plex.metricGetMaximumAnisotropy(), a_max)
         assert np.isclose(self.plex.metricGetTargetComplexity(), target)
         assert np.isclose(self.plex.metricGetNormalizationOrder(), p)
+        assert np.isclose(self.plex.metricGetGradationFactor(), beta)
 
         metric1 = self.plex.metricCreateUniform(1.0)
         metric2 = self.plex.metricCreateUniform(2.0)
