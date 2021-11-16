@@ -227,5 +227,6 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   ls->ops->view  = TaoLineSearchView_GPCG;
   ls->ops->destroy = TaoLineSearchDestroy_GPCG;
   ls->ops->setfromoptions = NULL;
+  ls->ops->monitor = NULL;
   PetscFunctionReturn(0);
 }
