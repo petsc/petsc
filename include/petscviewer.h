@@ -187,8 +187,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer,FILE**);
 PETSC_EXTERN PetscErrorCode PetscViewerFileGetMode(PetscViewer,PetscFileMode*);
 PETSC_EXTERN PetscErrorCode PetscViewerFileSetMode(PetscViewer,PetscFileMode);
 PETSC_EXTERN PetscErrorCode PetscViewerRead(PetscViewer,void*,PetscInt,PetscInt*,PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,const char[],...);
-PETSC_EXTERN PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...);
+PETSC_EXTERN PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,const char[],...) PETSC_ATTRIBUTE_FORMAT(2,3);
+PETSC_EXTERN PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...) PETSC_ATTRIBUTE_FORMAT(2,3);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPushTab(PetscViewer);
@@ -205,7 +205,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryRead(PetscViewer,void*,PetscInt,Pet
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer,const void*,PetscInt,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer,void*,PetscInt,PetscInt,PetscInt,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer,const void*,PetscInt,PetscInt,PetscInt,PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...);
+PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_ATTRIBUTE_FORMAT(2,3);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscViewerStringGetStringRead(PetscViewer,const char*[],size_t*);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSetOwnString(PetscViewer);
@@ -235,7 +235,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerFileGetName(PetscViewer,const char**);
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetPointer(PetscViewer, FILE**);
 PETSC_EXTERN PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscBool  *);
-PETSC_EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char [], ...);
+PETSC_EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char [], ...) PETSC_ATTRIBUTE_FORMAT(2,3);
 PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
 
 /*@C

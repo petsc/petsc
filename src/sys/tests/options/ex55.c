@@ -11,7 +11,7 @@ PetscErrorCode PetscOptionsMonitorCustom(const char name[],const char value[],vo
 
   PetscFunctionBegin;
   if (!value) {
-    ierr = PetscViewerASCIIPrintf(viewer,"* Removing option: %s\n",name,value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"* Removing option: %s\n",name);CHKERRQ(ierr);
   } else if (!value[0]) {
     ierr = PetscViewerASCIIPrintf(viewer,"* Setting option: %s (no value)\n",name);CHKERRQ(ierr);
   } else {

@@ -57,6 +57,6 @@ PETSC_EXTERN void petscinfo_(char* text,PetscErrorCode *ierr,PETSC_FORTRAN_CHARL
   FIXCHAR(text,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
   FREECHAR(text,c1);
-  *ierr = PetscInfo(NULL,tmp);if (*ierr) return;
+  *ierr = PetscInfo1(NULL,"%s",tmp);if (*ierr) return;
   *ierr = PetscFree(tmp);
 }

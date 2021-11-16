@@ -1003,18 +1003,18 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
       (void) sscanf(threads, "%" PetscInt_FMT,&PetscNumOMPThreads);
     } else {
       PetscNumOMPThreads = (PetscInt) omp_get_max_threads();
-      ierr = PetscInfo1(NULL,"Number of OpenMP threads %D (as given by omp_get_max_threads())\n",PetscNumOMPThreads);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Number of OpenMP threads %" PetscInt_FMT " (as given by omp_get_max_threads())\n",PetscNumOMPThreads);CHKERRQ(ierr);
     }
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"OpenMP options","Sys");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-omp_num_threads","Number of OpenMP threads to use (can also use environmental variable OMP_NUM_THREADS","None",PetscNumOMPThreads,&PetscNumOMPThreads,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsName("-omp_view","Display OpenMP number of threads",NULL,&omp_view_flag);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscInfo1(NULL,"Number of OpenMP theads %D (given by -omp_num_threads)\n",PetscNumOMPThreads);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Number of OpenMP theads %" PetscInt_FMT " (given by -omp_num_threads)\n",PetscNumOMPThreads);CHKERRQ(ierr);
       omp_set_num_threads((int)PetscNumOMPThreads);
     }
     if (omp_view_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"OpenMP: number of threads %D\n",PetscNumOMPThreads);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"OpenMP: number of threads %" PetscInt_FMT "\n",PetscNumOMPThreads);CHKERRQ(ierr);
     }
   }
 #endif
@@ -1525,7 +1525,7 @@ PetscErrorCode  PetscFinalize(void)
       if (nopt == 1) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %" PetscInt_FMT " unused database options. They are:\n",nopt);CHKERRQ(ierr);
       }
     } else if (flg3 && flg1) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);

@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-get_an_integer",&M,&set);CHKERRQ(ierr);
-  if (set) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Option used: name:-get_an_integer value: %D\n",M);CHKERRQ(ierr); }
+  if (set) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Option used: name:-get_an_integer value: %" PetscInt_FMT "\n",M);CHKERRQ(ierr); }
   ierr = PetscOptionsLeftGet(NULL,&N,&names,&values);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     if (values[i]) {

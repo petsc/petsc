@@ -35,6 +35,9 @@ Changes: Development
 - Add ``PetscDeviceInitialize()`` to eagerly initialize a ``PetscDeviceType``, and ``PetscDeviceInitialized()`` to query the corresponding initialization state
 - Change ``PetscDeviceCreate()`` to also accept a ``PetscInt devid``, to create a ``PetscDevice`` for a specific device
 - Add ``PetscDeviceView()``
+- Move ``PetscInt64_FMT`` and ``MPIU_INT64`` definitions to ``petscsystypes.h``
+- Add ``PetscBLASInt_FMT``, ``PETSC_MPI_COMM_FMT``, and ``PETSC_MPI_WIN_FMT`` format specifiers
+- Add ``PetscHasAttribute()`` macro to query for existence of an ``__attribute__`` specifier
 
 .. rubric:: PetscViewer:
 

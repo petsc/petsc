@@ -1297,7 +1297,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
     ierr = MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRMPI(ierr);
     for (event = 0; event < numEvents; event++) {
       eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"syncTime\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g",
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %d, \"time\" : %g, \"syncTime\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g",
                                                 stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
                                                 eventInfo->count,eventInfo->time,eventInfo->syncTime,eventInfo->numMessages,eventInfo->messageLength,eventInfo->numReductions,eventInfo->flops);CHKERRQ(ierr);
       if (eventInfo->dof[0] >= 0.) {
@@ -1357,7 +1357,7 @@ PetscErrorCode  PetscLogView_CSV(PetscViewer viewer)
     ierr = MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRMPI(ierr);
     for (event = 0; event < numEvents; event++) {
       eventInfo = &stageLog->stageInfo[stage].eventLog->eventInfo[event];
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s,%s,%d,%D,%g,%g,%g,%g,%g",stageLog->stageInfo[stage].name,
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s,%s,%d,%d,%g,%g,%g,%g,%g",stageLog->stageInfo[stage].name,
                                                 stageLog->eventLog->eventInfo[event].name,rank,eventInfo->count,eventInfo->time,eventInfo->numMessages,
                                                 eventInfo->messageLength,eventInfo->numReductions,eventInfo->flops);CHKERRQ(ierr);
       if (eventInfo->dof[0] >= 0.) {
@@ -1500,7 +1500,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
   }
 #if defined(PETSC_HAVE_OPENMP)
-  ierr = PetscFPrintf(comm,fd,"Using %D OpenMP threads\n", PetscNumOMPThreads);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"Using %" PetscInt_FMT " OpenMP threads\n", PetscNumOMPThreads);CHKERRQ(ierr);
 #endif
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
 

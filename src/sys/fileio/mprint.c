@@ -37,36 +37,37 @@ FILE *PETSC_STDERR = NULL;
 @*/
 PetscErrorCode PetscFormatConvertGetSize(const char *format,size_t *size)
 {
-  PetscInt i = 0;
+  size_t   sz = 0;
+  PetscInt i  = 0;
 
   PetscFunctionBegin;
-  *size = 0;
+  PetscValidCharPointer(format,1);
+  PetscValidPointer(size,2);
   while (format[i]) {
-    if (format[i] == '%' && format[i+1] == '%') {
-      i++; i++; *size += 2;
-    } else if (format[i] == '%') {
+    if (format[i] == '%') {
+      if (format[i+1] == '%') {
+        i  += 2;
+        sz += 2;
+        continue;
+      }
       /* Find the letter */
-      for (; format[i] && format[i] <= '9'; i++,(*size += 1));
+      while (format[i] && (format[i] <= '9')) {++i;++sz;}
       switch (format[i]) {
+#if PetscDefined(USE_64BIT_INDICES)
       case 'D':
-#if defined(PETSC_USE_64BIT_INDICES)
-        *size += 2;
+        sz += 2;
+        break;
 #endif
-        break;
       case 'g':
-        *size += 4;
-        break;
+        sz += 4;
       default:
         break;
       }
-      *size += 1;
-      i++;
-    } else {
-      i++;
-      *size += 1;
     }
+    ++i;
+    ++sz;
   }
-  *size += 1; /* space for NULL character */
+  *size = sz+1; /* space for NULL character */
   PetscFunctionReturn(0);
 }
 

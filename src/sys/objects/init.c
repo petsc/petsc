@@ -352,7 +352,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
   */
   ierr = PetscOptionsHasHelp(NULL,&hasHelp);CHKERRQ(ierr);
   if (help && hasHelp) {
-    ierr = PetscPrintf(comm,help);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"%s",help);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"----------------------------------------\n");CHKERRQ(ierr);
   }
 
@@ -482,7 +482,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
         ierr = PetscStrcat(msg," (Silence this warning with ");CHKERRQ(ierr);
         ierr = PetscStrcat(msg,quietopt);CHKERRQ(ierr);
         ierr = PetscStrcat(msg,")\n");CHKERRQ(ierr);
-        ierr = PetscPrintf(comm,msg);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"%s",msg);CHKERRQ(ierr);
       }
     } else {
       lsize = size;

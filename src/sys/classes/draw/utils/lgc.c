@@ -557,7 +557,7 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
   }
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)lg,viewer);CHKERRQ(ierr);
   for (i = 0; i < dim; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "Line %D>\n", i);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Line %" PetscInt_FMT ">\n", i);CHKERRQ(ierr);
     for (j = 0; j < nopts; j++) {
       ierr = PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);CHKERRQ(ierr);
     }

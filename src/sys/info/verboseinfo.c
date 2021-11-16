@@ -542,7 +542,7 @@ $   -info [filename][:[~]<list,of,classnames>[:[~]self]]
 $     Mat A;
 $     PetscInt alpha;
 $     ...
-$     PetscInfo1(A,"Matrix uses parameter alpha=%D\n",alpha);
+$     PetscInfo1(A,"Matrix uses parameter alpha=%" PetscInt_FMT "\n",alpha);
 
     Options Examples:
     Each call of the form

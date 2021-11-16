@@ -180,7 +180,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
   Collective on viewer, Asynchronous
 
   Input Parameter:
-+ device - The PetscDevice to configure
++ device - The PetscDevice to view
 - viewer - The PetscViewer to view the device with (NULL for PETSC_VIEWER_STDOUT_WORLD)
 
   Level: beginner
@@ -317,10 +317,10 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    const auto PetscDeviceCheckAllDestroyedAfterFinalize = [](){
+    PETSC_CONSTEXPR_17 auto PetscDeviceCheckAllDestroyedAfterFinalize = [](){
       PetscFunctionBegin;
       for (const auto &device : defaultDevices) {
-        if (PetscUnlikely(device)) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_COR,"Device of type '%s' had reference count %D and was not type name(args) const;ully destroyed during PetscFinalize()",PetscDeviceTypes[device->type],device->refcnt);
+        if (PetscUnlikely(device)) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_COR,"Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()",PetscDeviceTypes[device->type],device->refcnt);
       }
       PetscFunctionReturn(0);
     };

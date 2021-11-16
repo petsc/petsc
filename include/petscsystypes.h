@@ -102,6 +102,19 @@ M*/
    typedef int PetscInt;
 #endif
 
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#  define MPIU_INT64     MPI_INT64_T
+#  define PetscInt64_FMT PRId64
+#elif (PETSC_SIZEOF_LONG_LONG == 8)
+#  define MPIU_INT64     MPI_LONG_LONG_INT
+#  define PetscInt64_FMT "lld"
+#elif defined(PETSC_HAVE___INT64)
+#  define MPIU_INT64     MPI_INT64_T
+#  define PetscInt64_FMT "ld"
+#else
+#  error "cannot determine PetscInt64 type"
+#endif
+
 /*MC
    PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
 
@@ -135,8 +148,10 @@ M*/
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
+#  define PetscBLASInt_FMT PetscInt64_FMT
    typedef PetscInt64 PetscBLASInt;
 #else
+#  define PetscBLASInt_FMT "d"
    typedef int PetscBLASInt;
 #endif
 

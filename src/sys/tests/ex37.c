@@ -18,11 +18,11 @@ int main(int argc,char **argv)
 
   /* test that PetscFormatConvertGetSize() correctly counts needed amount of space */
   ierr = PetscFormatConvertGetSize(formatstr,&sz);CHKERRQ(ierr);
-#if !defined(PETSC_USE_64BIT_INDICES)
-  if (sz != 27) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Format size %d should be 27\n",(int)sz);
-#else
-  if (sz != 29) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Format size %d should be 29\n",(int)sz);
-#endif
+  if (PetscDefined(USE_64BIT_INDICES)) {
+    if (sz != 29) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Format size %zu should be 29",sz);
+  } else {
+    if (sz != 27) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Format size %zu should be 27",sz);
+  }
   ierr = PetscMalloc1(sz,&newformatstr);CHKERRQ(ierr);
   ierr = PetscFormatConvert(formatstr,newformatstr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,newformatstr,twentytwo,3.47,3.0);CHKERRQ(ierr);

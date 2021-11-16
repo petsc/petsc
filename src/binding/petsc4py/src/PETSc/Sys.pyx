@@ -79,7 +79,7 @@ cdef class Sys:
             message = ''
         cdef const char *m = NULL
         message = str2bytes(message, &m)
-        CHKERR( PetscPrintf(ccomm, m) )
+        CHKERR( PetscPrintf(ccomm, '%s', m) )
 
     @classmethod
     def syncPrint(cls, *args, **kargs):
@@ -94,7 +94,7 @@ cdef class Sys:
         message = ''.join(format) % args
         cdef const char *m = NULL
         message = str2bytes(message, &m)
-        CHKERR( PetscSynchronizedPrintf(ccomm, m) )
+        CHKERR( PetscSynchronizedPrintf(ccomm, '%s', m) )
         if flush: CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
 
     @classmethod
