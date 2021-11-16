@@ -1092,7 +1092,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     if (n%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Size of local coordinate vector %D incompatible with space dimension %D",n,sdim);
     for (i=0;i<n/sdim;i++) {
       for (s=0;s<sdim;s++) {
-        ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscRealPart(array[i*sdim+s]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,fmt,(double) PetscRealPart(array[i*sdim+s]));CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
@@ -1108,7 +1108,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       for (s=0;s<sdim;s++) {
         PetscReal v = PetscRealPart(array[p*sdim+s]);
 
-        ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscIsInfOrNanReal(v) ? 0.0 : v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscIsInfOrNanReal(v) ? 0.0 : (double) v);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }

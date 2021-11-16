@@ -21,14 +21,18 @@ Label 'cohesive':
 [1]: 12 (1)
 Discrete System with 1 fields
     cell total dim 6 total comp 2
-  Field displacement FEM2 components (implicit) (Nq 4 Nqc 1) 1-jet
+  Field displacement FEM 2 components (implicit) (Nq 4 Nqc 1) 1-jet
     PetscFE Object: displacement (displacement_) 1 MPI processes
       type: basic
       Basic Finite Element in 2 dimensions with 2 components
       PetscSpace Object: displacement (displacement_) 1 MPI processes
-        type: poly
+        type: sum
         Space in 2 variables with 2 components, size 6
-        Polynomial space of degree 1
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: sum component (displacement_sumcomp_) 1 MPI processes
+            type: poly
+            Space in 2 variables with 1 components, size 3
+            Polynomial space of degree 1
       PetscDualSpace Object: displacement (displacement_) 1 MPI processes
         type: lagrange
         Dual space with 2 components, size 6
@@ -38,27 +42,35 @@ Discrete System with 1 fields
 Discrete System with 2 fields
     cell total dim 12 total comp 4
     hybrid cell
-  Field displacement FEM2 components (implicit) (Nq 2 Nqc 1) 1-jet
+  Field displacement FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
     PetscFE Object: displacement 1 MPI processes
       type: basic
       Basic Finite Element in 1 dimensions with 2 components
       PetscSpace Object: displacement 1 MPI processes
-        type: poly
+        type: sum
         Space in 1 variables with 2 components, size 4
-        Polynomial space of degree 1
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: sum component 1 MPI processes
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
       PetscDualSpace Object: displacement 1 MPI processes
         type: lagrange
         Dual space with 2 components, size 4
         Continuous Lagrange dual space
         Quadrature of order 3 on 2 points (dim 1)
-  Field fault traction FEM2 components (implicit) (Nq 2 Nqc 1) 1-jet
+  Field fault traction FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
     PetscFE Object: fault traction (faulttraction_) 1 MPI processes
       type: basic
       Basic Finite Element in 1 dimensions with 2 components
       PetscSpace Object: fault traction (faulttraction_) 1 MPI processes
-        type: poly
+        type: sum
         Space in 1 variables with 2 components, size 4
-        Polynomial space of degree 1
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: sum component (faulttraction_sumcomp_) 1 MPI processes
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
       PetscDualSpace Object: fault traction (faulttraction_) 1 MPI processes
         type: lagrange
         Dual space with 2 components, size 4

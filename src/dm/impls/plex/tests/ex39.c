@@ -644,18 +644,18 @@ int main(int argc,char **argv)
           -velocity_petscspace_components 2 \
           -velocity_petscspace_sum_spaces 2 \
           -velocity_petscspace_sum_concatenate true \
-          -velocity_subspace0_petscspace_variables 2 \
-          -velocity_subspace0_petscspace_type tensor \
-          -velocity_subspace0_petscspace_tensor_spaces 2 \
-          -velocity_subspace0_petscspace_tensor_uniform false \
-          -velocity_subspace0_subspace_0_petscspace_degree 1 \
-          -velocity_subspace0_subspace_1_petscspace_degree 0 \
-          -velocity_subspace1_petscspace_variables 2 \
-          -velocity_subspace1_petscspace_type tensor \
-          -velocity_subspace1_petscspace_tensor_spaces 2 \
-          -velocity_subspace1_petscspace_tensor_uniform false \
-          -velocity_subspace1_subspace_0_petscspace_degree 0 \
-          -velocity_subspace1_subspace_1_petscspace_degree 1 \
+          -velocity_sumcomp_0_petscspace_variables 2 \
+          -velocity_sumcomp_0_petscspace_type tensor \
+          -velocity_sumcomp_0_petscspace_tensor_spaces 2 \
+          -velocity_sumcomp_0_petscspace_tensor_uniform false \
+          -velocity_sumcomp_0_tensorcomp_0_petscspace_degree 1 \
+          -velocity_sumcomp_0_tensorcomp_1_petscspace_degree 0 \
+          -velocity_sumcomp_1_petscspace_variables 2 \
+          -velocity_sumcomp_1_petscspace_type tensor \
+          -velocity_sumcomp_1_petscspace_tensor_spaces 2 \
+          -velocity_sumcomp_1_petscspace_tensor_uniform false \
+          -velocity_sumcomp_1_tensorcomp_0_petscspace_degree 0 \
+          -velocity_sumcomp_1_tensorcomp_1_petscspace_degree 1 \
           -velocity_petscdualspace_form_degree -1 \
           -velocity_petscdualspace_order 1 \
           -velocity_petscdualspace_lagrange_trimmed true

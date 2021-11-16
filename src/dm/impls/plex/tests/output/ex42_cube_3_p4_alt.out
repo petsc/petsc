@@ -1,13 +1,13 @@
-DM Object: box_surface 1 MPI processes
+DM Object: box_surface 4 MPI processes
   type: plex
 box_surface in 2 dimensions:
-  0-cells: 98
-  1-cells: 192
-  2-cells: 96
+  0-cells: 40 40 40 40
+  1-cells: 62 62 62 62
+  2-cells: 24 24 24 24
 Labels:
-  celltype: 3 strata with value/size (0 (98), 1 (192), 4 (96))
-  depth: 3 strata with value/size (0 (98), 1 (192), 2 (96))
-  marker: 1 strata with value/size (1 (302))
+  celltype: 3 strata with value/size (0 (40), 1 (62), 4 (24))
+  depth: 3 strata with value/size (0 (40), 1 (62), 2 (24))
+  marker: 1 strata with value/size (1 (83))
 libCEED Backend: /cpu/self/avx/blocked
 Discrete System with 1 fields
     cell total dim 16 total comp 1

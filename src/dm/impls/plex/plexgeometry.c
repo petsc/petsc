@@ -901,11 +901,10 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   if (ltype == DM_POINTLOCATION_NEAREST && hash && numFound < numPoints) {
     for (p = 0; p < numPoints; p++) {
       const PetscScalar *point = &a[p*bs];
-      PetscReal          cpoint[3], diff[3], dist, distMax = PETSC_MAX_REAL;
-      PetscInt           dbin[3] = {-1,-1,-1}, bin, cellOffset, d;
+      PetscReal          cpoint[3], diff[3], best[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL}, dist, distMax = PETSC_MAX_REAL;
+      PetscInt           dbin[3] = {-1,-1,-1}, bin, cellOffset, d, bestc = -1;
 
       if (cells[p].index < 0) {
-        ++numFound;
         ierr = PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset);CHKERRQ(ierr);
@@ -914,12 +913,16 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
           for (d = 0; d < dim; ++d) diff[d] = cpoint[d] - PetscRealPart(point[d]);
           dist = DMPlex_NormD_Internal(dim, diff);
           if (dist < distMax) {
-            for (d = 0; d < dim; ++d) a[p*bs+d] = cpoint[d];
-            cells[p].rank  = 0;
-            cells[p].index = boxCells[c];
+            for (d = 0; d < dim; ++d) best[d] = cpoint[d];
+            bestc = boxCells[c];
             distMax = dist;
-            break;
           }
+        }
+        if (distMax < PETSC_MAX_REAL) {
+          ++numFound;
+          cells[p].rank  = 0;
+          cells[p].index = bestc;
+          for (d = 0; d < dim; ++d) a[p*bs+d] = best[d];
         }
       }
     }

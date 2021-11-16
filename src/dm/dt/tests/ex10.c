@@ -287,14 +287,14 @@ int main(int argc,char **argv)
       -velocity_sum_petscspace_sum_spaces 2 \
       -velocity_sum_petscspace_sum_concatenate true \
       -velocity_sum_petscdualspace_type lagrange \
-      -velocity_sum_subspace0_petscspace_type poly \
-      -velocity_sum_subspace0_petscspace_degree 1 \
-      -velocity_sum_subspace0_petscspace_variables 2 \
-      -velocity_sum_subspace0_petscspace_components 1 \
-      -velocity_sum_subspace1_petscspace_type poly \
-      -velocity_sum_subspace1_petscspace_degree 1 \
-      -velocity_sum_subspace1_petscspace_variables 2 \
-      -velocity_sum_subspace1_petscspace_components 1 \
+      -velocity_sum_sumcomp_0_petscspace_type poly \
+      -velocity_sum_sumcomp_0_petscspace_degree 1 \
+      -velocity_sum_sumcomp_0_petscspace_variables 2 \
+      -velocity_sum_sumcomp_0_petscspace_components 1 \
+      -velocity_sum_sumcomp_1_petscspace_type poly \
+      -velocity_sum_sumcomp_1_petscspace_degree 1 \
+      -velocity_sum_sumcomp_1_petscspace_variables 2 \
+      -velocity_sum_sumcomp_1_petscspace_components 1 \
       -divu_sum_petscspace_degree 0 \
       -divu_sum_petscspace_type sum \
       -divu_sum_petscspace_variables 2 \
@@ -302,10 +302,10 @@ int main(int argc,char **argv)
       -divu_sum_petscspace_sum_spaces 1 \
       -divu_sum_petscspace_sum_concatenate true \
       -divu_sum_petscdualspace_lagrange_continuity false \
-      -divu_sum_subspace0_petscspace_type poly \
-      -divu_sum_subspace0_petscspace_degree 0 \
-      -divu_sum_subspace0_petscspace_variables 2 \
-      -divu_sum_subspace0_petscspace_components 1 \
+      -divu_sum_sumcomp_0_petscspace_type poly \
+      -divu_sum_sumcomp_0_petscspace_degree 0 \
+      -divu_sum_sumcomp_0_petscspace_variables 2 \
+      -divu_sum_sumcomp_0_petscspace_components 1 \
       -dm_refine 0 \
       -snes_error_if_not_converged \
       -ksp_rtol 1e-10 \
