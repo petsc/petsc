@@ -92,6 +92,7 @@ struct CUPMInterface<CUPMDeviceType::CUDA>
 #else
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT(cuda,ErrorInsufficientDriver,ErrorStubLibrary);
 #endif
+  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(cuda,ErrorNoDevice);
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE(cuda,StreamNonBlocking);
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE(cuda,DeviceMapHost);
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE(cuda,MemcpyHostToDevice);
@@ -247,6 +248,7 @@ struct CUPMInterface<CUPMDeviceType::HIP>
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE(hip,ErrorSetOnActiveProcess);
   // as of HIP v4.2 cudaErrorStubLibrary has no HIP equivalent
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT(hip,ErrorInsufficientDriver,ErrorStubLibrary);
+  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(hip,ErrorNoDevice);
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE(hip,StreamNonBlocking);
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE(hip,DeviceMapHost);
   PETSC_CUPM_ALIAS_INTEGRAL_VALUE(hip,MemcpyHostToDevice);
@@ -371,6 +373,7 @@ struct CUPMInterface<CUPMDeviceType::HIP>
   using base_name_::cupmErrorStubLibrary;                               \
   using base_name_::cupmErrorDeviceAlreadyInUse;                        \
   using base_name_::cupmErrorSetOnActiveProcess;                        \
+  using base_name_::cupmErrorNoDevice;                                  \
   using base_name_::cupmStreamNonBlocking;                              \
   using base_name_::cupmDeviceMapHost;                                  \
   using base_name_::cupmMemcpyHostToDevice;                             \

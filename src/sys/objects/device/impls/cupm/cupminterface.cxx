@@ -38,6 +38,7 @@ namespace Petsc
 PETSC_CUPM_DEFINE_STATIC_VARIABLE(Success)
 PETSC_CUPM_DEFINE_STATIC_VARIABLE(ErrorNotReady)
 PETSC_CUPM_DEFINE_STATIC_VARIABLE(ErrorSetOnActiveProcess)
+PETSC_CUPM_DEFINE_STATIC_VARIABLE(ErrorNoDevice)
 
 // hip not conforming, see declaration in cupminterface.hpp
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_EXACT(ErrorDeviceAlreadyInUse,ErrorContextAlreadyInUse,ErrorDeviceAlreadyInUse)
