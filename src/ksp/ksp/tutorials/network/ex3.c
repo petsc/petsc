@@ -134,7 +134,7 @@ int main(int argc,char ** argv)
     ierr = DMNetworkGetPlex(dmnetwork,&plexdm);CHKERRQ(ierr);
     ierr = DMPlexGetPartitioner(plexdm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part,PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
-    ierr = PetscOptionsSetValue(NULL,"-dm_plex_csr_via_mat","true");CHKERRQ(ierr); /* for parmetis */
+    ierr = PetscOptionsSetValue(NULL,"-dm_plex_csr_alg","mat");CHKERRQ(ierr); /* for parmetis */
   }
 
   /* Setup dmnetwork */
