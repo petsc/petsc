@@ -116,9 +116,9 @@ latex_documents = [
         ]
 
 latex_additional_files = [
-    'docs/manual/anl_tech_report/ArgonneLogo.pdf',
-    'docs/manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
-    'docs/manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
+    'images/docs/manual/anl_tech_report/ArgonneLogo.pdf',
+    'images/docs/manual/anl_tech_report/ArgonneReportTemplateLastPage.pdf',
+    'images/docs/manual/anl_tech_report/ArgonneReportTemplatePage2.pdf',
     'docs/manual/anl_tech_report/first.inc',
     'docs/manual/anl_tech_report/last.inc',
 ]
