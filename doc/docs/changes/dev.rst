@@ -121,6 +121,7 @@ Changes: Development
 - Change ``DMPlexMetricNormalize()`` to have another argument, for controlling whether anisotropy is restricted
 - Change ``DMAdaptor`` so that its ``-adaptor_refinement_h_min/h_max/a_max/p`` command line arguments become ``-dm_plex_metric_h_min/h_max/a_max/p``
 - Add ``DMGetNaturalSF()`` and ``DMSetNaturalSF()``
+- Change ``-dm_plex_csr_via_mat`` to ``-dm_plex_csr_alg`` which takes a DMPlexCSRAlgorithm name
 
 .. rubric:: FE/FV:
 

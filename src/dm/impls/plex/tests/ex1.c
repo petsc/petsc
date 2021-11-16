@@ -371,12 +371,12 @@ int main(int argc, char **argv)
     suffix: part_parmetis_0
     requires: parmetis
     nsize: 2
-    args: -dm_plex_simplex 0 -ref_dm_refine 1 -dist_dm_distribute -petscpartitioner_type parmetis -dm_view -petscpartitioner_view -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
+    args: -dm_plex_simplex 0 -ref_dm_refine 1 -dist_dm_distribute -petscpartitioner_type parmetis -dm_view -petscpartitioner_view -test_redistribute -dm_plex_csr_alg {{mat graph overlap}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
   test:
     suffix: part_ptscotch_0
     requires: ptscotch
     nsize: 2
-    args: -dm_plex_simplex 0 -dist_dm_distribute -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_ptscotch_strategy quality -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
+    args: -dm_plex_simplex 0 -dist_dm_distribute -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_ptscotch_strategy quality -test_redistribute -dm_plex_csr_alg {{mat graph overlap}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
   test:
     suffix: part_ptscotch_1
     requires: ptscotch
@@ -772,7 +772,7 @@ int main(int argc, char **argv)
     test:
       suffix: p4est_redistribute
       nsize: 3
-      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,1 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -petscpartitioner_type simple -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_view ::load_balance
+      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,1 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -petscpartitioner_type simple -test_redistribute -dm_plex_csr_alg {{mat graph overlap}} -dm_view ::load_balance
     test:
       suffix: p4est_gmsh_s2t_3d
       args: -conv_seq_1_dm_forest_initial_refinement 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
