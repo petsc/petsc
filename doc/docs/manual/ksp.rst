@@ -258,7 +258,7 @@ Since the rate of convergence of Krylov projection methods for a
 particular linear system is strongly dependent on its spectrum,
 preconditioning is typically used to alter the spectrum and hence
 accelerate the convergence rate of iterative techniques. Preconditioning
-can be applied to the system :any:`eq_axeqb` by
+can be applied to the system :eq:`eq_axeqb` by
 
 .. math::
   :label: eq_prec
@@ -267,8 +267,8 @@ can be applied to the system :any:`eq_axeqb` by
 
 where :math:`M_L` and :math:`M_R` indicate preconditioning matrices (or,
 matrices from which the preconditioner is to be constructed). If
-:math:`M_L = I` in :any:`eq_prec`, right preconditioning
-results, and the residual of :any:`eq_axeqb`,
+:math:`M_L = I` in :eq:`eq_prec`, right preconditioning
+results, and the residual of :eq:`eq_axeqb`,
 
 .. math:: r \equiv b - Ax = b - A M_R^{-1} \, M_R x,
 
