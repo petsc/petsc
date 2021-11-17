@@ -78,7 +78,8 @@ class Configure(config.package.Package):
     self.openmpi = framework.require('config.packages.OpenMPI', self)
     self.cuda    = framework.require('config.packages.cuda',self)
     self.hip     = framework.require('config.packages.hip',self)
-    self.odeps   = [self.cuda,self.hip]
+    self.sycl    = framework.require('config.packages.sycl',self)
+    self.odeps   = [self.cuda,self.hip,self.sycl]
     return
 
   def __str__(self):
@@ -697,6 +698,7 @@ Unable to run hostname to check the network')
     needed=False
     if hasattr(self.compilers, 'CUDAC') and self.cuda.found: needed = True
     if hasattr(self.compilers, 'HIPC') and self.hip.found: needed = True
+    if hasattr(self.compilers, 'SYCLC') and self.sycl.found: needed = True
     if not needed: return
     import re
 

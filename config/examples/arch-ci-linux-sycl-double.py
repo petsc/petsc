@@ -16,7 +16,7 @@ if __name__ == '__main__':
     'CXXOPTFLAGS=-g -O',
     '--with-cuda=0',
     '--with-sycl=1',
-    '--with-syclcxx=dpcpp',
+    '--with-syclc=dpcpp',
     '--with-sycl-dir=/opt/intel/inteloneapi/compiler/latest/linux',
     '--with-precision=double',
     '--with-clanguage=c',

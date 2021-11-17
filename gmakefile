@@ -81,7 +81,7 @@ endif
 ifneq ($(HIPC),)
 langs += hip.cpp
 endif
-ifneq ($(SYCLCPP),)
+ifneq ($(SYCLC),)
 langs += sycl.cxx
 endif
 ifneq ($(KOKKOS_LIB),)
@@ -181,6 +181,9 @@ $(call soname_function,%) : $(call libname_function,%)
 
 .PRECIOUS: $(call soname_function,%)
 
+$(OBJDIR)/%.o : src/%.sycl.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
+
 $(OBJDIR)/%.o : src/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
@@ -193,9 +196,6 @@ $(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
 #$(OBJDIR)/%.hip.o : src/%.hip.cpp | $$(@D)/.DIR
 $(OBJDIR)/%.o : src/%.hip.cpp | $$(@D)/.DIR
 	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
-
-$(OBJDIR)/%.o : src/%.sycl.cxx | $$(@D)/.DIR
-	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : src/%.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
