@@ -54,7 +54,7 @@ PC Object: 1 MPI processes
                 rows=6, cols=6
                 package used to perform factorization: kokkos
                 total: nonzeros=32, allocated nonzeros=32
-                  not using I-node routines
+                  using I-node routines: found 3 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: (mg_coarse_sub_) 1 MPI processes
           type: seqaijkokkos

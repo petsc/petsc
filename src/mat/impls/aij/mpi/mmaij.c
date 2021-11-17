@@ -134,14 +134,11 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-/*
-     Takes the local part of an already assembled MPIAIJ matrix
-   and disassembles it. This is to allow new nonzeros into the matrix
-   that require more communication in the matrix vector multiply.
-   Thus certain data-structures must be rebuilt.
-
-   Kind of slow! But that's what application programmers get when
-   they are sloppy.
+/* Disassemble the off-diag portion of the MPIAIJXxx matrix.
+   In other words, change the B from reduced format using local col ids
+   to expanded format using global col ids, which will make it easier to
+   insert new nonzeros (with global col ids) into the matrix.
+   The off-diag B determines communication in the matrix vector multiply.
 */
 PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
 {
@@ -151,6 +148,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   PetscErrorCode ierr;
   PetscInt       i,j,m = B->rmap->n,n = A->cmap->N,col,ct = 0,*garray = aij->garray,*nz,ec;
   PetscScalar    v;
+  const PetscScalar *ba;
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
@@ -175,7 +173,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
     nz[i] = Baij->i[i+1] - Baij->i[i];
   }
   ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
-  ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr); /* Bnew now uses A->cmap->N as its col size */
   ierr = MatSetBlockSizesFromMats(Bnew,A,A);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
@@ -191,13 +189,16 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   Bnew->nonzerostate = B->nonzerostate;
 
   ierr = PetscFree(nz);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArrayRead(B,&ba);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=Baij->i[i]; j<Baij->i[i+1]; j++) {
       col  = garray[Baij->j[ct]];
-      v    = Baij->a[ct++];
+      v    = ba[ct++];
       ierr = MatSetValues(Bnew,1,&i,1,&col,&v,B->insertmode);CHKERRQ(ierr);
     }
   }
+  ierr = MatSeqAIJRestoreArrayRead(B,&ba);CHKERRQ(ierr);
+
   ierr = PetscFree(aij->garray);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
