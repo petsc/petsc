@@ -1,17 +1,17 @@
-#requiresdefine 'PETSC_HAVE_CXX_DIALECT_CXX11'
+#requirespackage 'PETSC_HAVE_SYCL'
 ALL: lib
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
 SOURCEC	  =
-SOURCECXX = dcontext.cxx device.cxx devicereg.cxx
+SOURCESYCL = sycldevice.sycl.cxx syclcontext.sycl.cxx
 SOURCEF	  =
-SOURCEH   = objpool.hpp cupmdevice.hpp sycldevice.hpp
+SOURCEH   =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  =
-LOCDIR	  = src/sys/objects/device/interface/
+DIRS	    =
+LOCDIR	  = src/sys/objects/device/impls/sycl/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

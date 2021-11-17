@@ -195,6 +195,7 @@ PETSC_STATIC_INLINE PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Intern
     /* casts are needed in C++ */
   case PETSC_DEVICE_CUDA:    return (PetscBool)PetscDefined(HAVE_CUDA);
   case PETSC_DEVICE_HIP:     return (PetscBool)PetscDefined(HAVE_HIP);
+  case PETSC_DEVICE_SYCL:    return (PetscBool)PetscDefined(HAVE_SYCL);
   case PETSC_DEVICE_MAX:     return PETSC_FALSE;
     /* Do not add default case! Will make compiler warn on new additions to PetscDeviceType! */
   }
@@ -349,6 +350,9 @@ PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext);
 #endif
 #if PetscDefined(HAVE_HIP)
 PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext);
+#endif
+#if PetscDefined(HAVE_SYCL)
+PETSC_INTERN PetscErrorCode PetscDeviceContextCreate_SYCL(PetscDeviceContext);
 #endif
 
 #endif /* PETSCDEVICEIMPL_H */

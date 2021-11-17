@@ -91,5 +91,8 @@ int main(int argc, char *argv[])
    test:
      requires: hip
      suffix: hip
+   test:
+     requires: sycl
+     suffix: sycl
 
 TEST*/
