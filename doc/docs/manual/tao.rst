@@ -43,8 +43,8 @@ Rosenbrock’s function. The complete code is available in
 The following sections annotate the lines of code in
 :any:`the example <tao-example1>`.
 
+.. _tao-example1:
 .. admonition:: Listing: ``src/tao/unconstrained/tutorials/rosenbrock1.c``
-   :name: tao-example1
 
    .. literalinclude:: /../src/tao/unconstrained/tutorials/rosenbrock1.c
       :prepend: #include <petsctao.h>
