@@ -312,7 +312,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       }
 
       /* Output the component names in the field if available */
-      ierr = PetscSectionGetFieldComponents(section, f, &Nc);
+      ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
       for (c = 0; c < Nc; ++c){
         char componentNameLabel[PETSC_MAX_PATH_LEN];
         ierr = PetscSectionGetComponentName(section, f, c, &componentName);CHKERRQ(ierr);
