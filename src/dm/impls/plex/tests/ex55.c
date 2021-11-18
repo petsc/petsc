@@ -267,7 +267,7 @@ int main(int argc, char **argv)
   testset:
     suffix: 10-v3.16.0-v1.0.0
     requires: hdf5 !complex datafilespath
-    args: -dm_plex_check_all -compare
+    args: -dm_plex_check_all -compare -compare_labels
     args: -dm_plex_view_hdf5_storage_version {{1.0.0 2.0.0}} -use_low_level_functions {{0 1}}
     test:
       suffix: a
