@@ -43,7 +43,10 @@ int main(int argc, char** argv)
     if (tmp==-1) break;
     myapp.push_back(tmp);
   }
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %D indices.\n",rank,myapp.size());CHKERRQ(ierr);
+#if __cplusplus >= 201103L // c++11
+  static_assert(is_same<decltype(myapp.size()),size_t>::value,"");
+#endif
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %zu indices.\n",rank,myapp.size());CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &(myapp[0]), PETSC_USE_POINTER, &isapp);CHKERRQ(ierr);

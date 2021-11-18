@@ -13,8 +13,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-k",&k,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test with %D random vectors of length %D",k,n);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n",k,n);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test with %" PetscInt_FMT " random vectors of length %" PetscInt_FMT "\n",k,n);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
@@ -44,17 +43,17 @@ int main(int argc, char **argv)
       /* Check result */
       for (j=0;j<i;j++) {
         if (PetscAbsScalar(val_mdot[j] - val_dot[j])/PetscAbsScalar(val_dot[j]) > 1e-5) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%D, j=%D, val_mdot[j]=%g, val_dot[j]=%g\n",i,j,(double)PetscAbsScalar(val_mdot[j]), (double)PetscAbsScalar(val_dot[j]));CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%" PetscInt_FMT ", j=%" PetscInt_FMT ", val_mdot[j]=%g, val_dot[j]=%g\n",i,j,(double)PetscAbsScalar(val_mdot[j]), (double)PetscAbsScalar(val_dot[j]));CHKERRQ(ierr);
           break;
         }
         if (PetscAbsScalar(tval_mdot[j] - tval_dot[j])/PetscAbsScalar(tval_dot[j]) > 1e-5) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%D, j=%D, tval_mdot[j]=%g, tval_dot[j]=%g\n",i,j,(double)PetscAbsScalar(tval_mdot[j]), (double)PetscAbsScalar(tval_dot[j]));CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%" PetscInt_FMT ", j=%" PetscInt_FMT ", tval_mdot[j]=%g, tval_dot[j]=%g\n",i,j,(double)PetscAbsScalar(tval_mdot[j]), (double)PetscAbsScalar(tval_dot[j]));CHKERRQ(ierr);
           break;
         }
       }
     }
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test completed successfully!\n",k,n);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test completed successfully!\n");CHKERRQ(ierr);
   ierr = PetscFree(val_dot);CHKERRQ(ierr);
   ierr = PetscFree(val_mdot);CHKERRQ(ierr);
   ierr = PetscFree(tval_dot);CHKERRQ(ierr);

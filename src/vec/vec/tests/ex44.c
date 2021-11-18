@@ -42,21 +42,21 @@ int main(int argc, char * argv[]) {
   if (!flg) fromStep = 2;
 
   if (n>m) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %D. The number of elements being scattered is %D\n",m,n);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameters such that m>=n\n");CHKERRQ(ierr);
   } else if (toFirst+(n-1)*toStep >=m) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %D. The number of elements being scattered is %D\n",m,n);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, toFirst=%D and toStep=%D.\n",toFirst,toStep);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, toFirst=%" PetscInt_FMT " and toStep=%" PetscInt_FMT ".\n",toFirst,toStep);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"This produces an index (toFirst+(n-1)*toStep)>=m\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -toFirst, or -toStep\n");CHKERRQ(ierr);
   } else if (fromFirst+(n-1)*fromStep>=m) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %D. The number of elements being scattered is %D\n",m,n);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, fromFirst=%D and fromStep=%D.\n",fromFirst,toStep);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The vector sizes are %" PetscInt_FMT ". The number of elements being scattered is %" PetscInt_FMT "\n",m,n);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"For the Strided Scatter, fromFirst=%" PetscInt_FMT " and fromStep=%" PetscInt_FMT ".\n",fromFirst,toStep);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"This produces an index (fromFirst+(n-1)*fromStep)>=m\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Adjust the parameterrs accordingly with -m, -n, -fromFirst, or -fromStep\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"m=%D\tn=%D\tfromFirst=%D\tfromStep=%D\ttoFirst=%D\ttoStep=%D\n",m,n,fromFirst,fromStep,toFirst,toStep);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"fromFirst+(n-1)*fromStep=%D\ttoFirst+(n-1)*toStep=%D\n",fromFirst+(n-1)*fromStep,toFirst+(n-1)*toStep);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"m=%" PetscInt_FMT "\tn=%" PetscInt_FMT "\tfromFirst=%" PetscInt_FMT "\tfromStep=%" PetscInt_FMT "\ttoFirst=%" PetscInt_FMT "\ttoStep=%" PetscInt_FMT "\n",m,n,fromFirst,fromStep,toFirst,toStep);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"fromFirst+(n-1)*fromStep=%" PetscInt_FMT "\ttoFirst+(n-1)*toStep=%" PetscInt_FMT "\n",fromFirst+(n-1)*fromStep,toFirst+(n-1)*toStep);CHKERRQ(ierr);
 
     /* Build the vectors */
     ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);

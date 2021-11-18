@@ -81,7 +81,7 @@ int main(int argc,char **argv)
 
   ierr = VecStrideMax(v,1,&miidx[0],&mvidx[0]);CHKERRQ(ierr);
   ierr = VecStrideMin(v,1,&miidx[1],&mvidx[1]);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Min/Max: %D %g, %D %g\n",miidx[0],(double)mvidx[0],miidx[1],(double)mvidx[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Min/Max: %" PetscInt_FMT " %g, %" PetscInt_FMT " %g\n",miidx[0],(double)mvidx[0],miidx[1],(double)mvidx[1]);CHKERRQ(ierr);
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.

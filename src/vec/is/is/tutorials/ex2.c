@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(set,&indices);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n");CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D\n",indices[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",indices[i]);CHKERRQ(ierr);
   }
 
   ierr = ISRestoreIndices(set,&indices);CHKERRQ(ierr);
