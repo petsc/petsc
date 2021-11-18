@@ -898,6 +898,25 @@ PetscErrorCode DMPlexMetricCreateIsotropic(DM dm, PetscInt f, Vec indicator, Vec
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode LAPACKsyevFail(PetscInt dim, PetscScalar Mpos[])
+{
+  PetscInt i, j;
+
+  PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_SELF, "Failed to apply LAPACKsyev to the matrix\n");
+  for (i = 0; i < dim; ++i) {
+    if (i == 0) PetscPrintf(PETSC_COMM_SELF, "    [[");
+    else        PetscPrintf(PETSC_COMM_SELF, "     [");
+    for (j = 0; j < dim; ++j) {
+      if (j < dim-1) PetscPrintf(PETSC_COMM_SELF, "%15.8e, ", Mpos[i*dim+j]);
+      else           PetscPrintf(PETSC_COMM_SELF, "%15.8e", Mpos[i*dim+j]);
+    }
+    if (i < dim-1) PetscPrintf(PETSC_COMM_SELF, "]\n");
+    else           PetscPrintf(PETSC_COMM_SELF, "]]\n");
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, PetscReal h_max, PetscReal a_max, PetscScalar Mp[])
 {
   PetscErrorCode ierr;
@@ -940,7 +959,17 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
 #else
       PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Mpos,&nb,eigs,work,&lwork,&lierr));
 #endif
-      if (lierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
+      if (lierr) {
+        for (i = 0; i < dim; ++i) {
+          Mpos[i*dim+i] = Mp[i*dim+i];
+          for (j = i+1; j < dim; ++j) {
+            Mpos[i*dim+j] = 0.5*(Mp[i*dim+j] + Mp[j*dim+i]);
+            Mpos[j*dim+i] = Mpos[i*dim+j];
+          }
+        }
+        LAPACKsyevFail(dim, Mpos);
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
+      }
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
     ierr = PetscFree(work);CHKERRQ(ierr);
@@ -1257,7 +1286,10 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 #else
       PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals1, work, &lwork, &lierr));
 #endif
-      if (lierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
+      if (lierr) {
+        LAPACKsyevFail(dim, M1);
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
+      }
       ierr = PetscFPTrapPop();
 
       /* Compute square root and reciprocal */
@@ -1297,7 +1329,20 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 #else
       PetscStackCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &nb, evecs, &nb, evals, work, &lwork, &lierr));
 #endif
-      if (lierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
+      if (lierr) {
+        for (i = 0; i < dim; ++i) {
+          for (j = 0; j < dim; ++j) {
+            evecs[i*dim+j] = 0.0;
+            for (k = 0; k < dim; ++k) {
+              for (l = 0; l < dim; ++l) {
+                evecs[i*dim+j] += isqrtM1[i*dim+k] * M2[l*dim+k] * isqrtM1[j*dim+l];
+              }
+            }
+          }
+        }
+        LAPACKsyevFail(dim, evecs);
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
+      }
       ierr = PetscFPTrapPop();
 
       /* Modify eigenvalues */
