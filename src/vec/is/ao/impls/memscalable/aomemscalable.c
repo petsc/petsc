@@ -38,7 +38,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag_petsc);CHKERRQ(ierr);
 
   if (rank == 0) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",ao->N);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %" PetscInt_FMT "\n",ao->N);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
 
     ierr = PetscMalloc2(map->N,&app,map->N,&petsc);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
     /* print local AO */
     ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);
     for (i=0; i<len; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aomems->app_loc[i],i,aomems->petsc_loc[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%3" PetscInt_FMT "  %3" PetscInt_FMT "    %3" PetscInt_FMT "  %3" PetscInt_FMT "\n",i,aomems->app_loc[i],i,aomems->petsc_loc[i]);CHKERRQ(ierr);
     }
 
     /* recv and print off-processor's AO */
@@ -56,9 +56,9 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
       petsc_loc = petsc+ map->range[i];
       ierr      = MPI_Recv(app_loc,(PetscMPIInt)len,MPIU_INT,i,tag_app,PetscObjectComm((PetscObject)ao),&status);CHKERRMPI(ierr);
       ierr      = MPI_Recv(petsc_loc,(PetscMPIInt)len,MPIU_INT,i,tag_petsc,PetscObjectComm((PetscObject)ao),&status);CHKERRMPI(ierr);
-      ierr      = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",i);CHKERRQ(ierr);
+      ierr      = PetscViewerASCIIPrintf(viewer,"Process [%" PetscInt_FMT "]\n",i);CHKERRQ(ierr);
       for (j=0; j<len; j++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",map->range[i]+j,app_loc[j],map->range[i]+j,petsc_loc[j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%3" PetscInt_FMT "  %3" PetscInt_FMT "    %3" PetscInt_FMT "  %3" PetscInt_FMT "\n",map->range[i]+j,app_loc[j],map->range[i]+j,petsc_loc[j]);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree2(app,petsc);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const 
       count++;
     }
   }
-  if (nsends != count) SETERRQ2(comm,PETSC_ERR_SUP,"nsends %d != count %d",nsends,count);
+  if (PetscUnlikely(nsends != count)) SETERRQ2(comm,PETSC_ERR_SUP,"nsends %" PetscInt_FMT " != count %" PetscInt_FMT,nsends,count);
 
   /* wait on 1st sends */
   if (nsends) {
@@ -364,7 +364,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
       count++;
     }
   }
-  if (nsends != count) SETERRQ2(comm,PETSC_ERR_SUP,"nsends %d != count %d",nsends,count);
+  if (PetscUnlikely(nsends != count)) SETERRQ2(comm,PETSC_ERR_SUP,"nsends %" PetscInt_FMT " != count %" PetscInt_FMT,nsends,count);
 
   /* wait on sends */
   if (nsends) {

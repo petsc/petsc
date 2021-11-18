@@ -14,7 +14,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v,"Length=%D",v->map->N);
+  PetscLogObjectState((PetscObject)v,"Length=%" PetscInt_FMT "",v->map->N);
 #endif
   if (!x) PetscFunctionReturn(0);
   ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       nmin = PetscMin(nmin,xin->map->range[i+1] - xin->map->range[i]);
     }
     navg = xin->map->N/size;
-    ierr = PetscViewerASCIIPrintf(viewer,"  Load Balance - Local vector size Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Load Balance - Local vector size Min %" PetscInt_FMT "  avg %" PetscInt_FMT "  max %" PetscInt_FMT "\n",nmin,navg,nmax);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -161,7 +161,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         else if (outputState == 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
 
         if (doOutput) {
-          ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", xin->map->N/bs);CHKERRQ(ierr);
         }
       } else {
         if (outputState == 0) {
@@ -175,7 +175,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         else if (outputState == 4) doOutput = 0;
 
         if (doOutput) {
-          ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", xin->map->N/bs);CHKERRQ(ierr);
         }
       }
       ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
@@ -183,10 +183,10 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         if (bs == 3) {
           ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name);CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name, bs);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %" PetscInt_FMT "\n", name, bs);CHKERRQ(ierr);
         }
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", bs);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %" PetscInt_FMT "\n", bs);CHKERRQ(ierr);
       }
       if (bs != 3) {
         ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
@@ -219,7 +219,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
       ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+      if (PetscUnlikely((bs < 1) || (bs > 3))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %" PetscInt_FMT, bs);
 
       for (i=0; i<n/bs; i++) {
         for (b=0; b<bs; b++) {
@@ -255,11 +255,11 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
       ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
+      if (PetscUnlikely((bs < 1) || (bs > 3))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %" PetscInt_FMT, bs);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->map->N/bs);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT "\n", xin->map->N/bs);CHKERRQ(ierr);
       for (i=0; i<n/bs; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%7" PetscInt_FMT "   ", vertexCount++);CHKERRQ(ierr);
         for (b=0; b<bs; b++) {
           if (b > 0) {
             ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
@@ -274,7 +274,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRMPI(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRMPI(ierr);
         for (i=0; i<n/bs; i++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%7" PetscInt_FMT "   ", vertexCount++);CHKERRQ(ierr);
           for (b=0; b<bs; b++) {
             if (b > 0) {
               ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
@@ -302,8 +302,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       if (!glvis_container) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_PLIB,"Missing GLVis container");
       ierr = PetscContainerGetPointer(glvis_container,(void**)&glvis_vec_info);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s\n",glvis_vec_info->fec_type);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"VDim: %d\n",vdim);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Ordering: %d\n",ordering);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"VDim: %" PetscInt_FMT "\n",vdim);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Ordering: %" PetscInt_FMT "\n",ordering);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       /* mfem::Vector::Print() */
       ierr = PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container);CHKERRQ(ierr);
@@ -325,7 +325,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       cnt = 0;
       for (i=0; i<xin->map->n; i++) {
         if (format == PETSC_VIEWER_ASCII_INDEX) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%D: ",cnt++);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT ": ",cnt++);CHKERRQ(ierr);
         }
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(xarray[i]) > 0.0) {
@@ -348,7 +348,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
         for (i=0; i<n; i++) {
           if (format == PETSC_VIEWER_ASCII_INDEX) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%D: ",cnt++);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT ": ",cnt++);CHKERRQ(ierr);
           }
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(values[i]) > 0.0) {
@@ -854,7 +854,7 @@ PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
   for (i=0; i<ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
     tmp = ix[i] - start;
-    if (PetscUnlikelyDebug(tmp < 0 || tmp >= xin->map->n)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Can only get local values, trying %D",ix[i]);
+    if (PetscUnlikelyDebug(tmp < 0 || tmp >= xin->map->n)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Can only get local values, trying %" PetscInt_FMT "",ix[i]);
     y[i] = xx[tmp];
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
@@ -880,22 +880,22 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   if (addv == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
-      if (PetscUnlikelyDebug(ix[i] < 0)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
+      if (PetscUnlikelyDebug(ix[i] < 0)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " cannot be negative",ix[i]);
       if ((row = ix[i]) >= start && row < end) {
         xx[row-start] = y[i];
       } else if (!xin->stash.donotstash) {
-        if (PetscUnlikelyDebug(ix[i] >= xin->map->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->N);
+        if (PetscUnlikelyDebug(ix[i] >= xin->map->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT "",ix[i],xin->map->N);
         ierr = VecStashValue_Private(&xin->stash,row,y[i]);CHKERRQ(ierr);
       }
     }
   } else {
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
-      if (PetscUnlikelyDebug(ix[i] < 0)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
+      if (PetscUnlikelyDebug(ix[i] < 0)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " cannot be negative",ix[i]);
       if ((row = ix[i]) >= start && row < end) {
         xx[row-start] += y[i];
       } else if (!xin->stash.donotstash) {
-        if (PetscUnlikelyDebug(ix[i] >= xin->map->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->N);
+        if (PetscUnlikelyDebug(ix[i] >= xin->map->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT "",ix[i],xin->map->N);
         ierr = VecStashValue_Private(&xin->stash,row,y[i]);CHKERRQ(ierr);
       }
     }
@@ -926,7 +926,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
         for (j=0; j<bs; j++) xx[row-start+j] = y[j];
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) { y += bs; continue; }
-        if (PetscUnlikelyDebug(ix[i] >= xin->map->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map->N);
+        if (PetscUnlikelyDebug(ix[i] >= xin->map->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " max %" PetscInt_FMT "",ix[i],xin->map->N);
         ierr = VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);CHKERRQ(ierr);
       }
       y += bs;
@@ -937,7 +937,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
         for (j=0; j<bs; j++) xx[row-start+j] += y[j];
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) { y += bs; continue; }
-        if (PetscUnlikelyDebug(ix[i] > xin->map->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map->N);
+        if (PetscUnlikelyDebug(ix[i] > xin->map->N)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " max %" PetscInt_FMT "",ix[i],xin->map->N);
         ierr = VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);CHKERRQ(ierr);
       }
       y += bs;
@@ -979,9 +979,9 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = VecStashScatterBegin_Private(&xin->stash,owners);CHKERRQ(ierr);
   ierr = VecStashScatterBegin_Private(&xin->bstash,bowners);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  ierr = PetscInfo2(xin,"Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+  ierr = PetscInfo2(xin,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->bstash,&nstash,&reallocs);CHKERRQ(ierr);
-  ierr = PetscInfo2(xin,"Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+  ierr = PetscInfo2(xin,"Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

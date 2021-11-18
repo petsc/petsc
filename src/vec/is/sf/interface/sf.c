@@ -11,13 +11,17 @@
   #include <hip/hip_runtime.h>
 #endif
 
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+void PetscSFCheckGraphSet(PetscSF,int);
+#else
 #if defined(PETSC_USE_DEBUG)
 #  define PetscSFCheckGraphSet(sf,arg) do {                          \
     if (PetscUnlikely(!(sf)->graphset))                              \
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetGraph() or PetscSFSetGraphWithPattern() on argument %D \"%s\" before %s()",(arg),#sf,PETSC_FUNCTION_NAME); \
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetGraph() or PetscSFSetGraphWithPattern() on argument %d \"%s\" before %s()",(arg),#sf,PETSC_FUNCTION_NAME); \
   } while (0)
 #else
 #  define PetscSFCheckGraphSet(sf,arg) do {} while (0)
+#endif
 #endif
 
 const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","PetscSFDuplicateOption","PETSCSF_DUPLICATE_",NULL};
@@ -286,9 +290,9 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
     const PetscInt rank = iremote[i].rank;
     const PetscInt remote = iremote[i].index;
     const PetscInt leaf = ilocal ? ilocal[i] : i;
-    if (rank < 0 || rank >= size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided rank (%D) for remote %D is invalid, should be in [0, %d)",rank,i,size);
-    if (remote < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided index (%D) for remote %D is invalid, should be >= 0",remote,i);
-    if (leaf < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided location (%D) for leaf %D is invalid, should be >= 0",leaf,i);
+    if (rank < 0 || rank >= size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided rank (%" PetscInt_FMT ") for remote %" PetscInt_FMT " is invalid, should be in [0, %d)",rank,i,size);
+    if (remote < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided index (%" PetscInt_FMT ") for remote %" PetscInt_FMT " is invalid, should be >= 0",remote,i);
+    if (leaf < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided location (%" PetscInt_FMT ") for leaf %" PetscInt_FMT " is invalid, should be >= 0",leaf,i);
   }
   PetscFunctionReturn(0);
 }
@@ -466,8 +470,8 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   if (nleaves > 0 && ilocal) PetscValidIntPointer(ilocal,4);
   if (nleaves > 0) PetscValidPointer(iremote,6);
-  if (nroots  < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nroots %D, cannot be negative",nroots);
-  if (nleaves < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nleaves %D, cannot be negative",nleaves);
+  if (nroots  < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nroots %" PetscInt_FMT ", cannot be negative",nroots);
+  if (nleaves < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nleaves %" PetscInt_FMT ", cannot be negative",nleaves);
 
   if (sf->nroots >= 0) { /* Reset only if graph already set */
     ierr = PetscSFReset(sf);CHKERRQ(ierr);
@@ -583,8 +587,10 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf,PetscLayout map,PetscSFPatt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (pattern != PETSCSF_PATTERN_ALLTOALL) PetscValidPointer(map,2);
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
-  if (pattern < PETSCSF_PATTERN_ALLGATHER || pattern > PETSCSF_PATTERN_ALLTOALL) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unsupported PetscSFPattern %D\n",pattern);
+  if (PetscUnlikely((pattern < PETSCSF_PATTERN_ALLGATHER) || (pattern > PETSCSF_PATTERN_ALLTOALL))) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unsupported PetscSFPattern %d\n",pattern);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
@@ -904,9 +910,9 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
       }
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,sf->nroots,sf->nleaves,sf->nranks);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n",rank,sf->nroots,sf->nleaves,sf->nranks);CHKERRQ(ierr);
       for (i=0; i<sf->nleaves; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,sf->mine ? sf->mine[i] : i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,sf->mine ? sf->mine[i] : i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -919,9 +925,9 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
         for (ii=0; ii<sf->nranks; ii++) {
           i = perm[ii];
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d: %" PetscInt_FMT " edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
           for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
-            ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %" PetscInt_FMT " <- %" PetscInt_FMT "\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
           }
         }
         ierr = PetscFree2(tmpranks,perm);CHKERRQ(ierr);
@@ -1112,7 +1118,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
       }
       orank = sf->remote[i].rank;
     }
-    if (irank < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %D in array",sf->remote[i].rank);
+    if (irank < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %" PetscInt_FMT " in array",sf->remote[i].rank);
     sf->rmine[sf->roffset[irank] + rcount[irank]]   = sf->mine ? sf->mine[i] : i;
     sf->rremote[sf->roffset[irank] + rcount[irank]] = sf->remote[i].index;
     rcount[irank]++;
@@ -1325,7 +1331,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf,PetscInt nselected,const P
     ierr = PetscCheckDupsInt(nselected,selected,&dups);CHKERRQ(ierr);
     if (dups) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"selected[] has dups");
     for (i=0; i<nselected; i++)
-      if (selected[i] < 0 || selected[i] >= nroots) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"selected root indice %D is out of [0,%D)",selected[i],nroots);
+      if (selected[i] < 0 || selected[i] >= nroots) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"selected root indice %" PetscInt_FMT " is out of [0,%" PetscInt_FMT ")",selected[i],nroots);
   }
 
   if (sf->ops->CreateEmbeddedRootSF) {
@@ -1407,7 +1413,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
   ierr = PetscMalloc1(nselected,&leaves);CHKERRQ(ierr);
   ierr = PetscArraycpy(leaves,selected,nselected);CHKERRQ(ierr);
   ierr = PetscSortedRemoveDupsInt(&nselected,leaves);CHKERRQ(ierr);
-  if (nselected && (leaves[0] < 0 || leaves[nselected-1] >= sf->nleaves)) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max leaf indices %D/%D are not in [0,%D)",leaves[0],leaves[nselected-1],sf->nleaves);
+  if (nselected && (leaves[0] < 0 || leaves[nselected-1] >= sf->nleaves)) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max leaf indices %" PetscInt_FMT "/%" PetscInt_FMT " are not in [0,%" PetscInt_FMT ")",leaves[0],leaves[nselected-1],sf->nleaves);
 
   /* Optimize the routine only when sf is setup and hence we can reuse sf's communication pattern */
   if (sf->setupcalled && sf->ops->CreateEmbeddedLeafSF) {
