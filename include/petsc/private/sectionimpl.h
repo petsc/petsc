@@ -84,4 +84,19 @@ PETSC_EXTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, IS *);
 PETSC_INTERN PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection, PetscViewer);
 PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscViewer);
 #endif
-#endif
+
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+#  define PetscSectionCheckValidField(x,y)
+#  define PetscSectionCheckValidFieldComponent(x,y)
+#else
+#  define PetscSectionCheckValid_(description,item,nitems) do {         \
+    if (PetscUnlikely(((item) < 0) || ((item) >= (nitems)))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE,"Invalid " description " %" PetscInt_FMT "; not in [0, %" PetscInt_FMT ")", (item), (nitems)); \
+  } while (0)
+
+#  define PetscSectionCheckValidFieldComponent(comp,nfieldcomp) PetscSectionCheckValid_("section field component",comp,nfieldcomp)
+
+#  define PetscSectionCheckValidField(field,nfields)            PetscSectionCheckValid_("field number",field,nfields)
+
+#endif /* PETSC_CLANG_STATIC_ANALYZER */
+
+#endif /* PETSCSECTIONIMPL_H */
