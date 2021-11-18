@@ -121,7 +121,7 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
   shift -= llen;
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     id = shmget(key,len, 0666 |IPC_CREAT);
     if (id == -1) {
       perror("Unable to malloc shared memory");

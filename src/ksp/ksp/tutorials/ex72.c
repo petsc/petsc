@@ -567,19 +567,19 @@ int main(int argc,char **args)
          args: -pc_type spai
       test:
          suffix: 15
-         requires: hypre
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type pilut
       test:
          suffix: 16
-         requires: hypre
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type parasails
       test:
          suffix: 17
-         requires: hypre
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type boomeramg
       test:
          suffix: 18
-         requires: hypre
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type euclid
 
    testset:
@@ -616,7 +616,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 2
-      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) hypre
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg
       test:
          suffix: boomeramg_euclid
@@ -835,4 +835,12 @@ int main(int argc,char **args)
          filter: sed -e "s/Number of iterations =   [0-9]/Number of iterations = 9/g"
          nsize: 4
          args: -ksp_error_if_not_converged -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type ptscotch
+
+   test:
+      suffix: hpddm
+      output_file: output/ex72_bddc_seq.out
+      filter: sed -e "s/Number of iterations =   2/Number of iterations =   1/g"
+      nsize: 2
+      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_pc_type mat
+      requires: !__float128 hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
 TEST*/

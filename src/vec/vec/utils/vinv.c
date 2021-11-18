@@ -10,7 +10,7 @@
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  s - value to set for each entry in that subvector
@@ -33,18 +33,12 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidLogicalCollectiveInt(v,start,2);
-  PetscValidLogicalCollectiveScalar(v,s,3);
-  ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
-
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  x += start;
-  for (i=0; i<n; i+=bs) x[i] = s;
-  x -= start;
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride %D",start,bs);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for (i=start; i<n; i+=bs) x[i] = s;
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -55,7 +49,7 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  scale - value to multiply each subvector entry by
@@ -78,18 +72,12 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidLogicalCollectiveInt(v,start,2);
-  PetscValidLogicalCollectiveScalar(v,scale,3);
-  ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
-
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  x += start;
-  for (i=0; i<n; i+=bs) x[i] *= scale;
-  x -= start;
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride %D",start,bs);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for (i=start; i<n; i+=bs) x[i] *= scale;
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -100,7 +88,7 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
@@ -130,41 +118,33 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
   PetscInt          i,n,bs;
   const PetscScalar *x;
   PetscReal         tnorm;
-  MPI_Comm          comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(v,ntype,3);
   PetscValidRealPointer(nrm,4);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
-
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  x += start;
-
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride %D",start,bs);
+  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   if (ntype == NORM_2) {
     PetscScalar sum = 0.0;
-    for (i=0; i<n; i+=bs) sum += x[i]*(PetscConj(x[i]));
+    for (i=start; i<n; i+=bs) sum += x[i]*(PetscConj(x[i]));
     tnorm = PetscRealPart(sum);
-    ierr  = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRMPI(ierr);
+    ierr  = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
     *nrm  = PetscSqrtReal(*nrm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
-    for (i=0; i<n; i+=bs) tnorm += PetscAbsScalar(x[i]);
-    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRMPI(ierr);
+    for (i=start; i<n; i+=bs) tnorm += PetscAbsScalar(x[i]);
+    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
   } else if (ntype == NORM_INFINITY) {
-    PetscReal tmp;
     tnorm = 0.0;
-
-    for (i=0; i<n; i+=bs) {
-      if ((tmp = PetscAbsScalar(x[i])) > tnorm) tnorm = tmp;
-      /* check special case of tmp == NaN */
-      if (tmp != tmp) {tnorm = tmp; break;}
+    for (i=start; i<n; i+=bs) {
+      if (PetscAbsScalar(x[i]) > tnorm) tnorm = PetscAbsScalar(x[i]);
     }
-    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
+    ierr = MPIU_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)v),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -175,11 +155,11 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  start - starting point of the subvector (defined by a stride)
 
-   Output Parameter:
+   Output Parameters:
 +  idex - the location where the maximum occurred  (pass NULL if not required)
 -  nrm - the maximum value in the subvector
 
@@ -201,33 +181,26 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
 PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,n,bs,id;
+  PetscInt          i,n,bs,id = -1;
   const PetscScalar *x;
-  PetscReal         max,tmp;
+  PetscReal         max = PETSC_MIN_REAL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidRealPointer(nrm,4);
-
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
-
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  x += start;
-
-  id = -1;
-  if (!n) max = PETSC_MIN_REAL;
-  else {
-    id  = 0;
-    max = PetscRealPart(x[0]);
-    for (i=bs; i<n; i+=bs) {
-      if ((tmp = PetscRealPart(x[i])) > max) { max = tmp; id = i;}
-    }
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride %D",start,bs);
+  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
+  for (i=start; i<n; i+=bs) {
+    if (PetscRealPart(x[i]) > max) { max = PetscRealPart(x[i]); id = i;}
   }
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_MPIUNI)
+  *nrm = max;
+  if (idex) *idex = id;
+#else
   if (!idex) {
     ierr = MPIU_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
   } else {
@@ -236,11 +209,12 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in.v  = max;
-    in.i  = rstart+id+start;
+    in.i  = rstart+id;
     ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MAXLOC,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
     *nrm  = out.v;
     *idex = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -250,11 +224,11 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  start - starting point of the subvector (defined by a stride)
 
-   Output Parameter:
+   Output Parameters:
 +  idex - the location where the minimum occurred. (pass NULL if not required)
 -  nrm - the minimum value in the subvector
 
@@ -276,48 +250,40 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,n,bs,id;
+  PetscInt          i,n,bs,id = -1;
   const PetscScalar *x;
-  PetscReal         min,tmp;
-  MPI_Comm          comm;
+  PetscReal         min = PETSC_MAX_REAL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidRealPointer(nrm,4);
-
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
-
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\nHave you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  x += start;
-
-  id = -1;
-  if (!n) min = PETSC_MAX_REAL;
-  else {
-    id = 0;
-    min = PetscRealPart(x[0]);
-    for (i=bs; i<n; i+=bs) {
-      if ((tmp = PetscRealPart(x[i])) < min) { min = tmp; id = i;}
-    }
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride %D",start,bs);
+  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
+  for (i=start; i<n; i+=bs) {
+    if (PetscRealPart(x[i]) < min) { min = PetscRealPart(x[i]); id = i;}
   }
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_MPIUNI)
+  *nrm = min;
+  if (idex) *idex = id;
+#else
   if (!idex) {
-    ierr = MPIU_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
+    ierr = MPIU_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
   } else {
     struct { PetscReal v; PetscInt i; } in,out;
     PetscInt rstart;
 
     ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in.v  = min;
-    in.i  = rstart+id+start;
+    in.i  = rstart+id;
     ierr  = MPIU_Allreduce(&in,&out,1,MPIU_REAL_INT,MPIU_MINLOC,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
     *nrm  = out.v;
     *idex = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +293,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  scales - values to multiply each subvector entry by
 
@@ -350,12 +316,9 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidScalarPointer(scales,2);
-  ierr = VecSetErrorIfLocked(v,1);CHKERRQ(ierr);
-
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   /* need to provide optimized code for each bs */
   for (i=0; i<n; i+=bs) {
     for (j=0; j<bs; j++) x[i+j] *= scales[j];
@@ -370,7 +333,7 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
 
@@ -402,13 +365,14 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(v,ntype,2);
   PetscValidRealPointer(nrm,3);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (ntype == NORM_2) {
     PetscScalar sum[128];
@@ -440,7 +404,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
       }
     }
     ierr = MPIU_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
+  } else SETERRQ(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -454,7 +418,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
    Input Parameter:
 .  v - the vector
 
-   Output Parameter:
+   Output Parameters:
 +  index - the location where the maximum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the maximum values of each subvector
@@ -486,7 +450,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
     for (j=0; j<bs; j++) max[j] = PETSC_MIN_REAL;
@@ -514,7 +478,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
    Input Parameter:
 .  v - the vector
 
-   Output Parameter:
+   Output Parameters:
 +  idex - the location where the minimum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the minimums of each subvector
@@ -546,7 +510,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
     for (j=0; j<bs; j++) min[j] = PETSC_MAX_REAL;
@@ -572,7 +536,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
@@ -670,7 +634,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  s - the location where the subvectors are stored
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
@@ -763,7 +727,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
@@ -807,7 +771,7 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  s - the single-component vector
 .  start - starting point of the subvector (defined by a stride)
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
@@ -849,7 +813,7 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v - the vector
 .  nidx - the number of indices
 .  idxv - the indices of the components 0 <= idxv[0] ...idxv[nidx-1] < bs(v), they need not be sorted
@@ -890,7 +854,7 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
 
    Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  s - the smaller-component vector
 .  nidx - the number of indices in idx
 .  idxs - the indices of the components in the smaller-component vector, 0 <= idxs[0] ...idxs[nidx-1] < bs(s) they need not be sorted, may be null if nidx == bs(s) or is PETSC_DETERMINE
@@ -1252,11 +1216,11 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 
   Collective on Vec
 
-  Input Parameter:
+  Input Parameters:
 + s - first vector
 - t - second vector
 
-  Output Parameter:
+  Output Parameters:
 + dp - s'conj(t)
 - nm - t'conj(t)
 
@@ -1327,7 +1291,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 
    Level: beginner
 
-.seealso: VecNorm()
+.seealso: VecMean(), VecNorm()
 @*/
 PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
 {
@@ -1348,6 +1312,35 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
     ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   }
   ierr = MPIU_Allreduce(MPI_IN_PLACE,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRMPI(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecMean - Computes the arithmetic mean of all the components of a vector.
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  mean - the result
+
+   Level: beginner
+
+.seealso: VecSum(), VecNorm()
+@*/
+PetscErrorCode  VecMean(Vec v,PetscScalar *mean)
+{
+  PetscErrorCode    ierr;
+  PetscInt          n;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidScalarPointer(mean,2);
+  ierr = VecGetSize(v,&n);CHKERRQ(ierr);
+  ierr = VecSum(v,mean);CHKERRQ(ierr);
+  *mean /= n;
   PetscFunctionReturn(0);
 }
 
@@ -1414,9 +1407,6 @@ PetscErrorCode  VecRealPart(Vec v)
    Input Parameters:
 +  v - the vector
 -  shift - the shift
-
-   Output Parameter:
-.  v - the shifted vector
 
    Level: intermediate
 

@@ -11,10 +11,11 @@ and eventually adaptivity.\n\n\n";
 
 typedef struct {
   /* Domain and mesh definition */
-  PetscBool spectral; /* Look at the spectrum along planes in the solution */
-  PetscBool shear;    /* Shear the domain */
-  PetscBool adjoint;  /* Solve the adjoint problem */
-  PetscBool homogeneous;
+  PetscBool spectral;    /* Look at the spectrum along planes in the solution */
+  PetscBool shear;       /* Shear the domain */
+  PetscBool adjoint;     /* Solve the adjoint problem */
+  PetscBool homogeneous; /* Use homogeneous boudnary conditions */
+  PetscBool viewError;   /* Output the solution error */
 } AppCtx;
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -115,17 +116,19 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->shear    = PETSC_FALSE;
-  options->spectral = PETSC_FALSE;
-  options->adjoint  = PETSC_FALSE;
+  options->shear       = PETSC_FALSE;
+  options->spectral    = PETSC_FALSE;
+  options->adjoint     = PETSC_FALSE;
   options->homogeneous = PETSC_FALSE;
+  options->viewError   = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-shear", "Shear the domain", "ex13.c", options->shear, &options->shear, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-adjoint", "Solve the adjoint problem", "ex13.c", options->adjoint, &options->adjoint, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-homogeneous", "Use homogeneous boundary conditions", "ex13.c", options->homogeneous, &options->homogeneous, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-error_view", "Output the solution error", "ex13.c", options->viewError, &options->viewError, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +330,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
       gray   = ray;
       gsvals = svals;
     }
-    if (!rank) {
+    if (rank == 0) {
       /* Sort point along ray */
       ierr = PetscMalloc2(N, &perm, N, &nperm);CHKERRQ(ierr);
       for (i = 0; i < N; ++i) {perm[i] = i;}
@@ -393,6 +396,19 @@ int main(int argc, char **argv)
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-potential_view");CHKERRQ(ierr);
+  if (user.viewError) {
+    PetscErrorCode (*sol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+    void            *ctx;
+    PetscDS          ds;
+    PetscReal        error;
+    PetscInt         N;
+
+    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(ds, 0, &sol, &ctx);CHKERRQ(ierr);
+    ierr = VecGetSize(u, &N);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, 0.0, &sol, &ctx, u, &error);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g\n", N, (double)error);CHKERRQ(ierr);
+  }
   if (user.spectral) {
     PetscInt  planeDir[2]   = {0,  1};
     PetscReal planeCoord[2] = {0., 1.};

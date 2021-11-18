@@ -102,7 +102,7 @@ M*/
   #include <petsc/private/hashset.h>
   PetscErrorCode PetscHSetTUpdate(PetscHSetT ht,PetscHSetT hda)
 
-  Input Parameter:
+  Input Parameters:
 + ht - The hash table to which elements are added
 - hta - The hash table from which the elements are retrieved
 
@@ -282,7 +282,7 @@ M*/
 . off   - Input offset in array (usually zero)
 - array - Array where to put hash table entries into
 
-  Output Parameter:
+  Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
 - array - Array filled with the hash table entries
 

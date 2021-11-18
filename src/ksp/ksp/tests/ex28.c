@@ -115,7 +115,7 @@ int main(int argc,char **args)
     ierr = PCGetOperators(innerpc,NULL,&A_redundant);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)A_redundant,&subcomm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRMPI(ierr);
-    if (subsize==1 && !rank) {
+    if (subsize==1 && rank == 0) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"A_redundant:\n");CHKERRQ(ierr);
       ierr = MatView(A_redundant,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }

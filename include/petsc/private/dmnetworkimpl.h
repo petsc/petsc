@@ -104,7 +104,7 @@ typedef struct {
 
   PetscInt                          nsubnet,Nsubnet; /* Local and global number of subnetworks */
   DMSubnetwork                      *subnet;         /* Subnetworks */
-  PetscInt                          *subnetvtx;      /* Maps local vertex to local subnetwork's vertex */
+  PetscInt                          *subnetvtx,*subnetedge; /* Maps local vertex/edge to local subnetwork's vertex/edge */
   SVtx                              *svtx;           /* Array of vertices shared by subnetworks */
   PetscInt                          nsvtx,Nsvtx;     /* Local and global num of entries in svtx */
   PetscInt                          *svertices;      /* Array of local subnetwork vertices that are merged/shared */

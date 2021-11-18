@@ -23,7 +23,7 @@ int main(int argc,char **args)
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (testcase == 1) { /* proc[0] holds entire A and other processes have no entry */
-    if (!rank) {
+    if (rank == 0) {
       ierr = MatSetSizes(A,M,N,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     } else {
       ierr = MatSetSizes(A,0,0,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  if (!rank) { /* proc[0] sets matrix A */
+  if (rank == 0) { /* proc[0] sets matrix A */
     for (j=0; j<N; j++) indices[j] = j;
     switch (testcase) {
     case 1: /* see testcast 0 */

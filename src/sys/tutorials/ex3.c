@@ -69,7 +69,7 @@ int main(int argc,char **argv)
      We test event logging imbalance
   */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (!rank) {ierr = PetscSleep(0.5);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = PetscSleep(0.5);CHKERRQ(ierr);}
   ierr = PetscLogEventSync(USER_EVENT,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);

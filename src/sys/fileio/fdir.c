@@ -86,7 +86,7 @@ PetscErrorCode PetscMkdtemp(char dir[])
   }
 #else
   dir = mkdtemp(dir);
-  if (!dir) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create temporary dir using the template: %s",dir);
+  if (PetscUnlikely(!dir)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Could not create temporary dir");
 #endif
   PetscFunctionReturn(0);
 }

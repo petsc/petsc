@@ -18,6 +18,10 @@ configure_options = [
 
   '--with-c2html=0',
   '--with-mpi-dir=/export/home/petsc/soft/mpich-3.3.1',
+  # opensolaris throws warning
+  # CC: Warning: Option -std=c++03 passed to ld, if ld is invoked, ignored otherwise
+  # to stderr, so don't use flag at all
+  '--with-cxx-dialect=0',
   ]
 
 if __name__ == '__main__':

@@ -380,7 +380,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 
    Collecive on PetscQuadrature
 
-   Input Arguments:
+   Input Parameters:
 +  q - the quadrature functional
 .  imageDim - the dimension of the image of the transformation
 .  origin - a point in the original space
@@ -388,7 +388,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 .  J - the Jacobian of the image: an [imageDim x dim] matrix in row major order
 -  formDegree - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see PetscDTAltVPullback() for interpretation of formDegree]
 
-   Output Arguments:
+   Output Parameters:
 .  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of J to the k-form weights in the image space.
 
    Note: the new quadrature rule will have a different number of components if spaces have different dimensions.  For example, pushing a 2-form forward from a two dimensional space to a three dimensional space changes the number of components from 1 to 3.
@@ -551,7 +551,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + q - The original PetscQuadrature
 . numSubelements - The number of subelements the original element is divided into
 . v0 - An array of the initial points for each subelement
@@ -633,12 +633,12 @@ do {                                                            \
 
   $\| P^{\alpha,\beta}_n \|_{\alpha,\beta}^2 = \int_{-1}^1 (1 + x)^{\alpha} (1 - x)^{\beta} P^{\alpha,\beta}_n (x)^2 dx.$
 
-  Input Arguments:
+  Input Parameters:
 - alpha - the left exponent > -1
 . beta - the right exponent > -1
 + n - the polynomial degree
 
-  Output Arguments:
+  Output Parameter:
 . norm - the weighted L2 norm
 
   Level: beginner
@@ -748,7 +748,7 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
 /*@
   PetscDTJacobiEvalJet - Evaluate the jet (function and derivatives) of the Jacobi polynomials basis up to a given degree.  The Jacobi polynomials with indices $\alpha$ and $\beta$ are orthogonal with respect to the weighted inner product $\langle f, g \rangle = \int_{-1}^1 (1+x)^{\alpha} (1-x)^{\beta) f(x) g(x) dx$.
 
-  Input Arguments:
+  Input Parameters:
 + alpha - the left exponent of the weight
 . beta - the right exponetn of the weight
 . npoints - the number of points to evaluate the polynomials at
@@ -804,7 +804,7 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  npoints - number of spatial points to evaluate at
 .  alpha - the left exponent > -1
 .  beta - the right exponent > -1
@@ -812,7 +812,7 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 .  ndegree - number of basis degrees to evaluate
 -  degrees - sorted array of degrees to evaluate
 
-   Output Arguments:
+   Output Parameters:
 +  B - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or NULL)
 .  D - row-oriented derivative evaluation matrix (or NULL)
 -  D2 - row-oriented second derivative evaluation matrix (or NULL)
@@ -840,13 +840,13 @@ PetscErrorCode PetscDTJacobiEval(PetscInt npoints,PetscReal alpha, PetscReal bet
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  npoints - number of spatial points to evaluate at
 .  points - array of locations to evaluate at
 .  ndegree - number of basis degrees to evaluate
 -  degrees - sorted array of degrees to evaluate
 
-   Output Arguments:
+   Output Parameters:
 +  B - row-oriented basis evaluation matrix B[point*ndegree + degree] (dimension npoints*ndegrees, allocated by caller) (or NULL)
 .  D - row-oriented derivative evaluation matrix (or NULL)
 -  D2 - row-oriented second derivative evaluation matrix (or NULL)
@@ -970,12 +970,12 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
                                  "  publisher={ACM New York, NY, USA}\n}\n";
 
 /*@
-  PetscDTPKDEvalJet - Evaluate the jet (function and derivatives) of the Prioriol-Koornwinder-Dubiner (PKD) basis for
+  PetscDTPKDEvalJet - Evaluate the jet (function and derivatives) of the Proriol-Koornwinder-Dubiner (PKD) basis for
   the space of polynomials up to a given degree.  The PKD basis is L2-orthonormal on the biunit simplex (which is used
   as the reference element for finite elements in PETSc), which makes it a stable basis to use for evaluating
   polynomials in that domain.
 
-  Input Arguments:
+  Input Parameters:
 + dim - the number of variables in the multivariate polynomials
 . npoints - the number of points to evaluate the polynomials at
 . points - [npoints x dim] array of point coordinates
@@ -993,7 +993,7 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
 
   Note: The ordering of the basis functions, and the ordering of the derivatives in the jet, both follow the graded
   ordering of PetscDTIndexToGradedOrder() and PetscDTGradedOrderToIndex().  For example, in 3D, the polynomial with
-  leading monomial x^3,y^1,z^2, which as degree tuple (2,0,1), which by PetscDTGradedOrderToIndex() has index 12 (it is the 13th basis function in the space);
+  leading monomial x^2,y^0,z^1, which has degree tuple (2,0,1), which by PetscDTGradedOrderToIndex() has index 12 (it is the 13th basis function in the space);
   the partial derivative $\partial_x \partial_z$ has order tuple (1,0,1), appears at index 6 in the jet (it is the 7th partial derivative in the jet).
 
   The implementation uses Kirby's singularity-free evaluation algorithm, https://doi.org/10.1145/1644001.1644006.
@@ -1017,7 +1017,7 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
   initscale = 1.;
   if (dim > 1) {
     ierr = PetscDTBinomial(dim,2,&scaleexp);CHKERRQ(ierr);
-    initscale = PetscPowReal(2.,scaleexp*0.5);CHKERRQ(ierr);
+    initscale = PetscPowReal(2.,scaleexp*0.5);
   }
   for (degidx = 0; degidx < Ndeg; degidx++) {
     PetscInt e, i;
@@ -1135,6 +1135,200 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
   }
   ierr = PetscFree(scales);CHKERRQ(ierr);
   ierr = PetscFree2(degtup, ktup);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTPTrimmedSize - The size of the trimmed polynomial space of k-forms with a given degree and form degree,
+  which can be evaluated in PetscDTPTrimmedEvalJet().
+
+  Input Parameters:
++ dim - the number of variables in the multivariate polynomials
+. degree - the degree (sum of degrees on the variables in a monomial) of the trimmed polynomial space.
+- formDegree - the degree of the form
+
+  Output Argments:
+- size - The number ((dim + degree) choose (dim + formDegree)) x ((degree + formDegree - 1) choose (formDegree))
+
+  Level: advanced
+
+.seealso: PetscDTPTrimmedEvalJet()
+@*/
+PetscErrorCode PetscDTPTrimmedSize(PetscInt dim, PetscInt degree, PetscInt formDegree, PetscInt *size)
+{
+  PetscInt       Nrk, Nbpt; // number of trimmed polynomials
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  formDegree = PetscAbsInt(formDegree);
+  ierr = PetscDTBinomialInt(degree + dim, degree + formDegree, &Nbpt);CHKERRQ(ierr);
+  ierr = PetscDTBinomialInt(degree + formDegree - 1, formDegree, &Nrk);CHKERRQ(ierr);
+  Nbpt *= Nrk;
+  *size = Nbpt;
+  PetscFunctionReturn(0);
+}
+
+/* there was a reference implementation based on section 4.4 of Arnold, Falk & Winther (acta numerica, 2006), but it
+ * was inferior to this implementation */
+static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npoints, const PetscReal points[], PetscInt degree, PetscInt formDegree, PetscInt jetDegree, PetscReal p[])
+{
+  PetscInt       formDegreeOrig = formDegree;
+  PetscBool      formNegative = (formDegreeOrig < 0) ? PETSC_TRUE : PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  formDegree = PetscAbsInt(formDegreeOrig);
+  if (formDegree == 0) {
+    ierr = PetscDTPKDEvalJet(dim, npoints, points, degree, jetDegree, p);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (formDegree == dim) {
+    ierr = PetscDTPKDEvalJet(dim, npoints, points, degree - 1, jetDegree, p);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  PetscInt Nbpt;
+  ierr = PetscDTPTrimmedSize(dim, degree, formDegree, &Nbpt);CHKERRQ(ierr);
+  PetscInt Nf;
+  ierr = PetscDTBinomialInt(dim, formDegree, &Nf);CHKERRQ(ierr);
+  PetscInt Nk;
+  ierr = PetscDTBinomialInt(dim + jetDegree, dim, &Nk);CHKERRQ(ierr);
+  ierr = PetscArrayzero(p, Nbpt * Nf * Nk * npoints);CHKERRQ(ierr);
+
+  PetscInt Nbpm1; // number of scalar polynomials up to degree - 1;
+  ierr = PetscDTBinomialInt(dim + degree - 1, dim, &Nbpm1);CHKERRQ(ierr);
+  PetscReal *p_scalar;
+  ierr = PetscMalloc1(Nbpm1 * Nk * npoints, &p_scalar);CHKERRQ(ierr);
+  ierr = PetscDTPKDEvalJet(dim, npoints, points, degree - 1, jetDegree, p_scalar);CHKERRQ(ierr);
+  PetscInt total = 0;
+  // First add the full polynomials up to degree - 1 into the basis: take the scalar
+  // and copy one for each form component
+  for (PetscInt i = 0; i < Nbpm1; i++) {
+    const PetscReal *src = &p_scalar[i * Nk * npoints];
+    for (PetscInt f = 0; f < Nf; f++) {
+      PetscReal *dest = &p[(total++ * Nf + f) * Nk * npoints];
+      ierr = PetscArraycpy(dest, src, Nk * npoints);CHKERRQ(ierr);
+    }
+  }
+  PetscInt *form_atoms;
+  ierr = PetscMalloc1(formDegree + 1, &form_atoms);CHKERRQ(ierr);
+  // construct the interior product pattern
+  PetscInt (*pattern)[3];
+  PetscInt Nf1; // number of formDegree + 1 forms
+  ierr = PetscDTBinomialInt(dim, formDegree + 1, &Nf1);CHKERRQ(ierr);
+  PetscInt nnz = Nf1 * (formDegree+1);
+  ierr = PetscMalloc1(Nf1 * (formDegree+1), &pattern);CHKERRQ(ierr);
+  ierr = PetscDTAltVInteriorPattern(dim, formDegree+1, pattern);CHKERRQ(ierr);
+  PetscReal centroid = (1. - dim) / (dim + 1.);
+  PetscInt *deriv;
+  ierr = PetscMalloc1(dim, &deriv);CHKERRQ(ierr);
+  for (PetscInt d = dim; d >= formDegree + 1; d--) {
+    PetscInt Nfd1; // number of formDegree + 1 forms in dimension d that include dx_0
+                   // (equal to the number of formDegree forms in dimension d-1)
+    ierr = PetscDTBinomialInt(d - 1, formDegree, &Nfd1);CHKERRQ(ierr);
+    // The number of homogeneous (degree-1) scalar polynomials in d variables
+    PetscInt Nh;
+    ierr = PetscDTBinomialInt(d - 1 + degree - 1, d - 1, &Nh);CHKERRQ(ierr);
+    const PetscReal *h_scalar = &p_scalar[(Nbpm1 - Nh) * Nk * npoints];
+    for (PetscInt b = 0; b < Nh; b++) {
+      const PetscReal *h_s = &h_scalar[b * Nk * npoints];
+      for (PetscInt f = 0; f < Nfd1; f++) {
+        // construct all formDegree+1 forms that start with dx_(dim - d) /\ ...
+        form_atoms[0] = dim - d;
+        ierr = PetscDTEnumSubset(d-1, formDegree, f, &form_atoms[1]);CHKERRQ(ierr);
+        for (PetscInt i = 0; i < formDegree; i++) {
+          form_atoms[1+i] += form_atoms[0] + 1;
+        }
+        PetscInt f_ind; // index of the resulting form
+        ierr = PetscDTSubsetIndex(dim, formDegree + 1, form_atoms, &f_ind);CHKERRQ(ierr);
+        PetscReal *p_f = &p[total++ * Nf * Nk * npoints];
+        for (PetscInt nz = 0; nz < nnz; nz++) {
+          PetscInt i = pattern[nz][0]; // formDegree component
+          PetscInt j = pattern[nz][1]; // (formDegree + 1) component
+          PetscInt v = pattern[nz][2]; // coordinate component
+          PetscReal scale = v < 0 ? -1. : 1.;
+
+          i = formNegative ? (Nf - 1 - i) : i;
+          scale = (formNegative && (i & 1)) ? -scale : scale;
+          v = v < 0 ? -(v + 1) : v;
+          if (j != f_ind) {
+            continue;
+          }
+          PetscReal *p_i = &p_f[i * Nk * npoints];
+          for (PetscInt jet = 0; jet < Nk; jet++) {
+            const PetscReal *h_jet = &h_s[jet * npoints];
+            PetscReal *p_jet = &p_i[jet * npoints];
+
+            for (PetscInt pt = 0; pt < npoints; pt++) {
+              p_jet[pt] += scale * h_jet[pt] * (points[pt * dim + v] - centroid);
+            }
+            ierr = PetscDTIndexToGradedOrder(dim, jet, deriv);CHKERRQ(ierr);
+            deriv[v]++;
+            PetscReal mult = deriv[v];
+            PetscInt l;
+            ierr = PetscDTGradedOrderToIndex(dim, deriv, &l);CHKERRQ(ierr);
+            if (l >= Nk) {
+              continue;
+            }
+            p_jet = &p_i[l * npoints];
+            for (PetscInt pt = 0; pt < npoints; pt++) {
+              p_jet[pt] += scale * mult * h_jet[pt];
+            }
+            deriv[v]--;
+          }
+        }
+      }
+    }
+  }
+  if (total != Nbpt) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrectly counted P trimmed polynomials");
+  ierr = PetscFree(deriv);CHKERRQ(ierr);
+  ierr = PetscFree(pattern);CHKERRQ(ierr);
+  ierr = PetscFree(form_atoms);CHKERRQ(ierr);
+  ierr = PetscFree(p_scalar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDTPTrimmedEvalJet - Evaluate the jet (function and derivatives) of a basis of the trimmed polynomial k-forms up to
+  a given degree.
+
+  Input Parameters:
++ dim - the number of variables in the multivariate polynomials
+. npoints - the number of points to evaluate the polynomials at
+. points - [npoints x dim] array of point coordinates
+. degree - the degree (sum of degrees on the variables in a monomial) of the trimmed polynomial space to evaluate.
+           There are ((dim + degree) choose (dim + formDegree)) x ((degree + formDegree - 1) choose (formDegree)) polynomials in this space.
+           (You can use PetscDTPTrimmedSize() to compute this size.)
+. formDegree - the degree of the form
+- jetDegree - the maximum order partial derivative to evaluate in the jet.  There are ((dim + jetDegree) choose dim) partial derivatives
+              in the jet.  Choosing jetDegree = 0 means to evaluate just the function and no derivatives
+
+  Output Argments:
+- p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is
+      PetscDTPTrimmedSize() x ((dim + formDegree) choose dim) x ((dim + k) choose dim) x npoints,
+      which also describes the order of the dimensions of this
+      four-dimensional array:
+        the first (slowest varying) dimension is basis function index;
+        the second dimension is component of the form;
+        the third dimension is jet index;
+        the fourth (fastest varying) dimension is the index of the evaluation point.
+
+  Level: advanced
+
+  Note: The ordering of the basis functions is not graded, so the basis functions are not nested by degree like PetscDTPKDEvalJet().
+        The basis functions are not an L2-orthonormal basis on any particular domain.
+
+  The implementation is based on the description of the trimmed polynomials up to degree r as
+  the direct sum of polynomials up to degree (r-1) and the Koszul differential applied to
+  homogeneous polynomials of degree (r-1).
+
+.seealso: PetscDTPKDEvalJet(), PetscDTPTrimmedSize()
+@*/
+PetscErrorCode PetscDTPTrimmedEvalJet(PetscInt dim, PetscInt npoints, const PetscReal points[], PetscInt degree, PetscInt formDegree, PetscInt jetDegree, PetscReal p[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDTPTrimmedEvalJet_Internal(dim, npoints, points, degree, formDegree, jetDegree, p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1558,12 +1752,12 @@ PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints,PetscReal a,
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  npoints - number of points
 .  a - left end of interval (often-1)
 -  b - right end of interval (often +1)
 
-   Output Arguments:
+   Output Parameters:
 +  x - quadrature points
 -  w - quadrature weights
 
@@ -1596,11 +1790,11 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - number of grid nodes
 -  type - PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA or PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON
 
-   Output Arguments:
+   Output Parameters:
 +  x - quadrature points
 -  w - quadrature weights
 
@@ -1634,14 +1828,14 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints,PetscGauss
 
   Not Collective
 
-  Input Arguments:
+  Input Parameters:
 + dim     - The spatial dimension
 . Nc      - The number of components
 . npoints - number of points in one dimension
 . a       - left end of interval (often-1)
 - b       - right end of interval (often +1)
 
-  Output Argument:
+  Output Parameter:
 . q - A PetscQuadrature object
 
   Level: intermediate
@@ -1715,14 +1909,14 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 
   Not Collective
 
-  Input Arguments:
+  Input Parameters:
 + dim     - The simplex dimension
 . Nc      - The number of components
 . npoints - The number of points in one dimension
 . a       - left end of interval (often-1)
 - b       - right end of interval (often +1)
 
-  Output Argument:
+  Output Parameter:
 . q - A PetscQuadrature object
 
   Level: intermediate
@@ -1781,13 +1975,13 @@ PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt dim, PetscInt Nc, PetscIn
 
   Not Collective
 
-  Input Arguments:
+  Input Parameters:
 + dim   - The cell dimension
 . level - The number of points in one dimension, 2^l
 . a     - left end of interval (often-1)
 - b     - right end of interval (often +1)
 
-  Output Argument:
+  Output Parameter:
 . q - A PetscQuadrature object
 
   Level: intermediate
@@ -2105,14 +2299,14 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscRea
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  degree - degree of reconstruction polynomial
 .  nsource - number of source intervals
 .  sourcex - sorted coordinates of source cell boundaries (length nsource+1)
 .  ntarget - number of target intervals
 -  targetx - sorted coordinates of target cell boundaries (length ntarget+1)
 
-   Output Arguments:
+   Output Parameter:
 .  R - reconstruction matrix, utarget = sum_s R[t*nsource+s] * usource[s]
 
    Level: advanced
@@ -2174,7 +2368,7 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weights
@@ -2205,7 +2399,7 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n,PetscReal *nodes,Pe
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 -  weights - the GLL weights
@@ -2302,7 +2496,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n,PetscR
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weightss
@@ -2334,7 +2528,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n,Petsc
 .  nodes - the GLL nodes
 .  weights - the GLL weights
 
-   Output Parameter:
+   Output Parameters:
 .  AA - the stiffness element
 -  AAT - the transpose of AA (pass in NULL if you do not need this array)
 
@@ -2391,7 +2585,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n,PetscRe
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weights
@@ -2424,7 +2618,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n,PetscR
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 -  weights - the GLL weightss
@@ -2468,7 +2662,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n,PetscR
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  n - the number of GLL nodes
 .  nodes - the GLL nodes
 .  weights - the GLL weights

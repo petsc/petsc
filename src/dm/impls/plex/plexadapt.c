@@ -203,7 +203,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid refiner %s not registered",name);
   } else {
     while (fl) {
-      if (dim-1 == fl->dim) {
+      if (fl->dim < 0 || dim-1 == fl->dim) {
         refine = fl->refine;
         adapt  = fl->adaptlabel;
         goto gotit;
@@ -215,6 +215,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
 
   gotit:
   switch (dim) {
+    case 1:
     case 2:
     case 3:
       if (adapt) {
@@ -239,6 +240,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       break;
     default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
   }
+  ((DM_Plex *) (*dmRefined)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
   ierr = DMCopyDisc(dm, *dmRefined);CHKERRQ(ierr);
   if (localized) {ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -262,6 +264,8 @@ PetscErrorCode DMPlexCoarsen_Internal(DM dm, DMLabel adaptLabel, DM *dmCoarsened
   if (flg) {ierr = DMGetLabel(dm, bdLabelName, &bdLabel);CHKERRQ(ierr);}
   ierr = DMAdaptMetric_Plex(dm, metricVec, bdLabel, dmCoarsened);CHKERRQ(ierr);
   ierr = VecDestroy(&metricVec);CHKERRQ(ierr);
+  ((DM_Plex *) (*dmCoarsened)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
+  ierr = DMCopyDisc(dm, *dmCoarsened);CHKERRQ(ierr);
   if (localized) {ierr = DMLocalizeCoordinates(*dmCoarsened);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -386,7 +390,13 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(udm, &maxConeSize, NULL);CHKERRQ(ierr);
-  numCells    = cEnd - cStart;
+  numCells = cEnd - cStart;
+  if (numCells == 0) {
+    PetscMPIInt rank;
+
+    ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot perform mesh adaptation because process %d does not own any cells.", rank);
+  }
   numVertices = vEnd - vStart;
   ierr = PetscCalloc5(numVertices, &x, numVertices, &y, numVertices, &z, numVertices*PetscSqr(dim), &metric, numCells*maxConeSize, &cells);CHKERRQ(ierr);
   for (c = 0, coff = 0; c < numCells; ++c) {

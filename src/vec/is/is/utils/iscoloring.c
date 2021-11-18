@@ -214,7 +214,7 @@ PetscErrorCode  ISColoringGetColors(ISColoring iscoloring,PetscInt *n,PetscInt *
 
    Collective on ISColoring
 
-   Input Parameter:
+   Input Parameters:
 +  iscoloring - the coloring context
 -  mode - if this value is PETSC_OWN_POINTER then the caller owns the pointer and must free the array of IS and each IS in the array
 
@@ -285,7 +285,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscI
 
    Collective on ISColoring
 
-   Input Parameter:
+   Input Parameters:
 +  iscoloring - the coloring context
 .  mode - who retains ownership of the is
 -  is - array of index sets
@@ -352,7 +352,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 
   /* should use MPI_Scan() */
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     base = 0;
     top  = n;
   } else {
@@ -733,12 +733,12 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   comm - communicator to share the indices
 .   n - local size of set
 -   lindices - local colors
 
-    Output Parameter:
+    Output Parameters:
 +   outN - total number of indices
 -   outindices - all of the colors
 
@@ -780,7 +780,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
 
     Collective on IS
 
-    Input Parameter:
+    Input Parameters:
 +   is - the index set
 .   nmin - the first index desired in the local part of the complement
 -   nmax - the largest index desired in the local part of the complement (note that all indices in is must be greater or equal to nmin and less than nmax)

@@ -85,6 +85,9 @@ class Configure(config.base.Configure):
     body     = 'double _Complex x;\n x = I;\n'
     if not self.checkCompile(includes, body): return    # checkLink can succeed even if checkCompile fails
     if self.checkLink(includes, body):
+      # recheck with _GNU_SOURCE active (Issues with crayCC on aarch64)
+      includes = '#define _GNU_SOURCE\n#include <complex.h>\n'
+      if not self.checkCompile(includes, body): return
       self.addDefine('HAVE_C99_COMPLEX', 1)
       self.c99_complex = 1
     return

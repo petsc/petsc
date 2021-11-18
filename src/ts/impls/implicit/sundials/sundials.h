@@ -19,7 +19,9 @@
 EXTERN_C_BEGIN
 #include <cvode/cvode.h>                  /* prototypes for CVODE fcts. */
 #include <cvode/cvode_spgmr.h>            /* prototypes and constants for CVSPGMR solver */
+#include <cvode/cvode_dense.h>            /* prototypes and constants for CVDense solver */
 #include <nvector/nvector_parallel.h>     /* definition N_Vector and macro NV_DATA_P  */
+#include <nvector/nvector_serial.h>
 EXTERN_C_END
 
 typedef struct {
@@ -27,7 +29,7 @@ typedef struct {
   Vec ydot;             /* work vector the time derivative is stored */
   Vec w1,w2;            /* work space vectors for function evaluation */
 
-  /* PETSc peconditioner objects used by SUNDIALS */
+  /* PETSc preconditioner objects used by SUNDIALS */
   PetscInt                  cvode_type;   /* the SUNDIALS method, BDF or ADAMS  */
   TSSundialsGramSchmidtType gtype;
   PetscReal                 linear_tol;
@@ -42,6 +44,7 @@ typedef struct {
   PetscBool monitorstep;     /* flag for monitor internal steps; itask=V_ONE_STEP or itask=CV_NORMAL*/
   PetscInt  maxl;            /* max dimension of the Krylov subspace to be used */
   PetscInt  maxord;          /* max order of BDF / Adams method */
+  PetscBool use_dense;       /* Use a dense instead of iterative solve within SUNDIALS (serial only) */
 } TS_Sundials;
 #endif
 

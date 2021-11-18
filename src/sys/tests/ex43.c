@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   }
   ierr = PetscTimeAdd(&t_del);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"N = %D - table size: %D, add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del);CHKERRQ(ierr);
 
   ierr = PetscHSetIJDestroy(&table);CHKERRQ(ierr);
   ierr = PetscFinalize();

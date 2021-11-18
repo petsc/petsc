@@ -27,8 +27,9 @@ PetscErrorCode PrintSparsity(MPI_Comm comm,PetscInt m,unsigned int **sparsity)
   ierr = PetscPrintf(comm,"Sparsity pattern:\n");CHKERRQ(ierr);
   for (i=0; i<m ;i++) {
     ierr = PetscPrintf(comm,"\n %2d: ",i);CHKERRQ(ierr);
-    for (j=1; j<= (PetscInt) sparsity[i][0] ;j++)
+    for (j=1; j<= (PetscInt) sparsity[i][0] ;j++) {
       ierr = PetscPrintf(comm," %2d ",sparsity[i][j]);CHKERRQ(ierr);
+    }
   }
   ierr = PetscPrintf(comm,"\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);

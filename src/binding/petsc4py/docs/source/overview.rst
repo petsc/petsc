@@ -22,15 +22,15 @@ mechanisms needed within parallel application codes, such as simple
 parallel matrix and vector assembly routines that allow the overlap of
 communication and computation.
 
-.. [petsc-user-ref]  S. Balay, S. Abhyankar, M. Adams,
-   J. Brown, P. Brune, K. Buschelman,
-   L. Dalcin, A. Dener, V. Eijkhout, W. Gropp,
-   D. Karpeyev, D. Kaushik, M. Knepley,
-   D. May, L. Curfman McInnes, R. Mills, T. Munson,
-   K. Rupp, P. Sanan, B. Smith,
-   S. Zampini, H. Zhang, and H. Zhang,
-   *PETSc Users Manual*, ANL-95/11 - Revision 3.15, 2021.
-   http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf
+.. [petsc-user-ref] S. Balay, S. Abhyankar, M. Adams, S. Benson, J. Brown,
+  P. Brune, K. Buschelman, E. Constantinescu, L. Dalcin, A. Dener,
+  V. Eijkhout, W. Gropp, V. Hapla, T. Isaac, P. Jolivet,
+  D. Karpeyev, D. Kaushik, M. Knepley, F. Kong, S. Kruger,
+  D. May, L. Curfman McInnes, R. Mills, L. Mitchell, T. Munson,
+  J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith,
+  S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
+  *PETSc Users Manual*, ANL-21/39 - Revision 3.16, 2021.
+  https://petsc.org/release/docs/manual/manual.pdf
 
 .. [petsc-efficient] Satish Balay, Victor Eijkhout, William D. Gropp,
    Lois Curfman McInnes and Barry F. Smith. Efficient Management of

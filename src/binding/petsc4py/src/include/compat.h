@@ -10,5 +10,6 @@
 #include "compat/viennacl.h"
 #include "compat/cuda.h"
 #include "compat/tao.h"
+#include "compat/h2opus.h"
 
 #endif/*PETSC4PY_COMPAT_H*/

@@ -12,7 +12,6 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneg,PetscInt *nzero,Petsc
 
   PetscFunctionBegin;
   if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for bs: %D >1 yet",bs);
-  if (F->factorerrortype==MAT_FACTOR_NUMERIC_ZEROPIVOT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatFactor fails with numeric zeropivot");
 
   nneg_tmp = 0; npos_tmp = 0;
   for (i=0; i<mbs; i++) {

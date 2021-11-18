@@ -55,7 +55,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscR
 
   Logically Collective on TS
 
-  Input Parameters:
+  Input Parameter:
 . ts - TS context obtained from TSCreate()
 
   Output Parameters:
@@ -858,8 +858,9 @@ PetscErrorCode TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Output Parameter:
-+  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
+   Output Parameters:
++  numcost - size of returned arrays
+.  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
 -  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
 
    Level: intermediate
@@ -920,7 +921,7 @@ PetscErrorCode TSSetCostHessianProducts(TS ts,PetscInt numcost,Vec *lambda2,Vec 
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Output Parameter:
+   Output Parameters:
 +  numcost - number of cost functions
 .  lambda2 - Hessian-vector product with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
 .  mu2 - Hessian-vector product with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
@@ -1633,7 +1634,7 @@ PetscErrorCode TSAdjointMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscI
 
  Collective on TS
 
- Input Arguments:
+ Input Parameter:
  .  ts - time stepping context
 
  Level: advanced
@@ -1718,7 +1719,7 @@ PetscErrorCode TSForwardReset(TS ts)
 /*@
   TSForwardSetIntegralGradients - Set the vectors holding forward sensitivities of the integral term.
 
-  Input Parameter:
+  Input Parameters:
 + ts- the TS context obtained from TSCreate()
 . numfwdint- number of integrals
 - vp = the vectors containing the gradients for each integral w.r.t. parameters
@@ -1766,7 +1767,7 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts,PetscInt *numfwdint,Vec **vp)
 
   Collective on TS
 
-  Input Arguments:
+  Input Parameter:
 . ts - time stepping context
 
   Level: advanced
@@ -1831,7 +1832,7 @@ PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Mat Smat)
 
   Not Collective, but Vec returned is parallel if TS is parallel
 
-  Output Parameter:
+  Output Parameters:
 + ts - the TS context obtained from TSCreate()
 . nump - number of parameters
 - Smat - sensitivities with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
@@ -1854,7 +1855,7 @@ PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Mat *Smat)
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameter:
 .  ts - time stepping context
 
    Level: advanced
@@ -1880,7 +1881,7 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
 
   Collective on TS
 
-  Input Parameter:
+  Input Parameters:
 + ts - the TS context obtained from TSCreate()
 - didp - parametric sensitivities of the initial condition
 
@@ -1933,7 +1934,7 @@ PetscErrorCode TSForwardGetStages(TS ts,PetscInt *ns,Mat **S)
 /*@
    TSCreateQuadratureTS - Create a sub-TS that evaluates integrals over time
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context obtained from TSCreate()
 -  fwd - flag indicating whether to evaluate cost integral in the forward run or the adjoint run
 

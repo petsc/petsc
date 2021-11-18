@@ -48,7 +48,7 @@ PetscErrorCode VecView_Binary(Vec vec,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_BINARY_MATLAB) {
       ierr = PetscObjectGetName((PetscObject)vec,&name);CHKERRQ(ierr);
-      if (!rank && info) {
+      if (rank == 0 && info) {
         ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
         ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
         ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
@@ -56,7 +56,7 @@ PetscErrorCode VecView_Binary(Vec vec,PetscViewer viewer)
     }
 
     ierr = PetscObjectGetOptionsPrefix((PetscObject)vec,&pre);CHKERRQ(ierr);
-    if (!rank && info) {ierr = PetscFPrintf(PETSC_COMM_SELF,info,"-%svecload_block_size %D\n",pre?pre:"",PetscAbs(vec->map->bs));CHKERRQ(ierr);}
+    if (rank == 0 && info) {ierr = PetscFPrintf(PETSC_COMM_SELF,info,"-%svecload_block_size %D\n",pre?pre:"",PetscAbs(vec->map->bs));CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

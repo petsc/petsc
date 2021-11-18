@@ -191,33 +191,9 @@ int main(int argc, char **argv)
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
     /* Save coordinates */
-    /* The following block is to replace DMPlexCoordinatesView(). */
-    {
-      DM         cdm;
-      Vec        coords, newcoords;
-      PetscInt   m = -1, M = -1, bs = -1;
-      PetscReal  lengthScale = -1;
-
-      ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)cdm, "coordinateDM");CHKERRQ(ierr);
-      ierr = DMPlexSectionView(dm, viewer, cdm);CHKERRQ(ierr);
-      ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
-      ierr = VecCreate(PetscObjectComm((PetscObject)coords), &newcoords);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)newcoords, "coordinates");CHKERRQ(ierr);
-      ierr = VecGetSize(coords, &M);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(coords, &m);CHKERRQ(ierr);
-      ierr = VecSetSizes(newcoords, m, M);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(coords, &bs);CHKERRQ(ierr);
-      ierr = VecSetBlockSize(newcoords, bs);CHKERRQ(ierr);
-      ierr = VecSetType(newcoords,VECSTANDARD);CHKERRQ(ierr);
-      ierr = VecCopy(coords, newcoords);CHKERRQ(ierr);
-      ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
-      ierr = VecScale(newcoords, lengthScale);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-      ierr = DMPlexGlobalVectorView(dm, viewer, cdm, newcoords);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = VecDestroy(&newcoords);CHKERRQ(ierr);
-    }
+    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+    ierr = DMPlexCoordinatesView(dm, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     /* Save exampleVec */
     {
       PetscInt      pStart = -1, pEnd = -1;
@@ -394,39 +370,12 @@ int main(int argc, char **argv)
       ierr = PetscSFDestroy(&sfBC);CHKERRQ(ierr);
     }
     /* Load coordinates */
-    /* The following block is to replace DMPlexCoordinatesLoad() */
-    {
-      DM            cdm;
-      PetscSection  coordSection;
-      Vec           coords;
-      PetscInt      m = -1;
-      PetscReal     lengthScale = -1;
-      PetscSF       lsf, gsf;
-
-      ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)cdm, "coordinateDM");CHKERRQ(ierr);
-      /* lsf: on-disk data -> in-memory local vector associated with cdm's local section */
-      /* gsf: on-disk data -> in-memory global vector associated with cdm's global section */
-      ierr = DMPlexSectionLoad(dm, viewer, cdm, sfXC, &gsf, &lsf);CHKERRQ(ierr);
-      ierr = VecCreate(comm, &coords);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)coords, "coordinates");CHKERRQ(ierr);
-      ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
-      ierr = PetscSectionGetStorageSize(coordSection, &m);CHKERRQ(ierr);
-      ierr = VecSetSizes(coords, m, PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetUp(coords);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-      ierr = DMPlexLocalVectorLoad(dm, viewer, cdm, lsf, coords);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
-      ierr = VecScale(coords, 1.0/lengthScale);CHKERRQ(ierr);
-      ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
-      ierr = VecDestroy(&coords);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&lsf);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&gsf);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)dm, "Load: DM (with coordinates)");CHKERRQ(ierr);
-      ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)dm, exampleDMPlexName);CHKERRQ(ierr);
-    }
+    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+    ierr = DMPlexCoordinatesLoad(dm, viewer, sfXC);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)dm, "Load: DM (with coordinates)");CHKERRQ(ierr);
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)dm, exampleDMPlexName);CHKERRQ(ierr);
     /* Load exampleVec */
     {
       DM            sdm;
@@ -535,6 +484,7 @@ int main(int argc, char **argv)
     requires: !complex
     nsize: 4
     args: -fname ex12_dump.h5 -shell {{True False}separate output} -dm_view ascii::ascii_info_detail
+    args: -dm_plex_view_hdf5_storage_version 2.0.0
     test:
       suffix: parmetis
       requires: parmetis

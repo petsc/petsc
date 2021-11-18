@@ -200,7 +200,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
 /*@
   MatPreallocatorPreallocate - Preallocates the A matrix, using information from mat, optionally filling A with zeros
 
-  Input Parameter:
+  Input Parameters:
 + mat  - the preallocator
 . fill - fill the matrix with zeros
 - A    - the matrix to be preallocated

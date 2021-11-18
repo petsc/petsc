@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   /* Create a seq vector y, and a parallel to sequential (PtoS) vecscatter to scatter x to y */
-  if (!rank) {
+  if (rank == 0) {
     /* On rank 0, seq y is of size 6. We will scatter x[0,1,2,6,7,8] to y[0,1,2,3,4,5] using IS with bs=3 */
     PetscInt idx[2]={0,2};
     PetscInt idy[2]={0,1};

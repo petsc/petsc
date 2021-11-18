@@ -71,7 +71,7 @@ can be approximated with finite differences. For codes that are
 typically more efficient and accurate, the user can provide a routine to
 compute the Jacobian; details regarding these application-provided
 routines are discussed below. To provide an overview of the use of the
-nonlinear solvers, browse the concrete example in `ex1.c <#snes-ex1>`_ or skip ahead to the discussion.
+nonlinear solvers, browse the concrete example in :any:`ex1.c <snes-ex1>` or skip ahead to the discussion.
 
 .. admonition:: Listing: ``src/snes/tutorials/ex1.c``
    :name: snes-ex1
@@ -919,7 +919,7 @@ computed via the routines
    MatMFFDResetHHistory(Mat,PetscScalar *,int);
    MatMFFDGetH(Mat,PetscScalar *);
 
-We include an explicit example of using matrix-free methods in `ex3.c <#snes-ex3>`_.
+We include an explicit example of using matrix-free methods in :any:`ex3.c <snes-ex3>`.
 Note that by using the option ``-snes_mf`` one can
 easily convert any ``SNES`` code to use a matrix-free Newton-Krylov
 method without a preconditioner. As shown in this example,
@@ -936,7 +936,7 @@ default ``SNES`` matrix-free form.
 Table :any:`tab-jacobians` summarizes the various matrix situations
 that ``SNES`` supports. In particular, different linear system matrices
 and preconditioning matrices are allowed, as well as both matrix-free
-and application-provided preconditioners. If `ex3.c <#snes-ex3>`_ is run with
+and application-provided preconditioners. If :any:`ex3.c <snes-ex3>` is run with
 the options ``-snes_mf`` and ``-user_precond`` then it uses a
 matrix-free application of the matrix-vector multiple and a user
 provided matrix free Jacobian.
@@ -1216,8 +1216,5 @@ and accessed with
 
     <hr>
 
-.. bibliography:: /../src/docs/tex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /../src/docs/tex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

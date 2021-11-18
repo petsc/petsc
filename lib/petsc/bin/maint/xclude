@@ -81,7 +81,6 @@ petsc-dist/config/osf5.0
 petsc-dist/config/python
 petsc-dist/config/solaris2.9
 petsc-dist/config/solaris2.9-lam
-petsc-dist/src/docs
 petsc-dist/src/da/tests/scripts
 petsc-dist/src/contrib/sda/tests/scripts
 petsc-dist/src/ksp/tests/scripts

@@ -151,6 +151,7 @@ struct _p_Vec {
 #if defined(PETSC_HAVE_DEVICE)
   void                   *spptr; /* this is the special pointer to the array on the GPU */
   PetscBool              boundtocpu;
+  PetscBool              bindingpropagates;
   size_t                 minimum_bytes_pinned_memory; /* minimum data size in bytes for which pinned memory will be allocated */
   PetscBool              pinned_memory; /* PETSC_TRUE if the current host allocation has been made from pinned memory. */
 #endif
@@ -333,8 +334,8 @@ struct _VecTaggerOps {
   PetscErrorCode (*setfromoptions) (PetscOptionItems*,VecTagger);
   PetscErrorCode (*setup) (VecTagger);
   PetscErrorCode (*view) (VecTagger,PetscViewer);
-  PetscErrorCode (*computeboxes) (VecTagger,Vec,PetscInt *,VecTaggerBox **);
-  PetscErrorCode (*computeis) (VecTagger,Vec,IS *);
+  PetscErrorCode (*computeboxes) (VecTagger,Vec,PetscInt *,VecTaggerBox **,PetscBool *);
+  PetscErrorCode (*computeis) (VecTagger,Vec,IS *,PetscBool *);
 };
 struct _p_VecTagger {
   PETSCHEADER(struct _VecTaggerOps);
@@ -346,7 +347,7 @@ struct _p_VecTagger {
 
 PETSC_EXTERN PetscBool      VecTaggerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
-PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger,Vec,IS*);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger,Vec,IS*,PetscBool*);
 PETSC_EXTERN PetscMPIInt Petsc_Reduction_keyval;
 
 #endif

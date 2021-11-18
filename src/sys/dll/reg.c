@@ -418,7 +418,7 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
    Input Parameter:
 .  list   - list of types
 
-   Output Parameter:
+   Output Parameters:
 +  array - array of names
 -  n - length of array
 

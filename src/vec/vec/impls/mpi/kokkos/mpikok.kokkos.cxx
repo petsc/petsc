@@ -111,7 +111,9 @@ PetscErrorCode VecMax_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
   PetscFunctionBegin;
   /* Find the local max */
   ierr = VecMax_SeqKokkos(xin,idx,&work);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_MPIUNI)
+  *z = work;
+#else
   /* Find the global max */
   if (!idx) { /* User does not need idx */
     ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
@@ -124,6 +126,7 @@ PetscErrorCode VecMax_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
     *z    = out.v;
     *idx  = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -135,7 +138,9 @@ PetscErrorCode VecMin_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
   PetscFunctionBegin;
   /* Find the local Min */
   ierr = VecMin_SeqKokkos(xin,idx,&work);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_MPIUNI)
+  *z = work;
+#else
   /* Find the global Min */
   if (!idx) {
     ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
@@ -148,6 +153,7 @@ PetscErrorCode VecMin_MPIKokkos(Vec xin,PetscInt *idx,PetscReal *z)
     *z    = out.v;
     *idx  = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -169,7 +175,7 @@ PetscErrorCode VecDuplicate_MPIKokkos(Vec win,Vec *vv)
   veckok = new Vec_Kokkos(v->map->n,vecmpi->array);
   Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
   v->spptr       = veckok;
-  v->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
+  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   *vv = v;
   PetscFunctionReturn(0);
 }
@@ -258,7 +264,7 @@ PetscErrorCode VecCreate_MPIKokkos(Vec v)
   veckok = new Vec_Kokkos(v->map->n,vecmpi->array);
   Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
   v->spptr = static_cast<void*>(veckok);
-  v->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
+  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   PetscFunctionReturn(0);
 }
 
@@ -325,7 +331,7 @@ PetscErrorCode  VecCreateMPIKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
   veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray));
   veckok->v_dual.modify_device(); /* Mark the device is modified */
   w->spptr = static_cast<void*>(veckok);
-  w->offloadmask = PETSC_OFFLOAD_VECKOKKOS;
+  w->offloadmask = PETSC_OFFLOAD_KOKKOS;
   *v = w;
   PetscFunctionReturn(0);
 }

@@ -1,38 +1,8 @@
-DM Object: Mesh 1 MPI processes
-  type: plex
-Mesh in 2 dimensions:
-  0-cells: 289
-  1-cells: 800
-  2-cells: 512
-Labels:
-  marker: 1 strata with value/size (1 (128))
-  Face Sets: 1 strata with value/size (1 (120))
-  depth: 3 strata with value/size (0 (289), 1 (800), 2 (512))
-  DM_0x84000000_1 in 2 dimensions:
-    0-cells:   95  
-    1-cells:   246  
-    2-cells:   152  
-  Labels:
-    _boundary_: 1 strata with value/size (1 (36))
-    depth: 3 strata with value/size (0 (95), 1 (246), 2 (152))
-    DM_0x84000000_2 in 2 dimensions:
-      0-cells:     38    
-      1-cells:     91    
-      2-cells:     54    
-    Labels:
-      _boundary_: 1 strata with value/size (1 (20))
-      depth: 3 strata with value/size (0 (38), 1 (91), 2 (54))
-      DM_0x84000000_3 in 2 dimensions:
-        0-cells:       19      
-        1-cells:       40      
-        2-cells:       22      
-      Labels:
-        _boundary_: 1 strata with value/size (1 (14))
-        depth: 3 strata with value/size (0 (19), 1 (40), 2 (22))
   0 SNES Function norm 8.32828 
     0 KSP unpreconditioned resid norm 8.328278903362e+00 true resid norm 8.328278903362e+00 ||r(i)||/||b|| 1.000000000000e+00
-    1 KSP unpreconditioned resid norm 5.274358775793e-06 true resid norm 5.274358775793e-06 ||r(i)||/||b|| 6.333071739064e-07
-    2 KSP unpreconditioned resid norm 2.976750476392e-12 true resid norm 2.976750476392e-12 ||r(i)||/||b|| 3.574268478438e-13
+    1 KSP unpreconditioned resid norm 1.577431790565e-04 true resid norm 1.577431790565e-04 ||r(i)||/||b|| 1.894066960135e-05
+    2 KSP unpreconditioned resid norm 1.103738275186e-08 true resid norm 1.103738275186e-08 ||r(i)||/||b|| 1.325289760337e-09
+    3 KSP unpreconditioned resid norm 7.232926360782e-13 true resid norm 7.232926360782e-13 ||r(i)||/||b|| 8.684779225948e-14
   1 SNES Function norm < 1.e-11
 L_2 Error: 0.00131794
 Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
@@ -40,11 +10,13 @@ SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=0., absolute=1e-08, solution=1e-08
-  total number of linear solver iterations=2
+  total number of linear solver iterations=3
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
-    type: basic
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
@@ -77,15 +49,15 @@ SNES Object: 1 MPI processes
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=5, cols=5
+                rows=4, cols=4
                 package used to perform factorization: petsc
-                total: nonzeros=19, allocated nonzeros=19
-                  not using I-node routines
+                total: nonzeros=14, allocated nonzeros=14
+                  using I-node routines: found 3 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=5, cols=5
-          total: nonzeros=19, allocated nonzeros=19
+          rows=4, cols=4
+          total: nonzeros=14, allocated nonzeros=14
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Down solver (pre-smoother) on level 1 -------------------------------
@@ -107,15 +79,15 @@ SNES Object: 1 MPI processes
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=18, cols=18
+                rows=15, cols=15
                 package used to perform factorization: petsc
-                total: nonzeros=92, allocated nonzeros=92
+                total: nonzeros=73, allocated nonzeros=73
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=18, cols=18
-          total: nonzeros=92, allocated nonzeros=92
+          rows=15, cols=15
+          total: nonzeros=73, allocated nonzeros=73
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)
@@ -140,13 +112,13 @@ SNES Object: 1 MPI processes
                 type: seqaij
                 rows=59, cols=59
                 package used to perform factorization: petsc
-                total: nonzeros=353, allocated nonzeros=353
+                total: nonzeros=347, allocated nonzeros=347
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
           rows=59, cols=59
-          total: nonzeros=353, allocated nonzeros=353
+          total: nonzeros=347, allocated nonzeros=347
           total number of mallocs used during MatSetValues calls=0
             not using I-node routines
     Up solver (post-smoother) same as down solver (pre-smoother)

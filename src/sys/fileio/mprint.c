@@ -37,36 +37,37 @@ FILE *PETSC_STDERR = NULL;
 @*/
 PetscErrorCode PetscFormatConvertGetSize(const char *format,size_t *size)
 {
-  PetscInt i = 0;
+  size_t   sz = 0;
+  PetscInt i  = 0;
 
   PetscFunctionBegin;
-  *size = 0;
+  PetscValidCharPointer(format,1);
+  PetscValidPointer(size,2);
   while (format[i]) {
-    if (format[i] == '%' && format[i+1] == '%') {
-      i++; i++; *size += 2;
-    } else if (format[i] == '%') {
+    if (format[i] == '%') {
+      if (format[i+1] == '%') {
+        i  += 2;
+        sz += 2;
+        continue;
+      }
       /* Find the letter */
-      for (; format[i] && format[i] <= '9'; i++,(*size += 1));
+      while (format[i] && (format[i] <= '9')) {++i;++sz;}
       switch (format[i]) {
+#if PetscDefined(USE_64BIT_INDICES)
       case 'D':
-#if defined(PETSC_USE_64BIT_INDICES)
-        *size += 2;
+        sz += 2;
+        break;
 #endif
-        break;
       case 'g':
-        *size += 4;
-        break;
+        sz += 4;
       default:
         break;
       }
-      *size += 1;
-      i++;
-    } else {
-      i++;
-      *size += 1;
     }
+    ++i;
+    ++sz;
   }
-  *size += 1; /* space for NULL character */
+  *size = sz+1; /* space for NULL character */
   PetscFunctionReturn(0);
 }
 
@@ -298,7 +299,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"C89 does not support va_copy() hence cannot print long strings with PETSc printing routines");
 #endif
   }
-  fprintf(fd,"%s",buff);CHKERRQ(ierr);
+  fprintf(fd,"%s",buff);
   fflush(fd);
   if (buff != str) {
     ierr = PetscFree(buff);CHKERRQ(ierr);
@@ -402,7 +403,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   /* First processor prints immediately to stdout */
-  if (!rank) {
+  if (rank == 0) {
     va_list Argp;
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
@@ -470,7 +471,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   /* First processor prints immediately to fp */
-  if (!rank) {
+  if (rank == 0) {
     va_list Argp;
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
@@ -540,7 +541,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   /* First processor waits for messages from all other processors */
-  if (!rank) {
+  if (rank == 0) {
     if (!fd) fd = PETSC_STDOUT;
     for (i=1; i<size; i++) {
       /* to prevent a flood of messages to process zero, request each message separately */
@@ -605,7 +606,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
   PetscFunctionBegin;
   if (comm == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     va_list Argp;
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(fd,format,Argp);CHKERRQ(ierr);
@@ -648,7 +649,7 @@ PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
   PetscFunctionBegin;
   if (comm == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     va_list Argp;
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
@@ -669,7 +670,7 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
   PetscFunctionBegin;
   if (comm == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     va_list Argp;
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
@@ -711,7 +712,7 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char str
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     char *ptr = fgets(string, len, fp);
 
     if (!ptr) {

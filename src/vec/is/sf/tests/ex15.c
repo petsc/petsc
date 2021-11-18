@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   for (i=ranges[rank]; i<ranges[rank+1]; i++) ix[i-start] = i;
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,ix,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
 
-  if (!rank) { for (i=0; i<n; i++) iy[i] = i+32; }
+  if (rank == 0) { for (i=0; i<n; i++) iy[i] = i+32; }
   else for (i=0; i<n/2; i++) { iy[i] = i+96; iy[i+n/2] = i; }
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,iy,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);

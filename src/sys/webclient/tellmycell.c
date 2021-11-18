@@ -46,7 +46,7 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
   ierr = PetscStrlen(message,&mlen);CHKERRQ(ierr);
   if (mlen > 100) SETERRQ1(comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     int       sock;
     char      buff[1000],*body;
     PetscInt  i;

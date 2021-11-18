@@ -20,13 +20,13 @@ if not PETSc.COMM_WORLD.rank:
                          [1.0, 0.5],
                          [0.0, 1.0],
                          [0.5, 1.0],
-                         [1.0, 1.0]], dtype=float)
+                         [1.0, 1.0]], dtype=PETSc.RealType)
     cells = np.asarray([[0,1,4,3],
                         [1,2,5,4],
                         [3,4,7,6],
                         [4,5,8,7]], dtype=PETSc.IntType)
 else:
-    coords = np.zeros((0, 2), dtype=float)
+    coords = np.zeros((0, 2), dtype=PETSc.RealType)
     cells = np.zeros((0, 4), dtype=PETSc.IntType)
 
 plex = PETSc.DMPlex().createFromCellList(dim, cells, coords, comm=PETSc.COMM_WORLD)

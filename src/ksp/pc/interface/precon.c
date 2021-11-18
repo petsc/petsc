@@ -841,7 +841,7 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 .  its - the number of iterations to apply.
 -  guesszero - if the input x contains nonzero initial guess
 
-   Output Parameter:
+   Output Parameters:
 +  outits - number of iterations actually used (for SOR this always equals its)
 .  reason - the reason the apply terminated
 -  y - the solution (also contains initial guess if guesszero is PETSC_FALSE
@@ -878,7 +878,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
    Logically Collective on PC
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context
 -  reason - the reason it failedx
 
@@ -1540,7 +1540,7 @@ PETSC_INTERN PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
 
 .seealso: PCPostSolve()
 @*/
-PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
+PetscErrorCode PCPreSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
   Vec            x,rhs;
@@ -1555,7 +1555,38 @@ PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
 
   if (pc->ops->presolve) {
     ierr = (*pc->ops->presolve)(pc,ksp,rhs,x);CHKERRQ(ierr);
+  } else if (pc->presolve) {
+    ierr = (pc->presolve)(pc,ksp);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PCSetPreSolve - Sets function PCPreSolve() which is intended for any
+   preconditioner-specific actions that must be performed before
+   the iterative solve itself.
+
+   Logically Collective on pc
+
+   Input Parameters:
++   pc - the preconditioner object
+-   presolve - the function to call before the solve
+
+   Calling sequence of presolve:
+$  func(PC pc,KSP ksp)
+
++  pc - the PC context
+-  ksp - the KSP context
+
+   Level: developer
+
+.seealso: PC, PCSetUp(), PCPreSolve()
+@*/
+PetscErrorCode PCSetPreSolve(PC pc,PetscErrorCode (*presolve)(PC,KSP))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  pc->presolve = presolve;
   PetscFunctionReturn(0);
 }
 
@@ -1771,7 +1802,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
       ierr = PetscStrncpy(type,((PetscObject)pc)->type_name,256);CHKERRQ(ierr);
       ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
@@ -1806,7 +1837,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 
     ierr = PetscObjectName((PetscObject)pc);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!((PetscObject)pc)->amsmem && !rank) {
+    if (!((PetscObject)pc)->amsmem && rank == 0) {
       ierr = PetscObjectViewSAWs((PetscObject)pc,viewer);CHKERRQ(ierr);
     }
     if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
@@ -1868,7 +1899,7 @@ static PetscErrorCode MatMult_PC(Mat A,Vec X,Vec Y)
 
     Collective on PC
 
-    Input Parameter:
+    Input Parameters:
 +   pc - the preconditioner object
 -   mattype - the matrix type to be used for the operator
 
@@ -1945,12 +1976,12 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal co
 
    Logically Collective on PC
 
-   Input Parameters:
-+  pc - the precondition context
+   Input Parameter:
+.  pc - the precondition context
 
-   Output Parameter:
--  num_levels - the number of levels
-.  interpolations - the interpolation matrices (size of num_levels-1)
+   Output Parameters:
++  num_levels - the number of levels
+-  interpolations - the interpolation matrices (size of num_levels-1)
 
    Level: advanced
 
@@ -1975,12 +2006,12 @@ PetscErrorCode PCGetInterpolations(PC pc,PetscInt *num_levels,Mat *interpolation
 
    Logically Collective on PC
 
-   Input Parameters:
-+  pc - the precondition context
+   Input Parameter:
+.  pc - the precondition context
 
-   Output Parameter:
--  num_levels - the number of levels
-.  coarseOperators - the coarse operator matrices (size of num_levels-1)
+   Output Parameters:
++  num_levels - the number of levels
+-  coarseOperators - the coarse operator matrices (size of num_levels-1)
 
    Level: advanced
 

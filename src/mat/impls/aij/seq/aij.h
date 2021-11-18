@@ -5,6 +5,16 @@
 #include <petsc/private/matimpl.h>
 #include <petscctable.h>
 
+/* Operations provided by MATSEQAIJ and its subclasses */
+typedef struct {
+  PetscErrorCode (*getarray)(Mat,PetscScalar **);
+  PetscErrorCode (*restorearray)(Mat,PetscScalar **);
+  PetscErrorCode (*getarrayread)(Mat,const PetscScalar **);
+  PetscErrorCode (*restorearrayread)(Mat,const PetscScalar **);
+  PetscErrorCode (*getarraywrite)(Mat,PetscScalar **);
+  PetscErrorCode (*restorearraywrite)(Mat,PetscScalar **);
+} Mat_SeqAIJOps;
+
 /*
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
 */
@@ -38,7 +48,8 @@
   PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
   Mat               parent;           /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); \
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */\
-  Mat_SubSppt       *submatis1         /* used by MatCreateSubMatrices_MPIXAIJ_Local */
+  Mat_SubSppt       *submatis1;       /* used by MatCreateSubMatrices_MPIXAIJ_Local */    \
+  Mat_SeqAIJOps     ops[1]            /* operations for SeqAIJ and its subclasses */
 
 typedef struct {
   MatTransposeColoring matcoloring;

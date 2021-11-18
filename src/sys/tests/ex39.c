@@ -4,6 +4,8 @@ static char help[] = "Tests PetscIsCloseAtTol() routine.\n";
 
 PETSC_INTERN PetscReal zero;
 PetscReal zero = 0;
+PETSC_INTERN PetscReal zero2;
+PetscReal zero2 = 0;
 
 #define CALL(call) do { \
     PetscErrorCode _ierr;                                               \
@@ -19,7 +21,7 @@ int main(int argc, char **argv) {
   PetscReal pos_one  = PetscRealConstant(+1.0);
   PetscReal neg_inf  = neg_one/zero; /* -inf */
   PetscReal pos_inf  = pos_one/zero; /* +inf */
-  PetscReal x_nan    = zero/zero;    /*  NaN */
+  PetscReal x_nan    = zero2/zero;   /*  NaN */ /* some compilers may optimize out zero/zero and set x_nan = 1! */
 
   PetscErrorCode ierr;
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;

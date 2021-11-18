@@ -159,7 +159,7 @@ PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + stageLog - The PetscStageLog
 - sname    - the name to associate with that stage
 

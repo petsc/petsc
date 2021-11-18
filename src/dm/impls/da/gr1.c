@@ -193,7 +193,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = DMDAGetCoordinateName(da,0,&xlabel);CHKERRQ(ierr);
 
   /* Determine the min and max coordinate in plot */
-  if (!rank) xmin = PetscRealPart(xg[0]);
+  if (rank == 0) xmin = PetscRealPart(xg[0]);
   if (rank == size-1) xmax = PetscRealPart(xg[n-1]);
   ierr = MPI_Bcast(&xmin,1,MPIU_REAL,0,comm);CHKERRMPI(ierr);
   ierr = MPI_Bcast(&xmax,1,MPIU_REAL,size-1,comm);CHKERRMPI(ierr);

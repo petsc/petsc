@@ -68,7 +68,7 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
   ierr = PetscDrawSetTitle(popup,"Contour Scale");CHKERRQ(ierr);
   ierr = PetscDrawSetCoordinates(popup,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawCollectiveBegin(popup);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     for (i=0; i<10; i++) {
       int c = PetscDrawRealToColor((PetscReal)i/9,0,1);
       ierr = PetscDrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);CHKERRQ(ierr);

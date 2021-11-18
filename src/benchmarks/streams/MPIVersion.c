@@ -90,7 +90,7 @@ int main(int argc,char **args)
     hostname[j] = 0;
   }
   ierr = MPI_Get_processor_name(hostname,&resultlen);if (ierr) return ierr;
-  if (!rank) {
+  if (rank == 0) {
     for (j=1; j<size; j++) {
       ierr = MPI_Recv(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,j,0,MPI_COMM_WORLD,&status);if (ierr) return ierr;
     }
@@ -101,7 +101,7 @@ int main(int argc,char **args)
 
   /* --- SETUP --- determine precision and check timing --- */
 
-  if (!rank) {
+  if (rank == 0) {
     /*printf(HLINE);
     printf("Array size = %d, Offset = %d\n" , N, OFFSET);
     printf("Total memory required = %.1f MB.\n", (3 * N * BytesPerWord) / 1048576.0);
@@ -121,7 +121,7 @@ int main(int argc,char **args)
     c[j] = 0.0;
   }
 
-  if (!rank) {
+  if (rank == 0) {
     if  ((quantum = checktick()) >= 1) ; /* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
     else ; /* printf("Your clock granularity appears to be less than one microsecond.\n");*/
   }
@@ -130,7 +130,7 @@ int main(int argc,char **args)
   for (j = 0; j < N; j++) a[j] = 2.0E0 * a[j];
   t = 1.0E6 * (MPI_Wtime() - t);
 
-  if (!rank) {
+  if (rank == 0) {
     /*  printf("Each test below will take on the order of %d microseconds.\n", (int) t);
     printf("   (= %d clock ticks)\n", (int) (t/quantum));
     printf("Increase the size of the arrays if this shows that\n");
@@ -179,7 +179,7 @@ int main(int argc,char **args)
   ierr = MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
   if (ierr) printf("Error calling MPI\n");
 
-  if (!rank) {
+  if (rank == 0) {
     if (size == 1) {
       printf("%d %11.4f   Rate (MB/s)\n",size, rate[3]);
       fd = fopen("flops","w");

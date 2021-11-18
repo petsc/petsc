@@ -257,7 +257,7 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 + dm - The distributed DMPlex
 - gv - The global Vec
 
-  Output Parameters:
+  Output Parameter:
 . nv - The natural Vec
 
   Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().

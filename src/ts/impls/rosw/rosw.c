@@ -1456,7 +1456,7 @@ static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  roswtype - type of Rosenbrock-W scheme
 
@@ -1505,7 +1505,7 @@ PetscErrorCode TSRosWGetType(TS ts,TSRosWType *rostype)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  flg - PETSC_TRUE to recompute the Jacobian at each stage
 

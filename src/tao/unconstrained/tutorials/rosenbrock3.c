@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   reason = TAO_CONTINUE_ITERATING;
   flg = PETSC_FALSE;
   ierr = TaoGetRecycleHistory(tao, &flg);CHKERRQ(ierr);
-  if (flg) ierr = PetscPrintf(PETSC_COMM_SELF, "Recycle: enabled\n");CHKERRQ(ierr);
+  if (flg) {ierr = PetscPrintf(PETSC_COMM_SELF, "Recycle: enabled\n");CHKERRQ(ierr);}
   while (reason != TAO_CONVERGED_GATOL) {
     ierr = TaoSolve(tao);CHKERRQ(ierr);
     ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   ierr = TaoSetRecycleHistory(tao, PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecSet(x, zero);CHKERRQ(ierr);
   ierr = TaoGetRecycleHistory(tao, &flg);CHKERRQ(ierr);
-  if (!flg) ierr = PetscPrintf(PETSC_COMM_SELF, "Recycle: disabled\n");CHKERRQ(ierr);
+  if (!flg) {ierr = PetscPrintf(PETSC_COMM_SELF, "Recycle: disabled\n");CHKERRQ(ierr);}
   ierr = TaoSolve(tao);CHKERRQ(ierr);
   ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONVERGED_GATOL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Solution failed to converge!");

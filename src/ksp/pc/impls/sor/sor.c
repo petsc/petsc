@@ -261,7 +261,7 @@ PetscErrorCode  PCSORGetOmega(PC pc,PetscReal *omega)
    Input Parameter:
 .  pc - the preconditioner context
 
-   Output Parameter:
+   Output Parameters:
 +  lits - number of local iterations, smoothings over just variables on processor
 -  its - number of parallel iterations to use; each parallel iteration has lits local iterations
 

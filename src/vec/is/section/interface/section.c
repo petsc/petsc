@@ -1774,7 +1774,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
 
   Collective on s
 
-  Input Parameter:
+  Input Parameters:
 + s      - the PetscSection
 . len    - the number of subfields
 - fields - the subfield numbers
@@ -2575,7 +2575,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 
   Collective on PetscSection
 
-  Input Parameter:
+  Input Parameters:
 + section - The PetscSection object
 - perm - The point permutation, old point p becomes new point perm[p]
 
@@ -3210,7 +3210,7 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
     arbitrary integer: its interpretation is up to sym.  Orientations are used by DM: for their interpretation in that
     context, see DMPlexGetConeOrientation()).
 
-  Output Parameter:
+  Output Parameters:
 + perms - The permutations for the given orientations (or NULL if there is no symmetry or the permutation is the identity).
 - rots - The field rotations symmetries for the given orientations (or NULL if there is no symmetry or the rotations are all
     identity).
@@ -3312,7 +3312,7 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
     arbitrary integer: its interpretation is up to sym.  Orientations are used by DM: for their interpretation in that
     context, see DMPlexGetConeOrientation()).
 
-  Output Parameter:
+  Output Parameters:
 + perms - The permutations for the given orientations: set to NULL at conclusion
 - rots - The field rotations symmetries for the given orientations: set to NULL at conclusion
 
@@ -3358,7 +3358,7 @@ PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPo
     arbitrary integer: its interpretation is up to sym.  Orientations are used by DM: for their interpretation in that
     context, see DMPlexGetConeOrientation()).
 
-  Output Parameter:
+  Output Parameters:
 + perms - The permutations for the given orientations (or NULL if there is no symmetry or the permutation is the identity).
 - rots - The field rotations symmetries for the given orientations (or NULL if there is no symmetry or the rotations are all
     identity).
@@ -3391,7 +3391,7 @@ PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt fiel
     arbitrary integer: its interpretation is up to sym.  Orientations are used by DM: for their interpretation in that
     context, see DMPlexGetConeOrientation()).
 
-  Output Parameter:
+  Output Parameters:
 + perms - The permutations for the given orientations: set to NULL at conclusion
 - rots - The field rotations symmetries for the given orientations: set to NULL at conclusion
 

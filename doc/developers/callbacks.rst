@@ -19,7 +19,7 @@ where different levels and different domains may (or may not) share the
 same callback function or callback context. You can control exactly what
 ``XXX``/``DM`` objects share a common ``DMXXX`` object.
 
-.. figure:: images/callbacks1.svg
+.. figure:: /images/developers/callbacks1.svg
   :name: fig_callbacks1
 
   Three levels of KSP/DM share the same DMKSP
@@ -47,7 +47,7 @@ functions (or their contexts) without affecting the original DMKSP, call
 
 This results in the object organization as indicated in the following figure
 
-.. figure:: images/callbacks2.svg
+.. figure:: /images/developers/callbacks2.svg
   :name: fig_callbacks2
 
   Two levels of KSP/DM share the same DMKSP; one has its own private copy

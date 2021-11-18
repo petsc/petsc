@@ -30,23 +30,23 @@ specified on the command line:
 
   .. code-block:: console
 
-     > export PETSC_DIR=/absolute/path/to/petsc
-     > export PETSC_ARCH=linux-gnu-c-debug
+     $ export PETSC_DIR=/absolute/path/to/petsc
+     $ export PETSC_ARCH=linux-gnu-c-debug
 
 
 - Specify environment variable for csh/tcsh (can be specified in ``~/.cshrc``):
 
   .. code-block:: console
 
-     > setenv PETSC_DIR /absolute/path/to/petsc
-     > setenv PETSC_ARCH linux-gnu-c-debug
+     $ setenv PETSC_DIR /absolute/path/to/petsc
+     $ setenv PETSC_ARCH linux-gnu-c-debug
 
 - Specify variable on commandline (bash) to build an example in
   ``$PETSC_DIR/src/ts/tutorials``:
 
   .. code-block:: console
 
-     > PETSC_ARCH=linux-gnu-c-debug make PETSC_DIR=/absolute/path/to/petsc ex1
+     $ PETSC_ARCH=linux-gnu-c-debug make PETSC_DIR=/absolute/path/to/petsc ex1
 
 ``$PETSC_DIR`` should point to the location of the PETSc installation. For out-of-place
 installations this is the ``--prefix`` location. For in-place installations it is the
@@ -85,7 +85,7 @@ when determining whether to rebuild various packages installed through PETSc.
 
    .. code-block:: console
 
-      > ./configure --some-args --force
+      $ ./configure --some-args --force
 
    Keep in mind however that this will only disable ``configure``'s cache, not any other
    caching mechanism potentially in use, such as `CCache <https://ccache.dev/>`__.
@@ -102,7 +102,7 @@ when determining whether to rebuild various packages installed through PETSc.
 
    .. code-block:: console
 
-      > ./configure --many-args --with-clean
+      $ ./configure --many-args --with-clean
 
 Reconfigure
 ===========
@@ -119,7 +119,7 @@ For example running the following ``configure``:
 
 .. code-block:: console
 
-   > ./configure --download-mpich --download-fblaslapack --with-debugging=1
+   $ ./configure --download-mpich --download-fblaslapack --with-debugging=1
 
 Will result in the following ``reconfigure``:
 
@@ -143,7 +143,7 @@ In order to rerun this ``configure`` with the same arguments simply do:
 
 .. code-block:: console
 
-   > $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py
+   $ $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py
 
 .. Note::
 
@@ -176,7 +176,7 @@ In order to rerun this ``configure`` with the same arguments simply do:
 
    .. code-block:: console
 
-      > $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py --download-zlib
+      $ $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py --download-zlib
 
    Will install `zlib <https://zlib.net/>`__ into that ``reconfigure``'s home
    ``$PETSC_ARCH``.
@@ -187,7 +187,7 @@ intend to rebuild often into your ``$PETSC_DIR``:
 
 .. code-block:: console
 
-   > ln -s $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py $PETSC_DIR/
+   $ ln -s $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py $PETSC_DIR/
 
 Updating or Reinstalling PETSc
 ==============================
@@ -196,12 +196,12 @@ If you follow the main or release branches of PETSc you can update your librarie
 
 .. code-block:: console
 
-   > git pull
-   > make libs
+   $ git pull
+   $ make libs
 
 Most of the time this will work, if there are errors regarding compiling Fortran stubs you
 need to also do:
 
 .. code-block:: console
 
-   > make allfortranstubs
+   $ make allfortranstubs

@@ -385,8 +385,10 @@ class PetscCursor(object):
   @staticmethod
   def findCursorReferencesFromCursor(cursor):
     __doc__="""
-    Brute force find and collect all references in a file that pertain to a particular cursor. Essentially refers to finding every cursor that contains the symbol
-    that the cursor represents, so this function is only useful for first-class symbols (i.e. variables, functions)
+    Brute force find and collect all references in a file that pertain to a particular
+    cursor. Essentially refers to finding every reference to the symbol that the cursor
+    represents, so this function is only useful for first-class symbols (i.e. variables,
+    functions)
     """
     import ctypes
 
@@ -418,6 +420,11 @@ class PetscCursor(object):
           foundCursors.append(cursor)
         except ParsingError:
           pass
+        except RuntimeError as re:
+          string = "Full error full error message below:"
+          print('='*30,"CXCursorAndRangeVisitor Error",'='*30)
+          print("It is possible that this is a false positive! E.g. some 'unexpected number of tokens' errors are due to macro instantiation locations being misattributed.\n",string,"\n","-"*len(string),"\n",re,sep="")
+          print('='*30,"CXCursorAndRangeVisitor End Error",'='*26)
         return 1 # continue
 
     if not hasattr(clx.conf.lib,"clang_findReferencesInFile"):
@@ -581,11 +588,12 @@ class SourceFix(object):
                 yield "+"+line
 
 class PetscLinter(object):
-  def __init__(self,compilerFlags,clangOptions=baseClangOptions,prefix="[ROOT]",verbose=False,lock=None):
+  def __init__(self,compilerFlags,clangOptions=baseClangOptions,prefix="[ROOT]",verbose=False,werror=False,lock=None):
     self.flags      = compilerFlags
     self.clangOpts  = clangOptions
     self.prefix     = prefix
     self.verbose    = verbose
+    self.werror     = werror
     self.lock       = lock
     self.errPrefix  = " ".join([prefix,85*"-"])
     self.warnPrefix = " ".join([prefix,85*"%"])
@@ -606,7 +614,7 @@ class PetscLinter(object):
     printList = [prefixStr,flagStr,clangStr,lockStr,showStr]
     errorStr  = self.getAllErrors()
     if errorStr: printList.append(errorStr)
-    warnStr   = self.getAllWarnings()
+    warnStr   = self.getAllWarnings(joinToString=True)
     if warnStr: printList.append(warnStr)
     return "\n".join(printList)
 
@@ -616,7 +624,7 @@ class PetscLinter(object):
   def __exit__(self,excType,*args):
     if not excType:
       if self.verbose:
-        self.__print(self.getAllWarnings())
+        self.__print(self.getAllWarnings(joinToString=True))
       self.__print(self.getAllErrors())
     return
 
@@ -810,27 +818,27 @@ class PetscLinter(object):
     if tu.diagnostics and self.verbose:
       diags = {" ".join([self.prefix,d]) for d in map(str,tu.diagnostics)}
       self.__print("\n".join(diags))
-    self.processRemoveDuplicates(tu)
+    self.processRemoveDuplicates(filename,tu)
     return
 
   def getArgumentCursors(self,funcCursor):
     return tuple(PetscCursor(a,i+1) for i,a in enumerate(funcCursor.get_arguments()))
 
-  def process(self,tu):
+  def process(self,filename,tu):
     for func,parent,_ in self.findFunctionCallExpr(tu,checkFunctionMap.keys()):
       try:
         checkFunctionMap[func.spelling](self,func,parent)
       except ParsingError as pe:
-        self.addWarning(str(pe))
+        self.addWarning(filename,str(pe))
     return
 
-  def processRemoveDuplicates(self,tu):
+  def processRemoveDuplicates(self,filename,tu):
     processedFuncs = {}
     for func,parent,scope in self.findFunctionCallExpr(tu,set(checkFunctionMap.keys())):
       try:
         checkFunctionMap[func.spelling](self,func,parent)
       except ParsingError as pe:
-        self.addWarning(str(pe))
+        self.addWarning(filename,str(pe))
       func  = PetscCursor(func)
       pname = PetscCursor.getNameFromCursor(parent)
       try:
@@ -892,26 +900,40 @@ class PetscLinter(object):
       errFixedStr = "\n".join([self.errPrefix,"\n".join(errFixed)[1:],self.errPrefix])
     return errLeftStr,errFixedStr
 
-  def addWarning(self,warnMsg):
-    try:
-      if warnMsg in self.warnings[-1]:
-        # we just had the exact same warning, we can ignore it. This happens very often
-        # for warnings occurring deep within a macro
-        return
-    except IndexError:
-      pass
-    self.warnings.append("".join(["\nWARNING {}: ".format(len(self.warnings)),warnMsg]))
+  def addWarning(self,filename,warnMsg):
+    if self.werror:
+      self.addErrorFromCursor(filename,warnMsg)
+    else:
+      try:
+        if warnMsg in self.warnings[-1][1]:
+          # we just had the exact same warning, we can ignore it. This happens very often
+          # for warnings occurring deep within a macro
+          return
+      except IndexError:
+        pass
+      warnStr = "".join(["\nWARNING {}: ".format(len(self.warnings)),warnMsg])
+      self.warnings.append((filename,warnStr))
     return
 
   def addWarningFromCursor(self,locCursor,warnMsg):
-    warnPrefix = str(locCursor)
-    self.warnings.append("".join(["\nWARNING {}: ".format(len(self.warnings)),warnPrefix,"\n",warnMsg]))
+    if self.werror:
+      self.addErrorFromCursor(locCursor,warnMsg)
+    else:
+      warnPrefix = str(locCursor)
+      warnFile   = locCursor.location.file.name
+      warnStr    = "".join(["\nWARNING {}: ".format(len(self.warnings)),warnPrefix,"\n",warnMsg])
+      self.warnings.append((warnFile,warnStr))
     return
 
-  def getAllWarnings(self):
-    if self.warnings:
-      return "\n".join([self.warnPrefix,"\n".join(self.warnings)[1:],self.warnPrefix])
-    return
+  def getAllWarnings(self,joinToString=False):
+    if joinToString:
+      if len(self.warnings):
+        warnings = "\n".join([self.warnPrefix,"\n".join(s for _,s in self.warnings)[1:],self.warnPrefix])
+      else:
+        warnings = ""
+    else:
+      warnings = self.warnings
+    return warnings
 
   def coalescePatches(self):
     combinedPatches = []
@@ -952,29 +974,32 @@ class WorkerPool(mp.queues.JoinableQueue):
     self.patches     = []
     return
 
-  def setup(self,compilerFlags,clangLib=None,clangOptions=baseClangOptions):
+  def setup(self,compilerFlags,clangLib=None,clangOptions=baseClangOptions,werror=False):
     if clangLib is None:
       assert clx.conf.loaded, "Must initialize libClang first"
       clangLib = clx.conf.get_filename()
     if self.parallel:
-      workerArgs = (clangLib,checkFunctionMap,classIdMap,compilerFlags,clangOptions,self.verbose,self.errorQueue,self.returnQueue,self,self.lock)
+      workerArgs = (clangLib,checkFunctionMap,classIdMap,compilerFlags,clangOptions,self.verbose,werror,self.errorQueue,self.returnQueue,self,self.lock)
       for i in range(self.numWorkers):
         workerName = "[{}]".format(i)
         worker     = mp.Process(target=queueMain,args=workerArgs,name=workerName,daemon=True)
         worker.start()
         self.workers.append(worker)
     else:
-      self.linter = PetscLinter(compilerFlags,clangOptions=clangOptions,prefix=self.prefix,verbose=self.verbose)
+      self.linter = PetscLinter(compilerFlags,clangOptions=clangOptions,prefix=self.prefix,verbose=self.verbose,werror=werror)
     return
 
-  def walk(self,srcDir,excludeDirs=excludeDirNames,excludeDirSuff=excludeDirSuffixes,allowFileSuff=allowFileExtensions):
-    for root,dirs,files in os.walk(srcDir):
-      if self.verbose: print(self.prefix,"Processing directory",root)
-      dirs[:] = [d for d in dirs if d not in excludeDirs]
-      dirs[:] = [d for d in dirs if not d.endswith(excludeDirSuff)]
-      files   = [os.path.join(root,f) for f in files if f.endswith(allowFileSuff)]
-      for filename in files:
-        self.put(filename)
+  def walk(self,srcLoc,excludeDirs=excludeDirNames,excludeDirSuff=excludeDirSuffixes,allowFileSuff=allowFileExtensions):
+    if os.path.isfile(srcLoc):
+      self.put(srcLoc)
+    else:
+      for root,dirs,files in os.walk(srcLoc):
+        if self.verbose: print(self.prefix,"Processing directory",root)
+        dirs[:] = [d for d in dirs if d not in excludeDirs]
+        dirs[:] = [d for d in dirs if not d.endswith(excludeDirSuff)]
+        files   = [os.path.join(root,f) for f in files if f.endswith(allowFileSuff)]
+        for filename in files:
+          self.put(filename)
     return
 
   def put(self,filename,*args):
@@ -1274,10 +1299,16 @@ def checkTraceableToParentArgs(obj,parentArgNames):
     # we just tried those and they didn't work, also more importantly weeds out the
     # instantiation line if this is an intermediate cursor in a recursive call to this
     # function
-    refsAll = [r for r in refsAll if r.kind not in {clx.CursorKind.VAR_DECL,clx.CursorKind.FIELD_DECL}]
-    assert len(refsAll), "Could not determine the origin of cursor {}".format(obj)
+    argRefs = [r for r in refsAll if r.kind not in {clx.CursorKind.VAR_DECL,clx.CursorKind.FIELD_DECL}]
+    if not len(argRefs):
+      # it's not traceable to a function argument, so maybe its a global static variable
+      if len([r for r in refsAll if r.storage_class in {clx.StorageClass.STATIC}]):
+        # a global variable is not a function argumment, so this is unhandleable
+        raise ParsingError("PETSC_CLANG_STATIC_ANALYZER_IGNORE")
+
+    assert len(argRefs), "Could not determine the origin of cursor {}".format(obj)
     # take the first, as this is the earliest
-    firstRef  = refsAll[0]
+    firstRef  = argRefs[0]
     tu,loc    = firstRef.translation_unit,firstRef.location
     srcLen    = len(firstRef.getRawSource())
     # why the following song and dance? Because you cannot walk the AST backwards, and
@@ -1335,7 +1366,7 @@ def checkMatchingArgNum(linter,obj,idx,parentArgs):
   Is the Arg # correct w.r.t. the function arguments
   """
   if idx.canonical.kind not in mathCursors:
-    # sometimes it is impossible to tell if the index is correct so this is a warnning not
+    # sometimes it is impossible to tell if the index is correct so this is a warning not
     # an error. For example in the case of a loop:
     # for (i = 0; i < n; ++i) PetscValidIntPointer(arr+i,i);
     linter.addWarningFromCursor(idx,"Index value is of unexpected type '{}'".format(idx.canonical.kind))
@@ -1351,12 +1382,21 @@ def checkMatchingArgNum(linter,obj,idx,parentArgs):
   except ValueError:
     try:
       matchLoc = checkTraceableToParentArgs(obj,parentArgNames)
-    except ParsingError:
+    except ParsingError as pe:
       # If the parent arguments don't contain the symbol and we couldn't determine a
       # definition then we cannot check for correct numbering, so we cannot do
       # anything here but emit a warning
-      parentFunc = PetscCursor(parentArgs[0].semantic_parent)
-      linter.addWarningFromCursor(obj,"Cannot determine index correctness, parent function '{}()' seemingly does not contain the object:\n\n{}".format(parentFunc.name,parentFunc.getFormattedSource()))
+      if "PETSC_CLANG_STATIC_ANALYZER_IGNORE" in pe.args:
+        return
+      if len(parentArgs):
+        parentFunc = PetscCursor(parentArgs[0].semantic_parent)
+        parentFuncName = parentFunc.name+"()"
+        parentFuncSrc  = parentFunc.getFormattedSource()
+      else:
+        # parent function has no arguments (very likely that "obj" is a global variable)
+        parentFuncName = "UNKNOWN FUNCTION"
+        parentFuncSrc  = "  <could not determine parent function signature from arguments>"
+      linter.addWarningFromCursor(obj,"Cannot determine index correctness, parent function '{}' seemingly does not contain the object:\n\n{}".format(parentFuncName,parentFuncSrc))
       return
   if idxNum != parentArgs[matchLoc].argidx:
     errMess = "Argument number doesn't match for '{}'. Found '{}' expected '{}' from\n\n{}".format(obj.name,str(idxNum),str(parentArgs[matchLoc].argidx),parentArgs[matchLoc].getFormattedSource())
@@ -1836,44 +1876,51 @@ def buildPrecompiledHeader(petscDir,compilerFlags,extraHeaderIncludes=[],verbose
 
 
 """Main functions for root and queue processes"""
-def testMain(petscDir,testDir,patches,replace=False,verbose=False):
+def testMain(petscDir,srcDir,outputDir,patches,replace=False,verbose=False):
   import glob,itertools,difflib
 
+  class TestException(Exception):
+    pass
+
   if not patches:
-    raise RuntimeError("testDir {} provided but no patches generated".format(testDir))
+    raise RuntimeError("outputDir {} provided but no patches generated".format(outputDir))
   returncode = 0
-  testGlob   = "".join([testDir,os.path.sep,"*.patch"])
-  testFiles  = {os.path.basename(f):f for f in glob.glob(testGlob)}
   patchError = {}
-  for filename,patch in patches:
-    shortName   = filename.replace(petscDir+os.path.sep,"")
-    mangledFile = os.path.splitext(filename)[0]+".patch"
-    mangledBase = os.path.basename(mangledFile)
+  patches    = dict(patches)
+  fileList   = []
+  for ext in ('c','cxx','cpp','cc','CC'):
+    fileList.extend(glob.glob("".join([srcDir,os.path.sep,"*."+ext])))
+  for testFile in fileList:
+    basename   = os.path.basename(os.path.splitext(testFile)[0])
+    outputFile = os.path.join(outputDir,basename+".patch")
+    shortName  = testFile.replace(petscDir+os.path.sep,"")
+
     print("\tTEST   ",shortName)
-    if replace:
-      print("\tREPLACE",shortName)
-      replaceFile = os.path.join(testDir,mangledBase)
-      patch = "".join(patch.splitlines(True)[2:])
-      with open(replaceFile,"w") as fd:
-        fd.write(patch)
-      continue
     try:
-      testFile = testFiles[mangledBase]
-    except KeyError:
-      print("\tNOT OK ",shortName)
-      patchError[filename] = "File had no corresponding test: '{}'\n".format(os.path.join(testDir,mangledBase))
-      continue
-    # skip header lines containing date, the output files shouldn't contain them
-    patchLines = patch.splitlines(True)[2:]
-    with open(testFile,"r") as fd:
-      fileLines = fd.readlines()
-      diffs     = list(difflib.unified_diff(fileLines,patchLines,fromfile=testFile,tofile=mangledFile,n=0))
-      if diffs:
-        patchError[filename] = "".join(diffs)
-    if filename in patchError:
-      print("\tNOT OK ",shortName)
-    else:
+      try:
+        patch = patches[testFile]
+      except KeyError:
+        raise TestException("File had no corresponding patch: '{}'\n".format(testFile))
+      if replace:
+        print("\tREPLACE",shortName)
+        patch = "".join(patch.splitlines(True)[2:])
+        with open(outputFile,"w") as fd:
+          fd.write(patch)
+        continue
+      elif not os.path.exists(outputFile):
+        raise TestException("File had no corresponding output: '{}'\n".format(testFile))
+
+      with open(outputFile,"r") as fd:
+        fileLines  = fd.readlines()
+        # skip header lines containing date, the output files shouldn't contain them
+        patchLines = patch.splitlines(True)[2:]
+        diffs      = list(difflib.unified_diff(fileLines,patchLines,n=0))
+        if diffs:
+          raise TestException("".join(diffs))
       print("\tOK     ",shortName)
+    except TestException as te:
+      print("\tNOT OK ",shortName)
+      patchError[testFile] = str(te)
   if patchError:
     returncode = 21
     errBars    = "".join(["[ERROR]",85*"-","[ERROR]"])
@@ -1882,7 +1929,7 @@ def testMain(petscDir,testDir,patches,replace=False,verbose=False):
       print(patchError[errFile].join(errBars))
   return returncode
 
-def queueMain(clangLib,checkFunctionMapU,classIdMapU,compilerFlags,clangOptions,verbose,errorQueue,returnQueue,fileQueue,lock):
+def queueMain(clangLib,checkFunctionMapU,classIdMapU,compilerFlags,clangOptions,verbose,werror,errorQueue,returnQueue,fileQueue,lock):
   __doc__="""
   main function for worker processes in the queue, does pretty much the same thing the main process would do in their place
   """
@@ -1908,8 +1955,8 @@ def queueMain(clangLib,checkFunctionMapU,classIdMapU,compilerFlags,clangOptions,
     errorPrefix = " ".join([printPrefix,"Exception detected while processing"])
     lockPrint(printPrefix,15*"=","Performing setup",15*"=")
     initializeLibclang(clangLib=clangLib)
-    linter = PetscLinter(compilerFlags,clangOptions=clangOptions,prefix=printPrefix,verbose=verbose,lock=lock)
-    lockPrint(printPrefix,15*"=","Entering queue",15*"=")
+    linter = PetscLinter(compilerFlags,clangOptions=clangOptions,prefix=printPrefix,verbose=verbose,werror=werror,lock=lock)
+    lockPrint(printPrefix,15*"=","Entering queue  ",15*"=")
     while True:
       filename = fileQueue.get()
       if filename == QueueSignal.EXIT_QUEUE:
@@ -1923,7 +1970,7 @@ def queueMain(clangLib,checkFunctionMapU,classIdMapU,compilerFlags,clangOptions,
       returnQueue.put((QueueSignal.WARNING     ,linter.getAllWarnings()))
       linter.clear()
       fileQueue.task_done()
-    lockPrint(printPrefix,15*"=","Exiting queue",15*"=")
+    lockPrint(printPrefix,15*"=","Exiting queue   ",15*"=")
   except:
     try:
       # attempt to send the traceback back to parent
@@ -1946,7 +1993,7 @@ def queueMain(clangLib,checkFunctionMapU,classIdMapU,compilerFlags,clangOptions,
   returnQueue.close()
   return
 
-def main(petscDir,petscArch,srcDir=None,clangDir=None,clangLib=None,verbose=False,workers=-1,checkFunctionFilter=None,patchDir=None,applyPatches=False,extraCompilerFlags=[],extraHeaderIncludes=[],testDir=None,replaceTests=False):
+def main(petscDir,petscArch,srcDir=None,clangDir=None,clangLib=None,verbose=False,workers=-1,checkFunctionFilter=None,patchDir=None,applyPatches=False,extraCompilerFlags=[],extraHeaderIncludes=[],testDir=None,replaceTests=False,werror=False):
   __doc__="""
   entry point for linter
 
@@ -1967,6 +2014,7 @@ def main(petscDir,petscArch,srcDir=None,clangDir=None,clangLib=None,verbose=Fals
   extraHeaderIncludes -- list of #include statements to append to the precompiled mega-header, these must be in the include search path. Use extraCompilerFlags to make any other search path additions. For example ["#include <slepc/private/epsimpl.h>"] (default: None)
   testDir             -- directory containing test output to compare patches against, use special keyword '__at_src__' to use srcDir/output (default: None)
   replaceTests        -- replace output files in testDir with patches generated (default: False)
+  werror              -- treat all linter-generated warnings as errors (default: False)
   """
 
   # pre-processing setup
@@ -1991,13 +2039,13 @@ def main(petscDir,petscArch,srcDir=None,clangDir=None,clangLib=None,verbose=Fals
   filterCheckFunctionMap(checkFunctionFilter)
 
   pool = WorkerPool(numWorkers=workers,verbose=verbose)
-  pool.setup(compilerFlags)
+  pool.setup(compilerFlags,werror=werror)
   pool.walk(srcDir)
   warnings,errorsLeft,errorsFixed,patches = pool.finalize()
   if verbose: print(rootPrintPrefix,"Deleting precompiled header",precompiledHeader)
   osRemoveSilent(precompiledHeader)
   if testDir is not None:
-    return testMain(petscDir,testDir,patches,replace=replaceTests,verbose=verbose)
+    return testMain(petscDir,srcDir,testDir,patches,replace=replaceTests,verbose=verbose)
   if patches:
     import time
 
@@ -2026,7 +2074,7 @@ def main(petscDir,petscArch,srcDir=None,clangDir=None,clangLib=None,verbose=Fals
   returnCode = 0
   if warnings and verbose:
     print("\n"+rootPrintPrefix,30*"=","Found warnings      ",33*"=")
-    print("\n".join(warnings))
+    print("\n".join(s for tup in warnings for _,s in tup))
     print(rootPrintPrefix,30*"=","End warnings        ",33*"=")
   if errorsFixed and verbose:
     print("\n"+rootPrintPrefix,30*"=","Fixed Errors        ",33*"=")
@@ -2093,6 +2141,7 @@ if __name__ == "__main__":
   parser.add_argument("--CXXFLAGS",required=False,nargs="+",default=[],help="extra flags to pass to CXX compiler",dest="cxxflags")
   parser.add_argument("--test",required=False,nargs="?",const="__at_src__",help="test the linter for correctness. Optionally provide a directory containing the files against which to compare patches, defaults to SRC_DIR/output if no argument is given. The files of correct patches must be in the format [path_from_src_dir_to_testFileName].out")
   parser.add_argument("--replace",required=False,type=str2bool,nargs="?",const=True,default=False,help="replace output files in test directory with patches generated")
+  parser.add_argument("--werror",required=False,type=str2bool,nargs="?",const=True,default=False,help="treat all warnings as errors")
   args = parser.parse_args()
 
   if args.petscdir is None:
@@ -2106,5 +2155,5 @@ if __name__ == "__main__":
   if args.src == "$PETSC_DIR/src":
     args.src = os.path.join(petscDir,"src")
 
-  ret = main(args.petscdir,args.petscarch,srcDir=args.src,clangDir=args.clangdir,clangLib=args.clanglib,verbose=args.verbose,workers=args.jobs,checkFunctionFilter=args.funcs,patchDir=args.patchdir,applyPatches=args.apply,extraCompilerFlags=args.cxxflags,testDir=args.test,replaceTests=args.replace)
+  ret = main(args.petscdir,args.petscarch,srcDir=args.src,clangDir=args.clangdir,clangLib=args.clanglib,verbose=args.verbose,workers=args.jobs,checkFunctionFilter=args.funcs,patchDir=args.patchdir,applyPatches=args.apply,extraCompilerFlags=args.cxxflags,testDir=args.test,replaceTests=args.replace,werror=args.werror)
   sys.exit(ret)

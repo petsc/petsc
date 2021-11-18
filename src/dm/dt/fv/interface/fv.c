@@ -152,7 +152,7 @@ PetscErrorCode  PetscLimiterViewFromOptions(PetscLimiter A,PetscObject obj,const
 
   Collective on lim
 
-  Input Parameter:
+  Input Parameters:
 + lim - the PetscLimiter object to view
 - v   - the viewer
 
@@ -1070,7 +1070,7 @@ PetscErrorCode  PetscFVViewFromOptions(PetscFV A,PetscObject obj,const char name
 
   Collective on fvm
 
-  Input Parameter:
+  Input Parameters:
 + fvm - the PetscFV object to view
 - v   - the viewer
 
@@ -1754,7 +1754,7 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 . uL           - The state from the cell on the left
 - uR           - The state from the cell on the right
 
-  Output Parameter:
+  Output Parameters:
 + fluxL        - the left fluxes for each face
 - fluxR        - the right fluxes for each face
 
@@ -2145,7 +2145,7 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
       grad[1] += fg->grad[!i][1] * du;
     }
   }
-  PetscPrintf(PETSC_COMM_SELF, "cell[%d] grad (%g, %g)\n", cell, grad[0], grad[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "cell[%d] grad (%g, %g)\n", cell, grad[0], grad[1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

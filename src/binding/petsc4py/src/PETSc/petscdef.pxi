@@ -46,7 +46,7 @@ cdef extern from * nogil:
         PETSC_OFFLOAD_CPU
         PETSC_OFFLOAD_GPU
         PETSC_OFFLOAD_BOTH
-        PETSC_OFFLOAD_VECKOKKOS
+        PETSC_OFFLOAD_KOKKOS
 
 
 cdef extern from * nogil:

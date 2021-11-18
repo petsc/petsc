@@ -1215,7 +1215,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts,PetscViewer viewer)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  mprktype - type of MPRK-scheme
 

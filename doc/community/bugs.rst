@@ -3,8 +3,13 @@
 *************************
 Reporting Bugs And Errors
 *************************
+Bug reports can be sent to petsc-users@mcs.anl.gov (public mailing list with public archives)
+or petsc-maint@mcs.anl.gov, a private maintenance e-mail without archives. Installation
+issues generally require sending in ``configure.log``, ``make.log`` i.e uncompressed large
+attachments - here petsc-maint@mcs.anl.gov is preferable.
+Check :ref:`Mailing lists <doc_mail>`
 
-The PETSc maintenance e-mail petsc-maint@mcs.anl.gov is intended for users to:
+Topics can include:
 
 - Report bugs.
 - Ask for clarification.
@@ -14,10 +19,13 @@ The PETSc maintenance e-mail petsc-maint@mcs.anl.gov is intended for users to:
 
 .. Note::
 
-   We respond to almost all email the same day and many within the hour. Please do not
-   send maintenance requests to the individual PETSc authors; all e-mail to
-   petsc-maint@mcs.anl.gov is automatically distributed to all of the PETSc authors, so
-   our response time using this address will be fastest.
+   We respond to almost all email the same day and many within the hour.
+
+.. important::
+
+   Please `do not send e-mail requests to the individual PETSc authors`; all list e-mail
+   is automatically distributed to all of the PETSc authors, so our response time here
+   will be fastest.
 
 Before sending a bug report, please consult the :ref:`FAQ <doc_config_faq>` to determine
 whether a fix or work-around to the problem already exists. Also, see the chapter on

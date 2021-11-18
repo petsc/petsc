@@ -174,7 +174,9 @@ template<typename Type> struct Maxloc {
 
   See Cuda version
 */
+#if PETSC_PKG_HIP_VERSION_LT(4,4,0)
 __device__ static double atomicExch(double* address,double val) {return __longlong_as_double(atomicExch((ullint*)address,__double_as_longlong(val)));}
+#endif
 
 __device__ static llint atomicExch(llint* address,llint val) {return (llint)(atomicExch((ullint*)address,(ullint)val));}
 
@@ -297,7 +299,7 @@ template<typename Type> struct AtomicMult {__device__ Type operator() (Type& x,T
 
   See CUDA version for comments.
  */
-
+#if PETSC_PKG_HIP_VERSION_LT(4,4,0)
 #if defined(PETSC_USE_REAL_DOUBLE)
 __device__ static double atomicMin(double* address, double val)
 {
@@ -342,6 +344,7 @@ __device__ static float atomicMax(float* address,float val)
   } while (assumed != old);
   return __int_as_float(old);
 }
+#endif
 #endif
 
 /* As of ROCm 3.10 llint atomicMin/Max(llint*, llint) is not supported */
@@ -771,8 +774,8 @@ PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,void** ptr)
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);}
   else if (PetscMemTypeDevice(mtype)) {
-    if (!PetscHIPInitialized) { PetscErrorCode ierr = PetscHIPInitializeCheck();CHKERRQ(ierr); }
-    hipError_t err = hipMalloc(ptr,size);CHKERRHIP(err);
+    PetscErrorCode ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);
+    hipError_t     err  = hipMalloc(ptr,size);CHKERRHIP(err);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
 }

@@ -143,7 +143,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGallopSearchLeft_Private(const char *arr
 
   PetscFunctionBegin;
   *m = l;
-  if (PetscUnlikelyDebug(r < l)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"r %D < l %D in PetscGallopSearchLeft",r,l);
+  if (PetscUnlikelyDebug(r < l)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"r %" PetscInt_FMT " < l %" PetscInt_FMT " in PetscGallopSearchLeft",r,l);
   if ((*cmp)(x, arr+r*size, ctx) >= 0) {*m = r; PetscFunctionReturn(0);}
   if ((*cmp)(x, (arr)+l*size, ctx) < 0 || PetscUnlikely(!(r-l))) PetscFunctionReturn(0);
   while (PETSC_TRUE) {
@@ -174,7 +174,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscGallopSearchRight_Private(const char *ar
 
   PetscFunctionBegin;
   *m = r;
-  if (PetscUnlikelyDebug(r < l)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"r %D < l %D in PetscGallopSearchRight",r,l);
+  if (PetscUnlikelyDebug(r < l)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"r %" PetscInt_FMT " < l %" PetscInt_FMT " in PetscGallopSearchRight",r,l);
   if ((*cmp)(x, arr+l*size, ctx) <= 0) {*m = l; PetscFunctionReturn(0);}
   if ((*cmp)(x, (arr)+r*size, ctx) > 0 || PetscUnlikely(!(r-l))) PetscFunctionReturn(0);
   while (PETSC_TRUE) {
@@ -539,7 +539,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBinaryInsertionSortWithArray_Private(cha
 typedef struct {
   PetscInt size;
   PetscInt start;
+#if defined(__CRAY_AARCH64) /* segfaults with Cray compilers for aarch64 on a64FX */
+} PetscTimSortStack;
+#else
 } PetscTimSortStack PETSC_ATTRIBUTEALIGNED(2*sizeof(PetscInt));
+#endif
 
 typedef struct {
   char   *ptr PETSC_ATTRIBUTEALIGNED(PETSC_MEMALIGN);
@@ -833,7 +837,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTimSortBuildRun_Private(char *arr, char 
 #if defined(PETSC_USE_DEBUG)
   {
     PetscErrorCode ierr;
-    ierr = PetscInfo1(NULL, "natural run length = %D\n", ri-runstart+1);CHKERRQ(ierr);
+    ierr = PetscInfo1(NULL, "natural run length = %" PetscInt_FMT "\n", ri-runstart+1);CHKERRQ(ierr);
   }
 #endif
   if (ri < re) {
@@ -880,7 +884,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *a
 #if defined(PETSC_USE_DEBUG)
   {
     PetscErrorCode ierr;
-    ierr = PetscInfo1(NULL, "natural run length = %D\n", ri-runstart+1);CHKERRQ(ierr);
+    ierr = PetscInfo1(NULL, "natural run length = %" PetscInt_FMT "\n", ri-runstart+1);CHKERRQ(ierr);
   }
 #endif
   if (ri < re) {
@@ -996,10 +1000,10 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
     minrun = t + r;
   }
   if (PetscDefined(USE_DEBUG)) {
-    ierr = PetscInfo1(NULL, "minrun = %D\n", minrun);CHKERRQ(ierr);
+    ierr = PetscInfo1(NULL, "minrun = %" PetscInt_FMT "\n", minrun);CHKERRQ(ierr);
     if (n < 64) {
-      ierr = PetscInfo1(NULL, "n %D < 64, consider using PetscSortInt() instead\n", n);CHKERRQ(ierr);
-    } else if ((minrun < 32) || (minrun > 65)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Calculated minrun %D not in range (32,65)",minrun);
+      ierr = PetscInfo1(NULL, "n %" PetscInt_FMT " < 64, consider using PetscSortInt() instead\n", n);CHKERRQ(ierr);
+    } else if ((minrun < 32) || (minrun > 65)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Calculated minrun %" PetscInt_FMT " not in range (32,65)",minrun);
   }
   ierr = PetscMalloc1((size_t) minrun*size, &buff.ptr);CHKERRQ(ierr);
   buff.size = (size_t) minrun*size;
@@ -1030,16 +1034,14 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
 
   Input Parameters:
 + n     - number of values
-. arr   - array to be sorted
 . asize - size in bytes of the datatype held in arr
-. barr  - array to be reordered
-. asize - size in bytes of the datatype held in barr
+. bsize - size in bytes of the datatype held in barr
 . cmp   - function pointer to comparison function
 - ctx   - optional context to be passed to comparison function, NULL if not needed
 
-  Output Parameters:
-+ arr  - sorted array
-- barr - reordered array
+  Input/Output Parameters:
++ arr  - array to be sorted, on output it is sorted
+- barr - array to be reordered, on output it is reordered
 
   Notes:
   The arrays need not be of the same type, however barr MUST contain at least as many elements as arr and the two CANNOT
@@ -1127,8 +1129,8 @@ PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *
     minrun = t + r;
   }
   if (PetscDefined(USE_DEBUG)) {
-    ierr = PetscInfo1(NULL, "minrun = %D\n", minrun);CHKERRQ(ierr);
-    if ((n >= 64) && ((minrun < 32) || (minrun > 65))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Calculated minrun %D not in range (32,65)",minrun);
+    ierr = PetscInfo1(NULL, "minrun = %" PetscInt_FMT "\n", minrun);CHKERRQ(ierr);
+    if ((n >= 64) && ((minrun < 32) || (minrun > 65))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Calculated minrun %" PetscInt_FMT " not in range (32,65)",minrun);
   }
   ierr = PetscMalloc1((size_t) minrun*asize, &abuff.ptr);CHKERRQ(ierr);
   abuff.size = (size_t) minrun*asize;
@@ -1198,14 +1200,12 @@ PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[])
 
    Not Collective
 
-   Input Parameters:
-+  n   - number of values
-.  arr1 - array of integers to be sorted
--  arr2 - array of integers to be reordered
+   Input Parameter:
+.  n   - number of values
 
-   Output Parameters:
-+  arr1 - sorted array of integers
--  arr2 - reordered array of integers
+   Input/Output Parameters:
++  arr1 - array of integers to be sorted, modified on output
+-  arr2 - array of integers to be reordered, modified on output
 
    Notes:
    The arrays CANNOT overlap.
@@ -1274,14 +1274,12 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
 
    Not Collective
 
-   Input Parameters:
-+  n   - number of values
-.  arr1 - array of integers to be sorted
--  arr2 - array of integers to be reordered
+   Input Parameter:
+.  n   - number of values
 
-   Output Parameters:
-+  arr1 - sorted array of integers
--  arr2 - reordered array of integers
+   Input/Output Parameters:
+.  arr1 - array of integers to be sorted, modified on output
+-  arr2 - array of integers to be reordered, modified on output
 
    Notes:
    The arrays CANNOT overlap.
@@ -1350,14 +1348,12 @@ PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[])
 
    Not Collective
 
-   Input Parameters:
-+  n   - number of values
-.  arr1 - array of PetscReals to be sorted
--  arr2 - array of PetscReals to be reordered
+   Input Parameter:
+.  n   - number of values
 
-   Output Parameters:
-+  arr1 - sorted array of PetscReals
--  arr2 - reordered array of PetscInts
+   Input/Output Parameters:
+.  arr1 - array of PetscReals to be sorted, modified on output
+-  arr2 - array of PetscReals to be reordered, modified on output
 
    Notes:
    This function serves as an alternative to PetscSortRealWithArray(). While this function works for any array of PetscReals it is

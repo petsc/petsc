@@ -6,7 +6,7 @@
     In particular, it silences `-Wfloat-equal` warnings in `operator==()` and `operator!=` below.
     Other compilers beyond GCC support this pragma.
 */
-#if defined(__GNUC__) && (__GNUC__ >= 4)
+#if defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__NEC__)
 #pragma GCC system_header
 #endif
 
@@ -39,10 +39,6 @@
      may conflict with other code one may add '#define PETSC_SKIP_CXX_COMPLEX_FIX 1' before including any PETSc include
      files to prevent these methods from being provided.
 */
-
-#if defined(__GNUC__) && (__GNUC__ >= 4)
-#pragma GCC system_header
-#endif
 
 #define PETSC_CXX_COMPLEX_FIX(Type) \
 static inline PetscComplex operator+(const PetscComplex& lhs, const Type& rhs) { return const_cast<PetscComplex&>(lhs) + PetscReal(rhs); } \

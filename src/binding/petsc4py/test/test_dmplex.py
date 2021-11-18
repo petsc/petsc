@@ -130,16 +130,48 @@ class BaseTestPlex(object):
         self.assertNotEqual(numInterior, pEnd - pStart)
         self.assertEqual(numBoundary + numInterior, pEnd - pStart)
 
+    def testMetric(self):
+        if self.DIM == 1: return
+        self.plex.distribute()
+        if self.CELLS is None and not self.plex.isSimplex(): return
+
+        h_min = 1.0e-30
+        h_max = 1.0e+30
+        a_max = 1.0e+10
+        target = 10.0
+        p = 1.0
+        self.plex.metricSetIsotropic(False)
+        self.plex.metricSetRestrictAnisotropyFirst(False)
+        self.plex.metricSetMinimumMagnitude(h_min)
+        self.plex.metricSetMaximumMagnitude(h_max)
+        self.plex.metricSetMaximumAnisotropy(a_max)
+        self.plex.metricSetTargetComplexity(target)
+        self.plex.metricSetNormalizationOrder(p)
+
+        self.assertFalse(self.plex.metricIsIsotropic())
+        self.assertFalse(self.plex.metricRestrictAnisotropyFirst())
+        assert np.isclose(self.plex.metricGetMinimumMagnitude(), h_min)
+        assert np.isclose(self.plex.metricGetMaximumMagnitude(), h_max)
+        assert np.isclose(self.plex.metricGetMaximumAnisotropy(), a_max)
+        assert np.isclose(self.plex.metricGetTargetComplexity(), target)
+        assert np.isclose(self.plex.metricGetNormalizationOrder(), p)
+
+        metric1 = self.plex.metricCreateUniform(1.0)
+        metric2 = self.plex.metricCreateUniform(2.0)
+        metric = self.plex.metricAverage2(metric1, metric2)
+        metric2.array[:] *= 0.75
+        assert np.allclose(metric.array, metric2.array)
+        metric = self.plex.metricIntersection2(metric1, metric2)
+        assert np.allclose(metric.array, metric1.array)
+        self.plex.metricEnforceSPD(metric)
+        assert np.allclose(metric.array, metric1.array)
 
     def testAdapt(self):
-        dim = self.plex.getDimension()
-        if dim == 1: return
-        vStart, vEnd = self.plex.getDepthStratum(0)
-        numVertices = vEnd-vStart
-        metric_array = np.zeros([numVertices,dim,dim])
-        for met in metric_array:
-            met[:,:] = np.diag([9]*dim)
-        metric = PETSc.Vec().createWithArray(metric_array)
+        if self.DIM == 1: return
+        self.plex.distribute()
+        if self.CELLS is None and not self.plex.isSimplex(): return
+        if sum(self.DOFS) > 1: return
+        metric = self.plex.metricCreateUniform(9.0)
         try:
             newplex = self.plex.adaptMetric(metric,"")
         except PETSc.Error as exc:
@@ -380,6 +412,7 @@ class BaseTestPlexHDF5(object):
                 # Save redistributed dm to XDMF in parallel
                 vwr.create(self.outfile(), mode='w', comm=comm)
                 vwr.pushFormat(format=self.outformat())
+                plex.setName("DMPlex Object")
                 plex.view(viewer=vwr)
                 vwr.popFormat()
                 vwr.destroy()

@@ -188,6 +188,7 @@ class generateExamples(Petsc):
     if srcext in ".F".split(): langReq="F"
     if srcext in ".cxx".split(): langReq="cxx"
     if srcext in ".kokkos.cxx".split(): langReq="kokkos_cxx"
+    if srcext in ".raja.cxx".split(): langReq="raja_cxx"    
     if srcext in ".cpp".split(): langReq="cpp"
     if srcext == ".cu": langReq="cu"
     if srcext == ".c": langReq="c"
@@ -383,6 +384,12 @@ class generateExamples(Petsc):
     # This is used to label some matrices
     subst['petsc_index_size']=str(self.conf['PETSC_INDEX_SIZE'])
     subst['petsc_scalar_size']=str(self.conf['PETSC_SCALAR_SIZE'])
+
+    if 'PETSC_OPTIONS' in os.environ:
+      subst['petsc_options']=os.environ['PETSC_OPTIONS']
+    else:
+      subst['petsc_options']=''
+    subst['petsc_test_options']=self.conf['PETSC_TEST_OPTIONS']
 
     #Conf vars
     if self.petsc_arch.find('valgrind')>=0:
@@ -665,6 +672,8 @@ class generateExamples(Petsc):
       srcDict["SKIP"].append("SYCL required for this test")
     if lang=="kokkos_cxx" and 'PETSC_HAVE_KOKKOS' not in self.conf:
       srcDict["SKIP"].append("KOKKOS required for this test")
+    if lang=="raja_cxx" and 'PETSC_HAVE_RAJA' not in self.conf:
+      srcDict["SKIP"].append("RAJA required for this test")
     if lang=="cxx" and 'PETSC_HAVE_CXX' not in self.conf:
       srcDict["SKIP"].append("C++ required for this test")
     if lang=="cpp" and 'PETSC_HAVE_CXX' not in self.conf:

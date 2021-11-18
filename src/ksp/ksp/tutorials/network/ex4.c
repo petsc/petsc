@@ -8,7 +8,7 @@ int main(int argc,char ** argv)
   PetscMPIInt    size,rank;
   DM             dmnetwork;
   PetscInt       i,j,net,Nsubnet,ne,nv,nvar,v,goffset,row;
-  PetscInt       *numVertices,*numEdges,**edgelist,asvtx[2],bsvtx[2];
+  PetscInt       *numEdges,**edgelist,asvtx[2],bsvtx[2];
   const PetscInt *vtx,*edges;
   PetscBool      ghost,distribute=PETSC_TRUE;
   Vec            X;
@@ -21,26 +21,26 @@ int main(int argc,char ** argv)
   /* Create a network of subnetworks */
   if (size == 1) Nsubnet = 2;
   else Nsubnet = (PetscInt)size;
-  ierr = PetscCalloc3(Nsubnet,&numVertices,Nsubnet,&numEdges,Nsubnet,&edgelist);CHKERRQ(ierr);
+  ierr = PetscCalloc2(Nsubnet,&numEdges,Nsubnet,&edgelist);CHKERRQ(ierr);
 
   /* when size>1, process[i] creates subnetwork[i] */
   for (i=0; i<Nsubnet; i++) {
     if (i == 0 && (size == 1 || (rank == i && size >1))) {
-      numVertices[i] = 4; numEdges[i] = 3;
+      numEdges[i] = 3;
       ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
       edgelist[i][0] = 0; edgelist[i][1] = 1;
       edgelist[i][2] = 1; edgelist[i][3] = 2;
       edgelist[i][4] = 2; edgelist[i][5] = 3;
 
     } else if (i == 1 && (size == 1 || (rank == i && size >1))) {
-      numVertices[i] = 4; numEdges[i] = 3;
+      numEdges[i] = 3;
       ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
       edgelist[i][0] = 0; edgelist[i][1] = 1;
       edgelist[i][2] = 1; edgelist[i][3] = 2;
       edgelist[i][4] = 2; edgelist[i][5] = 3;
 
     } else if (i>1 && (size == 1 || (rank == i && size >1))) {
-      numVertices[i] = 4; numEdges[i] = 3;
+      numEdges[i] = 3;
       ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
       for (j=0; j< numEdges[i]; j++) {
         edgelist[i][2*j] = j; edgelist[i][2*j+1] = j+1;
@@ -56,7 +56,7 @@ int main(int argc,char ** argv)
 
   for (i=0; i<Nsubnet; i++) {
     PetscInt netNum = -1;
-    ierr = DMNetworkAddSubnetwork(dmnetwork,NULL,numVertices[i],numEdges[i],edgelist[i],&netNum);CHKERRQ(ierr);
+    ierr = DMNetworkAddSubnetwork(dmnetwork,NULL,numEdges[i],edgelist[i],&netNum);CHKERRQ(ierr);
   }
 
   /* Add shared vertices -- all processes hold this info at current implementation
@@ -92,7 +92,7 @@ int main(int argc,char ** argv)
     ierr = DMNetworkGetPlex(dmnetwork,&plexdm);CHKERRQ(ierr);
     ierr = DMPlexGetPartitioner(plexdm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part,PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
-    ierr = PetscOptionsSetValue(NULL,"-dm_plex_csr_via_mat","true");CHKERRQ(ierr); /* for parmetis */
+    ierr = PetscOptionsSetValue(NULL,"-dm_plex_csr_alg","mat");CHKERRQ(ierr); /* for parmetis */
   }
 
   /* Setup dmnetwork */
@@ -133,7 +133,7 @@ int main(int argc,char ** argv)
   for (i=0; i<Nsubnet; i++) {
     if (size == 1 || rank == i) {ierr = PetscFree(edgelist[i]);CHKERRQ(ierr);}
   }
-  ierr = PetscFree3(numVertices,numEdges,edgelist);CHKERRQ(ierr);
+  ierr = PetscFree2(numEdges,edgelist);CHKERRQ(ierr);
   ierr = DMDestroy(&dmnetwork);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

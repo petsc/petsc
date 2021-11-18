@@ -193,7 +193,7 @@ PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm     - the discretization manager object
 - field - field number for the DMMoab (0, 1, ... dof-1), where dof indicates the
         number of degrees of freedom per node within the DMMoab

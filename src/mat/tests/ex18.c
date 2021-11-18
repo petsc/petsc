@@ -91,7 +91,7 @@ int main(int argc,char **args)
 
   if (nonlocalBC) {
     /*version where boundary conditions are set by processes that don't necessarily own the nodes */
-    if (!rank) {
+    if (rank == 0) {
       nboundary_nodes = size>m ? nlocal : m-size+nlocal;
       ierr = PetscMalloc1(nboundary_nodes,&boundary_nodes);CHKERRQ(ierr);
       k = 0;

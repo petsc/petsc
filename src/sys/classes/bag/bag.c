@@ -29,7 +29,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,co
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of enum in struct
 .  mdefault - the initial value
@@ -83,7 +83,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char *const *l
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of integer in struct
 .  msize - number of entries in array
@@ -113,7 +113,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag,void *addr,PetscInt msize, 
   if (printhelp) {
     ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix ? bag->bagprefix : "",name);CHKERRQ(ierr);
     for (i=0; i<msize; i++) {
-      ierr = (*PetscHelpPrintf)(bag->bagcomm,"%D ",*((PetscInt*)addr)+i);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(bag->bagcomm,"%" PetscInt_FMT " ",*((PetscInt*)addr)+i);CHKERRQ(ierr);
     }
     ierr = (*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help);CHKERRQ(ierr);
   }
@@ -134,7 +134,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag,void *addr,PetscInt msize, 
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of real array in struct
 .  msize - number of entries in array
@@ -185,7 +185,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize,
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of integer in struct
 .  mdefault - the initial value
@@ -212,7 +212,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
   ierr     = PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH);CHKERRQ(ierr);
   ierr     = PetscOptionsHasHelp(NULL,&printhelp);CHKERRQ(ierr);
   if (printhelp) {
-    ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%d>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,mdefault,help);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%" PetscInt_FMT ">: %s \n",bag->bagprefix ? bag->bagprefix : "",name,mdefault,help);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetInt(NULL,bag->bagprefix,nname,&mdefault,NULL);CHKERRQ(ierr);
 
@@ -232,7 +232,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of integer in struct
 .  mdefault - the initial value
@@ -261,7 +261,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag,void *addr,PetscInt64 mdefault
   ierr     = PetscStrlcat(nname,name,PETSC_BAG_NAME_LENGTH);CHKERRQ(ierr);
   ierr     = PetscOptionsHasHelp(NULL,&printhelp);CHKERRQ(ierr);
   if (printhelp) {
-    ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%d>: %s \n",bag->bagprefix ? bag->bagprefix : "",name,odefault,help);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%" PetscInt_FMT ">: %s \n",bag->bagprefix ? bag->bagprefix : "",name,odefault,help);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetInt(NULL,bag->bagprefix,nname,&odefault,&flg);CHKERRQ(ierr);
   if (flg) mdefault = (PetscInt64)odefault;
@@ -269,7 +269,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag,void *addr,PetscInt64 mdefault
   ierr         = PetscNew(&item);CHKERRQ(ierr);
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
-  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  if (PetscUnlikely(item->offset > bag->bagsize)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next       = NULL;
   item->msize      = 1;
   *(PetscInt64*)addr = mdefault;
@@ -282,7 +282,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag,void *addr,PetscInt64 mdefault
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of boolean array in struct
 .  msize - number of entries in array
@@ -312,7 +312,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag,void *addr,PetscInt msize,
   if (printhelp) {
     ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix?bag->bagprefix:"",name);CHKERRQ(ierr);
     for (i=0; i<msize; i++) {
-      ierr = (*PetscHelpPrintf)(bag->bagcomm,"%D ",*((PetscInt*)addr)+i);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(bag->bagcomm,"%" PetscInt_FMT " ",*((PetscInt*)addr)+i);CHKERRQ(ierr);
     }
     ierr = (*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help);CHKERRQ(ierr);
   }
@@ -333,7 +333,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag,void *addr,PetscInt msize,
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of start of string in struct
 .  msize - length of the string space in the struct
@@ -385,7 +385,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of double in struct
 .  mdefault - the initial value
@@ -432,7 +432,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of scalar in struct
 .  mdefault - the initial value
@@ -479,7 +479,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
 
    Logically Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 .  addr - location of logical in struct
 .  mdefault - the initial value
@@ -635,7 +635,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
 
    Collective on PetscBag
 
-   Input Parameter:
+   Input Parameters:
 +  bag - the bag of values
 -  viewer - location to view the values
 
@@ -695,7 +695,7 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
         PetscInt i,*value = (PetscInt*)(((char*)bag) + nitem->offset);
         ierr = PetscViewerASCIIPrintf(view,"  %s = ",nitem->name);CHKERRQ(ierr);
         for (i=0; i<nitem->msize; i++) {
-          ierr = PetscViewerASCIIPrintf(view,"%D ",value[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(view,"%" PetscInt_FMT " ",value[i]);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(view,"; %s\n",nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_BOOL) {
@@ -706,7 +706,7 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
         for (i=0; i<nitem->msize; i++) {
           if (((int) value[i]) == -1) value[i] = PETSC_TRUE;
           /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
-          if (value[i] != PETSC_FALSE && value[i] != PETSC_TRUE) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Boolean value for %s %s is corrupt; integer value %d",nitem->name,nitem->help,value);
+          if (value[i] != PETSC_FALSE && value[i] != PETSC_TRUE) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Boolean value for %s %s is corrupt; integer value %" PetscInt_FMT,nitem->name,nitem->help,(PetscInt)(value[i]));
           ierr = PetscViewerASCIIPrintf(view," %s",PetscBools[value[i]]);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(view,"; %s\n",nitem->help);CHKERRQ(ierr);
@@ -802,7 +802,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
 
    Collective on PetscViewer
 
-   Input Parameter:
+   Input Parameters:
 +  viewer - file to load values from
 -  bag - the bag of values
 

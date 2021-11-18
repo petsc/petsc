@@ -345,25 +345,30 @@ PetscErrorCode MyKSPConvergedReasonView(KSP ksp,void *ctx)
    test:
       suffix: 1
       nsize: 1
+      filter: sed -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g"
 
    test:
       suffix: 2
       nsize: 1
       args: -ksp_converged_reason_view_cancel
+      filter: sed -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g"
 
    test:
       suffix: 3
       nsize: 1
       args: -ksp_converged_reason_view_cancel -ksp_converged_reason
+      filter: sed -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g"
 
    test:
       suffix: 4
       nsize: 1
       args: -snes_converged_reason_view_cancel
+      filter: sed -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g"
 
    test:
       suffix: 5
       nsize: 1
       args: -snes_converged_reason_view_cancel -snes_converged_reason
+      filter: sed -e "s/CONVERGED_ATOL/CONVERGED_RTOL/g"
 
 TEST*/

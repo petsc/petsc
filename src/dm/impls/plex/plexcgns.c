@@ -50,12 +50,12 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
   PetscValidCharPointer(filename, 2);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 #if defined(PETSC_HAVE_CGNS)
-  if (!rank) {
+  if (rank == 0) {
     ierr = cg_open(filename, CG_MODE_READ, &cgid);CHKERRCGNS(ierr);
     if (cgid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
   }
   ierr = DMPlexCreateCGNS(comm, cgid, interpolate, dm);CHKERRQ(ierr);
-  if (!rank) {ierr = cg_close(cgid);CHKERRCGNS(ierr);}
+  if (rank == 0) {ierr = cg_close(cgid);CHKERRCGNS(ierr);}
   PetscFunctionReturn(0);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires CGNS support. Reconfigure using --with-cgns-dir");
@@ -108,7 +108,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
 
   /* Open CGNS II file and read basic information on rank 0, then broadcast to all processors */
-  if (!rank) {
+  if (rank == 0) {
     int nbases, z;
 
     ierr = cg_nbases(cgid, &nbases);CHKERRCGNS(ierr);
@@ -141,7 +141,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
 
   /* Read zone information */
-  if (!rank) {
+  if (rank == 0) {
     int z, c, c_loc;
 
     /* Read the cell set connectivity table and build mesh topology
@@ -208,7 +208,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
 
   ierr = DMCreateLabel(*dm, "zone");CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     int z, c, c_loc, v_loc;
 
     ierr = DMGetLabel(*dm, "zone", &label);CHKERRQ(ierr);
@@ -293,7 +293,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
 
   ierr = DMCreateLocalVector(cdm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscInt off = 0;
     float   *x[3];
     int      z, d;
@@ -338,7 +338,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
 
   /* Read boundary conditions */
   ierr = DMGetNumLabels(*dm, &labelIdRange[0]);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     CGNS_ENUMT(BCType_t)        bctype;
     CGNS_ENUMT(DataType_t)      datatype;
     CGNS_ENUMT(PointSetType_t)  pointtype;
@@ -403,7 +403,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
     size_t len = sizeof(buffer);
     const char *locName;
 
-    if (!rank) {
+    if (rank == 0) {
       ierr = DMGetLabelByNum(*dm, labelId, &label);CHKERRQ(ierr);
       ierr = PetscObjectGetName((PetscObject)label, &locName);CHKERRQ(ierr);
       ierr = PetscStrncpy(labelName, locName, len);CHKERRQ(ierr);

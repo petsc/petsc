@@ -40,6 +40,7 @@ PetscLogEvent MAT_DenseCopyToGPU, MAT_DenseCopyFromGPU;
 PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
 PetscLogEvent MAT_FactorFactS,MAT_FactorInvS;
 PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;
+PetscLogEvent MAT_H2Opus_Build,MAT_H2Opus_Compress,MAT_H2Opus_Orthog;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","QR","MatFactorType","MAT_FACTOR_",NULL};
 
@@ -103,10 +104,10 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the factored matrix
 
-   Output Parameter:
+   Output Parameters:
 +  pivot - the pivot value computed
 -  row - the row that the zero pivot occurred. Note that this row must be interpreted carefully due to row reorderings and which processes
          the share the matrix
@@ -714,7 +715,7 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the Mat context
 -  prefix - the prefix to prepend to all option names
 
@@ -1041,7 +1042,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
 
     ierr = PetscObjectName((PetscObject)mat);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!((PetscObject)mat)->amsmem && !rank) {
+    if (!((PetscObject)mat)->amsmem && rank == 0) {
       ierr = PetscObjectViewSAWs((PetscObject)mat,viewer);CHKERRQ(ierr);
     }
 #endif
@@ -2096,7 +2097,7 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Output Parameters:
@@ -2150,7 +2151,7 @@ PetscErrorCode MatSetLayouts(Mat A,PetscLayout rmap,PetscLayout cmap)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  A - the matrix
 
    Output Parameters:
@@ -2875,7 +2876,7 @@ PetscErrorCode MatSetFactorType(Mat mat, MatFactorType t)
 
    Collective on Mat if MAT_GLOBAL_MAX or MAT_GLOBAL_SUM is used as the flag
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -4118,7 +4119,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 .  its - the number of iterations
 -  lits - the number of local iterations
 
-   Output Parameters:
+   Output Parameter:
 .  x - the solution (can contain an initial guess, use option SOR_ZERO_INITIAL_GUESS to indicate no guess)
 
    SOR Flags:
@@ -4183,7 +4184,7 @@ PetscErrorCode MatSOR(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal sh
 
   MatCheckPreallocated(mat,1);
   ierr = PetscLogEventBegin(MAT_SOR,mat,b,x,0);CHKERRQ(ierr);
-  ierr =(*mat->ops->sor)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
+  ierr = (*mat->ops->sor)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SOR,mat,b,x,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4938,10 +4939,10 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (optional)
 
@@ -4987,10 +4988,10 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the minimums
 -  idx - the indices of the column found for each row (or NULL if not needed)
 
@@ -5037,10 +5038,10 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (optional)
 
@@ -5085,10 +5086,10 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  v - the vector for storing the maximums
 -  idx - the indices of the column found for each row (or NULL if not needed)
 
@@ -5214,7 +5215,7 @@ PetscErrorCode MatTranspose(Mat mat,MatReuse reuse,Mat *B)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  B - the matrix to test against, this can equal the first parameter
 
@@ -5290,7 +5291,7 @@ PetscErrorCode MatHermitianTranspose(Mat mat,MatReuse reuse,Mat *B)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  B - the matrix to test against, this can equal the first parameter
 
@@ -5507,7 +5508,7 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
 +  mat - the matrix
 -  type - the type of norm, NORM_1, NORM_FROBENIUS, NORM_INFINITY
 
-   Output Parameters:
+   Output Parameter:
 .  nrm - the resulting norm
 
    Level: intermediate
@@ -6690,7 +6691,7 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6720,7 +6721,7 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective, unless matrix has not been allocated, then collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6756,7 +6757,7 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -6849,10 +6850,10 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  A - matrix of type Elemental or ScaLAPACK
 
-   Output Arguments:
+   Output Parameters:
 +  rows - rows in which this process owns elements
 -  cols - columns in which this process owns elements
 
@@ -7091,6 +7092,12 @@ PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS 
     if (eq) {
       ierr = MatPropagateSymmetryOptions(mat,(*submat)[i]);CHKERRQ(ierr);
     }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+    if (mat->boundtocpu && mat->bindingpropagates) {
+      ierr = MatBindToCPU((*submat)[i],PETSC_TRUE);CHKERRQ(ierr);
+      ierr = MatSetBindingPropagates((*submat)[i],PETSC_TRUE);CHKERRQ(ierr);
+    }
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -7412,7 +7419,7 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
    Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +  rbs - row block size
 -  cbs - column block size
 
@@ -7508,7 +7515,7 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat,PetscInt nblocks,PetscInt *bsize
 
    Logically Collective on Mat
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
@@ -7831,7 +7838,7 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
     Input Parameters:
 +   mat - the matrix
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
--   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
+.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
 -   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is
@@ -8952,7 +8959,7 @@ PetscErrorCode MatSolves(Mat mat,Vecs b,Vecs x)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact transpose)
 
@@ -9004,7 +9011,7 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the matrix to test
 -  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact Hermitian)
 
@@ -9186,7 +9193,7 @@ PetscErrorCode MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,Petsc
    Input Parameter:
 .  mat - the matrix
 
-   Output Parameter:
+   Output Parameters:
 +   right - (optional) vector that the matrix can be multiplied against
 -   left - (optional) vector that the matrix vector product can be stored in
 
@@ -9218,6 +9225,12 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
       ierr = VecSetType(*right,mat->defaultvectype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      if (mat->boundtocpu && mat->bindingpropagates) {
+        ierr = VecSetBindingPropagates(*right,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = VecBindToCPU(*right,PETSC_TRUE);CHKERRQ(ierr);
+      }
+#endif
       ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
     }
     if (left) {
@@ -9226,6 +9239,12 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
       ierr = VecSetType(*left,mat->defaultvectype);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+      if (mat->boundtocpu && mat->bindingpropagates) {
+        ierr = VecSetBindingPropagates(*left,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = VecBindToCPU(*left,PETSC_TRUE);CHKERRQ(ierr);
+      }
+#endif
       ierr = PetscLayoutReference(mat->rmap,&(*left)->map);CHKERRQ(ierr);
     }
   }
@@ -9766,13 +9785,25 @@ static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fi
 
    To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value actually needed.
 
-   If you have many matrices with the same non-zero structure to multiply, you should use MatProductCreate()/MatProductSymbolic(C)/ReplaceMats(), and call MatProductNumeric() repeatedly.
+   If you have many matrices with the same non-zero structure to multiply, you should use MatProductCreate()/MatProductSymbolic()/MatProductReplaceMats(), and call MatProductNumeric() repeatedly.
 
    In the special case where matrix B (and hence C) are dense you can create the correctly sized matrix C yourself and then call this routine with MAT_REUSE_MATRIX, rather than first having MatMatMult() create it for you. You can NEVER do this if the matrix C is sparse.
 
+   Example of Usage:
+.vb
+     MatProductCreate(A,B,NULL,&C);
+     MatProductSetType(C,MATPRODUCT_AB);
+     MatProductSymbolic(C);
+     MatProductNumeric(C); // compute C=A * B
+     MatProductReplaceMats(A1,B1,NULL,C); // compute C=A1 * B1
+     MatProductNumeric(C);
+     MatProductReplaceMats(A2,NULL,NULL,C); // compute C=A2 * B1
+     MatProductNumeric(C);
+.ve
+
    Level: intermediate
 
-.seealso: MatTransposeMatMult(), MatMatTransposeMult(), MatPtAP()
+.seealso: MatTransposeMatMult(), MatMatTransposeMult(), MatPtAP(), MatProductCreate(), MatProductSymbolic(), MatProductReplaceMats(), MatProductNumeric()
 @*/
 PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
@@ -10040,6 +10071,12 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   } else {
     ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
   }
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  if (matseq[0]->boundtocpu && matseq[0]->bindingpropagates) {
+    ierr = MatBindToCPU(*matredundant,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetBindingPropagates(*matredundant,PETSC_TRUE);CHKERRQ(ierr);
+  }
+#endif
   ierr = PetscLogEventEnd(MAT_RedundantMat,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -10096,12 +10133,12 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  mat - matrix to extract local submatrix from
 .  isrow - local row indices for submatrix
 -  iscol - local column indices for submatrix
 
-   Output Arguments:
+   Output Parameter:
 .  submat - the submatrix
 
    Level: intermediate
@@ -10145,11 +10182,11 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
 
    Not Collective
 
-   Input Arguments:
-   mat - matrix to extract local submatrix from
-   isrow - local row indices for submatrix
-   iscol - local column indices for submatrix
-   submat - the submatrix
+   Input Parameters:
++  mat - matrix to extract local submatrix from
+.  isrow - local row indices for submatrix
+.  iscol - local column indices for submatrix
+-  submat - the submatrix
 
    Level: intermediate
 

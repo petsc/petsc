@@ -36,7 +36,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = PetscViewerSetType(viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscBool isAscii, isBinaryBig, isBinaryLittle;
 
     /* Check for PLY file */
@@ -152,7 +152,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = VecSetBlockSize(coordinates, cdim);CHKERRQ(ierr);
   ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     float rbuf[1];
     int   ibuf[1];
 
@@ -160,13 +160,13 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
       for (p = 0; p < Nvp; ++p) {
         if (vtype[p] == 'f') {
           ierr = PetscViewerRead(viewer, &rbuf, 1, NULL, PETSC_FLOAT);CHKERRQ(ierr);
-          if (byteSwap) ierr = PetscByteSwap(&rbuf, PETSC_FLOAT, 1);CHKERRQ(ierr);
+          if (byteSwap) {ierr = PetscByteSwap(&rbuf, PETSC_FLOAT, 1);CHKERRQ(ierr);}
           if      (p == xi) coords[v*cdim+0] = rbuf[0];
           else if (p == yi) coords[v*cdim+1] = rbuf[0];
           else if (p == zi) coords[v*cdim+2] = rbuf[0];
         } else if (vtype[p] == 'd') {
           ierr = PetscViewerRead(viewer, &ibuf, 1, NULL, PETSC_INT);CHKERRQ(ierr);
-          if (byteSwap) ierr = PetscByteSwap(&ibuf, PETSC_INT, 1);CHKERRQ(ierr);
+          if (byteSwap) {ierr = PetscByteSwap(&ibuf, PETSC_INT, 1);CHKERRQ(ierr);}
         } else if (vtype[p] == 'c') {
           ierr = PetscViewerRead(viewer, &ibuf, 1, NULL, PETSC_CHAR);CHKERRQ(ierr);
         } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid vertex property type in PLY file");
@@ -177,7 +177,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   /* Read topology */
-  if (!rank) {
+  if (rank == 0) {
     char     ibuf[1];
     PetscInt vbuf[16], corners;
 
@@ -192,7 +192,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
       }
       if (ibuf[0] != corners) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All cells must have the same number of vertices in PLY file: %D != %D", ibuf[0], corners);
       ierr = PetscViewerRead(viewer, &vbuf, ibuf[0], NULL, PETSC_INT);CHKERRQ(ierr);
-      if (byteSwap) ierr = PetscByteSwap(&vbuf, PETSC_INT, ibuf[0]);CHKERRQ(ierr);
+      if (byteSwap) {ierr = PetscByteSwap(&vbuf, PETSC_INT, ibuf[0]);CHKERRQ(ierr);}
       for (v = 0; v < ibuf[0]; ++v) vbuf[v] += Nc;
       ierr = DMPlexSetCone(*dm, c, vbuf);CHKERRQ(ierr);
     }

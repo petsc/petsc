@@ -733,6 +733,7 @@ PETSC_DEPRECATED_FUNCTION("Use KSPGLTRGetLambda (since v3.12)") PETSC_STATIC_INL
 
 PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP,const char[]);
 
+PETSC_EXTERN PetscErrorCode PCSetPreSolve(PC,PetscErrorCode (*)(PC,KSP));
 PETSC_EXTERN PetscErrorCode PCPreSolve(PC,KSP);
 PETSC_EXTERN PetscErrorCode PCPostSolve(PC,KSP);
 

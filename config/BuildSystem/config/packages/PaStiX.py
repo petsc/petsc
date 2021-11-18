@@ -237,8 +237,7 @@ class Configure(config.package.Package):
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing PaStiX; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp -f install/*.a '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f install/*.h '+includeDir+'/.', timeout=2500, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && mkdir -p '+libDir+' && cp -f install/*.a '+libDir+'/. && mkdir -p '+includeDir+' && cp -f install/*.h '+includeDir+'/.', timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on PaStiX: '+str(e))
       self.postInstall(output+err,os.path.join('src','config.in'))

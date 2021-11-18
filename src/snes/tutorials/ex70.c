@@ -156,8 +156,6 @@ PetscErrorCode StokesSetupIndexSets(Stokes *s)
   PetscFunctionBeginUser;
   /* the two index sets */
   ierr = MatNestGetISs(s->A, s->isg, NULL);CHKERRQ(ierr);
-  /*  ISView(isg[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  /*  ISView(isg[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 

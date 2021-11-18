@@ -339,7 +339,7 @@ int main(int argc,char **args)
     ierr = MatMumpsGetCntl(F,icntl,&cntl);CHKERRQ(ierr);
 
     /* compute determinant */
-    if (!rank) {
+    if (rank == 0) {
       ierr = MatMumpsGetInfog(F,34,&infog34);CHKERRQ(ierr);
       ierr = MatMumpsGetRinfog(F,12,&rinfo12);CHKERRQ(ierr);
       ierr = MatMumpsGetRinfog(F,13,&rinfo13);CHKERRQ(ierr);

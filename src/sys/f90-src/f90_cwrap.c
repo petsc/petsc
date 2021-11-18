@@ -2,7 +2,7 @@
 
 /*@C
 
-   Converts a MPI_Fint that contains a Fortran MPI_Datatype to its C MPI_Datatype equivalent
+   PetscMPIFortranDatatypeToC - Converts a MPI_Fint that contains a Fortran MPI_Datatype to its C MPI_Datatype equivalent
 
    Not Collective
 

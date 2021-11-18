@@ -80,7 +80,7 @@ class MatType(object):
     LMVMSYMBADBROYDEN = S_(MATLMVMSYMBADBROYDEN)
     LMVMDIAGBBROYDEN = S_(MATLMVMDIAGBROYDEN)
     CONSTANTDIAGONAL = S_(MATCONSTANTDIAGONAL)
-    HARA             = S_(MATHARA)
+    H2OPUS           = S_(MATH2OPUS)
 
 class MatOption(object):
     OPTION_MIN                  = MAT_OPTION_MIN
@@ -530,6 +530,44 @@ cdef class Mat(Object):
             for j from 0 <= j < mc: ciscols[j] = (<IS?>iscols[j]).iset
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateNest(ccomm, nr, cisrows, nc, ciscols, cmats, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
+
+    def createH2OpusFromMat(self, Mat A, coordinates=None, dist=None, eta=None, leafsize=None, maxrank=None, bs=None, rtol=None):
+        cdef PetscInt cdim = 1
+        cdef PetscReal *coords = NULL
+        cdef PetscBool cdist = PETSC_FALSE
+        cdef PetscReal peta = PETSC_DECIDE
+        cdef PetscInt lsize = PETSC_DECIDE
+        cdef PetscInt maxr = PETSC_DECIDE
+        cdef PetscInt pbs = PETSC_DECIDE
+        cdef PetscReal tol = PETSC_DECIDE
+        cdef ndarray xyz
+        cdef PetscInt nvtx
+        cdef PetscInt rl = 0, cl = 0
+        if dist is not None: cdist = asBool(dist)
+        if eta is not None: peta = asReal(eta)
+        if leafsize is not None: lsize = asInt(leafsize)
+        if maxrank is not None: maxr = asInt(maxrank)
+        if bs is not None: pbs = asInt(bs)
+        if rtol is not None: tol = asReal(rtol)
+
+        if coordinates is not None:
+            xyz = iarray(coordinates, NPY_PETSC_REAL)
+            if PyArray_ISFORTRAN(xyz): xyz = PyArray_Copy(xyz)
+            if PyArray_NDIM(xyz) != 2: raise ValueError(
+                ("coordinates must have two dimensions: "
+                 "coordinates.ndim=%d") % (PyArray_NDIM(xyz)) )
+            nvtx = <PetscInt> PyArray_DIM(xyz, 0)
+            CHKERR( MatGetLocalSize(A.mat, &rl, &cl) )
+            if cl != rl: raise ValueError("Not for rectangular matrices")
+            if nvtx < rl: raise ValueError(
+                ("coordinates size must be at least %d" % rl ))
+            cdim = <PetscInt> PyArray_DIM(xyz, 1)
+            coords = <PetscReal*> PyArray_DATA(xyz)
+
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateH2OpusFromMat(A.mat, cdim, coords, cdist, peta, lsize, maxr, pbs, tol, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 

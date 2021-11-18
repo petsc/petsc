@@ -10,20 +10,20 @@ For testing builds, the general invocation from the ``$PETSC_DIR`` is:
 
 .. code-block:: console
 
-   > make [-j <n>] -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
+   $ make [-j <n>] -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
 
 For testing ``configure`` that used the ``--prefix`` option, the
 general invocation from the installation (prefix) directory is:
 
 .. code-block:: console
 
-   > make [-j <n>] -f share/petsc/examples/gmakefile test
+   $ make [-j <n>] -f share/petsc/examples/gmakefile test
 
 For a full list of options, use
 
 .. code-block:: console
 
-   > make -f gmakefile help
+   $ make -f gmakefile help
 
 Understanding test output and more information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,19 +36,19 @@ To check if the libraries are working do:
 
 .. code-block:: console
 
-   > make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> test
+   $ make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> test
 
 A comprehensive set of tests can be run with
 
 .. code-block:: console
 
-   > make PETSC_DIR=<PETSC_DIR> $PETSC_ARCH=<PETSC_ARCH> alltests
+   $ make PETSC_DIR=<PETSC_DIR> $PETSC_ARCH=<PETSC_ARCH> alltests
 
 or
 
 .. code-block:: console
 
-   > make [-j <n>] -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
+   $ make [-j <n>] -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
 
 Depending on your machine’s configuration running the full test suite
 (above) can take from a few minutes to a couple hours. Note that
@@ -82,13 +82,13 @@ For example, test ``vec_vec_tutorials-ex6``, which can be run e.g. with
 
 .. code-block:: console
 
-   > make -f gmakefile test search='vec_vec_tutorials-ex6'
+   $ make -f gmakefile test search='vec_vec_tutorials-ex6'
 
 (see the discussion of ``search`` below), denotes the shell script:
 
 .. code-block:: console
 
-   > $PETSC_DIR/$PETSC_ARCH/tests/vec/vec/tutorials/runex6.sh
+   $ $PETSC_DIR/$PETSC_ARCH/tests/vec/vec/tutorials/runex6.sh
 
 These shell scripts can be run independently in those directories, and
 take arguments to show the commands run, change arguments, etc. Use the
@@ -108,26 +108,26 @@ Some examples are:
 
 .. code-block:: console
 
-   > make -f gmakefile test search='ts%'                      # Run all TS examples
-   > make -f gmakefile test searchin='tutorials'              # Run all tutorials
-   > make -f gmakefile test search='ts%' searchin='tutorials' # Run all TS tutorials
-   > make -f gmakefile test argsearch='cuda'                  # Run examples with cuda in arguments
-   > make -f gmakefile test test-fail='1'
-   > make -f gmakefile test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'
+   $ make -f gmakefile test search='ts%'                      # Run all TS examples
+   $ make -f gmakefile test searchin='tutorials'              # Run all tutorials
+   $ make -f gmakefile test search='ts%' searchin='tutorials' # Run all TS tutorials
+   $ make -f gmakefile test argsearch='cuda'                  # Run examples with cuda in arguments
+   $ make -f gmakefile test test-fail='1'
+   $ make -f gmakefile test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'
 
 It is useful before invoking the tests to see what targets will be run.
 The ``print-test`` target helps with this:
 
 .. code-block:: console
 
-   > make -f gmakefile print-test argsearch='cuda'
+   $ make -f gmakefile print-test argsearch='cuda'
 
 To see all of the test targets which would be run, this command can be
 used:
 
 .. code-block:: console
 
-   > make -f gmakefile print-test
+   $ make -f gmakefile print-test
 
 For testing of installed PETSc, use
 

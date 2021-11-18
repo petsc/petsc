@@ -557,7 +557,7 @@ choices below:
    The number of updates to be used in the :math:`S` and :math:`Y`
    matrices is 1 by default (i.e.: the latest update only) and can be
    changed via ``-mat_lmvm_scalar_hist``. This technique is inspired by
-   Gilbert and Lemarechal :cite:`KEYPREFIX-gilbert-lemarechal`.
+   Gilbert and Lemarechal :cite:`KEYPREFIX-Gilbert-Lemarechal`.
 
 -  ``diagonal`` – Uses a full-memory restricted Broyden update formula
    to construct a diagonal matrix for the Jacobian initialization.
@@ -565,7 +565,7 @@ choices below:
    footprint is restricted to only the vector representing the diagonal
    and some additional work vectors used in its construction. The
    diagonal terms are also re-scaled with every update as suggested in
-   :cite:`KEYPREFIX-gilbert-lemarechal`. This initialization requires
+   :cite:`KEYPREFIX-Gilbert-Lemarechal`. This initialization requires
    the most computational effort of the available choices but typically
    results in a significant reduction in the number of function
    evaluations taken to compute a solution.
@@ -664,7 +664,7 @@ we introduce the four spaces shown in :numref:`fig_localspaces`.
    space (at least not during assembly), but it is a useful for
    declaring which part of a matrix is being assembled.
 
-.. figure:: images/localspaces.svg
+.. figure:: /images/docs/manual/localspaces.svg
    :alt: The relationship between spaces used for coupled assembly.
    :name: fig_localspaces
 
@@ -705,7 +705,7 @@ for a simple example using this interface.
 Basic Matrix Operations
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Table `2.2 <#fig_matrixops>`__ summarizes basic PETSc matrix operations.
+Table :any:`2.2 <fig_matrixops>` summarizes basic PETSc matrix operations.
 We briefly discuss a few of these routines in more detail below.
 
 The parallel matrix can multiply a vector with ``n`` local entries,
@@ -1084,7 +1084,7 @@ are the row pointers and column pointers for the given rows; these are
 the usual format for parallel compressed sparse row storage, using
 indices starting at 0, *not* 1.
 
-.. figure:: images/usg.*
+.. figure:: /images/docs/manual/usg.*
    :alt: Numbering on Simple Unstructured Grid
    :name: fig_usg
 
@@ -1167,12 +1167,7 @@ requires a great deal of time.
 
     <hr>
 
-.. bibliography:: /../src/docs/tex/petsc.bib
-   :filter: docname in docnames
-   :keyprefix: KEYPREFIX-
-   :labelprefix: ref-
-
-.. bibliography:: /../src/docs/tex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames
    :keyprefix: KEYPREFIX-
    :labelprefix: ref-

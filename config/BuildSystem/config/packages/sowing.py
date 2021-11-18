@@ -132,7 +132,7 @@ and run configure again\n')
         self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
                           you will need to copy them from some other system (src/fortran/auto)')
       else:
-        self.logWrite('           Running '+self.bfort+' to generate fortran stubs\n')
+        self.logPrintBox('Running '+self.bfort+' to generate fortran stubs')
         try:
           import os,sys
           sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))

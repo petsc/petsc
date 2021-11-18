@@ -51,6 +51,9 @@ static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOpti
   ierr = PetscOptionsBool("-viewer_hdf5_sp_output","Force data to be written in single precision","PetscViewerHDF5SetSPOutput",hdf5->spoutput,&hdf5->spoutput,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_hdf5_collective","Enable collective transfer mode","PetscViewerHDF5SetCollective",flg,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = PetscViewerHDF5SetCollective(v,flg);CHKERRQ(ierr);}
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-viewer_hdf5_default_timestepping","Set default timestepping state","PetscViewerHDF5SetDefaultTimestepping",flg,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = PetscViewerHDF5SetDefaultTimestepping(v,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -69,6 +72,7 @@ static PetscErrorCode PetscViewerView_HDF5(PetscViewer v,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"Enforce single precision storage: %s\n",PetscBools[hdf5->spoutput]);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetCollective(v,&flg);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"MPI-IO transfer mode: %s\n",flg ? "collective" : "independent");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Default timestepping: %s\n",PetscBools[hdf5->defTimestepping]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,6 +84,15 @@ static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscFree(hdf5->filename);CHKERRQ(ierr);
   if (hdf5->file_id) PetscStackCallHDF5(H5Fclose,(hdf5->file_id));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerFlush_HDF5(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)viewer->data;
+
+  PetscFunctionBegin;
+  if (hdf5->file_id) PetscStackCallHDF5(H5Fflush,(hdf5->file_id, H5F_SCOPE_LOCAL));
   PetscFunctionReturn(0);
 }
 
@@ -104,6 +117,8 @@ static PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5SetBaseDimension2_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5SetSPOutput_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5GetDefaultTimestepping_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerHDF5SetDefaultTimestepping_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -438,6 +453,81 @@ static PetscErrorCode PetscViewerSetUp_HDF5(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscViewerHDF5SetDefaultTimestepping_HDF5(PetscViewer viewer, PetscBool flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  hdf5->defTimestepping = flg;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerHDF5GetDefaultTimestepping_HDF5(PetscViewer viewer, PetscBool *flg)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
+
+  PetscFunctionBegin;
+  *flg = hdf5->defTimestepping;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5SetDefaultTimestepping - Set the flag for default timestepping
+
+  Logically Collective on PetscViewer
+
+  Input Parameters:
++ viewer - the PetscViewer; if it is not hdf5 then this command is ignored
+- flg    - if PETSC_TRUE we will assume that timestepping is on
+
+  Options Database:
+. -viewer_hdf5_default_timestepping - turns on (true) or off (false) default timestepping
+
+  Notes:
+  If the timestepping attribute is not found for an object, then the default timestepping is used
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5GetDefaultTimestepping(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode PetscViewerHDF5SetDefaultTimestepping(PetscViewer viewer, PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  ierr = PetscTryMethod(viewer, "PetscViewerHDF5SetDefaultTimestepping_C", (PetscViewer,PetscBool), (viewer,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscViewerHDF5GetDefaultTimestepping - Get the flag for default timestepping
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Output Parameter:
+. flg    - if PETSC_TRUE we will assume that timestepping is on
+
+  Notes:
+  If the timestepping attribute is not found for an object, then the default timestepping is used
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5SetDefaultTimestepping(), PetscViewerHDF5PushTimestepping(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode PetscViewerHDF5GetDefaultTimestepping(PetscViewer viewer, PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  ierr = PetscUseMethod(viewer, "PetscViewerHDF5GetDefaultTimestepping_C", (PetscViewer,PetscBool*), (viewer,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
    PETSCVIEWERHDF5 - A viewer that writes to an HDF5 file
 
@@ -470,7 +560,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   v->ops->setfromoptions = PetscViewerSetFromOptions_HDF5;
   v->ops->setup          = PetscViewerSetUp_HDF5;
   v->ops->view           = PetscViewerView_HDF5;
-  v->ops->flush          = NULL;
+  v->ops->flush          = PetscViewerFlush_HDF5;
   hdf5->btype            = FILE_MODE_UNDEFINED;
   hdf5->filename         = NULL;
   hdf5->timestep         = -1;
@@ -486,6 +576,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetSPOutput_C",PetscViewerHDF5SetSPOutput_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetCollective_C",PetscViewerHDF5SetCollective_HDF5);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5GetCollective_C",PetscViewerHDF5GetCollective_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5GetDefaultTimestepping_C",PetscViewerHDF5GetDefaultTimestepping_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerHDF5SetDefaultTimestepping_C",PetscViewerHDF5SetDefaultTimestepping_HDF5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -696,7 +788,7 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char *name[])
   Input Parameter:
 . viewer - the PetscViewer
 
-  Output Parameter:
+  Output Parameters:
 + fileId - The HDF5 file ID
 - groupId - The HDF5 group ID
 
@@ -711,16 +803,21 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 {
   hid_t          file_id;
   H5O_type_t     type;
-  const char     *groupName = NULL;
-  PetscBool      create;
+  const char     *groupName = NULL, *fileName = NULL;
+  PetscBool      writable, has;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerWritable(viewer, &create);CHKERRQ(ierr);
+  ierr = PetscViewerWritable(viewer, &writable);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+  ierr = PetscViewerFileGetName(viewer, &fileName);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetGroup(viewer, &groupName);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Traverse_Internal(viewer, groupName, create, NULL, &type);CHKERRQ(ierr);
-  if (type != H5O_TYPE_GROUP) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Path %s resolves to something which is not a group", groupName);
+  ierr = PetscViewerHDF5Traverse_Internal(viewer, groupName, writable, &has, &type);CHKERRQ(ierr);
+  if (!has) {
+    if (!writable) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Group %s does not exist and file %s is not open for writing", groupName, fileName);
+    else           SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_LIB, "HDF5 failed to create group %s although file %s is open for writing", groupName, fileName);
+  }
+  if (type != H5O_TYPE_GROUP) SETERRQ2(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Path %s in file %s resolves to something which is not a group", groupName, fileName);
   PetscStackCallHDF5Return(*groupId,H5Gopen2,(file_id, groupName ? groupName : "/", H5P_DEFAULT));
   *fileId  = file_id;
   PetscFunctionReturn(0);
@@ -866,7 +963,7 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer, timestep, 2);
-  if (timestep < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestep %D is negative", timestep);
+  if (timestep < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestep %" PetscInt_FMT " is negative", timestep);
   if (!hdf5->timestepping) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Timestepping has not been pushed yet. Call PetscViewerHDF5PushTimestepping() first");
   hdf5->timestep = timestep;
   PetscFunctionReturn(0);

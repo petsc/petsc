@@ -10,7 +10,8 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.installed = 0 # 1 indicates that Configure itself has already compiled and installed PETSc
+    self.installed    = 0 # 1 indicates that Configure itself has already compiled and installed PETSc
+    self.found        = 1
     return
 
   def __str2__(self):
@@ -284,12 +285,6 @@ prepend-path PATH "%s"
     self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('PCC',self.setCompilers.getCompiler())
     self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())
-    self.addMakeMacro('PCPP_FLAGS',getattr(self.setCompilers,self.languages.clanguage.upper()+'PPFLAGS'))
-    self.addMakeMacro('PFLAGS','${'+self.languages.clanguage.upper()+'FLAGS}')
-    self.addMakeMacro('PPPFLAGS','${'+self.languages.clanguage.upper()+'PPFLAGS}')
-    # ugly work-around for python3 distutils parse_makefile() issue with the above 2 lines
-    self.addMakeMacro('PY_'+self.languages.clanguage.upper()+'FLAGS','')
-    self.addMakeMacro('PY_'+self.languages.clanguage.upper()+'PPFLAGS','')
     self.setCompilers.popLanguage()
     # .o or .obj
     self.addMakeMacro('CC_SUFFIX','o')
@@ -395,6 +390,8 @@ prepend-path PATH "%s"
     self.packagelibs = []
     for i in self.framework.packages:
       if not i.required:
+        if i.devicePackage:
+          self.addDefine('HAVE_DEVICE',1)
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]

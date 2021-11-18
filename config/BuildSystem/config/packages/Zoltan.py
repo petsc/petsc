@@ -64,8 +64,7 @@ class Configure(config.package.GNUPackage):
 
       output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+packageDir+' && '+self.make.make+' everything', timeout=6000, log = self.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
-      self.installDirProvider.printSudoPasswordMessage(self.installSudo)
-      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+packageDir+' && '+self.installSudo+self.make.make+' install', timeout=300, log = self.log)
+      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+packageDir+' && '+self.make.make+' install', timeout=300, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3, conffile)

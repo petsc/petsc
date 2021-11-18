@@ -228,19 +228,19 @@ static PetscErrorCode TaoDestroy_CG(Tao tao)
 }
 
 static PetscErrorCode TaoSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,Tao tao)
- {
-    TAO_CG         *cgP = (TAO_CG*)tao->data;
-    PetscErrorCode ierr;
+{
+  TAO_CG         *cgP = (TAO_CG*)tao->data;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-    ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
-    ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_cg_eta","restart tolerance", "", cgP->eta,&cgP->eta,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-tao_cg_type","cg formula", "", CG_Table, CG_Types, CG_Table[cgP->cg_type], &cgP->cg_type,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value", "", cgP->delta_min,&cgP->delta_min,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_cg_delta_max","maximum delta value", "", cgP->delta_max,&cgP->delta_max,NULL);CHKERRQ(ierr);
-   ierr = PetscOptionsTail();CHKERRQ(ierr);
-   PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_cg_eta","restart tolerance", "", cgP->eta,&cgP->eta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_cg_type","cg formula", "", CG_Table, CG_Types, CG_Table[cgP->cg_type], &cgP->cg_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value", "", cgP->delta_min,&cgP->delta_min,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_cg_delta_max","maximum delta value", "", cgP->delta_max,&cgP->delta_max,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)

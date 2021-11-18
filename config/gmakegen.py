@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-from distutils.sysconfig import parse_makefile
+from sysconfig import _parse_makefile as parse_makefile
 import sys
 import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -46,7 +46,7 @@ class Mistakes(object):
         smdirs = set(mdirs)
         sdirs  = set(dirs).difference(AUTODIRS)
         if not smdirs.issubset(sdirs):
-            self.mistakes.append('Makefile contains directory not on filesystem: %s: %r' % (root, sorted(smdirs - sdirs)))
+            self.mistakes.append('%s/makefile contains a directory not on the filesystem: %r' % (root, sorted(smdirs - sdirs)))
         if not self.verbose: return
         if smdirs != sdirs:
             from sys import stderr
@@ -60,9 +60,9 @@ class Mistakes(object):
         if NOWARNDIRS.intersection(pathsplit(root)):
             return
         smsources = set(msources)
-        ssources  = set(f for f in files if getlangext(f) in ['.c', '.kokkos.cxx','.cxx', '.cc', '.cu', '.cpp', '.F', '.F90', '.hip.cpp', '.sycl.cxx'])
+        ssources  = set(f for f in files if getlangext(f) in ['.c', '.kokkos.cxx','.cxx', '.cc', '.cu', '.cpp', '.F', '.F90', '.hip.cpp', '.sycl.cxx', 'raja.cxx'])
         if not smsources.issubset(ssources):
-            self.mistakes.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
+            self.mistakes.append('%s/makefile contains a file not on the filesystem: %r' % (root, sorted(smsources - ssources)))
         if not self.verbose: return
         if smsources != ssources:
             from sys import stderr
@@ -76,7 +76,7 @@ class Mistakes(object):
         for m in self.mistakes:
             self.log.write(m + '\n')
         if self.mistakes:
-            raise RuntimeError('PETSc makefiles contain mistakes or files are missing on filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "hg revert filename" or "git checkout filename".\n\t2. Files were deleted from repository, but were not removed from makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot to "add" new files to the repository. Send mail to petsc-maint@mcs.anl.gov.' % ('\n'.join(self.mistakes)))
+            raise RuntimeError('\n\nThe PETSc makefiles contain mistakes or files are missing on the filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "git checkout filename", where "filename" is the missing file.\n\t2. Files were deleted from the repository, but were not removed from the makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot to "add" new files to the repository. Send mail to petsc-maint@mcs.anl.gov.\n\n' % ('\n'.join(self.mistakes)))
 
 def stripsplit(line):
   return line[len('#requires'):].replace("'","").split()
@@ -84,7 +84,7 @@ def stripsplit(line):
 PetscPKGS = 'sys vec mat dm ksp snes ts tao'.split()
 # the key is actually the language suffix, it won't work for suffixes such as 'kokkos.cxx' so use an _ and replace the _ as needed with . 
 LANGS = dict(kokkos_cxx='KOKKOS', c='C', cxx='CXX', cpp='CPP', cu='CU', F='F',
-             F90='F90', hip_cpp='HIP', sycl_cxx='SYCL.CXX')
+             F90='F90', hip_cpp='HIP', sycl_cxx='SYCL.CXX', raja_cxx='RAJA.CXX')
 
 class debuglogger(object):
     def __init__(self, log):

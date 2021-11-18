@@ -108,12 +108,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   const PetscInt *rip,*riip;
   PetscInt       mbs=A->rmap->n,*bi=b->i,*bj=b->j;
 
-  MatScalar    *ba     = b->a;
-  PetscReal    shiftnz = info->shiftamount;
-  PetscReal    droptol = -1;
-  PetscBool    perm_identity;
-  spbas_matrix Pattern, matrix_L,matrix_LT;
-  PetscReal    mem_reduction;
+  MatScalar      *ba     = b->a;
+  PetscReal      shiftnz = info->shiftamount;
+  PetscReal      droptol = -1;
+  PetscBool      perm_identity;
+  spbas_matrix   Pattern, matrix_L,matrix_LT;
+  PetscReal      mem_reduction;
 
   PetscFunctionBegin;
   /* Reduce memory requirements:   erase values of B-matrix */
@@ -134,8 +134,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   }
   for (ierr = NEGATIVE_DIAGONAL; ierr == NEGATIVE_DIAGONAL;)
   {
-    ierr = spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz,&matrix_LT);CHKERRQ(ierr);
-    if (ierr == NEGATIVE_DIAGONAL) {
+    PetscBool success;
+    ierr = spbas_incomplete_cholesky(A, rip, riip, Pattern, droptol, shiftnz,&matrix_LT,&success);CHKERRQ(ierr);
+    if (!success) {
       shiftnz *= 1.5;
       if (shiftnz < 1e-5) shiftnz=1e-5;
       ierr = PetscInfo1(NULL,"spbas_incomplete_cholesky found a negative diagonal. Trying again with Manteuffel shift=%g\n",(double)shiftnz);CHKERRQ(ierr);

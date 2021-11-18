@@ -4,15 +4,7 @@
 Mailing Lists
 *************
 
-.. important::
-
-   Do not send configure and installation questions to the petsc-users mailing
-   list. Always send them (and include ``configure.log`` and ``make.log``) to
-   petsc-maint@mcs.anl.gov. See bug-report :ref:`documentation <doc_creepycrawly>` for
-   more information.
-
-For all other contact, we have the following mailing lists with public archives for
-general use.
+The following mailing lists, with public archives are available for general use.
 
 .. list-table::
    :header-rows: 1
@@ -34,15 +26,25 @@ general use.
      - `subscribe/unsubscribe <https://lists.mcs.anl.gov/mailman/listinfo/petsc-dev>`__
      - `archives <http://lists.mcs.anl.gov/pipermail/petsc-dev/>`__
 
+.. important::
+
+   petsc-maint@mcs.anl.gov - a private maintenance e-mail without public archives is
+   also available. It might be preferable to send issues requiring large attachments here
+   (for example uncompressed ``configure.log`, ``make.log`` when encountering installation
+   issues).
+
+
+   Additional notes on sending bug-reports is available at :ref:`documentation <doc_creepycrawly>`
+
 .. note::
 
    - petsc-announce is an announcement only list (i.e users cannot post on this list).
-   - petsc-users and petsc-dev are subscriber-only lists (i.e to post to this list - you
-     have to subscribe first).
-   - All lists have limits on message sizes - so if you have to send in attachments - most
-     likely the appropriate place is petsc-maint@mcs.anl.gov - not the mailing list.
-   - The mailing lists are migrated from majordomo to mailman in Jan-09. So links to
-     archives, and subscription procedures have changed since then - as indicated above.
+   - petsc-users and petsc-dev are open; we recommend subscribing and participating
+     in the list discussions. However, it is possible to post to the lists without
+     subscribing (the first post to the list will be held until list owner can
+     enable access)
+   - Avoid cross posting to multiple lists. You can reach PETSc developers equally
+     on any suitable list.
 
 .. rubric:: Footnotes
 

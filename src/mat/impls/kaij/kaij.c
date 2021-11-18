@@ -181,7 +181,7 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A,const PetscScalar **S)
    Input Parameter:
 .  A - the KAIJ matrix
 
-   Output Parameter:
+   Output Parameters:
 +  m - the number of rows in T
 .  n - the number of columns in T
 -  T - the T matrix, in form of a scalar array in column-major format
@@ -210,7 +210,7 @@ PetscErrorCode MatKAIJGetT(Mat A,PetscInt *m,PetscInt *n,PetscScalar **T)
    Input Parameter:
 .  A - the KAIJ matrix
 
-   Output Parameter:
+   Output Parameters:
 +  m - the number of rows in T
 .  n - the number of columns in T
 -  T - the T matrix, in form of a scalar array in column-major format
@@ -462,6 +462,50 @@ PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
+{
+  PetscErrorCode   ierr;
+  Mat_MPIKAIJ      *a;
+  Mat_MPIAIJ       *mpiaij;
+  PetscScalar      *T;
+  PetscInt         i,j;
+  PetscObjectState state;
+
+  PetscFunctionBegin;
+  a = (Mat_MPIKAIJ*)A->data;
+  mpiaij = (Mat_MPIAIJ*)a->A->data;
+
+  ierr = PetscObjectStateGet((PetscObject)a->A,&state);CHKERRQ(ierr);
+  if (state == a->state) {
+    /* The existing AIJ and KAIJ members are up-to-date, so simply exit. */
+    PetscFunctionReturn(0);
+  } else {
+    ierr = MatDestroy(&a->AIJ);CHKERRQ(ierr);
+    ierr = MatDestroy(&a->OAIJ);CHKERRQ(ierr);
+    if (a->isTI) {
+      /* If the transformation matrix associated with the parallel matrix A is the identity matrix, then a->T will be NULL.
+       * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
+       * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
+       * to pass in. */
+      ierr = PetscMalloc1(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
+      for (i=0; i<a->p; i++) {
+        for (j=0; j<a->q; j++) {
+          if (i==j) T[i+j*a->p] = 1.0;
+          else      T[i+j*a->p] = 0.0;
+        }
+      }
+    } else T = a->T;
+    ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr);
+    ierr = MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ);CHKERRQ(ierr);
+    if (a->isTI) {
+      ierr = PetscFree(T);CHKERRQ(ierr);
+    }
+    a->state = state;
+  }
+
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatSetUp_KAIJ(Mat A)
 {
   PetscErrorCode ierr;
@@ -482,8 +526,6 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     Mat_MPIAIJ  *mpiaij;
     IS          from,to;
     Vec         gvec;
-    PetscScalar *T;
-    PetscInt    i,j;
 
     a = (Mat_MPIKAIJ*)A->data;
     mpiaij = (Mat_MPIAIJ*)a->A->data;
@@ -493,24 +535,7 @@ PetscErrorCode MatSetUp_KAIJ(Mat A)
     ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-    if (a->isTI) {
-      /* If the transformation matrix associated with the parallel matrix A is the identity matrix, then a->T will be NULL.
-       * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
-       * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
-       * to pass in. */
-      ierr = PetscMalloc1(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
-      for (i=0; i<a->p; i++) {
-        for (j=0; j<a->q; j++) {
-          if (i==j) T[i+j*a->p] = 1.0;
-          else      T[i+j*a->p] = 0.0;
-        }
-      }
-    } else T = a->T;
-    ierr = MatCreateKAIJ(mpiaij->A,a->p,a->q,a->S,T,&a->AIJ);CHKERRQ(ierr);
-    ierr = MatCreateKAIJ(mpiaij->B,a->p,a->q,NULL,T,&a->OAIJ);CHKERRQ(ierr);
-    if (a->isTI) {
-      ierr = PetscFree(T);CHKERRQ(ierr);
-    }
+    ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr);
 
     ierr = VecGetSize(mpiaij->lvec,&n);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_SELF,&a->w);CHKERRQ(ierr);
@@ -1077,6 +1102,7 @@ PetscErrorCode MatMultAdd_MPIKAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   } else {
     ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   }
+  ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr); /* Ensure b->AIJ and b->OAIJ are up to date. */
   /* start the scatter */
   ierr = VecScatterBegin(b->ctx,xx,b->w,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*b->AIJ->ops->multadd)(b->AIJ,xx,zz,zz);CHKERRQ(ierr);
@@ -1099,6 +1125,7 @@ PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A,const PetscScalar **values)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr); /* Ensure b->AIJ is up to date. */
   ierr = (*b->AIJ->ops->invertblockdiagonal)(b->AIJ,values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1191,16 +1218,18 @@ PetscErrorCode MatRestoreRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
 PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **values)
 {
   Mat_MPIKAIJ     *b      = (Mat_MPIKAIJ*) A->data;
-  Mat             MatAIJ  = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
-  Mat             MatOAIJ = ((Mat_SeqKAIJ*)b->OAIJ->data)->AIJ;
   Mat             AIJ     = b->A;
   PetscBool       diag    = PETSC_FALSE;
+  Mat             MatAIJ,MatOAIJ;
   PetscErrorCode  ierr;
   const PetscInt  rstart=A->rmap->rstart,rend=A->rmap->rend,p=b->p,q=b->q,*garray;
   PetscInt        nz,*idx,ncolsaij = 0,ncolsoaij = 0,*colsaij,*colsoaij,r,s,c,i,j,lrow;
   PetscScalar     *v,*vals,*ovals,*S=b->S,*T=b->T;
 
   PetscFunctionBegin;
+  ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr); /* Ensure b->AIJ and b->OAIJ are up to date. */
+  MatAIJ  = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
+  MatOAIJ = ((Mat_SeqKAIJ*)b->OAIJ->data)->AIJ;
   if (b->getrowactive) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
   b->getrowactive = PETSC_TRUE;
   if (row < rstart || row >= rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only local rows");
@@ -1334,6 +1363,12 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
   Notes:
   This function increases the reference count on the AIJ matrix, so the user is free to destroy the matrix if it is not needed.
   Changes to the entries of the AIJ matrix will immediately affect the KAIJ matrix.
+
+  Developer Notes:
+  In the MATMPIKAIJ case, the internal 'AIJ' and 'OAIJ' sequential KAIJ matrices are kept up to date by tracking the object state
+  of the AIJ matrix 'A' that describes the blockwise action of the MATMPIKAIJ matrix and, if the object state has changed, lazily
+  rebuilding 'AIJ' and 'OAIJ' just before executing operations with the MATMPIKAIJ matrix. If new types of operations are added,
+  routines implementing those must also ensure these are rebuilt when needed (by calling the internal MatKAIJ_build_AIJ_OAIJ() routine).
 
   Level: advanced
 

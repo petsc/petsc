@@ -4349,7 +4349,7 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
    Input Parameter:
 .  A - the Inode matrix or matrix derived from the Inode class -- e.g., SeqAIJ
 
-   Output Parameter:
+   Output Parameters:
 +  node_count - no of inodes present in the matrix.
 .  sizes      - an array of size node_count,with sizes of each inode.
 -  limit      - the max size used to generate the inodes.

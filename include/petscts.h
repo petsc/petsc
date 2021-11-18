@@ -46,6 +46,7 @@ typedef const char* TSType;
 #define TSRADAU5          "radau5"
 #define TSMPRK            "mprk"
 #define TSDISCGRAD        "discgrad"
+#define TSIRK             "irk"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -870,6 +871,27 @@ PETSC_EXTERN PetscErrorCode TSMPRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSMPRKRegisterDestroy(void);
 
 /*J
+    TSIRKType - String with the name of an implicit Runge-Kutta method.
+
+   Level: beginner
+
+.seealso: TSIRKSetType(), TS, TSIRK, TSIRKRegister()
+J*/
+typedef const char* TSIRKType;
+#define TSIRKGAUSS   "gauss"
+
+PETSC_EXTERN PetscErrorCode TSIRKGetOrder(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSIRKGetType(TS,TSIRKType*);
+PETSC_EXTERN PetscErrorCode TSIRKSetType(TS,TSIRKType);
+PETSC_EXTERN PetscErrorCode TSIRKGetNumStages(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSIRKSetNumStages(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSIRKRegister(const char[],PetscErrorCode (*function)(TS));
+PETSC_EXTERN PetscErrorCode TSIRKTableauCreate(TS,PetscInt,const PetscReal*,const PetscReal*,const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,const PetscScalar*);
+PETSC_EXTERN PetscErrorCode TSIRKInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSIRKFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSIRKRegisterDestroy(void);
+
+/*J
     TSGLEEType - String with the name of a General Linear with Error Estimation method.
 
    Level: beginner
@@ -1008,6 +1030,7 @@ PETSC_EXTERN PetscErrorCode TSSundialsMonitorInternalSteps(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 PETSC_EXTERN PetscErrorCode TSSundialsSetMaxl(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSundialsSetMaxord(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSSundialsSetUseDense(TS,PetscBool);
 #endif
 
 PETSC_EXTERN PetscErrorCode TSThetaSetTheta(TS,PetscReal);

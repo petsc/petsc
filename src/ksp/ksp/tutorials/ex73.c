@@ -644,7 +644,7 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f,DM *dm_c,UserContext *ctx)
 
   dmc = NULL;
   dmc_shell = NULL;
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMDACreate2d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,17,17,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&dmc);CHKERRQ(ierr);
     ierr = DMSetFromOptions(dmc);CHKERRQ(ierr);
     ierr = DMSetUp(dmc);CHKERRQ(ierr);
@@ -1010,7 +1010,6 @@ int main(int argc,char **argv)
       break;
   default:
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"-tid must be 0,1,2");
-      break;
   }
   ierr = PetscFinalize();
   return ierr;

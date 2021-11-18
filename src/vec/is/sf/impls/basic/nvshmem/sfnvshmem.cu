@@ -12,7 +12,7 @@ PetscErrorCode PetscNvshmemInitializeCheck(void)
   if (!PetscNvshmemInitialized) { /* Note NVSHMEM does not provide a routine to check whether it is initialized */
     nvshmemx_init_attr_t attr;
     attr.mpi_comm = &PETSC_COMM_WORLD;
-    ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+    ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
     ierr = nvshmemx_init_attr(NVSHMEMX_INIT_WITH_MPI_COMM,&attr);CHKERRQ(ierr);
     PetscNvshmemInitialized = PETSC_TRUE;
     PetscBeganNvshmem       = PETSC_TRUE;

@@ -1,0 +1,9 @@
+Solving a linear TS problem, number of processors = 1
+Timestep 0: time = 0. 2-norm error = 0. max norm error = 0.
+Timestep 1: time = 2.87274e-06 2-norm error = 6.47797e-06 max norm error = 9.32458e-06
+Timestep 2: time = 5.74548e-06 2-norm error = 1.29428e-05 max norm error = 1.86305e-05
+Timestep 3: time = 8.61821e-06 2-norm error = 1.93945e-05 max norm error = 2.79179e-05
+Timestep 4: time = 1.881e-05 2-norm error = 4.24085e-05 max norm error = 6.10495e-05
+Timestep 5: time = 2.90018e-05 2-norm error = 6.42511e-05 max norm error = 9.24981e-05
+Total timesteps 5, Final time 2.90018e-05
+Avg. error (2 norm) = 2.9095e-05 Avg. error (max norm) = 4.18841e-05

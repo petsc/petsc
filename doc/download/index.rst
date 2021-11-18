@@ -10,7 +10,7 @@ Recommended Download
 
 .. code-block:: console
 
-   > git clone -b release https://gitlab.com/petsc/petsc.git petsc
+   $ git clone -b release https://gitlab.com/petsc/petsc.git petsc
 
 Use ``git pull`` to download any new patches or changes that have been added since your
 ``git clone`` or last ``git pull``. Use ``git checkout vMAJOR.MINOR.PATCH`` to download a
@@ -26,22 +26,22 @@ Alternative Download
 
 Tarball which contains only the source, identical to ``git`` download. Documentation available online.
 
-- `petsc-3.15.4.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.15.4.tar.gz>`__
+- `petsc-3.16.1.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.16.1.tar.gz>`__
 
 Tarball which includes all documentation, recommended for offline use.
 
-- `petsc-with-docs-3.15.4.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-with-docs-3.15.4.tar.gz>`__
+- `petsc-with-docs-3.16.1.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-with-docs-3.16.1.tar.gz>`__
 
 
 Tarball to enable a separate installation of petsc4py.
 
-- `petsc4py-3.15.4.tar.gz  <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc4py-3.15.4.tar.gz>`__
+- `petsc4py-3.16.1.tar.gz  <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc4py-3.16.1.tar.gz>`__
 
 To extract the sources use:
 
 .. code-block:: console
 
-   > tar xf petsc-<version number>.tar.gz
+   $ tar xf petsc-<version number>.tar.gz
 
 Use mirror if GitLab and our primary download server are unavailable:
 

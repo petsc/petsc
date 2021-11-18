@@ -352,15 +352,15 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
       while (curfas) {
         if (!curfas->smoothu) {
           ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
-          if (curfas->smoothd) ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);
+          if (curfas->smoothd) {ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);}
           ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
         } else {
           w    = 0.5*PetscMin(1.0-x,x);
           ierr = PetscDrawPushCurrentPoint(draw,x-w,bottom);CHKERRQ(ierr);
-          if (curfas->smoothd) ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);
+          if (curfas->smoothd) {ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);}
           ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
           ierr = PetscDrawPushCurrentPoint(draw,x+w,bottom);CHKERRQ(ierr);
-          if (curfas->smoothu) ierr = SNESView(curfas->smoothu,viewer);CHKERRQ(ierr);
+          if (curfas->smoothu) {ierr = SNESView(curfas->smoothu,viewer);CHKERRQ(ierr);}
           ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
         }
         /* this is totally bogus but we have no way of knowing how low the previous one was draw to */
@@ -446,10 +446,10 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  snes - SNESFAS
 
-   Output Arguments:
+   Output Parameter:
 .  Xcoarse - vector on level one coarser than snes
 
    Level: developer
@@ -478,11 +478,11 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  fine - SNES from which to restrict
 -  Xfine - vector to restrict
 
-   Output Arguments:
+   Output Parameter:
 .  Xcoarse - result of restriction
 
    Level: developer

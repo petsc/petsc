@@ -4,7 +4,7 @@
 #define PETSCFORTRANIMPL_H
 
 #include <petsc/private/petscimpl.h>
-
+PETSC_INTERN PetscErrorCode PETScParseFortranArgs_Private(int*,char***);
 PETSC_EXTERN PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint,MPI_Datatype*);
 
 PETSC_EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
@@ -19,6 +19,9 @@ PETSC_EXTERN void    *PETSC_NULL_REAL_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_BOOL_Fortran;
 PETSC_EXTERN void   (*PETSC_NULL_FUNCTION_Fortran)(void);
 PETSC_EXTERN void    *PETSC_NULL_MPI_COMM_Fortran;
+
+PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool,const char*,PetscInt);
+
 /*  ----------------------------------------------------------------------*/
 /*
    PETSc object C pointers are stored directly as

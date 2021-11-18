@@ -124,7 +124,7 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
 
    Collective on MatColoring
 
-   Input Parameter:
+   Input Parameters:
 +  mc - the MatColoring context
 -  type - the type of coloring
 
@@ -168,7 +168,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 
    Collective on MatColoring
 
-   Input Parameters:
+   Input Parameter:
 .  mc - MatColoring context
 
    Options Database Keys:
@@ -277,7 +277,7 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
 
    Logically Collective on MatColoring
 
-   Input Parameter:
+   Input Parameters:
 +  mc - the MatColoring context
 -  maxcolors - the maximum number of colors to produce
 

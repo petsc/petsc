@@ -197,7 +197,7 @@ int main(int argc,char **args)
 
   /* Write Tecplot solution file */
 #if 0
-  if (!rank)
+  if (rank == 0)
     f77TECFLO(&user.grid->nnodes,
               &user.grid->nnbound,&user.grid->nvbound,&user.grid->nfbound,
               &user.grid->nnfacet,&user.grid->nvfacet,&user.grid->nffacet,
@@ -215,7 +215,7 @@ int main(int argc,char **args)
 
   /* Write residual,lift,drag,and moment history file */
   /*
-    if (!rank) f77PLLAN(&user.grid->nnodes,&rank);
+    if (rank == 0) f77PLLAN(&user.grid->nnodes,&rank);
   */
 
   ierr = VecRestoreArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
@@ -601,7 +601,7 @@ int Update(SNES snes,void *ctx)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %g fnorm = %g\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"clift = %g cdrag = %g cmom = %g\n",clift,cdrag,cmom);CHKERRQ(ierr);
 
-  if (!rank && print_flag) fclose(fptr);
+  if (rank == 0 && print_flag) fclose(fptr);
   if (user->PreLoading) {
     tsCtx->fnorm_ini = 0.0;
     ierr             = PetscPrintf(PETSC_COMM_WORLD,"Preloading done ...\n");CHKERRQ(ierr);
@@ -681,7 +681,7 @@ int GetLocalOrdering(GRID *grid)
   PetscFunctionBegin;
   /* Read the integer grid parameters */
   ICALLOC(grid_param,&tmp);
-  if (!rank) {
+  if (rank == 0) {
     PetscBool exists;
     ierr = PetscOptionsGetString(NULL,NULL,"-mesh",mesh_file,sizeof(mesh_file),&flg);CHKERRQ(ierr);
     ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
@@ -732,7 +732,7 @@ int GetLocalOrdering(GRID *grid)
   for (i = 0; i < nnodes; i++) a2l[i] = -1;
   ierr = PetscTime(&time_ini);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     if (size == 1) {
       ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
     } else {
@@ -1088,7 +1088,7 @@ int GetLocalOrdering(GRID *grid)
       ICALLOC(nnodes, &loc2glo_glo);
       MPI_Gatherv(grid->loc2glo,nnodesLoc,MPI_INT,loc2glo_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
       MPI_Gatherv(partv_loc,nnodesLoc,MPI_INT,partv_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
-      if (!rank) {
+      if (rank == 0) {
         ierr = PetscSortIntWithArray(nnodes,loc2glo_glo,partv_glo);CHKERRQ(ierr);
         sprintf(part_file,"hyb_part_vec.%d",2*size);
         fp = fopen(part_file,"w");
@@ -1824,10 +1824,10 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
+  if (n < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
   if (!n) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     size_t count;
     int    bytes;
     switch (dtype) {
@@ -1863,7 +1863,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
       count = fwrite(buf,1,ptr-buf,fp);
       if (count < (size_t)(ptr-buf)) {
         perror("");
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D of %D bytes",(PetscInt)count,(PetscInt)(ptr-buf));
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT " of %" PetscInt_FMT " bytes",(PetscInt)count,(PetscInt)(ptr-buf));
       }
       ierr = PetscFree(buf);CHKERRQ(ierr);
     } else {
@@ -1875,7 +1875,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
       count = fwrite(data,size,(size_t)n,fp);
       if ((int)count != n) {
         perror("");
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %D",(PetscInt)count,n,(PetscInt)size);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT "/%" PetscInt_FMT " array members of size %" PetscInt_FMT,(PetscInt)count,n,(PetscInt)size);
       }
     }
   }
@@ -1968,22 +1968,22 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
     ierr  = PetscMemcpy(tmp1,&uj[ui[node0]],ntmp1*sizeof(PetscInt));CHKERRQ(ierr);
     for (j=0; j<ntmp1; j++) {
       node1 = tmp1[j];
-      if (node1 < 0 || nnodes <= node1) SETERRQ2(PETSC_COMM_SELF,1,"node index %D out of range [0,%D)",node1,nnodes);
-      if (node1 <= node0) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should be larger",node0,node1);
+      if (node1 < 0 || nnodes <= node1) SETERRQ2(PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node1,nnodes);
+      if (node1 <= node0) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node0,node1);
       ntmp2 = ui[node1+1] - ui[node1];
       ierr  = PetscMemcpy(tmp2,&uj[ui[node1]],ntmp2*sizeof(PetscInt));CHKERRQ(ierr);
       ierr  = IntersectInt(ntmp1,tmp1,&ntmp2,tmp2);CHKERRQ(ierr);
       for (k=0; k<ntmp2; k++) {
         node2 = tmp2[k];
-        if (node2 < 0 || nnodes <= node2) SETERRQ2(PETSC_COMM_SELF,1,"node index %D out of range [0,%D)",node2,nnodes);
-        if (node2 <= node1) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should be larger",node1,node2);
+        if (node2 < 0 || nnodes <= node2) SETERRQ2(PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node2,nnodes);
+        if (node2 <= node1) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node1,node2);
         ntmp3 = ui[node2+1] - ui[node2];
         ierr  = PetscMemcpy(tmp3,&uj[ui[node2]],ntmp3*sizeof(PetscInt));CHKERRQ(ierr);
         ierr  = IntersectInt(ntmp2,tmp2,&ntmp3,tmp3);CHKERRQ(ierr);
         for (l=0; l<ntmp3; l++) {
           node3 = tmp3[l];
-          if (node3 < 0 || nnodes <= node3) SETERRQ2(PETSC_COMM_SELF,1,"node index %D out of range [0,%D)",node3,nnodes);
-          if (node3 <= node2) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %D is %D, should be larger",node2,node3);
+          if (node3 < 0 || nnodes <= node3) SETERRQ2(PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node3,nnodes);
+          if (node3 <= node2) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node2,node3);
           if (ncell > acell) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer exceeded");
           if (ntmp3 < 3) continue;
           conn[ncell][0] = node0;
@@ -2008,7 +2008,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
   ierr = PetscFree3(tmp1,tmp2,tmp3);CHKERRQ(ierr);
   ierr = PetscFree2(ui,uj);CHKERRQ(ierr);
 
-  ierr    = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Inferred %D cells with nnodes=%D nedge=%D\n",ncell,nnodes,nedge);CHKERRQ(ierr);
+  ierr    = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Inferred %" PetscInt_FMT " cells with nnodes=%" PetscInt_FMT " nedge=%" PetscInt_FMT "\n",ncell,nnodes,nedge);CHKERRQ(ierr);
   ierr    = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   *incell = ncell;
   *iconn  = (PetscInt*)conn;
@@ -2111,7 +2111,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = ISDestroy(&isedgeOv);CHKERRQ(ierr);
   ierr = PetscFree(eIdxOv);CHKERRQ(ierr);
 
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of edges before pruning: %D, half=%D\n",rank,PETSC_FUNCTION_NAME,nedgeOv,nedgeOv/2);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of edges before pruning: %" PetscInt_FMT ", half=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,nedgeOv,nedgeOv/2);CHKERRQ(ierr);
 
   /* Create the non-scalable global-to-local index map. Yuck, but it has already been used elsewhere. */
   ierr = PetscMalloc1(nnodes,&p2l);CHKERRQ(ierr);
@@ -2120,7 +2120,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   if (1) {
     PetscInt m = 0;
     for (i=0; i<nnodes; i++) m += (p2l[i] >= 0);
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of global indices that map to local indices: %D; nvertices=%D nnodesLoc=%D nnodes=%D\n",rank,PETSC_FUNCTION_NAME,m,nvertices,nnodesLoc,nnodes);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of global indices that map to local indices: %" PetscInt_FMT "; nvertices=%" PetscInt_FMT " nnodesLoc=%" PetscInt_FMT " nnodes=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,m,nvertices,nnodesLoc,nnodes);CHKERRQ(ierr);
   }
 
   /* Log each edge connecting nodes in owned+ghosted exactly once */
@@ -2159,7 +2159,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = VecDestroy(&VNodeEdgeOv);CHKERRQ(ierr);
   ierr = PetscFree(p2l);CHKERRQ(ierr);
 
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: nedgeLoc=%D nedgeOv=%D\n",rank,PETSC_FUNCTION_NAME,nedgeLoc,nedgeOv);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: nedgeLoc=%" PetscInt_FMT " nedgeOv=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,nedgeLoc,nedgeOv);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   flg  = PETSC_TRUE;
@@ -2204,8 +2204,8 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 #if defined(PETSC_USE_COMPLEX) || !defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_64BIT_INDICES)
   SETERRQ(comm,PETSC_ERR_SUP,"This function is only implemented for scalar-type=real precision=double, 32-bit indices");
 #endif
-  ierr = PetscSNPrintf(pvtu_fname,sizeof(pvtu_fname),"%s-%D.pvtu",fname,tsCtx->itstep);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(vtu_fname,sizeof(vtu_fname),"%s-%D-%D.vtu",fname,tsCtx->itstep,rank);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(pvtu_fname,sizeof(pvtu_fname),"%s-%" PetscInt_FMT ".pvtu",fname,tsCtx->itstep);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(vtu_fname,sizeof(vtu_fname),"%s-%" PetscInt_FMT "-%" PetscInt_FMT ".vtu",fname,tsCtx->itstep,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(comm,pvtu_fname,"w",&pvtu);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,pvtu,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,pvtu,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
@@ -2226,7 +2226,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = PetscFPrintf(comm,pvtu,"   <PDataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" />\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,pvtu,"  </PCells>\n");CHKERRQ(ierr);
   for (i=0; i<size; i++) {
-    ierr = PetscFPrintf(comm,pvtu,"  <Piece Source=\"%s-%D-%D.vtu\" />\n",fname,tsCtx->itstep,i);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,pvtu,"  <Piece Source=\"%s-%" PetscInt_FMT "-%" PetscInt_FMT ".vtu\" />\n",fname,tsCtx->itstep,i);CHKERRQ(ierr);
   }
   ierr = PetscFPrintf(comm,pvtu," </PUnstructuredGrid>\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,pvtu,"</VTKFile>\n");CHKERRQ(ierr);
@@ -2236,10 +2236,10 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = VecScatterBegin(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetBlockSize(Xloc,&bs);CHKERRQ(ierr);
-  if (bs != 4) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected block size 4, got %D",bs);
+  if (bs != 4) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected block size 4, got %" PetscInt_FMT,bs);
   ierr = VecGetSize(Xloc,&nloc);CHKERRQ(ierr);
-  if (nloc/bs != nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%D to match nvertices=%D",nloc/bs,nvertices);
-  if (nvertices != grid->nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%D to match grid->nvertices=%D",nvertices,grid->nvertices);
+  if (nloc/bs != nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%" PetscInt_FMT " to match nvertices=%" PetscInt_FMT,nloc/bs,nvertices);
+  if (nvertices != grid->nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%" PetscInt_FMT " to match grid->nvertices=%" PetscInt_FMT,nvertices,grid->nvertices);
   ierr = VecCreateSeq(PETSC_COMM_SELF,nvertices,&Xploc);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_SELF,&Xuloc);CHKERRQ(ierr);
@@ -2264,31 +2264,31 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,vtu," <UnstructuredGrid>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"  <Piece NumberOfPoints=\"%D\" NumberOfCells=\"%D\">\n",nvertices,ncells);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"  <Piece NumberOfPoints=\"%" PetscInt_FMT "\" NumberOfCells=\"%" PetscInt_FMT "\">\n",nvertices,ncells);CHKERRQ(ierr);
 
   /* Solution fields */
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   <PointData Scalars=\"Pressure\" Vectors=\"Velocity\">\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Pressure\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",boffset);CHKERRQ(ierr);
+  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Pressure\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
   boffset += nvertices*sizeof(PetscScalar) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Velocity\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%D\" />\n",boffset);CHKERRQ(ierr);
+  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Velocity\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
   boffset += nvertices*3*sizeof(PetscScalar) + sizeof(int);
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   </PointData>\n");CHKERRQ(ierr);
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   <CellData>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",boffset);CHKERRQ(ierr);
+  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
   boffset += ncells*sizeof(int) + sizeof(int);
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   </CellData>\n");CHKERRQ(ierr);
   /* Coordinate positions */
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   <Points>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%D\" />\n",boffset);CHKERRQ(ierr);
+  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
   boffset += nvertices*3*sizeof(double) + sizeof(int);
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   </Points>\n");CHKERRQ(ierr);
   /* Cell connectivity */
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   <Cells>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",boffset);CHKERRQ(ierr);
+  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
   boffset += ncells*4*sizeof(int) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",boffset);CHKERRQ(ierr);
+  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
   boffset += ncells*sizeof(int) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",boffset);CHKERRQ(ierr);
+  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
   boffset += ncells*sizeof(unsigned char) + sizeof(int);
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   </Cells>\n");CHKERRQ(ierr);
   ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"  </Piece>\n");CHKERRQ(ierr);

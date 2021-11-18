@@ -429,14 +429,17 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   sf - star forest mapping contiguous local indices to (rank, offset)
--   start - first global index on this process
+-   start - first global index on this process, or PETSC_DECIDE to compute contiguous global numbering automatically
 
     Output Parameter:
 .   mapping - new mapping data structure
 
     Level: advanced
+
+    Notes:
+    If any processor calls this with start = PETSC_DECIDE then all processors must, otherwise the program will hang.
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions()
 @*/
@@ -453,6 +456,10 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
 
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
+  if (start == PETSC_DECIDE) {
+    start = 0;
+    ierr = MPI_Exscan(&nroots,&start,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
+  } else if (start < 0) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "start must be nonnegative or PETSC_DECIDE");
   if (ilocal) {
     for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,ilocal[i]+1);
   }
@@ -607,31 +614,23 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   *mapping = NULL;
   ierr = ISInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(*mapping,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",
-                           comm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
-  (*mapping)->n             = n;
-  (*mapping)->bs            = bs;
-  (*mapping)->info_cached   = PETSC_FALSE;
-  (*mapping)->info_free     = PETSC_FALSE;
-  (*mapping)->info_procs    = NULL;
-  (*mapping)->info_numprocs = NULL;
-  (*mapping)->info_indices  = NULL;
-  (*mapping)->info_nodec    = NULL;
-  (*mapping)->info_nodei    = NULL;
-
-  (*mapping)->ops->globaltolocalmappingapply      = NULL;
-  (*mapping)->ops->globaltolocalmappingapplyblock = NULL;
-  (*mapping)->ops->destroy                        = NULL;
+  ierr = PetscHeaderCreate(*mapping,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",comm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
+  (*mapping)->n  = n;
+  (*mapping)->bs = bs;
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscArraycpy(in,indices,n);CHKERRQ(ierr);
     (*mapping)->indices = in;
+    (*mapping)->dealloc_indices = PETSC_TRUE;
     ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) {
     (*mapping)->indices = (PetscInt*)indices;
+    (*mapping)->dealloc_indices = PETSC_TRUE;
     ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else if (mode == PETSC_USE_POINTER) {
+    (*mapping)->indices = (PetscInt*)indices;
   }
-  else SETERRQ(comm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
+  else SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid mode %d", mode);
   PetscFunctionReturn(0);
 }
 
@@ -688,7 +687,9 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   if (!*mapping) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*mapping),IS_LTOGM_CLASSID,1);
   if (--((PetscObject)(*mapping))->refct > 0) {*mapping = NULL;PetscFunctionReturn(0);}
-  ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
+  if ((*mapping)->dealloc_indices) {
+    ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
+  }
   ierr = PetscFree((*mapping)->info_procs);CHKERRQ(ierr);
   ierr = PetscFree((*mapping)->info_numprocs);CHKERRQ(ierr);
   if ((*mapping)->info_indices) {
@@ -1012,10 +1013,10 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each subdomain (processor)
@@ -1463,10 +1464,10 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each processor
@@ -1508,10 +1509,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping ma
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each subdomain (processor)
@@ -1564,10 +1565,10 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each processor
@@ -1592,10 +1593,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nnodes - number of local nodes (same ISLocalToGlobalMappingGetSize())
 .   count - number of neighboring processors per node
 -   indices - indices of processes sharing the node (sorted)
@@ -1657,10 +1658,10 @@ PetscErrorCode  ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping
 
     Collective on ISLocalToGlobalMapping
 
-    Input Parameters:
+    Input Parameter:
 .   mapping - the mapping from local to global indexing
 
-    Output Parameter:
+    Output Parameters:
 +   nnodes - number of local nodes
 .   count - number of neighboring processors per node
 -   indices - indices of processes sharing the node (sorted)
@@ -1685,10 +1686,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping map
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 . ltog - local to global mapping
 
-   Output Arguments:
+   Output Parameter:
 . array - array of indices, the length of this array may be obtained with ISLocalToGlobalMappingGetSize()
 
    Level: advanced
@@ -1726,7 +1727,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + ltog - local to global mapping
 - array - array of indices
 
@@ -1753,10 +1754,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 . ltog - local to global mapping
 
-   Output Arguments:
+   Output Parameter:
 . array - array of indices
 
    Level: advanced
@@ -1777,7 +1778,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping lto
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + ltog - local to global mapping
 - array - array of indices
 
@@ -1800,12 +1801,12 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + comm - communicator for the new mapping, must contain the communicator of every mapping to concatenate
 . n - number of mappings to concatenate
 - ltogs - local to global mappings
 
-   Output Arguments:
+   Output Parameter:
 . ltogcat - new mapping
 
    Note: this currently always returns a mapping with block size of 1

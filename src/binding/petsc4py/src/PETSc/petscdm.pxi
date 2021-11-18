@@ -60,6 +60,7 @@ cdef extern from * nogil:
     int DMSetField(PetscDM,PetscInt,PetscDMLabel,PetscObject)
     int DMAddField(PetscDM,PetscDMLabel,PetscObject)
     int DMGetField(PetscDM,PetscInt,PetscDMLabel*,PetscObject*)
+    int DMClearFields(PetscDM)
     int DMCopyFields(PetscDM,PetscDM)
     int DMCreateDS(PetscDM)
     int DMClearDS(PetscDM)

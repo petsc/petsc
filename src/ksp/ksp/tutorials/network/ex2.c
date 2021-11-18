@@ -292,7 +292,7 @@ int main(int argc,char ** argv)
 
   ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
   /* "read" data only for processor 0 */
-  if (!rank) {
+  if (rank == 0) {
     nnode = 100;
     ierr = PetscOptionsGetInt(NULL,NULL,"-n",&nnode,NULL);CHKERRQ(ierr);
     ierr = random_network(nnode, &nbranch, &node, &branch, &edgelist, seed);CHKERRQ(ierr);
@@ -306,13 +306,13 @@ int main(int argc,char ** argv)
 
   /* Set number of nodes/edges and edge connectivity */
   ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,"",nnode,nbranch,edgelist,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,"",nbranch,edgelist,NULL);CHKERRQ(ierr);
 
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 
   /* Add network components (physical parameters of nodes and branches) and num of variables */
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
       ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&branch[i-eStart],1);CHKERRQ(ierr);
@@ -330,7 +330,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscFree(edgelist);CHKERRQ(ierr);
     ierr = PetscFree2(node,branch);CHKERRQ(ierr);
   }

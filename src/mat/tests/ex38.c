@@ -75,7 +75,7 @@ int main(int argc,char **args)
   if (flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMissingDiagonal() did not return false!\n");
 
   /* Set unowned matrix entries - add subdiagonals and diagonals from proc[0] */
-  if (!rank) {
+  if (rank == 0) {
     PetscInt M,N,cols[2];
     ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
     for (i=0; i<M; i++) {

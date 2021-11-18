@@ -1,0 +1,109 @@
+Number of labels: 12
+Label 0: name: celltype
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 4
+  0 0
+  1 7
+  2 4
+  3 1
+
+Label 1: name: depth
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 4
+  0 0
+  1 1
+  2 2
+  3 3
+
+Label 2: name: Cell Sets
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 10
+
+Label 3: name: Face Sets
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 4
+  0 100
+  1 101
+  2 200
+  3 201
+
+Label 4: name: OuterBoundary
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 100
+
+Label 5: name: InnerBoundary
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 101
+
+Label 6: name: TopBoundary
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 200
+
+Label 7: name: BottomBoundary
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 201
+
+Label 8: name: label0
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 1
+
+Label 9: name: label1
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 2
+
+Label 10: name: label2
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 1
+
+Label 11: name: label3
+IS of values
+  IS Object: 1 MPI processes
+    type: general
+  Number of indices in set 1
+  0 2
+
+
+
+Cell Set label IS
+IS Object: 1 MPI processes
+  type: general
+Number of indices in set 1
+0 10
+Compare label "label0" with "label1": Stratum values in DMLabel l0 "label0" are different than in DMLabel l1 "label1"
+Compare label "label1" with "label3": Default value of DMLabel l0 "label1" = 333 != -1 = Default value of DMLabel l1 "label3"
+Compare label "label1" with "label3": Stratum values in DMLabel l0 "label1" are different than in DMLabel l1 "label3"
+Compare label "label1" with "label3": Stratum #0 with value 2 contains different points in DMLabel l0 "label1" and DMLabel l1 "label3"
+Labels of DMs "plex0" and "plex1" differ: Number of labels in dm0 = 12 != 8 = Number of labels in dm1
+Compare label "label2" with "label2": Stratum values in DMLabel l0 "label2" are different than in DMLabel l1 "label2"
+Labels of DMs "plex0" and "plex1" differ: Stratum values in DMLabel l0 "label2" are different than in DMLabel l1 "label2"
+Labels of DMs "plex0" and "plex1" differ: Label "label2" (#10 in dm0) not found in dm1

@@ -192,7 +192,7 @@ PetscErrorCode VecCreate_MPICUDA(Vec vv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(vv->map);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(vv);CHKERRQ(ierr);
   ierr = VecCreate_MPICUDA_Private(vv,PETSC_FALSE,0,((Vec_CUDA*)vv->spptr)->GPUarray_allocated);CHKERRQ(ierr);
@@ -292,7 +292,7 @@ PetscErrorCode  VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,P
 
   PetscFunctionBegin;
   if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
-  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
@@ -366,6 +366,9 @@ PetscErrorCode VecMax_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
 
   PetscFunctionBegin;
   ierr = VecMax_SeqCUDA(xin,idx,&work);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIUNI)
+  *z = work;
+#else
   if (!idx) {
     ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   } else {
@@ -377,6 +380,7 @@ PetscErrorCode VecMax_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
     *z    = out.v;
     *idx  = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -387,6 +391,9 @@ PetscErrorCode VecMin_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
 
   PetscFunctionBegin;
   ierr = VecMin_SeqCUDA(xin,idx,&work);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIUNI)
+  *z = work;
+#else
   if (!idx) {
     ierr = MPIU_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)xin));CHKERRMPI(ierr);
   } else {
@@ -398,6 +405,7 @@ PetscErrorCode VecMin_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
     *z    = out.v;
     *idx  = out.i;
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -478,8 +486,8 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->pointwisedivide        = VecPointwiseDivide_SeqCUDA;
     V->ops->getlocalvector         = VecGetLocalVector_SeqCUDA;
     V->ops->restorelocalvector     = VecRestoreLocalVector_SeqCUDA;
-    V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUDA;
-    V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUDA;
+    V->ops->getlocalvectorread     = VecGetLocalVectorRead_SeqCUDA;
+    V->ops->restorelocalvectorread = VecRestoreLocalVectorRead_SeqCUDA;
     V->ops->getarraywrite          = VecGetArrayWrite_SeqCUDA;
     V->ops->getarray               = VecGetArray_SeqCUDA;
     V->ops->restorearray           = VecRestoreArray_SeqCUDA;

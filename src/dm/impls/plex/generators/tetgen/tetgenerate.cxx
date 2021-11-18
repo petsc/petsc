@@ -120,7 +120,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       ierr = DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     }
   }
-  if (!rank) {
+  if (rank == 0) {
     DM_Plex *mesh = (DM_Plex *) boundary->data;
     char     args[32];
 
@@ -401,7 +401,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
     }
   }
 
-  if (!rank) {
+  if (rank == 0) {
     char args[32];
 
     /* Take away 'Q' for verbose output */

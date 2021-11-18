@@ -160,7 +160,7 @@ static PetscErrorCode  PCGalerkinSetComputeSubmatrix_Galerkin(PC pc,PetscErrorCo
 
    Logically Collective on PC
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context
 -  R - the restriction operator
 
@@ -188,7 +188,7 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
 
    Logically Collective on PC
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context
 -  R - the interpolation operator
 
@@ -216,7 +216,7 @@ PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
 
    Logically Collective
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context
 .  computeAsub - routine that computes the submatrix from the global matrix
 -  ctx - context used by the routine, or NULL

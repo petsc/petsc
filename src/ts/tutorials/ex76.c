@@ -20,6 +20,11 @@ For visualization, use
 
   -dm_view hdf5:$PWD/sol.h5 -sol_vec_view hdf5:$PWD/sol.h5::append -exact_vec_view hdf5:$PWD/sol.h5::append
 
+To look at nonlinear solver convergence, use
+
+  -dm_refine <k> -ts_max_steps 1 \
+  -ts_view -ts_monitor -snes_monitor -snes_converged_reason -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason
+
 [1] https://ubchrest.github.io/ablate/content/formulations/lowMachFlow/
 [2] https://github.com/UBCHREST/ablate/blob/main/ablateCore/flow/lowMachFlow.c
 [3] J. Principe and R. Codina, "Mathematical models for thermally coupled low speed flows", Adv. in Theo. and App. Mech., 2(1), pp.93--112, 2009.
@@ -1937,7 +1942,7 @@ int main(int argc, char **argv)
     args: -dm_plex_separate_marker -mod_type conducting \
           -div_petscdualspace_lagrange_use_moments -div_petscdualspace_lagrange_moment_order 3 \
           -snes_error_if_not_converged -snes_max_linear_solve_fail 5 \
-          -ksp_type fgmres -ksp_max_it 2 -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
+          -ksp_type fgmres -ksp_max_it 2 -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 \
           -pc_type fieldsplit -pc_fieldsplit_0_fields 0,2 -pc_fieldsplit_1_fields 1 \
           -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
             -fieldsplit_0_pc_type lu \

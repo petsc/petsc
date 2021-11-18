@@ -252,7 +252,7 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  coloring - the coloring context
 
    Output Parameters:
@@ -367,7 +367,7 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)matfd);CHKERRQ(ierr);
-  PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -542,7 +542,7 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 
     Not Collective
 
-    Input Parameters:
+    Input Parameter:
 .   coloring - coloring context created with MatFDColoringCreate()
 
     Output Parameters:

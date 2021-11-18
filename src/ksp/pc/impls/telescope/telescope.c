@@ -1,4 +1,3 @@
-
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/matimpl.h>
 #include <petsc/private/pcimpl.h>
@@ -142,6 +141,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   MPI_Comm       comm,subcomm;
   VecScatter     scatter;
   IS             isin;
+  VecType        vectype;
 
   PetscFunctionBegin;
   ierr = PetscInfo(pc,"PCTelescope: setup (default)\n");CHKERRQ(ierr);
@@ -152,6 +152,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   ierr = MatGetSize(B,&M,NULL);CHKERRQ(ierr);
   ierr = MatGetBlockSize(B,&bs);CHKERRQ(ierr);
   ierr = MatCreateVecs(B,&x,NULL);CHKERRQ(ierr);
+  ierr = MatGetVecType(B,&vectype);CHKERRQ(ierr);
 
   xred = NULL;
   m    = 0;
@@ -159,6 +160,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
     ierr = VecCreate(subcomm,&xred);CHKERRQ(ierr);
     ierr = VecSetSizes(xred,PETSC_DECIDE,M);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xred,bs);CHKERRQ(ierr);
+    ierr = VecSetType(xred,vectype);CHKERRQ(ierr); /* Use the preconditioner matrix's vectype by default */
     ierr = VecSetFromOptions(xred);CHKERRQ(ierr);
     ierr = VecGetLocalSize(xred,&m);CHKERRQ(ierr);
   }
@@ -171,7 +173,7 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   ierr = VecCreate(comm,&xtmp);CHKERRQ(ierr);
   ierr = VecSetSizes(xtmp,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(xtmp,bs);CHKERRQ(ierr);
-  ierr = VecSetType(xtmp,((PetscObject)x)->type_name);CHKERRQ(ierr);
+  ierr = VecSetType(xtmp,vectype);CHKERRQ(ierr);
 
   if (PCTelescope_isActiveRank(sred)) {
     ierr = VecGetOwnershipRange(xred,&st,&ed);CHKERRQ(ierr);
@@ -691,7 +693,7 @@ static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscR
 
   if (PCTelescope_isActiveRank(sred)) {
     ierr = KSPGetInitialGuessNonzero(sred->ksp,&default_init_guess_value);CHKERRQ(ierr);
-    if (!zeroguess) ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);
+    if (!zeroguess) {ierr = KSPSetInitialGuessNonzero(sred->ksp,PETSC_TRUE);CHKERRQ(ierr);}
   }
 
   ierr = PCApply_Telescope(pc,x,y);CHKERRQ(ierr);
@@ -1193,7 +1195,7 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
 
  Logically Collective
 
- Input Parameter:
+ Input Parameters:
 +  pc - the preconditioner context
 -  subcommtype - the subcommunicator type (see PetscSubcommType)
 
@@ -1322,9 +1324,9 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    VecPlaceArray() could be used within PCApply() to improve efficiency and reduce memory usage.
    A unified mechanism to query for user contexts as required by KSPSetComputeOperators() and MatNullSpaceSetFunction().
 
-   The symmetric permutation used when a DMDA is encountered is performed via explicitly assmbleming a permutation matrix P,
+   The symmetric permutation used when a DMDA is encountered is performed via explicitly assembling a permutation matrix P,
    and performing P^T.A.P. Possibly it might be more efficient to use MatPermute(). We opted to use P^T.A.P as it appears
-   VecPermute() does not supported for the use case required here. By computing P, one can permute both the operator and RHS in a
+   VecPermute() does not support the use case required here. By computing P, one can permute both the operator and RHS in a
    consistent manner.
 
    Mapping of vectors (default setup mode) is performed in the following way.

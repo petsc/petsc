@@ -6,6 +6,7 @@ static char help[] = "Load and save the mesh and fields to HDF5 and ExodusII\n\n
 
 typedef struct {
   PetscBool compare;                      /* Compare the meshes using DMPlexEqual() */
+  PetscBool compare_labels;               /* Compare labels in the meshes using DMCompareLabels() */
   PetscBool distribute;                   /* Distribute the mesh */
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
@@ -20,6 +21,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBeginUser;
   options->compare = PETSC_FALSE;
+  options->compare_labels = PETSC_FALSE;
   options->distribute = PETSC_TRUE;
   options->interpolate = PETSC_FALSE;
   options->filename[0] = '\0';
@@ -29,6 +31,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex55.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compare_labels", "Compare labels in the meshes using DMCompareLabels()", "ex55.c", options->compare_labels, &options->compare_labels, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex55.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex55.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex55.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
@@ -42,12 +45,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const char prefix[], AppCtx user, DM *dm_new)
 {
   DM             dmnew;
+  const char     exampleDMPlexName[] = "DMPlex Object";
   PetscViewer    v;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), filename, FILE_MODE_WRITE, &v);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(v, user.format);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) dm, exampleDMPlexName);CHKERRQ(ierr);
   if (user.use_low_level_functions) {
     ierr = DMPlexTopologyView(dm, v);CHKERRQ(ierr);
     ierr = DMPlexCoordinatesView(dm, v);CHKERRQ(ierr);
@@ -59,10 +64,14 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
   ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = DMCreate(PETSC_COMM_WORLD, &dmnew);CHKERRQ(ierr);
   ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) dmnew, exampleDMPlexName);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dmnew, prefix);CHKERRQ(ierr);
   if (user.use_low_level_functions) {
-    ierr = DMPlexTopologyLoad(dmnew, v, NULL);CHKERRQ(ierr);
-    ierr = DMPlexCoordinatesLoad(dmnew, v);CHKERRQ(ierr);
+    PetscSF  sfXC;
+
+    ierr = DMPlexTopologyLoad(dmnew, v, &sfXC);CHKERRQ(ierr);
+    ierr = DMPlexCoordinatesLoad(dmnew, v, sfXC);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfXC);CHKERRQ(ierr);
     ierr = DMPlexLabelsLoad(dmnew, v);CHKERRQ(ierr);
   } else {
     ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
@@ -85,7 +94,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.interpolate, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, "ex55_plex", user.interpolate, &dm);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dm,"orig_");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
@@ -120,8 +129,12 @@ int main(int argc, char **argv)
   /* This currently makes sense only for sequential meshes. */
   if (user.compare) {
     ierr = DMPlexEqual(dmnew, dm, &flg);CHKERRQ(ierr);
-    if (flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n");CHKERRQ(ierr);}
-    else     {ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs are not equal\n");CHKERRQ(ierr);}
+    if (!flg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n");CHKERRQ(ierr);
+  }
+  if (user.compare_labels) {
+    ierr = DMCompareLabels(dmnew, dm, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"DMLabels equal\n");CHKERRQ(ierr);
   }
 
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -137,12 +150,14 @@ int main(int argc, char **argv)
   #   Have to replace Exodus file, which is creating uninterpolated edges
   test:
     suffix: 0
-    requires: exodusii broken
+    TODO: broken
+    requires: exodusii
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -format hdf5_petsc -compare
   test:
     suffix: 1
-    requires: exodusii parmetis !defined(PETSC_USE_64BIT_INDICES) broken
+    TODO: broken
+    requires: exodusii parmetis !defined(PETSC_USE_64BIT_INDICES)
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
     args: -petscpartitioner_type parmetis
@@ -165,15 +180,22 @@ int main(int argc, char **argv)
   test:
     suffix: 3
     requires: exodusii
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -compare
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -compare -compare_labels
 
   # Load HDF5 file in XDMF format in parallel, write, read dm1, write, read dm2, and compare dm1 and dm2
-  test:
+  testset:
     suffix: 4
     requires: !complex
-    nsize: {{1 2 3 4 8}}
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5
-    args: -dm_plex_create_from_hdf5_xdmf -distribute 0 -format hdf5_xdmf -second_write_read -compare
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
+    args: -distribute 0 -second_write_read -compare
+    test:
+      suffix: hdf5_petsc
+      nsize: {{1 2}}
+      args: -format hdf5_petsc -compare_labels
+    test:
+      suffix: hdf5_xdmf
+      nsize: {{1 3 8}}
+      args: -format hdf5_xdmf
 
   # Use low level functions, DMPlexTopologyView()/Load(), DMPlexCoordinatesView()/Load(), and DMPlexLabelsView()/Load()
   # Output must be the same as ex55_2_nsize-2_format-hdf5_petsc_interpolate-0.out
@@ -188,34 +210,44 @@ int main(int argc, char **argv)
     args: -format hdf5_petsc -use_low_level_functions
 
   testset:
+    suffix: 6
+    requires: hdf5 !complex datafilespath
+    nsize: {{1 3}}
+    args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
+    args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
+    args: -format hdf5_petsc -second_write_read -compare -compare_labels
+    args: -interpolate {{0 1}} -distribute {{0 1}} -petscpartitioner_type simple
+
+  testset:
     # the same data and settings as dm_impls_plex_tests-ex18_9%
+    suffix: 9
     requires: hdf5 !complex datafilespath
     nsize: {{1 2 4}}
     args: -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_geometry
     args: -filename ${DATAFILESPATH}/meshes/cube-hexahedra-refined.h5 -dm_plex_create_from_hdf5_xdmf -dm_plex_hdf5_topology_path /cells -dm_plex_hdf5_geometry_path /coordinates
     args: -format hdf5_xdmf -second_write_read -compare
     test:
-      suffix: 9_hdf5_seqload
+      suffix: hdf5_seqload
       args: -distribute -petscpartitioner_type simple
       args: -interpolate {{0 1}}
       args: -dm_plex_hdf5_force_sequential
     test:
-      suffix: 9_hdf5_seqload_metis
+      suffix: hdf5_seqload_metis
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
       args: -interpolate 1
       args: -dm_plex_hdf5_force_sequential
     test:
-      suffix: 9_hdf5
+      suffix: hdf5
       args: -interpolate 1 -petscpartitioner_type simple
     test:
-      suffix: 9_hdf5_repart
+      suffix: hdf5_repart
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
       args: -interpolate 1
     test:
       TODO: Parallel partitioning of uninterpolated meshes not supported
-      suffix: 9_hdf5_repart_ppu
+      suffix: hdf5_repart_ppu
       requires: parmetis
       args: -distribute -petscpartitioner_type parmetis
       args: -interpolate 0
@@ -226,4 +258,31 @@ int main(int argc, char **argv)
     requires: exodusii
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo -new_dm_view ascii:ex5_new_dm_view.log:ascii_info_detail
+
+  # test backward compatibility of petsc_hdf5 format
+  testset:
+    suffix: 10-v3.16.0-v1.0.0
+    requires: hdf5 !complex datafilespath
+    args: -dm_plex_check_all -compare
+    args: -dm_plex_view_hdf5_storage_version {{1.0.0 2.0.0}} -use_low_level_functions {{0 1}}
+    test:
+      suffix: a
+      args: -filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/annulus-20.h5
+    test:
+      suffix: b
+      TODO: broken
+      args: -filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/barycentricallyrefinedcube.h5
+    test:
+      suffix: c
+      args: -filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/blockcylinder-50.h5
+    test:
+      suffix: d
+      args: -filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/cube-hexahedra-refined.h5
+    test:
+      suffix: e
+      args: -filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/hybrid_hexwedge.h5
+    test:
+      suffix: f
+      args: -filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/square.h5
+
 TEST*/

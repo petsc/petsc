@@ -80,7 +80,7 @@ static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     /* first processor draws all node lines */
-    if (!rank) {
+    if (rank == 0) {
       PetscInt xmin_tmp;
       ymin = 0.0; ymax = 0.3;
       for (xmin_tmp=0; xmin_tmp < dd->M; xmin_tmp++) {

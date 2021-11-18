@@ -1,0 +1,167 @@
+lid velocity = 0.000106281, prandtl # = 1., grashof # = 1.
+  0 SNES Function norm 1.036007954337e-02 
+    0 KSP Residual norm 3.167045865731e+00 
+    1 KSP Residual norm 1.062138735731e-01 
+    2 KSP Residual norm 2.632207774221e-02 
+    3 KSP Residual norm 1.469659018701e-02 
+    4 KSP Residual norm 1.339238434759e-02 
+    5 KSP Residual norm 1.135809948187e-02 
+    6 KSP Residual norm 5.946207815936e-03 
+    7 KSP Residual norm 1.989640800279e-03 
+    8 KSP Residual norm 1.608260482529e-03 
+    9 KSP Residual norm 1.553608300956e-03 
+   10 KSP Residual norm 1.500181214943e-03 
+   11 KSP Residual norm 9.037846198335e-04 
+   12 KSP Residual norm 2.809523544900e-04 
+   13 KSP Residual norm 1.863091603515e-04 
+   14 KSP Residual norm 1.767530317232e-04 
+   15 KSP Residual norm 1.697173381848e-04 
+   16 KSP Residual norm 1.345278739356e-04 
+   17 KSP Residual norm 5.852158704761e-05 
+   18 KSP Residual norm 3.051638660647e-05 
+  1 SNES Function norm 1.612213481258e-03 
+    0 KSP Residual norm 4.712131182924e-05 
+    1 KSP Residual norm 2.855990297007e-05 
+    2 KSP Residual norm 2.753904445281e-05 
+    3 KSP Residual norm 2.599135270262e-05 
+    4 KSP Residual norm 1.635056617185e-05 
+    5 KSP Residual norm 1.127096959867e-05 
+    6 KSP Residual norm 1.098160075871e-05 
+    7 KSP Residual norm 1.065291813114e-05 
+    8 KSP Residual norm 9.193803820570e-06 
+    9 KSP Residual norm 4.914472328107e-06 
+   10 KSP Residual norm 3.823722529345e-06 
+   11 KSP Residual norm 3.734848130895e-06 
+   12 KSP Residual norm 3.395043587327e-06 
+   13 KSP Residual norm 2.490367942653e-06 
+   14 KSP Residual norm 1.137969920348e-06 
+   15 KSP Residual norm 9.160848219972e-07 
+   16 KSP Residual norm 9.104663987670e-07 
+   17 KSP Residual norm 8.085954588166e-07 
+   18 KSP Residual norm 4.767427249377e-07 
+   19 KSP Residual norm 1.691946890677e-07 
+   20 KSP Residual norm 1.250378133158e-07 
+   21 KSP Residual norm 1.178498696435e-07 
+   22 KSP Residual norm 1.147792618104e-07 
+   23 KSP Residual norm 7.883679143196e-08 
+   24 KSP Residual norm 2.966155948080e-08 
+   25 KSP Residual norm 2.171057070964e-08 
+   26 KSP Residual norm 2.134561970407e-08 
+   27 KSP Residual norm 2.113687299268e-08 
+   28 KSP Residual norm 1.702764605072e-08 
+   29 KSP Residual norm 9.797503347109e-09 
+   30 KSP Residual norm 8.593149000574e-09 
+   31 KSP Residual norm 8.584295240676e-09 
+   32 KSP Residual norm 8.542038356962e-09 
+   33 KSP Residual norm 7.830459498416e-09 
+   34 KSP Residual norm 5.091078437569e-09 
+   35 KSP Residual norm 4.325957164742e-09 
+   36 KSP Residual norm 4.269347344368e-09 
+   37 KSP Residual norm 4.112298925413e-09 
+   38 KSP Residual norm 3.393572260728e-09 
+   39 KSP Residual norm 1.468389761834e-09 
+   40 KSP Residual norm 1.125005507677e-09 
+   41 KSP Residual norm 1.069643706211e-09 
+   42 KSP Residual norm 1.041387229426e-09 
+   43 KSP Residual norm 6.595130732334e-10 
+   44 KSP Residual norm 3.096421997330e-10 
+  2 SNES Function norm 1.486845224447e-08 
+    0 KSP Residual norm 8.959224583072e-10 
+    1 KSP Residual norm 2.554490915895e-10 
+    2 KSP Residual norm 2.285642329072e-10 
+    3 KSP Residual norm 2.276812591542e-10 
+    4 KSP Residual norm 1.963405688243e-10 
+    5 KSP Residual norm 9.163528438085e-11 
+    6 KSP Residual norm 6.838940605029e-11 
+    7 KSP Residual norm 6.673913524970e-11 
+    8 KSP Residual norm 6.433595694860e-11 
+    9 KSP Residual norm 4.444077820389e-11 
+   10 KSP Residual norm 2.053935305046e-11 
+   11 KSP Residual norm 1.741652273507e-11 
+   12 KSP Residual norm 1.641562218474e-11 
+   13 KSP Residual norm 1.590822710981e-11 
+   14 KSP Residual norm 1.096662798229e-11 
+   15 KSP Residual norm 6.038767717998e-12 
+   16 KSP Residual norm 5.346989686946e-12 
+   17 KSP Residual norm 5.222050006558e-12 
+   18 KSP Residual norm 4.843955246308e-12 
+   19 KSP Residual norm 3.020806401485e-12 
+   20 KSP Residual norm 2.058775861861e-12 
+   21 KSP Residual norm 1.979303431359e-12 
+   22 KSP Residual norm 1.945931019986e-12 
+   23 KSP Residual norm 1.863959580940e-12 
+   24 KSP Residual norm 9.374752042393e-13 
+   25 KSP Residual norm 4.768516955795e-13 
+   26 KSP Residual norm 4.362867982456e-13 
+   27 KSP Residual norm 4.257437811808e-13 
+   28 KSP Residual norm 3.841247651161e-13 
+   29 KSP Residual norm 1.760376448837e-13 
+   30 KSP Residual norm 9.394807832505e-14 
+   31 KSP Residual norm 8.839942587859e-14 
+   32 KSP Residual norm 8.689335691217e-14 
+   33 KSP Residual norm 8.225915088213e-14 
+   34 KSP Residual norm 5.999797398963e-14 
+   35 KSP Residual norm 3.674989736613e-14 
+   36 KSP Residual norm 3.505741072626e-14 
+   37 KSP Residual norm 3.445740504006e-14 
+   38 KSP Residual norm 3.168274630941e-14 
+   39 KSP Residual norm 1.742252751102e-14 
+   40 KSP Residual norm 9.929126002856e-15 
+   41 KSP Residual norm 8.780624678949e-15 
+  3 SNES Function norm 5.404771879425e-13 
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=103
+  total number of function evaluations=4
+  norm schedule ALWAYS
+  Jacobian is built using colored finite differences on a DMDA
+  SNESLineSearch Object: 4 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 4 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 4 MPI processes
+    type: hypre
+      HYPRE BoomerAMG preconditioning
+        Cycle type V
+        Maximum number of levels 25
+        Maximum number of iterations PER hypre call 1
+        Convergence tolerance PER hypre call 0.
+        Threshold for strong coupling 0.25
+        Interpolation truncation factor 0.
+        Interpolation: max elements per row 0
+        Number of levels of aggressive coarsening 0
+        Number of paths for aggressive coarsening 1
+        Maximum row sums 0.9
+        Sweeps down         1
+        Sweeps up           1
+        Sweeps on coarse    1
+        Relax down          l1scaled-Jacobi
+        Relax up            l1scaled-Jacobi
+        Relax on coarse     Gaussian-elimination
+        Relax weight  (all)      1.
+        Outer relax weight (all) 1.
+        Not using CF-relaxation
+        Not using more complex smoothers.
+        Measure type        local
+        Coarsen type        PMIS
+        Interpolation type  ext+i
+    linear system matrix = precond matrix:
+    Mat Object: 4 MPI processes
+      type: mpiaij
+      rows=37636, cols=37636, bs=4
+      total: nonzeros=746512, allocated nonzeros=746512
+      total number of mallocs used during MatSetValues calls=0
+Number of SNES iterations = 3

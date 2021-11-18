@@ -163,8 +163,8 @@
 #define MATLMVMSYMBADBROYDEN 'lmvmsymbadbroyden'
 #define MATLMVMDIAGBROYDEN 'lmvmdiagbroyden'
 #define MATCONSTANTDIAGONAL 'constantdiagonal'
-#define MATHARA            'hara'
 #define MATHTOOL           'htool'
+#define MATH2OPUS          'h2opus'
 
 !
 ! MatMFFDType values

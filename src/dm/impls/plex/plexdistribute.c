@@ -36,7 +36,7 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,P
 . dm      - The DM object
 
   Output Parameters:
-- user    - The user callback
++ user    - The user callback
 - ctx     - context for callback evaluation
 
   Level: advanced
@@ -271,13 +271,13 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
 
   Input Parameters:
 + dm - The DM object
-. p  - The point
-. adjSize - The maximum size of adj if it is non-NULL, or PETSC_DETERMINE
-- adj - Either NULL so that the array is allocated, or an existing array with size adjSize
+- p  - The point
 
-  Output Parameters:
-+ adjSize - The number of adjacent points
-- adj - The adjacent points
+  Input/Output Parameters:
++ adjSize - The maximum size of adj if it is non-NULL, or PETSC_DETERMINE;
+            on output the number of adjacent points
+- adj - Either NULL so that the array is allocated, or an existing array with size adjSize;
+        on output contains the adjacent points
 
   Level: advanced
 
@@ -308,7 +308,11 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 
   Input Parameters:
 + dm      - The DM
-- sfPoint - The PetscSF which encodes point connectivity
+. sfPoint - The PetscSF which encodes point connectivity
+. rootRankSection -
+. rootRanks -
+. leftRankSection -
+- leafRanks -
 
   Output Parameters:
 + processRanks - A list of process neighbors, or NULL
@@ -1366,10 +1370,10 @@ static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_D
   Input Parameters:
 + dm          - The source DMPlex object
 . migrationSF - The star forest that describes the parallel point remapping
-. ownership   - Flag causing a vote to determine point ownership
+- ownership   - Flag causing a vote to determine point ownership
 
   Output Parameter:
-- pointSF     - The star forest describing the point overlap in the remapped DM
+. pointSF     - The star forest describing the point overlap in the remapped DM
 
   Notes:
   Output pointSF is guaranteed to have the array of local indices (leaves) sorted.
@@ -1499,10 +1503,10 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
   Input Parameters:
 + dm       - The source DMPlex object
-. sf       - The star forest communication context describing the migration pattern
+- sf       - The star forest communication context describing the migration pattern
 
   Output Parameter:
-- targetDM - The target DMPlex object
+. targetDM - The target DMPlex object
 
   Level: intermediate
 
@@ -2015,14 +2019,17 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
 {
   PetscInt          pStart, pEnd, count;
   MPI_Comm          comm;
+  PetscMPIInt       size;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(distributed,2);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  if (size == 1) { *distributed = PETSC_FALSE; PetscFunctionReturn(0); }
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  count = !!(pEnd - pStart);
+  count = (pEnd - pStart) > 0 ? 1 : 0;
   ierr = MPI_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
   *distributed = count > 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);

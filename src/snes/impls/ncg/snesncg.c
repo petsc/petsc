@@ -134,7 +134,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES NCG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ncg_monitor","Monitor the beta values used in the NCG iterations","SNES",ncg->monitor ? PETSC_TRUE : PETSC_FALSE, &debug, NULL);CHKERRQ(ierr);
   if (debug) {
-    ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+    ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
   }
   ierr = PetscOptionsEnum("-snes_ncg_type","NCG Beta type used","SNESNCGSetType",SNESNCGTypes,(PetscEnum)ncg->type,(PetscEnum*)&ncgtype,NULL);CHKERRQ(ierr);
   ierr = SNESNCGSetType(snes, ncgtype);CHKERRQ(ierr);
@@ -433,14 +433,14 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
       ierr = VecDotEnd(dX, dX, &dXdotdX);CHKERRQ(ierr);
       ierr = VecDotEnd(lX, dX, &lXdotdX);CHKERRQ(ierr);
       ierr = VecDotEnd(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotdX / (lXdotdXold - lXdotdX));CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / (lXdotdXold - lXdotdX));
       break;
     case SNES_NCG_CD: /* Conjugate Descent */
       ierr = VecDotBegin(dX, dX, &dXdotdX);CHKERRQ(ierr);
       ierr = VecDotBegin(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
       ierr = VecDotEnd(dX, dX, &dXdotdX);CHKERRQ(ierr);
       ierr = VecDotEnd(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotdX / lXdotdXold);CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / lXdotdXold);
       break;
     }
     if (ncg->monitor) {

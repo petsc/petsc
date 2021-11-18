@@ -13,7 +13,7 @@
   Input Parameter:
 . dmb  - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
 - ldegrees  - The degree of refinement at each level in the hierarchy
 
@@ -89,7 +89,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   Input Parameter:
 . dm  - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
 - dmf  - The DM objects after successive refinement of the hierarchy
 
@@ -119,7 +119,7 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM 
   Input Parameter:
 . dm  - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
 - dmc  - The DM objects after successive coarsening of the hierarchy
 
@@ -149,11 +149,11 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, 
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm1  - The DMMoab object
 - dm2  - the second, finer DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + interpl  - The interpolation operator for transferring data between the levels
 - vec      - The scaling vector (optional)
 
@@ -394,7 +394,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   Input Parameter:
 . dmb  - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
 - ldegrees  - The degree of refinement at each level in the hierarchy
 
@@ -509,7 +509,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm  - The DMMoab object
 - comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
@@ -539,7 +539,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm  - The DMMoab object
 - comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 

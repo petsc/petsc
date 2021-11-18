@@ -64,7 +64,7 @@ PETSC_EXTERN void petscviewerasciiprintf_(PetscViewer *viewer,char* str,PetscErr
   FIXCHAR(str,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
   FREECHAR(str,c1);
-  *ierr = PetscViewerASCIIPrintf(v,tmp);if (*ierr) return;
+  *ierr = PetscViewerASCIIPrintf(v,"%s",tmp);if (*ierr) return;
   *ierr = PetscFree(tmp);
 }
 
@@ -91,7 +91,7 @@ PETSC_EXTERN void petscviewerasciisynchronizedprintf_(PetscViewer *viewer,char* 
   FIXCHAR(str,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
   FREECHAR(str,c1);
-  *ierr = PetscViewerASCIISynchronizedPrintf(v,tmp);if (*ierr) return;
+  *ierr = PetscViewerASCIISynchronizedPrintf(v,"%s",tmp);if (*ierr) return;
   *ierr = PetscFree(tmp);
 }
 

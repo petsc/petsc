@@ -51,7 +51,7 @@ class CompilerOptions(config.base.Configure):
       # Linux Intel
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not compiler.find('win32fe') >=0:
         if bopt == '':
-          flags.append('-wd1572')
+          flags.extend(['-wd1572', '-Wno-unknown-pragmas'])
           # next one fails in OpenMP build and we don't use it anyway so remove
           # flags.append('-Qoption,cpp,--extended_float_type')
         elif bopt == 'g':
@@ -87,7 +87,7 @@ class CompilerOptions(config.base.Configure):
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
           flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
-      if config.setCompilers.Configure.isNVCC(compiler, self.log):
+      elif config.setCompilers.Configure.isNVCC(compiler, self.log):
         if bopt == 'g':
           # nvcc --help says:
           #  -g : Generate debug information for host code.
@@ -98,6 +98,16 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-g', '-lineinfo'])
         elif bopt == 'O':
           flags.append('-O3')
+      # NEC
+      elif config.setCompilers.Configure.isNEC(compiler, self.log):
+        if bopt == '':
+          flags.extend(['-Wall', '-fdiag-vector=0', '-fdiag-parallel=0', '-fdiag-inline=0'])
+        elif bopt == 'O':
+          flags.append('-O1') # defaults to O2, which is quite buggy (as of version 3.3.1)
+        elif bopt == 'g':
+          flags.append('-g')
+          flags.append('-traceback=verbose')
+          flags.append('-O0')
     # Generic
     if not len(flags):
       if bopt == 'g':
@@ -108,7 +118,7 @@ class CompilerOptions(config.base.Configure):
       self.logPrintBox('***** WARNING: Using default optimization '+language+' flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n '+language.upper()+'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
-  def getCxxFlags(self, compiler, bopt):
+  def getCxxFlags(self, compiler, bopt, language):
     import config.setCompilers
 
     if [s for s in ['mpiCC','mpic++','mpicxx','mpiicxx','mpiicpc'] if os.path.basename(compiler).find(s)>=0]:
@@ -197,6 +207,16 @@ class CompilerOptions(config.base.Configure):
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
           flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
+      # NEC
+      elif config.setCompilers.Configure.isNEC(compiler, self.log):
+        if bopt == '':
+          flags.extend(['-Wall', '-fdiag-vector=0', '-fdiag-parallel=0', '-fdiag-inline=0'])
+        elif bopt == 'O':
+          flags.append('-O1') # defaults to O2, which is quite buggy (as of version 3.3.1)
+        elif bopt == 'g':
+          flags.append('-g')
+          flags.append('-traceback=verbose')
+          flags.append('-O0')
     # Generic
     if not len(flags):
       if bopt in ['g']:
@@ -204,7 +224,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt in ['O']:
         flags.append('-O')
     if bopt == 'O':
-      self.logPrintBox('***** WARNING: Using default C++ optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n CXXOPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
+      self.logPrintBox('***** WARNING: Using default ' + language + ' optimization flags '+' '.join(flags)+'\nYou might consider manually setting optimal optimization flags for your system with\n ' + language.upper() + 'OPTFLAGS="optimization flags" see config/examples/arch-*-opt.py for examples')
     return flags
 
   def getFortranFlags(self, compiler, bopt):
@@ -270,6 +290,16 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-debug:full','-Od'])
         elif bopt == 'O':
           flags.extend(['-optimize:5', '-fast'])
+      # NEC
+      elif config.setCompilers.Configure.isNEC(compiler, self.log):
+        if bopt == '':
+          flags.extend(['-Wall', '-fdiag-vector=0', '-fdiag-parallel=0', '-fdiag-inline=0'])
+        elif bopt == 'O':
+          flags.append('-O2')
+        elif bopt == 'g':
+          flags.append('-g')
+          flags.append('-traceback=verbose')
+          flags.append('-O0')
     # Generic
     if not len(flags):
       if bopt == 'g':
@@ -289,7 +319,7 @@ class CompilerOptions(config.base.Configure):
     if language == 'C' or language == 'CUDA':
       flags = self.getCFlags(compiler, bopt, language)
     elif language == 'Cxx' or language == 'HIP' or language == 'SYCL':
-      flags = self.getCxxFlags(compiler, bopt)
+      flags = self.getCxxFlags(compiler, bopt, language)
     elif language in ['Fortran', 'FC']:
       flags = self.getFortranFlags(compiler, bopt)
     return flags

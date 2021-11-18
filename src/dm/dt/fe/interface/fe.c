@@ -193,7 +193,7 @@ PetscErrorCode  PetscFEViewFromOptions(PetscFE A,PetscObject obj,const char name
 
   Collective on fem
 
-  Input Parameter:
+  Input Parameters:
 + fem - the PetscFE object to view
 - viewer   - the viewer
 
@@ -790,7 +790,7 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + fem - The PetscFE object
 - k   - The highest derivative we need to tabulate, very often 1
 
@@ -827,7 +827,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + fem - The PetscFE object
 - k   - The highest derivative we need to tabulate, very often 1
 
@@ -1519,6 +1519,7 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS ds, PetscWeakForm wf, PetscFor
   Input Parameters:
 + prob         - The PetscDS specifying the discretizations and continuum functions
 . key          - The (label+value, field) being integrated
+. s            - The side of the cell being integrated, 0 for negative and 1 for positive
 . Ne           - The number of elements in the chunk
 . fgeom        - The face geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements
@@ -1534,7 +1535,7 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscDS ds, PetscWeakForm wf, PetscFor
 
 .seealso: PetscFEIntegrateResidual()
 @*/
-PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS prob, PetscFormKey key, PetscInt Ne, PetscFEGeom *fgeom,
+PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS prob, PetscFormKey key, PetscInt s, PetscInt Ne, PetscFEGeom *fgeom,
                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   PetscFE        fe;
@@ -1543,7 +1544,7 @@ PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS prob, PetscFormKey key, Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   ierr = PetscDSGetDiscretization(prob, key.field, (PetscObject *) &fe);CHKERRQ(ierr);
-  if (fe->ops->integratehybridresidual) {ierr = (*fe->ops->integratehybridresidual)(prob, key, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
+  if (fe->ops->integratehybridresidual) {ierr = (*fe->ops->integratehybridresidual)(prob, key, s, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -2199,7 +2200,7 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
   return(0);
 }
 
-PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulation T, PetscInt r, PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
+PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulation T, PetscInt r, PetscInt s, PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
 {
   const PetscInt   dE       = T->cdim;
   const PetscInt   Nq       = T->Np;
@@ -2207,10 +2208,10 @@ PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulati
   const PetscInt   Nc       = T->Nc;
   const PetscReal *basis    = &T->T[0][r*Nq*Nb*Nc];
   const PetscReal *basisDer = &T->T[1][r*Nq*Nb*Nc*dE];
-  PetscInt         q, b, c, d, s;
+  PetscInt         q, b, c, d;
   PetscErrorCode   ierr;
 
-  for (b = 0; b < Nb*2; ++b) elemVec[b] = 0.0;
+  for (b = 0; b < Nb; ++b) elemVec[Nb*s+b] = 0.0;
   for (q = 0; q < Nq; ++q) {
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Nc; ++c) {
@@ -2222,15 +2223,13 @@ PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulati
     }
     ierr = PetscFEPushforward(fe, fegeom, Nb, tmpBasis);CHKERRQ(ierr);
     ierr = PetscFEPushforwardGradient(fe, fegeom, Nb, tmpBasisDer);CHKERRQ(ierr);
-    for (s = 0; s < 2; ++s) {
-      for (b = 0; b < Nb; ++b) {
-        for (c = 0; c < Nc; ++c) {
-          const PetscInt bcidx = b*Nc+c;
-          const PetscInt qcidx = (q*2+s)*Nc+c;
+    for (b = 0; b < Nb; ++b) {
+      for (c = 0; c < Nc; ++c) {
+        const PetscInt bcidx = b*Nc+c;
+        const PetscInt qcidx = q*Nc+c;
 
-          elemVec[Nb*s+b] += tmpBasis[bcidx]*f0[qcidx];
-          for (d = 0; d < dE; ++d) elemVec[Nb*s+b] += tmpBasisDer[bcidx*dE+d]*f1[qcidx*dE+d];
-        }
+        elemVec[Nb*s+b] += tmpBasis[bcidx]*f0[qcidx];
+        for (d = 0; d < dE; ++d) elemVec[Nb*s+b] += tmpBasisDer[bcidx*dE+d]*f1[qcidx*dE+d];
       }
     }
   }

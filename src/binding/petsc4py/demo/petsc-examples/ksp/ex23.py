@@ -83,8 +83,8 @@ For matrix assembly, each processor contributes entries for
 the part that it owns locally.
 '''
 
-col = np.zeros(3,dtype='i4')
-value = np.zeros(3,dtype='f8')
+col = np.zeros(3,dtype=PETSc.IntType)
+value = np.zeros(3,dtype=PETSc.ScalarType)
 
 if not rstart:
     rstart = 1

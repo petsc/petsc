@@ -15,7 +15,7 @@ class Heat(object):
         self.n = N // comm.size + int(comm.rank < (N % comm.size)) # owned part of global problem
         self.start = comm.exscan(self.n)
         if comm.rank == 0: self.start = 0
-        gindices = numpy.arange(self.start-1, self.start+self.n+1, dtype=int) % N # periodic
+        gindices = numpy.arange(self.start-1, self.start+self.n+1, dtype=PETSc.IntType) % N # periodic
         self.mat = PETSc.Mat().create(comm=comm)
         size = (self.n, self.N) # local and global sizes
         self.mat.setSizes((size,size))

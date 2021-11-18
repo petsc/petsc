@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/draw/utils/axisimpl.h>  /*I   "petscdraw.h"  I*/
+#include <petsc/private/drawimpl.h>  /*I   "petscdraw.h"  I*/
 
 /*
    val is the label value.  sep is the separation to the next (or previous)

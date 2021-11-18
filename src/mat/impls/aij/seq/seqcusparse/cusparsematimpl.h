@@ -250,6 +250,7 @@ struct Mat_SeqAIJCUSPARSE {
   THRUSTINTARRAY32             *rowoffsets_gpu; /* rowoffsets on GPU in non-compressed-row format. It is used to convert CSR to CSC */
   PetscInt                     nrows;           /* number of rows of the matrix seen by GPU */
   MatCUSPARSEStorageFormat     format;          /* the storage format for the matrix on the device */
+  PetscBool                    use_cpu_solve;   /* Use AIJ_Seq (I)LU solve */
   cudaStream_t                 stream;          /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
   cusparseHandle_t             handle;          /* a handle to the cusparse library ... this may not be owned (if we're working in parallel i.e. multiGPUs) */
   PetscObjectState             nonzerostate;    /* track nonzero state to possibly recreate the GPU matrix */
@@ -272,13 +273,8 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetHandle(Mat, const cusparseHandle_t han
 PETSC_INTERN PetscErrorCode MatCUSPARSEClearHandle(Mat);
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat,const PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat,const PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat,PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat,PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat,PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat,PetscScalar**);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);
 
 PETSC_STATIC_INLINE bool isCudaMem(const void *data)
 {

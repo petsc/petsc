@@ -7,6 +7,7 @@ native DMDAInterpolationType
 native DMDAElementType
 native DMBoundaryType
 native DMAdaptationStrategy
+native DMCopyLabelsMode
 native PetscDrawMarkerType
 native ISGlobalToLocalMappingMode
 native ISColoringType
@@ -71,6 +72,7 @@ native MatReal
 native PetscSysInt
 native MatSTRUMPACKReordering
 native PCGAMGLayoutType
+native PCHPDDMCoarseCorrectionType
 native PetscOffloadMask
 # Some structures are like arrays and can be treated as native types
 native MatInfo
@@ -96,6 +98,8 @@ nativeptr MatPartitioning
 nativeptr PC
 nativeptr PetscBag
 nativeptr PetscBagItem
+nativeptr PetscDevice
+nativeptr PetscDeviceContext
 nativeptr PetscDraw
 nativeptr PetscDrawAxis
 nativeptr PetscDrawHG

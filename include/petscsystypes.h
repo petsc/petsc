@@ -102,6 +102,19 @@ M*/
    typedef int PetscInt;
 #endif
 
+#if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#  define MPIU_INT64     MPI_INT64_T
+#  define PetscInt64_FMT PRId64
+#elif (PETSC_SIZEOF_LONG_LONG == 8)
+#  define MPIU_INT64     MPI_LONG_LONG_INT
+#  define PetscInt64_FMT "lld"
+#elif defined(PETSC_HAVE___INT64)
+#  define MPIU_INT64     MPI_INT64_T
+#  define PetscInt64_FMT "ld"
+#else
+#  error "cannot determine PetscInt64 type"
+#endif
+
 /*MC
    PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
 
@@ -135,8 +148,10 @@ M*/
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
+#  define PetscBLASInt_FMT PetscInt64_FMT
    typedef PetscInt64 PetscBLASInt;
 #else
+#  define PetscBLASInt_FMT "d"
    typedef int PetscBLASInt;
 #endif
 
@@ -234,6 +249,8 @@ M*/
 #      elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX)  /* User code only - conditional on libary code complex support */
 #        define PETSC_HAVE_COMPLEX 1
 #      endif
+#    elif defined(PETSC_USE_REAL___FLOAT128) && defined(PETSC_HAVE_C99_COMPLEX)
+#        define PETSC_HAVE_COMPLEX 1
 #    endif
 #  else /* !PETSC_CLANGUAGE_CXX */
 #    if !defined(PETSC_USE_REAL___FP16)
@@ -255,6 +272,8 @@ M*/
     #elif defined(PETSC_HAVE_CUDA)
       #define petsccomplexlib thrust
       #include <thrust/complex.h>
+    #elif defined(PETSC_USE_REAL___FLOAT128)
+      #include <complex.h>
     #else
       #define petsccomplexlib std
       #include <complex>
@@ -266,7 +285,7 @@ M*/
     #elif defined(PETSC_USE_REAL_DOUBLE)
       typedef petsccomplexlib::complex<double> PetscComplex;
     #elif defined(PETSC_USE_REAL___FLOAT128)
-      typedef petsccomplexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
+      typedef __complex128 PetscComplex;
     #endif
 
     /* Include a PETSc C++ complex 'fix'. Check PetscComplex manual page for details */

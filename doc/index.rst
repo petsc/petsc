@@ -5,7 +5,7 @@ PETSc, the Portable, Extensible Toolkit for Scientific Computation,
 pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/English#Key>`__), is a suite of
 data structures and routines for the scalable (parallel) solution of scientific
 applications modeled by partial differential equations. It supports MPI, and GPUs through
-CUDA or OpenCL, as well as hybrid MPI-GPU parallelism. PETSc (sometimes called PETSc/TAO)
+CUDA, HIP or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine. PETSc (sometimes called PETSc/TAO)
 also contains the TAO, the Toolkit for Advanced Optimization, software library.
 
 PETSc is developed as :ref:`open-source <doc_license>`, requests and contributions are welcome.
@@ -43,7 +43,7 @@ Main Topics
    Installation <install/index>
    FAQ <faq/index>
    Documentation <docs/index>
-   Tutorials <tutorials/guide_to_examples>
+   Tutorials <tutorials/index>
    Community <community/index>
    Developers <developers/index>
    Misc. <miscellaneous/index>
@@ -120,59 +120,36 @@ Citing PETSc
 
 When citing PETSc in a publication please cite the following:
 
-.. code-block:: none
+.. literalinclude:: /petsc.bib
+   :language: none
+   :start-at: @misc{petsc-web-page
+   :end-at: year
+   :append: }
 
-   @Misc{petsc-web-page,
-      Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown
-      and Peter Brune and Kris Buschelman and Lisandro Dalcin and Alp Dener and Victor Eijkhout
-      and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and Dave~A. May
-      and Lois Curfman McInnes and Richard Tran Mills and Todd Munson and Karl Rupp
-      and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
-      Title  = "{PETS}c {W}eb page",
-      Note   = "https://petsc.org/",
-      Year   = "2021"}
+.. literalinclude:: /petsc.bib
+   :language: none
+   :start-at: @techreport{petsc-user-ref
+   :end-at: year
+   :append: }
 
-   @TechReport{petsc-user-ref,
-      Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown
-      and Peter Brune and Kris Buschelman and Lisandro Dalcin and Alp Dener and Victor Eijkhout
-      and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and Dave~A. May
-      and Lois Curfman McInnes and Richard Tran Mills and Todd Munson and Karl Rupp
-      and Patrick Sanan and Barry~F. Smith and Stefano Zampini and Hong Zhang and Hong Zhang",
-      Title       = "{PETS}c Users Manual",
-      Number      = "ANL-95/11 - Revision 3.15",
-      Institution = "Argonne National Laboratory",
-      Year        = "2021"}
-
-   @InProceedings{petsc-efficient,
-      Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",
-      Title     = "Efficient Management of Parallelism in Object Oriented
-                   Numerical Software Libraries",
-      Booktitle = "Modern Software Tools in Scientific Computing",
-      Editor    = "E. Arge and A. M. Bruaset and H. P. Langtangen",
-      Pages     = "163--202",
-      Publisher = "Birkhauser Press",
-      Year      = "1997"}
+.. literalinclude:: /petsc.bib
+   :language: none
+   :start-at: @inproceedings{petsc-efficient
+   :end-at: year
+   :append: }
 
 If you use the TS component of PETSc please cite the following:
 
-.. code-block:: none
-
-   @article{abhyankar2018petsc,
-     title={PETSc/TS: A Modern Scalable ODE/DAE Solver Library},
-     author={Abhyankar, Shrirang and Brown, Jed and Constantinescu, Emil M and Ghosh, Debojyoti and Smith, Barry F and Zhang, Hong},
-     journal={arXiv preprint arXiv:1806.01437},
-     year={2018}
-   }
+.. literalinclude:: petsc.bib
+   :language: none
+   :start-at: @techreport{AbhyankarEtAl2018
+   :end-at: year
+   :append: }
 
 If you utilize the TS adjoint solver please cite
 
-.. code-block:: none
-
-     @article{zhang2019,
-       author = {Zhang, Hong and Constantinescu, Emil M. and Smith, Barry F.},
-       title = {{{PETSc TSAdjoint: a discrete adjoint ODE solver for first-order and second-order sensitivity analysis}},
-       journal = {arXiv e-preprints},
-       eprint = {1912.07696},
-       archivePrefix = {arXiv},
-       year={2019}
-     }
+.. literalinclude:: /petsc.bib
+   :language: none
+   :start-at: @techreport{ZhangConstantinescuSmith2019
+   :end-at: year
+   :append: }

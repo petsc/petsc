@@ -108,7 +108,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = DMDAGetInfo(dm,NULL,&M,&N,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   len = DMDA_I*DMDA_J*DMDA_K*dof;
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscBinaryOpen(name,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fdes,buffer,len,NULL,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);

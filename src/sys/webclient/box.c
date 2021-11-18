@@ -117,7 +117,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     if (!isatty(fileno(PETSC_STDOUT))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
     ierr = PetscPrintf(comm,"Cut and paste the following into your browser:\n\n"
                             "https://www.box.com/api/oauth2/authorize?"
@@ -169,7 +169,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
                     if not found it will call PetscBoxAuthorize()
 -   tokensize - size of the output string access_token
 
-   Output Parameter:
+   Output Parameters:
 +   access_token - token that can be passed to PetscBoxUpload()
 -   new_refresh_token - the old refresh token is no longer valid, not this is different than Google where the same refresh_token is used forever
 
@@ -191,7 +191,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     if (!refresh_token) {
       PetscBool set;
       ierr = PetscMalloc1(512,&refreshtoken);CHKERRQ(ierr);
@@ -288,7 +288,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscStrcpy(head,"Authorization: Bearer ");CHKERRQ(ierr);
     ierr = PetscStrcat(head,access_token);CHKERRQ(ierr);
     ierr = PetscStrcat(head,"\r\n");CHKERRQ(ierr);

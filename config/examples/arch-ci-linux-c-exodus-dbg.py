@@ -33,10 +33,14 @@ if __name__ == '__main__':
     '--download-triangle',
     '--download-p4est',
     '--download-viennacl',
+    '--download-hypre',
     '--with-cuda',
     '--with-shared-libraries',
     '--download-magma',
     '--with-magma-fortran-bindings=0',
+    '--download-kblas',
+    '--download-h2opus',
+    '--download-cub',
   ]
 
   configure.petsc_configure(configure_options)

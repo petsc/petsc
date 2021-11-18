@@ -19,6 +19,9 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatSeqAIJRegisterAll(void);
 
+/* Gets the root type of the input matrix's type (e.g., MATAIJ for MATSEQAIJ) */
+PETSC_INTERN PetscErrorCode MatGetRootType_Private(Mat, MatType*);
+
 /*
   This file defines the parts of the matrix data structure that are
   shared by all matrix types.
@@ -181,7 +184,7 @@ struct _MatOps {
   PetscErrorCode (*getmultiprocblock)(Mat,MPI_Comm,MatReuse,Mat*);
   /*124*/
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
-  PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
+  PetscErrorCode (*getcolumnreductions)(Mat,PetscInt,PetscReal*);
   PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
   PetscErrorCode (*invertvariableblockdiagonal)(Mat,PetscInt,const PetscInt*,PetscScalar*);
   PetscErrorCode (*createsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
@@ -421,6 +424,9 @@ typedef struct { /* used by MatProduct() */
   MatProductType type;
   char           *alg;
   Mat            A,B,C,Dwork;
+  PetscBool      symbolic_used_the_fact_A_is_symmetric; /* Symbolic phase took advantage of the fact that A is symmetric, and optimized e.g. AtB as AB. Then, .. */
+  PetscBool      symbolic_used_the_fact_B_is_symmetric; /* .. in the numeric phase, if a new A is not symmetric (but has the same sparsity as the old A therefore .. */
+  PetscBool      symbolic_used_the_fact_C_is_symmetric; /* MatMatMult(A,B,MAT_REUSE_MATRIX,..&C) is still legitimate), we need to redo symbolic! */
   PetscReal      fill;
   PetscBool      api_user; /* used to distinguish command line options and to indicate the matrix values are ready to be consumed at symbolic phase if needed */
 
@@ -467,6 +473,7 @@ struct _p_Mat {
 #if defined(PETSC_HAVE_DEVICE)
   PetscOffloadMask       offloadmask;      /* a mask which indicates where the valid matrix data is (GPU, CPU or both) */
   PetscBool              boundtocpu;
+  PetscBool              bindingpropagates;
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   char                   *solvertype;
@@ -1811,5 +1818,8 @@ PETSC_EXTERN PetscLogEvent MATCOLORING_Local;
 PETSC_EXTERN PetscLogEvent MATCOLORING_ISCreate;
 PETSC_EXTERN PetscLogEvent MATCOLORING_SetUp;
 PETSC_EXTERN PetscLogEvent MATCOLORING_Weights;
+PETSC_EXTERN PetscLogEvent MAT_H2Opus_Build;
+PETSC_EXTERN PetscLogEvent MAT_H2Opus_Compress;
+PETSC_EXTERN PetscLogEvent MAT_H2Opus_Orthog;
 
 #endif

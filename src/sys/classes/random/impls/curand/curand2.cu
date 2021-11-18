@@ -45,7 +45,7 @@ PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom r, size_t
     auto zibit = thrust::make_zip_iterator(thrust::make_tuple(pval,thrust::counting_iterator<size_t>(0)));
     thrust::transform(zibit,zibit+n,pval,complexscalelw(r->low,r->width));
 #else
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Negative array size %D",(PetscInt)n);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Negative array size %" PetscInt_FMT,(PetscInt)n);
 #endif
   } else {
     PetscReal rl = PetscRealPart(r->low);

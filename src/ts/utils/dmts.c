@@ -150,7 +150,7 @@ static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm,VecScatter gscat,VecSca
 
    Not Collective
 
-   Input Argument:
+   Input Parameters:
 +  kdm - Original DMTS
 -  nkdm - DMTS to receive the data, should have been created with DMTSCreate()
 
@@ -201,10 +201,10 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Argument:
+   Output Parameter:
 .  tsdm - private DMTS context
 
    Level: developer
@@ -237,10 +237,10 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Argument:
+   Output Parameter:
 .  tsdm - private DMTS context
 
    Level: developer
@@ -274,7 +274,7 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dmsrc - DM to obtain context from
 -  dmdest - DM to add context to
 
@@ -305,7 +305,7 @@ PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  func - function evaluating f(t,u,u_t)
 -  ctx - context for residual evaluation
@@ -346,10 +346,10 @@ PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Arguments:
+   Output Parameters:
 +  func - function evaluation function, see TSSetIFunction() for calling sequence
 -  ctx - context for residual evaluation
 
@@ -379,7 +379,7 @@ PetscErrorCode DMTSGetIFunction(DM dm,TSIFunction *func,void **ctx)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  fun - function evaluation routine
 -  ctx - context for residual evaluation
@@ -420,10 +420,10 @@ PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Arguments:
+   Output Parameters:
 +  fun - function evaluation function, see TSSetI2Function() for calling sequence
 -  ctx - context for residual evaluation
 
@@ -453,7 +453,7 @@ PetscErrorCode DMTSGetI2Function(DM dm,TSI2Function *fun,void **ctx)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  fun - Jacobian evaluation routine
 -  ctx - context for Jacobian evaluation
@@ -497,10 +497,10 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Arguments:
+   Output Parameters:
 +  jac - Jacobian evaluation function, see TSSetI2Jacobian() for calling sequence
 -  ctx - context for Jacobian evaluation
 
@@ -530,7 +530,7 @@ PetscErrorCode DMTSGetI2Jacobian(DM dm,TSI2Jacobian *jac,void **ctx)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  func - RHS function evaluation routine
 -  ctx - context for residual evaluation
@@ -571,7 +571,7 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  tvar - a function that transforms to transient variables
 -  ctx - a context for tvar
@@ -615,10 +615,10 @@ PetscErrorCode DMTSSetTransientVariable(DM dm,TSTransientVariable tvar,void *ctx
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Arguments:
+   Output Parameters:
 +  tvar - a function that transforms to transient variables
 -  ctx - a context for tvar
 
@@ -644,7 +644,7 @@ PetscErrorCode DMTSGetTransientVariable(DM dm,TSTransientVariable *tvar,void *ct
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  dm - DM to be used with TS
 
    Output Parameters:
@@ -673,7 +673,7 @@ PetscErrorCode DMTSGetSolutionFunction(DM dm,TSSolutionFunction *func,void **ctx
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  func - solution function evaluation routine
 -  ctx - context for solution evaluation
@@ -713,7 +713,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  f - forcing function evaluation routine
 -  ctx - context for solution evaluation
@@ -753,10 +753,10 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,TSForcingFunction f,void *ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .   dm - DM to be used with TS
 
-   Output Arguments:
+   Output Parameters:
 +  f - forcing function evaluation function; see TSForcingFunction for details
 -  ctx - context for solution evaluation
 
@@ -787,10 +787,10 @@ PetscErrorCode DMTSGetForcingFunction(DM dm,TSForcingFunction *f,void **ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Arguments:
+   Output Parameters:
 +  func - residual evaluation function, see TSSetRHSFunction() for calling sequence
 -  ctx - context for residual evaluation
 
@@ -820,7 +820,7 @@ PetscErrorCode DMTSGetRHSFunction(DM dm,TSRHSFunction *func,void **ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  func - Jacobian evaluation routine
 -  ctx - context for residual evaluation
@@ -863,10 +863,10 @@ PetscErrorCode DMTSSetIJacobian(DM dm,TSIJacobian func,void *ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Arguments:
+   Output Parameters:
 +  func - Jacobian evaluation function, see TSSetIJacobian() for calling sequence
 -  ctx - context for residual evaluation
 
@@ -897,7 +897,7 @@ PetscErrorCode DMTSGetIJacobian(DM dm,TSIJacobian *func,void **ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  func - Jacobian evaluation routine
 -  ctx - context for residual evaluation
@@ -938,10 +938,10 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm,TSRHSJacobian func,void *ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with TS
 
-   Output Arguments:
+   Output Parameters:
 +  func - Jacobian evaluation function, see TSSetRHSJacobian() for calling sequence
 -  ctx - context for residual evaluation
 
@@ -972,7 +972,7 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm,TSRHSJacobian *func,void **ctx)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  view - viewer function
 -  load - loading function
@@ -999,7 +999,7 @@ PetscErrorCode DMTSSetIFunctionSerialize(DM dm,PetscErrorCode (*view)(void*,Pets
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to be used with TS
 .  view - viewer function
 -  load - loading function

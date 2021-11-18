@@ -118,7 +118,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-HIPC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the HIP linker flags'))
 
     help.addArgument('Compilers', '-SYCLPP=<prog>', nargs.Arg(None, None, 'Specify the SYCL preprocessor'))
-    help.addArgument('Compilers', '-SYCLPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the SYCL preprocessor options'))
+    help.addArgument('Compilers', '-SYCLPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the SYCL preprocessor options'))
     help.addArgument('Compilers', '-with-syclcxx=<prog>', nargs.Arg(None, None, 'Specify the SYCLcompiler'))
     help.addArgument('Compilers', '-SYCLCXX=<prog>',         nargs.Arg(None, None, 'Specify the SYCL compiler'))
     help.addArgument('Compilers', '-SYCLCXXFLAGS=<string>',   nargs.Arg(None, None, 'Specify the SYCL compiler options'))
@@ -155,7 +155,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find('NAGWare Fortran') >= 0 or output.find('The Numerical Algorithms Group Ltd') >= 0:
+      found = any([s in output for s in ['NAGWare Fortran','The Numerical Algorithms Group Ltd']])
+      if found:
         if log: log.write('Detected NAG Fortran compiler\n')
         return 1
     except RuntimeError:
@@ -192,6 +193,7 @@ class Configure(config.base.Configure):
                                          ]])
               and not any([s in output for s in ['Intel(R)',
                                                  'Unrecognised option --help passed to ld', # NAG f95 compiler
+                                                 'IBM XL', # XL compiler
                                                  ]]))
       if found:
         if log: log.write('Detected GNU compiler\n')
@@ -237,11 +239,23 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isNVC(compiler, log):
+    '''Returns true if the compiler is an NVIDIA (former PGI) compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output + error
+      if 'NVIDIA Compilers and Tools' in output:
+        if log: log.write('Detected NVIDIA compiler\n')
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
   def isGcc110plus(compiler, log):
     '''returns true if the compiler is gcc-11.0.x or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('gcc\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -257,7 +271,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-4.5.x'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       if re.match(r'GNU Fortran \(.*\) (4.5.\d+|4.6.0 20100703)', output):
         if log: log.write('Detected GFortran45x compiler\n')
@@ -270,7 +284,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-4.6.x or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -286,7 +300,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-4.7.x or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -302,7 +316,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-10.0.x or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -318,7 +332,7 @@ class Configure(config.base.Configure):
     '''returns true if the compiler is gfortran-8 or later'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output +  error
+      output = output + error
       import re
       strmatch = re.match('GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
       if strmatch:
@@ -335,9 +349,9 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
-      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
+      if 'Unrecognised option --help passed to ld' in output:    # NAG f95 compiler
         return 0
-      if output.find('http://www.g95.org') >= 0:
+      if 'http://www.g95.org' in output:
         if log: log.write('Detected g95 compiler\n')
         return 1
     except RuntimeError:
@@ -349,9 +363,10 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
-      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
+      if 'Unrecognised option --help passed to ld' in output:    # NAG f95 compiler
         return 0
-      if output.find('Compaq Visual Fortran') >= 0 or output.find('Digital Visual Fortran') >=0 :
+      found = any([s in output for s in ['Compaq Visual Fortran','Digital Visual Fortran']])
+      if found:
         if log: log.write('Detected Compaq Visual Fortran compiler\n')
         return 1
     except RuntimeError:
@@ -363,7 +378,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find(' Sun ') >= 0:
+      found = any([s in output for s in [' Sun C ',' Sun C++ ', ' Sun Fortran ']])
+      if found:
         if log: log.write('Detected Sun/Oracle compiler\n')
         return 1
     except RuntimeError:
@@ -387,7 +403,7 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help | head -n 20', log = log)
       output = output + error
-      if output.find('Intel') >= 0:
+      if 'Intel' in output:
         if log: log.write('Detected Intel compiler\n')
         return 1
     except RuntimeError:
@@ -407,7 +423,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V', log = log)
       output = output + error
-      if output.find('Cray Standard C') >= 0 or output.find('Cray C++') >= 0 or output.find('Cray Fortran') >= 0:
+      found = any([s in output for s in ['Cray C ','Cray Standard C','Cray C++ ','Cray Fortran ']])
+      if found:
         if log: log.write('Detected Cray compiler\n')
         return 1
     except RuntimeError:
@@ -452,8 +469,21 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find('The Portland Group') >= 0 or output.find('PGI Compilers and Tools') >= 0:
+      found = any([s in output for s in ['The Portland Group','PGI Compilers and Tools']])
+      if found:
         if log: log.write('Detected PGI compiler\n')
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
+  def isNEC(compiler, log):
+    '''Returns true if the compiler is a NEC compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version',checkCommand = noCheck, log = log)
+      output = output + error
+      if output.find('NEC Corporation') >= 0:
+        if log: log.write('Detected NEC compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -464,7 +494,7 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(ar + ' -V',checkCommand = noCheck, log = log)
       output = output + error
-      if output.find('Software Generation Utilities') >= 0:
+      if 'Software Generation Utilities' in output:
         return 1
     except RuntimeError:
       pass
@@ -610,15 +640,20 @@ class Configure(config.base.Configure):
       self.popLanguage()
       raise RuntimeError(msg)
     oldlibs = self.LIBS
-    self.LIBS += ' -lpetsc-ufod4vtr9mqHvKIQiVAm'
-    if self.checkLink(linkLanguage=linkLanguage):
-      msg = language + ' compiler ' + self.getCompiler()+ ''' is broken! It is returning a zero error when the linking failed! Either
+    if linkLanguage: llang = linkLanguage
+    else: llang = language
+    compiler = self.framework.getCompilerObject(llang)
+    if not hasattr(compiler,'linkerrorcodecheck'):
+      self.LIBS += ' -lpetsc-ufod4vtr9mqHvKIQiVAm'
+      if self.checkLink(linkLanguage=linkLanguage):
+        msg = language + ' compiler ' + self.getCompiler()+ ''' is broken! It is returning a zero error when the linking failed! Either
  1) switch to another compiler suite or
  2) report this entire error message to your compiler/linker suite vendor and ask for fix for this issue.'''
-      self.popLanguage()
+        self.popLanguage()
+        self.LIBS = oldlibs
+        raise RuntimeError(msg)
       self.LIBS = oldlibs
-      raise RuntimeError(msg)
-    self.LIBS = oldlibs
+      compiler.linkerrorcodecheck = 1
     if not self.argDB['with-batch']:
       if not self.checkRun(linkLanguage=linkLanguage):
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
@@ -700,6 +735,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('C compiler you provided with -CC='+self.argDB['CC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpincc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpcc')
@@ -728,6 +764,7 @@ class Configure(config.base.Configure):
           if cross_cc:
             delattr(self, 'cross_cc')
             delattr(self, 'cross_LIBS')
+        yield 'mpincc'
         yield 'mpicc'
         yield 'mpiicc'
         yield 'mpcc_r'
@@ -735,6 +772,7 @@ class Configure(config.base.Configure):
         yield 'mpxlc'
         yield 'hcc'
         self.usedMPICompilers = 0
+      yield 'ncc'
       yield 'gcc'
       yield 'clang'
       yield 'icc'
@@ -1027,6 +1065,7 @@ class Configure(config.base.Configure):
         yield self.argDB['CXX']
       raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.usedMPICompilers and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpinc++')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiicpc')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'hcp')
@@ -1045,6 +1084,7 @@ class Configure(config.base.Configure):
             self.log.write('Cray system using C++ cross compiler:'+cross_CC+'\n')
           yield 'CC'
           if cross_CC: delattr(self, 'cross_CC')
+        yield 'mpinc++'
         yield 'mpicxx'
         yield 'mpiicpc'
         yield 'mpCC_r'
@@ -1066,6 +1106,8 @@ class Configure(config.base.Configure):
           yield 'icpc'
         elif self.CC == 'xlc':
           yield 'xlC'
+        elif self.CC == 'ncc':
+          yield 'nc++'
         yield 'g++'
         yield 'clang++'
         yield 'c++'
@@ -1167,6 +1209,7 @@ class Configure(config.base.Configure):
       yield self.argDB['FC']
       raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.usedMPICompilers and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
+      yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpinfort')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpiifort')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpf90')
@@ -1186,6 +1229,7 @@ class Configure(config.base.Configure):
             self.log.write('Cray system using Fortran cross compiler:'+cross_fc+'\n')
           yield 'ftn'
           if cross_fc: delattr(self, 'cross_fc')
+        yield 'mpinfort'
         yield 'mpif90'
         yield 'mpiifort'
         yield 'mpxlf_r'
@@ -1202,6 +1246,8 @@ class Configure(config.base.Configure):
         elif self.CC == 'xlc':
           yield 'xlf90'
           yield 'xlf'
+        elif self.CC == 'ncc':
+          yield 'nfort'
         elif self.CC.find('win32fe cl') >= 0:
           yield 'win32fe f90'
           yield 'win32fe ifc'
@@ -1362,14 +1408,16 @@ class Configure(config.base.Configure):
 
   def checkPragma(self):
     '''Check for all available applicable languages whether they complain (including warnings!) about potentially unknown pragmas'''
-    usePragma = {'C':False}
-    if hasattr(self,'Cxx'):
-      usePragma['Cxx'] = False
-    for language in usePragma.keys():
-      with self.Language(language):
+    usePragma = {}
+    langMap = {'C':'CC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
+    for lang in langMap:
+      if hasattr(self,langMap[lang]):
+        usePragma[lang] = False
+    for lang in usePragma.keys():
+      with self.Language(lang):
         with self.extraCompilerFlags(['-Wunknown-pragmas']) as skipFlags:
           if not skipFlags:
-            usePragma[language] = self.checkCompile('#pragma GCC poison TEST')
+            usePragma[lang] = self.checkCompile('#pragma GCC poison TEST')
     if all(usePragma.values()): self.framework.enablepoison = True
     return
 
@@ -1379,8 +1427,10 @@ class Configure(config.base.Configure):
       return
     if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
       PICFlags = ['-fPIC']
+    elif config.setCompilers.Configure.isIBM(self.getCompiler(), self.log):
+      PICFlags = ['-qPIC']
     else:
-      PICFlags = ['-PIC','-fPIC','-KPIC','-qpic']
+      PICFlags = ['-PIC','-qPIC','-KPIC','-fPIC','-fpic']
     try:
       output = self.executeShellCommand(self.getCompiler() + ' -show', log = self.log)[0]
     except:
@@ -1670,12 +1720,14 @@ class Configure(config.base.Configure):
       yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
     if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
       # C++ compiler default
+      yield (self.CXX, ['-qmkshrobj'], 'so')
       yield (self.CXX, ['-shared'], 'so')
       yield (self.CXX, ['-dynamic'], 'so')
+      yield (self.CC, ['-shared'], 'dll')
     # C compiler default
+    yield (self.CC, ['-qmkshrobj'], 'so')
     yield (self.CC, ['-shared'], 'so')
     yield (self.CC, ['-dynamic'], 'so')
-    yield (self.CC, ['-qmkshrobj'], 'so')
     yield (self.CC, ['-shared'], 'dll')
     # Windows default
     if self.CC.find('win32fe') >=0:
@@ -2021,9 +2073,9 @@ if (dlclose(handle)) {
     This usually prevents mpi compilers from being used - so issue a warning'''
 
     if 'with-mpi-dir' in self.argDB and self.argDB['with-mpi-compilers']:
-      optcplrs = [(['with-cc','CC'],['mpiicc','mpicc','mpcc','hcc','mpcc_r']),
-              (['with-fc','FC'],['mpiifort','mpif90','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90']),
-              (['with-cxx','CXX'],['mpiicpc','mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
+      optcplrs = [(['with-cc','CC'],['mpincc','mpiicc','mpicc','mpcc','hcc','mpcc_r']),
+              (['with-fc','FC'],['mpinfort','mpiifort','mpif90','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90']),
+              (['with-cxx','CXX'],['mpinc++','mpiicpc','mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
       for opts,cplrs in optcplrs:
         for opt in opts:
           if (opt in self.argDB  and self.argDB[opt] != '0'):

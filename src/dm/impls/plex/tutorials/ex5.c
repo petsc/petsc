@@ -50,6 +50,7 @@ int main(int argc, char **argv)
   PetscInt          i;
   PetscBool         flg;
   PetscErrorCode    ierr;
+  const char        exampleDMPlexName[] = "DMPlex Object";
   const char        *infilename;
   PetscViewerFormat informat;
 
@@ -87,14 +88,14 @@ int main(int argc, char **argv)
 
       /* Load data from XDMF into dm in parallel */
       /* We could also use
-          ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
+          ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, "ex5_plex", PETSC_TRUE, &dm);CHKERRQ(ierr);
         This currently support a few more formats than DMLoad().
       */
       ierr = PetscViewerHDF5Open(comm, infilename, FILE_MODE_READ, &v);CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(v, informat);CHKERRQ(ierr);
       ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
       ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) dm, "DMPlex Object");CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) dm, exampleDMPlexName);CHKERRQ(ierr);
       ierr = DMSetOptionsPrefix(dm,"loaded_");CHKERRQ(ierr);
       ierr = DMLoad(dm, v);CHKERRQ(ierr);
       ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
@@ -141,6 +142,7 @@ int main(int argc, char **argv)
       /* Save redistributed dm to XDMF in parallel and destroy it */
       ierr = PetscViewerHDF5Open(comm, user.outfile, FILE_MODE_WRITE, &v);CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(v, user.outformat);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) dm, exampleDMPlexName);CHKERRQ(ierr);
       ierr = DMView(dm, v);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);

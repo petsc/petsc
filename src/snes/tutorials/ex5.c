@@ -150,7 +150,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.mms_solution = ZeroBCSolution;
   switch (MMS) {
-  case 0: user.mms_solution = NULL; user.mms_forcing = NULL;CHKERRQ(ierr);
+  case 0: user.mms_solution = NULL; user.mms_forcing = NULL;
   case 1: user.mms_solution = MMSSolution1; user.mms_forcing = MMSForcing1; break;
   case 2: user.mms_solution = MMSSolution2; user.mms_forcing = MMSForcing2; break;
   case 3: user.mms_solution = MMSSolution3; user.mms_forcing = MMSForcing3; break;
@@ -702,7 +702,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      the array.
      */
     ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-    if (B) ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
+    if (B) {ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);}
     /*
      Get local grid boundaries (for 2-dimensional DMDA):
      xs, ys   - starting grid indices (no ghost points)

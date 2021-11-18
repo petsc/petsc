@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   */
   ierr = ISAllGather(is,&newis);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = ISView(newis,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

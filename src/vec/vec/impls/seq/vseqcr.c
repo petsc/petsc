@@ -10,7 +10,7 @@
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - the communicator, should be PETSC_COMM_SELF
 -  n - the vector length
 

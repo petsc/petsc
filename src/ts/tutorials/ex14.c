@@ -778,9 +778,10 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
         PetscInt  ls = 0;
         Node      n[8],ndot[8],*fn[8];
         PetscReal zn[8],etabase = 0;
+
         PrmHexGetZ(pn,k,zm,zn);
         HexExtract(x,i,j,k,n);
-        HexExtract(xdot,i,j,k,ndot);CHKERRQ(ierr);
+        HexExtract(xdot,i,j,k,ndot);
         HexExtractRef(f,i,j,k,fn);
         if (thi->no_slip && k == 0) {
           for (l=0; l<4; l++) n[l].u = n[l].v = 0;
@@ -988,7 +989,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
   ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
   ierr = MatGetSize(B,&m,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)B),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscScalar val0,val2;
     ierr = MatGetValue(B,0,0,&val0);CHKERRQ(ierr);
     ierr = MatGetValue(B,2,2,&val2);CHKERRQ(ierr);
@@ -1418,7 +1419,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   tag  = ((PetscObject)viewer3)->tag;
   ierr = VecGetArrayRead(X3,(const PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X2,(const PetscScalar**)&x2);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscScalar *array,*array2;
     ierr = PetscMalloc2(nmax,&array,nmax2,&array2);CHKERRQ(ierr);
     for (r=0; r<size; r++) {

@@ -144,7 +144,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
     }
   }
 #endif
-  if (!rank) {
+  if (rank == 0) {
     char args[32];
 
     /* Take away 'Q' for verbose output */
@@ -328,7 +328,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
     }
   }
 #endif
-  if (!rank) {
+  if (rank == 0) {
     char args[32];
 
     /* Take away 'Q' for verbose output */

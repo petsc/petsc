@@ -9,12 +9,8 @@
 
 #include <petsc/private/petscimpl.h> /* for PetscCUPMInitialized */
 
-#if defined(PETSC_HAVE_CUDA)
-  #include <cuda_runtime.h>
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-  #include <hip/hip_runtime.h>
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#include <petscdevice.h>
 #endif
 
 #define MPI_SUCCESS 0
@@ -69,9 +65,9 @@ int MPIUNI_Memcpy(void *dst,const void *src,int n)
 
   /* GPU-aware MPIUNI. Use synchronous copy per MPI semantics */
 #if defined(PETSC_HAVE_CUDA)
-  if (PetscCUDAInitialized) {cudaError_t cerr = cudaMemcpy(dst,src,n,cudaMemcpyDefault);if (cerr != cudaSuccess) return MPI_FAILURE;} else
+  if (PetscDeviceInitialized(PETSC_DEVICE_CUDA)) {cudaError_t cerr = cudaMemcpy(dst,src,n,cudaMemcpyDefault);if (cerr != cudaSuccess) return MPI_FAILURE;} else
 #elif defined(PETSC_HAVE_HIP)
-  if (PetscHIPInitialized)  {hipError_t  cerr = hipMemcpy(dst,src,n,hipMemcpyDefault);  if (cerr != hipSuccess)  return MPI_FAILURE;} else
+  if (PetscDeviceInitialized(PETSC_DEVICE_HIP))  {hipError_t  cerr = hipMemcpy(dst,src,n,hipMemcpyDefault);  if (cerr != hipSuccess)  return MPI_FAILURE;} else
 #endif
   {memcpy(dst,src,n);}
   return MPI_SUCCESS;
@@ -216,6 +212,29 @@ int MPI_Comm_get_attr(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
   return MPI_SUCCESS;
 }
 
+static char all_comm_names[MAX_COMM][MPI_MAX_OBJECT_NAME] = {
+  "MPI_COMM_SELF",
+  "MPI_COMM_WORLD"
+};
+
+int MPI_Comm_get_name(MPI_Comm comm,char *comm_name,int *resultlen)
+{
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  if (!comm_name || !resultlen) return MPI_FAILURE;
+  strncpy(comm_name,all_comm_names[CommIdx(comm)],MPI_MAX_OBJECT_NAME-1);
+  *resultlen = (int)strlen(comm_name);
+  return MPI_SUCCESS;
+}
+
+int MPI_Comm_set_name(MPI_Comm comm,const char *comm_name)
+{
+  if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
+  if (!comm_name) return MPI_FAILURE;
+  if (strlen(comm_name) > MPI_MAX_OBJECT_NAME-1) return MPI_FAILURE;
+  strncpy(all_comm_names[CommIdx(comm)],comm_name,MPI_MAX_OBJECT_NAME-1);
+  return MPI_SUCCESS;
+}
+
 int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 {
   int j;
@@ -307,6 +326,18 @@ int MPI_Init(int *argc, char ***argv)
   /* if (MPI_was_finalized) return MPI_FAILURE; */
   MPI_was_initialized = 1;
   MPI_was_finalized   = 0;
+  return MPI_SUCCESS;
+}
+
+int MPI_Init_thread(int *argc, char ***argv, int required, int* provided)
+{
+  MPI_Query_thread(provided);
+  return MPI_Init(argc,argv);
+}
+
+int MPI_Query_thread(int* provided)
+{
+  *provided = MPI_THREAD_FUNNELED;
   return MPI_SUCCESS;
 }
 

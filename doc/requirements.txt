@@ -1,6 +1,7 @@
-sphinx==3.5.4
+sphinx==4.2.0
 sphinxcontrib-bibtex>=1.0.0
 sphinxcontrib-katex
 sphinxcontrib-svg2pdfconverter
 sphinx-copybutton
 pydata-sphinx-theme
+sphinx-panels

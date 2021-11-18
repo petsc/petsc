@@ -177,10 +177,11 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 
    Input Parameters:
 +  comm - the communicator to own the viewer
+.  options - options database, use NULL for default global database
 .  pre - the string to prepend to the name or NULL
 -  name - the option one is seeking
 
-   Output Parameter:
+   Output Parameters:
 +  viewer - the viewer, pass NULL if not needed
 .  format - the PetscViewerFormat requested by the user, pass NULL if not needed
 -  set - PETSC_TRUE if found, else PETSC_FALSE
@@ -401,7 +402,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 
    Collective on PetscViewer
 
-   Input Parameter:
+   Input Parameters:
 +  viewer      - the PetscViewer context
 -  type        - for example, PETSCVIEWERASCII
 

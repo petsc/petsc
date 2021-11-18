@@ -116,7 +116,7 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp)
   do {
     ierr = KSPSolve_GCR_cycle(ksp);CHKERRQ(ierr);
     if (ksp->reason) PetscFunctionReturn(0); /* catch case when convergence occurs inside the cycle */
-  } while (ksp->its < ksp->max_it);CHKERRQ(ierr);
+  } while (ksp->its < ksp->max_it);
 
   if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
@@ -278,7 +278,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp,PetscInt *restart)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the Krylov space context
 -  restart - integer restart value
 

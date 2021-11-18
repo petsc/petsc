@@ -1278,9 +1278,8 @@ PetscErrorCode  KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 -  ctx - convergence context which must be created by KSPConvergedDefaultCreate()
 
    Output Parameter:
-+   positive - if the iteration has converged
-.   negative - if the iteration has diverged
--   KSP_CONVERGED_ITERATING - otherwise.
+.  reason - the convergence reason; it is positive if the iteration has converged,
+            negative if the iteration has diverged, and KSP_CONVERGED_ITERATING otherwise
 
    Notes:
    KSPConvergedDefault() reaches convergence when   rnorm < MAX (rtol * rnorm_0, abstol);
@@ -1525,7 +1524,7 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
 . rightn  - number of right work vectors
 - leftn   - number of left work vectors to allocate
 
-  Output Parameter:
+  Output Parameters:
 +  right - the array of vectors created
 -  left - the array of left vectors
 
@@ -1909,7 +1908,7 @@ PetscErrorCode  KSPGetApplicationContext(KSP ksp,void *usrP)
 
    Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the linear solver (KSP) context.
 .  pc - the preconditioner context
 -  vec - a vector that will be initialized with Inf to indicate lack of convergence

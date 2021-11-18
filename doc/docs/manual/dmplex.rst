@@ -36,7 +36,7 @@ encodes a partially ordered set (poset).
 
 For example, we can encode the doublet mesh as in :numref:`fig_doubletMesh`,
 
-.. figure:: images/dmplex_doublet_mesh.svg
+.. figure:: /images/docs/manual/dmplex_doublet_mesh.svg
   :name: fig_doubletMesh
 
   A 2D doublet mesh, two triangles sharing an edge.
@@ -44,7 +44,7 @@ For example, we can encode the doublet mesh as in :numref:`fig_doubletMesh`,
 which can also be represented as the DAG in
 :numref:`fig_doubletDAG`.
 
-.. figure:: images/dmplex_doublet_dag.svg
+.. figure:: /images/docs/manual/dmplex_doublet_dag.svg
   :name: fig_doubletDAG
 
   The Hasse diagram for our 2D doublet mesh, expressed as a DAG.
@@ -447,11 +447,11 @@ The output file "example.h5" now looks like the following:
     group      /topologies/plexA/dms/dmA/vecs
     group      /topologies/plexA/dms/dmA/vecs/vecA
     dataset    /topologies/plexA/dms/dmA/vecs/vecA/vecA
-    group      /topology
-    dataset    /topology/cells
-    dataset    /topology/cones
-    dataset    /topology/order
-    dataset    /topology/orientation
+    group      /topologies/plexA/topology
+    dataset    /topologies/plexA/topology/cells
+    dataset    /topologies/plexA/topology/cones
+    dataset    /topologies/plexA/topology/order
+    dataset    /topologies/plexA/topology/orientation
     }
    }
 
@@ -618,9 +618,9 @@ follows:
 
    ::
 
-      DMNetworkAddSubnetwork(DM dm, const char* name, PetscInt nv, PetscInt ne, PetscInt edgelist[], PetscInt *netnum);
+      DMNetworkAddSubnetwork(DM dm, const char* name, PetscInt ne, PetscInt edgelist[], PetscInt *netnum);
 
-   Here ``name`` is the subnetwork name, ``nv`` and ``ne`` are the numbers of local vertices and local edges on the subnetwork, and ``edgelist`` is the connectivity for the subnetwork.
+   Here ``name`` is the subnetwork name, ``ne`` is the number of local edges on the subnetwork, and ``edgelist`` is the connectivity for the subnetwork.
    The output ``netnum`` is the global numbering of the subnetwork in the network.
    Each element of ``edgelist`` is an integer array of size ``2*ne``
    containing the edge connectivity for the subnetwork.

@@ -62,7 +62,7 @@ size_t PetscIntAddressToFortran(const PetscInt *base,const PetscInt *addr)
   if (base + itmp2 != addr) {
     (*PetscErrorPrintf)("PetscIntAddressToFortran:C and Fortran arrays are\n");
     (*PetscErrorPrintf)("not commonly aligned or are too far apart to be indexed \n");
-    (*PetscErrorPrintf)("by an integer. Locations: C %uld Fortran %uld\n",tmp1,tmp3);
+    (*PetscErrorPrintf)("by an integer. Locations: C %zu Fortran %zu\n",tmp1,tmp3);
     PETSCABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB);
   }
   return itmp2;
@@ -154,7 +154,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     if (shift) {
       (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
       (*PetscErrorPrintf)("not commonly aligned.\n");
-      (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %f Fortran %f\n",((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
+      (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %g Fortran %g\n",(double)(((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar)),(double)(((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar)));
       PETSCABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB);
     }
     ierr = PetscInfo(obj,"Efficiency warning, copying array in XXXGetArray() due\n\

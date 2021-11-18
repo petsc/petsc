@@ -120,7 +120,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
   ierr     = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
   ierr     = PetscMalloc1(maxCells, &corners);CHKERRQ(ierr);
   ierr     = PetscFPrintf(comm, fp, "CELLS %D %D\n", totCells, totCorners+totCells);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscInt *remoteVertices, *vertices;
 
     ierr = PetscMalloc1(maxCorners, &vertices);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
   }
   ierr = ISRestoreIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "CELL_TYPES %D\n", totCells);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscInt cellType;
 
     for (c = 0; c < numCells; ++c) {
@@ -256,7 +256,7 @@ static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
     }
     ++numCells;
   }
-  if (!rank) {
+  if (rank == 0) {
     for (c = 0; c < numCells; ++c) {ierr = PetscFPrintf(comm, fp, "%d\n", rank);CHKERRQ(ierr);}
     for (proc = 1; proc < size; ++proc) {
       MPI_Status status;
@@ -325,7 +325,7 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
   ierr = MPIU_Allreduce(&numDof, &maxDof, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
   enforceDof = PetscMax(enforceDof, maxDof);
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscVTKReal dval;
     PetscScalar  val;
     char formatString[8];
@@ -656,7 +656,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 
   Collective
 
-  Input Arguments:
+  Input Parameters:
 + odm - The DMPlex specifying the mesh, passed as a PetscObject
 - viewer - viewer of type VTK
 

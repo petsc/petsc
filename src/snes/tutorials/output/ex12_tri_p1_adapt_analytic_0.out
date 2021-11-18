@@ -1,41 +1,4 @@
-DM Object: Mesh 1 MPI processes
-  type: plex
-Mesh in 2 dimensions:
-  0-cells: 289
-  1-cells: 800
-  2-cells: 512
-Labels:
-  marker: 1 strata with value/size (1 (128))
-  Face Sets: 1 strata with value/size (1 (120))
-  depth: 3 strata with value/size (0 (289), 1 (800), 2 (512))
-N_orig: 289 N_adapt: 500.
-      DM Object: Mesh 1 MPI processes
-        type: plex
-      Mesh in 2 dimensions:
-        0-cells:       726      
-        1-cells:       2095      
-        2-cells:       1370      
-      Labels:
-        marker: 1 strata with value/size (1 (160))
-        depth: 3 strata with value/size (0 (726), 1 (2095), 2 (1370))
-N_orig: 726 N_adapt: 500.
-    DM Object: Mesh 1 MPI processes
-      type: plex
-    Mesh in 2 dimensions:
-      0-cells:     868    
-      1-cells:     2526    
-      2-cells:     1659    
-    Labels:
-      marker: 1 strata with value/size (1 (150))
-      depth: 3 strata with value/size (0 (868), 1 (2526), 2 (1659))
-N_orig: 868 N_adapt: 500.
-  DM Object: Mesh 1 MPI processes
-    type: plex
-  Mesh in 2 dimensions:
-    0-cells:   790  
-    1-cells:   2290  
-    2-cells:   1501  
-  Labels:
-    marker: 1 strata with value/size (1 (154))
-    depth: 3 strata with value/size (0 (790), 1 (2290), 2 (1501))
-N_orig: 790 N_adapt: 500.
+N_orig: 3 N_adapt: 500.
+N_orig: 3 N_adapt: 500.
+N_orig: 3 N_adapt: 500.
+N_orig: 3 N_adapt: 500.

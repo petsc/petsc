@@ -140,7 +140,8 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
   if (!same) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   if (!lmvm->allocated) SETERRQ(comm, PETSC_ERR_ORDER, "Matrix must be allocated before setting diagonal scaling");
   if (!lmvm->square) SETERRQ(comm, PETSC_ERR_SUP, "Diagonal scaling is available only for square LMVM matrices");
-  VecCheckSameSize(V, 2, lmvm->Fprev, 3);CHKERRQ(ierr);
+  VecCheckSameSize(V, 2, lmvm->Fprev, 3);
+
   ierr = MatLMVMClearJ0(B);CHKERRQ(ierr);
   if (!lmvm->J0diag) {
     ierr = VecDuplicate(V, &lmvm->J0diag);CHKERRQ(ierr);
@@ -469,6 +470,7 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
   if (!same) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   if (!lmvm->allocated) SETERRQ(comm, PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   VecCheckMatCompatible(B, X, 2, Y, 3);
+
   /* Invert the initial Jacobian onto q (or apply scaling) */
   if (lmvm->user_pc) {
     /* User has defined a J0 inverse so we can directly apply it as a preconditioner */

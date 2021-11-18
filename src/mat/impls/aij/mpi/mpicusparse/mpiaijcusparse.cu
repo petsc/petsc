@@ -292,6 +292,8 @@ PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
   if (nt != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%D) and xx (%D)",A->cmap->n,nt);
+  /* If A is bound to the CPU, the local vector used in the matrix multiplies should also be bound to the CPU. */
+  if (A->boundtocpu) {ierr = VecBindToCPU(a->lvec,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = VecScatterBegin(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -414,6 +416,14 @@ PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A,MatAssemblyType mode)
     ierr = PetscNew(&h_mat);CHKERRQ(ierr);
     cerr = cudaMemcpy(h_mat,d_mat,sizeof(*d_mat),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     cerr = cudaFree(h_mat->colmap);CHKERRCUDA(cerr);
+    if (h_mat->allocated_indices) {
+      cerr = cudaFree(h_mat->diag.i);CHKERRCUDA(cerr);
+      cerr = cudaFree(h_mat->diag.j);CHKERRCUDA(cerr);
+      if (h_mat->offdiag.j) {
+        cerr = cudaFree(h_mat->offdiag.i);CHKERRCUDA(cerr);
+        cerr = cudaFree(h_mat->offdiag.j);CHKERRCUDA(cerr);
+      }
+    }
     cerr = cudaFree(d_mat);CHKERRCUDA(cerr);
     ierr = PetscFree(h_mat);CHKERRQ(ierr);
     cusp->deviceMat = NULL;
@@ -438,6 +448,14 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
     ierr = PetscNew(&h_mat);CHKERRQ(ierr);
     cerr = cudaMemcpy(h_mat,d_mat,sizeof(*d_mat),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
     cerr = cudaFree(h_mat->colmap);CHKERRCUDA(cerr);
+    if (h_mat->allocated_indices) {
+      cerr = cudaFree(h_mat->diag.i);CHKERRCUDA(cerr);
+      cerr = cudaFree(h_mat->diag.j);CHKERRCUDA(cerr);
+      if (h_mat->offdiag.j) {
+        cerr = cudaFree(h_mat->offdiag.i);CHKERRCUDA(cerr);
+        cerr = cudaFree(h_mat->offdiag.j);CHKERRCUDA(cerr);
+      }
+    }
     cerr = cudaFree(d_mat);CHKERRCUDA(cerr);
     ierr = PetscFree(h_mat);CHKERRQ(ierr);
   }
@@ -461,6 +479,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpiaijcusparse_hypre_C",NULL);CHKERRQ(ierr);
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -519,6 +538,9 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",MatCUSPARSESetFormat_MPIAIJCUSPARSE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_MPIAIJCUSPARSE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_MPIAIJCUSPARSE);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpiaijcusparse_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +549,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
   ierr = MatConvert_MPIAIJ_MPIAIJCUSPARSE(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -641,7 +663,7 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
   PetscErrorCode             ierr;
   int                        *ai = NULL,*bi = NULL,*aj = NULL,*bj = NULL;
   PetscScalar                *aa = NULL,*ba = NULL;
-  Mat_SeqAIJ                 *jaca = NULL;
+  Mat_SeqAIJ                 *jaca = NULL, *jacb = NULL;
   Mat_SeqAIJCUSPARSE         *cusparsestructA = NULL;
   CsrMatrix                  *matrixA = NULL,*matrixB = NULL;
 
@@ -652,6 +674,7 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     PetscFunctionReturn(0);
   }
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
+  // get jaca
   if (size == 1) {
     PetscBool isseqaij;
 
@@ -683,7 +706,7 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
     if (!aij->roworiented) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support column oriented values insertion");
     jaca = (Mat_SeqAIJ*)aij->A->data;
-    Mat_SeqAIJ *jacb = (Mat_SeqAIJ*)aij->B->data;
+    jacb = (Mat_SeqAIJ*)aij->B->data;
     Mat_MPIAIJCUSPARSE *spptr = (Mat_MPIAIJCUSPARSE*)aij->spptr;
 
     if (!A->nooffprocentries && !aij->donotstash) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support offproc values insertion. Use MatSetOption(A,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) or MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE)");
@@ -735,21 +758,44 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     cerr = cudaMalloc((void**)&d_mat,sizeof(*d_mat));CHKERRCUDA(cerr);
     if (size > 1) { /* need the colmap array */
       Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
-      int        *colmap;
+      PetscInt   *colmap;
       PetscInt   ii,n = aij->B->cmap->n,N = A->cmap->N;
 
       if (n && !aij->garray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
 
       ierr = PetscCalloc1(N+1,&colmap);CHKERRQ(ierr);
       for (ii=0; ii<n; ii++) colmap[aij->garray[ii]] = (int)(ii+1);
+#if defined(PETSC_USE_64BIT_INDICES)
+      { // have to make a long version of these
+        int        *h_bi32, *h_bj32;
+        PetscInt   *h_bi64, *h_bj64, *d_bi64, *d_bj64;
+        ierr = PetscCalloc4(A->rmap->n+1,&h_bi32,jacb->nz,&h_bj32,A->rmap->n+1,&h_bi64,jacb->nz,&h_bj64);CHKERRQ(ierr);
+        cerr = cudaMemcpy(h_bi32, bi, (A->rmap->n+1)*sizeof(*h_bi32),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+        for (int i=0;i<A->rmap->n+1;i++) h_bi64[i] = h_bi32[i];
+        cerr = cudaMemcpy(h_bj32, bj, jacb->nz*sizeof(*h_bj32),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+        for (int i=0;i<jacb->nz;i++) h_bj64[i] = h_bj32[i];
 
-      h_mat->offdiag.i = bi;
-      h_mat->offdiag.j = bj;
+        cerr = cudaMalloc((void**)&d_bi64,(A->rmap->n+1)*sizeof(*d_bi64));CHKERRCUDA(cerr);
+        cerr = cudaMemcpy(d_bi64, h_bi64,(A->rmap->n+1)*sizeof(*d_bi64),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+        cerr = cudaMalloc((void**)&d_bj64,jacb->nz*sizeof(*d_bj64));CHKERRCUDA(cerr);
+        cerr = cudaMemcpy(d_bj64, h_bj64,jacb->nz*sizeof(*d_bj64),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+
+        h_mat->offdiag.i = d_bi64;
+        h_mat->offdiag.j = d_bj64;
+        h_mat->allocated_indices = PETSC_TRUE;
+
+        ierr = PetscFree4(h_bi32,h_bj32,h_bi64,h_bj64);CHKERRQ(ierr);
+      }
+#else
+      h_mat->offdiag.i = (PetscInt*)bi;
+      h_mat->offdiag.j = (PetscInt*)bj;
+      h_mat->allocated_indices = PETSC_FALSE;
+#endif
       h_mat->offdiag.a = ba;
       h_mat->offdiag.n = A->rmap->n;
 
-      cerr = cudaMalloc((void**)&h_mat->colmap,(N+1)*sizeof(int));CHKERRCUDA(cerr);
-      cerr = cudaMemcpy(h_mat->colmap,colmap,(N+1)*sizeof(int),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+      cerr = cudaMalloc((void**)&h_mat->colmap,(N+1)*sizeof(*h_mat->colmap));CHKERRCUDA(cerr);
+      cerr = cudaMemcpy(h_mat->colmap,colmap,(N+1)*sizeof(*h_mat->colmap),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
       ierr = PetscFree(colmap);CHKERRQ(ierr);
     }
     h_mat->rstart = A->rmap->rstart;
@@ -757,8 +803,33 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     h_mat->cstart = A->cmap->rstart;
     h_mat->cend   = A->cmap->rend;
     h_mat->N      = A->cmap->N;
-    h_mat->diag.i = ai;
-    h_mat->diag.j = aj;
+#if defined(PETSC_USE_64BIT_INDICES)
+    {
+      if (sizeof(PetscInt) != 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"size pof PetscInt = %d",sizeof(PetscInt));
+      int        *h_ai32, *h_aj32;
+      PetscInt   *h_ai64, *h_aj64, *d_ai64, *d_aj64;
+      ierr = PetscCalloc4(A->rmap->n+1,&h_ai32,jaca->nz,&h_aj32,A->rmap->n+1,&h_ai64,jaca->nz,&h_aj64);CHKERRQ(ierr);
+      cerr = cudaMemcpy(h_ai32, ai, (A->rmap->n+1)*sizeof(*h_ai32),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+      for (int i=0;i<A->rmap->n+1;i++) h_ai64[i] = h_ai32[i];
+      cerr = cudaMemcpy(h_aj32, aj, jaca->nz*sizeof(*h_aj32),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
+      for (int i=0;i<jaca->nz;i++) h_aj64[i] = h_aj32[i];
+
+      cerr = cudaMalloc((void**)&d_ai64,(A->rmap->n+1)*sizeof(*d_ai64));CHKERRCUDA(cerr);
+      cerr = cudaMemcpy(d_ai64, h_ai64,(A->rmap->n+1)*sizeof(*d_ai64),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+      cerr = cudaMalloc((void**)&d_aj64,jaca->nz*sizeof(*d_aj64));CHKERRCUDA(cerr);
+      cerr = cudaMemcpy(d_aj64, h_aj64,jaca->nz*sizeof(*d_aj64),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+
+      h_mat->diag.i = d_ai64;
+      h_mat->diag.j = d_aj64;
+      h_mat->allocated_indices = PETSC_TRUE;
+
+      ierr = PetscFree4(h_ai32,h_aj32,h_ai64,h_aj64);CHKERRQ(ierr);
+    }
+#else
+    h_mat->diag.i = (PetscInt*)ai;
+    h_mat->diag.j = (PetscInt*)aj;
+    h_mat->allocated_indices = PETSC_FALSE;
+#endif
     h_mat->diag.a = aa;
     h_mat->diag.n = A->rmap->n;
     h_mat->rank   = PetscGlobalRank;

@@ -513,7 +513,7 @@ PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool  *flg)
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(y,rctx);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscRandomGetValue(rctx,&a);CHKERRQ(ierr);
     }
     ierr = MPI_Bcast(&a, 1, MPIU_SCALAR, 0, comm);CHKERRMPI(ierr);

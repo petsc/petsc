@@ -86,7 +86,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMPlexSetChart(dm, 0, 25);CHKERRQ(ierr);
     ierr = DMPlexSetConeSize(dm, 0, 6);CHKERRQ(ierr);
     ierr = DMPlexSetConeSize(dm, 1, 6);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     ierr = DMPlexSetConeSize(dm, 12, 4);CHKERRQ(ierr);
   }
   ierr = DMSetUp(dm);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMPlexSetCone(dm, 0, c0);CHKERRQ(ierr);
     ierr = DMPlexSetCone(dm, 1, c1);CHKERRQ(ierr);
     ierr = DMPlexSetCone(dm, 2, c2);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
 
     ierr = DMCreateLabel(dm, "depth");CHKERRQ(ierr);
     ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       PetscInt i;
 
       for (i = 0; i < 25; ++i) {
@@ -200,7 +200,7 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   ierr = PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg);CHKERRQ(ierr);
   if (!flg) PetscFunctionReturn(0);
   ierr = PetscOptionsGetInt(NULL, NULL, "-overlap", &overlap, NULL);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(comm, filename, "ex11_plex", PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
 
   ierr = PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm1);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(comm, filename, "ex11_plex", PETSC_TRUE, &dm1);CHKERRQ(ierr);
   } else {
     ierr = DMCreate(comm, &dm1);CHKERRQ(ierr);
     ierr = DMSetType(dm1, DMPLEX);CHKERRQ(ierr);

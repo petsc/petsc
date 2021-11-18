@@ -33,19 +33,3 @@ ssh petsc@login.mcs.anl.gov " \
   /bin/ln -s petsc4py-${VERSION}.tar.gz petsc4py-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-with-docs-${VERSION}.tar.gz petsc-with-docs-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
-
-#######################################
-# M lib/petsc/bin/maint/update-docs.py
-# M include/petscversion.h
-# M src/docs/website/documentation/changes/300.html
-# M src/docs/website/documentation/changes/dev.html
-# M src/docs/website/documentation/changes/index.html
-# M src/docs/website/documentation/installation.html
-# M src/docs/website/download/index.html
-# M src/docs/website/index.html
-# A src/docs/website/documentation/changes/31.html
-
-# ? lib/petsc/bin/win32fe/win32fe.exe
-# ? lib/petsc/bin/win32fe/win32feutils.dll
-
-# git grep "PETSc Users Manual" src/binding/petsc4py

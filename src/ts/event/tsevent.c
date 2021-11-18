@@ -56,7 +56,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + ts - time integration context
 - dt - post event interval step
 
@@ -87,7 +87,7 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts,PetscReal dt)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time integration context
 .  tol - scalar tolerance, PETSC_DECIDE to leave current value
 -  vtol - array of tolerances or NULL, used in preference to tol if present
@@ -611,10 +611,10 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 
   Logically Collective
 
-  Input Argument:
+  Input Parameter:
 . ts - the TS context
 
-  Output Argument:
+  Output Parameter:
 . nevents - number of events
 
   Level: intermediate

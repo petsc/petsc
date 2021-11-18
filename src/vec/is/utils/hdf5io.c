@@ -15,13 +15,13 @@ typedef struct _n_HDF5ReadCtx* HDF5ReadCtx;
 PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
-  PetscBool        timestepping=PETSC_FALSE;
+  PetscBool        timestepping = PETSC_FALSE;
   const char       *group;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetGroup(viewer, &group);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"timestepping",PETSC_BOOL,&timestepping,&timestepping);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadAttribute(viewer,name,"timestepping",PETSC_BOOL,&hdf5->defTimestepping,&timestepping);CHKERRQ(ierr);
   if (timestepping != hdf5->timestepping) SETERRQ4(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
   PetscFunctionReturn(0);
 }
@@ -187,12 +187,14 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   Input Parameters:
 + viewer   - The HDF5 viewer
 . name     - The dataset name
-. map      - The layout which specifies array partitioning
 - datatype - The HDF5 datatype of the items in the dataset
 
+  Input/Output Parameter:
+. map      - The layout which specifies array partitioning, on output the
+             set up layout (with global size and blocksize according to dataset)
+
   Output Parameter:
-+ map      - The set up layout (with global size and blocksize according to dataset)
-- newarr   - The partitioned array, a memory image of the given dataset
+. newarr   - The partitioned array, a memory image of the given dataset
 
   Level: developer
 
@@ -252,7 +254,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 + viewer - The HDF5 viewer
 - name   - The dataset name
 
-  Output Parameter:
+  Output Parameters:
 + bs     - block size
 - N      - global size
 

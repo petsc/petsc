@@ -1485,12 +1485,16 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
     PetscFormKey *keys;
     void           (**funcs)(void);
     const char       *name;
+    PetscBool         showPart = PETSC_FALSE;
     PetscInt          off = 0, n, i;
 
     ierr = PetscMalloc1(Nk, &keys);CHKERRQ(ierr);
     ierr = PetscHMapFormGetKeys(map, &off, keys);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "%s\n", tableName);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    for (k = 0; k < Nk; ++k) {
+      if (keys[k].part != 0) showPart = PETSC_TRUE;
+    }
     for (k = 0; k < Nk; ++k) {
       if (keys[k].label) {
         ierr = PetscObjectGetName((PetscObject) keys[k].label, &name);CHKERRQ(ierr);
@@ -1499,6 +1503,7 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
       if (splitField) {ierr = PetscViewerASCIIPrintf(viewer, "(%D, %D) ", keys[k].field/Nf, keys[k].field%Nf);CHKERRQ(ierr);}
       else            {ierr = PetscViewerASCIIPrintf(viewer, "(%D) ", keys[k].field);CHKERRQ(ierr);}
+      if (showPart)   {ierr = PetscViewerASCIIPrintf(viewer, "(%D) ", keys[k].part);CHKERRQ(ierr);}
       ierr = PetscWeakFormGetFunction_Private(wf, map, keys[k].label, keys[k].value, keys[k].field, keys[k].part, &n, &funcs);CHKERRQ(ierr);
       for (i = 0; i < n; ++i) {
         char *fname;
@@ -1529,7 +1534,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
   ierr = PetscViewerASCIIPrintf(viewer, "Weak Form System with %d fields\n", wf->Nf);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   for (f = 0; f < PETSC_NUM_WF; ++f) {
-    ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_FALSE, PetscWeakFormKinds[f], wf->form[f]);CHKERRQ(ierr);
+    ierr = PetscWeakFormViewTable_Ascii(wf, viewer, PETSC_TRUE, PetscWeakFormKinds[f], wf->form[f]);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1540,7 +1545,7 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
 
   Collective on wf
 
-  Input Parameter:
+  Input Parameters:
 + wf - the PetscWeakForm object to view
 - v  - the viewer
 

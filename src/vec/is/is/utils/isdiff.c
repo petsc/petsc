@@ -8,7 +8,7 @@
 
    Collective on IS
 
-   Input Parameter:
+   Input Parameters:
 +  is1 - first index, to have items removed from it
 -  is2 - index values to be removed
 
@@ -97,7 +97,7 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
 
    Only sequential version (at the moment)
 
-   Input Parameter:
+   Input Parameters:
 +  is1 - index set to be extended
 -  is2 - index values to be added
 
@@ -222,7 +222,7 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
 
    Collective on IS
 
-   Input Parameter:
+   Input Parameters:
 +  is1 - first index set
 -  is2 - index values to be added
 
@@ -307,7 +307,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 
    Collective on IS
 
-   Input Parameter:
+   Input Parameters:
 +  is1 - first index set
 -  is2 - second index set
 
@@ -427,7 +427,7 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
 
    Collective.
 
-   Input Parameter:
+   Input Parameters:
 +  comm    - communicator of the concatenated IS.
 .  len     - size of islist array (nonnegative)
 -  islist  - array of index sets

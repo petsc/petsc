@@ -1,8 +1,7 @@
 -include ../../../petscdir.mk
 ALL: lib
 
-SOURCEH   = ../../../include/petsc/private/pcimpl.h ../../../include/petscpc.h \
-            ../../../include/petsc/private/pcgamgimpl.h ../../../include/petscpctypes.h
+SOURCEH   = ../../../include/petsc/private/pcimpl.h ../../../include/petscpc.h ../../../include/petsc/private/pcgamgimpl.h ../../../include/petscpctypes.h
 DIRS      = interface impls tests tutorials
 LOCDIR    = src/ksp/pc/
 MANSEC    = KSP

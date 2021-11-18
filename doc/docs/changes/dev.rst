@@ -11,55 +11,37 @@ Changes: Development
 
 .. rubric:: General:
 
--  Change ``MPIU_Allreduce()`` to always returns a MPI error code that
-   should be checked with ``CHKERRMPI(ierr)``
--  Add support for ESSL 5.2 and later; drop support for ESSL <=5.1
-
 .. rubric:: Configure/Build:
--  Remove --with-kokkos-cuda-arch. One can use -with-cuda-gencodearch to specify the cuda arch for Kokkos. Usually not needed since PETSc auto detects that
--  For --download-hdf5, disable --download-hdf5-fortran-bindings by default
--  Add OpenCascade package to PETSc and allow --download-opencascade
+
+- C++ dialect will now also be inferred from compiler flags, although users will be warned that they should let PETSc auto-detect the flag when setting the dialect this way
+- Change C++ dialect flag option to be consistent with compiler flags;  ``--with-cxx-dialect=gnu++14`` means you want ``-std=gnu++14``, no more, no less
+- Fix for requesting no C++ dialect flag via ``--with-cxx-dialect=0``. Previously ``configure`` would bail out immediately without running the tests and therefore wouldn't set any of the capability defines. ``configure`` now runs all tests, just doesn't add the flag in the end
+- Fix a number of corner-cases when handling C++ dialect detection
+- Remove deprecated PETSC_VERSION_PATCH so as to not have confusion with patch releases where the subminor version changes
 
 .. rubric:: Sys:
--  Add ``PetscDevice`` class to manage discovered GPU devices
--  Add ``PetscDeviceKind``
--  Add ``PetscDeviceCreate()``, ``PetscDeviceConfigure()``, and ``PetscDeviceDestroy()``
--  Add ``PetscDeviceContext`` class to manage asynchronous GPU compute support via a fork-join model
--  Add ``PetscStreamType`` and ``PetscDeviceContextJoinMode``
--  Add ``PetscDeviceContextCreate()``, ``PetscDeviceContextDestroy()``, ``PetscDeviceContextSetDevice()``, ``PetscDeviceContextGetDevice()``,
-   ``PetscDeviceContextSetStreamType()``, ``PetscDeviceContextGetStreamType()``, ``PetscDeviceContextSetUp()``, ``PetscDeviceContextDuplicate()``,
-   ``PetscDeviceContextQueryIdle()``, ``PetscDeviceContextWaitForContext()``, ``PetscDeviceContextFork()``, ``PetscDeviceContextJoin()``,
-   ``PetscDeviceContextSynchronize()``, ``PetscDeviceContextGetCurrentContext()``, ``PetscDeviceContextSetCurrentContext()``, and
-   ``PetscDeviceContextSetFromOptions()``
--  Deprecate ``petsccublas.h`` and ``petschipblas.h`` in favor of ``petscdevice.h`` and ``petscdevicetypes.h``
--  Add GPU event timers to capture kernel execution time accurately
--  Remove ``WaitForCUDA()`` and ``WaitForHIP()`` before ``PetscLogGpuTimeEnd()``
--  Add MPIU_REAL_INT and MPIU_SCALAR_INT datatypes to be used for reduction operations
--  Add MPIU_MAXLOC and MPIU_MINLOC operations
--  Add ``CHKERRCXX()`` to catch C++ exceptions and return a PETSc error code
+
+- Add ``MPI_Comm_get_name()`` and ``MPI_Comm_set_name()`` to MPIUNI
+- Remove ``petsccublas.h`` and ``petschipblas.h``
+- Remove ``-petsc_use_default_null_stream`` and ``-[cuda|hip]_synchronize`` options
+- Remove ``PetscCUDASynchronize`` and ``PetscHIPSynchronize``. Their operation is now managed by ``PetscDeviceContext`` via its ``PetscStreamType`` attribute
+- Remove ``PetscCUDAInitialize()``, ``PetscCUDAInitializeCheck()``, ``PetscHIPInitialize()``, and ``PetscHIPInitializeCheck()``. Their function is now handled by ``PetscDeviceInitialize()`` and ``PetscDeviceInitialized()``
+- Remove ``PetscCUBLASInitializeHandle()``, ``PetscCUSOLVERDnInitializeHandle()``, ``PetscHIPBLASInitializeHandle()``, and ``PetscHIPSOLVERInitializeHandle()``. Their function is now handled implicitly by ``PetscDeviceContext``
+- Remove ``petsc_gputimer_begin`` and ``petsc_gputimer_begin``
+- Add ``-device_enable``, ``-device_select`` and ``-device_view`` startup-options to control coarse-grained device initialization strategy
+- Replace ``-[cuda|hip]_device`` with split options ``-device_enable_[cuda|hip]`` and ``-device_select_[cuda|hip]`` to enable fine-grained control of device selection and initialization strategy
+- Replace ``-[cuda|hip]_view`` with ``-device_view_[cuda|hip]``
+- Add ``PetscDeviceInitType`` to enumerate PETSc device initialization strategies
+- Add ``PetscDeviceInitialize()`` to eagerly initialize a ``PetscDeviceType``, and ``PetscDeviceInitialized()`` to query the corresponding initialization state
+- Change ``PetscDeviceCreate()`` to also accept a ``PetscInt devid``, to create a ``PetscDevice`` for a specific device
+- Add ``PetscDeviceView()``
+- Move ``PetscInt64_FMT`` and ``MPIU_INT64`` definitions to ``petscsystypes.h``
+- Add ``PetscBLASInt_FMT``, ``PETSC_MPI_COMM_FMT``, and ``PETSC_MPI_WIN_FMT`` format specifiers
+- Add ``PetscHasAttribute()`` macro to query for existence of an ``__attribute__`` specifier
 
 .. rubric:: PetscViewer:
 
--  ``PetscViewerHDF5PushGroup()``: if input path begins with ``/``, it is
-   taken as absolute, otherwise relative to the current group
--  Add ``PetscViewerHDF5HasDataset()``
--  ``PetscViewerHDF5HasAttribute()``,
-   ``PetscViewerHDF5ReadAttribute()``,
-   ``PetscViewerHDF5WriteAttribute()``,
-   ``PetscViewerHDF5HasDataset()`` and
-   ``PetscViewerHDF5HasGroup()``
-   support absolute paths (starting with ``/``)
-   and paths relative to the current pushed group
--  Add input argument to ``PetscViewerHDF5ReadAttribute()`` for default
-   value that is used if attribute is not found in the HDF5 file
--  Add ``PetscViewerHDF5PushTimestepping()``,
-   ``PetscViewerHDF5PopTimestepping()`` and
-   ``PetscViewerHDF5IsTimestepping()`` to control timestepping mode.
--  One can call ``PetscViewerHDF5IncrementTimestep()``,
-   ``PetscViewerHDF5SetTimestep()`` or ``PetscViewerHDF5GetTimestep()`` only
-   if timestepping mode is active
--  Error if timestepped dataset is read/written out of timestepping mode, or
-   vice-versa
+- Add  ``PetscViewerHDF5SetDefaultTimestepping`` and ``PetscViewerHDF5SetDefaultTimestepping`` to deal with HDF5 files missing the timestepping attribute
 
 .. rubric:: PetscDraw:
 
@@ -67,152 +49,97 @@ Changes: Development
 
 .. rubric:: IS:
 
+-  ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
+
 .. rubric:: VecScatter / PetscSF:
 
 .. rubric:: PF:
 
 .. rubric:: Vec:
 
-.. rubric:: PetscSection:
+-  Change ``VecTaggerComputeBoxes()`` and ``VecTaggerComputeIS()`` to return a boolean whose value is true if the list was created
+-  Add ``-vec_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` operations
+-  Add ``VecSetBindingPropagates()``
+-  Add ``VecGetBindingPropagates()``
+-  For CUDA and ViennaCL and HIP GPU vectors, ``VecCreate()`` no longer allocates the array on CPU eagerly, it is only allocated if it is needed
 
--  Extend ``PetscSectionView()`` for section saving to HDF5
--  Add ``PetscSectionLoad()`` for section loading from HDF5
+.. rubric:: PetscSection:
 
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
 
--  Factorization types now provide their preferred ordering (which
-   may be ``MATORDERINGEXTERNAL``) to prevent PETSc PCFactor from, by
-   default, picking an ordering when it is not ideal
--  Deprecate ``MatFactorGetUseOrdering()``; Use
-   ``MatFactorGetCanUseOrdering()`` instead
--  Add ``--download-htool`` to use hierarchical matrices with the new
-   type ``MATHTOOL``
--  Add ``MATCENTERING`` special matrix type that implements action of the
-   centering matrix
--  Remove -mat_mumps_icntl_7 1 option, use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
--  Add ``MATSOLVERSPQR`` - interface to SuiteSparse QR factorization
--  Add ``MatSeqAIJKron()`` - Kronecker product of two ``MatSeqAIJ``
--  Add ``MatNormalGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMAL``
--  Add ``MatNormalHermitianGetMat()`` to retrieve the underlying ``Mat`` of a ``MATNORMALHERMITIAN``
--  Add ``VecCreateMPICUDA()`` and ``VecCreateMPIHIP()`` to create MPI device vectors
--  ``MatPreallocatorPreallocate`` performance `significantly improved <https://gitlab.com/petsc/petsc/-/merge_requests/4273>`_
+-  Add ``-mat_bind_below`` option for specifying size threshold below which GPU is not used for ``Mat`` operations
+-  Add ``MatSetBindingPropagates()``
+-  Add ``MatGetBindingPropagates()``
+-  Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
+-  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU.
 
 .. rubric:: PC:
 
--  Add ``PCQR`` - interface to SuiteSparse QR factorization for ``MatSeqAIJ``,
-   ``MATNORMAL``, and ``MATNORMALHERMITIAN``
--  Add support for ``MATNORMAL`` in ``PCASM`` and ``PCHPDDM``
--  ``PCShellGetContext()`` now takes ``void*`` as return argument
-
 .. rubric:: KSP:
 
--  ``KSPGetMonitorContext()`` now takes ``void*`` as return argument
--  ``KSPGetConvergenceContext()`` now takes ``void*`` as return argument
+-  Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
 
 .. rubric:: SNES:
-
--  Add ``SNESSetComputeMFFunction()``
-
--  Add support for ``-snes_mf_operator`` for use with ``SNESSetPicard()``
--  ``SNESShellGetContext()`` now takes ``void*`` as return argument
 
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
 
--  Add ``TSTrajectory`` interface to the CAMS library for optimal offline checkpointing for multistage time stepping schemes
--  Add option ``-ts_trajectory_memory_type <revolve | cams | petsc>`` to switch checkpointing schedule software
--  Add option ``-ts_trajectory_max_units_ram`` to specify the maximum number of allowed checkpointing units
+- Add ``TSSundialsSetUseDense()`` and options database option ``-ts_sundials_use_dense`` to use a dense linear solver (serial only) within CVODE, instead of the default iterative solve.
 
 .. rubric:: TAO:
 
--  ``TaoShellGetContext()`` now takes ``void*`` as return argument
-
 .. rubric:: DM/DA:
 
--  Change management of auxiliary data in DM from object composition
-   to ``DMGetAuxiliaryVec()``/``DMSetAuxiliaryVec()``, ``DMCopyAuxiliaryVec()``
--  Remove ``DMGetNumBoundary()`` and ``DMGetBoundary()`` in favor of DS
-   counterparts
--  Remove ``DMCopyBoundary()``
--  Change interface for ``DMAddBoundary()``, ``PetscDSAddBoundary()``,
-   ``PetscDSGetBoundary()``, ``PetscDSUpdateBoundary()``
--  Add ``DMDAVecGetArrayDOFWrite()`` and ``DMDAVecRestoreArrayDOFWrite()``
--  ``DMShellGetContext()`` now takes ``void*`` as return argument
+-  Add ``DMLabelGetNonEmptyStratumValuesIS()``, similar to ``DMLabelGetValueIS()`` but counts only nonempty strata
+-  Add ``DMLabelCompare()`` for ``DMLabel`` comparison
+-  Add ``DMCompareLabels()`` comparing ``DMLabel``\s of two ``DM``\s
+-  ``DMCopyLabels()`` now takes DMCopyLabelsMode argument determining duplicity handling
+-  Add ``-dm_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` and ``Mat`` objects associated with a DM
 
 .. rubric:: DMSwarm:
 
--  Add ``DMSwarmGetCellSwarm()`` and ``DMSwarmRestoreCellSwarm()``
-
 .. rubric:: DMPlex:
 
--  Add a ``PETSCVIEWEREXODUSII`` viewer type for ``DMView()``/``DMLoad()`` and
-   ``VecView()``/``VecLoad()``. Note that not all DMPlex can be saved in exodusII
-   format since this file format requires that the numbering of cell
-   sets be compact
--  Add ``PetscViewerExodusIIOpen()`` convenience function
--  Add ``PetscViewerExodusIISetOrder()`` to
-   generate "2nd order" elements (i.e. tri6, tet10, hex27) when using
-   ``DMView`` with a ``PETSCVIEWEREXODUSII`` viewer
--  Change ``DMPlexComputeBdResidualSingle()`` and
-   ``DMPlexComputeBdJacobianSingle()`` to take a form key
--  Add ``DMPlexTopologyLoad()``, ``DMPlexCoordinatesLoad()``, and
-   ``DMPlexLabelsLoad()`` for incremental loading of a ``DMPlex`` object
-   from an HDF5 file
--  Add ``DMPlexTopologyView()``, ``DMPlexCoordinatesView()``, and
-   ``DMPlexLabelsView()`` for incremental saving of a ``DMPlex`` object
-   to an HDF5 file
--  Add ``DMPlexSectionView()`` saving a ``PetscSection`` in
-   association with a ``DMPlex`` mesh
--  Add ``DMPlexSectionLoad()`` loading a ``PetscSection`` in
-   association with a ``DMPlex`` mesh
--  Add ``DMPlexGlobalVectorView()`` and ``DMPlexLocalVectorView()`` saving
-   global and local vectors in association with a data layout on a ``DMPlex`` mesh
--  Add ``DMPlexGlobalVectorLoad()`` and ``DMPlexLocalVectorLoad()`` loading
-   global and local vectors in association with a data layout on a ``DMPlex`` mesh
-- Add ``DMPlexIsSimplex()`` to check the shape of the first cell
-- Add ``DMPlexShape`` to describe prebuilt mesh domains
-- Add ``DMPlexCreateCoordinateSpace()`` to make an FE space for the coordinates
-- Add the automatic creation of a Plex from options, see ``DMSetFromOptions()``
-- The old options for ``DMPlexCreateBoxMesh()`` NO LONGER WORK. They have been changed to make the interface more uniform
-- Replace ``DMPlexCreateSquareBoundary()`` and ``DMPlexCreateCubeBoundary()`` with ``DMPlexCreateBoxSurfaceMesh()``
-- Remove ``DMPlexCreateReferenceCellByType()``
-- The number of refinements is no longer an argument to ``DMPlexCreateHexCylinderMesh()``
-- Add ``DMSetLabel()``
-- Replace ``DMPlexComputeJacobianAction()`` with ``DMSNESComputeJacobianAction()``
-- Add ``DMSNESCreateJacobianMF()``
-- Change ``DMPlexComputeBdResidualSingle()`` to take ``PetscFormKey`` instead of explicit label/value/field arguments
-- Add ``DMPlexInflateToGeomModel()`` which pushes refined points out to a geometric boundary
-- Separate EGADS and EGADSLite functionality, add ``DMPlexCreateEGADSLiteFromFile()``
-- Remove ``DMPlexReverseCell()`` and ``DMPlexOrientCell()`` in favor of ``DMPlexOrientPoint()``
-- Remove ``DMPlexCompareOrientations()`` in favor of ``DMPolytopeMatchOrientation()``
-- Add ``DMPlexGetCompressedClosure()`` and ``DMPlexRestoreCompressedClosure()``
+- Add ``DMExtrude()`` which now the default extrusion
+- Change ``DMPlexExtrude()`` to use DMPlexTransform underneath
+- Move ``DMPlexMetricCtx`` from public to private and give it to ``DMPlex``
+- Add ``DMPlexMetricSetFromOptions()`` to assign values to ``DMPlexMetricCtx``
+- Add ``DMPlexMetricSetIsotropic()`` for declaring whether a metric is isotropic
+- Add ``DMPlexMetricIsIsotropic()`` for determining whether a metric is isotropic
+- Add ``DMPlexMetricSetRestrictAnisotropyFirst()`` for declaring whether anisotropy should be restricted before normalization
+- Add ``DMPlexMetricRestrictAnisotropyFirst()`` for determining whether anisotropy should be restricted before normalization
+- Add ``DMPlexMetricSetMinimumMagnitude()`` for specifying the minimum tolerated metric magnitude
+- Add ``DMPlexMetricGetMinimumMagnitude()`` for retrieving the minimum tolerated metric magnitude
+- Add ``DMPlexMetricSetMaximumMagnitude()`` for specifying the maximum tolerated metric magnitude
+- Add ``DMPlexMetricGetMaximumMagnitude()`` for retrieving the maximum tolerated metric magnitude
+- Add ``DMPlexMetricSetMaximumAnisotropy()`` for specifying the maximum tolerated metric anisostropy
+- Add ``DMPlexMetricGetMaximumAnisotropy()`` for retrieving the maximum tolerated metric anisotropy
+- Add ``DMPlexMetricSetTargetComplexity()`` for specifying the target metric complexity
+- Add ``DMPlexMetricGetTargetComplexity()`` for retrieving the target metric complexity
+- Add ``DMPlexMetricSetNormalizationOrder()`` for specifying the order of L-p normalization
+- Add ``DMPlexMetricGetNormalizationOrder()`` for retrieving the order of L-p normalization
+- Change ``DMPlexMetricCtx`` so that it is only instantiated when one of the above routines are called
+- Change ``DMPlexMetricEnforceSPD()`` to have another argument, for controlling whether anisotropy is restricted
+- Change ``DMPlexMetricNormalize()`` to have another argument, for controlling whether anisotropy is restricted
+- Change ``DMAdaptor`` so that its ``-adaptor_refinement_h_min/h_max/a_max/p`` command line arguments become ``-dm_plex_metric_h_min/h_max/a_max/p``
+- Add ``DMGetNaturalSF()`` and ``DMSetNaturalSF()``
+- Change ``-dm_plex_csr_via_mat`` to ``-dm_plex_csr_alg`` which takes a DMPlexCSRAlgorithm name
 
 .. rubric:: FE/FV:
 
--  Change ``PetscFEIntegrateBdResidual()`` and
-   ``PetscFEIntegrateBdJacobian()`` to take both ``PetscWeakForm`` and form
-   key
-- Add ``PetscFEGeomGetPoint()`` and ``PetscFEGeomGetCellPoint`` to package up geometry handling
+- Deprecate ``PetscSpacePolynomialGetSymmetric()`` and ``PetscSpacePolynomialSetSymmetric()``: symmetric polynomials were never supported and support is no longer planned
+- Remove ``PetscSpacePolynomialType`` enum and associated array of strings ``PetscSpacePolynomialTypes``: other polynomial spaces are now handled by other implementations of ``PetscSpace``
+- Add ``PETSCSPACEPTRIMMED`` that implements trimmed polynomial spaces (also known as the spaces in Nedelec face / edge elements of the first kind)
 
 .. rubric:: DMNetwork:
 
--  Add ``DMNetworkCreateIS()`` and ``DMNetworkCreateLocalIS()``
-
 .. rubric:: DMStag:
-
--  Add ``DMStagStencilToIndexLocal()``
 
 .. rubric:: DT:
 
--  Add ``PetscWeakFormCopy()``, ``PetscWeakFormClear()``, ``PetscWeakFormRewriteKeys()`` and ``PetscWeakFormClearIndex()``
--  Add ``PetscDSDestroyBoundary()`` and ``PetscDSCopyExactSolutions()``
--  ``PetscDSGetContext()`` now takes ``void*`` as return argument
--  Add ``PetscWeakFormReplaceLabel()`` to change labels after mesh modification
+- Add ``PetscDTPTrimmedEvalJet()`` to evaluate a stable basis for trimmed polynomials, and ``PetscDTPTrimmedSize()`` for the size of that space
 
 .. rubric:: Fortran:
-
--  Add support for ``PetscInitialize(filename,help,ierr)``,
-   ``PetscInitialize(ierr)`` in addition to current ``PetscInitialize(filename,ierr)``

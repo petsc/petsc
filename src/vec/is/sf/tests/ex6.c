@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd  (vscat2,x,y2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* View on rank 0 of x's comm, which is PETSC_COMM_WORLD */
-  if (!rank) {
+  if (rank == 0) {
     /* Print the part of x on rank 0, which is 0 1 2 3 4 */
     ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, x  = ");CHKERRQ(ierr);
     ierr = VecGetArrayRead(x,&dat);CHKERRQ(ierr);

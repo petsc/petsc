@@ -36,6 +36,10 @@ configure_options = [
   '--download-chaco=1',
   '--download-spai=1',
   '--with-mpi-f90module-visibility=0',
+  # opensolaris throws warning
+  # CC: Warning: Option -std=c++03 passed to ld, if ld is invoked, ignored otherwise
+  # to stderr, so don't use flag at all
+  '--with-cxx-dialect=0',
   ]
 
 if __name__ == '__main__':

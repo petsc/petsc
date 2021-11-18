@@ -92,7 +92,7 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm,const char pre
 
    Collective on PetscSubcomm
 
-   Input Parameter:
+   Input Parameters:
 +  psubcomm - PetscSubcomm context
 -  viewer - location to view the values
 
@@ -132,7 +132,7 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  psubcomm - PetscSubcomm context
 -  nsubcomm - the total number of subcommunicators in psubcomm
 
@@ -161,7 +161,7 @@ PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  psubcomm - PetscSubcomm context
 -  subcommtype - subcommunicator type, PETSC_SUBCOMM_CONTIGUOUS,PETSC_SUBCOMM_INTERLACED
 
@@ -190,7 +190,7 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  psubcomm - PetscSubcomm context
 .  color   - control of subset assignment (nonnegative integer). Processes with the same color are in the same subcommunicator.
 -  subrank - rank in the subcommunicator

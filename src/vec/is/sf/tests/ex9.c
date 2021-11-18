@@ -454,6 +454,7 @@ int main(int argc,char **argv)
 
    build:
      requires: !defined(PETSC_HAVE_MPIUNI)
+
    testset:
      nsize: 7
 
@@ -464,6 +465,8 @@ int main(int argc,char **argv)
      test:
        suffix: 2
        args: -sub2sub
+       # deadlocks with NECMPI
+       requires: !defined(PETSC_HAVE_NECMPI)
 
      test:
        suffix: 3
@@ -488,7 +491,8 @@ int main(int argc,char **argv)
        suffix: 7
        args: -world2sub -sf_type neighbor
        output_file: output/ex9_1.out
-       # OpenMPI has a bug wrt MPI_Neighbor_alltoallv etc (https://github.com/open-mpi/ompi/pull/6782). Once the patch is in, we can remove !defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
-       requires: defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES) !defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+       # OpenMPI has a bug wrt MPI_Neighbor_alltoallv etc (https://github.com/open-mpi/ompi/pull/6782). Once the patch is in, we can remove !define(PETSC_HAVE_OMPI_MAJOR_VERSION)
+       # segfaults with NECMPI
+       requires: defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES) !defined(PETSC_HAVE_OMPI_MAJOR_VERSION) !defined(PETSC_HAVE_NECMPI)
 TEST*/
 

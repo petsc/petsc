@@ -70,7 +70,7 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[PETSC_DR
 
   /* only the first process return image data */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     Window        root;
     XImage        *ximage;
     int           pmap[PETSC_DRAW_MAXCOLOR];

@@ -690,7 +690,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 
   Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - The DMPlex
 . bs   - The matrix blocksize
 . dnz  - An array to hold the number of nonzeros in the diagonal block
@@ -699,7 +699,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 . onzu - An array to hold the number of nonzeros in the upper triangle of the off-diagonal block
 - fillMatrix - If PETSC_TRUE, fill the matrix with zeros
 
-  Output Argument:
+  Output Parameter:
 . A - The preallocated matrix
 
   Level: advanced
@@ -726,8 +726,10 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 7);
-  if (dnz)  PetscValidPointer(dnz,3);  if (onz)  PetscValidPointer(onz,4);
-  if (dnzu) PetscValidPointer(dnzu,5); if (onzu) PetscValidPointer(onzu,6);
+  if (dnz) PetscValidPointer(dnz,3);
+  if (onz) PetscValidPointer(onz,4);
+  if (dnzu) PetscValidPointer(dnzu,5);
+  if (onzu) PetscValidPointer(onzu,6);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);

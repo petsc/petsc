@@ -7,10 +7,10 @@
 
   Not collective
 
-  Input Argument:
+  Input Parameter:
 . dm   - the DM
 
-  Output Argument:
+  Output Parameter:
 . point - The mesh point involved in the current projection
 
   Level: developer
@@ -29,7 +29,7 @@ PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - the DM
 - point - The mesh point involved in the current projection
 

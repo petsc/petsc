@@ -1,9 +1,9 @@
-  0 KSP Residual norm 4.74473 
-  1 KSP Residual norm 0.233639 
+  0 KSP Residual norm 4.74472 
+  1 KSP Residual norm 0.233643 
   2 KSP Residual norm 0.0103672 
-  3 KSP Residual norm 0.00103616 
-  4 KSP Residual norm 6.33639e-05 
-  5 KSP Residual norm 2.7079e-06 
+  3 KSP Residual norm 0.00103617 
+  4 KSP Residual norm 6.33651e-05 
+  5 KSP Residual norm 2.70818e-06 
 KSP Object: 2 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -56,7 +56,7 @@ PC Object: 2 MPI processes
                 rows=5, cols=5
                 package used to perform factorization: kokkos
                 total: nonzeros=21, allocated nonzeros=21
-                  not using I-node routines
+                  using I-node routines: found 3 nodes, limit used is 5
         linear system matrix = precond matrix:
         Mat Object: (mg_coarse_sub_) 1 MPI processes
           type: seqaijkokkos
@@ -108,4 +108,4 @@ PC Object: 2 MPI processes
     total: nonzeros=100, allocated nonzeros=240
     total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
-Norm of error 3.27507e-06 iterations 5
+Norm of error 3.27535e-06 iterations 5

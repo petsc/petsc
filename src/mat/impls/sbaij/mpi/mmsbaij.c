@@ -153,6 +153,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(sbaij->slvec0,from,sbaij->slvec1,to,&sbaij->sMvctx);CHKERRQ(ierr);
+  ierr = VecScatterViewFromOptions(sbaij->sMvctx,(PetscObject)mat,"-matmult_vecscatter_view");CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(sbaij->slvec1,&nt);CHKERRQ(ierr);
   ierr = VecGetArray(sbaij->slvec1,&ptr);CHKERRQ(ierr);

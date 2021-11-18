@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr  = PetscMalloc1(3,&ii);CHKERRQ(ierr);
   ierr  = PetscMalloc1(6,&jj);CHKERRQ(ierr);
   ii[0] = 0; ii[1] = 3; ii[2] = 6;
-  if (!rank) {
+  if (rank == 0) {
     jj[0] = 0; jj[1] = 1; jj[2] = 2; jj[3] = 1; jj[4] = 2; jj[5] = 3;
   } else {
     jj[0] = 1; jj[1] = 4; jj[2] = 5; jj[3] = 1; jj[4] = 3; jj[5] = 5;

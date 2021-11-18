@@ -2,7 +2,7 @@
 /*
      Interface to malloc() and free(). This code allows for logging of memory usage and some error checking
 */
-#include <petscsys.h>           /*I "petscsys.h" I*/
+#include <petsc/private/petscimpl.h>           /*I "petscsys.h" I*/
 #include <petscviewer.h>
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
@@ -210,13 +210,9 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,PetscBool clear,int lineno,const c
   TRfrags++;
 
 #if defined(PETSC_USE_DEBUG)
-  if (PetscStackActive()) {
-    ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
-    /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
-    head->stack.line[head->stack.currentsize-2] = lineno;
-  } else {
-    head->stack.currentsize = 0;
-  }
+  ierr = PetscStackCopy(&petscstack,&head->stack);CHKERRQ(ierr);
+  /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
+  head->stack.line[head->stack.currentsize-2] = lineno;
 #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE)
   if (!clear && TRdebugIinitializenan) {
     size_t     i, n = a/sizeof(PetscReal);
@@ -444,13 +440,9 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
   TRfrags++;
 
 #if defined(PETSC_USE_DEBUG)
-  if (PetscStackActive()) {
-    ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
-    /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
-    head->stack.line[head->stack.currentsize-2] = lineno;
-  } else {
-    head->stack.currentsize = 0;
-  }
+  ierr = PetscStackCopy(&petscstack,&head->stack);CHKERRQ(ierr);
+  /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
+  head->stack.line[head->stack.currentsize-2] = lineno;
 #endif
 
   /*
@@ -481,7 +473,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 
     Collective on PetscViewer
 
-    Input Parameter:
+    Input Parameters:
 +    viewer - the viewer that defines the communicator
 -    message - string printed before values
 
@@ -508,7 +500,7 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
   ierr = PetscMemoryGetMaximumUsage(&residentmax);CHKERRQ(ierr);
   if (residentmax > 0) residentmax = PetscMax(resident,residentmax);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,message);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s",message);CHKERRQ(ierr);
   if (resident && residentmax && allocated) {
     ierr = MPI_Reduce(&residentmax,&gresidentmax,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,0,comm);CHKERRMPI(ierr);
     ierr = MPI_Reduce(&residentmax,&maxgresidentmax,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,0,comm);CHKERRMPI(ierr);
@@ -748,7 +740,7 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
 
     Not Collective
 
-    Input Arguments:
+    Input Parameter:
 .   logmin - minimum allocation size to log, or PETSC_DEFAULT
 
     Options Database Key:
@@ -781,7 +773,7 @@ PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 
     Not Collective
 
-    Output Arguments
+    Output Parameter
 .   logging - PETSC_TRUE if logging is active
 
     Options Database Key:
@@ -804,7 +796,7 @@ PetscErrorCode PetscMallocViewGet(PetscBool *logging)
 
   Not Collective
 
-  Input Arguments:
+  Input Parameters:
 + viewer - The viewer to use for tracing, or NULL to use stdout
 . active - Flag to activate or deactivate tracing
 - logmin - The smallest memory size that will be logged
@@ -835,7 +827,7 @@ PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLo
 
   Not Collective
 
-  Output Argument:
+  Output Parameter:
 . logging - PETSC_TRUE if logging is active
 
   Options Database Key:
@@ -946,7 +938,7 @@ foundit:;
 
     Not Collective
 
-    Input Parameter:
+    Input Parameters:
 +   eachcall - checks the entire heap of allocated memory for issues on each call to PetscMalloc() and PetscFree()
 -   initializenan - initializes all memory with NaN to catch use of uninitialized floating point arrays
 

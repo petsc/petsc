@@ -1,13 +1,6 @@
+#include <petsc/private/deviceimpl.h>
 #include <petsc/private/randomimpl.h>
 #include <curand.h>
-
-#define CHKERRCURAND(stat) \
-do { \
-   if (PetscUnlikely(stat != CURAND_STATUS_SUCCESS)) { \
-     if (((stat == CURAND_STATUS_INITIALIZATION_FAILED) || (stat == CURAND_STATUS_ALLOCATION_FAILED)) && PetscCUDAInitialized) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuRAND error %d. Reports not initialized or alloc failed; this indicates the GPU has run out resources",(int)stat); \
-     else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuRand error %d",(int)stat); \
-   } \
-} while (0)
 
 typedef struct {
   curandGenerator_t gen;
@@ -94,7 +87,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r)
   PetscRandom_CURAND *curand;
 
   PetscFunctionBegin;
-  ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
   ierr = PetscNewLog(r,&curand);CHKERRQ(ierr);
   cerr = curandCreateGenerator(&curand->gen,CURAND_RNG_PSEUDO_DEFAULT);CHKERRCURAND(cerr);
   /* https://docs.nvidia.com/cuda/curand/host-api-overview.html#performance-notes2 */

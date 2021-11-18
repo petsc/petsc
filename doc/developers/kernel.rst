@@ -343,8 +343,5 @@ These routines are normally called by the ``PetscInitialize()`` and
 References
 ----------
 
-.. bibliography:: /../src/docs/tex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /../src/docs/tex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

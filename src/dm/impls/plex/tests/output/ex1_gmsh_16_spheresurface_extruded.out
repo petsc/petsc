@@ -8,3 +8,4 @@ Generated Mesh in 3 dimensions:
 Labels:
   depth: 4 strata with value/size (0 (244), 1 (823), 2 (876), 3 (297))
   celltype: 6 strata with value/size (0 (244), 1 (640), 2 (183), 3 (396), 5 (480), 9 (297))
+  Cell Sets: 1 strata with value/size (1 (693))

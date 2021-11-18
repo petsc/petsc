@@ -48,7 +48,7 @@ PetscErrorCode DMNetworkGetPlex(DM dm,DM *plexdm)
 
   Not collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the dm object
 
   Output Parameters:
@@ -119,7 +119,6 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm,PetscInt nsubnet,PetscInt Nsubne
   Input Parameters:
 + dm - the dm object
 . name - name of the subnetwork
-. nv - number of local vertices of this subnetwork
 . ne - number of local edges of this subnetwork
 - edgelist - list of edges for this subnetwork
 
@@ -130,39 +129,103 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm,PetscInt nsubnet,PetscInt Nsubne
   There is no copy involved in this operation, only the pointer is referenced. The edgelist should
   not be destroyed before the call to DMNetworkLayoutSetUp()
 
+  A network can comprise of a single subnetwork OR multiple subnetworks. For a single subnetwork, the subnetwork can be read either in serial or parallel. For a multiple subnetworks, each subnetwork topology needs to be set on a unique rank and the communicator size needs to be at least equal to the number of subnetworks.
+
   Level: beginner
 
   Example usage:
-  Consider the following network:
+  Consider the following networks:
+  1) A sigle subnetwork:
 .vb
- network 1: v1 -> v2 -> v0
+ network 0:
+ rank[0]:
+   v0 --> v2; v1 --> v2
+ rank[1]:
+   v3 --> v5; v4 --> v5
 .ve
 
  The resulting input
-   edgelist = [1 2 | 2 0]
+ network 0:
+ rank[0]:
+   ne = 2
+   edgelist = [0 2 | 1 2]
+ rank[1]:
+   ne = 2
+   edgelist = [3 5 | 4 5]
+
+  2) Two subnetworks:
+.vb
+ subnetwork 0:
+ rank[0]:
+   v0 --> v2; v2 --> v1; v1 --> v3;
+ subnetwork 1:
+ rank[1]:
+   v0 --> v3; v3 --> v2; v2 --> v1;
+.ve
+
+ The resulting input
+ subnetwork 0:
+ rank[0]:
+   ne = 3
+   edgelist = [0 2 | 2 1 | 1 3]
+ rank[1]:
+   ne = 0
+   edgelist = NULL
+
+ subnetwork 1:
+ rank[0]:
+   ne = 0
+   edgelist = NULL
+ rank[1]:
+   edgelist = [0 3 | 3 2 | 2 1]
 
 .seealso: DMNetworkCreate(), DMNetworkSetNumSubnetworks()
 @*/
-PetscErrorCode DMNetworkAddSubnetwork(DM dm,const char* name,PetscInt nv,PetscInt ne,PetscInt edgelist[],PetscInt *netnum)
+PetscErrorCode DMNetworkAddSubnetwork(DM dm,const char* name,PetscInt ne,PetscInt edgelist[],PetscInt *netnum)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       i = network->nsubnet,a[2],b[2];
+  PetscInt       i,Nedge,j,Nvtx,nvtx;
+  PetscBT        table;
 
   PetscFunctionBegin;
+  /* Get global total Nvtx = max(edgelist[])+1 for this subnet */
+  nvtx = -1; i = 0;
+  for (j=0; j<ne; j++) {
+    nvtx = PetscMax(nvtx, edgelist[i]); i++;
+    nvtx = PetscMax(nvtx, edgelist[i]); i++;
+  }
+  nvtx++;
+  ierr = MPIU_Allreduce(&nvtx,&Nvtx,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
+
+  /* Get local nvtx for this subnet */
+  ierr = PetscBTCreate(Nvtx,&table);CHKERRQ(ierr);
+  ierr = PetscBTMemzero(Nvtx,table);CHKERRQ(ierr);
+  i = 0;
+  for (j=0; j<ne; j++) {
+    ierr = PetscBTSet(table,edgelist[i]);CHKERRQ(ierr);
+    i++;
+    ierr = PetscBTSet(table,edgelist[i]);CHKERRQ(ierr);
+    i++;
+  }
+  nvtx = 0;
+  for (j=0; j<Nvtx; j++) {
+    if (PetscBTLookup(table,j)) nvtx++;
+  }
+  ierr = PetscBTDestroy(&table);CHKERRQ(ierr);
+
+  /* Get global total Nedge for this subnet */
+  ierr = MPIU_Allreduce(&ne,&Nedge,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
+
+  i = network->nsubnet;
   if (name) {
     ierr = PetscStrcpy(network->subnet[i].name,name);CHKERRQ(ierr);
   }
-
-  network->subnet[i].nvtx     = nv;
+  network->subnet[i].nvtx     = nvtx; /* include ghost vertices */
   network->subnet[i].nedge    = ne;
   network->subnet[i].edgelist = edgelist;
-
-  /* Get global number of vertices and edges for subnet[i] */
-  a[0] = nv; a[1] = ne;
-  ierr = MPIU_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
-  network->subnet[i].Nvtx  = b[0];
-  network->subnet[i].Nedge = b[1];
+  network->subnet[i].Nvtx     = Nvtx;
+  network->subnet[i].Nedge    = Nedge;
 
   /* ----------------------------------------------------------
    p=v or e;
@@ -173,7 +236,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm,const char* name,PetscInt nv,PetscIn
   network->subnet[i].vStart = network->NVertices;
   network->subnet[i].vEnd   = network->subnet[i].vStart + network->subnet[i].Nvtx; /* global vEnd of subnet[i] */
 
-  network->nVertices += nv;
+  network->nVertices += nvtx; /* include ghost vertices */
   network->NVertices += network->subnet[i].Nvtx;
 
   /* LOCAL subnet[].eStart and eEnd, used by DMNetworkLayoutSetUp() */
@@ -359,7 +422,7 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       i,j,ctr,np,*edges,*subnetvtx,vStart;
+  PetscInt       i,j,ctr,np,*edges,*subnetvtx,*subnetedge,vStart;
   PetscInt       k,*vidxlTog,Nsv=0,Nsubnet=network->Nsubnet;
   PetscInt       *sedgelist=network->sedgelist;
   const PetscInt *cone;
@@ -445,7 +508,6 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
   network->NVertices -= np;
 
   ierr = PetscCalloc1(2*network->nEdges,&edges);CHKERRQ(ierr);
-  ierr = PetscCalloc1(network->nVertices+network->nsvtx,&network->subnetvtx);CHKERRQ(ierr);
 
   ctr = 0;
   for (net=0; net<Nsubnet; net++) {
@@ -490,39 +552,31 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
     ierr = SetUpNetworkHeaderComponentValue(dm,&network->header[i],&network->cvalue[i]);CHKERRQ(ierr);
   }
 
-  /* (4) Create vidxlTog: maps MERGED plex local vertex index (including ghosts) to User's global vertex index (without merging shared vertices) */
-  np = network->vEnd - vStart; /* include ghost vertices */
-  ierr = PetscMalloc2(np,&vidxlTog,size+1,&eowners);CHKERRQ(ierr);
-
-  ctr = 0;
-  for (e=network->eStart; e<network->eEnd; e++) {
-    ierr = DMNetworkGetConnectedVertices(dm,e,&cone);CHKERRQ(ierr);
-    vidxlTog[cone[0] - vStart] = edges[2*ctr];
-    vidxlTog[cone[1] - vStart] = edges[2*ctr+1];
-    ctr++;
-  }
-  ierr = PetscFree(edges);CHKERRQ(ierr);
-
-  /* (5) Create vertices and edges array for the subnetworks */
-  subnetvtx = network->subnetvtx;
+  /* (4) Create edge and vertex arrays for the subnetworks */
+  ierr = PetscCalloc2(network->nEdges,&subnetedge,network->nVertices+network->nsvtx,&subnetvtx);CHKERRQ(ierr); /* Maps local edge/vertex to local subnetwork's edge/vertex */
+  network->subnetedge = subnetedge;
+  network->subnetvtx  = subnetvtx;
   for (j=0; j < Nsubnet; j++) {
-    ierr = PetscCalloc1(network->subnet[j].nedge,&network->subnet[j].edges);CHKERRQ(ierr);
+    network->subnet[j].edges = subnetedge;
+    subnetedge              += network->subnet[j].nedge;
+
     network->subnet[j].vertices = subnetvtx;
     subnetvtx                  += network->subnet[j].nvtx;
   }
-  network->svertices                = subnetvtx;
+  network->svertices = subnetvtx;
 
   /* Get edge ownership */
+  ierr = PetscMalloc1(size+1,&eowners);CHKERRQ(ierr);
   np = network->eEnd - network->eStart; /* num of local edges */
   ierr = MPI_Allgather(&np,1,MPIU_INT,eowners+1,1,MPIU_INT,comm);CHKERRMPI(ierr);
   eowners[0] = 0;
   for (i=2; i<=size; i++) eowners[i] += eowners[i-1];
 
+  /* Setup edge and vertex arrays for subnetworks */
   e = 0;
   for (i=0; i < Nsubnet; i++) {
-    v = 0;
+    ctr = 0;
     for (j = 0; j < network->subnet[i].nedge; j++) {
-
       /* edge e */
       network->header[e].index    = e + eowners[rank]; /* Global edge index */
       network->header[e].subnetid = i;                 /* Subnetwork id */
@@ -536,20 +590,24 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
       ierr = DMPlexGetCone(network->plex,e,&cone);CHKERRQ(ierr);
 
       /* vertex cone[0] */
-      vfrom = network->subnet[i].edgelist[2*v];
-      network->header[cone[0]].index = vidxlTog[cone[0]-vStart]; /*  Global vertex index */
-      network->header[cone[0]].subnetid = i;                     /* Subnetwork id */
-      network->subnet[i].vertices[vfrom] = cone[0];              /* user's subnet[].dix = petsc's v */
+      v = cone[0];
+      network->header[v].index    = edges[2*e];   /* Global vertex index */
+      network->header[v].subnetid = i;            /* Subnetwork id */
+      vfrom = network->subnet[i].edgelist[2*ctr];
+      network->subnet[i].vertices[vfrom] = v;     /* user's subnet[].dix = petsc's v */
 
       /* vertex cone[1] */
-      vto = network->subnet[i].edgelist[2*v+1];
-      network->header[cone[1]].index = vidxlTog[cone[1]-vStart]; /*  Global vertex index */
-      network->header[cone[1]].subnetid   = i;
-      network->subnet[i].vertices[vto]= cone[1];
+      v = cone[1];
+      network->header[v].index    = edges[2*e+1]; /* Global vertex index */
+      network->header[v].subnetid = i;
+      vto = network->subnet[i].edgelist[2*ctr+1];
+      network->subnet[i].vertices[vto]= v;
 
-      e++; v++;
+      e++; ctr++;
     }
   }
+  ierr = PetscFree(eowners);CHKERRQ(ierr);
+  ierr = PetscFree(edges);CHKERRQ(ierr);
 
   /* Set vertex array for the subnetworks */
   k = 0;
@@ -560,20 +618,19 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
     ierr = PetscSectionAddDof(network->DataSection,v,network->header[v].hsize);CHKERRQ(ierr);
 
     /* shared vertex */
-    ierr = PetscTableFind(network->svtable,vidxlTog[v-vStart]+1,&i);CHKERRQ(ierr);
+    ierr = PetscTableFind(network->svtable,network->header[v].index+1,&i);CHKERRQ(ierr);
     if (i) network->svertices[k++] = v;
   }
 #if defined(PETSC_USE_DEBUG)
   if (k != network->nsvtx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"k %D != %D nsvtx",k,network->nsvtx);
 #endif
 
-  ierr = PetscFree2(vidxlTog,eowners);CHKERRQ(ierr);
-
   network->svtx  = svtx;
   network->Nsvtx = Nsv;
   ierr = PetscFree(sedgelist);CHKERRQ(ierr);
 
   /* Create a global section to be used by DMNetworkIsGhostVertex() which is a non-collective routine */
+  /* see snes_tutorials_network-ex1_4 */
   ierr = DMGetGlobalSection(network->plex,&sectiong);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -584,7 +641,7 @@ static PetscErrorCode DMNetworkLayoutSetUp_Coupling(DM dm)
   Collective on dm
 
   Input Parameters:
-. DM - the dmnetwork object
+. dm - the dmnetwork object
 
   Notes:
   This routine should be called after the network sizes and edgelists have been provided. It creates
@@ -600,8 +657,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       i,j,ctr,Nsubnet=network->Nsubnet,*eowners,np,*edges,*subnetvtx;
-  PetscInt       e,v,vfrom,vto;
+  PetscInt       i,j,ctr,Nsubnet=network->Nsubnet,*eowners,np,*edges,*subnetvtx,*subnetedge,e,v,vfrom,vto;
   const PetscInt *cone;
   MPI_Comm       comm;
   PetscMPIInt    size,rank;
@@ -621,7 +677,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
-  /* Create LOCAL edgelist for the network by concatenating local input edgelists of the subnetworks */
+  /* Create LOCAL edgelist in global vertex ordering for the network by concatenating local input edgelists of the subnetworks */
   ierr = PetscCalloc1(2*network->nEdges,&edges);CHKERRQ(ierr);
   ctr = 0;
   for (i=0; i < Nsubnet; i++) {
@@ -641,7 +697,6 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   } else {
     ierr = DMPlexBuildFromCellListParallel(network->plex,network->nEdges,network->nVertices,PETSC_DECIDE,2,edges,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscFree(edges);CHKERRQ(ierr); /* local edge list with global idx used by DMPlexBuildFromCellList() */
 
   ierr = DMPlexGetChart(network->plex,&network->pStart,&network->pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(network->plex,0,&network->eStart,&network->eEnd);CHKERRQ(ierr);
@@ -659,9 +714,21 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     ierr = SetUpNetworkHeaderComponentValue(dm,&network->header[i],&network->cvalue[i]);CHKERRQ(ierr);
   }
 
-  /* Create edge and vertex arrays for the subnetworks */
+  /* Create edge and vertex arrays for the subnetworks
+     This implementation assumes that DMNetwork reads
+     (1) a single subnetwork in parallel; or
+     (2) n subnetworks using n processors, one subnetwork/processor.
+   */
+  ierr = PetscCalloc2(network->nEdges,&subnetedge,network->nVertices,&subnetvtx);CHKERRQ(ierr); /* Maps local edge/vertex to local subnetwork's edge/vertex */
+
+  network->subnetedge = subnetedge;
+  network->subnetvtx  = subnetvtx;
   for (j=0; j < network->Nsubnet; j++) {
-    ierr = PetscCalloc1(network->subnet[j].nedge,&network->subnet[j].edges);CHKERRQ(ierr);
+    network->subnet[j].edges = subnetedge;
+    subnetedge              += network->subnet[j].nedge;
+
+    network->subnet[j].vertices = subnetvtx;
+    subnetvtx                  += network->subnet[j].nvtx;
   }
 
   /* Get edge ownership */
@@ -671,26 +738,10 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   eowners[0] = 0;
   for (i=2; i<=size; i++) eowners[i] += eowners[i-1];
 
-  /* Set network->subnet[*].vertices on array network->subnetvtx */
-  np = 0;
-  for (j=0; j<network->Nsubnet; j++) {
-    /* sum up subnet[j].Nvtx instead of subnet[j].nvtx, because a subnet might be owned by more than one processor;
-       below, subnet[i].vertices[vfrom/vto] requires vfrom/vto =0, ...,Nvtx-1
-     */
-    if (network->subnet[j].nvtx) np += network->subnet[j].Nvtx;
-  }
-
-  ierr = PetscCalloc1(np,&network->subnetvtx);CHKERRQ(ierr); /* Maps local vertex to local subnetwork's vertex */
-  subnetvtx = network->subnetvtx;
-  for (j=0; j<network->Nsubnet; j++) {
-    network->subnet[j].vertices = subnetvtx;
-    if (network->subnet[j].nvtx) subnetvtx += network->subnet[j].Nvtx;
-  }
-
   /* Setup edge and vertex arrays for subnetworks */
   e = 0;
   for (i=0; i < Nsubnet; i++) {
-    v = 0;
+    ctr = 0;
     for (j = 0; j < network->subnet[i].nedge; j++) {
       /* edge e */
       network->header[e].index    = e + eowners[rank];   /* Global edge index */
@@ -706,21 +757,32 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
       ierr = DMPlexGetCone(network->plex,e,&cone);CHKERRQ(ierr);
 
       /* vertex cone[0] */
-      vfrom = network->subnet[i].edgelist[2*v];     /* =subnet[i].idx, Global index! */
-      network->header[cone[0]].index     = vfrom + network->subnet[i].vStart; /* Global vertex index */
-      network->header[cone[0]].subnetid  = i;       /* Subnetwork id */
-      network->subnet[i].vertices[vfrom] = cone[0]; /* user's subnet[].dix = petsc's v */
+      v = cone[0];
+      network->header[v].index     = edges[2*e];  /* Global vertex index */
+      network->header[v].subnetid  = i;           /* Subnetwork id */
+      if (Nsubnet == 1) {
+        network->subnet[i].vertices[v - network->vStart] = v; /* user's subnet[].idx = petsc's v */
+      } else {
+        vfrom = network->subnet[i].edgelist[2*ctr];     /* =subnet[i].idx, Global index! */
+        network->subnet[i].vertices[vfrom] = v; /* user's subnet[].dix = petsc's v */
+      }
 
       /* vertex cone[1] */
-      vto   = network->subnet[i].edgelist[2*v+1];   /* =subnet[i].idx, Global index! */
-      network->header[cone[1]].index    = vto + network->subnet[i].vStart;  /* Global vertex index */
-      network->header[cone[1]].subnetid = i;
-      network->subnet[i].vertices[vto]  = cone[1];  /* user's subnet[].dix = petsc's v */
+      v = cone[1];
+      network->header[v].index    = edges[2*e+1];   /* Global vertex index */
+      network->header[v].subnetid = i;              /* Subnetwork id */
+      if (Nsubnet == 1) {
+        network->subnet[i].vertices[v - network->vStart] = v; /* user's subnet[].idx = petsc's v */
+      } else {
+        vto = network->subnet[i].edgelist[2*ctr+1];     /* =subnet[i].idx, Global index! */
+        network->subnet[i].vertices[vto] = v; /* user's subnet[].dix = petsc's v */
+      }
 
-      e++; v++;
+      e++; ctr++;
     }
   }
   ierr = PetscFree(eowners);CHKERRQ(ierr);
+  ierr = PetscFree(edges);CHKERRQ(ierr); /* local edge list with global idx used by DMPlexBuildFromCellList() */
 
   for (v = network->vStart; v < network->vEnd; v++) {
     network->header[v].ndata           = 0;
@@ -813,7 +875,7 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm,PetscInt anetnum,PetscInt bnetnu
 
   Not collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the DM object
 
   Output Parameters:
@@ -912,7 +974,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,size_t size,Pet
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the DMNetwork object
 
   Output Parameters:
@@ -938,7 +1000,7 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
 
   Not Collective
 
-  Input Parameters:
+  Input Parameter:
 . dm - the DMNetwork object
 
   Output Parameters:
@@ -961,9 +1023,9 @@ PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 
 static PetscErrorCode DMNetworkGetIndex(DM dm,PetscInt p,PetscInt *index)
 {
-  PetscErrorCode    ierr;
-  DM_Network        *network = (DM_Network*)dm->data;
-  PetscInt          offsetp;
+  PetscErrorCode           ierr;
+  DM_Network               *network = (DM_Network*)dm->data;
+  PetscInt                 offsetp;
   DMNetworkComponentHeader header;
 
   PetscFunctionBegin;
@@ -1108,9 +1170,9 @@ PetscErrorCode DMNetworkGetLocalVecOffset(DM dm,PetscInt p,PetscInt compnum,Pets
 @*/
 PetscErrorCode DMNetworkGetGlobalVecOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offsetg)
 {
-  PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*)dm->data;
-  PetscInt       offsetp,offsetd;
+  PetscErrorCode           ierr;
+  DM_Network               *network = (DM_Network*)dm->data;
+  PetscInt                 offsetp,offsetd;
   DMNetworkComponentHeader header;
 
   PetscFunctionBegin;
@@ -1222,6 +1284,8 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
   header = &network->header[p];
   cvalue = &network->cvalue[p];
   if (header->ndata == header->maxcomps) {
+    PetscInt additional_size;
+
     /* Reached limit so resize header component arrays */
     header->maxcomps += 2;
 
@@ -1259,7 +1323,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
 
     /* Update DataSection Dofs */
     /* The dofs for datasection point p equals sizeof the header (i.e. header->hsize) + sizes of the components added at point p. With the resizing of the header, we need to update the dofs for point p. Hence, we add the extra size added for the header */
-    PetscInt additional_size = (5*(header->maxcomps - header->ndata)*sizeof(PetscInt))/sizeof(DMNetworkComponentGenericDataType);
+    additional_size = (5*(header->maxcomps - header->ndata)*sizeof(PetscInt))/sizeof(DMNetworkComponentGenericDataType);
     ierr = PetscSectionAddDof(network->DataSection,p,additional_size);CHKERRQ(ierr);
   }
   header = &network->header[p];
@@ -1337,71 +1401,25 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
 {
   PetscErrorCode           ierr;
   DM_Network               *network = (DM_Network*)dm->data;
-  PetscInt                 arr_size,p,offset,offsetp,ncomp,i;
-  MPI_Comm                 comm;
-  PetscMPIInt              size,rank;
+  PetscInt                 arr_size,p,offset,offsetp,ncomp,i,*headerarr;
   DMNetworkComponentHeader header;
   DMNetworkComponentValue  cvalue;
+  DMNetworkComponentHeader headerinfo;
   DMNetworkComponentGenericDataType *componentdataarray;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-#if 0
-  //------------- new
-  if (size > 1) { /* Sync nvar at shared vertices for all processes */
-    PetscSF        sf = network->plex->sf;
-    const PetscInt *degree;
-    PetscInt       i,nleaves_total,*indata,*outdata,nroots,nleaves,nsv,p,ncomp;
-    const PetscInt *svtx;
-    PetscBool      ghost;
-
-    ierr = PetscSFGetGraph(sf,&nroots,&nleaves,NULL,NULL);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
-    nleaves_total=0;
-    for (i=0; i<nroots; i++) nleaves_total += degree[i];
-    printf("[%d] nleaves_total %d\n",rank,nleaves_total);
-    MPI_Barrier(comm);
-
-    ierr = PetscCalloc2(nleaves_total,&indata,nleaves,&outdata);CHKERRQ(ierr);
-
-    /* Leaves copy user's ncomp to outdata */
-    ierr = DMNetworkGetSharedVertices(dm,&nsv,&svtx);CHKERRQ(ierr);
-    for (i=0; i<nsv; i++) {
-      p = svtx[i];
-      ierr = DMNetworkIsGhostVertex(dm,p,&ghost);CHKERRQ(ierr);
-      if (!ghost) continue;
-
-      header = &network->header[p];
-      ncomp = header->ndata;
-      printf("[%d] leaf has ncomp %d\n",rank,ncomp);
-      outdata[p] = ncomp;
-    }
-
-    /* Roots gather ncomp from leaves */
-    ierr = PetscSFGatherBegin(sf,MPIU_INT,outdata,indata);CHKERRQ(ierr);
-    ierr = PetscSFGatherEnd(sf,MPIU_INT,outdata,indata);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Gathered data at multi-roots from leaves\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleaves_total,indata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-    ierr = PetscFree2(indata,outdata);CHKERRQ(ierr);
-  }
-  //----------------------
-#endif
-
   ierr = PetscSectionSetUp(network->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(network->DataSection,&arr_size);CHKERRQ(ierr);
-  ierr = PetscCalloc1(arr_size,&network->componentdataarray);CHKERRQ(ierr);
+  /* arr_size+1 fixes pipeline test of opensolaris-misc for src/dm/tests/ex10.c -- Do not know why */
+  ierr = PetscCalloc1(arr_size+1,&network->componentdataarray);CHKERRQ(ierr);
   componentdataarray = network->componentdataarray;
   for (p = network->pStart; p < network->pEnd; p++) {
     ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
     /* Copy header */
     header = &network->header[p];
-    DMNetworkComponentHeader headerinfo=(DMNetworkComponentHeader)(componentdataarray+offsetp);
+    headerinfo = (DMNetworkComponentHeader)(componentdataarray+offsetp);
     ierr = PetscMemcpy(headerinfo,header,sizeof(struct _p_DMNetworkComponentHeader));CHKERRQ(ierr);
-    PetscInt *headerarr = (PetscInt*)(headerinfo+1);
+    headerarr = (PetscInt*)(headerinfo+1);
     ierr = PetscMemcpy(headerarr,header->size,header->maxcomps*sizeof(PetscInt));CHKERRQ(ierr);
     headerarr += header->maxcomps;
     ierr = PetscMemcpy(headerarr,header->key,header->maxcomps*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1556,12 +1574,11 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscMPIInt    rank, size;
+  PetscMPIInt    size;
   DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
 
   /* Create maps for vertices and edges */
@@ -1593,12 +1610,35 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
   PetscFunctionReturn(0);
 }
 
+/*
+   Add all subnetid for the input vertex v in this process to the btable
+   vertex_subnetid = supportingedge_subnetid
+*/
+PETSC_STATIC_INLINE PetscErrorCode SetSubnetIdLookupBT(DM dm,PetscInt v,PetscInt Nsubnet,PetscBT btable)
+{
+  PetscErrorCode ierr;
+  PetscInt       e,nedges,offset;
+  const PetscInt *edges;
+  DM_Network     *newDMnetwork = (DM_Network*)dm->data;
+  DMNetworkComponentHeader header;
+
+  PetscFunctionBegin;
+  ierr = DMNetworkGetSupportingEdges(dm,v,&nedges,&edges);CHKERRQ(ierr);
+  ierr = PetscBTMemzero(Nsubnet,btable);CHKERRQ(ierr);
+  for (e=0; e<nedges; e++) {
+    ierr = PetscSectionGetOffset(newDMnetwork->DataSection,edges[e],&offset);CHKERRQ(ierr);
+    header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);
+    ierr = PetscBTSet(btable,header->subnetid);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMNetworkDistribute - Distributes the network and moves associated component data
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + DM - the DMNetwork object
 - overlap - the overlap of partitions, 0 is the default
 
@@ -1622,8 +1662,9 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   DM_Network     *newDMnetwork;
   PetscSF        pointsf=NULL;
   DM             newDM;
-  PetscInt       j,e,v,offset,*subnetvtx,nsubnet,gidx,svtx_idx,nv;
+  PetscInt       j,e,v,offset,*subnetvtx,*subnetedge,Nsubnet,gidx,svtx_idx,nv;
   PetscInt       to_net,from_net,*svto;
+  PetscBT        btable;
   PetscPartitioner         part;
   DMNetworkComponentHeader header;
 
@@ -1662,14 +1703,14 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   newDMnetwork->nVertices = newDMnetwork->vEnd - newDMnetwork->vStart;
   newDMnetwork->NVertices = oldDMnetwork->NVertices;
   newDMnetwork->NEdges    = oldDMnetwork->NEdges;
-  newDMnetwork->svtable   = oldDMnetwork->svtable;
+  newDMnetwork->svtable   = oldDMnetwork->svtable; /* global table! */
   oldDMnetwork->svtable   = NULL;
 
   /* Set Dof section as the section for dm */
   ierr = DMSetLocalSection(newDMnetwork->plex,newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = DMGetGlobalSection(newDMnetwork->plex,&newDMnetwork->GlobalDofSection);CHKERRQ(ierr);
 
-  /* Set up subnetwork info in the newDM */
+  /* Setup subnetwork info in the newDM */
   newDMnetwork->Nsubnet = oldDMnetwork->Nsubnet;
   newDMnetwork->Nsvtx   = oldDMnetwork->Nsvtx;
   oldDMnetwork->Nsvtx   = 0;
@@ -1680,16 +1721,13 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   /* Copy over the global number of vertices and edges in each subnetwork.
      Note: these are calculated in DMNetworkLayoutSetUp()
   */
-  nsubnet = newDMnetwork->Nsubnet;
-  for (j = 0; j < nsubnet; j++) {
+  Nsubnet = newDMnetwork->Nsubnet;
+  for (j = 0; j < Nsubnet; j++) {
     newDMnetwork->subnet[j].Nvtx  = oldDMnetwork->subnet[j].Nvtx;
     newDMnetwork->subnet[j].Nedge = oldDMnetwork->subnet[j].Nedge;
   }
 
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-
-  /* Get local nedges and nvtx for subnetworks */
+  /* Count local nedges for subnetworks */
   for (e = newDMnetwork->eStart; e < newDMnetwork->eEnd; e++) {
     ierr = PetscSectionGetOffset(newDMnetwork->DataSection,e,&offset);CHKERRQ(ierr);
     header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);
@@ -1703,10 +1741,11 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
     newDMnetwork->subnet[header->subnetid].nedge++;
   }
 
+  /* Count local nvtx for subnetworks */
+  ierr = PetscBTCreate(Nsubnet,&btable);CHKERRQ(ierr);
   for (v = newDMnetwork->vStart; v < newDMnetwork->vEnd; v++) {
     ierr = PetscSectionGetOffset(newDMnetwork->DataSection,v,&offset);CHKERRQ(ierr);
     header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);CHKERRQ(ierr);
-
     /* Update pointers */
     header->size          = (PetscInt*)(header + 1);
     header->key           = header->size   + header->maxcomps;
@@ -1714,7 +1753,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
     header->nvar          = header->offset + header->maxcomps;
     header->offsetvarrel  = header->nvar   + header->maxcomps;
 
-    /* shared vertices: use gidx = header->index to check if v is a shared vertex */
+    /* shared vertices: use gidx=header->index to check if v is a shared vertex */
     gidx = header->index;
     ierr = PetscTableFind(newDMnetwork->svtable,gidx+1,&svtx_idx);CHKERRQ(ierr);
     svtx_idx--;
@@ -1722,27 +1761,32 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
     if (svtx_idx < 0) { /* not a shared vertex */
       newDMnetwork->subnet[header->subnetid].nvtx++;
     } else { /* a shared vertex belongs to more than one subnetworks, it is being counted by multiple subnets */
+      ierr = SetSubnetIdLookupBT(newDM,v,Nsubnet,btable);CHKERRQ(ierr);
+
       from_net = newDMnetwork->svtx[svtx_idx].sv[0];
-      newDMnetwork->subnet[from_net].nvtx++;
+      if (PetscBTLookup(btable,from_net)) newDMnetwork->subnet[from_net].nvtx++; /* sv is on from_net */
+
       for (j=1; j<newDMnetwork->svtx[svtx_idx].n; j++) {
         svto   = newDMnetwork->svtx[svtx_idx].sv + 2*j;
         to_net = svto[0];
-        newDMnetwork->subnet[to_net].nvtx++;
+        if (PetscBTLookup(btable,to_net)) newDMnetwork->subnet[to_net].nvtx++; /* sv is on to_net */
       }
     }
   }
 
   /* Get total local nvtx for subnetworks */
   nv = 0;
-  for (j=0; j<nsubnet; j++) nv += newDMnetwork->subnet[j].nvtx;
+  for (j=0; j<Nsubnet; j++) nv += newDMnetwork->subnet[j].nvtx;
   nv += newDMnetwork->Nsvtx;
 
   /* Now create the vertices and edge arrays for the subnetworks */
-  ierr = PetscCalloc1(nv,&subnetvtx);CHKERRQ(ierr);
-  newDMnetwork->subnetvtx = subnetvtx;
+  ierr = PetscCalloc2(newDMnetwork->nEdges,&subnetedge,nv,&subnetvtx);CHKERRQ(ierr); /* Maps local vertex to local subnetwork's vertex */
+  newDMnetwork->subnetedge = subnetedge;
+  newDMnetwork->subnetvtx  = subnetvtx;
+  for (j=0; j < newDMnetwork->Nsubnet; j++) {
+    newDMnetwork->subnet[j].edges = subnetedge;
+    subnetedge                   += newDMnetwork->subnet[j].nedge;
 
-  for (j=0; j<nsubnet; j++) {
-    ierr = PetscCalloc1(newDMnetwork->subnet[j].nedge,&newDMnetwork->subnet[j].edges);CHKERRQ(ierr);
     newDMnetwork->subnet[j].vertices = subnetvtx;
     subnetvtx                       += newDMnetwork->subnet[j].nvtx;
 
@@ -1771,13 +1815,18 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
     } else { /* a shared vertex */
       newDMnetwork->svertices[nv++] = v;
 
+      /* add all subnetid for this shared vertex in this process to btable */
+      ierr = SetSubnetIdLookupBT(newDM,v,Nsubnet,btable);CHKERRQ(ierr);
+
       from_net = newDMnetwork->svtx[svtx_idx].sv[0];
-      newDMnetwork->subnet[from_net].vertices[newDMnetwork->subnet[from_net].nvtx++] = v;
+      if (PetscBTLookup(btable,from_net))
+        newDMnetwork->subnet[from_net].vertices[newDMnetwork->subnet[from_net].nvtx++] = v;
 
       for (j=1; j<newDMnetwork->svtx[svtx_idx].n; j++) {
         svto   = newDMnetwork->svtx[svtx_idx].sv + 2*j;
         to_net = svto[0];
-        newDMnetwork->subnet[to_net].vertices[newDMnetwork->subnet[to_net].nvtx++] = v;
+        if (PetscBTLookup(btable,to_net))
+          newDMnetwork->subnet[to_net].vertices[newDMnetwork->subnet[to_net].nvtx++] = v;
       }
     }
   }
@@ -1789,6 +1838,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   /* Free spaces */
   ierr = PetscSFDestroy(&pointsf);CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&btable);CHKERRQ(ierr);
 
   /* View distributed dmnetwork */
   ierr = DMViewFromOptions(newDM,NULL,"-dmnetwork_view_distributed");CHKERRQ(ierr);
@@ -1806,7 +1856,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
 + mainSF - the original SF structure
 - map - a ISLocalToGlobal mapping that contains the subset of points
 
-  Output Parameters:
+  Output Parameter:
 . subSF - a subset of the mainSF for the desired subset.
 
   Level: intermediate
@@ -2272,7 +2322,6 @@ PetscErrorCode DMCreateMatrix_Network_Nest(DM dm,Mat *J)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
-  PetscMPIInt    rank, size;
   PetscInt       eDof,vDof;
   Mat            j11,j12,j21,j22,bA[2][2];
   MPI_Comm       comm;
@@ -2280,8 +2329,6 @@ PetscErrorCode DMCreateMatrix_Network_Nest(DM dm,Mat *J)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   ierr = PetscSectionGetConstrainedStorageSize(network->edge.GlobalDofSection,&eDof);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(network->vertex.GlobalDofSection,&vDof);CHKERRQ(ierr);
@@ -2644,11 +2691,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
     ierr = PetscFree(network->svtx[j].sv);CHKERRQ(ierr);
   }
   if (network->svtx) {ierr = PetscFree(network->svtx);CHKERRQ(ierr);}
-
-  for (j=0; j<network->Nsubnet; j++) {
-    ierr = PetscFree(network->subnet[j].edges);CHKERRQ(ierr);
-  }
-  if (network->subnetvtx) {ierr = PetscFree(network->subnetvtx);CHKERRQ(ierr);}
+  ierr = PetscFree2(network->subnetedge,network->subnetvtx);CHKERRQ(ierr);
 
   ierr = PetscTableDestroy(&network->svtable);CHKERRQ(ierr);
   ierr = PetscFree(network->subnet);CHKERRQ(ierr);
@@ -2685,7 +2728,7 @@ PetscErrorCode DMView_Network(DM dm,PetscViewer viewer)
     DM_Network     *network = (DM_Network*)dm->data;
 
     nsubnet = network->Nsubnet; /* num of subnetworks */
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  NSubnets: %D; NEdges: %D; NVertices: %D; NSharedVertices: %D.\n",nsubnet,network->NEdges,network->NVertices,network->Nsvtx);CHKERRQ(ierr);
     }
 

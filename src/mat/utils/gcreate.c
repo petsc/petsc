@@ -203,6 +203,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   const char     *deft = MATAIJ;
   char           type[256];
   PetscBool      flg,set;
+  PetscInt       bind_below = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
@@ -248,6 +249,14 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   ierr = PetscOptionsBool("-mat_form_explicit_transpose","Hint to form an explicit transpose for operations like MatMultTranspose","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = MatSetOption(B,MAT_FORM_EXPLICIT_TRANSPOSE,flg);CHKERRQ(ierr);}
 
+  /* Bind to CPU if below a user-specified size threshold.
+   * This perhaps belongs in the options for the GPU Mat types, but MatBindToCPU() does nothing when called on non-GPU types,
+   * and putting it here makes is more maintainable than duplicating this for all. */
+  ierr = PetscOptionsInt("-mat_bind_below","Set the size threshold (in local rows) below which the Mat is bound to the CPU","MatBindToCPU",bind_below,&bind_below,&flg);CHKERRQ(ierr);
+  if (flg && B->rmap->n < bind_below) {
+    ierr = MatBindToCPU(B,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)B);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -259,7 +268,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 
    Collective on Mat
 
-   Input Arguments:
+   Input Parameters:
 +  A - matrix being preallocated
 .  bs - block size
 .  dnnz - number of nonzero column blocks per block row of diagonal part of parallel matrix
@@ -436,32 +445,56 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 /*@
      MatBindToCPU - marks a matrix to temporarily stay on the CPU and perform computations on the CPU
 
+   Logically collective on Mat
+
    Input Parameters:
 +   A - the matrix
 -   flg - bind to the CPU if value of PETSC_TRUE
 
    Level: intermediate
+
+.seealso: MatBoundToCPU()
 @*/
 PetscErrorCode MatBindToCPU(Mat A,PetscBool flg)
 {
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveBool(A,flg,2);
+#if defined(PETSC_HAVE_DEVICE)
   if (A->boundtocpu == flg) PetscFunctionReturn(0);
   A->boundtocpu = flg;
   if (A->ops->bindtocpu) {
+    PetscErrorCode ierr;
     ierr = (*A->ops->bindtocpu)(A,flg);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
-#else
+}
+
+/*@
+     MatBoundToCPU - query if a matrix is bound to the CPU
+
+   Input Parameter:
+.   A - the matrix
+
+   Output Parameter:
+.   flg - the logical flag
+
+   Level: intermediate
+
+.seealso: MatBindToCPU()
+@*/
+PetscErrorCode MatBoundToCPU(Mat A,PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidLogicalCollectiveBool(A,flg,2);
-  PetscFunctionReturn(0);
+  PetscValidPointer(flg,2);
+#if defined(PETSC_HAVE_DEVICE)
+  *flg = A->boundtocpu;
+#else
+  *flg = PETSC_TRUE;
 #endif
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode imode)
@@ -532,7 +565,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt c
 
    Collective on Mat
 
-   Input Arguments:
+   Input Parameters:
 +  A - matrix being preallocated
 .  ncoo - number of entries in the locally owned part of the parallel matrix
 .  coo_i - row indices
@@ -579,7 +612,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
 
    Collective on Mat
 
-   Input Arguments:
+   Input Parameters:
 +  A - matrix being preallocated
 .  coo_v - the matrix values (can be NULL)
 -  imode - the insert mode
@@ -613,5 +646,63 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
   }
   ierr = PetscLogEventEnd(MAT_SetVCOO,A,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatSetBindingPropagates - Sets whether the state of being bound to the CPU for a GPU matrix type propagates to child and some other associated objects
+
+   Input Parameters:
++  A - the matrix
+-  flg - flag indicating whether the boundtocpu flag should be propagated
+
+   Level: developer
+
+   Notes:
+   If the value of flg is set to true, the following will occur:
+
+   MatCreateSubMatrices() and MatCreateRedundantMatrix() will bind created matrices to CPU if the input matrix is bound to the CPU.
+   MatCreateVecs() will bind created vectors to CPU if the input matrix is bound to the CPU.
+   The bindingpropagates flag itself is also propagated by the above routines.
+
+   Developer Notes:
+   If the fine-scale DMDA has the -dm_bind_below option set to true, then DMCreateInterpolationScale() calls MatSetBindingPropagates()
+   on the restriction/interpolation operator to set the bindingpropagates flag to true.
+
+.seealso: VecSetBindingPropagates(), MatGetBindingPropagates()
+@*/
+PetscErrorCode MatSetBindingPropagates(Mat A,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  A->bindingpropagates = flg;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatGetBindingPropagates - Gets whether the state of being bound to the CPU for a GPU matrix type propagates to child and some other associated objects
+
+   Input Parameter:
+.  A - the matrix
+
+   Output Parameter:
+.  flg - flag indicating whether the boundtocpu flag will be propagated
+
+   Level: developer
+
+.seealso: MatSetBindingPropagates()
+@*/
+PetscErrorCode MatGetBindingPropagates(Mat A,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidBoolPointer(flg,2);
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+  *flg = A->bindingpropagates;
+#else
+  *flg = PETSC_FALSE;
+#endif
   PetscFunctionReturn(0);
 }

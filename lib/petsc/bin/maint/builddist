@@ -17,10 +17,9 @@
 #echo "(2) Set the version number and release date in petscversion.h?"
 #echo "(3) Made sure Fortran include files match C ones?"
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on login.mcs"
-#echo "(5) Update update-docs.py with additional docs on the petsc web page (for eg new changes file)"
-#echo "(6) Update version info on all petsc web pages"
-#echo "(7) tag the new release with git and make a new clone for the release"
-#echo "(8) got the users manual CLEARED by ANL publications for release"
+#echo "(5) Update version info on all petsc web pages"
+#echo "(6) tag the new release with git and make a new clone for the release"
+#echo "(7) got the users manual CLEARED by ANL publications for release"
 
 # If version specified on the commandline, set the version
 echo "Starting date: `date +'%a, %d %b %Y %H:%M:%S %z'`"
@@ -57,7 +56,7 @@ PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
 # Clean and Update the git repository and check for branch
 cd $PETSC_DIR
-/bin/rm -rf $PETSC_DIR/$PETSC_ARCH
+/bin/rm -rf $PETSC_DIR/$PETSC_ARCH $PETSC_DIR/arch-classic-docs
 git clean -q -f -d -x
 git fetch -q origin
 git checkout -f origin/$branch
@@ -111,8 +110,13 @@ python3 -m venv $VENV
 source $VENV/bin/activate
 cd $PETSC_DIR/doc
 python3 -m pip install -r requirements.txt
-sphinx-build -T -E -b html -D language=en -j auto . ../docs
-make latexpdf && cp _build/latex/manual.pdf ../docs/
+make html BUILDDIR="../docs" SPHINXOPTS="-T -E"
+mv ../docs/html/* ../docs/html/.[!.]* ../docs
+make latexpdf && cp _build/latex/manual.pdf ../docs/html/docs/manual/
+rm -rf ../docs/doctrees
+make clean
+rm -rf images
+
 
 # petsc4py docs and tarball
 cd $PETSC_DIR

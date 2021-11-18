@@ -4,8 +4,8 @@
 #include <petscmat.h>
 
 #define CSRDataStructure(datatype)  \
-  int         *i; \
-  int         *j; \
+  PetscInt    *i; \
+  PetscInt    *j; \
   datatype    *a;\
   PetscInt    n;\
   PetscInt    ignorezeroentries;
@@ -17,9 +17,10 @@ typedef struct {
 struct _n_SplitCSRMat {
   PetscInt              cstart,cend,rstart,rend;
   PetscCSRDataStructure diag,offdiag;
-  int                   *colmap;
+  PetscInt              *colmap;
   PetscInt              N;
   PetscMPIInt           rank;
+  PetscBool             allocated_indices;
 };
 
 /* 64-bit floating-point version of atomicAdd() is only natively supported by
@@ -51,7 +52,7 @@ struct _n_SplitCSRMat {
     #define PetscAtomicAdd(a,b) atomicAdd(a,b)
   #endif
 #else
-  /* TODO: support devices other than CUDA */
+  /* TODO: support devices other than CUDA and Kokkos */
   #define PetscAtomicAdd(a,b) *(a) += b
 #endif
 
@@ -142,13 +143,13 @@ static
 PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   MatScalar       value;
-  const int       *rp1,*rp2 = NULL,*ai = d_mat->diag.i, *aj = d_mat->diag.j;
-  const int       *bi = d_mat->offdiag.i, *bj = d_mat->offdiag.j;
+  const PetscInt  *rp1,*rp2 = NULL,*ai = d_mat->diag.i, *aj = d_mat->diag.j;
+  const PetscInt  *bi = d_mat->offdiag.i, *bj = d_mat->offdiag.j;
   MatScalar       *ba = d_mat->offdiag.a, *aa = d_mat->diag.a;
-  int             nrow1,nrow2 = 0,_i,low1,high1,low2 = 0,high2 = 0,t,lastcol1,lastcol2 = 0,inserted;
+  PetscInt        nrow1,nrow2 = 0,_i,low1,high1,low2 = 0,high2 = 0,t,lastcol1,lastcol2 = 0,inserted;
   MatScalar       *ap1,*ap2 = NULL;
   PetscBool       roworiented = PETSC_TRUE;
-  int             i,j,row,col;
+  PetscInt        i,j,row,col;
   const PetscInt  rstart = d_mat->rstart,rend = d_mat->rend, cstart = d_mat->rstart,cend = d_mat->rend,N = d_mat->N;
 
   for (i=0; i<m; i++) {
@@ -173,7 +174,7 @@ PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,c
       for (j=0; j<n; j++) {
         value = roworiented ? v[i*n+j] : v[i+j*m];
         if (in[j] >= cstart && in[j] < cend) {
-          col = (int)(in[j] - cstart);
+          col = (in[j] - cstart);
           MatSetValues_SeqAIJ_A_Private(row,col,value,is);
           if (!inserted) SETERR;
         } else if (in[j] < 0) {

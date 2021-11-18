@@ -230,7 +230,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,nrecv;
   PETSC_UNUSED PetscMPIInt icompleted=0;
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
-  PetscInt            len,proc,*dnz,*onz,*owners,nzi,nspacedouble;
+  const PetscInt      *owners;
+  PetscInt            len,proc,*dnz,*onz,nzi,nspacedouble;
   PetscInt            nrows,*buf_s,*buf_si,*buf_si_i,**nextrow,**nextci;
   MPI_Request         *swaits,*rwaits;
   MPI_Status          *sstatus,rstatus;
@@ -387,10 +388,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   /* ------------------------------------------ */
   /* determine row ownership */
   ierr = PetscLayoutCreate(comm,&rowmap);CHKERRQ(ierr);
-  rowmap->n  = pn;
-  rowmap->bs = 1;
-  ierr   = PetscLayoutSetUp(rowmap);CHKERRQ(ierr);
-  owners = rowmap->range;
+  ierr = PetscLayoutSetLocalSize(rowmap, pn);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(rowmap, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(rowmap);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(rowmap,&owners);CHKERRQ(ierr);
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc4(size,&len_s,size,&len_si,size,&sstatus,size+2,&owners_co);CHKERRQ(ierr);

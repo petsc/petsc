@@ -8,7 +8,8 @@
    Collective on SNES
 
    Input Parameters:
-+  x1 - compute Jacobian at this point
++  snes - the SNES context
+.  x1 - compute Jacobian at this point
 -  ctx - application's function context, as set with SNESSetFunction()
 
    Output Parameters:

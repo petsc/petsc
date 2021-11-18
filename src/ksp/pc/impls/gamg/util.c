@@ -102,7 +102,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
           Determine exact preallocation count for (sequential) scalar matrix
       */
       ierr = MatSeqAIJGetMaxRowNonzeros(Amat,&max_d_nnz);CHKERRQ(ierr);
-      max_d_nnz = PetscMin(nloc,bs*max_d_nnz);CHKERRQ(ierr);
+      max_d_nnz = PetscMin(nloc,bs*max_d_nnz);
       ierr = PetscMalloc3(max_d_nnz, &w0,max_d_nnz, &w1,max_d_nnz, &w2);CHKERRQ(ierr);
       for (Ii = 0, jj = 0; Ii < Iend; Ii += bs, jj++) {
         ierr = MatCollapseRows(Amat,Ii,bs,w0,w1,w2,&d_nnz[jj],NULL);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
           Determine exact preallocation count for diagonal block portion of scalar matrix
       */
       ierr = MatSeqAIJGetMaxRowNonzeros(Daij,&max_d_nnz);CHKERRQ(ierr);
-      max_d_nnz = PetscMin(nloc,bs*max_d_nnz);CHKERRQ(ierr);
+      max_d_nnz = PetscMin(nloc,bs*max_d_nnz);
       ierr = PetscMalloc3(max_d_nnz, &w0,max_d_nnz, &w1,max_d_nnz, &w2);CHKERRQ(ierr);
       for (Ii = 0, jj = 0; Ii < Iend - Istart; Ii += bs, jj++) {
         ierr = MatCollapseRows(Daij,Ii,bs,w0,w1,w2,&d_nnz[jj],NULL);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +   a_Gmat - the graph
 .   vfilter - threshold parameter [0,1)
 -   symm - make the result symmetric

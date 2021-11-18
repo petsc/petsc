@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, ctx.filename, PETSC_TRUE, &surface);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, ctx.filename, "ex37_plex", PETSC_TRUE, &surface);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) surface, "CAD Surface");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) surface, "sur_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(surface);CHKERRQ(ierr);

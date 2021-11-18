@@ -468,7 +468,7 @@ PetscErrorCode  PCCompositeGetType(PC pc,PCCompositeType *type)
 
    Logically Collective on PC
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context
 -  alpha - scale on identity
 
@@ -564,7 +564,7 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  pc - the preconditioner context
 -  n - the number of the pc requested
 

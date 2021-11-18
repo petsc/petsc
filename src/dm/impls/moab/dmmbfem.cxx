@@ -109,17 +109,20 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal (PetscReal *inmat, PetscReal *
       EDGE2             EDGE3
 .ve
 
-  Input Parameter:
+  Input Parameters:
 +  PetscInt  nverts -          the number of element vertices
 .  PetscReal coords[3*nverts] - the physical coordinates of the vertices (in canonical numbering)
 .  PetscInt  npts -            the number of evaluation points (quadrature points)
 -  PetscReal quad[3*npts] -    the evaluation points (quadrature points) in the reference space
 
-  Output Parameter:
+  Output Parameters:
 +  PetscReal phypts[3*npts] -  the evaluation points (quadrature points) transformed to the physical space
 .  PetscReal jxw[npts] -       the jacobian determinant * quadrature weight necessary for assembling discrete contributions
 .  PetscReal phi[npts] -       the bases evaluated at the specified quadrature points
--  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
+.  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
+.  jacobian -
+.  ijacobian -
+-  volume
 
   Level: advanced
 
@@ -225,18 +228,21 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
     1------2        0-------r
 .ve
 
-  Input Parameter:
+  Input Parameters:
 +  PetscInt  nverts -          the number of element vertices
 .  PetscReal coords[3*nverts] - the physical coordinates of the vertices (in canonical numbering)
 .  PetscInt  npts -            the number of evaluation points (quadrature points)
 -  PetscReal quad[3*npts] -    the evaluation points (quadrature points) in the reference space
 
-  Output Parameter:
+  Output Parameters:
 +  PetscReal phypts[3*npts] -  the evaluation points (quadrature points) transformed to the physical space
 .  PetscReal jxw[npts] -       the jacobian determinant * quadrature weight necessary for assembling discrete contributions
 .  PetscReal phi[npts] -       the bases evaluated at the specified quadrature points
 .  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
--  PetscReal dphidy[npts] -    the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
+.  PetscReal dphidy[npts] -    the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
+.  jacobian -
+.  ijacobian -
+-  volume
 
   Level: advanced
 
@@ -383,19 +389,22 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
     1------2
 .ve
 
-  Input Parameter:
+  Input Parameters:
 +  PetscInt  nverts -          the number of element vertices
 .  PetscReal coords[3*nverts] - the physical coordinates of the vertices (in canonical numbering)
 .  PetscInt  npts -            the number of evaluation points (quadrature points)
 -  PetscReal quad[3*npts] -    the evaluation points (quadrature points) in the reference space
 
-  Output Parameter:
+  Output Parameters:
 +  PetscReal phypts[3*npts] -  the evaluation points (quadrature points) transformed to the physical space
 .  PetscReal jxw[npts] -       the jacobian determinant * quadrature weight necessary for assembling discrete contributions
 .  PetscReal phi[npts] -       the bases evaluated at the specified quadrature points
 .  PetscReal dphidx[npts] -    the derivative of the bases wrt X-direction evaluated at the specified quadrature points
 .  PetscReal dphidy[npts] -    the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
--  PetscReal dphidz[npts] -    the derivative of the bases wrt Z-direction evaluated at the specified quadrature points
+.  PetscReal dphidz[npts] -    the derivative of the bases wrt Z-direction evaluated at the specified quadrature points
+.  jacobian -
+.  ijacobian -
+-  volume
 
   Level: advanced
 
@@ -604,13 +613,13 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
   The routine takes the coordinates of the vertices of an element and computes basis functions associated with
   each quadrature point provided, and their derivatives with respect to X, Y and Z as appropriate.
 
-  Input Parameter:
+  Input Parameters:
 +  PetscInt  nverts,           the number of element vertices
 .  PetscReal coords[3*nverts], the physical coordinates of the vertices (in canonical numbering)
 .  PetscInt  npts,             the number of evaluation points (quadrature points)
 -  PetscReal quad[3*npts],     the evaluation points (quadrature points) in the reference space
 
-  Output Parameter:
+  Output Parameters:
 +  PetscReal phypts[3*npts],   the evaluation points (quadrature points) transformed to the physical space
 .  PetscReal jxw[npts],        the jacobian determinant * quadrature weight necessary for assembling discrete contributions
 .  PetscReal fe_basis[npts],        the bases values evaluated at the specified quadrature points
@@ -674,7 +683,7 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   DMMoabFEMCreateQuadratureDefault - Create default quadrature rules for integration over an element with a given
   dimension and polynomial order (deciphered from number of element vertices).
 
-  Input Parameter:
+  Input Parameters:
 
 +  PetscInt  dim   -   the element dimension (1=EDGE, 2=QUAD/TRI, 3=HEX/TET)
 -  PetscInt nverts -   the number of vertices in the physical element
@@ -945,13 +954,13 @@ PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, 
   canonical reference element. In addition to finding the inverse mapping evaluation through Newton iteration,
   the basis function at the parametric point is also evaluated optionally.
 
-  Input Parameter:
+  Input Parameters:
 +  PetscInt  dim -         the element dimension (1=EDGE, 2=QUAD/TRI, 3=HEX/TET)
 .  PetscInt nverts -       the number of vertices in the physical element
 .  PetscReal coordinates - the coordinates of vertices in the physical element
 -  PetscReal[3] xphy -     the coordinates of physical point for which natural coordinates (in reference frame) are sought
 
-  Output Parameter:
+  Output Parameters:
 +  PetscReal[3] natparam - the natural coordinates (in reference frame) corresponding to xphy
 -  PetscReal[nverts] phi - the basis functions evaluated at the natural coordinates (natparam)
 

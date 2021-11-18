@@ -101,7 +101,7 @@ int main(int argc,char **argv)
 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  /* if (!rank) printf("A %d, %d\n",M,N); */
+  /* if (rank == 0) printf("A %d, %d\n",M,N); */
 
   /* set val=one to A */
   if (size == 1) {
@@ -136,7 +136,7 @@ int main(int argc,char **argv)
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
-  /* if (!rank) printf("P %d, %d\n",M,N); */
+  /* if (rank == 0) printf("P %d, %d\n",M,N); */
 
   /* Create vectors v1 and v2 that are compatible with A */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
@@ -188,7 +188,7 @@ int main(int argc,char **argv)
       norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
-    if (norm >= tol && !rank) {
+    if (norm >= tol && rank == 0) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %g\n",(double)norm);CHKERRQ(ierr);
     }
 
@@ -247,7 +247,7 @@ int main(int argc,char **argv)
       norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
-    if (norm >= tol && !rank) {
+    if (norm >= tol && rank == 0) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %g\n",(double)norm);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&C);CHKERRQ(ierr);

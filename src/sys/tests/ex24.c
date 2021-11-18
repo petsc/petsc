@@ -1,4 +1,4 @@
-static char help[] = "Tests %D and %g formatting\n";
+static char help[] = "Tests %d and %g formatting\n";
 #include <petscsys.h>
 
 int main(int argc,char **argv)

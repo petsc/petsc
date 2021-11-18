@@ -120,7 +120,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           if (bnk->active_idx) {
             ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
           } else {
-            ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);CHKERRQ(ierr);
+            ierr = PetscObjectReference((PetscObject)tao->hessian);CHKERRQ(ierr);
+            bnk->H_inactive = tao->hessian;
           }
           *needH = PETSC_FALSE;
         }
@@ -292,12 +293,14 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
       ierr = PCLMVMSetIS(bnk->bfgs_pre, bnk->inactive_idx);CHKERRQ(ierr);
     }
   } else {
-    ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)tao->hessian);CHKERRQ(ierr);
+    bnk->H_inactive = tao->hessian;
     if (tao->hessian == tao->hessian_pre) {
       ierr = PetscObjectReference((PetscObject)bnk->H_inactive);CHKERRQ(ierr);
       bnk->Hpre_inactive = bnk->H_inactive;
     } else {
-      ierr = MatDuplicate(tao->hessian_pre, MAT_COPY_VALUES, &bnk->Hpre_inactive);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)tao->hessian_pre);
+      bnk->Hpre_inactive = tao->hessian_pre;
     }
     if (bnk->bfgs_pre) {
       ierr = PCLMVMClearIS(bnk->bfgs_pre);CHKERRQ(ierr);

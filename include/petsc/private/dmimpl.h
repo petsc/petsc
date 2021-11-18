@@ -56,6 +56,7 @@ struct _DMOps {
   PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM*);
   PetscErrorCode (*adaptlabel)(DM,DMLabel,DM*);
   PetscErrorCode (*adaptmetric)(DM,Vec,DMLabel,DM*);
+  PetscErrorCode (*extrude)(DM,PetscInt,DM*);
 
   PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
@@ -215,6 +216,7 @@ struct _p_DM {
   MatFDColoring           fd;
   VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   MatType                 mattype;  /* type of matrix created with DMCreateMatrix() */
+  PetscInt                bind_below; /* Local size threshold (in entries/rows) below which Vec/Mat objects are bound to CPU */
   PetscInt                bs;
   ISLocalToGlobalMapping  ltogmap;
   PetscBool               prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */

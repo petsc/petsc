@@ -556,7 +556,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 
   Logically Collective on TS
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  order - order of the method
 

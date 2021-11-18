@@ -172,10 +172,10 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
   PetscValidScalarPointer(a,2);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
   if (start <  0)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-                            "Negative start %D",start);
+                            "Negative start %" PetscInt_FMT,start);
   if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,
-                            "Start of stride subvector (%D) is too large "
-                            "for block size (%D)",start,bs);
+                            "Start of stride subvector (%" PetscInt_FMT ") is too large "
+                            "for block size (%" PetscInt_FMT ")",start,bs);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   sum = (PetscScalar)0.0;

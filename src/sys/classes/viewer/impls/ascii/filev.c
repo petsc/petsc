@@ -13,7 +13,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
   PetscFunctionBegin;
   if (vascii->sviewer) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
-  if (!rank && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
+  if (rank == 0 && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
     if (vascii->fd && vascii->closefile) {
       err = fclose(vascii->fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
@@ -117,7 +117,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
-  if (!vascii->bviewer && !rank && (vascii->mode != FILE_MODE_READ)) {
+  if (!vascii->bviewer && rank == 0 && (vascii->mode != FILE_MODE_READ)) {
     err = fflush(vascii->fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() call failed");
   }
@@ -130,7 +130,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
 
     /* First processor waits for messages from all other processors */
-    if (!rank) {
+    if (rank == 0) {
       /* flush my own messages that I may have queued up */
       PrintfQueue next = vascii->petsc_printfqueuebase,previous;
       for (i=0; i<vascii->petsc_printfqueuelength; i++) {
@@ -713,7 +713,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
     }
   }
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
     ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
     /* empty filename means stdout */
@@ -925,7 +925,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 
   if (vascii->bviewer) {
     hasbviewer = PETSC_TRUE;
-    if (!rank) {
+    if (rank == 0) {
       vascii = (PetscViewer_ASCII*)vascii->bviewer->data;
       ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
@@ -934,7 +934,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
 
   fp   = vascii->fd;
 
-  if (!rank && !hasbviewer) {   /* First processor prints immediately to fp */
+  if (rank == 0 && !hasbviewer) {   /* First processor prints immediately to fp */
     va_list Argp;
     /* flush my own messages that I may have queued up */
     PrintfQueue next = vascii->petsc_printfqueuebase,previous;
@@ -1059,6 +1059,6 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
     else if (ret < 0) break; /* Proxy for EOF, need to check for it in configure */
   }
   if (count) *count = i;
-  else if (ret < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Insufficient data, read only %D < %D items", i, num);
+  else if (ret < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Insufficient data, read only %" PetscInt_FMT " < %" PetscInt_FMT " items", i, num);
   PetscFunctionReturn(0);
 }

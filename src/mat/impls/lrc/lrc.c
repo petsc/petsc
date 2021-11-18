@@ -97,12 +97,13 @@ PetscErrorCode MatLRCGetMats_LRC(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
    Collective on Mat
 
    Input Parameter:
-.  N    - matrix of type LRC
+.  N - matrix of type LRC
 
    Output Parameters:
-+  A    - the (sparse) matrix
-.  U, V - two dense rectangular (tall and skinny) matrices
--  c    - a sequential vector containing the diagonal of C
++  A - the (sparse) matrix
+.  U - first dense rectangular (tall and skinny) matrix
+.  c - a sequential vector containing the diagonal of C
+-  V - second dense rectangular (tall and skinny) matrix
 
    Note:
    The returned matrices need not be destroyed by the caller.

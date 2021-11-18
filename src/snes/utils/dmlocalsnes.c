@@ -171,7 +171,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,vo
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to associate callback with
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
@@ -208,7 +208,7 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Vec,vo
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to associate callback with
 .  func - local boundary value evaluation
 -  ctx - optional context for local boundary value evaluation
@@ -239,7 +239,7 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm,PetscErrorCode (*func)(DM,Vec,void*)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to associate callback with
 .  func - local Jacobian evaluation
 -  ctx - optional context for local Jacobian evaluation
@@ -271,10 +271,10 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Ma
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  dm - DM with the associated callback
 
-   Output Arguments:
+   Output Parameters:
 +  func - local residual evaluation
 -  ctx - context for local residual evaluation
 
@@ -302,10 +302,10 @@ PetscErrorCode DMSNESGetFunctionLocal(DM dm,PetscErrorCode (**func)(DM,Vec,Vec,v
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  dm - DM with the associated callback
 
-   Output Arguments:
+   Output Parameters:
 +  func - local boundary value evaluation
 -  ctx - context for local boundary value evaluation
 
@@ -333,10 +333,10 @@ PetscErrorCode DMSNESGetBoundaryLocal(DM dm,PetscErrorCode (**func)(DM,Vec,void*
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameter:
 .  dm - DM with the associated callback
 
-   Output Arguments:
+   Output Parameters:
 +  func - local Jacobian evaluation
 -  ctx - context for local Jacobian evaluation
 

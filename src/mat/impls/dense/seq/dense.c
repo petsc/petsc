@@ -675,7 +675,7 @@ static PetscErrorCode MatMatSolve_SeqDense_SetUp(Mat A, Mat B, Mat X, PetscScala
   PetscBLASInt      nrhs=0,m=0,k=0,ldb=0,ldx=0,ldy=0;
 
   PetscFunctionBegin;
-  *_ldy=0; *_m=0; *_nrhs=0; *_k=0;
+  *_ldy=0; *_m=0; *_nrhs=0; *_k=0; *_y = NULL;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->cmap->n,&k);CHKERRQ(ierr);
   ierr = MatGetSize(B,NULL,&n);CHKERRQ(ierr);
@@ -2144,7 +2144,7 @@ PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetLDA - gets the leading dimension of the array returned from MatDenseGetArray()
 
    Not collective
@@ -2170,12 +2170,12 @@ PetscErrorCode  MatDenseGetLDA(Mat A,PetscInt *lda)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseSetLDA - Sets the leading dimension of the array used by the dense matrix
 
    Not collective
 
-   Input Parameter:
+   Input Parameters:
 +  mat - a MATSEQDENSE or MATMPIDENSE matrix
 -  lda - the leading dimension
 
@@ -2797,7 +2797,7 @@ PetscErrorCode MatGetColumnVector_SeqDense(Mat A,Vec v,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
+PETSC_INTERN PetscErrorCode MatGetColumnReductions_SeqDense(Mat A,PetscInt type,PetscReal *reductions)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,m,n;
@@ -2805,33 +2805,49 @@ PETSC_INTERN PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,Petsc
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = PetscArrayzero(norms,n);CHKERRQ(ierr);
+  ierr = PetscArrayzero(reductions,n);CHKERRQ(ierr);
   ierr = MatDenseGetArrayRead(A,&a);CHKERRQ(ierr);
   if (type == NORM_2) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
-        norms[i] += PetscAbsScalar(a[j]*a[j]);
+        reductions[i] += PetscAbsScalar(a[j]*a[j]);
       }
       a += m;
     }
   } else if (type == NORM_1) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
-        norms[i] += PetscAbsScalar(a[j]);
+        reductions[i] += PetscAbsScalar(a[j]);
       }
       a += m;
     }
   } else if (type == NORM_INFINITY) {
     for (i=0; i<n; i++) {
       for (j=0; j<m; j++) {
-        norms[i] = PetscMax(PetscAbsScalar(a[j]),norms[i]);
+        reductions[i] = PetscMax(PetscAbsScalar(a[j]),reductions[i]);
       }
       a += m;
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  } else if (type == REDUCTION_SUM_REALPART || type == REDUCTION_MEAN_REALPART) {
+    for (i=0; i<n; i++) {
+      for (j=0; j<m; j++) {
+        reductions[i] += PetscRealPart(a[j]);
+      }
+      a += m;
+    }
+  } else if (type == REDUCTION_SUM_IMAGINARYPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+    for (i=0; i<n; i++) {
+      for (j=0; j<m; j++) {
+        reductions[i] += PetscImaginaryPart(a[j]);
+      }
+      a += m;
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown reduction type");
   ierr = MatDenseRestoreArrayRead(A,&a);CHKERRQ(ierr);
   if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
+    for (i=0; i<n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
+  } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {
+    for (i=0; i<n; i++) reductions[i] /= m;
   }
   PetscFunctionReturn(0);
 }
@@ -3010,7 +3026,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         NULL,
                                         NULL,
                                 /*124*/ NULL,
-                                        MatGetColumnNorms_SeqDense,
+                                        MatGetColumnReductions_SeqDense,
                                         NULL,
                                         NULL,
                                         NULL,
@@ -3477,7 +3493,7 @@ PetscErrorCode MatDenseRestoreColumn(Mat A,PetscScalar **vals)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetColumnVec - Gives read-write access to a column of a dense matrix, represented as a Vec.
 
    Collective
@@ -3512,7 +3528,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseRestoreColumnVec - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVec().
 
    Collective
@@ -3541,7 +3557,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetColumnVecRead - Gives read-only access to a column of a dense matrix, represented as a Vec.
 
    Collective
@@ -3577,7 +3593,7 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseRestoreColumnVecRead - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecRead().
 
    Collective
@@ -3606,7 +3622,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetColumnVecWrite - Gives write-only access to a column of a dense matrix, represented as a Vec.
 
    Collective
@@ -3641,7 +3657,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseRestoreColumnVecWrite - Returns access to a column of a dense matrix obtained from MatDenseGetColumnVecWrite().
 
    Collective
@@ -3670,7 +3686,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A,PetscInt col,Vec *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseGetSubMatrix - Gives access to a block of columns of a dense matrix, represented as a Mat.
 
    Collective
@@ -3707,7 +3723,7 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatDenseRestoreSubMatrix - Returns access to a block of columns of a dense matrix obtained from MatDenseGetSubMatrix().
 
    Collective

@@ -35,7 +35,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE, TSBSYMP
++  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE, TSBSYMP, TSIRK
 .  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_time <time> - maximum time to compute to
 .  -ts_max_steps <steps> - maximum number of time-steps to take
@@ -323,7 +323,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
     ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,NULL,NULL,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
     }
     rayctx->lgctx = NULL;
@@ -443,7 +443,7 @@ PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 
    Collective on TS
 
-   Input Parameters:
+   Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
    Options Database:
@@ -511,15 +511,11 @@ PetscErrorCode  TSResetTrajectory(TS ts)
 
    Output Parameters:
 +  A - Jacobian matrix
-.  B - optional preconditioning matrix
--  flag - flag indicating matrix structure
+-  B - optional preconditioning matrix
 
    Notes:
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers.
-
-   See KSPSetOperators() for important information about setting the
-   flag parameter.
 
    Level: developer
 
@@ -1294,7 +1290,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec r,TSIFunction f,void *ctx)
    Input Parameter:
 .  ts - the TS context
 
-   Output Parameter:
+   Output Parameters:
 +  r - vector to hold residual (or NULL)
 .  func - the function to compute residual (or NULL)
 -  ctx - the function context (or NULL)
@@ -1326,7 +1322,7 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
    Input Parameter:
 .  ts - the TS context
 
-   Output Parameter:
+   Output Parameters:
 +  r - vector to hold computed right hand side (or NULL)
 .  func - the function to compute right hand side (or NULL)
 -  ctx - the function context (or NULL)
@@ -1426,7 +1422,7 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat Amat,Mat Pmat,TSIJacobian f,void *ctx)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ts - TS context obtained from TSCreate()
 -  reuse - PETSC_TRUE if the RHS Jacobian
 
@@ -1488,7 +1484,7 @@ PetscErrorCode TSSetI2Function(TS ts,Vec F,TSI2Function fun,void *ctx)
   Input Parameter:
 . ts - the TS context
 
-  Output Parameter:
+  Output Parameters:
 + r - vector to hold residual (or NULL)
 . fun - the function to compute residual (or NULL)
 - ctx - the function context (or NULL)
@@ -1744,7 +1740,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context on which to change the transient variable
 .  tvar - a function that transforms to transient variables
 -  ctx - a context for tvar
@@ -1890,7 +1886,7 @@ PetscErrorCode  TS2SetSolution(TS ts,Vec u,Vec v)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Output Parameter:
+   Output Parameters:
 +  u - the vector containing the solution
 -  v - the vector containing the time derivative
 
@@ -2110,7 +2106,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 
     ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
       ierr = PetscStrncpy(type,((PetscObject)ts)->type_name,256);CHKERRQ(ierr);
       ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
@@ -2148,7 +2144,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 
     ierr = PetscObjectGetName((PetscObject)ts,&name);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!((PetscObject)ts)->amsmem && !rank) {
+    if (!((PetscObject)ts)->amsmem && rank == 0) {
       char       dir[1024];
 
       ierr = PetscObjectViewSAWs((PetscObject)ts,viewer);CHKERRQ(ierr);
@@ -2318,7 +2314,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 
   Logically Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +   ts - the time-step context
 -   eftopt - exact final time option
 
@@ -2901,7 +2897,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context obtained from TSCreate()
 -  snes - the nonlinear solver context
 
@@ -3491,11 +3487,11 @@ PetscErrorCode  TSPostStep(TS ts)
 
    Collective on TS
 
-   Input Argument:
+   Input Parameters:
 +  ts - time stepping context
 -  t - time to interpolate to
 
-   Output Argument:
+   Output Parameter:
 .  U - state at given time
 
    Level: intermediate
@@ -3594,14 +3590,16 @@ PetscErrorCode  TSStep(TS ts)
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
-.  wnormtype - norm type, either NORM_2 or NORM_INFINITY
--  order - optional, desired order for the error evaluation or PETSC_DECIDE
+-  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
-   Output Arguments:
-+  order - optional, the actual order of the error evaluation
--  wlte - the weighted local truncation error norm
+   Input/Output Parameter:
+.  order - optional, desired order for the error evaluation or PETSC_DECIDE;
+           on output, the actual order of the error evaluation
+
+   Output Parameter:
+.  wlte - the weighted local truncation error norm
 
    Level: advanced
 
@@ -3634,12 +3632,12 @@ PetscErrorCode TSEvaluateWLTE(TS ts,NormType wnormtype,PetscInt *order,PetscReal
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  order - desired order of accuracy
 -  done - whether the step was evaluated at this order (pass NULL to generate an error if not available)
 
-   Output Arguments:
+   Output Parameter:
 .  U - state at the end of the current step
 
    Level: advanced
@@ -3668,10 +3666,10 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 
   Not collective
 
-  Input Argument:
+  Input Parameter:
 . ts        - time stepping context
 
-  Output Argument:
+  Output Parameter:
 . initConditions - The function which computes an initial condition
 
    Level: advanced
@@ -3698,7 +3696,7 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
 
   Logically collective on ts
 
-  Input Arguments:
+  Input Parameters:
 + ts        - time stepping context
 - initCondition - The function which computes an initial condition
 
@@ -3726,7 +3724,7 @@ PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initConditio
 
   Collective on ts
 
-  Input Arguments:
+  Input Parameters:
 + ts - time stepping context
 - u  - The Vec to store the condition in which will be used in TSSolve()
 
@@ -3750,10 +3748,10 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
 
   Not collective
 
-  Input Argument:
+  Input Parameter:
 . ts         - time stepping context
 
-  Output Argument:
+  Output Parameter:
 . exactError - The function which computes the solution error
 
   Level: advanced
@@ -3781,7 +3779,7 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, V
 
   Logically collective on ts
 
-  Input Arguments:
+  Input Parameters:
 + ts         - time stepping context
 - exactError - The function which computes the solution error
 
@@ -3810,7 +3808,7 @@ PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Ve
 
   Collective on ts
 
-  Input Arguments:
+  Input Parameters:
 + ts - time stepping context
 . u  - The approximate solution
 - e  - The Vec used to store the error
@@ -3836,7 +3834,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 
    Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context obtained from TSCreate()
 -  u - the solution vector  (can be null if TSSetSolution() was used and TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP) was not used,
                              otherwise must contain the initial conditions and will contain the solution at the final requested time
@@ -4098,7 +4096,7 @@ PetscErrorCode  TSSetTime(TS ts, PetscReal t)
 
    Logically Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +  ts     - The TS context
 -  prefix - The prefix to prepend to all option names
 
@@ -4131,7 +4129,7 @@ PetscErrorCode  TSSetOptionsPrefix(TS ts,const char prefix[])
 
    Logically Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +  ts     - The TS context
 -  prefix - The prefix to prepend to all option names
 
@@ -4347,7 +4345,7 @@ PetscErrorCode  TSGetDM(TS ts,DM *dm)
 
    Logically Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 + snes - nonlinear solver
 . U - the current state at which to evaluate the residual
 - ctx - user context, must be a TS
@@ -4382,15 +4380,14 @@ PetscErrorCode  SNESTSFormFunction(SNES snes,Vec U,Vec F,void *ctx)
 
    Collective on SNES
 
-   Input Parameter:
+   Input Parameters:
 + snes - nonlinear solver
 . U - the current state at which to evaluate the residual
 - ctx - user context, must be a TS
 
-   Output Parameter:
+   Output Parameters:
 + A - the Jacobian
-. B - the preconditioning matrix (may be the same as A)
-- flag - indicates any structure change in the matrix
+- B - the preconditioning matrix (may be the same as A)
 
    Notes:
    This function is not normally called by users and is automatically registered with the SNES used by TS.
@@ -4421,13 +4418,13 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec U,Mat A,Mat B,void *ctx)
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  t - time at which to evaluate
 .  U - state at which to evaluate
 -  ctx - context
 
-   Output Arguments:
+   Output Parameter:
 .  F - right hand side
 
    Level: intermediate
@@ -4457,16 +4454,15 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec U,Vec F,void *ct
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  t - time at which to evaluate
 .  U - state at which to evaluate
 -  ctx - context
 
-   Output Arguments:
+   Output Parameters:
 +  A - pointer to operator
-.  B - pointer to preconditioning matrix
--  flg - matrix structure flag
+-  B - pointer to preconditioning matrix
 
    Level: intermediate
 
@@ -4486,14 +4482,14 @@ PetscErrorCode TSComputeRHSJacobianConstant(TS ts,PetscReal t,Vec U,Mat A,Mat B,
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  t - time at which to evaluate
 .  U - state at which to evaluate
 .  Udot - time derivative of state vector
 -  ctx - context
 
-   Output Arguments:
+   Output Parameter:
 .  F - left hand side
 
    Level: intermediate
@@ -4525,7 +4521,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,v
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  t - time at which to evaluate
 .  U - state at which to evaluate
@@ -4533,10 +4529,9 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,v
 .  shift - shift to apply
 -  ctx - context
 
-   Output Arguments:
+   Output Parameters:
 +  A - pointer to operator
-.  B - pointer to preconditioning matrix
--  flg - matrix structure flag
+-  B - pointer to preconditioning matrix
 
    Level: advanced
 
@@ -4597,7 +4592,7 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the TS context
 -  equation_type - see TSEquationType
 
@@ -4808,7 +4803,7 @@ PetscErrorCode TSGetSNESFailures(TS ts,PetscInt *fails)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - TS context
 -  rejects - maximum number of rejected steps, pass -1 for unlimited
 
@@ -4835,7 +4830,7 @@ PetscErrorCode TSSetMaxStepRejections(TS ts,PetscInt rejects)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - TS context
 -  fails - maximum number of failed nonlinear solves, pass -1 for unlimited
 
@@ -4862,7 +4857,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ts - TS context
 -  err - PETSC_TRUE to error if no step succeeds, PETSC_FALSE to return without failure
 
@@ -4886,10 +4881,10 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
 
    Collective on TS if controller has not been created yet
 
-   Input Arguments:
+   Input Parameter:
 .  ts - time stepping context
 
-   Output Arguments:
+   Output Parameter:
 .  adapt - adaptive controller
 
    Level: intermediate
@@ -4917,7 +4912,7 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time integration context
 .  atol - scalar absolute tolerances, PETSC_DECIDE to leave current value
 .  vatol - vector of absolute tolerances or NULL, used in preference to atol if present
@@ -4965,10 +4960,10 @@ PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameter:
 .  ts - time integration context
 
-   Output Arguments:
+   Output Parameters:
 +  atol - scalar absolute tolerances, NULL to ignore
 .  vatol - vector of absolute tolerances, NULL to ignore
 .  rtol - scalar relative tolerances, NULL to ignore
@@ -4993,12 +4988,12 @@ PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  U - state vector, usually ts->vec_sol
 -  Y - state vector to be compared to U
 
-   Output Arguments:
+   Output Parameters:
 +  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
 -  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
@@ -5167,12 +5162,12 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  U - state vector, usually ts->vec_sol
 -  Y - state vector to be compared to U
 
-   Output Arguments:
+   Output Parameters:
 +  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
 -  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
@@ -5319,13 +5314,13 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  U - state vector, usually ts->vec_sol
 .  Y - state vector to be compared to U
 -  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
-   Output Arguments:
+   Output Parameters:
 +  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
 .  norma - weighted norm, a value of 1.0 means that the error meets the absolute tolerance set by the user
 -  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
@@ -5355,13 +5350,13 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec U,Vec Y,NormType wnormtype,PetscRea
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  E - error vector
 .  U - state vector, usually ts->vec_sol
 -  Y - state vector, previous time step
 
-   Output Arguments:
+   Output Parameters:
 +  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
 -  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
@@ -5533,13 +5528,13 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
    TSErrorWeightedENormInfinity - compute a weighted infinity error norm based on supplied absolute and relative tolerances
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  E - error vector
 .  U - state vector, usually ts->vec_sol
 -  Y - state vector, previous time step
 
-   Output Arguments:
+   Output Parameters:
 +  norm - weighted norm, a value of 1.0 means that the error matches the tolerances
 .  norma - weighted norm based on the absolute tolerance, a value of 1.0 means that the error matches the tolerances
 -  normr - weighted norm based on the relative tolerance, a value of 1.0 means that the error matches the tolerances
@@ -5690,14 +5685,14 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 .  E - error vector
 .  U - state vector, usually ts->vec_sol
 .  Y - state vector, previous time step
 -  wnormtype - norm type, either NORM_2 or NORM_INFINITY
 
-   Output Arguments:
+   Output Parameters:
 +  norm  - weighted norm, a value of 1.0 achieves a balance between absolute and relative tolerances
 .  norma - weighted norm, a value of 1.0 means that the error meets the absolute tolerance set by the user
 -  normr - weighted norm, a value of 1.0 means that the error meets the relative tolerance set by the user
@@ -5727,7 +5722,7 @@ PetscErrorCode TSErrorWeightedENorm(TS ts,Vec E,Vec U,Vec Y,NormType wnormtype,P
 
    Logically Collective on TS
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time stepping context
 -  cfltime - maximum stable time step if using forward Euler (value can be different on each process)
 
@@ -5752,10 +5747,10 @@ PetscErrorCode TSSetCFLTimeLocal(TS ts,PetscReal cfltime)
 
    Collective on TS
 
-   Input Arguments:
+   Input Parameter:
 .  ts - time stepping context
 
-   Output Arguments:
+   Output Parameter:
 .  cfltime - maximum stable time step for forward Euler
 
    Level: advanced
@@ -6249,7 +6244,7 @@ PetscErrorCode  TSRHSJacobianTestTranspose(TS ts,PetscBool *flg)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  use_splitrhsfunction - PETSC_TRUE indicates that the split RHSFunction will be used
 

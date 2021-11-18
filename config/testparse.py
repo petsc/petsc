@@ -524,6 +524,8 @@ def parseTestFile(srcfile,verbosity):
 
   testDict={}
   sh=open(basename,"r"); fileStr=sh.read(); sh.close()
+  # Handle Windows issues
+  if not os.linesep == "\n": fileStr=fileStr.replace(os.linesep,"\n")
 
   ## Start with doing the tests
   #

@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
   /* Test AOApplicationToPetsc */
   ierr = PetscMalloc1(n_loc,&ia);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_loc,&ia0);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ia[0] = 0;
     ia[1] = -1;
     ia[2] = 1;

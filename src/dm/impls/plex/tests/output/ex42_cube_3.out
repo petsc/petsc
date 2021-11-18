@@ -16,9 +16,13 @@ Discrete System with 1 fields
       type: basic
       Basic Finite Element in 2 dimensions with 1 components
       PetscSpace Object: indicator 1 MPI processes
-        type: poly
+        type: tensor
         Space in 2 variables with 1 components, size 16
-        Tensor polynomial space of degree 3
+        Tensor space of 2 subspaces (all identical)
+          PetscSpace Object: tensor component (tensorcomp_) 1 MPI processes
+            type: poly
+            Space in 1 variables with 1 components, size 4
+            Polynomial space of degree 3
       PetscDualSpace Object: indicator 1 MPI processes
         type: lagrange
         Dual space with 1 components, size 16

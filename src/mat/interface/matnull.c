@@ -36,10 +36,10 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sp - null space object
 
-   Output Arguments:
+   Output Parameters:
 +  has_cnst - PETSC_TRUE if the null space contains the constant vector, otherwise PETSC_FALSE
 .  n - number of vectors (excluding constant vector) in null space
 -  vecs - orthonormal vectors that span the null space (excluding the constant vector)
@@ -67,10 +67,10 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt
 
    Collective on Vec
 
-   Input Argument:
+   Input Parameter:
 .  coords - block of coordinates of each node, must have block size set
 
-   Output Argument:
+   Output Parameter:
 .  sp - the null space
 
    Level: advanced
@@ -278,7 +278,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
         if (PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to vector %D, inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
       }
     }
-    PetscFree(dots);CHKERRQ(ierr);
+    ierr = PetscFree(dots);CHKERRQ(ierr);
   }
 
   *SP = NULL;

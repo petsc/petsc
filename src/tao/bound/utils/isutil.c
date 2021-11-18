@@ -12,7 +12,7 @@
 . reduced_type - the method TAO is using for subsetting (TAO_SUBSET_SUBVEC, TAO_SUBSET_MASK,  TAO_SUBSET_MATRIXFREE)
 - maskvalue - the value to set the unused vector elements to (for TAO_SUBSET_MASK or TAO_SUBSET_MATRIXFREE)
 
-  Output Parameters:
+  Output Parameter:
 . vreduced - the subvector
 
   Notes:
@@ -102,7 +102,7 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
 . v1 - work vector of dimension n, needed for TAO_SUBSET_MASK option
 - subset_type <TAO_SUBSET_SUBVEC,TAO_SUBSET_MASK,TAO_SUBSET_MATRIXFREE> - the method TAO is using for subsetting
 
-  Output Parameters:
+  Output Parameter:
 . Msub - the submatrix
 
   Level: developer
@@ -335,7 +335,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
 . active_fixed - index set for fixed active variables
 - scale - amplification factor for the step that needs to be taken on actively bounded variables
 
-  Output Parameters:
+  Output Parameter:
 . S - step direction to be modified
 
   Level: developer

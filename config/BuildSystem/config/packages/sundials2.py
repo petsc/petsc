@@ -8,7 +8,7 @@ class Configure(config.package.GNUPackage):
     self.versionname      = 'SUNDIALS_PACKAGE_VERSION'
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-'+self.version+'p1.tar.gz']
     self.downloaddirnames = ['sundials']
-    self.functions        = ['CVSpgmr']
+    self.functions        = ['CVSpgmr','CVDense']
     self.includes         = ['sundials/sundials_nvector.h']
     self.liblist          = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
     self.license          = 'http://www.llnl.gov/CASC/sundials/download/download.html'

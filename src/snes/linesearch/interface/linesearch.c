@@ -278,7 +278,7 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (linesearch->ops->reset) (*linesearch->ops->reset)(linesearch);
+  if (linesearch->ops->reset) {ierr = (*linesearch->ops->reset)(linesearch);CHKERRQ(ierr);}
 
   ierr = VecDestroy(&linesearch->vec_sol_new);CHKERRQ(ierr);
   ierr = VecDestroy(&linesearch->vec_func_new);CHKERRQ(ierr);
@@ -340,7 +340,7 @@ PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorC
 /*@C
    SNESLineSearchGetPreCheck - Gets the pre-check function for the line search routine.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - the SNESLineSearch context
 
    Output Parameters:
@@ -387,7 +387,7 @@ PetscErrorCode  SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscError
 /*@C
    SNESLineSearchGetPostCheck - Gets the post-check function for the line search routine.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - the SNESLineSearch context
 
    Output Parameters:
@@ -476,15 +476,16 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
 
    Logically Collective on SNESLineSearch
 
-   Input Arguments:
+   Input Parameters:
 +  linesearch - linesearch context
 .  X - base state for this step
-.  Y - initial correction
 -  ctx - context for this function
 
-   Output Arguments:
-+  Y - correction, possibly modified
--  changed - flag indicating that Y was modified
+   Input/Output Parameter:
+.  Y - correction, possibly modified
+
+   Output Parameter:
+.  changed - flag indicating that Y was modified
 
    Options Database Key:
 +  -snes_linesearch_precheck_picard - activate this routine
@@ -560,15 +561,12 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 
    Input Parameters:
 +  linesearch - The linesearch context
-.  X - The current solution
-.  F - The current function
-.  fnorm - The current norm
 -  Y - The search direction
 
-   Output Parameters:
-+  X - The new solution
-.  F - The new function
--  fnorm - The new function norm
+   Input/Output Parameters:
++  X - The current solution, on output the new solution
+.  F - The current function, on output the new function
+-  fnorm - The current norm, on output the new function norm
 
    Options Database Keys:
 + -snes_linesearch_type - basic, bt, l2, cp, nleqerr, shell
@@ -759,7 +757,7 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
 /*@
    SNESLineSearchSetFromOptions - Sets options for the line search
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Options Database Keys:
@@ -843,7 +841,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   ierr = PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,NULL);CHKERRQ(ierr);
 
   if (linesearch->ops->setfromoptions) {
-    (*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)linesearch);CHKERRQ(ierr);
@@ -1090,7 +1088,7 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
    in lambda for iterative line searches, the minimum steplength, the maximum steplength,
    and the maximum number of iterations the line search procedure may take.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Output Parameters:
@@ -1317,7 +1315,7 @@ PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,PetscInt order)
 /*@
    SNESLineSearchGetNorms - Gets the norms for for X, Y, and F.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Output Parameters:
@@ -1429,7 +1427,7 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 /*@
    SNESLineSearchGetVecs - Gets the vectors from the SNESLineSearch context
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - linesearch context
 
    Output Parameters:
@@ -1581,7 +1579,7 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 /*@C
    SNESLineSearchSetWorkVecs - Gets work vectors for the line search.
 
-   Input Parameter:
+   Input Parameters:
 +  linesearch - the SNESLineSearch context
 -  nwork - the number of work vectors
 
@@ -1706,7 +1704,7 @@ PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineS
 /*@C
    SNESLineSearchGetVIFunctions - Sets VI-specific functions for line search computation.
 
-   Input Parameters:
+   Input Parameter:
 .  linesearch - the line search context, obtain with SNESGetLineSearch()
 
    Output Parameters:

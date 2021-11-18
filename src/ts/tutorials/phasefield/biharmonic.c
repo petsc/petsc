@@ -522,7 +522,6 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         break;
       default:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"It will always be one of the values");
-        break;
       }
     }
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
@@ -597,7 +596,6 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         break;
       default:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"It will always be one of the values");
-      break;
       }
       if (ctx->energy < 3) {
         max         = PetscMax(max,PetscAbs(yy[1]));

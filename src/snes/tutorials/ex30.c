@@ -955,12 +955,13 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       ierr_out = 1;
     }
 
-    if (param->output_to_file)
+    if (param->output_to_file) {
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Mat file \"%s\"\n",param->filename);CHKERRQ(ierr);
 #else
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);CHKERRQ(ierr);
 #endif
+    }
     if (param->output_ivisc != param->ivisc) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc);CHKERRQ(ierr);
     }
@@ -1051,7 +1052,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
 
   if (param->output_to_file) { /* send output to binary file */
     ierr = VecCreate(comm, &pars);CHKERRQ(ierr);
-    if (!rank) { /* on processor 0 */
+    if (rank == 0) { /* on processor 0 */
       ierr = VecSetSizes(pars, 20, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
       ierr = VecSetValue(pars,0, (PetscScalar)(grid->ni),INSERT_VALUES);CHKERRQ(ierr);

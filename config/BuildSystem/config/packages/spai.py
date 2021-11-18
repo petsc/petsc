@@ -40,12 +40,11 @@ class Configure(config.package.Package):
 
     if self.installNeeded('Makefile.in'):
       self.logPrintBox('Configuring, compiling and installing Spai; this may take several minutes')
-      self.installDirProvider.printSudoPasswordMessage()
-      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
-      output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && make clean && make && '+self.installSudo+' cp -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && '+self.installSudo+' cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.log)
+      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+      output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && make clean && make && cp -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.log)
       try:
-        output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.log)
+        output3,err3,ret3  = config.package.Package.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
       self.postInstall(output1+err1+output2+err2+output3+err3,'Makefile.in')

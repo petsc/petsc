@@ -36,7 +36,7 @@ int main(int argc,char **argv)
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     avg += value;
     if (view_rank == (PetscInt)rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] value[%D] = %6.4e\n",rank,i,(double)PetscRealPart(value));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] value[%" PetscInt_FMT "] = %6.4e\n",rank,i,(double)PetscRealPart(value));CHKERRQ(ierr);
     }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }

@@ -234,7 +234,6 @@ int main(int argc, char **args)
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid value for -test_id. Must be {0,1}");
-      break;
   }
   ierr = PetscFinalize();
   return ierr;
