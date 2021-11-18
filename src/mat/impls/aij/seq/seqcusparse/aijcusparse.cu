@@ -238,6 +238,43 @@ PetscErrorCode MatCUSPARSESetFormat(Mat A,MatCUSPARSEFormatOperation op,MatCUSPA
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatCUSPARSESetUseCPUSolve_SeqAIJCUSPARSE(Mat A,PetscBool use_cpu)
+{
+  Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
+
+  PetscFunctionBegin;
+  cusparsestruct->use_cpu_solve = use_cpu;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatCUSPARSESetUseCPUSolve - Sets use CPU MatSolve.
+
+   Input Parameters:
++  A - Matrix of type SEQAIJCUSPARSE
+-  use_cpu - set flag for using the built-in CPU MatSolve
+
+   Output Parameter:
+
+   Notes:
+   The cuSparse LU solver currently computes the factors with the built-in CPU method
+   and moves the factors to the GPU for the solve. We have observed better performance keeping the data on the CPU and computing the solve there.
+   This method to specify if the solve is done on the CPU or GPU (GPU is the default).
+
+   Level: intermediate
+
+.seealso: MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
+@*/
+PetscErrorCode MatCUSPARSESetUseCPUSolve(Mat A,PetscBool use_cpu)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID,1);
+  ierr = PetscTryMethod(A,"MatCUSPARSESetUseCPUSolve_C",(Mat,PetscBool),(A,use_cpu));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatSetOption_SeqAIJCUSPARSE(Mat A,MatOption op,PetscBool flg)
 {
   PetscErrorCode ierr;
@@ -263,6 +300,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFac
   Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
   IS             isrow = b->row,iscol = b->col;
   PetscBool      row_identity,col_identity;
+  Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)B->spptr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -273,19 +311,25 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFac
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    B->ops->solve = MatSolve_SeqAIJCUSPARSE_NaturalOrdering;
-    B->ops->solvetranspose = MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering;
+    if (!cusparsestruct->use_cpu_solve) {
+      B->ops->solve = MatSolve_SeqAIJCUSPARSE_NaturalOrdering;
+      B->ops->solvetranspose = MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering;
+    }
     B->ops->matsolve = NULL;
     B->ops->matsolvetranspose = NULL;
   } else {
-    B->ops->solve = MatSolve_SeqAIJCUSPARSE;
-    B->ops->solvetranspose = MatSolveTranspose_SeqAIJCUSPARSE;
+    if (!cusparsestruct->use_cpu_solve) {
+      B->ops->solve = MatSolve_SeqAIJCUSPARSE;
+      B->ops->solvetranspose = MatSolveTranspose_SeqAIJCUSPARSE;
+    }
     B->ops->matsolve = NULL;
     B->ops->matsolvetranspose = NULL;
   }
 
   /* get the triangular factors */
-  ierr = MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(B);CHKERRQ(ierr);
+  if (!cusparsestruct->use_cpu_solve) {
+    ierr = MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -306,7 +350,9 @@ static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptionItems *PetscOp
     ierr = PetscOptionsEnum("-mat_cusparse_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV and TriSolve",
                             "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)cusparsestruct->format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_ALL,format);CHKERRQ(ierr);}
-   #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+    ierr = PetscOptionsBool("-mat_cusparse_use_cpu_solve","Use CPU (I)LU solve","MatCUSPARSESetUseCPUSolve",cusparsestruct->use_cpu_solve,&cusparsestruct->use_cpu_solve,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = MatCUSPARSESetUseCPUSolve(A,cusparsestruct->use_cpu_solve);CHKERRQ(ierr);}
+#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
     ierr = PetscOptionsEnum("-mat_cusparse_spmv_alg","sets cuSPARSE algorithm used in sparse-mat dense-vector multiplication (SpMV)",
                             "cusparseSpMVAlg_t",MatCUSPARSESpMVAlgorithms,(PetscEnum)cusparsestruct->spmvAlg,(PetscEnum*)&cusparsestruct->spmvAlg,&flg);CHKERRQ(ierr);
     /* If user did use this option, check its consistency with cuSPARSE, since PetscOptionsEnum() sets enum values based on their position in MatCUSPARSESpMVAlgorithms[] */
@@ -3300,6 +3346,7 @@ static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
   }
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJCopySubArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetUseCPUSolve_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdensecuda_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqaijcusparse_C",NULL);CHKERRQ(ierr);
@@ -3593,6 +3640,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtyp
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijcusparse_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPARSESetUseCPUSolve_C",MatCUSPARSESetUseCPUSolve_SeqAIJCUSPARSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3617,6 +3665,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 +  -mat_type aijcusparse - sets the matrix type to "seqaijcusparse" during a call to MatSetFromOptions()
 .  -mat_cusparse_storage_format csr - sets the storage format of matrices (for MatMult and factors in MatSolve) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
 -  -mat_cusparse_mult_storage_format csr - sets the storage format of matrices (for MatMult) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
++  -mat_cusparse_use_cpu_solve - Do MatSolve on CPU
 
   Level: beginner
 

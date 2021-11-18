@@ -73,6 +73,7 @@ Changes: Development
 -  Add ``MatSetBindingPropagates()``
 -  Add ``MatGetBindingPropagates()``
 -  Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
+-  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU.
 
 .. rubric:: PC:
 

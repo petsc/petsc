@@ -1443,9 +1443,9 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
         Kokkos::deep_copy (*aijkokB->i_uncompressed_d, h_i_k);
         h_mat.offdiag.i = aijkokB->i_uncompressed_d->data();
       } else {
-         h_mat.offdiag.i = (PetscInt*)aijkokB->i_device_data();
+         h_mat.offdiag.i = aijkokB->i_device_data();
       }
-      h_mat.offdiag.j = (PetscInt*)aijkokB->j_device_data();
+      h_mat.offdiag.j = aijkokB->j_device_data();
       h_mat.offdiag.a = aijkokB->a_device_data();
       {
         Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_colmap_k (colmap,A->cmap->N);
@@ -1464,9 +1464,9 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     ierr = MPI_Comm_rank(comm,&h_mat.rank);CHKERRMPI(ierr);
     if (jaca->compressedrow.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A does not suppport compressed row (todo)");
     else {
-      h_mat.diag.i = (PetscInt*)aijkokA->i_device_data();
+      h_mat.diag.i = aijkokA->i_device_data();
     }
-    h_mat.diag.j = (PetscInt*)aijkokA->j_device_data();
+    h_mat.diag.j = aijkokA->j_device_data();
     h_mat.diag.a = aijkokA->a_device_data();
     // copy pointers and metdata to device
     ierr = MatSeqAIJKokkosSetDeviceMat(Amat,&h_mat);CHKERRQ(ierr);
