@@ -45,6 +45,18 @@ PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromFile;
 PETSC_EXTERN PetscLogEvent DMPLEX_BuildFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_BuildCoordinatesFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_LocatePoints;
+PETSC_EXTERN PetscLogEvent DMPLEX_TopologyView;
+PETSC_EXTERN PetscLogEvent DMPLEX_LabelsView;
+PETSC_EXTERN PetscLogEvent DMPLEX_CoordinatesView;
+PETSC_EXTERN PetscLogEvent DMPLEX_SectionView;
+PETSC_EXTERN PetscLogEvent DMPLEX_GlobalVectorView;
+PETSC_EXTERN PetscLogEvent DMPLEX_LocalVectorView;
+PETSC_EXTERN PetscLogEvent DMPLEX_TopologyLoad;
+PETSC_EXTERN PetscLogEvent DMPLEX_LabelsLoad;
+PETSC_EXTERN PetscLogEvent DMPLEX_CoordinatesLoad;
+PETSC_EXTERN PetscLogEvent DMPLEX_SectionLoad;
+PETSC_EXTERN PetscLogEvent DMPLEX_GlobalVectorLoad;
+PETSC_EXTERN PetscLogEvent DMPLEX_LocalVectorLoad;
 
 typedef struct _n_PlexGeneratorFunctionList *PlexGeneratorFunctionList;
 struct _n_PlexGeneratorFunctionList {
@@ -220,7 +232,7 @@ PETSC_INTERN PetscErrorCode DMPlexSectionView_HDF5_Internal(DM, PetscViewer, DM)
 PETSC_INTERN PetscErrorCode DMPlexGlobalVectorView_HDF5_Internal(DM, PetscViewer, DM, Vec);
 PETSC_INTERN PetscErrorCode DMPlexLocalVectorView_HDF5_Internal(DM, PetscViewer, DM, Vec);
 PETSC_INTERN PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM, PetscViewer, PetscSF*);
-PETSC_INTERN PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM, PetscViewer, PetscSF);
 PETSC_INTERN PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM, PetscViewer, DM, PetscSF, PetscSF*, PetscSF*);
 PETSC_INTERN PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM, PetscViewer, DM, PetscSF, Vec);

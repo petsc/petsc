@@ -83,13 +83,15 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def createFromFile(self, filename, interpolate=True, comm=None):
+    def createFromFile(self, filename, plexname="unnamed", interpolate=True, comm=None):
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
         cdef const char *cfile = NULL
+        cdef const char *pname = NULL
         filename = str2bytes(filename, &cfile)
-        CHKERR( DMPlexCreateFromFile(ccomm, cfile, interp, &newdm) )
+        plexname = str2bytes(plexname, &pname)
+        CHKERR( DMPlexCreateFromFile(ccomm, cfile, pname, interp, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
@@ -797,8 +799,8 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexTopologyLoad(self.dm, viewer.vwr, &sf.sf))
         return sf
 
-    def coordinatesLoad(self, Viewer viewer):
-        CHKERR( DMPlexCoordinatesLoad(self.dm, viewer.vwr))
+    def coordinatesLoad(self, Viewer viewer, SF sfxc):
+        CHKERR( DMPlexCoordinatesLoad(self.dm, viewer.vwr, sfxc.sf))
 
     def labelsLoad(self, Viewer viewer):
         CHKERR( DMPlexLabelsLoad(self.dm, viewer.vwr))

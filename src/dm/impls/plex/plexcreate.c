@@ -2490,9 +2490,9 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   DMPolytopeType cell  = DM_POLYTOPE_TRIANGLE;
   PetscInt       dim   = 2;
   PetscBool      simplex = PETSC_TRUE, interpolate = PETSC_TRUE, adjCone = PETSC_FALSE, adjClosure = PETSC_TRUE, refDomain = PETSC_FALSE;
-  PetscBool      flg, flg2, fflg, bdfflg;
+  PetscBool      flg, flg2, fflg, bdfflg, nameflg;
   MPI_Comm       comm;
-  char           filename[PETSC_MAX_PATH_LEN], bdFilename[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN], bdFilename[PETSC_MAX_PATH_LEN], plexname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2500,6 +2500,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   /* TODO Turn this into a registration interface */
   ierr = PetscOptionsString("-dm_plex_filename", "File containing a mesh", "DMPlexCreateFromFile", filename, filename, sizeof(filename), &fflg);CHKERRQ(ierr);
   ierr = PetscOptionsString("-dm_plex_boundary_filename", "File containing a mesh boundary", "DMPlexCreateFromFile", bdFilename, bdFilename, sizeof(bdFilename), &bdfflg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_plex_name", "Name of the mesh in the file", "DMPlexCreateFromFile", plexname, plexname, sizeof(plexname), &nameflg);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-dm_plex_cell", "Cell shape", "", DMPolytopeTypes, (PetscEnum) cell, (PetscEnum *) &cell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_reference_cell_domain", "Use a reference cell domain", "", refDomain, &refDomain, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-dm_plex_shape", "Shape for built-in mesh", "", DMPlexShapes, (PetscEnum) shape, (PetscEnum *) &shape, &flg);CHKERRQ(ierr);
@@ -2526,14 +2527,14 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   if (fflg) {
     DM dmnew;
 
-    ierr = DMPlexCreateFromFile(PetscObjectComm((PetscObject) dm), filename, interpolate, &dmnew);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(PetscObjectComm((PetscObject) dm), filename, plexname, interpolate, &dmnew);CHKERRQ(ierr);
     ierr = DMPlexReplace_Static(dm, &dmnew);CHKERRQ(ierr);
   } else if (refDomain) {
     ierr = DMPlexCreateReferenceCell_Internal(dm, cell);CHKERRQ(ierr);
   } else if (bdfflg) {
     DM bdm, dmnew;
 
-    ierr = DMPlexCreateFromFile(PetscObjectComm((PetscObject) dm), bdFilename, interpolate, &bdm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(PetscObjectComm((PetscObject) dm), bdFilename, plexname, interpolate, &bdm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) bdm, "bd_");CHKERRQ(ierr);
     ierr = DMSetFromOptions(bdm);CHKERRQ(ierr);
     ierr = DMPlexGenerate(bdm, NULL, interpolate, &dmnew);CHKERRQ(ierr);
@@ -3999,6 +4000,7 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   Input Parameters:
 + comm - The communicator
 . filename - A file name
+. plexname - The object name of the resulting DM, also used for intra-datafile lookup by some formats
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
@@ -4010,11 +4012,18 @@ PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char filename
   Use -dm_plex_create_ prefix to pass options to the internal PetscViewer, e.g.
 $ -dm_plex_create_viewer_hdf5_collective
 
+  Notes:
+  Using PETSCVIEWERHDF5 type with PETSC_VIEWER_HDF5_PETSC format, one can save multiple DMPlex
+  meshes in a single HDF5 file. This in turn requires one to name the DMPlex object with PetscObjectSetName()
+  before saving it with DMView() and before loading it with DMLoad() for identification of the mesh object.
+  The input parameter name is thus used to name the DMPlex object when DMPlexCreateFromFile() internally
+  calls DMLoad(). Currently, name is ignored for other viewer types and/or formats.
+
   Level: beginner
 
-.seealso: DMPlexCreateFromDAG(), DMPlexCreateFromCellListPetsc(), DMPlexCreate()
+.seealso: DMPlexCreateFromDAG(), DMPlexCreateFromCellListPetsc(), DMPlexCreate(), PetscObjectSetName(), DMView(), DMLoad()
 @*/
-PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const char plexname[], PetscBool interpolate, DM *dm)
 {
   const char    *extGmsh      = ".msh";
   const char    *extGmsh2     = ".msh2";
@@ -4038,7 +4047,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
-  PetscValidPointer(dm, 4);
+  PetscValidCharPointer(plexname, 3);
+  PetscValidPointer(dm, 5);
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_CreateFromFile,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
@@ -4080,7 +4090,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)(*dm), plexname);CHKERRQ(ierr);
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
     if (load_hdf5_xdmf) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_XDMF);CHKERRQ(ierr);}
     ierr = DMLoad(*dm, viewer);CHKERRQ(ierr);
@@ -4094,6 +4106,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = idm;
     }
+    ierr = PetscObjectSetName((PetscObject)(*dm), plexname);CHKERRQ(ierr);
   } else if (isMed) {
     ierr = DMPlexCreateMedFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isPLY) {

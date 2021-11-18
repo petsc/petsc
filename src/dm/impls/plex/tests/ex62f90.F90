@@ -100,7 +100,7 @@ program ex62f90
     end if
 
     ! Read the mesh in any supported format
-    call DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename,PETSC_TRUE,dm,ierr);CHKERRA(ierr)
+    call DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename,"ex62f90_plex",PETSC_TRUE,dm,ierr);CHKERRA(ierr)
     call DMSetFromOptions(dm,ierr);CHKERRA(ierr);
     call DMGetDimension(dm, sdim,ierr);CHKERRA(ierr)
     call DMViewFromOptions(dm, PETSC_NULL_OPTIONS,"-dm_view",ierr);CHKERRA(ierr);

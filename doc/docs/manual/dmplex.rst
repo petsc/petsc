@@ -447,11 +447,11 @@ The output file "example.h5" now looks like the following:
     group      /topologies/plexA/dms/dmA/vecs
     group      /topologies/plexA/dms/dmA/vecs/vecA
     dataset    /topologies/plexA/dms/dmA/vecs/vecA/vecA
-    group      /topology
-    dataset    /topology/cells
-    dataset    /topology/cones
-    dataset    /topology/order
-    dataset    /topology/orientation
+    group      /topologies/plexA/topology
+    dataset    /topologies/plexA/topology/cells
+    dataset    /topologies/plexA/topology/cones
+    dataset    /topologies/plexA/topology/order
+    dataset    /topologies/plexA/topology/orientation
     }
    }
 

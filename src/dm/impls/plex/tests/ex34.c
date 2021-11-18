@@ -173,7 +173,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBegin;
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
-    ierr = DMPlexCreateFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(comm, filename, "ex34_plex", PETSC_FALSE, dm);CHKERRQ(ierr);
     ierr = OrderHybridMesh(dm);CHKERRQ(ierr);
     if (interpolate) {
       DM idm;
