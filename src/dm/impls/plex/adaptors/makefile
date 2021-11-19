@@ -1,14 +1,17 @@
--include ../../../petscdir.mk
+-include ../../../../../petscdir.mk
 ALL: lib
 
+CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dm.c dmregall.c dmget.c dmi.c dmglvis.c dlregisdmdm.c dmceed.c dmgenerate.c
+SOURCEC  =
 SOURCEF  =
 SOURCEH  =
+DIRS     = pragmatic mmg parmmg
 LIBBASE  = libpetscdm
 MANSEC   = DM
-LOCDIR   = src/dm/interface/
+SUBMANSEC= DMPLEX
+LOCDIR   = src/dm/impls/plex/adaptors/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

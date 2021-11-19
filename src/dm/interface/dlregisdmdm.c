@@ -43,7 +43,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  DMInitializePackage(void)
+PetscErrorCode DMInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
@@ -152,8 +152,8 @@ PetscErrorCode  DMInitializePackage(void)
     if (pkg) {ierr = PetscLogEventExcludeClass(DM_CLASSID);CHKERRQ(ierr);}
   }
 
-  ierr = DMPlexGenerateRegisterAll();CHKERRQ(ierr);
-  ierr = PetscRegisterFinalize(DMPlexGenerateRegisterDestroy);CHKERRQ(ierr);
+  ierr = DMGenerateRegisterAll();CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(DMGenerateRegisterDestroy);CHKERRQ(ierr);
   ierr = DMPlexTransformRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(DMPlexTransformRegisterDestroy);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);

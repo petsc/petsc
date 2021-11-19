@@ -105,28 +105,44 @@ Changes: Development
 
 - Add ``DMExtrude()`` which now the default extrusion
 - Change ``DMPlexExtrude()`` to use DMPlexTransform underneath
-- Move ``DMPlexMetricCtx`` from public to private and give it to ``DMPlex``
-- Add ``DMPlexMetricSetFromOptions()`` to assign values to ``DMPlexMetricCtx``
-- Add ``DMPlexMetricSetIsotropic()`` for declaring whether a metric is isotropic
-- Add ``DMPlexMetricIsIsotropic()`` for determining whether a metric is isotropic
-- Add ``DMPlexMetricSetRestrictAnisotropyFirst()`` for declaring whether anisotropy should be restricted before normalization
-- Add ``DMPlexMetricRestrictAnisotropyFirst()`` for determining whether anisotropy should be restricted before normalization
-- Add ``DMPlexMetricSetMinimumMagnitude()`` for specifying the minimum tolerated metric magnitude
-- Add ``DMPlexMetricGetMinimumMagnitude()`` for retrieving the minimum tolerated metric magnitude
-- Add ``DMPlexMetricSetMaximumMagnitude()`` for specifying the maximum tolerated metric magnitude
-- Add ``DMPlexMetricGetMaximumMagnitude()`` for retrieving the maximum tolerated metric magnitude
-- Add ``DMPlexMetricSetMaximumAnisotropy()`` for specifying the maximum tolerated metric anisostropy
-- Add ``DMPlexMetricGetMaximumAnisotropy()`` for retrieving the maximum tolerated metric anisotropy
-- Add ``DMPlexMetricSetTargetComplexity()`` for specifying the target metric complexity
-- Add ``DMPlexMetricGetTargetComplexity()`` for retrieving the target metric complexity
-- Add ``DMPlexMetricSetNormalizationOrder()`` for specifying the order of L-p normalization
-- Add ``DMPlexMetricGetNormalizationOrder()`` for retrieving the order of L-p normalization
-- Change ``DMPlexMetricCtx`` so that it is only instantiated when one of the above routines are called
-- Change ``DMPlexMetricEnforceSPD()`` to have another argument, for controlling whether anisotropy is restricted
-- Change ``DMPlexMetricNormalize()`` to have another argument, for controlling whether anisotropy is restricted
-- Change ``DMAdaptor`` so that its ``-adaptor_refinement_h_min/h_max/a_max/p`` command line arguments become ``-dm_plex_metric_h_min/h_max/a_max/p``
 - Add ``DMGetNaturalSF()`` and ``DMSetNaturalSF()``
 - Change ``-dm_plex_csr_via_mat`` to ``-dm_plex_csr_alg`` which takes a DMPlexCSRAlgorithm name
+- Add public API for metric-based mesh adaptation:
+    - Move ``DMPlexMetricCtx`` from public to private and give it to ``DMPlex``
+    - Add ``DMPlexMetricSetFromOptions()`` to assign values to ``DMPlexMetricCtx``
+    - Add ``DMPlexMetricSetIsotropic()`` for declaring whether a metric is isotropic
+    - Add ``DMPlexMetricIsIsotropic()`` for determining whether a metric is isotropic
+    - Add ``DMPlexMetricSetRestrictAnisotropyFirst()`` for declaring whether anisotropy should be restricted before normalization
+    - Add ``DMPlexMetricRestrictAnisotropyFirst()`` for determining whether anisotropy should be restricted before normalization
+    - Add ``DMPlexMetricSetMinimumMagnitude()`` for specifying the minimum tolerated metric magnitude
+    - Add ``DMPlexMetricGetMinimumMagnitude()`` for retrieving the minimum tolerated metric magnitude
+    - Add ``DMPlexMetricSetMaximumMagnitude()`` for specifying the maximum tolerated metric magnitude
+    - Add ``DMPlexMetricGetMaximumMagnitude()`` for retrieving the maximum tolerated metric magnitude
+    - Add ``DMPlexMetricSetMaximumAnisotropy()`` for specifying the maximum tolerated metric anisostropy
+    - Add ``DMPlexMetricGetMaximumAnisotropy()`` for retrieving the maximum tolerated metric anisotropy
+    - Add ``DMPlexMetricSetTargetComplexity()`` for specifying the target metric complexity
+    - Add ``DMPlexMetricGetTargetComplexity()`` for retrieving the target metric complexity
+    - Add ``DMPlexMetricSetNormalizationOrder()`` for specifying the order of L-p normalization
+    - Add ``DMPlexMetricGetNormalizationOrder()`` for retrieving the order of L-p normalization
+    - Change ``DMPlexMetricCtx`` so that it is only instantiated when one of the above routines are called
+    - Change ``DMPlexMetricEnforceSPD()`` to have another argument, for controlling whether anisotropy is restricted
+    - Change ``DMPlexMetricNormalize()`` to have another argument, for controlling whether anisotropy is restricted
+- Change ``DMAdaptor`` so that its ``-adaptor_refinement_h_min/h_max/a_max/p`` command line arguments become ``-dm_plex_metric_h_min/h_max/a_max/p``
+- Add 2D and 3D mesh adaptation interface to Mmg and 3D mesh adaptation interface to ParMmg. Mmg/ParMmg specific changes:
+    - Change ``DMPlexBuildFromCellListParallel()`` to have another argument, for the connectivity
+    - Change ``DMPlexCreateFromCellListParallelPetsc()`` to have another argument, for the connectivity
+    - Add ``DMPlexMetricSetVerbosity()`` for setting the verbosity of the metric-based mesh adaptation package
+    - Add ``DMPlexMetricGetVerbosity()`` for getting the verbosity of the metric-based mesh adaptation package
+    - Add ``DMPlexMetricSetNoInsertion()`` to turn off node insertion and deletion for (Par)Mmg
+    - Add ``DMPlexMetricNoInsertion()`` to determine whether node insertion and deletion are turned off for (Par)Mmg
+    - Add ``DMPlexMetricSetNoSwapping()`` to turn off facet swapping for (Par)Mmg
+    - Add ``DMPlexMetricNoSwapping()`` to determine whether facet swapping is turned off for (Par)Mmg
+    - Add ``DMPlexMetricSetNoMovement()`` to turn off node movement for (Par)Mmg
+    - Add ``DMPlexMetricNoMovement()`` to determine whether node movement is turned off for (Par)Mmg
+    - Add ``DMPlexMetricSetGradationFactor()`` to set the metric gradation factor
+    - Add ``DMPlexMetricGetGradationFactor()`` to get the metric gradation factor
+    - Add ``DMPlexMetricSetNumIterations()`` to set the number of ParMmg adaptation iterations
+    - Add ``DMPlexMetricGetNumIterations()`` to get the number of ParMmg adaptation iterations
 
 .. rubric:: FE/FV:
 

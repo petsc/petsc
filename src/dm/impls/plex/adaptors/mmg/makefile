@@ -1,14 +1,16 @@
--include ../../../petscdir.mk
-ALL: lib
+#requirespackage  'PETSC_HAVE_MMG'
 
+CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dm.c dmregall.c dmget.c dmi.c dmglvis.c dlregisdmdm.c dmceed.c dmgenerate.c
+SOURCEC  = mmgadapt.c
 SOURCEF  =
 SOURCEH  =
+DIRS     =
 LIBBASE  = libpetscdm
 MANSEC   = DM
-LOCDIR   = src/dm/interface/
+SUBMANSEC= DMPLEX
+LOCDIR   = src/dm/impls/plex/adaptors/mmg/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

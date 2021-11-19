@@ -1,14 +1,16 @@
--include ../../../petscdir.mk
-ALL: lib
+#requirespackage  'PETSC_HAVE_PRAGMATIC'
 
+CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dm.c dmregall.c dmget.c dmi.c dmglvis.c dlregisdmdm.c dmceed.c dmgenerate.c
+SOURCEC  = pragmaticadapt.c
 SOURCEF  =
 SOURCEH  =
+DIRS     =
 LIBBASE  = libpetscdm
 MANSEC   = DM
-LOCDIR   = src/dm/interface/
+SUBMANSEC= DMPLEX
+LOCDIR   = src/dm/impls/plex/adaptors/pragmatic/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

@@ -36,14 +36,14 @@ int main(int argc, char **argv)
   test:
     suffix: 2d
     requires: triangle !single
-    args: -dm_plex_box_faces 3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
+    args: -dm_plex_box_faces 3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info -post_adapt_dm_view ascii::ascii_info
   test:
     suffix: 3d_tetgen
     requires: tetgen
-    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
+    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info -post_adapt_dm_view ascii::ascii_info
   test:
     suffix: 3d_ctetgen
     requires: ctetgen !complex !single
-    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
+    args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -dm_coord_space 0 -pre_adapt_dm_view ascii::ascii_info -post_adapt_dm_view ascii::ascii_info
 
 TEST*/

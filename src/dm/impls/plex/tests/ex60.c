@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex60.c", dim, &dim, NULL, 2, 3);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_edges", "Number of edges on each boundary of the initial mesh", "ex60.c", numEdges, &numEdges, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-num_edges", "Number of edges on each boundary of the initial mesh", "ex60.c", numEdges, &numEdges, NULL, 0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-uniform", "Should the metric be assumed uniform?", "ex60.c", uniform, &uniform, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-isotropic", "Should the metric be assumed isotropic, or computed as a recovered Hessian?", "ex60.c", isotropic, &isotropic, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     /* Construct "error indicator" */
     ierr = DMClone(dm, &dmIndi);CHKERRQ(ierr);
     ierr = PetscFECreateLagrange(comm, dim, 1, PETSC_TRUE, 1, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-    ierr = DMAddField(dmIndi, NULL, (PetscObject)fe);CHKERRQ(ierr);
+    ierr = DMSetField(dmIndi, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
     ierr = DMCreateDS(dmIndi);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dmIndi, &indicator);CHKERRQ(ierr);
@@ -76,8 +76,6 @@ int main(int argc, char **argv) {
       /* 'Anisotropic' case: approximate the identity by recovering the Hessian of a parabola */
       DM               dmGrad;
       PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar*, void*) = {bowl};
-      PetscInt         pStart, pEnd, p;
-      PetscSection     sec, secCoord;
       Vec              gradient;
 
       /* Project the parabola into P1 space */
@@ -85,22 +83,8 @@ int main(int argc, char **argv) {
 
       /* Approximate the gradient */
       ierr = DMClone(dmIndi, &dmGrad);CHKERRQ(ierr);
-      ierr = DMGetCoordinateSection(dmGrad, &secCoord);CHKERRQ(ierr);
-      ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dmGrad), &sec);CHKERRQ(ierr);
-      ierr = PetscSectionSetNumFields(sec, 1);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldComponents(sec, 0, dim);CHKERRQ(ierr);
-      ierr = PetscSectionGetChart(secCoord, &pStart, &pEnd);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(sec, pStart, pEnd);CHKERRQ(ierr);
-      for (p = pStart; p < pEnd; ++p) {
-        ierr = PetscSectionSetDof(sec, p, dim);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(sec, p, 0, dim);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetUp(sec);CHKERRQ(ierr);
-      ierr = DMSetLocalSection(dmGrad, sec);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&sec);CHKERRQ(ierr);
       ierr = PetscFECreateLagrange(comm, dim, dim, PETSC_TRUE, 1, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-      ierr = DMClearFields(dmGrad);CHKERRQ(ierr);
-      ierr = DMAddField(dmGrad, NULL, (PetscObject)fe);CHKERRQ(ierr);
+      ierr = DMSetField(dmGrad, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
       ierr = DMCreateDS(dmGrad);CHKERRQ(ierr);
       ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
       ierr = DMCreateLocalVector(dmGrad, &gradient);CHKERRQ(ierr);
@@ -108,25 +92,7 @@ int main(int argc, char **argv) {
       ierr = VecViewFromOptions(gradient, NULL, "-adapt_gradient_view");CHKERRQ(ierr);
 
       /* Approximate the Hessian */
-      ierr = DMGetCoordinateSection(dm, &secCoord);CHKERRQ(ierr);
-      ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sec);CHKERRQ(ierr);
-      ierr = PetscSectionSetNumFields(sec, 1);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldComponents(sec, 0, dim*dim);CHKERRQ(ierr);
-      ierr = PetscSectionGetChart(secCoord, &pStart, &pEnd);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(sec, pStart, pEnd);CHKERRQ(ierr);
-      for (p = pStart; p < pEnd; ++p) {
-        ierr = PetscSectionSetDof(sec, p, dim*dim);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(sec, p, 0, dim*dim);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetUp(sec);CHKERRQ(ierr);
-      ierr = DMSetLocalSection(dm, sec);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&sec);CHKERRQ(ierr);
-      ierr = PetscFECreateLagrange(comm, dim, dim*dim, PETSC_TRUE, 1, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-      ierr = DMClearFields(dm);CHKERRQ(ierr);
-      ierr = DMAddField(dm, NULL, (PetscObject)fe);CHKERRQ(ierr);
-      ierr = DMCreateDS(dm);CHKERRQ(ierr);
-      ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-      ierr = DMCreateLocalVector(dm, &metric);CHKERRQ(ierr);
+      ierr = DMPlexMetricCreate(dm, 0, &metric);CHKERRQ(ierr);
       ierr = DMPlexComputeGradientClementInterpolant(dmGrad, gradient, metric);CHKERRQ(ierr);
       ierr = VecViewFromOptions(metric, NULL, "-adapt_hessian_view");CHKERRQ(ierr);
       ierr = VecDestroy(&gradient);CHKERRQ(ierr);
@@ -138,9 +104,9 @@ int main(int argc, char **argv) {
 
   /* Test metric routines */
   {
-    PetscReal   errornorm, norm, tol = 1.0e-10, weights[2] = {0.8, 0.2};
-    Vec         metric1, metric2, metricComb;
-    Vec         metrics[2];
+    PetscReal errornorm, norm, tol = 1.0e-10, weights[2] = {0.8, 0.2};
+    Vec       metric1, metric2, metricComb;
+    Vec       metrics[2];
 
     ierr = VecDuplicate(metric, &metric1);CHKERRQ(ierr);
     ierr = VecSet(metric1, 0);CHKERRQ(ierr);
@@ -219,26 +185,68 @@ int main(int argc, char **argv) {
 
 /*TEST
 
-  build:
+  test:
+    suffix: uniform_2d_pragmatic
     requires: pragmatic
-
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -uniform -isotropic
   test:
-    suffix: uniform_2d
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -uniform -isotropic
+    suffix: uniform_3d_pragmatic
+    requires: pragmatic tetgen
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -uniform -isotropic
   test:
-    suffix: uniform_3d
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -uniform -isotropic
+    suffix: iso_2d_pragmatic
+    requires: pragmatic
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -isotropic
   test:
-    suffix: iso_2d
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -isotropic
+    suffix: iso_3d_pragmatic
+    requires: pragmatic tetgen
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -isotropic
   test:
-    suffix: iso_3d
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -isotropic
+    suffix: hessian_2d_pragmatic
+    requires: pragmatic
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic
   test:
-    suffix: hessian_2d
-    args: -dm_plex_metric_target_complexity 100 -dim 2
+    suffix: hessian_3d_pragmatic
+    requires: pragmatic tetgen
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic
   test:
-    suffix: hessian_3d
-    args: -dm_plex_metric_target_complexity 100 -dim 3
+    suffix: uniform_2d_mmg
+    requires: mmg
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor mmg -uniform -isotropic
+  test:
+    suffix: uniform_3d_mmg
+    requires: mmg tetgen
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor mmg -uniform -isotropic
+  test:
+    suffix: iso_2d_mmg
+    requires: mmg
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor mmg -isotropic
+  test:
+    suffix: iso_3d_mmg
+    requires: mmg tetgen
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor mmg -isotropic
+  test:
+    suffix: hessian_2d_mmg
+    requires: mmg
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor mmg
+  test:
+    suffix: hessian_3d_mmg
+    requires: mmg tetgen
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor mmg
+  test:
+    suffix: uniform_3d_parmmg
+    requires: parmmg tetgen
+    nsize: 2
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor parmmg -uniform -isotropic
+  test:
+    suffix: iso_3d_parmmg
+    requires: parmmg tetgen
+    nsize: 2
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor parmmg -isotropic
+  test:
+    suffix: hessian_3d_parmmg
+    requires: parmmg tetgen
+    nsize: 2
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor parmmg
 
 TEST*/
