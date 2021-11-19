@@ -2557,7 +2557,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     if (!patch->nsubspaces) {
       DM           dm, plex;
       PetscSection s;
-      PetscInt     cStart, cEnd, c, Nf, f, numGlobalBcs = 0, *globalBcs, *Nb, totNb = 0, **cellDofs;
+      PetscInt     cStart, cEnd, c, Nf, f, numGlobalBcs = 0, *globalBcs, *Nb, **cellDofs;
 
       ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
       if (!dm) SETERRQ(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "Must set DM for PCPATCH or call PCPatchSetDiscretisationInfo()");
@@ -2582,7 +2582,6 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
         /* ierr = PetscFEGetNumComponents(fe, &Nc[f]);CHKERRQ(ierr); */
         ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDimension(sp, &Nb[f]);CHKERRQ(ierr);
-        totNb += Nb[f];
 
         ierr = PetscMalloc1((cEnd-cStart)*Nb[f], &cellDofs[f]);CHKERRQ(ierr);
         for (c = cStart; c < cEnd; ++c) {

@@ -609,7 +609,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 PetscErrorCode solve(TAO_DF *df)
 {
   PetscErrorCode ierr;
-  PetscInt       i, j, innerIter, it, it2, luv, info, lscount = 0, projcount = 0;
+  PetscInt       i, j, innerIter, it, it2, luv, info, lscount = 0;
   PetscReal      gd, max, ak, bk, akold, bkold, lamnew, alpha, kktlam=0.0, lam_ext;
   PetscReal      DELTAsv, ProdDELTAsv;
   PetscReal      c, *tempQ;
@@ -634,7 +634,7 @@ PetscErrorCode solve(TAO_DF *df)
   lam_ext = 0.0;
 
   /* Project the initial solution */
-  projcount += project(dim, a, b, tempv, l, u, x, &lam_ext, df);
+  project(dim, a, b, tempv, l, u, x, &lam_ext, df);
 
   /* Compute gradient
      g = Q*x + f; */
@@ -659,7 +659,7 @@ PetscErrorCode solve(TAO_DF *df)
   }
 
   /* Project x_{k} - g_{k} */
-  projcount += project(dim, a, b, y, l, u, tempv, &lam_ext, df);
+  project(dim, a, b, y, l, u, tempv, &lam_ext, df);
 
   /* y = P(x_{k} - g_{k}) - x_{k} */
   max = ALPHA_MIN;
@@ -693,7 +693,7 @@ PetscErrorCode solve(TAO_DF *df)
     for (i = 0; i < dim; i++)  tempv[i] = alpha*g[i] - x[i];
 
     /* Project x_{k} - alpha*g_{k} */
-    projcount += project(dim, a, b, tempv, l, u, y, &lam_ext, df);
+    project(dim, a, b, tempv, l, u, y, &lam_ext, df);
 
     /* gd = \inner{d_{k}}{g_{k}}
         d = P(x_{k} - alpha*g_{k}) - x_{k}
