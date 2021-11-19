@@ -71,10 +71,10 @@ can be approximated with finite differences. For codes that are
 typically more efficient and accurate, the user can provide a routine to
 compute the Jacobian; details regarding these application-provided
 routines are discussed below. To provide an overview of the use of the
-nonlinear solvers, browse the concrete example in :any:`ex1.c <snes-ex1>` or skip ahead to the discussion.
+nonlinear solvers, browse the concrete example in :ref:`ex1.c <snes-ex1>` or skip ahead to the discussion.
 
+.. _snes-ex1:
 .. admonition:: Listing: ``src/snes/tutorials/ex1.c``
-   :name: snes-ex1
 
    .. literalinclude:: /../src/snes/tutorials/ex1.c
       :end-before: /*TEST
@@ -927,8 +927,8 @@ method without a preconditioner. As shown in this example,
 enable runtime switching between the user-specified Jacobian and the
 default ``SNES`` matrix-free form.
 
+.. _snes-ex3:
 .. admonition:: Listing: ``src/snes/tutorials/ex3.c``
-   :name: snes-ex3
 
    .. literalinclude:: /../src/snes/tutorials/ex3.c
       :end-before: /*TEST
