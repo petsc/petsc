@@ -90,55 +90,60 @@ def chkenable():
   #enable-fortran is a special case, the resulting --with-fortran is ambiguous.
   #Would it mean --with-fc=
   en_dash = u'\N{EN DASH}'
+  no_break_space = u'\N{NO-BREAK SPACE}'
   if sys.version_info < (3, 0):
     en_dash = en_dash.encode('utf-8')
+    no_break_space = no_break_space.encode('utf-8')
+
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-
-    if name.find(en_dash)  >= 0:
-      sys.argv[l] = name.replace(en_dash,'-')
+    if name.find(no_break_space) >= 0:
+      sys.exit(ValueError('Unicode NO-BREAK SPACE char found in arguments! Please rerun configure using regular space chars: %s' % [name]))
+    name = name.replace(en_dash,'-')
     if name.lstrip('-').startswith('enable-cxx'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-cxx','with-clanguage=C++',1)
+        name = name.replace('enable-cxx','with-clanguage=C++',1)
       else:
         head, tail = name.split('=', 1)
         if tail=='0':
-          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C',1)
+          name = head.replace('enable-cxx','with-clanguage=C',1)
         else:
-          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C++',1)
+          name = head.replace('enable-cxx','with-clanguage=C++',1)
+      sys.argv[l] = name
       continue
     if name.lstrip('-').startswith('disable-cxx'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-cxx','with-clanguage=C',1)
+        name = name.replace('disable-cxx','with-clanguage=C',1)
       else:
         head, tail = name.split('=', 1)
         if tail == '0':
-          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C++',1)
+          name = head.replace('disable-cxx','with-clanguage=C++',1)
         else:
-          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C',1)
+          name = head.replace('disable-cxx','with-clanguage=C',1)
+      sys.argv[l] = name
       continue
-
 
     if name.lstrip('-').startswith('enable-'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-','with-',1)+'=1'
+        name = name.replace('enable-','with-',1)+'=1'
       else:
         head, tail = name.split('=', 1)
-        sys.argv[l] = head.replace('enable-','with-',1)+'='+tail
+        name = head.replace('enable-','with-',1)+'='+tail
     if name.lstrip('-').startswith('disable-'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-','with-',1)+'=0'
+        name = name.replace('disable-','with-',1)+'=0'
       else:
         head, tail = name.split('=', 1)
         if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('disable-','with-',1)+'='+tail
+        name = head.replace('disable-','with-',1)+'='+tail
     if name.lstrip('-').startswith('without-'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('without-','with-',1)+'=0'
+        name = name.replace('without-','with-',1)+'=0'
       else:
         head, tail = name.split('=', 1)
         if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('without-','with-',1)+'='+tail
+        name = head.replace('without-','with-',1)+'='+tail
+    sys.argv[l] = name
 
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
