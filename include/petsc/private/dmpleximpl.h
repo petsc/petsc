@@ -84,10 +84,16 @@ struct _PetscGridHash {
 typedef struct {
   PetscBool isotropic;                    /* Is the metric isotropic? */
   PetscBool restrictAnisotropyFirst;      /* Should anisotropy or normalization come first? */
+  PetscBool noInsert;                     /* Should node insertion/deletion be turned off? */
+  PetscBool noSwap;                       /* Should facet swapping be turned off? */
+  PetscBool noMove;                       /* Should node movement be turned off? */
   PetscReal h_min, h_max;                 /* Minimum/maximum tolerated metric magnitudes */
   PetscReal a_max;                        /* Maximum tolerated anisotropy */
   PetscReal targetComplexity;             /* Target metric complexity */
   PetscReal p;                            /* Degree for L-p normalization methods */
+  PetscReal gradationFactor;              /* Maximum tolerated length ratio for adjacent edges */
+  PetscInt  numIter;                      /* Number of ParMmg mesh adaptation iterations */
+  PetscInt  verbosity;                    /* Level of verbosity for remesher (-1 = no output, 10 = maximum) */
 } DMPlexMetricCtx;
 
 /* Point Numbering in Plex:

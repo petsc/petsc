@@ -5,16 +5,28 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
 {
   MPI_Comm       comm;
   PetscBool      isotropic = PETSC_FALSE, restrictAnisotropyFirst = PETSC_FALSE;
+  PetscBool      noInsert = PETSC_FALSE, noSwap = PETSC_FALSE, noMove = PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0;
+  PetscInt       verbosity = -1, numIter = 3;
+  PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0, beta = 1.3;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Riemannian metric options", "DMPlexMetric");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_metric_isotropic", "Is the metric isotropic?", "DMPlexMetricCreateIsotropic", isotropic, &isotropic, NULL);CHKERRQ(ierr);
-  ierr = DMPlexMetricSetIsotropic(dm, isotropic);
+  ierr = DMPlexMetricSetIsotropic(dm, isotropic);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_metric_restrict_anisotropy_first", "Should anisotropy be restricted before normalization?", "DMPlexNormalize", restrictAnisotropyFirst, &restrictAnisotropyFirst, NULL);CHKERRQ(ierr);
-  ierr = DMPlexMetricSetRestrictAnisotropyFirst(dm, restrictAnisotropyFirst);
+  ierr = DMPlexMetricSetRestrictAnisotropyFirst(dm, restrictAnisotropyFirst);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_metric_no_insert", "Turn off node insertion and deletion", "DMAdaptMetric", noInsert, &noInsert, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetNoInsertion(dm, noInsert);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_metric_no_swap", "Turn off facet swapping", "DMAdaptMetric", noSwap, &noSwap, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetNoSwapping(dm, noSwap);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_metric_no_move", "Turn off facet node movement", "DMAdaptMetric", noMove, &noMove, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetNoMovement(dm, noMove);CHKERRQ(ierr);
+  ierr = PetscOptionsBoundedInt("-dm_plex_metric_num_iterations", "Number of ParMmg adaptation iterations", "DMAdaptMetric", numIter, &numIter, NULL, 0);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetNumIterations(dm, numIter);CHKERRQ(ierr);
+  ierr = PetscOptionsRangeInt("-dm_plex_metric_verbosity", "Verbosity of metric-based mesh adaptation package (-1 = silent, 10 = maximum)", "DMAdaptMetric", verbosity, &verbosity, NULL, -1, 10);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetVerbosity(dm, verbosity);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_metric_h_min", "Minimum tolerated metric magnitude", "DMPlexMetricEnforceSPD", h_min, &h_min, NULL);CHKERRQ(ierr);
   ierr = DMPlexMetricSetMinimumMagnitude(dm, h_min);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_metric_h_max", "Maximum tolerated metric magnitude", "DMPlexMetricEnforceSPD", h_max, &h_max, NULL);CHKERRQ(ierr);
@@ -25,6 +37,8 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   ierr = DMPlexMetricSetNormalizationOrder(dm, p);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_metric_target_complexity", "Target metric complexity", "DMPlexMetricNormalize", target, &target, NULL);CHKERRQ(ierr);
   ierr = DMPlexMetricSetTargetComplexity(dm, target);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_plex_metric_gradation_factor", "Metric gradation factor", "DMAdaptMetric", beta, &beta, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetGradationFactor(dm, beta);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -134,6 +148,162 @@ PetscErrorCode DMPlexMetricRestrictAnisotropyFirst(DM dm, PetscBool *restrictAni
 }
 
 /*
+  DMPlexMetricSetNoInsertion - Should node insertion and deletion be turned off?
+
+  Input parameters:
++ dm       - The DM
+- noInsert - Should node insertion and deletion be turned off?
+
+  Level: beginner
+
+.seealso: DMPlexMetricNoInsertion(), DMPlexMetricSetNoSwapping(), DMPlexMetricSetNoMovement()
+*/
+PetscErrorCode DMPlexMetricSetNoInsertion(DM dm, PetscBool noInsert)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->noInsert = noInsert;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricNoInsertion - Are node insertion and deletion turned off?
+
+  Input parameters:
+. dm       - The DM
+
+  Output parameters:
+. noInsert - Are node insertion and deletion turned off?
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetNoInsertion(), DMPlexMetricNoSwapping(), DMPlexMetricNoMovement()
+*/
+PetscErrorCode DMPlexMetricNoInsertion(DM dm, PetscBool *noInsert)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *noInsert = plex->metricCtx->noInsert;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetNoSwapping - Should facet swapping be turned off?
+
+  Input parameters:
++ dm     - The DM
+- noSwap - Should facet swapping be turned off?
+
+  Level: beginner
+
+.seealso: DMPlexMetricNoSwapping(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoMovement()
+*/
+PetscErrorCode DMPlexMetricSetNoSwapping(DM dm, PetscBool noSwap)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->noSwap = noSwap;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricNoSwapping - Is facet swapping turned off?
+
+  Input parameters:
+. dm     - The DM
+
+  Output parameters:
+. noSwap - Is facet swapping turned off?
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetNoSwapping(), DMPlexMetricNoInsertion(), DMPlexMetricNoMovement()
+*/
+PetscErrorCode DMPlexMetricNoSwapping(DM dm, PetscBool *noSwap)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *noSwap = plex->metricCtx->noSwap;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetNoMovement - Should node movement be turned off?
+
+  Input parameters:
++ dm     - The DM
+- noMove - Should node movement be turned off?
+
+  Level: beginner
+
+.seealso: DMPlexMetricNoMovement(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoSwapping()
+*/
+PetscErrorCode DMPlexMetricSetNoMovement(DM dm, PetscBool noMove)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->noMove = noMove;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricNoMovement - Is node movement turned off?
+
+  Input parameters:
+. dm     - The DM
+
+  Output parameters:
+. noMove - Is node movement turned off?
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetNoMovement(), DMPlexMetricNoInsertion(), DMPlexMetricNoSwapping()
+*/
+PetscErrorCode DMPlexMetricNoMovement(DM dm, PetscBool *noMove)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *noMove = plex->metricCtx->noMove;
+  PetscFunctionReturn(0);
+}
+
+/*
   DMPlexMetricSetMinimumMagnitude - Set the minimum tolerated metric magnitude
 
   Input parameters:
@@ -165,7 +335,7 @@ PetscErrorCode DMPlexMetricSetMinimumMagnitude(DM dm, PetscReal h_min)
   Input parameters:
 . dm    - The DM
 
-  Input parameters:
+  Output parameters:
 . h_min - The minimum tolerated metric magnitude
 
   Level: beginner
@@ -218,7 +388,7 @@ PetscErrorCode DMPlexMetricSetMaximumMagnitude(DM dm, PetscReal h_max)
   Input parameters:
 . dm    - The DM
 
-  Input parameters:
+  Output parameters:
 . h_max - The maximum tolerated metric magnitude
 
   Level: beginner
@@ -273,7 +443,7 @@ PetscErrorCode DMPlexMetricSetMaximumAnisotropy(DM dm, PetscReal a_max)
   Input parameters:
 . dm    - The DM
 
-  Input parameters:
+  Output parameters:
 . a_max - The maximum tolerated metric anisotropy
 
   Level: beginner
@@ -326,7 +496,7 @@ PetscErrorCode DMPlexMetricSetTargetComplexity(DM dm, PetscReal targetComplexity
   Input parameters:
 . dm               - The DM
 
-  Input parameters:
+  Output parameters:
 . targetComplexity - The target metric complexity
 
   Level: beginner
@@ -379,7 +549,7 @@ PetscErrorCode DMPlexMetricSetNormalizationOrder(DM dm, PetscReal p)
   Input parameters:
 . dm - The DM
 
-  Input parameters:
+  Output parameters:
 . p - The normalization order
 
   Level: beginner
@@ -397,6 +567,166 @@ PetscErrorCode DMPlexMetricGetNormalizationOrder(DM dm, PetscReal *p)
     ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
   }
   *p = plex->metricCtx->p;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetGradationFactor - Set the metric gradation factor
+
+  Input parameters:
++ dm   - The DM
+- beta - The metric gradation factor
+
+  Level: beginner
+
+  Notes:
+
+  The gradation factor is the maximum tolerated length ratio between adjacent edges.
+
+  Turn off gradation by passing the value -1. Otherwise, pass a positive value.
+
+.seealso: DMPlexMetricGetGradationFactor()
+*/
+PetscErrorCode DMPlexMetricSetGradationFactor(DM dm, PetscReal beta)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->gradationFactor = beta;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricGetGradationFactor - Get the metric gradation factor
+
+  Input parameters:
+. dm   - The DM
+
+  Output parameters:
+. beta - The metric gradation factor
+
+  Level: beginner
+
+  Note: The gradation factor is the maximum tolerated length ratio between adjacent edges.
+
+.seealso: DMPlexMetricSetGradationFactor()
+*/
+PetscErrorCode DMPlexMetricGetGradationFactor(DM dm, PetscReal *beta)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *beta = plex->metricCtx->gradationFactor;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetVerbosity - Set the verbosity of the mesh adaptation package
+
+  Input parameters:
++ dm        - The DM
+- verbosity - The verbosity, where -1 is silent and 10 is maximum
+
+.seealso: DMPlexMetricGetVerbosity(), DMPlexMetricSetNumIterations()
+*/
+PetscErrorCode DMPlexMetricSetVerbosity(DM dm, PetscInt verbosity)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->verbosity = verbosity;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricGetVerbosity - Get the verbosity of the mesh adaptation package
+
+  Input parameters:
+. dm        - The DM
+
+  Output parameters:
+. verbosity - The verbosity, where -1 is silent and 10 is maximum
+
+.seealso: DMPlexMetricSetVerbosity(), DMPlexMetricGetNumIterations()
+*/
+PetscErrorCode DMPlexMetricGetVerbosity(DM dm, PetscInt *verbosity)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *verbosity = plex->metricCtx->verbosity;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricSetNumIterations - Set the number of parallel adaptation iterations
+
+  Input parameters:
++ dm      - The DM
+- numIter - the number of parallel adaptation iterations
+
+  Note: This option is only used by ParMmg, not Mmg or Pragmatic.
+
+.seealso: DMPlexMetricSetVerbosity(), DMPlexMetricGetNumIterations()
+*/
+PetscErrorCode DMPlexMetricSetNumIterations(DM dm, PetscInt numIter)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->numIter = numIter;
+  PetscFunctionReturn(0);
+}
+
+/*
+  DMPlexMetricGetNumIterations - Get the number of parallel adaptation iterations
+
+  Input parameters:
+. dm      - The DM
+
+  Output parameters:
+. numIter - the number of parallel adaptation iterations
+
+  Note: This option is only used by ParMmg, not Mmg or Pragmatic.
+
+.seealso: DMPlexMetricSetNumIterations(), DMPlexMetricGetVerbosity()
+*/
+PetscErrorCode DMPlexMetricGetNumIterations(DM dm, PetscInt *numIter)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *numIter = plex->metricCtx->numIter;
   PetscFunctionReturn(0);
 }
 
