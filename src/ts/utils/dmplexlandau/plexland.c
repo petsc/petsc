@@ -1809,10 +1809,8 @@ PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char
   }
   // creat Jac
   ierr = DMSetApplicationContext(*pack, ctx);CHKERRQ(ierr);
-  ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only");
   ierr = DMSetFromOptions(*pack);CHKERRQ(ierr);
   ierr = DMCreateMatrix(*pack, &ctx->J);CHKERRQ(ierr);
-  ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only false");
   ierr = MatSetOption(ctx->J, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(ctx->J, MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)ctx->J, "Jac");CHKERRQ(ierr);
