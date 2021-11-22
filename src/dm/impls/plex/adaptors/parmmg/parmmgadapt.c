@@ -235,12 +235,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_niter, numIter);
   ierr = PMMG_Set_dparameter(parmesh, PMMG_DPARAM_hgrad, gradationFactor);
   ierr = PMMG_Set_vertices(parmesh, vertices, verTags);
-  for (i=0; i<numCells; i++) ierr = PMMG_Set_tetrahedron(parmesh, cells[4*i+0], cells[4*i+1], cells[4*i+2], cells[4*i+3], 0, i+1);
+  ierr = PMMG_Set_tetrahedra(parmesh, cells, cellTags);
   ierr = PMMG_Set_triangles(parmesh, bdFaces, bdFaceIds);
   ierr = PMMG_Set_metSize(parmesh, MMG5_Vertex, numVertices, MMG5_Tensor);
-  for (i=0; i<numVertices; i++) {
-    PMMG_Set_tensorMet(parmesh, metric[6*i], metric[6*i+1], metric[6*i+2], metric[6*i+3], metric[6*i+4], metric[6*i+5], i+1);
-  }
+  ierr = PMMG_Set_tensorMets(parmesh, metric);
   ierr = PMMG_Set_numberOfNodeCommunicators(parmesh, numNgbRanks);
   for (c = 0; c < numNgbRanks; ++c) {
     ierr = PMMG_Set_ithNodeCommunicatorSize(parmesh, c, ngbRanks[c], intOffset[c+1]-intOffset[c]);
