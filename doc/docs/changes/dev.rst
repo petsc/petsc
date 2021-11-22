@@ -143,6 +143,8 @@ Changes: Development
     - Add ``DMPlexMetricGetGradationFactor()`` to get the metric gradation factor
     - Add ``DMPlexMetricSetNumIterations()`` to set the number of ParMmg adaptation iterations
     - Add ``DMPlexMetricGetNumIterations()`` to get the number of ParMmg adaptation iterations
+- Change ``DMPlexCoordinatesLoad()`` to take a ``PetscSF`` as argument
+- Change ``DMPlexCreateFromFile()`` to take the mesh name as argument
 
 .. rubric:: FE/FV:
 
