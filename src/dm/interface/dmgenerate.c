@@ -18,16 +18,16 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM, PetscBool, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM, double*, DM*);
 #endif
 #if defined(PETSC_HAVE_PRAGMATIC)
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM, Vec, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM, Vec, DMLabel, DMLabel, DM*);
 #endif
 #if defined(PETSC_HAVE_MMG)
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM, Vec, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM, Vec, DMLabel, DMLabel, DM*);
 #endif
 #if defined(PETSC_HAVE_PARMMG)
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM, Vec, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM, Vec, DMLabel, DMLabel, DM*);
 #endif
-PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DM*);
-PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DMLabel, DM*);
+PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM*);
 
 /*@C
   DMGenerateRegisterAll - Registers all of the mesh generation methods in the DM package.
@@ -98,7 +98,7 @@ $     -dm_generator my_generator
 .seealso: DMGenerateRegisterAll(), DMPlexGenerate(), DMGenerateRegisterDestroy()
 
 @*/
-PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM*), PetscErrorCode (*rfnc)(DM, PetscReal*, DM*), PetscErrorCode (*alfnc)(DM, Vec, DMLabel, DM*), PetscInt dim)
+PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM*), PetscErrorCode (*rfnc)(DM, PetscReal*, DM*), PetscErrorCode (*alfnc)(DM, Vec, DMLabel, DMLabel, DM*), PetscInt dim)
 {
   DMGeneratorFunctionList entry;
   PetscErrorCode          ierr;
@@ -181,7 +181,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   while (fl) {
     ierr = PetscStrcmp(fl->name, name, &flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = (*fl->adapt)(dm, NULL, label, dmAdapt);CHKERRQ(ierr);
+      ierr = (*fl->adapt)(dm, NULL, label, NULL, dmAdapt);CHKERRQ(ierr);
       found = PETSC_TRUE;
     }
     fl = fl->next;
@@ -203,7 +203,8 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   Input Parameters:
 + dm - The DM object
 . metric - The metric to which the mesh is adapted, defined vertex-wise.
-- bdLabel - Label for boundary tags, which will be preserved in the output mesh. bdLabel should be NULL if there is no such label, and should be different from "_boundary_".
+. bdLabel - Label for boundary tags, which will be preserved in the output mesh. bdLabel should be NULL if there is no such label, and should be different from "_boundary_".
+- rgLabel - Label for cell tags, which will be preserved in the output mesh. rgLabel should be NULL if there is no such label, and should be different from "_regions_".
 
   Output Parameter:
 . dmAdapt  - Pointer to the DM object containing the adapted mesh
@@ -214,7 +215,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 
 .seealso: DMAdaptLabel(), DMCoarsen(), DMRefine()
 @*/
-PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DM *dmAdapt)
+PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel, DM *dmAdapt)
 {
   DMGeneratorFunctionList fl;
   char                    adaptname[PETSC_MAX_PATH_LEN];
@@ -227,7 +228,8 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DM *dmAdapt)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(metric, VEC_CLASSID, 2);
   if (bdLabel) PetscValidPointer(bdLabel, 3);
-  PetscValidPointer(dmAdapt, 4);
+  if (rgLabel) PetscValidPointer(rgLabel, 4);
+  PetscValidPointer(dmAdapt, 5);
   *dmAdapt = NULL;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg);CHKERRQ(ierr);
@@ -237,7 +239,7 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DM *dmAdapt)
   while (fl) {
     ierr = PetscStrcmp(fl->name, name, &flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = (*fl->adapt)(dm, metric, bdLabel, dmAdapt);CHKERRQ(ierr);
+      ierr = (*fl->adapt)(dm, metric, bdLabel, rgLabel, dmAdapt);CHKERRQ(ierr);
       found = PETSC_TRUE;
     }
     fl = fl->next;

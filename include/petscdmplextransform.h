@@ -52,7 +52,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformGetConeOriented(DMPlexTransform, Pets
 PETSC_EXTERN PetscErrorCode DMPlexTransformRestoreCone(DMPlexTransform, PetscInt, const PetscInt *[], const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform, DMPolytopeType, PetscInt *, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt *[]);
-PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DMLabel, DM *);
 
 PETSC_EXTERN PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform, DMPolytopeType, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[], PetscReal *[]);

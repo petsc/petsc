@@ -1637,7 +1637,7 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptLabel_Forest(DM dm, PETSC_UNUSED Vec metric, DMLabel label, DM *adaptedDM)
+PetscErrorCode DMAdaptLabel_Forest(DM dm, PETSC_UNUSED Vec metric, DMLabel label, PETSC_UNUSED DMLabel rgLabel, DM *adaptedDM)
 {
   PetscBool      success;
   PetscErrorCode ierr;

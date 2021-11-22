@@ -157,11 +157,11 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
 /*
    Contains the list of registered DMPlexGenerators routines
 */
-PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, DM *dmRefined)
+PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmRefined)
 {
   DMGeneratorFunctionList fl;
   PetscErrorCode        (*refine)(DM,PetscReal*,DM*);
-  PetscErrorCode        (*adapt)(DM,Vec,DMLabel,DM*);
+  PetscErrorCode        (*adapt)(DM,Vec,DMLabel,DMLabel,DM*);
   PetscErrorCode        (*refinementFunc)(const PetscReal [], PetscReal *);
   char                    genname[PETSC_MAX_PATH_LEN], *name = NULL;
   PetscReal               refinementLimit;
@@ -214,7 +214,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
     case 2:
     case 3:
       if (adapt) {
-        ierr = (*adapt)(dm, NULL, adaptLabel, dmRefined);CHKERRQ(ierr);
+        ierr = (*adapt)(dm, NULL, adaptLabel, NULL, dmRefined);CHKERRQ(ierr);
       } else {
         ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
         if (adaptLabel) {
@@ -241,12 +241,12 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, DM *dmCoarsened)
+PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmCoarsened)
 {
   Vec            metricVec;
   PetscInt       cStart, cEnd, vStart, vEnd;
   DMLabel        bdLabel = NULL;
-  char           bdLabelName[PETSC_MAX_PATH_LEN];
+  char           bdLabelName[PETSC_MAX_PATH_LEN], rgLabelName[PETSC_MAX_PATH_LEN];
   PetscBool      localized, flg;
   PetscErrorCode ierr;
 
@@ -257,7 +257,9 @@ PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ad
   ierr = DMPlexLabelToMetricConstraint(dm, adaptLabel, cStart, cEnd, vStart, vEnd, PETSC_DEFAULT, &metricVec);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL, dm->hdr.prefix, "-dm_plex_coarsen_bd_label", bdLabelName, sizeof(bdLabelName), &flg);CHKERRQ(ierr);
   if (flg) {ierr = DMGetLabel(dm, bdLabelName, &bdLabel);CHKERRQ(ierr);}
-  ierr = DMAdaptMetric(dm, metricVec, bdLabel, dmCoarsened);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, dm->hdr.prefix, "-dm_plex_coarsen_rg_label", rgLabelName, sizeof(rgLabelName), &flg);CHKERRQ(ierr);
+  if (flg) {ierr = DMGetLabel(dm, rgLabelName, &rgLabel);CHKERRQ(ierr);}
+  ierr = DMAdaptMetric(dm, metricVec, bdLabel, rgLabel, dmCoarsened);CHKERRQ(ierr);
   ierr = VecDestroy(&metricVec);CHKERRQ(ierr);
   ((DM_Plex *) (*dmCoarsened)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
   ierr = DMCopyDisc(dm, *dmCoarsened);CHKERRQ(ierr);
@@ -265,7 +267,7 @@ PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ad
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, DM *dmAdapted)
+PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmAdapted)
 {
   IS              flagIS;
   const PetscInt *flags;
@@ -310,7 +312,7 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLa
     }
   } else {
     ierr = DMPlexSetRefinementUniform(dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexRefine_Internal(dm, NULL, adaptLabel, dmAdapted);CHKERRQ(ierr);
+    ierr = DMPlexRefine_Internal(dm, NULL, adaptLabel, NULL, dmAdapted);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
