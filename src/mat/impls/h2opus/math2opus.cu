@@ -51,6 +51,7 @@ template <class T> class PetscPointCloud : public H2OpusDataSet<T>
   public:
     PetscPointCloud(int dim, size_t num_pts, const T coords[])
     {
+      dim = dim > 0 ? dim : 1;
       this->dimension = dim;
       this->num_points = num_pts;
 
@@ -741,11 +742,14 @@ static PetscErrorCode MatH2OpusInferCoordinates_Private(Mat A)
 
     ierr = PetscObjectQuery((PetscObject)S,"__math2opus_coords",(PetscObject*)&c);CHKERRQ(ierr);
   }
-  if (!c) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Missing coordinates");
-  ierr = VecGetArrayRead(c,&coords);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(c,&spacedim);CHKERRQ(ierr);
-  ierr = MatH2OpusSetCoords_H2OPUS(A,spacedim,coords,PETSC_FALSE,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(c,&coords);CHKERRQ(ierr);
+  if (!c) {
+    ierr = MatH2OpusSetCoords_H2OPUS(A,-1,NULL,PETSC_FALSE,NULL,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArrayRead(c,&coords);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(c,&spacedim);CHKERRQ(ierr);
+    ierr = MatH2OpusSetCoords_H2OPUS(A,spacedim,coords,PETSC_FALSE,NULL,NULL);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(c,&coords);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1195,7 +1199,7 @@ static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const 
   if (!cong) SETERRQ(comm,PETSC_ERR_SUP,"Only for square matrices with congruent layouts");
   N    = A->rmap->N;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size > 1 && cdist) {
+  if (spacedim > 0 && size > 1 && cdist) {
     PetscSF      sf;
     MPI_Datatype dtype;
 
