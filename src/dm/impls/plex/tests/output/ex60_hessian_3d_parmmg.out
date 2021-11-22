@@ -14,11 +14,12 @@ Field P1:
 DM Object: DM_adapted 2 MPI processes
   type: plex
 DM_adapted in 3 dimensions:
-  0-cells: 96 94
-  1-cells: 449 437
-  2-cells: 642 622
-  3-cells: 288 278
+  0-cells: 189 176
+  1-cells: 939 870
+  2-cells: 1369 1263
+  3-cells: 618 568
 Labels:
-  celltype: 4 strata with value/size (0 (96), 6 (288), 3 (642), 1 (449))
-  depth: 4 strata with value/size (0 (96), 1 (449), 2 (642), 3 (288))
-  _boundary_: 2 strata with value/size (1 (96), 0 (36))
+  celltype: 4 strata with value/size (0 (189), 6 (618), 3 (1369), 1 (939))
+  depth: 4 strata with value/size (0 (189), 1 (939), 2 (1369), 3 (618))
+  _boundary_: 2 strata with value/size (1 (177), 0 (89))
+  _regions_: 1 strata with value/size (0 (618))

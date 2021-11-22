@@ -14,7 +14,7 @@ static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 
 int main(int argc, char **argv) {
   DM              dm, dmDist, dmAdapt;
-  DMLabel         bdLabel = NULL;
+  DMLabel         bdLabel = NULL, rgLabel = NULL;
   MPI_Comm        comm;
   PetscBool       uniform = PETSC_FALSE, isotropic = PETSC_FALSE;
   PetscErrorCode  ierr;
@@ -165,20 +165,18 @@ int main(int argc, char **argv) {
     ierr = VecDestroy(&metric2);CHKERRQ(ierr);
     ierr = VecDestroy(&metric1);CHKERRQ(ierr);
   }
+  ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Adapt the mesh */
-  ierr = DMAdaptMetric(dm, metric, bdLabel, &dmAdapt);CHKERRQ(ierr);
+  ierr = DMAdaptMetric(dm, metric, bdLabel, rgLabel, &dmAdapt);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dmAdapt, "DM_adapted");CHKERRQ(ierr);
   ierr = VecDestroy(&metric);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dmAdapt, NULL, "-adapted_mesh_view");CHKERRQ(ierr);
-
-  /* Compare DMs */
-  ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMView(dmAdapt, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Clean up */
   ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
