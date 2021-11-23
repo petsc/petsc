@@ -337,12 +337,16 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
 /*MC
   TSDISCGRAD - ODE solver using the discrete gradients version of the implicit midpoint method
 
-  Level: beginner
-
-  Notes: This is the implicit midpoint rule, with an optional term that guarantees the discrete gradient property. This
+  Notes:
+  This is the implicit midpoint rule, with an optional term that guarantees the discrete gradient property. This
   timestepper applies to systems of the form
 $ u_t = S(u) grad F(u)
   where S(u) is a linear operator, and F is a functional of u.
+
+  Reference:
+  Gonzalez, Oscar. "Time integration and discrete Hamiltonian systems." Journal of Nonlinear Science 6.5 (1996): 449-467.
+
+  Level: beginner
 
 .seealso: TSCreate(), TSSetType(), TS, TSTHETA, TSDiscGradSetFormulation()
 M*/
