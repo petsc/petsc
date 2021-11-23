@@ -214,6 +214,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     buf = 'Environmental variables'
     for key,val in os.environ.items():
       buf += '\n'+str(key)+'='+str(val)
+    buf = buf.encode('ascii', 'ignore').decode()
     self.logPrint(buf)
     def logPrintFilesInPath(path):
       for d in path:
