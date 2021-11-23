@@ -793,6 +793,9 @@ the shape and orientation of elements in the adapted mesh, as well as their
 size. This can be particularly useful for advection-dominated and
 directionally-dependent problems.
 
+See :cite:`Alauzet2010` for further details on metric-based anisotropic mesh
+adaptation.
+
 The two main ingredients for metric-based mesh adaptation are an input mesh
 (i.e. the DMPlex) and a Riemannian metric. The implementation in PETSc assumes
 that the metric is piecewise linear and continuous across elemental boundaries.
@@ -886,3 +889,10 @@ mesh adaptation using the routine
 
 where ``bdLabel`` and ``rgLabel`` are boundary and interior tags to be
 preserved under adaptation, respectively.
+
+.. raw:: html
+
+    <hr>
+
+.. bibliography:: /petsc.bib
+    :filter: docname in docnames
