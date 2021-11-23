@@ -367,7 +367,7 @@ PETSc tests and tutorials contain within their file a simple language to
 describe tests and subtests required to run executables associated with
 compilation of that file. The general skeleton of the file is
 
-::
+.. code-block::
 
     static char help[] = "A simple MOAB example\n\
 
@@ -404,7 +404,7 @@ entirely or multiple executable/diff tests within a single test. At the
 core, the executable/diff test combination will look something like
 this:
 
-::
+.. code-block:: console
 
     mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
     diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
@@ -733,7 +733,7 @@ with the ``build:`` block. The language is as follows.
 
 A typical example for compiling for only real numbers is
 
-::
+.. code-block::
 
     /*TEST
       build:
@@ -858,18 +858,18 @@ Additional Tips
 
 To rerun just the reporting use
 
-::
+.. code-block:: console
 
-    config/report_tests.py
+    $ config/report_tests.py
 
 To see the full options use
 
-::
+.. code-block:: console
 
-    config/report_tests.py -h
+    $ config/report_tests.py -h
 
 To see the full timing information for the five most expensive tests use
 
-::
+.. code-block:: console
 
-    config/report_tests.py -t 5
+    $ config/report_tests.py -t 5

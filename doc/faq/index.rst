@@ -605,7 +605,7 @@ To change where all PETSc ``stdout`` and ``stderr`` go, (you can also reassign
 ``PetscVFPrintf()`` to handle ``stdout`` and ``stderr`` any way you like) write the
 following function:
 
-::
+.. code-block::
 
    PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp)
    {
@@ -695,7 +695,7 @@ For example, assuming we have distributed a vector ``vecGlobal`` of size :math:`
 first :math:`n` (also assume :math:`n \leq m`) values from it's immediately superior neighbor
 :math:`r+1` (final rank will retrieve from rank 0).
 
-::
+.. code-block::
 
    Vec            vecLocal;
    IS             isLocal, isGlobal;
@@ -777,13 +777,13 @@ How do I collect all the values from a parallel PETSc Vec on the 0th rank?
 See FAQ entry on collecting to :ref:`an arbitrary processor <doc_faq_usage_alltoone>`, but
 replace
 
-::
+.. code-block::
 
    ierr = VecScatterCreateToAll(in_par, &ctx, &out_seq);CHKERRQ(ierr);
 
 with
 
-::
+.. code-block::
 
    ierr = VecScatterCreateToZero(in_par, &ctx, &out_seq);CHKERRQ(ierr);
 
@@ -835,7 +835,7 @@ does not reset parameters.
 as ``KSPGMRESSetRestart()``) ONLY work if the object is ALREADY of that type. For example,
 with
 
-::
+.. code-block::
 
    KSP            ksp;
    PetscErrorCode ierr;
@@ -849,7 +849,7 @@ those values take effect you should do one of the following:
 - Allow setting the type from the command line, if it is not on the command line then the
   default type is automatically set.
 
-::
+.. code-block::
 
    /* Create generic object */
    XXXCreate(..,&obj);
@@ -860,7 +860,7 @@ those values take effect you should do one of the following:
   ``XXXSetFromOptions()`` call. This essentially allows the user to customize what the
   "default" type to of the object.
 
-::
+.. code-block::
 
    /* Create generic object */
    XXXCreate(..,&obj);
@@ -1160,7 +1160,7 @@ process ranks so that each physical process shares the same part of the mesh wit
 ``DMDA`` and the ``MPI_Cart_create()``. The code to determine the new numbering was
 provided by Rolf Kuiper:
 
-::
+.. code-block::
 
    // the numbers of processors per direction are (int) x_procs, y_procs, z_procs respectively
    // (no parallelization in direction 'dir' means dir_procs = 1)
@@ -1360,7 +1360,7 @@ How can one compute the nullspace of a sparse matrix with MUMPS?
 
 Assuming you have an existing matrix :math:`A` whose nullspace :math:`V` you want to find:
 
-::
+.. code-block::
 
    Mat            F, work, V;
    PetscInt       N, rows;
@@ -1816,7 +1816,7 @@ In C++ I get a crash on VecDestroy() (or some other PETSc object) at the end of 
 This can happen when the destructor for a C++ class is automatically called at the end of
 the program after ``PetscFinalize()``. Use the following code-snippet:
 
-::
+.. code-block::
 
    main()
    {
@@ -1957,7 +1957,7 @@ What does "Object Type Not Set: Argument # N" Mean?
 
 Many operations on PETSc objects require that the specific type of the object be set before the operations is performed. You must call ``XXXSetType()`` or ``XXXSetFromOptions()`` before you make the offending call. For example
 
-::
+.. code-block::
 
    Mat            A;
    PetscErrorCode ierr;
@@ -1967,7 +1967,7 @@ Many operations on PETSc objects require that the specific type of the object be
 
 will not work. You must add ``MatSetType()`` or ``MatSetFromOptions()`` before the call to ``MatSetValues()``. I.e.
 
-::
+.. code-block::
 
    Mat            A;
    PetscErrorCode ierr;

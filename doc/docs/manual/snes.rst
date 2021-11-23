@@ -82,7 +82,7 @@ nonlinear solvers, browse the concrete example in :ref:`ex1.c <snes-ex1>` or ski
 To create a ``SNES`` solver, one must first call ``SNESCreate()`` as
 follows:
 
-::
+.. code-block::
 
    SNESCreate(MPI_Comm comm,SNES *snes);
 
@@ -91,7 +91,7 @@ discussed in the following sections.
 
 To choose a nonlinear solution method, the user can either call
 
-::
+.. code-block::
 
    SNESSetType(SNES snes,SNESType method);
 
@@ -100,7 +100,7 @@ available methods are presented in :any:`sec_nlsolvers`. The
 application code can take complete control of the linear and nonlinear
 techniques used in the Newton-like method by calling
 
-::
+.. code-block::
 
    SNESSetFromOptions(snes);
 
@@ -115,7 +115,7 @@ in :any:`chapter_ksp`.
 After having set these routines and options, the user solves the problem
 by calling
 
-::
+.. code-block::
 
    SNESSolve(SNES snes,Vec b,Vec x);
 
@@ -125,7 +125,7 @@ zero, the user should explicitly set this vector to zero by calling
 ``VecZeroEntries(x)``. Finally, after solving the nonlinear system (or several
 systems), the user should destroy the ``SNES`` context with
 
-::
+.. code-block::
 
    SNESDestroy(SNES *snes);
 
@@ -137,7 +137,7 @@ Nonlinear Function Evaluation
 When solving a system of nonlinear equations, the user must provide a
 a residual function :math:numref:`fx0`, which is set using
 
-::
+.. code-block::
 
    SNESSetFunction(SNES snes,Vec f,PetscErrorCode (*FormFunction)(SNES snes,Vec x,Vec f,void *ctx),void *ctx);
 
@@ -164,7 +164,7 @@ The user must also specify a routine to form some approximation of the
 Jacobian matrix, ``A``, at the current iterate, ``x``, as is typically
 done with
 
-::
+.. code-block::
 
    SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes,Vec x,Mat A,Mat B,void *ctx),void *ctx);
 
@@ -354,14 +354,14 @@ listed in Table :any:`tab-linesearches`.
 Every ``SNES`` has a line search context of type ``SNESLineSearch`` that
 may be retrieved using
 
-::
+.. code-block::
 
    SNESGetLineSearch(SNES snes,SNESLineSearch *ls);.
 
 There are several default options for the line searches. The order of
 polynomial approximation may be set with ``-snes_linesearch_order`` or
 
-::
+.. code-block::
 
    SNESLineSearchSetOrder(SNESLineSearch ls, PetscInt order);
 
@@ -369,7 +369,7 @@ for instance, 2 for quadratic or 3 for cubic. Sometimes, it may not be
 necessary to monitor the progress of the nonlinear iteration. In this
 case, ``-snes_linesearch_norms`` or
 
-::
+.. code-block::
 
    SNESLineSearchSetComputeNorms(SNESLineSearch ls,PetscBool norms);
 
@@ -401,7 +401,7 @@ Custom line search types may either be defined using
 ``SNESLineSearchShell``, or by creating a custom user line search type
 in the model of the preexisting ones and register it using
 
-::
+.. code-block::
 
    SNESLineSearchRegister(const char sname[],PetscErrorCode (*function)(SNESLineSearch));.
 
@@ -444,7 +444,7 @@ CG, but with the steplength determined by line search
 Hestenes-Steifel, Polak-Ribiere-Polyak, Dai-Yuan, and Conjugate Descent)
 are implemented in PETSc and may be chosen using
 
-::
+.. code-block::
 
    SNESNCGSetType(SNES snes, SNESNCGType btype);
 
@@ -486,13 +486,13 @@ This iteration is similar to the line search Newton methods.
 
 One may also control the form of the initial Jacobian approximation with
 
-::
+.. code-block::
 
    SNESQNSetScaleType(SNES snes, SNESQNScaleType stype);
 
 and the restart type with
 
-::
+.. code-block::
 
    SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype);
 
@@ -509,7 +509,7 @@ map. We describe the “get” operations here, and it can be assumed that
 each has a corresponding “set” operation. For instance, the number of
 levels in the hierarchy may be retrieved using
 
-::
+.. code-block::
 
    SNESFASGetLevels(SNES snes, PetscInt *levels);
 
@@ -517,13 +517,13 @@ There are four ``SNESFAS`` cycle types, ``SNES_FAS_MULTIPLICATIVE``,
 ``SNES_FAS_ADDITIVE``, ``SNES_FAS_FULL``, and ``SNES_FAS_KASKADE``. The
 type may be set with
 
-::
+.. code-block::
 
    SNESFASSetType(SNES snes,SNESFASType fastype);.
 
 and the cycle type, 1 for V, 2 for W, may be set with
 
-::
+.. code-block::
 
    SNESFASSetCycles(SNES snes, PetscInt cycles);.
 
@@ -531,7 +531,7 @@ Much like the interface to ``PCMG`` described in :any:`sec_mg`, there are interf
 various levels’ cycles and smoothers. The level smoothers may be
 accessed with
 
-::
+.. code-block::
 
    SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth);
    SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth);
@@ -539,14 +539,14 @@ accessed with
 
 and the level cycles with
 
-::
+.. code-block::
 
    SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes);.
 
 Also akin to ``PCMG``, the restriction and prolongation at a level may
 be acquired with
 
-::
+.. code-block::
 
    SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat);
    SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat);
@@ -554,13 +554,13 @@ be acquired with
 In addition, FAS requires special restriction for solution-like
 variables, called injection. This may be set with
 
-::
+.. code-block::
 
    SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat);.
 
 The coarse solve context may be acquired with
 
-::
+.. code-block::
 
    SNESFASGetCoarseSolve(SNES snes, SNES *smooth);
 
@@ -571,7 +571,7 @@ Nonlinear Additive Schwarz methods (NASM) take a number of local
 nonlinear subproblems, solves them independently in parallel, and
 combines those solutions into a new approximate solution.
 
-::
+.. code-block::
 
    SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[]);
 
@@ -582,7 +582,7 @@ to two types borrowed from ``PCASM``: ``PC_ASM_BASIC``, in which the
 overlapping updates added. ``PC_ASM_RESTRICT`` updates in a
 nonoverlapping fashion. This may be set with
 
-::
+.. code-block::
 
    SNESNASMSetType(SNES snes,PCASMType type);.
 
@@ -619,7 +619,7 @@ size of the norm, ``atol``, or its relative decrease, ``rtol``, from an
 initial guess. The following routine sets these parameters, which are
 used in many of the default ``SNES`` convergence tests:
 
-::
+.. code-block::
 
    SNESSetTolerances(SNES snes,PetscReal atol,PetscReal rtol,PetscReal stol, PetscInt its,PetscInt fcts);
 
@@ -640,14 +640,14 @@ parameter that indicates the minimum allowable trust region radius. The
 user can set this parameter with the option ``-snes_trtol <trtol>`` or
 with the routine
 
-::
+.. code-block::
 
    SNESSetTrustRegionTolerance(SNES snes,PetscReal trtol);
 
 Users can set their own customized convergence tests in ``SNES`` by
 using the command
 
-::
+.. code-block::
 
    SNESSetConvergenceTest(SNES snes,PetscErrorCode (*test)(SNES snes,PetscInt it,PetscReal xnorm, PetscReal gnorm,PetscReal f,SNESConvergedReason reason, void *cctx),void *cctx,PetscErrorCode (*destroy)(void *cctx));
 
@@ -668,7 +668,7 @@ By default the ``SNES`` solvers run silently without displaying
 information about the iterations. The user can initiate monitoring with
 the command
 
-::
+.. code-block::
 
    SNESMonitorSet(SNES snes,PetscErrorCode (*mon)(SNES,PetscInt its,PetscReal norm,void* mctx),void *mctx,PetscErrorCode (*monitordestroy)(void**));
 
@@ -700,7 +700,7 @@ cross-process testing easier.
 
 The routines
 
-::
+.. code-block::
 
    SNESGetSolution(SNES snes,Vec *x);
    SNESGetFunction(SNES snes,Vec *r,void *ctx,int(**func)(SNES,Vec,Vec,void*));
@@ -823,7 +823,7 @@ to explicit matrix entries.
 The user can create a matrix-free context for use within ``SNES`` with
 the routine
 
-::
+.. code-block::
 
    MatCreateSNESMF(SNES snes,Mat *mat);
 
@@ -839,7 +839,7 @@ default matrix free variant with the option ``-snes_mf_operator``.
 
 See also
 
-::
+.. code-block::
 
    MatCreateMFFD(Vec x, Mat *mat);
 
@@ -848,7 +848,7 @@ for users who need a matrix-free matrix but are not using ``SNES``.
 The user can set one parameter to control the Jacobian-vector product
 approximation with the command
 
-::
+.. code-block::
 
    MatMFFDSetFunctionError(Mat mat,PetscReal rerror);
 
@@ -865,7 +865,7 @@ the differencing parameter (:math:`h`); see the manual page for
 default routines accessible via ``-snes_mf_type <default or wp>``. For
 the default approach there is one “tuning” parameter, set with
 
-::
+.. code-block::
 
    MatMFFDDSSetUmin(Mat mat,PetscReal umin);
 
@@ -901,7 +901,7 @@ for the entire *linear* iterative process :math:`u` does not change
 hence :math:`\sqrt{1 + ||u||}` need be computed only once. This
 information may be set with the options
 
-::
+.. code-block::
 
    MatMFFDWPSetComputeNormU(Mat mat,PetscBool );
 
@@ -913,7 +913,7 @@ efficiency of the application code.
 It is also possible to monitor the differencing parameters h that are
 computed via the routines
 
-::
+.. code-block::
 
    MatMFFDSetHHistory(Mat,PetscScalar *,int);
    MatMFFDResetHHistory(Mat,PetscScalar *,int);
@@ -981,7 +981,7 @@ requires several steps:
 
 A code fragment that demonstrates this process is given below.
 
-::
+.. code-block::
 
    ISColoring    iscoloring;
    MatFDColoring fdcoloring;
@@ -1077,7 +1077,7 @@ PETSc provides the following coloring algorithms, which can be selected using ``
 As for the matrix-free computation of Jacobians (:any:`sec_nlmatrixfree`), two parameters affect the accuracy of the
 finite difference Jacobian approximation. These are set with the command
 
-::
+.. code-block::
 
    MatFDColoringSetParameters(MatFDColoring fdcoloring,PetscReal rerror,PetscReal umin);
 
@@ -1125,7 +1125,7 @@ knowledge of the discretization, the routine ``MatFDColoringCreate()``
 is scalable. An example of this for 2D distributed arrays is given below
 that uses the utility routine ``DMCreateColoring()``.
 
-::
+.. code-block::
 
    DMCreateColoring(da,IS_COLORING_GHOSTED, &iscoloring);
    MatFDColoringCreate(J,iscoloring, &fdcoloring);
@@ -1148,7 +1148,7 @@ negative infinity (indicated to PETSc with ``SNES_VI_NINF``) and some or
 all of the upper bounds may be infinity (indicated by ``SNES_VI_INF``).
 The command
 
-::
+.. code-block::
 
    SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
 
@@ -1167,7 +1167,7 @@ Nonlinear preconditioning in PETSc involves the use of an inner ``SNES``
 instance to define the step for an outer ``SNES`` instance. The inner
 instance may be extracted using
 
-::
+.. code-block::
 
    SNESGetNPC(SNES snes,SNES *npc);
 
@@ -1196,19 +1196,19 @@ argument to ``-snes_composite_sneses``. There are additive
 (``SNES_COMPOSITE_ADDITIVEOPTIMAL``), and multiplicative
 (``SNES_COMPOSITE_MULTIPLICATIVE``) variants which may be set with
 
-::
+.. code-block::
 
    SNESCompositeSetType(SNES,SNESCompositeType);
 
 New subsolvers may be added to the composite solver with
 
-::
+.. code-block::
 
    SNESCompositeAddSNES(SNES,SNESType);
 
 and accessed with
 
-::
+.. code-block::
 
    SNESCompositeGetSNES(SNES,PetscInt,SNES *);
 
