@@ -81,6 +81,7 @@ static PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat A)
   aijkok->a_dual.modify_device();
   aijkok->transpose_updated = PETSC_FALSE;
   aijkok->hermitian_updated = PETSC_FALSE;
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -126,8 +127,12 @@ static PetscErrorCode MatSeqAIJGetArrayRead_SeqAIJKokkos(Mat A,const PetscScalar
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
 
   PetscFunctionBegin;
-  aijkok->a_dual.sync_host();
-  *array = aijkok->a_dual.view_host().data();
+  if (aijkok) {
+    aijkok->a_dual.sync_host();
+    *array = aijkok->a_dual.view_host().data();
+  } else {
+    *array = static_cast<Mat_SeqAIJ*>(A->data)->a;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -143,7 +148,11 @@ static PetscErrorCode MatSeqAIJGetArrayWrite_SeqAIJKokkos(Mat A,PetscScalar *arr
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
 
   PetscFunctionBegin;
-  *array = aijkok->a_dual.view_host().data();
+  if (aijkok) {
+    *array = aijkok->a_dual.view_host().data();
+  } else { /* Ex. happens with MatZeroEntries on a preallocated but not assembled matrix */
+    *array = static_cast<Mat_SeqAIJ*>(A->data)->a;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -152,8 +161,10 @@ static PetscErrorCode MatSeqAIJRestoreArrayWrite_SeqAIJKokkos(Mat A,PetscScalar 
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
 
   PetscFunctionBegin;
-  aijkok->a_dual.clear_sync_state();
-  aijkok->a_dual.modify_host();
+  if (aijkok) {
+    aijkok->a_dual.clear_sync_state();
+    aijkok->a_dual.modify_host();
+  }
   PetscFunctionReturn(0);
 }
 
@@ -846,11 +857,13 @@ static PetscErrorCode MatZeroEntries_SeqAIJKokkos(Mat A)
   Mat_SeqAIJKokkos *aijkok;
 
   PetscFunctionBegin;
-  ierr = MatSeqAIJKokkosSyncDevice(A);CHKERRQ(ierr);
   aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
-  KokkosBlas::fill(aijkok->a_dual.view_device(),0.0);
-  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr); /* Cached diagonal values are invalided */
-  ierr = MatSeqAIJKokkosModifyDevice(A);CHKERRQ(ierr);
+  if (aijkok) { /* Only zero the device if data is already there */
+    KokkosBlas::fill(aijkok->a_dual.view_device(),0.0);
+    ierr = MatSeqAIJKokkosModifyDevice(A);CHKERRQ(ierr);
+  } else { /* Might be preallocated but not assembled */
+    ierr = MatZeroEntries_SeqAIJ(A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
