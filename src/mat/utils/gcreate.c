@@ -348,12 +348,13 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
 */
 PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
 {
-  PetscErrorCode ierr;
-  PetscInt       refct;
-  PetscOps       Abops;
-  struct _MatOps Aops;
-  char           *mtype,*mname,*mprefix;
-  Mat_Product    *product;
+  PetscErrorCode   ierr;
+  PetscInt         refct;
+  PetscOps         Abops;
+  struct _MatOps   Aops;
+  char             *mtype,*mname,*mprefix;
+  Mat_Product      *product;
+  PetscObjectState state;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -366,6 +367,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   refct = ((PetscObject)A)->refct;
   mtype = ((PetscObject)A)->type_name;
   mname = ((PetscObject)A)->name;
+  state = ((PetscObject)A)->state;
   mprefix = ((PetscObject)A)->prefix;
   product = A->product;
 
@@ -381,6 +383,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
   ierr = PetscObjectListDestroy(&((PetscObject)A)->olist);CHKERRQ(ierr);
+  ierr = PetscComposedQuantitiesDestroy((PetscObject)A);CHKERRQ(ierr);
 
   /* copy C over to A */
   ierr = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
@@ -392,6 +395,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   ((PetscObject)A)->type_name = mtype;
   ((PetscObject)A)->name      = mname;
   ((PetscObject)A)->prefix    = mprefix;
+  ((PetscObject)A)->state     = state + 1;
   A->product                  = product;
 
   /* since these two are copied into A we do not want them destroyed in C */
