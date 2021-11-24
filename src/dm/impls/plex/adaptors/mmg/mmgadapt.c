@@ -1,13 +1,14 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <mmg/libmmg.h>
 
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *dmNew)
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
 {
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
+  const char        *rgName = "_regions_";
   DM                 udm, cdm;
   DMLabel            bdLabelFull;
-  const char        *bdLabelName;
+  const char        *bdLabelName, *rgLabelName;
   IS                 bdIS;
   PetscSection       coordSection;
   Vec                coordinates;
@@ -24,7 +25,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscInt           numCellsNew, numVerticesNew, numCornersNew, numFacesNew;
   PetscInt           verbosity;
   PetscBool          flg, noInsert, noSwap, noMove;
-  DMLabel            bdLabelNew;
+  DMLabel            bdLabelNew, rgLabelNew;
   MMG5_pMesh         mmg_mesh = NULL;
   MMG5_pSol          mmg_metric = NULL;
   PetscErrorCode     ierr;
@@ -35,6 +36,11 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     ierr = PetscObjectGetName((PetscObject) bdLabel, &bdLabelName);CHKERRQ(ierr);
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
     if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+  }
+  if (rgLabel) {
+    ierr = PetscObjectGetName((PetscObject) rgLabel, &rgLabelName);CHKERRQ(ierr);
+    ierr = PetscStrcmp(rgLabelName, rgName, &flg);CHKERRQ(ierr);
+    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
   }
 
   /* Get mesh information */
@@ -103,6 +109,12 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   ierr = ISDestroy(&bdIS);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&bdLabelFull);CHKERRQ(ierr);
 
+  /* Get cell tags */
+  ierr = PetscCalloc2(numVertices, &verTags, numCells, &cellTags);CHKERRQ(ierr);
+  if (rgLabel) {
+    for (c = cStart; c < cEnd; ++c) { ierr = DMLabelGetValue(rgLabel, c, &cellTags[c]);CHKERRQ(ierr); }
+  }
+
   /* Get metric */
   ierr = VecViewFromOptions(vertexMetric, NULL, "-adapt_metric_view");CHKERRQ(ierr);
   ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
@@ -122,7 +134,6 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   ierr = DMPlexMetricNoInsertion(dm, &noInsert);CHKERRQ(ierr);
   ierr = DMPlexMetricNoSwapping(dm, &noSwap);CHKERRQ(ierr);
   ierr = DMPlexMetricNoMovement(dm, &noMove);CHKERRQ(ierr);
-  ierr = PetscCalloc2(numVertices, &verTags, numCells, &cellTags);CHKERRQ(ierr);
   switch (dim) {
   case 2:
     ierr = MMG2D_Init_mesh(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
@@ -215,6 +226,11 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     ierr = DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]);CHKERRQ(ierr);
     ierr = DMPlexRestoreJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);
   }
+
+  /* Rebuild cell labels */
+  ierr = DMCreateLabel(*dmNew, rgLabel ? rgLabelName : rgName);CHKERRQ(ierr);
+  ierr = DMGetLabel(*dmNew, rgLabel ? rgLabelName : rgName, &rgLabelNew);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) { ierr = DMLabelSetValue(rgLabelNew, c, cellTagsNew[c-cStart]);CHKERRQ(ierr); }
 
   /* Clean up */
   ierr = PetscFree(cells);CHKERRQ(ierr);

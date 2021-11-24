@@ -333,7 +333,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     ierr = DMPlexTransformCreateDiscLabels(tr, *rdm);CHKERRQ(ierr);
     ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexRefine_Internal(dm, NULL, NULL, rdm);CHKERRQ(ierr);
+    ierr = DMPlexRefine_Internal(dm, NULL, NULL, NULL, rdm);CHKERRQ(ierr);
   }
   if (*rdm) {
     ((DM_Plex *) (*rdm)->data)->printFEM = ((DM_Plex *) dm->data)->printFEM;

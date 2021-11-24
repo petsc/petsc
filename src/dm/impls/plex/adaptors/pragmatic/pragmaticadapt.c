@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <pragmatic/cpragmatic.h>
 
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *dmNew)
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
 {
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
@@ -42,6 +42,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
     if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
   }
+  if (rgLabel) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot currently preserve cell tags with Pragmatic");
 #if 0
   /* Check for overlap by looking for cell in the SF */
   if (!overlapped) {

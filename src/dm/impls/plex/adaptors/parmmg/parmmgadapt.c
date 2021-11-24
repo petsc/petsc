@@ -1,13 +1,14 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <parmmg/libparmmg.h>
 
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *dmNew)
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
 {
   MPI_Comm           comm, tmpComm;
   const char        *bdName = "_boundary_";
+  const char        *rgName = "_regions_";
   DM                 udm, cdm;
   DMLabel            bdLabelFull;
-  const char        *bdLabelName;
+  const char        *bdLabelName, *rgLabelName;
   IS                 bdIS, globalVertexNum;
   PetscSection       coordSection;
   Vec                coordinates;
@@ -24,7 +25,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   PetscInt           dim, Neq, cStart, cEnd, numCells, coff, vStart, vEnd, numVertices;
   PetscInt           maxConeSize, numBdFaces, bdSize, fStart, fEnd;
   PetscBool          flg, noInsert, noSwap, noMove;
-  DMLabel            bdLabelNew;
+  DMLabel            bdLabelNew, rgLabelNew;
   PetscReal         *verticesNewLoc, gradationFactor;
   PetscInt          *verTagsNew, *cellsNew, *cellTagsNew, *corners;
   PetscInt          *requiredCells, *requiredVer, *facesNew, *faceTagsNew, *ridges, *requiredFaces;
@@ -46,6 +47,11 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
     ierr = PetscObjectGetName((PetscObject) bdLabel, &bdLabelName);CHKERRQ(ierr);
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
     if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+  }
+  if (rgLabel) {
+    ierr = PetscObjectGetName((PetscObject) rgLabel, &rgLabelName);CHKERRQ(ierr);
+    ierr = PetscStrcmp(rgLabelName, rgName, &flg);CHKERRQ(ierr);
+    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
   }
 
   /* Get mesh information */
@@ -113,6 +119,12 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   }
   ierr = ISDestroy(&bdIS);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&bdLabelFull);CHKERRQ(ierr);
+
+  /* Get cell tags */
+  ierr = PetscCalloc2(numVertices, &verTags, numCells, &cellTags);CHKERRQ(ierr);
+  if (rgLabel) {
+    for (c = cStart; c < cEnd; ++c) { ierr = DMLabelGetValue(rgLabel, c, &cellTags[c]);CHKERRQ(ierr); }
+  }
 
   /* Get metric */
   ierr = VecViewFromOptions(vertexMetric, NULL, "-adapt_metric_view");CHKERRQ(ierr);
@@ -223,7 +235,6 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexMetricGetVerbosity(dm, &verbosity);CHKERRQ(ierr);
   ierr = DMPlexMetricGetNumIterations(dm, &numIter);CHKERRQ(ierr);
   ierr = DMPlexMetricGetGradationFactor(dm, &gradationFactor);CHKERRQ(ierr);
-  ierr = PetscCalloc2(numVertices, &verTags, numCells, &cellTags);CHKERRQ(ierr);
   ierr = PMMG_Init_parMesh(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, tmpComm, PMMG_ARG_end);
   ierr = PMMG_Set_meshSize(parmesh, numVertices, numCells, 0, numBdFaces, 0, 0);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_APImode, PMMG_APIDISTRIB_nodes);
@@ -235,12 +246,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_niter, numIter);
   ierr = PMMG_Set_dparameter(parmesh, PMMG_DPARAM_hgrad, gradationFactor);
   ierr = PMMG_Set_vertices(parmesh, vertices, verTags);
-  for (i=0; i<numCells; i++) ierr = PMMG_Set_tetrahedron(parmesh, cells[4*i+0], cells[4*i+1], cells[4*i+2], cells[4*i+3], 0, i+1);
+  ierr = PMMG_Set_tetrahedra(parmesh, cells, cellTags);
   ierr = PMMG_Set_triangles(parmesh, bdFaces, bdFaceIds);
   ierr = PMMG_Set_metSize(parmesh, MMG5_Vertex, numVertices, MMG5_Tensor);
-  for (i=0; i<numVertices; i++) {
-    PMMG_Set_tensorMet(parmesh, metric[6*i], metric[6*i+1], metric[6*i+2], metric[6*i+3], metric[6*i+4], metric[6*i+5], i+1);
-  }
+  ierr = PMMG_Set_tensorMets(parmesh, metric);
   ierr = PMMG_Set_numberOfNodeCommunicators(parmesh, numNgbRanks);
   for (c = 0; c < numNgbRanks; ++c) {
     ierr = PMMG_Set_ithNodeCommunicatorSize(parmesh, c, ngbRanks[c], intOffset[c+1]-intOffset[c]);
@@ -313,6 +322,11 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
     ierr = DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]);CHKERRQ(ierr);
     ierr = DMPlexRestoreJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);
   }
+
+  /* Rebuild cell labels */
+  ierr = DMCreateLabel(*dmNew, rgLabel ? rgLabelName : rgName);CHKERRQ(ierr);
+  ierr = DMGetLabel(*dmNew, rgLabel ? rgLabelName : rgName, &rgLabelNew);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) { ierr = DMLabelSetValue(rgLabelNew, c, cellTagsNew[c-cStart]);CHKERRQ(ierr); }
 
   /* Clean up */
   ierr = PetscFree4(verticesNew, verTagsNew, corners, requiredVer);CHKERRQ(ierr);

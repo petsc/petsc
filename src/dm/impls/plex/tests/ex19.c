@@ -277,7 +277,7 @@ int main (int argc, char * argv[]) {
 
     ierr = ComputeMetric(dm, &user, &metric);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-    ierr = DMAdaptMetric(dm, metric, label, &dma);CHKERRQ(ierr);
+    ierr = DMAdaptMetric(dm, metric, label, NULL, &dma);CHKERRQ(ierr);
     ierr = VecDestroy(&metric);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) dma, "DMadapt");CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) dma, "adapt_");CHKERRQ(ierr);

@@ -103,7 +103,7 @@ cdef extern from * nogil:
     int DMGetCoarsenLevel(PetscDM,PetscInt*)
 
     int DMAdaptLabel(PetscDM,PetscDMLabel,PetscDM*)
-    int DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDM*)
+    int DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDMLabel,PetscDM*)
 
     int DMGlobalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
     int DMGlobalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)

@@ -5,7 +5,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!dm->coarseMesh) {ierr = DMPlexCoarsen_Internal(dm, NULL, NULL, &dm->coarseMesh);CHKERRQ(ierr);}
+  if (!dm->coarseMesh) {ierr = DMPlexCoarsen_Internal(dm, NULL, NULL, NULL, &dm->coarseMesh);CHKERRQ(ierr);}
   ierr = PetscObjectReference((PetscObject) dm->coarseMesh);CHKERRQ(ierr);
   *dmCoarsened = dm->coarseMesh;
   PetscFunctionReturn(0);

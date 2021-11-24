@@ -681,7 +681,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = DMDestroy(&dmHess);CHKERRQ(ierr);
       /*     Adapt DM from metric */
       ierr = DMGetLabel(dm, "marker", &bdLabel);CHKERRQ(ierr);
-      ierr = DMAdaptMetric(dm, metric, bdLabel, &odm);CHKERRQ(ierr);
+      ierr = DMAdaptMetric(dm, metric, bdLabel, NULL, &odm);CHKERRQ(ierr);
       adapted = PETSC_TRUE;
       /*     Cleanup */
       ierr = DMRestoreLocalVector(dmMetric, &metric);CHKERRQ(ierr);

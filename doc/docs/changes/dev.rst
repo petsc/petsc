@@ -145,6 +145,9 @@ Changes: Development
     - Add ``DMPlexMetricGetNumIterations()`` to get the number of ParMmg adaptation iterations
 - Change ``DMPlexCoordinatesLoad()`` to take a ``PetscSF`` as argument
 - Change ``DMPlexCreateFromFile()`` to take the mesh name as argument
+- Change ``DMAdaptMetric`` so that it takes an additional argument for cell tags
+- Change ``DMTransformAdaptLabel`` so that it takes an additional argument for cell tags
+- Change ``DMGenerateRegister`` so that it registers routines that take an additional argument for cell tags
 
 .. rubric:: FE/FV:
 

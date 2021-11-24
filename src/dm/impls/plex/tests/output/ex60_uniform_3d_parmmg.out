@@ -22,3 +22,4 @@ Labels:
   celltype: 4 strata with value/size (0 (188), 6 (570), 3 (1285), 1 (902))
   depth: 4 strata with value/size (0 (188), 1 (902), 2 (1285), 3 (570))
   _boundary_: 2 strata with value/size (1 (192), 0 (98))
+  _regions_: 1 strata with value/size (0 (570))

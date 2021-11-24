@@ -21,3 +21,4 @@ Labels:
   celltype: 3 strata with value/size (0 (145), 3 (256), 1 (400))
   depth: 3 strata with value/size (0 (145), 1 (400), 2 (256))
   _boundary_: 1 strata with value/size (1 (32))
+  _regions_: 1 strata with value/size (0 (32))

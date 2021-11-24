@@ -29,7 +29,7 @@ PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxK
 struct _n_DMGeneratorFunctionList {
   PetscErrorCode (*generate)(DM, PetscBool, DM *);
   PetscErrorCode (*refine)(DM, PetscReal *, DM *);
-  PetscErrorCode (*adapt)(DM, Vec, DMLabel, DM *);
+  PetscErrorCode (*adapt)(DM, Vec, DMLabel, DMLabel, DM *);
   char            *name;
   PetscInt         dim;
   DMGeneratorFunctionList next;
