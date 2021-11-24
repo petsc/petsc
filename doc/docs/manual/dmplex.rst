@@ -774,3 +774,125 @@ of accessing and retrieving the components and number of variables at vertices i
 The above example does not explicitly use the component key. It is
 used when different component types are set at different vertices. In
 this case, ``compkey`` is used to differentiate the component type.
+
+
+Metric-based mesh adaptation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DMPlex supports mesh adaptation using the *Riemmanian metric framework*.
+The idea is to use a Riemannian metric space within the mesher. The
+metric space dictates how mesh resolution should be distributed across
+the domain. Using this information, the remesher transforms the mesh such
+that it is a *unit mesh* when viewed in the metric space. That is, the image
+of each of its elements under the mapping from Euclidean space into the
+metric space has edges of unit length.
+
+One of the main advantages of metric-based mesh adaptation is that it allows
+for fully anisotropic remeshing. That is, it provides a means of controlling
+the shape and orientation of elements in the adapted mesh, as well as their
+size. This can be particularly useful for advection-dominated and
+directionally-dependent problems.
+
+See :cite:`Alauzet2010` for further details on metric-based anisotropic mesh
+adaptation.
+
+The two main ingredients for metric-based mesh adaptation are an input mesh
+(i.e. the DMPlex) and a Riemannian metric. The implementation in PETSc assumes
+that the metric is piecewise linear and continuous across elemental boundaries.
+Such an object can be created using the routine
+
+.. code-block::
+
+   DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric);
+
+A metric must be symmetric positive-definite, so that distances may be properly
+defined. This can be checked using
+
+.. code-block::
+
+   DMPlexMetricEnforceSPD(DM dm, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metric);
+
+This routine may also be used to enforce minimum and maximum tolerated metric
+magnitudes (i.e. cell sizes), as well as maximum anisotropy. These quantities
+can be specified using
+
+.. code-block::
+
+   DMPlexMetricSetMinimumMagnitude(DM dm, PetscReal h_min);
+   DMPlexMetricSetMaximumMagnitude(DM dm, PetscReal h_max);
+   DMPlexMetricSetMaximumAnisotropy(DM dm, PetscReal a_max);
+
+or the command line arguments
+
+::
+   -dm_plex_metric_h_min <h_min>
+   -dm_plex_metric_h_max <h_max>
+   -dm_plex_metric_a_max <a_max>
+
+
+One simple way to combine two metrics is by simply averaging them entry-by-entry.
+Another is to *intersect* them, which amounts to choosing the greatest level of
+refinement in each direction. These operations are available in PETSc through
+the routines
+
+.. code-block::
+
+   DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights[], Vec metrics[], Vec *metricAvg);
+   DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec *metricInt);
+
+However, before combining metrics, it is important that they are scaled in the same
+way. Scaling also allows the user to control the number of vertices in the adapted
+mesh (in an approximate sense). This is achieved using the :math:`L^p` normalization
+framework, with the routine
+
+.. code-block::
+
+   DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut);
+
+There are two important parameters for the normalization: the normalization order
+:math:`p` and the target metric complexity, which is analogous to the vertex count.
+They are controlled using
+
+.. code-block::
+
+   DMPlexMetricSetNormalizationOrder(DM dm, PetscReal p);
+   DMPlexMetricSetTargetComplexity(DM dm, PetscReal target);
+
+or the command line arguments
+
+::
+   -dm_plex_metric_p <p>
+   -dm_plex_metric_target_complexity <target>
+
+Two different metric-based mesh adaptation tools are available in PETSc:
+
+- `Pragmatic <https://meshadaptation.github.io/>`__;
+
+- `Mmg/ParMmg <https://www.mmgtools.org/>`__.
+
+Mmg is a serial package, whereas ParMmg is the MPI parallel version.
+Note that surface meshing is not currently supported and that ParMmg
+is only in 3D. Mmg and Pragmatic can be used for both 2D and 3D problems.
+Pragmatic, Mmg and ParMmg may be specified by the command line arguments
+
+::
+   -dm_adaptor pragmatic
+   -dm_adaptor mmg
+   -dm_adaptor parmmg
+
+Once a metric has been constructed, it can be used to perform metric-based
+mesh adaptation using the routine
+
+.. code-block::
+
+   DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel, DM dmAdapt);
+
+where ``bdLabel`` and ``rgLabel`` are boundary and interior tags to be
+preserved under adaptation, respectively.
+
+.. raw:: html
+
+    <hr>
+
+.. bibliography:: /petsc.bib
+    :filter: docname in docnames
