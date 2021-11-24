@@ -199,7 +199,7 @@ Writing PETSc Programs
 
 Most PETSc programs begin with a call to
 
-::
+.. code-block::
 
    ierr = PetscInitialize(int *argc,char ***argv,char *file,char *help);if (ierr) return ierr;
 
@@ -293,7 +293,7 @@ Include Files
 
 The C/C++ include files for PETSc should be used via statements such as
 
-::
+.. code-block::
 
    #include <petscksp.h>
 
@@ -326,7 +326,7 @@ Vectors
 One creates a new parallel or sequential vector, ``x``, of global
 dimension ``M`` with the commands
 
-::
+.. code-block::
 
    VecCreate(MPI_Comm comm,Vec *x);
    VecSetSizes(Vec x, PetscInt m, PetscInt M);
@@ -337,13 +337,13 @@ vector may be set with either calls to ``VecSetType()`` or
 ``VecSetFromOptions()``. Additional vectors of the same type can be
 formed with
 
-::
+.. code-block::
 
    VecDuplicate(Vec old,Vec *new);
 
 The commands
 
-::
+.. code-block::
 
    VecSet(Vec x,PetscScalar value);
    VecSetValues(Vec x,PetscInt n,PetscInt *indices,PetscScalar *values,INSERT_VALUES);
@@ -372,7 +372,7 @@ Usage of PETSc matrices and vectors is similar. The user can create a
 new parallel or sequential matrix, ``A``, which has ``M`` global rows
 and ``N`` global columns, with the routines
 
-::
+.. code-block::
 
    MatCreate(MPI_Comm comm,Mat *A);
    MatSetSizes(Mat A,PETSC_DECIDE,PETSC_DECIDE,PetscInt M,PetscInt N);
@@ -381,13 +381,13 @@ where the matrix format can be specified at runtime via the options
 database. The user could alternatively specify each processes’ number of
 local rows and columns using ``m`` and ``n``.
 
-::
+.. code-block::
 
    MatSetSizes(Mat A,PetscInt m,PetscInt n,PETSC_DETERMINE,PETSC_DETERMINE);
 
 Generally one then sets the “type” of the matrix, with, for example,
 
-::
+.. code-block::
 
    MatSetType(A,MATAIJ);
 
@@ -395,14 +395,14 @@ This causes the matrix ``A`` to used the compressed sparse row storage
 format to store the matrix entries. See ``MatType`` for a list of all
 matrix types. Values can then be set with the command
 
-::
+.. code-block::
 
    MatSetValues(Mat A,PetscInt m,PetscInt *im,PetscInt n,PetscInt *in,PetscScalar *values,INSERT_VALUES);
 
 After all elements have been inserted into the matrix, it must be
 processed with the pair of commands
 
-::
+.. code-block::
 
    MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
    MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
@@ -417,7 +417,7 @@ After creating the matrix and vectors that define a linear system,
 ``Ax`` :math:`=` ``b``, the user can then use ``KSP`` to solve the
 system with the following sequence of commands:
 
-::
+.. code-block::
 
    KSPCreate(MPI_Comm comm,KSP *ksp);
    KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);
@@ -520,7 +520,7 @@ processors over which the object is to be distributed. For example, as
 mentioned above, some commands for matrix, vector, and linear solver
 creation are:
 
-::
+.. code-block::
 
    MatCreate(MPI_Comm comm,Mat *A);
    VecCreate(MPI_Comm comm,Vec *x);

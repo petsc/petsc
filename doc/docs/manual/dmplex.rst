@@ -60,7 +60,7 @@ these conventions. In terms of the labels in
 
 First, we declare the set of points present in a mesh,
 
-::
+.. code-block::
 
    DMPlexSetChart(dm, 0, 11);
 
@@ -70,7 +70,7 @@ like to use to define points on the current rank. We then define the
 covering relation, which we call the *cone*, which are also the in-edges
 in the DAG. In order to preallocate correctly, we first setup sizes,
 
-::
+.. code-block::
 
    DMPlexSetConeSize(dm, 0, 3);
    DMPlexSetConeSize(dm, 1, 3);
@@ -83,7 +83,7 @@ in the DAG. In order to preallocate correctly, we first setup sizes,
 
 and then point values,
 
-::
+.. code-block::
 
    DMPlexSetCone(dm, 0, [6, 7, 8]);
    DMPlexSetCone(dm, 1, [7, 9, 10]);
@@ -97,7 +97,7 @@ There is also an API for the dual relation, using
 ``DMPlexSetSupportSize()`` and ``DMPlexSetSupport()``, but this can be
 calculated automatically by calling
 
-::
+.. code-block::
 
    DMPlexSymmetrize(dm);
 
@@ -105,7 +105,7 @@ In order to support efficient queries, we also want to construct fast
 search structures and indices for the different types of points, which
 is done using
 
-::
+.. code-block::
 
    DMPlexStratify(dm);
 
@@ -151,7 +151,7 @@ For example, using the mesh from
 :numref:`fig_doubletMesh`, we can lay out data for
 a continuous Galerkin :math:`P_3` finite element method,
 
-::
+.. code-block::
 
    PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
 
@@ -184,7 +184,7 @@ zero along all edges).
 
 Now a PETSc local vector can be created manually using this layout,
 
-::
+.. code-block::
 
    PetscSectionGetStorageSize(s, &n);
    VecSetSizes(localVec, n, PETSC_DETERMINE);
@@ -193,7 +193,7 @@ Now a PETSc local vector can be created manually using this layout,
 though it is usually easier to use the ``DM`` directly, which also
 provides global vectors,
 
-::
+.. code-block::
 
    DMSetLocalSection(dm, s);
    DMGetLocalVector(dm, &localVec);
@@ -277,7 +277,7 @@ element can be expressed discretely as the transitive closure of the
 element point in the mesh DAG, where each point also has an orientation.
 Then we can retrieve the data using ``PetscSection`` methods,
 
-::
+.. code-block::
 
    PetscScalar *a;
    PetscInt     numPoints, *points = NULL, p;
@@ -300,7 +300,7 @@ This operation is so common that we have built a convenience method
 around it which returns the values in a contiguous array, correctly
 taking into account the orientations of various mesh points:
 
-::
+.. code-block::
 
    const PetscScalar *values;
    PetscInt           csize;
@@ -318,7 +318,7 @@ meshes, and meshes of any dimension, without change. We can also reverse
 the covering relation, so that the code works for finite volume methods
 where we want the data from neighboring cells for each face:
 
-::
+.. code-block::
 
    PetscScalar *a;
    PetscInt     points[2*2], numPoints, p, dofA, offA, dofB, offB;
@@ -352,7 +352,7 @@ Saving
 To save data to "example.h5" file, we first create a ``PetscViewer``
 of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_WRITE`` mode as:
 
-::
+.. code-block::
 
    PetscViewer  viewer;
 
@@ -361,7 +361,7 @@ of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_WRITE`` mode as:
 As ``dm`` is a DMPlex object representing a mesh, we first
 give it a *mesh name*, "plexA", and save it as:
 
-::
+.. code-block::
 
    PetscObjectSetName((PetscObject)dm, "plexA");
    PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_PETSC);
@@ -381,7 +381,7 @@ for it to be saved. Here, we create the wrapping ``DM``, ``sdm``,
 with ``DMClone()``, give it a *dm name*, "dmA", attach ``s`` to
 ``sdm``, and save it as:
 
-::
+.. code-block::
 
    DMClone(dm, &sdm);
    PetscObjectSetName((PetscObject)sdm, "dmA");
@@ -407,7 +407,7 @@ comparing their global point numbers.
 
 We now create a local vector assiciated with ``sdm``, e.g., as:
 
-::
+.. code-block::
 
    Vec  vec;
 
@@ -415,7 +415,7 @@ We now create a local vector assiciated with ``sdm``, e.g., as:
 
 After setting values of ``vec``, we name it "vecA" and save it as:
 
-::
+.. code-block::
 
    PetscObjectSetName((PetscObject)vec, "vecA");
    DMPlexLocalVectorView(dm, viewer, sdm, vec);
@@ -425,7 +425,7 @@ changes.
 
 After saving, we destroy the ``PetscViewer`` with:
 
-::
+.. code-block::
 
    PetscViewerDestroy(&viewer);
 
@@ -461,14 +461,14 @@ Loading
 To load data from "example.h5" file, we create a ``PetscViewer``
 of type ``PETSCVIEWERHDF5`` in ``FILE_MODE_READ`` mode as:
 
-::
+.. code-block::
 
    PetscViewerHDF5Open(PETSC_COMM_WORLD, "example.h5", FILE_MODE_READ, &viewer);
 
 We then create a DMPlex object, give it a *mesh name*, "plexA", and load
 the mesh as:
 
-::
+.. code-block::
 
    PetscSF  sfO;
 
@@ -489,7 +489,7 @@ As the DMPlex mesh just loaded might not have a desired distribution,
 it is common to redistribute the mesh for a better distribution using
 ``DMPlexDistribute()``, e.g., as:
 
-::
+.. code-block::
 
     DM        distributedDM;
     PetscInt  overlap = 1;
@@ -514,7 +514,7 @@ directly to the redistributed mesh, which we call ``sf``.
 We then create a new ``DM``, ``sdm``, with ``DMClone()``, give it
 a *dm name*, "dmA", and load the on-disk data layout into ``sdm`` as:
 
-::
+.. code-block::
 
    PetscSF  globalDataSF, localDataSF;
 
@@ -539,7 +539,7 @@ be used to migrate the on-disk vector data into local and global
 
 We now create a local vector assiciated with ``sdm``, e.g., as:
 
-::
+.. code-block::
 
    Vec  vec;
 
@@ -547,7 +547,7 @@ We now create a local vector assiciated with ``sdm``, e.g., as:
 
 We then name ``vec`` "vecA" and load the on-disk vector into ``vec`` as:
 
-::
+.. code-block::
 
    PetscObjectSetName((PetscObject)vec, "vecA");
    DMPlexLocalVectorLoad(dm, viewer, sdm, localDataSF, localVec);
@@ -559,7 +559,7 @@ The on-disk vector can be loaded into a global vector associated with
 
 After loading, we destroy the ``PetscViewer`` with:
 
-::
+.. code-block::
 
    PetscViewerDestroy(&viewer);
 
@@ -584,7 +584,7 @@ follows:
 
 #. Create a network object.
 
-   ::
+   .. code-block::
 
       DMNetworkCreate(MPI_Comm comm, DM *dm);
 
@@ -595,7 +595,7 @@ follows:
    graph problems, or generator/transmission line data for power grids.
    Components are registered by calling
 
-   ::
+   .. code-block::
 
       DMNetworkRegisterComponent(DM dm, const char *name, size_t size, PetscInt *compkey);
 
@@ -608,7 +608,7 @@ follows:
    coupling information between subnetworks which consist only of shared vertices of the physical subnetworks. The
    topological sizes of the network are set by calling
 
-   ::
+   .. code-block::
 
       DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsubnet);
 
@@ -616,7 +616,7 @@ follows:
 
 #. A subnetwork is added to the network by calling
 
-   ::
+   .. code-block::
 
       DMNetworkAddSubnetwork(DM dm, const char* name, PetscInt ne, PetscInt edgelist[], PetscInt *netnum);
 
@@ -637,7 +637,7 @@ follows:
 
    The coupling is done by calling
 
-   ::
+   .. code-block::
 
       DMNetworkAddSharedVertices(DM dm, PetscInt anet, PetscInt bnet, PetscInt nsv, PetscInt asv[], PetscInt bsv[]);
 
@@ -647,7 +647,7 @@ follows:
 #. The next step is to have DMNetwork create a bare layout (graph) of
    the network by calling
 
-   ::
+   .. code-block::
 
       DMNetworkLayoutSetUp(DM dm);
 
@@ -657,7 +657,7 @@ follows:
 
    A component and number of variables are added to a vertex/edge by calling
 
-   ::
+   .. code-block::
 
       DMNetworkAddComponent(DM dm, PetscInt p, PetscInt compkey, void* compdata, PetscInt nvar)
 
@@ -676,20 +676,20 @@ follows:
 
 #. Set up network internal data structures.
 
-   ::
+   .. code-block::
 
       DMSetUp(DM dm);
 
 #. Distribute the network (also moves components attached with
    vertices/edges) to multiple processors.
 
-   ::
+   .. code-block::
 
       DMNetworkDistribute(DM dm, const char partitioner[], PetscInt overlap, DM *distDM);
 
 #. Associate the ``DM`` with a PETSc solver:
 
-   ::
+   .. code-block::
 
       KSPSetDM(KSP ksp, DM dm) or SNESSetDM(SNES snes, DM dm) or TSSetDM(TS ts, DM dm).
 
@@ -700,36 +700,36 @@ Utility functions
 network. The mostly commonly used functions are: obtaining iterators for
 vertices/edges,
 
-::
+.. code-block::
 
    DMNetworkGetEdgeRange(DM dm, PetscInt *eStart, PetscInt *eEnd);
 
-::
+.. code-block::
 
    DMNetworkGetVertexRange(DM dm, PetscInt *vStart, PetscInt *vEnd);
 
-::
+.. code-block::
 
    DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PetscInt *nv, PetscInt *ne, const PetscInt **vtx, const PetscInt **edge);
 
 checking the status of a vertex,
 
-::
+.. code-block::
 
    DMNetworkIsGhostVertex(DM dm, PetscInt p, PetscBool *isghost);
 
-::
+.. code-block::
 
    DMNetworkIsSharedVertex(DM dm, PetscInt p, PetscBool *isshared);
 
 and retrieving local/global indices of vertex/edge component variables for
 inserting elements in vectors/matrices,
 
-::
+.. code-block::
 
    DMNetworkGetLocalVecOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offset);
 
-::
+.. code-block::
 
    DMNetworkGetGlobalVecOffset(DM dm, PetscInt p, PetscInt compnum, PetscInt *offsetg).
 
@@ -737,11 +737,11 @@ In network applications, one frequently needs to find the supporting
 edges for a vertex or the connecting vertices covering an edge. These
 can be obtained by the following two routines.
 
-::
+.. code-block::
 
    DMNetworkGetConnectedVertices(DM dm, PetscInt edge, const PetscInt *vertices[]);
 
-::
+.. code-block::
 
    DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *nedges, const PetscInt *edges[]).
 
@@ -750,14 +750,14 @@ Retrieving components and number of variables
 
 The components and the corresponding number of variables set at a vertex/edge can be accessed by
 
-::
+.. code-block::
 
    DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *compkey, void **component, PetscInt *nvar)
 
 input ``compnum`` is the component number, output ``compkey`` is the key set by ``DMNetworkRegisterComponent``. An example
 of accessing and retrieving the components and number of variables at vertices is:
 
-::
+.. code-block::
 
    PetscInt Start,End,numcomps,key,v,compnum;
    void *component;

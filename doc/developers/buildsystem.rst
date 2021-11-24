@@ -344,7 +344,7 @@ module requires another, it merely executes a ``require()``. For
 instance, the PETSc configure module for HYPRE requires information
 about MPI, and thus contains
 
-::
+.. code-block:: python
 
        self.mpi = self.framework.require("config.packages.MPI", self)
 

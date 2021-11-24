@@ -25,7 +25,7 @@ Creating and Assembling Matrices
 
 The simplest routine for forming a PETSc matrix, ``A``, is followed by
 
-::
+.. code-block::
 
    MatCreate(MPI_Comm comm,Mat *A)
    MatSetSizes(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
@@ -45,13 +45,13 @@ information about available matrix formats.
 To insert or add entries to a matrix, one can call a variant of
 ``MatSetValues()``, either
 
-::
+.. code-block::
 
    MatSetValues(Mat A,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar values[],INSERT_VALUES);
 
 or
 
-::
+.. code-block::
 
      MatSetValues(Mat A,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar values[],ADD_VALUES);
 
@@ -67,7 +67,7 @@ meaning that the value to be put in row ``idxm[i]`` and column
 ``idxn[j]`` is located in ``values[i*n+j]``. To allow the insertion of
 values in column major order, one can call the command
 
-::
+.. code-block::
 
    MatSetOption(Mat A,MAT_ROW_ORIENTED,PETSC_FALSE);
 
@@ -92,7 +92,7 @@ After the matrix elements have been inserted or added into the matrix,
 they must be processed (also called “assembled”) before they can be
 used. The routines for matrix processing are
 
-::
+.. code-block::
 
    MatAssemblyBegin(Mat A,MAT_FINAL_ASSEMBLY);
    MatAssemblyEnd(Mat A,MAT_FINAL_ASSEMBLY);
@@ -113,7 +113,7 @@ to be stored. To help the application programmer with this task for
 matrices that are distributed across the processes by ranges, the
 routine
 
-::
+.. code-block::
 
    MatGetOwnershipRange(Mat A,PetscInt *first_row,PetscInt *last_row);
 
@@ -169,7 +169,7 @@ entries are stored with the rest of the nonzeros (not separately).
 To create a sequential AIJ sparse matrix, ``A``, with ``m`` rows and
 ``n`` columns, one uses the command
 
-::
+.. code-block::
 
    MatCreateSeqAIJ(PETSC_COMM_SELF,PetscInt m,PetscInt n,PetscInt nz,PetscInt *nnz,Mat *A);
 
@@ -210,7 +210,7 @@ attempt to indicate (nearly) the exact number of elements intended for
 the various rows with the optional array, ``nnz`` of length ``m``, where
 ``m`` is the number of rows, for example
 
-::
+.. code-block::
 
    PetscInt nnz[m];
    nnz[0] = <nonzeros in row 0>
@@ -268,7 +268,7 @@ The ``-info`` option causes the routines ``MatAssemblyBegin()`` and
 preallocation. Consider the following example for the ``MATSEQAIJ``
 matrix format:
 
-::
+.. code-block::
 
    MatAssemblyEnd_SeqAIJ:Matrix size 10 X 10; storage space:20 unneeded, 100 used
    MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is 0
@@ -280,7 +280,7 @@ additional space (an expensive operation). In the next example the user
 did not preallocate sufficient space, as indicated by the fact that the
 number of mallocs is very large (bad for efficiency):
 
-::
+.. code-block::
 
    MatAssemblyEnd_SeqAIJ:Matrix size 10 X 10; storage space:47 unneeded, 1000 used
    MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is 40000
@@ -296,7 +296,7 @@ Parallel AIJ Sparse Matrices
 Parallel sparse matrices with the AIJ format can be created with the
 command
 
-::
+.. code-block::
 
    MatCreateAIJ=(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,PetscInt *d_nnz, PetscInt o_nz,PetscInt *o_nnz,Mat *A);
 
@@ -422,7 +422,7 @@ the success of preallocation during matrix assembly. For the
 number of elements owned by on each process that were generated on a
 different process. For example, the statements
 
-::
+.. code-block::
 
    MatAssemblyBegin_MPIAIJ:Stash has 10 entries, uses 0 mallocs
    MatAssemblyBegin_MPIAIJ:Stash has 3 entries, uses 0 mallocs
@@ -431,7 +431,7 @@ different process. For example, the statements
 indicate that very few values have been generated on different
 processes. On the other hand, the statements
 
-::
+.. code-block::
 
    MatAssemblyBegin_MPIAIJ:Stash has 100000 entries, uses 100 mallocs
    MatAssemblyBegin_MPIAIJ:Stash has 77777 entries, uses 70 mallocs
@@ -583,7 +583,7 @@ each process stores its entries in a column-major array in the usual
 Fortran style. To create a sequential, dense PETSc matrix, ``A`` of
 dimensions ``m`` by ``n``, the user should call
 
-::
+.. code-block::
 
    MatCreateSeqDense(PETSC_COMM_SELF,PetscInt m,PetscInt n,PetscScalar *data,Mat *A);
 
@@ -593,7 +593,7 @@ wish to allocate their own storage space). Most users should merely set
 ``data`` to ``NULL`` for PETSc to control matrix memory allocation. To
 create a parallel, dense matrix, ``A``, the user should call
 
-::
+.. code-block::
 
    MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar *data,Mat *A)
 
@@ -672,7 +672,7 @@ we introduce the four spaces shown in :numref:`fig_localspaces`.
 
 The key to format-independent assembly is the function
 
-::
+.. code-block::
 
    MatGetLocalSubMatrix(Mat A,IS isrow,IS iscol,Mat *submat);
 
@@ -712,13 +712,13 @@ The parallel matrix can multiply a vector with ``n`` local entries,
 returning a vector with ``m`` local entries. That is, to form the
 product
 
-::
+.. code-block::
 
    MatMult(Mat A,Vec x,Vec y);
 
 the vectors ``x`` and ``y`` should be generated with
 
-::
+.. code-block::
 
    VecCreateMPI(MPI_Comm comm,n,N,&x);
    VecCreateMPI(MPI_Comm comm,m,M,&y);
@@ -732,13 +732,13 @@ matrix-vector operations.
 Along with the matrix-vector multiplication routine, there is a version
 for the transpose of the matrix,
 
-::
+.. code-block::
 
    MatMultTranspose(Mat A,Vec x,Vec y);
 
 There are also versions that add the result to another vector:
 
-::
+.. code-block::
 
    MatMultAdd(Mat A,Vec x,Vec y,Vec w);
    MatMultTransposeAdd(Mat A,Vec x,Vec y,Vec w);
@@ -751,7 +751,7 @@ language standard, but we allow it anyway.
 One can print a matrix (sequential or parallel) to the screen with the
 command
 
-::
+.. code-block::
 
    MatView(Mat mat,PETSC_VIEWER_STDOUT_WORLD);
 
@@ -759,13 +759,13 @@ Other viewers can be used as well. For instance, one can draw the
 nonzero structure of the matrix into the default X-window with the
 command
 
-::
+.. code-block::
 
    MatView(Mat mat,PETSC_VIEWER_DRAW_WORLD);
 
 Also one can use
 
-::
+.. code-block::
 
    MatView(Mat mat,PetscViewer viewer);
 
@@ -839,7 +839,7 @@ of partial differential equations. To support matrix-free methods in
 PETSc, one can use the following command to create a ``Mat`` structure
 without ever actually generating the matrix:
 
-::
+.. code-block::
 
    MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *mat);
 
@@ -851,13 +851,13 @@ matrix-free algorithms require only the application of the linear
 operator to a vector. To provide this action, the user must write a
 routine with the calling sequence
 
-::
+.. code-block::
 
    UserMult(Mat mat,Vec x,Vec y);
 
 and then associate it with the matrix, ``mat``, by using the command
 
-::
+.. code-block::
 
    MatShellSetOperation(Mat mat,MatOperation MATOP_MULT, (void(*)(void)) PetscErrorCode (*UserMult)(Mat,Vec,Vec));
 
@@ -906,7 +906,7 @@ structure of a matrix, rather than determining it anew every time the
 matrix is generated. To retain a given matrix but reinitialize its
 contents, one can employ
 
-::
+.. code-block::
 
    MatZeroEntries(Mat A);
 
@@ -921,7 +921,7 @@ previously existed, space will be allocated for the new entries. To
 prevent the allocation of additional memory and simply discard those new
 entries, one can use the option
 
-::
+.. code-block::
 
    MatSetOption(Mat A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 
@@ -946,13 +946,13 @@ the matrix associated with known boundary conditions, by rows of the
 identity matrix (or some scaling of it). This action can be done with
 the command
 
-::
+.. code-block::
 
    MatZeroRows(Mat A,PetscInt numRows,PetscInt rows[],PetscScalar diag_value,Vec x,Vec b),
 
 or equivalently,
 
-::
+.. code-block::
 
    MatZeroRowsIS(Mat A,IS rows,PetscScalar diag_value,Vec x,Vec b);
 
@@ -968,7 +968,7 @@ structure, the user can call ``MatZeroRows()`` in the first iteration.
 Then, before generating the matrix in the second iteration the user
 should call
 
-::
+.. code-block::
 
    MatSetOption(Mat A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 
@@ -980,13 +980,13 @@ also be used if for each process one provides the Dirichlet locations in
 the local numbering of the matrix. A drawback of ``MatZeroRows()`` is
 that it destroys the symmetry of a matrix. Thus one can use
 
-::
+.. code-block::
 
    MatZeroRowsColumns(Mat A,PetscInt numRows,PetscInt rows[],PetscScalar diag_value,Vec x,Vec b),
 
 or equivalently,
 
-::
+.. code-block::
 
    MatZeroRowsColumnsIS(Mat A,IS rows,PetscScalar diag_value,Vec x,Vec b);
 
@@ -1008,7 +1008,7 @@ be symmetric.
 
 Another matrix routine of interest is
 
-::
+.. code-block::
 
    MatConvert(Mat mat,MatType newtype,Mat *M)
 
@@ -1023,7 +1023,7 @@ In certain applications it may be necessary for application codes to
 directly access elements of a matrix. This may be done by using the the
 command (for local rows only)
 
-::
+.. code-block::
 
    MatGetRow(Mat A,PetscInt row, PetscInt *ncols,const PetscInt (*cols)[],const PetscScalar (*vals)[]);
 
@@ -1038,7 +1038,7 @@ entries, one must use ``MatSetValues()``.
 
 Once the user has finished using a row, he or she *must* call
 
-::
+.. code-block::
 
    MatRestoreRow(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **vals);
 
@@ -1073,7 +1073,7 @@ object. One first creates a parallel matrix that contains the
 connectivity information about the grid (or other graph-type object)
 that is to be partitioned. This is done with the command
 
-::
+.. code-block::
 
    MatCreateMPIAdj(MPI_Comm comm,int mlocal,PetscInt n,const PetscInt ia[],const PetscInt ja[],PetscInt *weights,Mat *Adj);
 
@@ -1124,7 +1124,7 @@ and (2) partition by vertex.
 Once the connectivity matrix has been created the following code will
 generate the renumbering required for the new partition
 
-::
+.. code-block::
 
    MatPartitioningCreate(MPI_Comm comm,MatPartitioning *part);
    MatPartitioningSetAdjacency(MatPartitioning part,Mat Adj);
@@ -1142,7 +1142,7 @@ Now that a new numbering of the nodes has been determined, one must
 renumber all the nodes and migrate the grid information to the correct
 process. The command
 
-::
+.. code-block::
 
    AOCreateBasicIS(isg,NULL,&ao);
 

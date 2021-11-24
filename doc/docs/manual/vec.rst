@@ -32,7 +32,7 @@ PETSc currently provides two basic vector types: sequential and parallel
 (MPI-based). To create a sequential vector with ``m`` components, one
 can use the command
 
-::
+.. code-block::
 
    VecCreateSeq(PETSC_COMM_SELF,PetscInt m,Vec *x);
 
@@ -40,7 +40,7 @@ To create a parallel vector one can either specify the number of
 components that will be stored on each process or let PETSc decide. The
 command
 
-::
+.. code-block::
 
    VecCreateMPI(MPI_Comm comm,PetscInt m,PetscInt M,Vec *x);
 
@@ -52,7 +52,7 @@ Either the local or global dimension, but not both, can be set to
 PETSc should decide or determine it. More generally, one can use the
 routines
 
-::
+.. code-block::
 
    VecCreate(MPI_Comm comm,Vec *v);
    VecSetSizes(Vec v, PetscInt m, PetscInt M);
@@ -75,7 +75,7 @@ communicator.
 One can assign a single value to all components of a vector with the
 command
 
-::
+.. code-block::
 
    VecSet(Vec x,PetscScalar value);
 
@@ -84,7 +84,7 @@ complicated, in order to make it possible to write efficient parallel
 code. Assigning a set of components is a two-step process: one first
 calls
 
-::
+.. code-block::
 
    VecSetValues(Vec x,PetscInt n,PetscInt *indices,PetscScalar *values,INSERT_VALUES);
 
@@ -96,13 +96,13 @@ any components of the vector; PETSc ensures that they are automatically
 stored in the correct location. Once all of the values have been
 inserted with ``VecSetValues()``, one must call
 
-::
+.. code-block::
 
    VecAssemblyBegin(Vec x);
 
 followed by
 
-::
+.. code-block::
 
    VecAssemblyEnd(Vec x);
 
@@ -117,7 +117,7 @@ Example usage of ``VecSetValues()`` may be found in
 Often, rather than inserting elements in a vector, one may wish to add
 values. This process is also done with the command
 
-::
+.. code-block::
 
    VecSetValues(Vec x,PetscInt n,PetscInt *indices, PetscScalar *values,ADD_VALUES);
 
@@ -142,7 +142,7 @@ components of a vector are the vector scatter routines. See
 
 One can examine a vector with the command
 
-::
+.. code-block::
 
    VecView(Vec x,PetscViewer v);
 
@@ -157,14 +157,14 @@ variety of viewers are discussed further in
 To create a new vector of the same format as an existing vector, one
 uses the command
 
-::
+.. code-block::
 
    VecDuplicate(Vec old,Vec *new);
 
 To create several new vectors of the same format as an existing vector,
 one uses the command
 
-::
+.. code-block::
 
    VecDuplicateVecs(Vec old,PetscInt n,Vec **new);
 
@@ -179,13 +179,13 @@ the specified existing vector. As discussed in
 When a vector is no longer needed, it should be destroyed with the
 command
 
-::
+.. code-block::
 
    VecDestroy(Vec *x);
 
 To destroy an array of vectors, use the command
 
-::
+.. code-block::
 
    VecDestroyVecs(PetscInt n,Vec **vecs);
 
@@ -196,13 +196,13 @@ It is also possible to create vectors that use an array provided by the
 user, rather than having PETSc internally allocate the array space. Such
 vectors can be created with the routines
 
-::
+.. code-block::
 
    VecCreateSeqWithArray(PETSC_COMM_SELF,PetscInt bs,PetscInt n,PetscScalar *array,Vec *V);
 
 and
 
-::
+.. code-block::
 
    VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscScalar *array,Vec *vv);
 
@@ -282,7 +282,7 @@ For parallel vectors that are distributed across the processes by
 ranges, it is possible to determine a process’s local range with the
 routine
 
-::
+.. code-block::
 
    VecGetOwnershipRange(Vec vec,PetscInt *low,PetscInt *high);
 
@@ -295,13 +295,13 @@ On occasion, the user needs to access the actual elements of the vector.
 The routine ``VecGetArray()`` returns a pointer to the elements local to
 the process:
 
-::
+.. code-block::
 
    VecGetArray(Vec v,PetscScalar **array);
 
 When access to the array is no longer needed, the user should call
 
-::
+.. code-block::
 
    VecRestoreArray(Vec v, PetscScalar **array);
 
@@ -309,7 +309,7 @@ If the values do not need to be modified, the routines
 ``VecGetArrayRead()`` and ``VecRestoreArrayRead()`` provide read-only
 access and should be used instead.
 
-::
+.. code-block::
 
    VecGetArrayRead(Vec v, const PetscScalar **array);
    VecRestoreArrayRead(Vec v, const PetscScalar **array);
@@ -324,13 +324,13 @@ efficiently.
 
 The number of elements stored locally can be accessed with
 
-::
+.. code-block::
 
    VecGetLocalSize(Vec v,PetscInt *size);
 
 The global vector length can be determined by
 
-::
+.. code-block::
 
    VecGetSize(Vec v,PetscInt *size);
 
@@ -339,7 +339,7 @@ provides split phase versions of these that allow several independent
 inner products and/or norms to share the same communication (thus
 improving parallel efficiency). For example, one may have code such as
 
-::
+.. code-block::
 
    VecDot(Vec x,Vec y,PetscScalar *dot);
    VecMDot(Vec x,PetscInt nv, Vec y[],PetscScalar *dot);
@@ -349,7 +349,7 @@ improving parallel efficiency). For example, one may have code such as
 This code works fine, but it performs three separate parallel
 communication operations. Instead, one can write
 
-::
+.. code-block::
 
    VecDotBegin(Vec x,Vec y,PetscScalar *dot);
    VecMDotBegin(Vec x, PetscInt nv,Vec y[],PetscScalar *dot);
@@ -412,7 +412,7 @@ PETSc provides certain utility routines that allow one to deal cleanly
 and efficiently with the various orderings. To define a new application
 ordering (called an ``AO`` in PETSc), one can call the routine
 
-::
+.. code-block::
 
    AOCreateBasic(MPI_Comm comm,PetscInt n,const PetscInt apordering[],const PetscInt petscordering[],AO *ao);
 
@@ -434,13 +434,13 @@ write this correspondence as
 The user can create the PETSc ``AO`` mappings in a number of ways. For
 example, if using two processes, one could call
 
-::
+.. code-block::
 
    AOCreateBasic(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);
 
 on the first process and
 
-::
+.. code-block::
 
    AOCreateBasic(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);
 
@@ -449,7 +449,7 @@ on the other process.
 Once the application ordering has been created, it can be used with
 either of the commands
 
-::
+.. code-block::
 
    AOPetscToApplication(AO ao,PetscInt n,PetscInt *indices);
    AOApplicationToPetsc(AO ao,PetscInt n,PetscInt *indices);
@@ -464,7 +464,7 @@ used in the call to ``AOCreateBasic()``.
 
 An alternative routine to create the application ordering, ``AO``, is
 
-::
+.. code-block::
 
    AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 
@@ -473,7 +473,7 @@ instead of integer arrays.
 
 The mapping routines
 
-::
+.. code-block::
 
    AOPetscToApplicationIS(AO ao,IS indices);
    AOApplicationToPetscIS(AO ao,IS indices);
@@ -509,7 +509,7 @@ for local computation. PETSc provides routines to help map indices from
 a local numbering scheme to the PETSc global numbering scheme. This is
 done via the following routines
 
-::
+.. code-block::
 
    ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt N,PetscInt* globalnum,PetscCopyMode mode,ISLocalToGlobalMapping* ctx);
    ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,PetscInt n,PetscInt *in,PetscInt *out);
@@ -540,7 +540,7 @@ global PETSc numbering can be handled with the
 If one is given a list of block indices in a global numbering, the
 routine
 
-::
+.. code-block::
 
    ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingMode type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
 
@@ -564,13 +564,13 @@ may maintain its own sublist of vertices and elements and number them
 locally). To set values into a vector with the local numbering, one must
 first call
 
-::
+.. code-block::
 
    VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
 
 and then call
 
-::
+.. code-block::
 
    VecSetValuesLocal(Vec x,PetscInt n,const PetscInt indices[],const PetscScalar values[],INSERT_VALUES);
 
@@ -621,7 +621,7 @@ the proper layout.
 One creates a distributed array communication data structure in two
 dimensions with the command
 
-::
+.. code-block::
 
    DMDACreate2d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMDAStencilType st,PetscInt M, PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,DM *da);
 
@@ -664,7 +664,7 @@ technique).
 The commands for creating distributed array communication data
 structures in one and three dimensions are analogous:
 
-::
+.. code-block::
 
    DMDACreate1d(MPI_Comm comm,DMBoundaryType xperiod,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,DM *inra);
    DMDACreate3d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMBoundaryType zperiod, DMDAStencilType stencil_type,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra);
@@ -683,7 +683,7 @@ associated storage space for field values. Instead, the user can create
 vector objects that use the ``DMDA`` layout information with the
 routines
 
-::
+.. code-block::
 
    DMCreateGlobalVector(DM da,Vec *g);
    DMCreateLocalVector(DM da,Vec *l);
@@ -713,7 +713,7 @@ local portion of the vector, including the ghost points. This may be
 done by scattering a global vector into its local parts by using the
 two-stage commands
 
-::
+.. code-block::
 
    DMGlobalToLocalBegin(DM da,Vec g,InsertMode iora,Vec l);
    DMGlobalToLocalEnd(DM da,Vec g,InsertMode iora,Vec l);
@@ -728,13 +728,13 @@ generated by ``DMCreateGlobalVector()`` and ``DMCreateLocalVector()``
 One can scatter the local patches into the distributed vector with the
 command
 
-::
+.. code-block::
 
    DMLocalToGlobal(DM da,Vec l,InsertMode mode,Vec g);
 
 or the commands
 
-::
+.. code-block::
 
    DMLocalToGlobalBegin(DM da,Vec l,InsertMode mode,Vec g);
    /* (Computation to overlap with communication) */
@@ -749,7 +749,7 @@ A third type of distributed array scatter is from a local vector
 vector with correct ghost point values. This scatter may be done with
 the commands
 
-::
+.. code-block::
 
    DMLocalToLocalBegin(DM da,Vec l1,InsertMode iora,Vec l2);
    DMLocalToLocalEnd(DM da,Vec l1,InsertMode iora,Vec l2);
@@ -764,7 +764,7 @@ It is possible to directly access the vector scatter contexts (see
 below) used in the local-to-global (``ltog``), global-to-local
 (``gtol``), and local-to-local (``ltol``) scatters with the command
 
-::
+.. code-block::
 
    DMDAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol);
 
@@ -779,7 +779,7 @@ user “function evaluations”. PETSc provides an easy, light-weight
 return them when they are no longer needed. This is done with the
 routines
 
-::
+.. code-block::
 
    DMGetLocalVector(DM da,Vec *l);
    ... use the local vector l ...
@@ -792,7 +792,7 @@ PETSc provides an easy way to set values into the DMDA Vectors and
 access them using the natural grid indexing. This is done with the
 routines
 
-::
+.. code-block::
 
    DMDAVecGetArray(DM da,Vec l,void *array);
    ... use the array indexing it with 1 or 2 or 3 dimensions ...
@@ -805,7 +805,7 @@ routines
 
 and
 
-::
+.. code-block::
 
    DMDAVecGetArrayDOF(DM da,Vec l,void *array);
    ... use the array indexing it with 1 or 2 or 3 dimensions ...
@@ -823,7 +823,7 @@ the entire grid, but the user may *only* refer to the local and ghost
 entries of this array as all other entries are undefined. For example,
 for a scalar problem in two dimensions one could use
 
-::
+.. code-block::
 
    PetscScalar **f,**u;
    ...
@@ -839,7 +839,7 @@ The recommended approach for multi-component PDEs is to declare a
 ``struct`` representing the fields defined at each node of the grid,
 e.g.
 
-::
+.. code-block::
 
    typedef struct {
      PetscScalar u,v,omega,temperature;
@@ -847,7 +847,7 @@ e.g.
 
 and write residual evaluation using
 
-::
+.. code-block::
 
    Node **f,**u;
    DMDAVecGetArray(DM da,Vec local,&u);
@@ -870,7 +870,7 @@ Grid Information
 The global indices of the lower left corner of the local portion of the
 array as well as the local array size can be obtained with the commands
 
-::
+.. code-block::
 
    DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
    DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
@@ -894,13 +894,13 @@ with ``MatSetValues()`` or ``MatSetValuesStencil()``. Alternately, the
 global node number of each local node, including the ghost nodes, can be
 obtained by calling
 
-::
+.. code-block::
 
    DMGetLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
 
 followed by
 
-::
+.. code-block::
 
    VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping map);
    MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping);
@@ -916,7 +916,7 @@ between the natural ordering on a rectangular grid and the ordering
 PETSc uses to parallelize. This ordering context can be obtained with
 the command
 
-::
+.. code-block::
 
    DMDAGetAO(DM da,AO *ao);
 
@@ -964,7 +964,7 @@ matrices.
 
 The following command creates an index set based on a list of integers:
 
-::
+.. code-block::
 
    ISCreateGeneral(MPI_Comm comm,PetscInt n,PetscInt *indices,PetscCopyMode mode, IS *is);
 
@@ -978,20 +978,20 @@ using the ``IS``.
 Another standard index set is defined by a starting point (``first``)
 and a stride (``step``), and can be created with the command
 
-::
+.. code-block::
 
    ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is);
 
 Index sets can be destroyed with the command
 
-::
+.. code-block::
 
    ISDestroy(IS &is);
 
 On rare occasions the user may need to access information directly from
 an index set. Several commands assist in this process:
 
-::
+.. code-block::
 
    ISGetSize(IS is,PetscInt *size);
    ISStrideGetInfo(IS is,PetscInt *first,PetscInt *stride);
@@ -1002,7 +1002,7 @@ indices in the index set. For certain index sets, this may be a
 temporary array of indices created specifically for a given routine.
 Thus, once the user finishes using the array of indices, the routine
 
-::
+.. code-block::
 
    ISRestoreIndices(IS is, PetscInt **indices);
 
@@ -1011,7 +1011,7 @@ have used to generate the list of indices.
 
 A blocked version of the index sets can be created with the command
 
-::
+.. code-block::
 
    ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt *indices,PetscCopyMode mode, IS *is);
 
@@ -1036,7 +1036,7 @@ combination of scatters and gathers.
 To copy selected components from one vector to another, one uses the
 following set of commands:
 
-::
+.. code-block::
 
    VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
    VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);
@@ -1080,7 +1080,7 @@ In some cases one may wish to “undo” a scatter, that is perform the
 scatter backwards, switching the roles of the sender and receiver. This
 is done by using
 
-::
+.. code-block::
 
    VecScatterBegin(VecScatter ctx,Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE);
    VecScatterEnd(VecScatter ctx,Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE);
@@ -1109,7 +1109,7 @@ In this example each process now has the 100th and 200th component, but
 obviously each process could gather any elements it needed, or none by
 creating an index set with no entries.
 
-::
+.. code-block::
 
    Vec         p, x;         /* initial vector, destination vector */
    VecScatter  scatter;      /* scatter context */
@@ -1145,7 +1145,7 @@ vector, performs the computation on the local work vectors, and then
 scatters back into the global solution vector. In the simplest case this
 may be written as
 
-::
+.. code-block::
 
    VecScatterBegin(VecScatter scatter,Vec globalin,Vec localin,InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
    VecScatterEnd(VecScatter scatter,Vec globalin,Vec localin,InsertMode INSERT_VALUES,ScatterMode SCATTER_FORWARD);
@@ -1168,13 +1168,13 @@ There are two minor drawbacks to the basic approach described above:
 An alternative approach is to allocate global vectors with space
 preallocated for the ghost values; this may be done with either
 
-::
+.. code-block::
 
    VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,PetscInt *ghosts,Vec *vv)
 
 or
 
-::
+.. code-block::
 
    VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,PetscInt *ghosts,PetscScalar *array,Vec *vv)
 
@@ -1190,7 +1190,7 @@ created by ``VecCreateMPI()``. The difference is that the ghosted vector
 has an additional “local” representation that allows one to access the
 ghost locations. This is done through the call to
 
-::
+.. code-block::
 
    VecGhostGetLocalForm(Vec g,Vec *l);
 
@@ -1203,7 +1203,7 @@ numbering.
 
 A common usage of a ghosted vector is given by
 
-::
+.. code-block::
 
    VecGhostUpdateBegin(Vec globalin,InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
    VecGhostUpdateEnd(Vec globalin,InsertMode INSERT_VALUES, ScatterMode SCATTER_FORWARD);
