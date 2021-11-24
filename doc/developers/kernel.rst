@@ -94,7 +94,7 @@ In addition to ``SETERRQ()``, the macros ``SETERRQ1()``, ``SETERRQ2()``,
 ``SETERRQ3()``, and ``SETERRQ4()`` allow one to provide additional
 arguments to a formatted message string, for example,
 
-::
+.. code-block::
 
     SETERRQ2(comm,PETSC_ERR,"Iteration overflow: its %D norm %g",its,(double)norm);
 
@@ -146,7 +146,7 @@ more than likely there is no “terminal”, for example, with Microsoft
 Windows or Apple iPad applications). PETSc provides the replaceable
 function pointer
 
-::
+.. code-block::
 
     (*PetscErrorPrintf)("Format",...);
 
@@ -283,14 +283,14 @@ Profiling Object Creation and Destruction
 The creation of objects is profiled with the command
 ``PetscLogObjectCreate()``
 
-::
+.. code-block::
 
     PetscLogObjectCreate(PetscObject h);
 
 which logs the creation of any PETSc object. Just before an object is
 destroyed, it should be logged with ``PetscLogObjectDestroy()``
 
-::
+.. code-block::
 
     PetscLogObjectDestroy(PetscObject h);
 
@@ -303,14 +303,14 @@ If an object has a clearly defined parent object (for instance, when a
 work vector is generated for use in a Krylov solver), this information
 is logged with the command ``PetscLogObjectParent()``.
 
-::
+.. code-block::
 
     PetscLogObjectParent(PetscObject parent,PetscObject child);
 
 It is also useful to log information about the state of an object, as
 can be done with the command
 
-::
+.. code-block::
 
     PetscLogObjectState(PetscObject h,const char *format,...);
 

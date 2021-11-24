@@ -157,11 +157,11 @@ Basic TS Options
 
 The user first creates a ``TS`` object with the command
 
-::
+.. code-block::
 
    int TSCreate(MPI_Comm comm,TS *ts);
 
-::
+.. code-block::
 
    int TSSetProblemType(TS ts,TSProblemType problemtype);
 
@@ -170,13 +170,13 @@ The ``TSProblemType`` is one of ``TS_LINEAR`` or ``TS_NONLINEAR``.
 To set up ``TS`` for solving an ODE, one must set the “initial
 conditions” for the ODE with
 
-::
+.. code-block::
 
    TSSetSolution(TS ts, Vec initialsolution);
 
 One can set the solution method with the routine
 
-::
+.. code-block::
 
    TSSetType(TS ts,TSType type);
 
@@ -260,19 +260,19 @@ A list of available methods is given in the following table.
 
 Set the initial time with the command
 
-::
+.. code-block::
 
    TSSetTime(TS ts,PetscReal time);
 
 One can change the timestep with the command
 
-::
+.. code-block::
 
    TSSetTimeStep(TS ts,PetscReal dt);
 
 can determine the current timestep with the routine
 
-::
+.. code-block::
 
    TSGetTimeStep(TS ts,PetscReal* dt);
 
@@ -282,14 +282,14 @@ the solution form :math:`u^n` to :math:`u^{n+1}.`
 One sets the total number of timesteps to run or the total time to run
 (whatever is first) with the commands
 
-::
+.. code-block::
 
    TSSetMaxSteps(TS ts,PetscInt maxsteps);
    TSSetMaxTime(TS ts,PetscReal maxtime);
 
 and determines the behavior near the final time with
 
-::
+.. code-block::
 
    TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt);
 
@@ -298,32 +298,32 @@ where ``eftopt`` is one of
 ``TS_EXACTFINALTIME_MATCHSTEP``. One performs the requested number of
 time steps with
 
-::
+.. code-block::
 
    TSSolve(TS ts,Vec U);
 
 The solve call implicitly sets up the timestep context; this can be done
 explicitly with
 
-::
+.. code-block::
 
    TSSetUp(TS ts);
 
 One destroys the context with
 
-::
+.. code-block::
 
    TSDestroy(TS *ts);
 
 and views it with
 
-::
+.. code-block::
 
    TSView(TS ts,PetscViewer viewer);
 
 In place of ``TSSolve()``, a single step can be taken using
 
-::
+.. code-block::
 
    TSStep(TS ts);
 
@@ -1095,7 +1095,7 @@ For problems that involve discontinuous right hand sides, one can set an
 of discontinuities (zeros of :math:`g(t,u)`). Events can be defined
 through the event monitoring routine
 
-::
+.. code-block::
 
    TSSetEventHandler(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void* eventP),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
 
@@ -1150,7 +1150,7 @@ the installation guide, ``docs/installation/index.htm``.)
 
 To use the Sundials integrators, call
 
-::
+.. code-block::
 
    TSSetType(TS ts,TSType TSSUNDIALS);
 
@@ -1159,7 +1159,7 @@ or use the command line option ``-ts_type`` ``sundials``.
 Sundials’ CVODE solver comes with two main integrator families, Adams
 and BDF (backward differentiation formula). One can select these with
 
-::
+.. code-block::
 
    TSSundialsSetType(TS ts,TSSundialsLmmType [SUNDIALS_ADAMS,SUNDIALS_BDF]);
 
@@ -1171,7 +1171,7 @@ nonlinear solvers, so one cannot change the nonlinear solver options via
 ``SNES``. Rather, Sundials uses the preconditioners within the ``PC``
 package of PETSc, which can be accessed via
 
-::
+.. code-block::
 
    TSSundialsGetPC(TS ts,PC *pc);
 
@@ -1180,7 +1180,7 @@ the usual runtime options can be employed via ``-pc_xxx``.
 
 Finally, one can set the Sundials tolerances via
 
-::
+.. code-block::
 
    TSSundialsSetTolerance(TS ts,double abs,double rel);
 
@@ -1189,7 +1189,7 @@ tolerance.
 
 Other PETSc-Sundials options include
 
-::
+.. code-block::
 
    TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type);
 
@@ -1199,7 +1199,7 @@ with ``-ts_sundials_gramschmidt_type <modifed,unmodified>``.
 
 The routine
 
-::
+.. code-block::
 
    TSSundialsSetMaxl(TS ts,PetscInt restart);
 

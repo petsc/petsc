@@ -34,7 +34,7 @@ To perform the discrete adjoint sensitivity analysis one first sets up
 the ``TS`` object for a regular forward run but with one extra function
 call
 
-::
+.. code-block::
 
    TSSetSaveTrajectory(TS ts),
 
@@ -51,14 +51,14 @@ processes. :math:`\lambda_i` and :math:`mu_i` should be initialized with
 the values :math:`d\Phi_i/dy|_{t=t_F}` and :math:`d\Phi_i/dp|_{t=t_F}`
 respectively. Then one calls
 
-::
+.. code-block::
 
    TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 
 If :math:`F()` is a function of :math:`p` one needs to also provide the
 Jacobian :math:`-F_p` with
 
-::
+.. code-block::
 
    TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 
@@ -70,21 +70,21 @@ nonzero, it can be transformed into another ODE that is augmented to the
 original ODE. To evaluate the integral, one needs to create a child
 ``TS`` objective by calling
 
-::
+.. code-block::
 
    TSCreateQuadratureTS(TS ts,PetscBool fwd,TS *quadts);
 
 and provide the ODE RHS function (which evaluates the integrand
 :math:`r`) with
 
-::
+.. code-block::
 
    TSSetRHSFunction(TS quadts,Vec R,PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 
 Similar to the settings for the original ODE, Jacobians of the integrand
 can be provided with
 
-::
+.. code-block::
 
    TSSetRHSJacobian(TS quadts,Vec DRDU,Vec DRDU,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
    TSSetRHSJacobianP(TS quadts,Vec DRDU,Vec DRDU,PetscErrorCode (*drdyp)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
@@ -95,13 +95,13 @@ information will be included in :math:`\lambda` and :math:`\mu`.
 
 Lastly, one starts the backward run by calling
 
-::
+.. code-block::
 
    TSAdjointSolve(TS ts).
 
 One can obtain the value of the integral term by calling
 
-::
+.. code-block::
 
    TSGetCostIntegral(TS ts,Vec *q).
 
@@ -179,7 +179,7 @@ For explicit methods where one does not need to provide the Jacobian
 :math:`F_u` for the forward solve one still does need it for the
 backward solve and thus must call
 
-::
+.. code-block::
 
    TSSetRHSJacobian(TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,PetscReal,Vec,Mat,Mat,void*),void *fP);
 

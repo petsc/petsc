@@ -89,7 +89,7 @@ All PETSc/PETSc objects have the following common header structures
 defined in
 `include/petsc/private/petscimpl.h <../../include/petsc/private/petscimpl.h.html>`__:
 
-::
+.. code-block::
 
     typedef struct {
       PetscErrorCode (*getcomm)(PetscObject,MPI_Comm*);
@@ -101,7 +101,7 @@ defined in
       PetscErrorCode (*queryfunction)(PetscObject,const char*,void (**)(void));
     } PetscOps;
 
-::
+.. code-block::
 
     struct _p_<class> {
       PetscClassId     classid;
@@ -130,7 +130,7 @@ class. For example, the PETSc vector class object operations in
 `include/petsc/private/vecimpl.h <../../include/petsc/private/vecimpl.h.html>`__
 include the following.
 
-::
+.. code-block::
 
     typedef struct _VecOps* VecOps;
     struct _VecOps {
@@ -152,7 +152,7 @@ include the following.
       ... (AND SO ON) ...
     };
 
-::
+.. code-block::
 
     struct _p_Vec {
       PetscClassId           classid;
@@ -180,20 +180,20 @@ error checking. Each different class of objects has its value for
 ``classid``; these are used to distinguish between classes. When a new
 class is created you need to call
 
-::
+.. code-block::
 
     PetscClassIdRegister(const char *classname,PetscClassId *classid);
 
 For example,
 
-::
+.. code-block::
 
     PetscClassIdRegister("index set",&IS_CLASSID);
 
 you can verify that an object is valid of a particular class with
 ``PetscValidHeaderSpecific``, for example,
 
-::
+.. code-block::
 
     PetscValidHeaderSpecific(x,VEC_CLASSID,1);
 
@@ -203,7 +203,7 @@ more complete error messages.
 
 To check for an object of any type, use
 
-::
+.. code-block::
 
     PetscValidHeader(x,1);
 
@@ -284,7 +284,7 @@ In
 `src/sys/objects/olist.c <../../src/sys/objects/olist.c.html>`__,
 PETSc defines a C ``struct``
 
-::
+.. code-block::
 
       typedef struct _PetscObjectList* PetscObjectList;
       struct _PetscObjectList {
@@ -296,7 +296,7 @@ PETSc defines a C ``struct``
 from which linked lists of composed objects may be constructed. The
 routines to manipulate these elementary objects are
 
-::
+.. code-block::
 
     int PetscObjectListAdd(PetscObjectList *fl,const char *name,PetscObject obj);
     int PetscObjectListDestroy(PetscObjectList *fl);
@@ -310,7 +310,7 @@ The PETSc object ``compose()`` and ``query()`` functions are as follows
 (defined in
 `src/sys/objects/inherit.c <../../src/sys/objects/inherit.c.html>`__).
 
-::
+.. code-block::
 
     PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char *name,PetscObject ptr)
     {
@@ -338,7 +338,7 @@ pointer. In
 `src/sys/dll/reg.c <../../src/sys/dll/reg.c.html>`__,
 PETSc defines the following linked list structure.
 
-::
+.. code-block::
 
     struct _n_PetscFunctionList {
       void              (*routine)(void);    /* the routine */
@@ -351,7 +351,7 @@ Each PETSc object contains a ``PetscFunctionList`` object. The
 ``composefunction()`` and ``queryfunction()`` are given by the
 following.
 
-::
+.. code-block::
 
     PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char *name,void *ptr)
     {
@@ -404,7 +404,7 @@ registration for each package is performed “on demand” the first time a
 class in the package is utilized. This is handled, for example, with
 code such as
 
-::
+.. code-block::
 
     PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
     {
