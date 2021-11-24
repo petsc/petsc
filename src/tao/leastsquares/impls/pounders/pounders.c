@@ -635,7 +635,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   PetscReal          minnorm;
   PetscReal          *x,*f;
   const PetscReal    *xmint,*fmin;
-  PetscReal          cres,deltaold;
+  PetscReal          deltaold;
   PetscReal          gnorm;
   PetscBLASInt       info,ione=1,iblas;
   PetscBool          valid,same;
@@ -800,7 +800,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasncopy,&info));
   ierr = PetscInfo1(tao,"Linear solve return: %D\n",(PetscInt)info);CHKERRQ(ierr);
 
-  cres = minnorm;
   ierr = pounders_update_res(tao);CHKERRQ(ierr);
 
   valid = PETSC_TRUE;
@@ -871,7 +870,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
 
       PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&blasn,&blasn,&one,mfqP->Hres,&blasn,mfqP->work,&ione,&zero,mfqP->work2,&ione));
       for (i=0;i<mfqP->n;i++) {
-        cres += mfqP->work[i]*(mfqP->Gres[i]  + 0.5*mfqP->work2[i]);
         mfqP->Gres[i] += mfqP->work2[i];
       }
       mfqP->minindex = mfqP->nHist-1;
@@ -967,7 +965,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&iblas,&one,mfqP->Hdel,&ione,mfqP->H,&ione));
 
     /* Get residuals */
-    cres = mfqP->Fres[mfqP->minindex];
     ierr = pounders_update_res(tao);CHKERRQ(ierr);
 
     /* Export solution and gradient residual to TAO */

@@ -121,11 +121,6 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
   PetscFunctionReturn(0);
 }
 
-/*
-   Contains the list of registered DMPlexGenerators routines
-*/
-PlexGeneratorFunctionList DMPlexGenerateList = NULL;
-
 /*@C
   DMPlexGenerate - Generates a mesh.
 
@@ -141,7 +136,7 @@ PlexGeneratorFunctionList DMPlexGenerateList = NULL;
 
   Options Database:
 +  -dm_plex_generate <name> - package to generate mesh, for example, triangle, ctetgen or tetgen
--  -dm_plex_generator <name> - package to generate mesh, for example, triangle, ctetgen or tetgen (deprecated)
+-  -dm_generator <name> - package to generate mesh, for example, triangle, ctetgen or tetgen
 
   Level: intermediate
 
@@ -149,25 +144,25 @@ PlexGeneratorFunctionList DMPlexGenerateList = NULL;
 @*/
 PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpolate, DM *mesh)
 {
-  PlexGeneratorFunctionList fl;
-  char                      genname[PETSC_MAX_PATH_LEN];
-  const char               *suggestions;
-  PetscInt                  dim;
-  PetscBool                 flg;
-  PetscErrorCode            ierr;
+  DMGeneratorFunctionList fl;
+  char                    genname[PETSC_MAX_PATH_LEN];
+  const char             *suggestions;
+  PetscInt                dim;
+  PetscBool               flg;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(boundary, DM_CLASSID, 1);
   PetscValidLogicalCollectiveBool(boundary, interpolate, 3);
   ierr = DMGetDimension(boundary, &dim);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_plex_generator", genname, sizeof(genname), &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_generator", genname, sizeof(genname), &flg);CHKERRQ(ierr);
   if (flg) name = genname;
   else {
     ierr = PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_plex_generate", genname, sizeof(genname), &flg);CHKERRQ(ierr);
     if (flg) name = genname;
   }
 
-  fl = DMPlexGenerateList;
+  fl = DMGenerateList;
   if (name) {
     while (fl) {
       ierr = PetscStrcmp(fl->name,name,&flg);CHKERRQ(ierr);
@@ -191,76 +186,4 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
     else if (boundary->dim+1 == 3) suggestions = " You may need to add --download-ctetgen or --download-tetgen in your ./configure options";
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid generator of dimension %D registered%s",boundary->dim+1,suggestions);
   }
-}
-
-/*@C
-  DMPlexGenerateRegister -  Adds a grid generator to DMPlex
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined grid generator
-.  fnc - generator function
-.  rfnc - refinement function
-.  alfnc - adapt by label function
--  dim - dimension of boundary of domain
-
-   Notes:
-   DMPlexGenerateRegister() may be called multiple times to add several user-defined solvers.
-
-   Sample usage:
-.vb
-   DMPlexGenerateRegister("my_generator",MyGeneratorCreate,MyGeneratorRefiner,MyGeneratorAdaptor,dim);
-.ve
-
-   Then, your generator can be chosen with the procedural interface via
-$     DMPlexGenerate(dm,"my_generator",...)
-   or at runtime via the option
-$     -dm_plex_generator my_generator
-
-   Level: advanced
-
-.seealso: DMPlexGenerateRegisterAll(), DMPlexGenerate(), DMPlexGenerateRegisterDestroy()
-
-@*/
-PetscErrorCode  DMPlexGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM*), PetscErrorCode (*rfnc)(DM, PetscReal*, DM*), PetscErrorCode (*alfnc)(DM, DMLabel, DM*), PetscInt dim)
-{
-  PlexGeneratorFunctionList entry;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscNew(&entry);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(sname,&entry->name);CHKERRQ(ierr);
-  entry->generate   = fnc;
-  entry->refine     = rfnc;
-  entry->adaptlabel = alfnc;
-  entry->dim        = dim;
-  entry->next       = NULL;
-  if (!DMPlexGenerateList) DMPlexGenerateList = entry;
-  else {
-    PlexGeneratorFunctionList fl = DMPlexGenerateList;
-    while (fl->next) fl = fl->next;
-    fl->next = entry;
-  }
-  PetscFunctionReturn(0);
-}
-
-extern PetscBool DMPlexGenerateRegisterAllCalled;
-
-PetscErrorCode  DMPlexGenerateRegisterDestroy(void)
-{
-  PlexGeneratorFunctionList next,fl;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  next = fl =  DMPlexGenerateList;
-    while (next) {
-    next = fl ? fl->next : NULL;
-    if (fl) {ierr = PetscFree(fl->name);CHKERRQ(ierr);}
-    ierr = PetscFree(fl);CHKERRQ(ierr);
-    fl = next;
-  }
-  DMPlexGenerateList              = NULL;
-  DMPlexGenerateRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
 }

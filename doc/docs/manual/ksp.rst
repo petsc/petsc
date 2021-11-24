@@ -36,7 +36,7 @@ Using KSP
 To solve a linear system with ``KSP``, one must first create a solver
 context with the command
 
-::
+.. code-block::
 
    KSPCreate(MPI_Comm comm,KSP *ksp);
 
@@ -45,7 +45,7 @@ solver context. Before actually solving a linear system with ``KSP``,
 the user must call the following routine to set the matrices associated
 with the linear system:
 
-::
+.. code-block::
 
    KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);
 
@@ -62,7 +62,7 @@ employed to form the linear system matrix).
 
 Much of the power of ``KSP`` can be accessed through the single routine
 
-::
+.. code-block::
 
    KSPSetFromOptions(KSP ksp);
 
@@ -71,7 +71,7 @@ the ``KSP`` and ``PC`` options discussed below. To solve a linear
 system, one sets the rhs and solution vectors using and executes the
 command
 
-::
+.. code-block::
 
    KSPSolve(KSP ksp,Vec b,Vec x);
 
@@ -79,7 +79,7 @@ where ``b`` and ``x`` respectively denote the right-hand-side and
 solution vectors. On return, the iteration number at which the iterative
 process stopped can be obtained using
 
-::
+.. code-block::
 
    KSPGetIterationNumber(KSP ksp, PetscInt *its);
 
@@ -92,7 +92,7 @@ regarding convergence testing. Note that multiple linear solves can be
 performed by the same ``KSP`` context. Once the ``KSP`` context is no
 longer needed, it should be destroyed with the command
 
-::
+.. code-block::
 
    KSPDestroy(KSP *ksp);
 
@@ -103,7 +103,7 @@ to log certain performance data using the PETSc profiling facilities (as
 discussed in :any:`ch_profiling`). In this case, the user can
 optionally explicitly call
 
-::
+.. code-block::
 
    KSPSetUp(KSP ksp);
 
@@ -120,7 +120,7 @@ To allow application programmers to set any of the preconditioner or
 Krylov subspace options directly within the code, we provide routines
 that extract the ``PC`` and ``KSP`` contexts,
 
-::
+.. code-block::
 
    KSPGetPC(KSP ksp,PC *pc);
 
@@ -166,7 +166,7 @@ The Krylov subspace methods accept a number of options, many of which
 are discussed below. First, to set the Krylov subspace method that is to
 be used, one calls the command
 
-::
+.. code-block::
 
    KSPSetType(KSP ksp,KSPType method);
 
@@ -182,7 +182,7 @@ The ``KSP`` method can also be set with the options database command
 method-specific options. For instance, for the Richardson, Chebyshev, and
 GMRES methods:
 
-::
+.. code-block::
 
    KSPRichardsonSetScale(KSP ksp,PetscReal scale);
    KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin);
@@ -198,7 +198,7 @@ The default technique for orthogonalization of the Hessenberg matrix in
 GMRES is the unmodified (classical) Gram-Schmidt method, which can be
 set with
 
-::
+.. code-block::
 
    KSPGMRESSetOrthogonalization(KSP ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);
 
@@ -206,13 +206,13 @@ or the options database command ``-ksp_gmres_classicalgramschmidt``. By
 default this will *not* use iterative refinement to improve the
 stability of the orthogonalization. This can be changed with the option
 
-::
+.. code-block::
 
    KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 
 or via the options database with
 
-::
+:: 
 
    -ksp_gmres_cgs_refinement_type none,ifneeded,always
 
@@ -230,7 +230,7 @@ Hermitian symmetric or truly symmetric (the default is to assume that it
 is Hermitian symmetric). To indicate that it is symmetric, one uses the
 command
 
-::
+.. code-block::
 
    KSPCGSetType(KSP ksp,KSPCGType KSP_CG_SYMMETRIC);
 
@@ -245,7 +245,7 @@ initial value for the solution vector that is given; this zeroing is
 done at the call to ``KSPSolve()``. To use a nonzero initial guess, the
 user *must* call
 
-::
+.. code-block::
 
    KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg);
 
@@ -258,7 +258,7 @@ Since the rate of convergence of Krylov projection methods for a
 particular linear system is strongly dependent on its spectrum,
 preconditioning is typically used to alter the spectrum and hence
 accelerate the convergence rate of iterative techniques. Preconditioning
-can be applied to the system :any:`eq_axeqb` by
+can be applied to the system :eq:`eq_axeqb` by
 
 .. math::
   :label: eq_prec
@@ -267,8 +267,8 @@ can be applied to the system :any:`eq_axeqb` by
 
 where :math:`M_L` and :math:`M_R` indicate preconditioning matrices (or,
 matrices from which the preconditioner is to be constructed). If
-:math:`M_L = I` in :any:`eq_prec`, right preconditioning
-results, and the residual of :any:`eq_axeqb`,
+:math:`M_L = I` in :eq:`eq_prec`, right preconditioning
+results, and the residual of :eq:`eq_axeqb`,
 
 .. math:: r \equiv b - Ax = b - A M_R^{-1} \, M_R x,
 
@@ -284,7 +284,7 @@ preconditioning by default. Right preconditioning can be activated for
 some methods by using the options database command
 ``-ksp_pc_side right`` or calling the routine
 
-::
+.. code-block::
 
    KSPSetPCSide(KSP ksp,PCSide PC_RIGHT);
 
@@ -304,7 +304,7 @@ conjugate gradient, Richardson, and Chebyshev methods the true residual
 can be used by the options database command
 ``ksp_norm_type unpreconditioned`` or by calling the routine
 
-::
+.. code-block::
 
    KSPSetNormType(KSP ksp,KSP_NORM_UNPRECONDITIONED);
 
@@ -471,7 +471,7 @@ where :math:`r_k = b - A x_k`. Divergence is detected if
 These parameters, as well as the maximum number of allowable iterations,
 can be set with the routine
 
-::
+.. code-block::
 
    KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,PetscInt maxits);
 
@@ -487,7 +487,7 @@ In addition to providing an interface to a simple convergence test,
 customized convergence-testing routines. The user can specify a
 customized routine with the command
 
-::
+.. code-block::
 
    KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*test)(KSP ksp,PetscInt it,PetscReal rnorm, KSPConvergedReason *reason,void *ctx),void *ctx,PetscErrorCode (*destroy)(void *ctx));
 
@@ -515,7 +515,7 @@ window (running under X Windows), one should use
 provide their own routines to perform the monitoring by using the
 command
 
-::
+.. code-block::
 
    KSPMonitorSet(KSP ksp,PetscErrorCode (*mon)(KSP ksp,PetscInt it,PetscReal rnorm,void *ctx),void *ctx,PetscErrorCode (*mondestroy)(void**));
 
@@ -530,7 +530,7 @@ MPI communicators within PETSc.
 
 Several monitoring routines are supplied with PETSc, including
 
-::
+.. code-block::
 
    KSPMonitorResidual(KSP,PetscInt,PetscReal, void *);
    KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
@@ -572,13 +572,13 @@ spectrum (eigenvalues) of the preconditioned operator, PETSc has
 specific routines for eigenvalue approximation via the Arnoldi or
 Lanczos iteration. First, before the linear solve one must call
 
-::
+.. code-block::
 
    KSPSetComputeEigenvalues(KSP ksp,PETSC_TRUE);
 
 Then after the ``KSP`` solve one calls
 
-::
+.. code-block::
 
    KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *realpart,PetscReal *complexpart,PetscInt *neig);
 
@@ -588,7 +588,7 @@ computed; this number depends on the size of the Krylov space generated
 during the linear system solution, for GMRES it is never larger than the
 restart parameter. There is an additional routine
 
-::
+.. code-block::
 
    KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt n,PetscReal *realpart,PetscReal *complexpart);
 
@@ -610,7 +610,7 @@ Other KSP Options
 To obtain the solution vector and right hand side from a ``KSP``
 context, one uses
 
-::
+.. code-block::
 
    KSPGetSolution(KSP ksp,Vec *x);
    KSPGetRhs(KSP ksp,Vec *rhs);
@@ -619,7 +619,7 @@ During the iterative process the solution may not yet have been
 calculated or it may be stored in a different location. To access the
 approximate solution during the iterative process, one uses the command
 
-::
+.. code-block::
 
    KSPBuildSolution(KSP ksp,Vec w,Vec *v);
 
@@ -632,7 +632,7 @@ others it doesn’t evenrequire a vector copy.
 
 Access to the residual is done in a similar way with the command
 
-::
+.. code-block::
 
    KSPBuildResidual(KSP ksp,Vec t,Vec w,Vec *v);
 
@@ -650,7 +650,7 @@ particular preconditioning method, the user can either select it from
 the options database using input of the form ``-pc_type <methodname>``
 or set the method with the command
 
-::
+.. code-block::
 
    PCSetType(PC pc,PCType method);
 
@@ -733,7 +733,7 @@ ILU and ICC Preconditioners
 
 Some of the options for ILU preconditioner are
 
-::
+.. code-block::
 
    PCFactorSetLevels(PC pc,PetscInt levels);
    PCFactorSetReuseOrdering(PC pc,PetscBool  flag);
@@ -784,7 +784,7 @@ using block Jacobi or ASM preconditioning (see below).
 
 The options for SOR preconditioning with ``PCSOR`` are
 
-::
+.. code-block::
 
    PCSORSetOmega(PC pc,PetscReal omega);
    PCSORSetIterations(PC pc,PetscInt its,PetscInt lits);
@@ -828,7 +828,7 @@ LU Factorization
 The LU preconditioner provides several options. The first, given by the
 command
 
-::
+.. code-block::
 
    PCFactorSetUseInPlace(PC pc,PetscBool flg);
 
@@ -885,7 +885,7 @@ option name. These options database commands set the particular options
 for *all* of the blocks within the global problem. In addition, the
 routines
 
-::
+.. code-block::
 
    PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **subksp);
    PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **subksp);
@@ -911,7 +911,7 @@ the problem is divided. The options database commands to set this value
 are ``-pc_bjacobi_blocks`` ``n`` and ``-pc_bgs_blocks`` ``n``, and,
 within a program, the corresponding routines are
 
-::
+.. code-block::
 
    PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,PetscInt *size);
    PCASMSetTotalSubdomains(PC pc,PetscInt n,IS *is,IS *islocal);
@@ -946,7 +946,7 @@ additive Schwarz method.
 The user can also set the number of blocks and sizes on a per-process
 basis with the commands
 
-::
+.. code-block::
 
    PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,PetscInt *size);
    PCASMSetLocalSubdomains(PC pc,PetscInt N,IS *is,IS *islocal);
@@ -954,7 +954,7 @@ basis with the commands
 For the ASM preconditioner one can use the following command to set the
 overlap to compute in constructing the subdomains.
 
-::
+.. code-block::
 
    PCASMSetOverlap(PC pc,PetscInt overlap);
 
@@ -1349,20 +1349,20 @@ Shell Preconditioners
 The shell preconditioner simply uses an application-provided routine to
 implement the preconditioner. To set this routine, one uses the command
 
-::
+.. code-block::
 
    PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec));
 
 Often a preconditioner needs access to an application-provided data
 structured. For this, one should use
 
-::
+.. code-block::
 
    PCShellSetContext(PC pc,void *ctx);
 
 to set this data structure and
 
-::
+.. code-block::
 
    PCShellGetContext(PC pc,void *ctx);
 
@@ -1374,7 +1374,7 @@ used, that requires a new setup every time the operator is changed, one
 can provide a routine that is called every time the operator is changed
 (usually via ``KSPSetOperators()``).
 
-::
+.. code-block::
 
    PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC));
 
@@ -1402,7 +1402,7 @@ Let :math:`B_1` and :math:`B_2` represent the application of two
 preconditioners of type ``type1`` and ``type2``. The preconditioner
 :math:`B = B_1 + B_2` can be obtained with
 
-::
+.. code-block::
 
    PCSetType(pc,PCCOMPOSITE);
    PCCompositeAddPCType(pc,type1);
@@ -1414,7 +1414,7 @@ This way of combining preconditioners is called additive, since the
 actions of the preconditioners are added together. This is the default
 behavior. An alternative can be set with the option
 
-::
+.. code-block::
 
    PCCompositeSetType(PC pc,PCCompositeType PC_COMPOSITE_MULTIPLICATIVE);
 
@@ -1444,20 +1444,20 @@ system matrix or using the matrix used to build the preconditioners
 :math:`B_1`, :math:`B_2`, etc. By default it uses the “preconditioner
 matrix”, to use the ``Amat`` matrix use the option
 
-::
+.. code-block::
 
    PCSetUseAmat(PC pc);
 
 The individual preconditioners can be accessed (in order to set options)
 via
 
-::
+.. code-block::
 
    PCCompositeGetPC(PC pc,PetscInt count,PC *subpc);
 
 For example, to set the first sub preconditioners to use ILU(1)
 
-::
+.. code-block::
 
    PC subpc;
    PCCompositeGetPC(pc,0,&subpc);
@@ -1480,7 +1480,7 @@ where ``N`` is the number of the sub-preconditioner. For example,
 PETSc also allows a preconditioner to be a complete linear solver. This
 is achieved with the ``PCKSP`` type.
 
-::
+.. code-block::
 
    PCSetType(PC pc,PCKSP PCKSP);
    PCKSPGetKSP(pc,&ksp);
@@ -1494,7 +1494,7 @@ By default the inner ``KSP`` solver uses the outer preconditioner
 matrix, ``Pmat``, as the matrix to be solved in the linear system; to
 use the matrix that defines the linear system, ``Amat`` use the option
 
-::
+.. code-block::
 
    PCSetUseAmat(PC pc);
 
@@ -1522,7 +1522,7 @@ multigrid solvers.
 
 A multigrid preconditioner is created with the four commands
 
-::
+.. code-block::
 
    KSPCreate(MPI_Comm comm,KSP *ksp);
    KSPGetPC(KSP ksp,PC *pc);
@@ -1531,7 +1531,7 @@ A multigrid preconditioner is created with the four commands
 
 A large number of parameters affect the multigrid behavior. The command
 
-::
+.. code-block::
 
    PCMGSetType(PC pc,PCMGType mode);
 
@@ -1545,7 +1545,7 @@ variant of full multigrid, one can use ``PC_MG_FULL``, and for the
 Kaskade algorithm ``PC_MG_KASKADE``. For the multiplicative and full
 multigrid options, one can use a W-cycle by calling
 
-::
+.. code-block::
 
    PCMGSetCycleType(PC pc,PCMGCycleType ctype);
 
@@ -1559,7 +1559,7 @@ on the levels. By default, the up and down smoothers are identical. If
 separate configuration of up and down smooths is required, it can be
 requested with the option ``-pc_mg_distinct_smoothup`` or the routine
 
-::
+.. code-block::
 
    PCMGSetDistinctSmoothUp(PC pc);
 
@@ -1567,20 +1567,20 @@ The multigrid routines, which determine the solvers and
 interpolation/restriction operators that are used, are mandatory. To set
 the coarse grid solver, one must call
 
-::
+.. code-block::
 
    PCMGGetCoarseSolve(PC pc,KSP *ksp);
 
 and set the appropriate options in ``ksp``. Similarly, the smoothers are
 controlled by first calling
 
-::
+.. code-block::
 
    PCMGGetSmoother(PC pc,PetscInt level,KSP *ksp);
 
 and then setting the various options in the ``ksp.`` For example,
 
-::
+.. code-block::
 
    PCMGGetSmoother(pc,1,&ksp);
    KSPSetOperators(ksp,A1,A1);
@@ -1588,7 +1588,7 @@ and then setting the various options in the ``ksp.`` For example,
 sets the matrix that defines the smoother on level 1 of the multigrid.
 While
 
-::
+.. code-block::
 
    PCMGGetSmoother(pc,1,&ksp);
    KSPGetPC(ksp,&pc);
@@ -1599,20 +1599,20 @@ sets SOR as the smoother to use on level 1.
 To use a different pre- or postsmoother, one should call the following
 routines instead.
 
-::
+.. code-block::
 
    PCMGGetSmootherUp(PC pc,PetscInt level,KSP *upksp);
    PCMGGetSmootherDown(PC pc,PetscInt level,KSP *downksp);
 
 Use
 
-::
+.. code-block::
 
    PCMGSetInterpolation(PC pc,PetscInt level,Mat P);
 
 and
 
-::
+.. code-block::
 
    PCMGSetRestriction(PC pc,PetscInt level,Mat R);
 
@@ -1630,7 +1630,7 @@ interpolation is the transpose of the restriction, you can pass the same
 On each level except the coarsest, one must also set the routine to
 compute the residual. The following command suffices:
 
-::
+.. code-block::
 
    PCMGSetResidual(PC pc,PetscInt level,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat);
 
@@ -1644,7 +1644,7 @@ Finally, the user may provide three work vectors for each level (except
 on the finest, where only the residual work vector is required). The
 work vectors are set with the commands
 
-::
+.. code-block::
 
    PCMGSetRhs(PC pc,PetscInt level,Vec b);
    PCMGSetX(PC pc,PetscInt level,Vec x);
@@ -2034,7 +2034,7 @@ application of the Schur complement. The options prefix for this inner
 done by attaching the matrix/matrices to the :math:`Sp` matrix they
 provide with
 
-::
+.. code-block::
 
    PetscObjectCompose((PetscObject)Sp,"LSC_L",(PetscObject)L);
    PetscObjectCompose((PetscObject)Sp,"LSC_Lp",(PetscObject)Lp);
@@ -2055,7 +2055,7 @@ orthonormal basis in an array of PETSc Vecs. The constant functions can
 be handled separately, since they are such a common case). Create a
 ``MatNullSpace`` object with the command
 
-::
+.. code-block::
 
    MatNullSpaceCreate(MPI_Comm,PetscBool hasconstants,PetscInt dim,Vec *basis,MatNullSpace *nsp);
 
@@ -2067,7 +2067,7 @@ the ``basis`` vectors you provide, nor in the count ``dim``.
 One then tells the ``KSP`` object you are using what the null space is
 with the call
 
-::
+.. code-block::
 
    MatSetNullSpace(Mat Amat,MatNullSpace nsp);
    MatSetTransposeNullSpace(Mat Amat,MatNullSpace nsp);
@@ -2242,7 +2242,7 @@ the following procedural calls are equivalent to runtime options
 ``-ksp_type preonly`` ``-pc_type lu``
 ``-pc_factor_mat_solver_type mumps`` ``-mat_mumps_icntl_7 3``:
 
-::
+.. code-block::
 
    KSPSetType(ksp,KSPPREONLY);
    KSPGetPC(ksp,&pc);

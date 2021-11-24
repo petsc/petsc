@@ -779,6 +779,25 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTransformGetSourcePoint - Get the number of a point in the original mesh based on information from the transformed mesh.
+
+  Not collective
+
+  Input Parameters:
++ tr    - The DMPlexTransform
+- pNew  - The new point number
+
+  Output Parameters:
++ ct    - The type of the original point which produces the new point
+. ctNew - The type of the new point
+. p     - The original point which produces the new point
+- r     - The replica number of the new point, meaning it is the rth point of type ctNew produced from p
+
+  Level: developer
+
+.seealso: DMPlexTransformGetTargetPoint(), DMPlexTransformCellTransform()
+@*/
 PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, DMPolytopeType *ct, DMPolytopeType *ctNew, PetscInt *p, PetscInt *r)
 {
   DMLabel         trType = tr->trType;
@@ -1989,7 +2008,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformAdaptLabel(DM dm, DMLabel adaptLabel, DM *rdm)
+PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *rdm)
 {
   DMPlexTransform tr;
   DM              cdm, rcdm;
@@ -2013,5 +2032,6 @@ PetscErrorCode DMPlexTransformAdaptLabel(DM dm, DMLabel adaptLabel, DM *rdm)
   ierr = DMPlexTransformCreateDiscLabels(tr, *rdm);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *rdm);CHKERRQ(ierr);
   ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
+  ((DM_Plex *) (*rdm)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
   PetscFunctionReturn(0);
 }

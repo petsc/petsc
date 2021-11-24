@@ -175,7 +175,7 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(B,Bx,By,By);CHKERRQ(ierr);
   ierr = VecNorm(By,NORM_INFINITY,&err);CHKERRQ(ierr);
   ierr = VecViewFromOptions(By,NULL,"-mult_vec_view");CHKERRQ(ierr);
-  if (err > PETSC_SMALL) {
+  if (err > 10.*PETSC_SMALL) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMultAdd err %g\n",err);CHKERRQ(ierr);
   }
 
@@ -233,7 +233,7 @@ int main(int argc,char **argv)
     ierr = VecScale(Bx,-1.0);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(B,By,Bx,Bx);CHKERRQ(ierr);
     ierr = VecNorm(Bx,NORM_INFINITY,&err);CHKERRQ(ierr);
-    if (err > PETSC_SMALL) {
+    if (err > 10.*PETSC_SMALL) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMultTransposeAdd err %g\n",err);CHKERRQ(ierr);
     }
   }
@@ -265,7 +265,7 @@ int main(int argc,char **argv)
         ierr = MatMult(B,x,y);CHKERRQ(ierr);
         ierr = VecAXPY(y,-1.0,v);CHKERRQ(ierr);
         ierr = VecNorm(y,NORM_INFINITY,&err);CHKERRQ(ierr);
-        if (err > PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMat err %D %g\n",i,err);CHKERRQ(ierr); }
+        if (err > 10.*PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMat err %D %g\n",i,err);CHKERRQ(ierr); }
       }
       ierr = VecDestroy(&y);CHKERRQ(ierr);
       ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -289,7 +289,7 @@ int main(int argc,char **argv)
           ierr = MatMultTranspose(B,x,y);CHKERRQ(ierr);
           ierr = VecAXPY(y,-1.0,v);CHKERRQ(ierr);
           ierr = VecNorm(y,NORM_INFINITY,&err);CHKERRQ(ierr);
-          if (err > PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransMat err %D %g\n",i,err);CHKERRQ(ierr); }
+          if (err > 10.*PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransMat err %D %g\n",i,err);CHKERRQ(ierr); }
         }
         ierr = VecDestroy(&y);CHKERRQ(ierr);
         ierr = VecDestroy(&x);CHKERRQ(ierr);

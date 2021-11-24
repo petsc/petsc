@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 /*TEST
 
   testset:
-    args: -dm_plex_adaptor cellrefiner -dm_plex_transform_type refine_sbr
+    args: -dm_adaptor cellrefiner -dm_plex_transform_type refine_sbr
 
     test:
       suffix: 0

@@ -131,7 +131,7 @@ indices begin at zero.
 The routine for creating a sequential block AIJ matrix with ``m`` rows,
 ``n`` columns, and a block size of ``nb`` is
 
-::
+.. code-block::
 
     MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz,Mat *A)
 
@@ -152,7 +152,7 @@ Parallel Block AIJ Sparse Matrices
 Parallel block AIJ matrices with block size nb can be created with the
 command ``MatCreateBAIJ()``
 
-::
+.. code-block::
 
     MatCreateBAIJ(MPI_Comm comm,int nb,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A);
 

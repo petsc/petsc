@@ -216,8 +216,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 
     ierr = MatAXPY_Basic_Preallocate(Y,X,&B);CHKERRQ(ierr);
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-    /* TODO mat_tests-ex37_nsize-1_mat_type-baij_mat_block_size-2 fails with MatHeaderMerge */
-    ierr = MatHeaderReplace(Y,&B);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(Y,&B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

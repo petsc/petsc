@@ -4241,7 +4241,6 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
    Level: intermediate
 
 .seealso: MatConvert(), MatDuplicate()
-
 @*/
 PetscErrorCode MatCopy(Mat A,Mat B,MatStructure str)
 {
@@ -4828,8 +4827,6 @@ PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type,MatFactorType f
   PetscFunctionReturn(0);
 }
 
-#include <petscdmtypes.h>
-
 /*@
    MatDuplicate - Duplicates a matrix including the non-zero structure.
 
@@ -4856,7 +4853,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   PetscErrorCode ierr;
   Mat            B;
   PetscInt       i;
-  DM             dm;
+  PetscObject    dm;
   void           (*viewf)(void);
 
   PetscFunctionBegin;
@@ -4871,6 +4868,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   if (!mat->ops->duplicate) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not written for matrix type %s\n",((PetscObject)mat)->type_name);
   ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->duplicate)(mat,op,M);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   B    = *M;
 
   ierr = MatGetOperation(mat,MATOP_VIEW,&viewf);CHKERRQ(ierr);
@@ -4888,11 +4886,10 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   B->nooffproczerorows = mat->nooffproczerorows;
   B->nooffprocentries  = mat->nooffprocentries;
 
-  ierr = PetscObjectQuery((PetscObject) mat, "__PETSc_dm", (PetscObject*) &dm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) mat, "__PETSc_dm", &dm);CHKERRQ(ierr);
   if (dm) {
-    ierr = PetscObjectCompose((PetscObject) B, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) B, "__PETSc_dm", dm);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -9733,16 +9730,16 @@ static PetscErrorCode MatProduct_Private(Mat A,Mat B,MatReuse scall,PetscReal fi
     ierr = MatProductSymbolic(*C);CHKERRQ(ierr);
   } else { /* scall == MAT_REUSE_MATRIX */
     Mat_Product *product = (*C)->product;
+    PetscBool isdense;
 
+    ierr = PetscObjectBaseTypeCompareAny((PetscObject)(*C),&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    if (isdense && product && product->type != ptype) {
+      ierr = MatProductClear(*C);CHKERRQ(ierr);
+      product = NULL;
+    }
     ierr = PetscInfo2(A,"Calling MatProduct API with MAT_REUSE_MATRIX %s product present and product type %s\n",product ? "with" : "without",MatProductTypes[ptype]);CHKERRQ(ierr);
-    if (!product) {
-      /* user provide the dense matrix *C without calling MatProductCreate() */
-      PetscBool isdense;
-
-      ierr = PetscObjectBaseTypeCompareAny((PetscObject)(*C),&isdense,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    if (!product) { /* user provide the dense matrix *C without calling MatProductCreate() or reusing it from previous calls */
       if (isdense) {
-        /* user wants to reuse an assembled dense matrix */
-        /* Create product -- see MatCreateProduct() */
         ierr = MatProductCreate_Private(A,B,NULL,*C);CHKERRQ(ierr);
         product = (*C)->product;
         product->fill     = fill;

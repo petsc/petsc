@@ -15,26 +15,26 @@ Describing a particular finite element problem to PETSc
 
 A finite element problem is presented to PETSc in a series of steps. This is both to facilitate automation, and to allow multiple entry points for user code and external packages since so much finite element software already exists. First, we tell the ``DM``, usually a ``DMPLEX`` or ``DMFOREST``, that we have a set of finite element fields which we intended to solve for in our problem, using
 
-::
+.. code-block::
 
   DMAddField(dm, NULL, presDisc);
   DMAddField(dm, channelLabel, velDisc);
 
 The second argument is a ``DMLabel`` object indicating the support of the field on the mesh, with NULL indicating the entire domain. Once we have a set of fields, we calls
 
-::
+.. code-block::
 
   DMCreateDS(dm);
 
 This divides the computational domain into subdomains, called *regions* in PETSc, each with a unique set of fields supported on it. These subdomain are identified by labels, and each one has a ``PetscDS`` object describing the discrete system (DS) on that subdomain. There are query functions to get the set of DS objects for the DM, but it is usually easiest to get the proper DS for a given cell using
 
-::
+.. code-block::
 
   DMGetCellDS(dm, cell, &ds);
 
 Each `PetscDS`` object has a set of fields, each with a ``PetscFE`` discretization. This allows it to calculate the size of the local discrete approximation, as well as allocate scratch space for all the associated computations. The final thing needed is specify the actual equations to be enforced on each region. The ``PetscDS`` contains a ``PetscWeakForm`` object that holds callback function pointers that define the equations. A simplified, top-level interface through ``PetscDS`` allows users to quickly define problems for a single region. For example, in `SNES Tutorial ex13 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex13.c.html>`__, we define the Poisson problem using
 
-::
+.. code-block::
 
   DMLabel  label;
   PetscInt f = 0, id = 1;
@@ -47,7 +47,7 @@ Each `PetscDS`` object has a set of fields, each with a ``PetscFE`` discretizati
 
 where the pointwise functions are
 
-::
+.. code-block::
 
   static PetscErrorCode trig_inhomogeneous_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
   {
@@ -88,7 +88,7 @@ Notice that we set boundary conditions using ``DMAddBoundary``, which will be de
 
 For more complex cases with multiple regions, we need to use the ``PetscWeakForm`` interface directly. The weak form object allows you to set any number of functions for a given field, and also allows functions to be associated with particular subsets of the mesh using labels and label values. We can reproduce the above problem using the *SetIndex* variants which only set a single function at the specified index, rather than a list of functions. We use a NULL label and value, meaning that the entire domain is used.
 
-::
+.. code-block::
 
   PetscInt f = 0, val = 0;
 
@@ -98,7 +98,7 @@ For more complex cases with multiple regions, we need to use the ``PetscWeakForm
 
 In `SNES Tutorial ex23 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex23.c.html>`__, we define the Poisson problem over the entire domain, but in the top half we also define a pressure. The entire problem can be specified as follows
 
-::
+.. code-block::
 
   DMGetRegionNumDS(dm, 0, &label, NULL, &ds);
   PetscDSGetWeakForm(ds, &wf);
@@ -123,7 +123,7 @@ Assembling finite element residuals and Jacobians
 
 Once the pointwise functions are set in each ``PetscDS``, mesh traversals can be automatically determined from the ``DMLabel`` and value specifications in the keys. This default traversal strategy can be activated by attaching the ``DM`` and default callbacks to a solver
 
-::
+.. code-block::
 
   SNESSetDM(snes, dm);
   DMPlexSetSNESLocalFEM(dm, &user, &user, &user);

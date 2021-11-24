@@ -28,7 +28,7 @@ In the preceding figure, we depict how three levels of ``KSP``
 objects share a common ``DMKSP`` object. The code to access the inner
 ``DMKSP`` object is
 
-::
+.. code-block::
 
       DM    dm_2;
       DMKSP dmksp;
@@ -38,7 +38,7 @@ objects share a common ``DMKSP`` object. The code to access the inner
 To obtain a new DMKSP object for which you can change the callback
 functions (or their contexts) without affecting the original DMKSP, call
 
-::
+.. code-block::
 
       DM    dm_2;
       DMKSP dmksp;
@@ -56,7 +56,7 @@ This results in the object organization as indicated in the following figure
 The ``DMKSP`` object is essentially the list of callback functions and
 their contexts, for example,
 
-::
+.. code-block::
 
     typedef struct _p_DMKSP *DMKSP;
     typedef struct _DMKSPOps *DMKSPOps;
@@ -85,7 +85,7 @@ solver routine for setting a callback a similar routine exists at the
 ``DM`` level. Thus, ``XXXSetY(XXX,...)`` has a routine
 ``DMXXXSetY(DM,...)``.
 
-::
+.. code-block::
 
     PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
     {
@@ -104,7 +104,7 @@ The implementation of ``DMXXXSetY(DM,...)`` gets a “writable” version of
 the ``DMXXX`` object via ``DMGetDMXXXWrite(DM,DMXXX*)`` and sets the
 function callback and its context into the ``DMXXX`` object.
 
-::
+.. code-block::
 
     PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
     {
@@ -124,7 +124,7 @@ the object unless the ``DM`` associated with the ``DMXXX`` object is the
 original ``DM`` that the ``DMXXX`` object was created with. This can be
 seen in the following code.
 
-::
+.. code-block::
 
     PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
     {
@@ -150,7 +150,7 @@ seen in the following code.
 
 The routine ``DMGetDMXXX(DM,DMXXX*)`` has the following form.
 
-::
+.. code-block::
 
     PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
     {
@@ -175,7 +175,7 @@ attach to the ``DM`` object two functions that are automatically called
 when the object is coarsened or refined. The hooks
 ``DMCoarsenHook_DMXXX()`` and ``DMRefineHook_DMXXX()`` have the same form:
 
-::
+.. code-block::
 
     static PetscErrorCode DMCoarsenHook_DMKSP(DM dm,DM dmc,void *ctx)
     {
@@ -188,7 +188,7 @@ when the object is coarsened or refined. The hooks
 
 where
 
-::
+.. code-block::
 
     PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
     {

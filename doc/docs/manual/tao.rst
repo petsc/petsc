@@ -43,8 +43,8 @@ Rosenbrock’s function. The complete code is available in
 The following sections annotate the lines of code in
 :any:`the example <tao-example1>`.
 
+.. _tao-example1:
 .. admonition:: Listing: ``src/tao/unconstrained/tutorials/rosenbrock1.c``
-   :name: tao-example1
 
    .. literalinclude:: /../src/tao/unconstrained/tutorials/rosenbrock1.c
       :prepend: #include <petsctao.h>
@@ -2943,7 +2943,7 @@ computation of the solution. Since linear equation solvers often have a
 wide variety of options associated with them, TAO allows the user to
 access the linear solver with the
 
-::
+.. code-block::
 
       TaoGetKSP(Tao, KSP *);
 
@@ -2957,7 +2957,7 @@ Monitors
 By default the TAO solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the command
 
-::
+.. code-block::
 
       TaoSetMonitor(Tao, PetscErrorCode (*mon)(Tao,void*), void*);
 
@@ -2983,7 +2983,7 @@ choices are not sufficient, the user can specify a customized test
 
 Users can set their own customized convergence tests of the form
 
-::
+.. code-block::
 
       PetscErrorCode  conv(Tao, void*);
 
@@ -2994,7 +2994,7 @@ routines such as ``TaoGetSolutionStatus()`` and ``TaoGetTolerances()``.
 
 To use this convergence test within a TAO solver, one uses the command
 
-::
+.. code-block::
 
       TaoSetConvergenceTest(Tao, PetscErrorCode (*conv)(Tao,void*), void*);
 
@@ -3004,7 +3004,7 @@ user-defined context for private data. The convergence routine receives
 the TAO solver and this private data structure. The termination flag can
 be set by using the routine
 
-::
+.. code-block::
 
       TaoSetConvergedReason(Tao, TaoConvergedReason);
 
@@ -3113,7 +3113,7 @@ Header File
 TAO solver implementation files must include the TAO implementation file
 ``taoimpl.h``:
 
-::
+.. code-block::
 
       #include "petsc/private/taoimpl.h"
 
@@ -3133,7 +3133,7 @@ solver, setup appropriate data structures, and destroy these data
 structures. In order to implement the conjugate gradient algorithm, for
 example, the following structure is useful.
 
-::
+.. code-block::
 
    typedef struct{
 
@@ -3162,7 +3162,7 @@ convergence monitoring. As an example, consider the following code that
 solves an unconstrained minimization problem using the conjugate
 gradient method.
 
-::
+.. code-block::
 
    PetscErrorCode TaoSolve_CG(Tao tao)
    {
@@ -3233,7 +3233,7 @@ nonnegative and equals zero at the solution. The solver will pass this
 quantity, the current function value, the current iteration number, and
 a measure of infeasibility to TAO with the routine
 
-::
+.. code-block::
 
       PetscErrorCode TaoMonitor(Tao tao, PetscInt iter, PetscReal f,
                      PetscReal res, PetscReal cnorm, PetscReal steplength,
@@ -3265,7 +3265,7 @@ pages.
 Nonlinear conjugate gradient algorithms also require a line search. TAO
 provides several line searches and support for using them. The routine
 
-::
+.. code-block::
 
       TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
                              TaoVec *s, PetscReal *steplength, 
@@ -3292,7 +3292,7 @@ line search or linear solver if needed, and creates structures needed by
 this solver. For example, the routine that creates the nonlinear
 conjugate gradient algorithm shown above can be implemented as follows.
 
-::
+.. code-block::
 
    PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
    {
@@ -3354,7 +3354,7 @@ created by earlier routines. For the nonlinear conjugate gradient method
 discussed earlier, the following routine destroys the two work vectors
 and the ``TAO_CG`` structure.
 
-::
+.. code-block::
 
    PetscErrorCode TaoDestroy_CG(TAO_SOLVER tao)
    {
@@ -3387,7 +3387,7 @@ is optional, it is often provided to allocate the gradient vector, work
 vectors, and other data structures required by the solver. It should
 have the following form.
 
-::
+.. code-block::
 
    PetscErrorCode TaoSetUp_CG(Tao tao)
    {
@@ -3411,7 +3411,7 @@ algorithm-specific options set by the user and will be called when the
 application makes a call to ``TaoSetFromOptions()``. It should have the
 following form.
 
-::
+.. code-block::
 
    PetscErrorCode TaoSetFromOptions_CG(Tao tao, void *solver);
    {
@@ -3436,7 +3436,7 @@ called when the application makes a call to ``TaoView()`` or when the
 command line option ``-tao_view`` is used. It should have the following
 form.
 
-::
+.. code-block::
 
    PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
    { 
@@ -3458,7 +3458,7 @@ Once a new solver is implemented, TAO needs to know the name of the
 solver and what function to use to create the solver. To this end, one
 can use the routine
 
-::
+.. code-block::
 
      TaoRegister(const char *name, 
                      const char *path,

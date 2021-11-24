@@ -43,6 +43,7 @@ typedef const char* DMType;
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN const char *const DMBoundaryConditionTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
+PETSC_EXTERN DMGeneratorFunctionList DMGenerateList;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMClone(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
@@ -99,8 +100,12 @@ PETSC_EXTERN PetscErrorCode DMExtrude(DM,PetscInt,DM*);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMViewFromOptions(DM,PetscObject,const char[]);
 
+PETSC_EXTERN PetscErrorCode DMGenerate(DM, const char [], PetscBool , DM *);
+PETSC_EXTERN PetscErrorCode DMGenerateRegister(const char[],PetscErrorCode (*)(DM,PetscBool,DM*),PetscErrorCode (*)(DM,PetscReal*,DM*),PetscErrorCode (*)(DM,Vec,DMLabel,DMLabel,DM*),PetscInt);
+PETSC_EXTERN PetscErrorCode DMGenerateRegisterAll(void);
+PETSC_EXTERN PetscErrorCode DMGenerateRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode DMAdaptLabel(DM,DMLabel,DM*);
-PETSC_EXTERN PetscErrorCode DMAdaptMetric(DM, Vec, DMLabel, DM *);
+PETSC_EXTERN PetscErrorCode DMAdaptMetric(DM, Vec, DMLabel, DMLabel, DM *);
 
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);

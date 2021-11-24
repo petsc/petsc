@@ -26,6 +26,15 @@ typedef struct _PetscHashAuxKey
 
 PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxKeyEqual, NULL)
 
+struct _n_DMGeneratorFunctionList {
+  PetscErrorCode (*generate)(DM, PetscBool, DM *);
+  PetscErrorCode (*refine)(DM, PetscReal *, DM *);
+  PetscErrorCode (*adapt)(DM, Vec, DMLabel, DMLabel, DM *);
+  char            *name;
+  PetscInt         dim;
+  DMGeneratorFunctionList next;
+};
+
 typedef struct _DMOps *DMOps;
 struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
@@ -54,8 +63,6 @@ struct _DMOps {
   PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
   PetscErrorCode (*refinehierarchy)(DM,PetscInt,DM*);
   PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM*);
-  PetscErrorCode (*adaptlabel)(DM,DMLabel,DM*);
-  PetscErrorCode (*adaptmetric)(DM,Vec,DMLabel,DM*);
   PetscErrorCode (*extrude)(DM,PetscInt,DM*);
 
   PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);
