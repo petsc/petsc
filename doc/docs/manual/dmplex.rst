@@ -168,7 +168,7 @@ a continuous Galerkin :math:`P_3` finite element method,
        PetscSectionSetDof(s, e, 2);
    PetscSectionSetUp(s);
 
-DMPlexGetHeightStratum() returns all the points of the requested height
+``DMPlexGetHeightStratum()`` returns all the points of the requested height
 in the DAG. Since this problem is in two dimensions the edges are at
 height 1 and the vertices at height 2 (the cells are always at height
 0). One can also use ``DMPlexGetDepthStratum()`` to use the depth in the
