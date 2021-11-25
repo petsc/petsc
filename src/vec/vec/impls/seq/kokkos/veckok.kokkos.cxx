@@ -1039,18 +1039,24 @@ PetscErrorCode  VecCreateSeqKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
   ierr = VecCreate(comm,&w);CHKERRQ(ierr);
   ierr = VecSetSizes(w,n,n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(w,bs);CHKERRQ(ierr);
-
-  /* Given a device array, build the Vec_Seq struct */
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {harray = const_cast<PetscScalar*>(darray);}
-  else {ierr = PetscMalloc1(w->map->n,&harray);CHKERRQ(ierr);}
-  ierr   = VecCreate_Seq_Private(w,harray);CHKERRQ(ierr); /* Build a sequential vector with harray */
-
-  ierr   = PetscObjectChangeTypeName((PetscObject)w,VECSEQKOKKOS);CHKERRQ(ierr); /* Change it to Kokkos */
-  ierr   = VecSetOps_SeqKokkos(w);CHKERRQ(ierr);
-  veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray));
-  veckok->v_dual.modify_device(); /* Mark the device is modified */
-  w->offloadmask = PETSC_OFFLOAD_KOKKOS;
-  w->spptr = static_cast<void*>(veckok);
+  if (!darray) { /* Allocate memory ourself if user provided NULL */
+    ierr = VecSetType(w,VECSEQKOKKOS);CHKERRQ(ierr);
+  } else {
+    /* Build a VECSEQ, get its harray, and then build Vec_Kokkos along with darray */
+    if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
+      harray = const_cast<PetscScalar*>(darray);
+      ierr   = VecCreate_Seq_Private(w,harray);CHKERRQ(ierr); /* Build a sequential vector with harray */
+    } else {
+      ierr   = VecSetType(w,VECSEQ);CHKERRQ(ierr);
+      harray = static_cast<Vec_Seq*>(w->data)->array;
+    }
+    ierr   = PetscObjectChangeTypeName((PetscObject)w,VECSEQKOKKOS);CHKERRQ(ierr); /* Change it to Kokkos */
+    ierr   = VecSetOps_SeqKokkos(w);CHKERRQ(ierr);
+    veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray));
+    veckok->v_dual.modify_device(); /* Mark the device is modified */
+    w->offloadmask = PETSC_OFFLOAD_KOKKOS;
+    w->spptr = static_cast<void*>(veckok);
+  }
   *v       = w;
   PetscFunctionReturn(0);
 }
