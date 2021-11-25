@@ -1,10 +1,10 @@
 DM Object: Pre Adaptation Mesh 1 MPI processes
   type: plex
 Pre Adaptation Mesh in 3 dimensions:
-  0-cells: 64
-  1-cells: 279
-  2-cells: 378
-  3-cells: 162
+  Number of 0-cells per rank: 64
+  Number of 1-cells per rank: 279
+  Number of 2-cells per rank: 378
+  Number of 3-cells per rank: 162
 Labels:
   marker: 1 strata with value/size (1 (172))
   celltype: 4 strata with value/size (0 (64), 6 (162), 3 (378), 1 (279))
@@ -12,10 +12,10 @@ Labels:
 DM Object: Post Adaptation Mesh 1 MPI processes
   type: plex
 Post Adaptation Mesh in 3 dimensions:
-  0-cells: 343
-  1-cells: 1854
-  2-cells: 2808
-  3-cells: 1296
+  Number of 0-cells per rank: 343
+  Number of 1-cells per rank: 1854
+  Number of 2-cells per rank: 2808
+  Number of 3-cells per rank: 1296
 Labels:
   celltype: 4 strata with value/size (1 (1854), 3 (2808), 6 (1296), 0 (343))
   depth: 4 strata with value/size (0 (343), 1 (1854), 2 (2808), 3 (1296))

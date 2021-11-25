@@ -1300,7 +1300,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = MPI_Gather(&Nc[0], 1, MPIU_INT, sizes,    1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
       ierr = MPI_Gather(&Nc[1], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
       if (d == depth) {ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);}
-      ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", (depth == 1) && d ? dim : d);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  Number of %D-cells per rank:", (depth == 1) && d ? dim : d);CHKERRQ(ierr);
       for (p = 0; p < size; ++p) {
         if (rank == 0) {
           ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]+hybsizes[p]);CHKERRQ(ierr);

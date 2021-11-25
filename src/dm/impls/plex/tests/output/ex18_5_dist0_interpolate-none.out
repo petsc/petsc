@@ -6,8 +6,8 @@ DMPlexCheckPointSFHeavy PASSED
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 2 dimensions:
-  0-cells: 6 0
-  2-cells: 2 0
+  Number of 0-cells per rank: 6 0
+  Number of 2-cells per rank: 2 0
 Labels:
   celltype: 2 strata with value/size (4 (2), 0 (6))
   Cell Sets: 2 strata with value/size (1 (1), 2 (1))

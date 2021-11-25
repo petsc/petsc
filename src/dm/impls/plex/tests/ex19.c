@@ -327,11 +327,13 @@ int main (int argc, char * argv[]) {
       nsize: 4
 
   test:
+    requires: parmetis
     suffix: 6
     nsize: 2
     args: -dm_plex_dim 3 -dm_plex_box_faces 9,9,9 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis \
           -met 0 -hmin 0.01 -hmax 0.03 -init_dm_view -adapt_dm_view
   test:
+    requires: parmetis
     suffix: 7
     nsize: 2
     args: -dm_plex_box_faces 19,19 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis \

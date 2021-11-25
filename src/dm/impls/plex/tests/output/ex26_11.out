@@ -1,9 +1,9 @@
 DM Object: cubit(FourSquareH-large.exo): 12/02/2017: 09:20:37 2 MPI processes
   type: plex
 cubit(FourSquareH-large.exo): 12/02/2017: 09:20:37 in 2 dimensions:
-  0-cells: 54 0
-  1-cells: 117 0
-  2-cells: 64 0
+  Number of 0-cells per rank: 54 0
+  Number of 1-cells per rank: 117 0
+  Number of 2-cells per rank: 64 0
 Labels:
   depth: 3 strata with value/size (0 (54), 1 (117), 2 (64))
   Cell Sets: 4 strata with value/size (1 (9), 2 (18), 3 (28), 5 (9))
@@ -727,9 +727,9 @@ Process 1:
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 2 dimensions:
-  0-cells: 34 32
-  1-cells: 64 63
-  2-cells: 32 32
+  Number of 0-cells per rank: 34 32
+  Number of 1-cells per rank: 64 63
+  Number of 2-cells per rank: 32 32
 Labels:
   depth: 3 strata with value/size (0 (34), 1 (64), 2 (32))
   Cell Sets: 3 strata with value/size (1 (9), 2 (18), 3 (5))

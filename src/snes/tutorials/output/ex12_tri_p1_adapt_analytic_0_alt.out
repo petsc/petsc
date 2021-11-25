@@ -39,12 +39,12 @@ N_orig: 3 N_adapt: 500.
   DM Object: box 1 MPI processes
     type: plex
   box in 2 dimensions:
-    Number of 0-cells per rank:   1251  
-    Number of 1-cells per rank:   3650  
-    Number of 2-cells per rank:   2400  
+    Number of 0-cells per rank:   1252  
+    Number of 1-cells per rank:   3653  
+    Number of 2-cells per rank:   2402  
   Labels:
-    celltype: 3 strata with value/size (0 (1251), 3 (2400), 1 (3650))
-    depth: 3 strata with value/size (0 (1251), 1 (3650), 2 (2400))
+    celltype: 3 strata with value/size (0 (1252), 3 (2402), 1 (3653))
+    depth: 3 strata with value/size (0 (1252), 1 (3653), 2 (2402))
     marker: 1 strata with value/size (1 (200))
   Field potential:
     adjacency FEM

@@ -1,10 +1,10 @@
 DM Object: Generated Mesh 1 MPI processes
   type: plex
 Generated Mesh in 3 dimensions:
-  0-cells: 5
-  1-cells: 9
-  2-cells: 7
-  3-cells: 2
+  Number of 0-cells per rank: 5
+  Number of 1-cells per rank: 9
+  Number of 2-cells per rank: 7
+  Number of 3-cells per rank: 2
 Labels:
   celltype: 4 strata with value/size (0 (5), 6 (2), 3 (7), 1 (9))
   depth: 4 strata with value/size (0 (5), 1 (9), 2 (7), 3 (2))

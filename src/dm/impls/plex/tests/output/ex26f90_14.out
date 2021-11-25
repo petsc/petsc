@@ -1,10 +1,10 @@
 DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 1 MPI processes
   type: plex
 cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 in 3 dimensions:
-  0-cells: 125
-  1-cells: 300
-  2-cells: 240
-  3-cells: 64
+  Number of 0-cells per rank: 125
+  Number of 1-cells per rank: 300
+  Number of 2-cells per rank: 240
+  Number of 3-cells per rank: 64
 Labels:
   celltype: 4 strata with value/size (0 (125), 7 (64), 4 (240), 1 (300))
   depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
@@ -2220,10 +2220,10 @@ Process 0:
 DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 1 MPI processes
   type: plex
 cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickHex-large.exo): 12/08/2017: 17 in 3 dimensions:
-  0-cells: 125
-  1-cells: 300
-  2-cells: 240
-  3-cells: 64
+  Number of 0-cells per rank: 125
+  Number of 1-cells per rank: 300
+  Number of 2-cells per rank: 240
+  Number of 3-cells per rank: 64
 Labels:
   celltype: 4 strata with value/size (0 (125), 7 (64), 4 (240), 1 (300))
   depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))

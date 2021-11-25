@@ -2,9 +2,9 @@
 DM Object: CAD Surface (sur_) 1 MPI processes
   type: plex
 CAD Surface in 2 dimensions:
-  0-cells: 202
-  1-cells: 600
-  2-cells: 400
+  Number of 0-cells per rank: 202
+  Number of 1-cells per rank: 600
+  Number of 2-cells per rank: 400
 Labels:
   celltype: 3 strata with value/size (1 (600), 3 (400), 0 (202))
   depth: 3 strata with value/size (0 (202), 1 (600), 2 (400))

@@ -1,9 +1,9 @@
 DM Object: cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 2 MPI processes
   type: plex
 cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 in 2 dimensions:
-  0-cells: 61 0
-  1-cells: 156 0
-  2-cells: 96 0
+  Number of 0-cells per rank: 61 0
+  Number of 1-cells per rank: 156 0
+  Number of 2-cells per rank: 96 0
 Labels:
   celltype: 3 strata with value/size (0 (61), 3 (96), 1 (156))
   depth: 3 strata with value/size (0 (61), 1 (156), 2 (96))
@@ -23,9 +23,9 @@ PetscViewer Object: 2 MPI processes
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 2 dimensions:
-  0-cells: 40 36
-  1-cells: 85 84
-  2-cells: 48 48
+  Number of 0-cells per rank: 40 36
+  Number of 1-cells per rank: 85 84
+  Number of 2-cells per rank: 48 48
 Labels:
   depth: 3 strata with value/size (0 (40), 1 (85), 2 (48))
   celltype: 3 strata with value/size (0 (40), 1 (85), 3 (48))
