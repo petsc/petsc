@@ -64,8 +64,9 @@ class Package(config.base.Configure):
     self.functionsDefine        = []   # optional functions we wish to check for in the libraries that should generate a PETSC_HAVE_ define
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
     self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
-    self.cxx                    = 0    # 1 means requires C++
-    self.fc                     = 0    # 1 means requires fortran
+    self.buildLanguages         = ['C']  # Languages the package is written in, hence also the compilers needed to build it. Normally only contains one
+                                         # language, but can have multiple, such as ['FC', 'Cxx']. In petsc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
+                                         # We use the first language in the list to check include headers, library functions and versions.
     self.noMPIUni               = 0    # 1 means requires a real MPI
     self.libdir                 = 'lib'     # location of libraries in the package directory tree
     self.altlibdir              = 'lib64'   # alternate location of libraries in the package directory tree
@@ -857,10 +858,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
 
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
-    if self.cxx:
-      self.headers.pushLanguage('C++')
-    else:
-      self.headers.pushLanguage(self.defaultLanguage)
+    self.headers.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
     self.headers.saveLog()
     ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
     self.logWrite(self.headers.restoreLog())
@@ -965,17 +963,16 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 
       self.libraries.saveLog()
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages}):
         self.lib = lib
         if self.functionsDefine:
-          self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
+          self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for optional headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
         if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 60.0):
           self.foundoptionalincludes = 1
         self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
-        # For packages (ex. kokkos) that we are incapable of checking their includes, we set 'doNotCheckIncludes=1' as a workaround.
-        if (not self.includes) or (hasattr(self, 'doNotCheckIncludes') and self.doNotCheckIncludes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
@@ -1022,8 +1019,8 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     cxxVersionConflict = not inVersionRange(cxxVersionRange,self.compilers.cxxDialectRange[self.getDefaultLanguage()])
     # if user did not request option, then turn it off if conflicts with configuration
     if self.lookforbydefault and 'with-'+self.package not in self.framework.clArgDB:
-      if (self.cxx and not hasattr(self.compilers, 'CXX')) or \
-         (self.fc and not hasattr(self.compilers, 'FC')) or \
+      if ('Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX')) or \
+         ('FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC')) or \
          (self.noMPIUni and self.mpi.usingMPIUni) or \
          cxxVersionConflict or \
          (not self.defaultPrecision.lower() in self.precisions) or \
@@ -1035,9 +1032,9 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     if self.argDB['with-'+self.package]:
       if blaslapackconflict:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit BLAS/Lapack indices')
-      if self.cxx and not hasattr(self.compilers, 'CXX'):
+      if 'Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX'):
         raise RuntimeError('Cannot use '+self.name+' without C++, make sure you do NOT have --with-cxx=0')
-      if self.fc and not hasattr(self.compilers, 'FC'):
+      if 'FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
@@ -1090,10 +1087,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         self.version = ''
         return
       self.versioninclude = self.includes[0]
-    if self.cxx:
-      self.pushLanguage('C++')
-    else:
-      self.pushLanguage(self.defaultLanguage)
+    self.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
     flagsArg = self.getPreprocessorFlagsArg()
     oldFlags = getattr(self.compilers, flagsArg)
     setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))

@@ -13,7 +13,7 @@ class Configure(config.package.CMakePackage):
     self.doNotCheckIncludes = 1
     self.includes           = ['RAJA/RAJA.hpp']
     self.liblist            = [['libRAJA.a']]
-    self.cxx                = 1
+    self.buildLanguages     = ['Cxx']
     self.minCxxVersion      = 'c++14'
     self.downloadonWindows  = 0
     self.hastests           = 1
@@ -63,7 +63,7 @@ class Configure(config.package.CMakePackage):
     if self.mpi.found:
       args.append('-DENABLE_MPI=ON')
 
-    # Raja documents these flags though they may not exist 
+    # Raja documents these flags though they may not exist
     args.append('-DRAJA_ENABLE_TESTS=OFF')
     args.append('-DRAJA_ENABLE_BENCHMARKS=OFF')
     args.append('-DRAJA_ENABLE_EXAMPLES=OFF')

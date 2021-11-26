@@ -14,7 +14,7 @@ class Configure(config.package.Package):
                              ['libmkl_scalapack_lp64.a','libmkl_blacs_openmpi_lp64.a']]
     self.functions        = ['pssytrd']
     self.functionsFortran = 1
-    self.fc               = 1
+    self.buildLanguages   = ['FC']
     self.precisions       = ['single','double']
     self.downloadonWindows= 1
     return

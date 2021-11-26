@@ -14,7 +14,7 @@ class Configure(config.package.Package):
     self.liblist          = [['libhipsparse.a','libhipblas.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a'],
                              ['hipsparse.lib','hipblas.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib'],]
     self.precisions       = ['single','double']
-    self.cxx              = 1
+    self.buildLanguages   = ['HIP']
     self.complex          = 1
     self.hastests         = 0
     self.hastestsdatafiles= 0

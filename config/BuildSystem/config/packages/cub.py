@@ -14,7 +14,7 @@ class Configure(config.package.Package):
     self.functions        = []
     self.includes         = ['cub/host/mutex.cuh']
     self.precisions       = ['single','double']
-    self.cxx              = 1
+    self.buildLanguages   = ['Cxx']
     return
 
   def setupDependencies(self, framework):

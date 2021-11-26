@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     self.download               = ['git://https://github.com/mfem/mfem.git']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
-    self.cxx                    = 1
+    self.buildLanguages         = ['Cxx']
     self.minCxxVersion          = 'c++11'
     self.skippackagewithoptions = 1
     self.builtafterpetsc        = 1

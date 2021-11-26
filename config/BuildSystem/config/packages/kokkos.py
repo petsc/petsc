@@ -5,19 +5,17 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = '3.5.00'
+    self.minversion       = '3.5.00'
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git']
     self.downloaddirnames = ['kokkos']
     self.excludedDirs     = ['kokkos-kernels'] # Do not wrongly think kokkos-kernels as kokkos-vernum
-    # TODO: BuildSystem checks C++ headers blindly using CXX. However, when Kokkos is compiled by CUDAC, for example, using
-    # CXX to compile a Kokkos code raises an error. As a workaround, we set this field to skip checking headers in includes.
-    self.doNotCheckIncludes = 1
     self.includes         = ['Kokkos_Macros.hpp']
     self.liblist          = [['libkokkoscontainers.a','libkokkoscore.a']]
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
-    self.cxx              = 1
     self.minCxxVersion    = 'c++14'
+    self.buildLanguages   = ['Cxx'] # Depending on if cuda, hip or sycl is avaiable, it will be modified.
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
@@ -165,12 +163,16 @@ class Configure(config.package.CMakePackage):
 
   def configureLibrary(self):
     import os
-    config.package.CMakePackage.configureLibrary(self)
     if self.cuda.found:
-      self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))
+      self.buildLanguages = ['CUDA']
       self.addMakeMacro('KOKKOS_USE_CUDA_COMPILER',1) # use the CUDA compiler to compile PETSc Kokkos code
     elif self.hip.found:
+      self.buildLanguages= ['HIP']
       self.addMakeMacro('KOKKOS_USE_HIP_COMPILER',1)  # use the HIP compiler to compile PETSc Kokkos code
 
+    config.package.CMakePackage.configureLibrary(self)
+
+    if self.cuda.found:
+      self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))
     if self.argDB['with-kokkos-init-warnings']: # usually one wants to enable warnings
       self.addDefine('HAVE_KOKKOS_INIT_WARNINGS', 1)

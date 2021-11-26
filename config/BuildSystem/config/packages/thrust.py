@@ -14,7 +14,7 @@ class Configure(config.package.GNUPackage):
     self.download         = ['git://https://github.com/NVIDIA/thrust.git']
     self.includes         = ['thrust/version.h']
     self.precisions       = ['single','double']
-    self.cxx              = 1
+    self.buildLanguages   = ['Cxx']
     self.minCxxVersion    = 'c++11'
     return
 

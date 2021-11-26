@@ -18,7 +18,7 @@ class Configure(config.package.Package):
     self.functions        = ['dmumps_c']
     self.includes         = ['dmumps_c.h']
     #
-    self.fc               = 1
+    self.buildLanguages   = ['C','FC']
     self.precisions       = ['single','double']
     self.downloadonWindows= 1
     self.hastests         = 1

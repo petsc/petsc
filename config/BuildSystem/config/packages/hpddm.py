@@ -9,7 +9,7 @@ class Configure(config.package.Package):
     self.versionname            = 'HPDDM_VERSION'
     self.versioninclude         = 'HPDDM_define.hpp'
     self.minCxxVersion          = 'c++11'
-    self.cxx                    = 1
+    self.buildLanguages         = ['Cxx']
     self.functions              = []
     self.includes               = ['HPDDM.hpp']
     self.skippackagewithoptions = 1

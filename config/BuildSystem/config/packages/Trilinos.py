@@ -10,7 +10,7 @@ class Configure(config.package.CMakePackage):
     self.downloaddirnames = ['trilinos']
     self.includes         = ['Trilinos_version.h']
     self.functions        = ['Zoltan_Create']   # one of the very few C routines in Trilinos
-    self.cxx              = 1
+    self.buildLanguages   = ['Cxx']
     self.minCxxVersion    = 'c++11'
     self.downloadonWindows= 0
     self.hastests         = 1
@@ -76,7 +76,7 @@ class Configure(config.package.CMakePackage):
 
   # older versions of Trilinos require passing rpath with the various library paths
   # this caused problems on Apple with cmake generating command lines that are too long
-  # Trilinos was fixed to handled the rpath internally using cmake 
+  # Trilinos was fixed to handled the rpath internally using cmake
   def toStringNoDupes(self,string):
     string    = self.libraries.toStringNoDupes(string)
     if self.requiresrpath: return string

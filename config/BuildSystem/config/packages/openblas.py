@@ -19,7 +19,7 @@ class Configure(config.package.Package):
     self.functions              = ['openblas_get_config']
     self.liblist                = [['libopenblas.a']]
     self.precisions             = ['single','double']
-    self.fc                     = 1
+    self.buildLanguages         = ['C','FC']
     self.installwithbatch       = 1
     self.usespthreads           = 0
 

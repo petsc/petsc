@@ -9,7 +9,7 @@ class Configure(config.package.Package):
     self.versionname            = 'HTOOL_VERSION'
     self.versioninclude         = 'htool/misc/define.hpp'
     self.minCxxVersion          = 'c++11'
-    self.cxx                    = 1
+    self.buildLanguages         = ['Cxx']
     self.functions              = []
     self.includes               = ['htool/misc/define.hpp'] # no C++11 in this header
     self.skippackagewithoptions = 1

@@ -7,7 +7,7 @@ class Configure(config.package.GNUPackage):
     self.download               = ['git://https://github.com/stefanozampini/glvis.git']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
-    self.cxx                    = 1
+    self.buildLanguages         = ['Cxx']
     return
 
   def setupDependencies(self, framework):
