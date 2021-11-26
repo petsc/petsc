@@ -427,7 +427,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscSFSetGraph - Set a parallel star forest
 
    Collective
@@ -784,10 +784,14 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
 -  iremote - remote locations of root vertices for each leaf on the current process
 
    Notes:
-   We are not currently requiring that the graph is set, thus returning nroots=-1 if it has not been set yet
+     We are not currently requiring that the graph is set, thus returning nroots=-1 if it has not been set yet
 
-   When called from Fortran, the returned iremote array is a copy and must be deallocated after use. Consequently, if you
-   want to update the graph, you must call PetscSFSetGraph after modifying the iremote array.
+   Fortran Notes:
+     The returned iremote array is a copy and must be deallocated after use. Consequently, if you
+     want to update the graph, you must call PetscSFSetGraph() after modifying the iremote array.
+
+     To check for a NULL ilocal use
+$      if (loc(ilocal) == loc(PETSC_NULL_INTEGER)) then
 
    Level: intermediate
 
