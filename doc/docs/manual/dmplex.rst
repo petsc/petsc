@@ -109,8 +109,8 @@ is done using
 
    DMPlexStratify(dm);
 
-Data on Unstructured Grids
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Data on Unstructured Grids (PetscSection)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The strongest links between solvers and discretizations are
 
@@ -125,8 +125,8 @@ structures that can be understood by the linear algebra engine in PETSc
 without any reference to the mesh (topology) or discretization
 (analysis).
 
-Data Layout
-^^^^^^^^^^^
+Data Layout by Hand
+^^^^^^^^^^^^^^^^^^^
 
 Data is associated with a mesh using the ``PetscSection`` object. A
 ``PetscSection`` can be thought of as a generalization of
@@ -141,7 +141,7 @@ contiguous like ``PetscLayout``, they can be in any range
 
 The sequence for setting up any ``PetscSection`` is the following:
 
-#. Specify the chart,
+#. Specify the range of points, or chart,
 
 #. Specify the number of dofs per point, and
 
@@ -198,6 +198,24 @@ provides global vectors,
    DMSetLocalSection(dm, s);
    DMGetLocalVector(dm, &localVec);
    DMGetGlobalVector(dm, &globalVec);
+
+A global vector is missing both the shared dofs which are not owned by this process, as well as *constrained* dofs. These constraints are meant to mimic essential boundary conditions, or Dirichlet constraints. They are dofs that have a given fixed value, so they are present in local vectors for assembly purposes, but absent from global vectors since they are never solved for.
+
+We can indicate constraints in a local section using ``PetscSectionSetConstraintDof()``, to set the number of constrained dofs for a given point, and ``PetscSectionSetConstraintIndices()`` which indicates which dofs on the given point are constrained. Once we have this information, a global section can be created using ``PetscSectionCreateGlobalSection()``, and this is done automatically by the ``DM``. A global section returns :math:`-(dof+1)` for the number of dofs on an unowned point, and :math:`-(off+1)` for its offset on the owning process. This can be used to create global vectors, just as the local section is used to create local vectors.
+
+Data Layout using PetscFE
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A ``DM`` can automatically create the local section if given a description of the discretization, for example using a ``PetscFE`` object. Below we create a ``PetscFE`` that can be configured from the command line. It is a single, scalar field, and is added to the ``DM`` using ``DMSetField()``. When a local or global vector is requested, the ``DM`` builds the local and global sections automatically.
+
+.. code-block::
+
+  DMPlexIsSimplex(dm, &simplex);
+  PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe);
+  DMSetField(dm, 0, NULL, (PetscObject) fe);
+  DMCreateDS(dm);
+
+To get the :math:`P_3` section above, we can either give the option ``-petscspace_degree 3``, or call ``PetscFECreateLagrange()`` and set the degree directly.
 
 Partitioning and Ordering
 ^^^^^^^^^^^^^^^^^^^^^^^^^
