@@ -354,6 +354,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   struct _MatOps   Aops;
   char             *mtype,*mname,*mprefix;
   Mat_Product      *product;
+  Mat_Redundant    *redundant;
   PetscObjectState state;
 
   PetscFunctionBegin;
@@ -362,14 +363,15 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   if (A == *C) PetscFunctionReturn(0);
   PetscCheckSameComm(A,1,*C,2);
   /* save the parts of A we need */
-  Abops = ((PetscObject)A)->bops[0];
-  Aops  = A->ops[0];
-  refct = ((PetscObject)A)->refct;
-  mtype = ((PetscObject)A)->type_name;
-  mname = ((PetscObject)A)->name;
-  state = ((PetscObject)A)->state;
-  mprefix = ((PetscObject)A)->prefix;
-  product = A->product;
+  Abops     = ((PetscObject)A)->bops[0];
+  Aops      = A->ops[0];
+  refct     = ((PetscObject)A)->refct;
+  mtype     = ((PetscObject)A)->type_name;
+  mname     = ((PetscObject)A)->name;
+  state     = ((PetscObject)A)->state;
+  mprefix   = ((PetscObject)A)->prefix;
+  product   = A->product;
+  redundant = A->redundant;
 
   /* zero these so the destroy below does not free them */
   ((PetscObject)A)->type_name = NULL;
@@ -397,6 +399,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   ((PetscObject)A)->prefix    = mprefix;
   ((PetscObject)A)->state     = state + 1;
   A->product                  = product;
+  A->redundant                = redundant;
 
   /* since these two are copied into A we do not want them destroyed in C */
   ((PetscObject)*C)->qlist = NULL;
