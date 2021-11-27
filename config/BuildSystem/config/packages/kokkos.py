@@ -174,5 +174,22 @@ class Configure(config.package.CMakePackage):
 
     if self.cuda.found:
       self.addMakeMacro('KOKKOS_BIN',os.path.join(self.directory,'bin'))
+      self.logWrite('Checking if Kokkos is configured with CUDA lambda\n')
+      self.pushLanguage('CUDA')
+      cuda_lambda_test = '''
+         #include <Kokkos_Macros.hpp>
+         #if !defined(KOKKOS_ENABLE_CUDA_LAMBDA)
+         #error "Kokkos is not configured with CUDA lambda"
+         #endif
+      '''
+      oldFlags = self.compilers.CUDAPPFLAGS
+      self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+      if self.checkPreprocess(cuda_lambda_test):
+        self.logPrint('Kokkos is configured with CUDA lambda\n')
+      else:
+        raise RuntimeError('Kokkos is not configured with -DKokkos_ENABLE_CUDA_LAMBDA. PETSc usage requires Kokkos to be configured with that')
+      self.compilers.CUDAPPFLAGS = oldFlags
+      self.popLanguage()
+
     if self.argDB['with-kokkos-init-warnings']: # usually one wants to enable warnings
       self.addDefine('HAVE_KOKKOS_INIT_WARNINGS', 1)
