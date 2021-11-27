@@ -2100,36 +2100,22 @@ if (dlclose(handle)) {
 
   def resetEnvCompilers(self):
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
-    for envVal in ignoreEnvCompilers:
-      if envVal in os.environ:
-        if envVal in self.framework.clArgDB or 'with-'+envVal.lower() in self.framework.clArgDB:
-          self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
-          del os.environ[envVal]
-        elif self.argDB['with-environment-variables']:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables ******')
-        elif self.framework.argDB['with-xsdk-defaults'] and 'with-environment-variables' not in self.framework.clArgDB:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n because --with-xsdk-defaults was selected. Add --disable-environment-variables \n to NOT use the environmental variables ******')
-
-        else:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
-          del os.environ[envVal]
-
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
-    for envVal in ignoreEnv:
+    for envVal in ignoreEnvCompilers + ignoreEnv:
       if envVal in os.environ:
-        if envVal in self.framework.clArgDB:
-          self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
+        msg = 'WARNING! Found environment variable: %s=%s\n' % (envVal, os.environ[envVal])
+        if envVal in self.framework.clArgDB or (envVal in ignoreEnvCompilers and 'with-'+envVal.lower() in self.framework.clArgDB):
+          self.logPrintBox(msg+'Ignoring it, since its also set on command line')
           del os.environ[envVal]
         elif self.argDB['with-environment-variables']:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables******')
+          self.logPrintBox(msg+'Using it! Use "./configure --disable-environment-variables" to NOT use the environmental variables')
         else:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
+          self.logPrintBox (msg+'Ignoring it! Use "./configure %s=$%s" if you really want to use this value' % (envVal,envVal))
           del os.environ[envVal]
     return
 
-
   def checkEnvCompilers(self):
-    if 'with-environment-variables' in self.framework.clArgDB or 'with-xsdk-defaults' in self.framework.clArgDB:
+    if 'with-environment-variables' in self.framework.clArgDB:
       envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
       for ev in envVarChecklist:
         if ev in os.environ:
