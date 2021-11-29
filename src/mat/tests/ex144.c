@@ -188,7 +188,7 @@ int main(int argc,char **args)
 /*TEST
 
    build:
-      requires: fftw !complex
+      requires: !mpiuni fftw !complex
 
    test:
       output_file: output/ex144.out

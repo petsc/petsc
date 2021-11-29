@@ -31,6 +31,7 @@ if __name__ == '__main__':
     '--with-shared-libraries=1',
     '--download-slepc',
     '--download-hpddm',
+    '--download-fftw',
   ]
   configure.petsc_configure(configure_options)
 
