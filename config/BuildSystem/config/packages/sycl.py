@@ -16,7 +16,7 @@ class Configure(config.package.Package):
     self.liblist          = [['libsycl.a'],
                              ['sycl.lib'],]
     self.precisions       = ['single','double']
-    self.cxx              = 1
+    self.buildLanguages   = ['Cxx']  # FIXME: Add SYCL
     self.complex          = 1
     self.hastests         = 0
     self.hastestsdatafiles= 0

@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.download          = ['git://https://github.com/viennacl/viennacl-dev']
     self.downloaddirname   = [str('viennacl-dev')]
     self.includes          = ['viennacl/forwards.h']
-    self.cxx               = 1
+    self.buildLanguages    = ['Cxx']
     self.downloadonWindows = 1
     self.complex           = 0
     self.devicePackage     = 1

@@ -13,7 +13,7 @@ class Configure(config.package.CMakePackage):
     self.includes        = ['opencascade/Standard_Version.hxx']
     self.liblist         = [['libTKXSBase.a', 'libTKSTEPBase.a', 'libTKSTEPAttr.a', 'libTKSTEP209.a', 'libTKSTEP.a', 'libTKIGES.a', 'libTKGeomAlgo.a', 'libTKTopAlgo.a', 'libTKPrim.a', 'libTKBO.a', 'libTKBool.a', 'libTKHLR.a', 'libTKFillet.a', 'libTKOffset.a', 'libTKFeat.a', 'libTKMesh.a', 'libTKXMesh.a', 'libTKShHealing.a', 'libTKG2d.a', 'libTKG3d.a', 'libTKGeomBase.a', 'libTKBRep.a', 'libTKernel.a', 'libTKMath.a']]
     self.pkgname         = 'opencascade'
-    self.cxx             = 1
+    self.buildLanguages  = ['Cxx']
     self.hastests        = 1
     return
 

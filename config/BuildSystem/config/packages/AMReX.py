@@ -14,7 +14,7 @@ class Configure(config.package.CMakePackage):
     self.hastests          = 1
     self.hastestsdatafiles = 1
     self.precisions        = ['double']
-    self.cxx               = 1
+    self.buildLanguages    = ['Cxx']
     self.minCxxVersion     = 'c++14'
     self.builtafterpetsc   = 1
     return

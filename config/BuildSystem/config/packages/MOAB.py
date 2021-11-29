@@ -12,7 +12,7 @@ class Configure(config.package.GNUPackage):
     self.functionsCxx      = [1, 'namespace moab {class Core {public: Core();};}','moab::Core *mb = new moab::Core()']
     self.includes          = ['moab/Core.hpp']
     self.liblist           = [['libiMesh.a', 'libMOAB.a'],['libMOAB.a']]
-    self.cxx               = 1
+    self.buildLanguages    = ['Cxx']
     self.maxCxxVersion     = 'c++14'
     self.precisions        = ['single','double']
     self.hastests          = 1

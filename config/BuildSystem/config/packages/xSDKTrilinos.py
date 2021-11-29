@@ -9,7 +9,7 @@ class Configure(config.package.CMakePackage):
     self.downloaddirnames  = ['xSDKTrilinos']
     self.includes          = []
     self.functions         = []
-    self.cxx               = 1
+    self.buildLanguages    = ['Cxx']
     self.minCxxVersion     = 'c++11'
     self.downloadonWindows = 0
     self.hastests          = 1

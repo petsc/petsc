@@ -9,7 +9,7 @@ class Configure(config.package.GNUPackage):
     self.includes  = ['muParser.h']
     self.liblist   = [['libmuparser.a']]
     self.pkgname   = 'muparser-2.2.4'
-    self.cxx       = 1
+    self.buildLanguages= ['Cxx']
     return
 
   def formGNUConfigureArgs(self):

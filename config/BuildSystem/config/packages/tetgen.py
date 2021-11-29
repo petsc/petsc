@@ -7,7 +7,7 @@ class Configure(config.package.Package):
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.6.0.tar.gz']
     self.liblist      = [['libtet.a']]
     self.includes     = ['tetgen.h']
-    self.cxx          = 1
+    self.buildLanguage= 'Cxx'
     return
 
   def setupDependencies(self, framework):

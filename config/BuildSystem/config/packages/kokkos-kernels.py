@@ -7,14 +7,12 @@ class Configure(config.package.CMakePackage):
     self.gitcommit        = 'e9496bbfefad465ea9fba77314759f912898fdea' # develop of 2021-11-3
     self.versionname      = 'KOKKOS_KERNELS_VERSION'  # It looks kokkos-kernels does not yet have a macro for version number
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
-    # See also kokkos.py. Cannot test includes with standard approaches since that requires Kokkos nvcc_wapper that we do not handle in configure
-    self.doNotCheckIncludes = 1
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
     self.liblist          = [['libkokkoskernels.a']]
     self.functions        = ['']
     # I don't know how to make it work since all KK routines are templated and always need Kokkos::View. So I cheat here and use functionCxx from Kokkos.
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
-    self.cxx              = 1
+    self.buildLanguages   = ['Cxx']
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
@@ -94,3 +92,7 @@ class Configure(config.package.CMakePackage):
     # -DCMAKE_CXX_STANDARD= will be taken from Kokkos
     args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
     return args
+
+  def configureLibrary(self):
+    self.buildLanguages= self.kokkos.buildLanguages
+    config.package.CMakePackage.configureLibrary(self)

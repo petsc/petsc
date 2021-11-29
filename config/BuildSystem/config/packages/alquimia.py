@@ -9,8 +9,7 @@ class Configure(config.package.CMakePackage):
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
-    self.fc                = 1    # 1 means requires fortran
-    self.cxx               = 1    # 1 means requires C++
+    self.buildLanguages    = ['Cxx','FC']   # requires C++ and Fortran
     self.linkedbypetsc     = 0
     self.makerulename      = 'alquimia'    # make on the alquimia directory tries to build executables that will fail so force only building the libraries
     self.useddirectly      = 0

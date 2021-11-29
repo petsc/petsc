@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.functions  = []
     self.includes   = []
     self.liblist    = [['libadblaslapack.a']]
-    self.cxx        = 1
+    self.buildLanguages= ['Cxx']
     self.precisions = ['double']
     self.complex    = 0
     return

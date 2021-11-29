@@ -10,7 +10,7 @@ class Configure(config.package.Package):
     self.downloadonWindows      = 1
     self.skippackagewithoptions = 1
     self.installwithbatch       = 1
-    self.fc                     = 1
+    self.buildLanguages         = ['FC']
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -79,7 +79,7 @@ class Configure(config.package.Package):
         line = '\n'
       if line.find("-no-prec-div") >= 1:
          raise RuntimeError('Some versions of the Intel compiler generate incorrect code on fblaslapack with the option -no-prec-div\nRun configure without this option')
-      g.write(line) 
+      g.write(line)
       line = f.readline()
     f.close()
     g.close()

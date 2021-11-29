@@ -8,7 +8,7 @@ class Configure(config.package.Package):
                               'https://ftp.mcs.anl.gov/pub/petsc/externalpackages/boost_1_74_0.tar.gz']
     self.includes          = ['boost/multi_index_container.hpp']
     self.liblist           = []
-    self.cxx               = 1
+    self.buildLanguages    = ['Cxx']
     self.downloadonWindows = 1
     self.useddirectly      = 0
     return

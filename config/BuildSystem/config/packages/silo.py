@@ -8,7 +8,7 @@ class Configure(config.package.GNUPackage):
     self.includes  = ['silo.h']
     self.liblist   = [['libsilo.a']]
     self.pkgname   = 'silo-4.10-bsd'
-    self.cxx       = 1
+    self.buildLanguages    = ['Cxx']
     return
 
   def formGNUConfigureArgs(self):

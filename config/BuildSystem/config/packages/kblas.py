@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.version                = '4.0.0'
     self.gitcommit              = 'v'+self.version
     self.download               = ['git://https://github.com/ecrc/kblas-gpu.git']
-    self.cxx                    = 1 # uses nvcc to compile everything
+    self.buildLanguages         = ['CUDA'] # uses nvcc to compile everything
     self.functionsCxx           = [1,'struct KBlasHandle; typedef struct KBlasHandle *kblasHandle_t;extern "C" int kblasCreate(kblasHandle_t*);','kblasHandle_t h; kblasCreate(&h)']
     self.liblist                = [['libkblas.a']]
     self.includes               = ['kblas.h']

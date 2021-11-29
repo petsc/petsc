@@ -10,7 +10,7 @@ class Configure(config.package.Package):
     self.precisions        = ['double']
     self.requires32bitint  = 1;
     self.complex           = 0;
-    self.fc                = 1;
+    self.buildLanguages    = ['FC'];
     return
 
   def setupDependencies(self, framework):
