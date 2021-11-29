@@ -2,8 +2,8 @@ Begin cycle 0
 DM Object: DMPlex Object (loaded_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 45 45 45 45
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 45 45 45 45
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 2 strata with value/size (0 (45), 1 (14))
   celltype: 2 strata with value/size (7 (14), 0 (45))
@@ -11,20 +11,20 @@ Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 45 45 45 45
-  1-cells: 93 93 93 93
-  2-cells: 63 63 63 63
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 45 45 45 45
+  Number of 1-cells per rank: 93 93 93 93
+  Number of 2-cells per rank: 63 63 63 63
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   celltype: 4 strata with value/size (0 (45), 7 (14), 4 (63), 1 (93))
   depth: 4 strata with value/size (0 (45), 1 (93), 2 (63), 3 (14))
 DM Object: Parallel Mesh (redistributed_) 4 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 42 41 48 46
-  1-cells: 88 86 98 95
-  2-cells: 61 60 65 64
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 42 41 48 46
+  Number of 1-cells per rank: 88 86 98 95
+  Number of 2-cells per rank: 61 60 65 64
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 4 strata with value/size (0 (42), 1 (88), 2 (61), 3 (14))
   celltype: 4 strata with value/size (0 (42), 1 (88), 4 (61), 7 (14))
@@ -34,10 +34,10 @@ Begin cycle 1
 DM Object: DMPlex Object (loaded_) 3 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 125 0 0
-  1-cells: 295 0 0
-  2-cells: 226 0 0
-  3-cells: 56 0 0
+  Number of 0-cells per rank: 125 0 0
+  Number of 1-cells per rank: 295 0 0
+  Number of 2-cells per rank: 226 0 0
+  Number of 3-cells per rank: 56 0 0
 Labels:
   depth: 4 strata with value/size (0 (125), 1 (295), 2 (226), 3 (56))
   celltype: 4 strata with value/size (0 (125), 1 (295), 4 (226), 7 (56))
@@ -45,20 +45,20 @@ Loaded mesh distributed? FALSE
 DM Object: DMPlex Object (interpolated_) 3 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 125 0 0
-  1-cells: 295 0 0
-  2-cells: 226 0 0
-  3-cells: 56 0 0
+  Number of 0-cells per rank: 125 0 0
+  Number of 1-cells per rank: 295 0 0
+  Number of 2-cells per rank: 226 0 0
+  Number of 3-cells per rank: 56 0 0
 Labels:
   depth: 4 strata with value/size (0 (125), 1 (295), 2 (226), 3 (56))
   celltype: 4 strata with value/size (0 (125), 1 (295), 4 (226), 7 (56))
 DM Object: Parallel Mesh (redistributed_) 3 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 48 58 55
-  1-cells: 104 123 117
-  2-cells: 75 85 82
-  3-cells: 18 19 19
+  Number of 0-cells per rank: 48 58 55
+  Number of 1-cells per rank: 104 123 117
+  Number of 2-cells per rank: 75 85 82
+  Number of 3-cells per rank: 18 19 19
 Labels:
   depth: 4 strata with value/size (0 (48), 1 (104), 2 (75), 3 (18))
   celltype: 4 strata with value/size (0 (48), 1 (104), 4 (75), 7 (18))
@@ -68,10 +68,10 @@ Begin cycle 2
 DM Object: DMPlex Object (loaded_) 2 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 125 0
-  1-cells: 295 0
-  2-cells: 226 0
-  3-cells: 56 0
+  Number of 0-cells per rank: 125 0
+  Number of 1-cells per rank: 295 0
+  Number of 2-cells per rank: 226 0
+  Number of 3-cells per rank: 56 0
 Labels:
   depth: 4 strata with value/size (0 (125), 1 (295), 2 (226), 3 (56))
   celltype: 4 strata with value/size (0 (125), 1 (295), 4 (226), 7 (56))
@@ -79,20 +79,20 @@ Loaded mesh distributed? FALSE
 DM Object: DMPlex Object (interpolated_) 2 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 125 0
-  1-cells: 295 0
-  2-cells: 226 0
-  3-cells: 56 0
+  Number of 0-cells per rank: 125 0
+  Number of 1-cells per rank: 295 0
+  Number of 2-cells per rank: 226 0
+  Number of 3-cells per rank: 56 0
 Labels:
   depth: 4 strata with value/size (0 (125), 1 (295), 2 (226), 3 (56))
   celltype: 4 strata with value/size (0 (125), 1 (295), 4 (226), 7 (56))
 DM Object: Parallel Mesh (redistributed_) 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 70 80
-  1-cells: 156 174
-  2-cells: 115 123
-  3-cells: 28 28
+  Number of 0-cells per rank: 70 80
+  Number of 1-cells per rank: 156 174
+  Number of 2-cells per rank: 115 123
+  Number of 3-cells per rank: 28 28
 Labels:
   depth: 4 strata with value/size (0 (70), 1 (156), 2 (115), 3 (28))
   celltype: 4 strata with value/size (0 (70), 1 (156), 4 (115), 7 (28))

@@ -14,10 +14,10 @@ Field P1:
 DM Object: DM_adapted 1 MPI processes
   type: plex
 DM_adapted in 2 dimensions:
-  Number of 0-cells per rank: 143
-  Number of 1-cells per rank: 378
-  Number of 2-cells per rank: 236
+  Number of 0-cells per rank: 156
+  Number of 1-cells per rank: 421
+  Number of 2-cells per rank: 266
 Labels:
-  celltype: 3 strata with value/size (0 (143), 3 (236), 1 (378))
-  depth: 3 strata with value/size (0 (143), 1 (378), 2 (236))
-  _boundary_: 1 strata with value/size (1 (48))
+  celltype: 3 strata with value/size (0 (156), 3 (266), 1 (421))
+  depth: 3 strata with value/size (0 (156), 1 (421), 2 (266))
+  _boundary_: 1 strata with value/size (1 (44))

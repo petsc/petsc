@@ -1,10 +1,10 @@
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 8 6
-  1-cells: 12 9 (3)
-  2-cells: 8 5 (3)
-  3-cells: 2 1 (1)
+  Number of 0-cells per rank: 8 6
+  Number of 1-cells per rank: 12 9 (3)
+  Number of 2-cells per rank: 8 5 (3)
+  Number of 3-cells per rank: 2 1 (1)
 Labels:
   celltype: 4 strata with value/size (0 (8), 1 (12), 3 (8), 6 (2))
   depth: 4 strata with value/size (0 (8), 1 (12), 2 (8), 3 (2))
@@ -14,10 +14,10 @@ Labels:
 DM Object: Hybrid Mesh 2 MPI processes
   type: plex
 Hybrid Mesh in 3 dimensions:
-  0-cells: 20 12
-  1-cells: 50 24 (6)
-  2-cells: 48 17 (9)
-  3-cells: 16 4 (4)
+  Number of 0-cells per rank: 20 12
+  Number of 1-cells per rank: 50 24 (6)
+  Number of 2-cells per rank: 48 17 (9)
+  Number of 3-cells per rank: 16 4 (4)
 Labels:
   celltype: 4 strata with value/size (1 (50), 3 (48), 6 (16), 0 (20))
   depth: 4 strata with value/size (0 (20), 1 (50), 2 (48), 3 (16))

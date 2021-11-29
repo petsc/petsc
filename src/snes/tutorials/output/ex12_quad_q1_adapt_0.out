@@ -2,9 +2,9 @@ DM Object: 1 MPI processes
   type: p4est
 DM Object: 1 MPI processes
   type: plex
-  0-cells: 1089
-  1-cells: 2112
-  2-cells: 1024
+  Number of 0-cells per rank: 1089
+  Number of 1-cells per rank: 2112
+  Number of 2-cells per rank: 1024
 Labels:
   marker: 1 strata with value/size (1 (256))
   Face Sets: 4 strata with value/size (4 (62), 1 (62), 2 (62), 3 (62))

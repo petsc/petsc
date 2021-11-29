@@ -1,10 +1,10 @@
 DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 2 MPI processes
   type: plex
 cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 in 3 dimensions:
-  0-cells: 34 0
-  1-cells: 146 0
-  2-cells: 202 0
-  3-cells: 89 0
+  Number of 0-cells per rank: 34 0
+  Number of 1-cells per rank: 146 0
+  Number of 2-cells per rank: 202 0
+  Number of 3-cells per rank: 89 0
 Labels:
   celltype: 4 strata with value/size (0 (34), 6 (89), 3 (202), 1 (146))
   depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))
@@ -24,10 +24,10 @@ PetscViewer Object: 2 MPI processes
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 22 25
-  1-cells: 84 89
-  2-cells: 108 108
-  3-cells: 45 44
+  Number of 0-cells per rank: 22 25
+  Number of 1-cells per rank: 84 89
+  Number of 2-cells per rank: 108 108
+  Number of 3-cells per rank: 45 44
 Labels:
   depth: 4 strata with value/size (0 (22), 1 (84), 2 (108), 3 (45))
   celltype: 4 strata with value/size (0 (22), 1 (84), 3 (108), 6 (45))

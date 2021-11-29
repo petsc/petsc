@@ -2,8 +2,8 @@ Overlap: 2
 DM Object: Generated Mesh 2 MPI processes
   type: plex
 Generated Mesh in 1 dimension:
-  0-cells: 7 7
-  1-cells: 6 6
+  Number of 0-cells per rank: 7 7
+  Number of 1-cells per rank: 6 6
 Labels:
   depth: 2 strata with value/size (0 (7), 1 (6))
   celltype: 2 strata with value/size (0 (7), 1 (6))

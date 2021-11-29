@@ -1,9 +1,9 @@
 DM Object: box_surface 4 MPI processes
   type: plex
 box_surface in 2 dimensions:
-  0-cells: 33 33 33 33
-  1-cells: 56 56 56 56
-  2-cells: 24 24 24 24
+  Number of 0-cells per rank: 33 33 33 33
+  Number of 1-cells per rank: 56 56 56 56
+  Number of 2-cells per rank: 24 24 24 24
 Labels:
   celltype: 3 strata with value/size (0 (33), 1 (56), 4 (24))
   depth: 3 strata with value/size (0 (33), 1 (56), 2 (24))

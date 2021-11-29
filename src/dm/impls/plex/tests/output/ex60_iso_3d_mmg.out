@@ -1,10 +1,10 @@
 DM Object: DM_init 1 MPI processes
   type: plex
 DM_init in 3 dimensions:
-  0-cells: 125
-  1-cells: 604
-  2-cells: 864
-  3-cells: 384
+  Number of 0-cells per rank: 125
+  Number of 1-cells per rank: 604
+  Number of 2-cells per rank: 864
+  Number of 3-cells per rank: 384
 Labels:
   marker: 1 strata with value/size (1 (317))
   celltype: 4 strata with value/size (0 (125), 6 (384), 3 (864), 1 (604))
@@ -14,10 +14,10 @@ Field P1:
 DM Object: DM_adapted 1 MPI processes
   type: plex
 DM_adapted in 3 dimensions:
-  0-cells: 310
-  1-cells: 1684
-  2-cells: 2581
-  3-cells: 1206
+  Number of 0-cells per rank: 310
+  Number of 1-cells per rank: 1684
+  Number of 2-cells per rank: 2581
+  Number of 3-cells per rank: 1206
 Labels:
   celltype: 4 strata with value/size (0 (310), 6 (1206), 3 (2581), 1 (1684))
   depth: 4 strata with value/size (0 (310), 1 (1684), 2 (2581), 3 (1206))
