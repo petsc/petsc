@@ -357,7 +357,7 @@ int main(int argc,char **argv)
      requires: kokkos_kernels
 
    test:
-     requires: kokkos_kernels !complex !single cuda
+     requires: kokkos_kernels !complex !single
      nsize: 2
      args: -dm_vec_type kokkos -dm_mat_type aijkokkos -view_initial -snes_monitor
      output_file: output/ex3k_1.out
