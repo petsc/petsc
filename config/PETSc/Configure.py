@@ -253,7 +253,7 @@ prepend-path PATH "%s"
       try:
         output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
-        self.addDefine('MPICC_SHOW','"'+output.strip().replace('\n','\\\\n')+'"')
+        self.addDefine('MPICC_SHOW','"'+output.strip().replace('\n','\\\\n').replace('"','')+'"')
       except:
         self.addDefine('MPICC_SHOW','"Unavailable"')
     else:

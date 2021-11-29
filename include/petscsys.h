@@ -484,10 +484,12 @@ M*/
 #  define PetscPragmaSIMD _Pragma("vector")
 #elif defined(__GNUC__) && __GNUC__ >= 5 && !defined(__PGI)
 #  define PetscPragmaSIMD _Pragma("GCC ivdep")
-#elif defined(_OPENMP) && _OPENMP >= 201307 && !defined(_WIN32)
-#  define PetscPragmaSIMD _Pragma("omp simd")
-#elif defined(_OPENMP) && _OPENMP >= 201307 && defined(_WIN32)
-#  define PetscPragmaSIMD __pragma(omp simd)
+#elif defined(_OPENMP) && _OPENMP >= 201307
+#  if defined(_MSC_VER)
+#    define PetscPragmaSIMD __pragma(omp simd)
+#  else
+#    define PetscPragmaSIMD _Pragma("omp simd")
+#  endif
 #elif defined(PETSC_HAVE_CRAY_VECTOR)
 #  define PetscPragmaSIMD _Pragma("_CRI ivdep")
 #else

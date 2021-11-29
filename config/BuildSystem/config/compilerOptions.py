@@ -10,8 +10,8 @@ class CompilerOptions(config.base.Configure):
     if language == 'C':
       if [s for s in ['mpicc','mpiicc'] if os.path.basename(compiler).find(s)>=0]:
         try:
-          output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
-          self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
+          output = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
+          self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n').replace('"','\\"'))
         except:
           self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
       else:

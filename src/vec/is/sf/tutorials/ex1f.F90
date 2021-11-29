@@ -97,7 +97,7 @@
 
       call PetscSFGetGraph(sf,gnroots,gnleaves,gmine,gremote,ierr);CHKERRA(ierr)
       if (gnleaves .ne. nleaves) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'nleaves returned from PetscSFGetGraph() does not match that set with PetscSFSetGraph()'); endif
-      do i=1,nleaves
+         do i=1,nleaves
          if (gmine(i) .ne. mine(i)) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Root from PetscSFGetGraph() does not match that set with PetscSFSetGraph()'); endif
       enddo
       do i=1,nleaves
@@ -106,6 +106,22 @@
 
       deallocate(gremote)
 !    Clean storage for star forest.
+      call PetscSFDestroy(sf,ierr);CHKERRA(ierr)
+
+!  Create a star forest with continous leaves and hence no buffer
+      call PetscSFCreate(PETSC_COMM_WORLD,sf,ierr);CHKERRA(ierr)
+      call PetscSFSetFromOptions(sf,ierr);CHKERRA(ierr)
+      call PetscSFSetGraph(sf,nrootsalloc,nleaves,PETSC_NULL_INTEGER,PETSC_COPY_VALUES,remote,PETSC_COPY_VALUES,ierr);CHKERRA(ierr)
+      call PetscSFSetUp(sf,ierr);CHKERRA(ierr)
+
+!   View graph, mostly useful for debugging purposes.
+      call PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL,ierr);CHKERRA(ierr)
+      call PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+      call PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+
+      call PetscSFGetGraph(sf,gnroots,gnleaves,gmine,gremote,ierr);CHKERRA(ierr)
+      if (loc(gmine) .ne. loc(PETSC_NULL_INTEGER)) then; SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Leaves from PetscSFGetGraph() not null as expected'); endif
+      deallocate(gremote)
       call PetscSFDestroy(sf,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr);
   end
