@@ -1570,7 +1570,7 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
     ierr = PetscFVGetNumComponents(fvm, &Nc);CHKERRQ(ierr);
     ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fvm), &fvm->dualSpace);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
-    ierr = PetscDualSpaceCreateReferenceCell(fvm->dualSpace, dim, PETSC_FALSE, &K);CHKERRQ(ierr); /* TODO: The reference cell type should be held by the discretization object */
+    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, PETSC_FALSE), &K);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetNumComponents(fvm->dualSpace, Nc);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetDM(fvm->dualSpace, K);CHKERRQ(ierr);
     ierr = DMDestroy(&K);CHKERRQ(ierr);

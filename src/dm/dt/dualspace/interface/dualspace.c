@@ -8,8 +8,6 @@ PetscLogEvent PETSCDUALSPACE_SetUp;
 PetscFunctionList PetscDualSpaceList              = NULL;
 PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 
-const char *const PetscDualSpaceReferenceCells[] = {"SIMPLEX", "TENSOR", "PetscDualSpaceReferenceCell", "PETSCDUALSPACE_REFCELL_", NULL};
-
 /*
   PetscDualSpaceLatticePointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to at most 'max'.
                                                      Ordering is lexicographic with lowest index as least significant in ordering.
@@ -277,7 +275,6 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 + -petscdualspace_order <order>      - the approximation order of the space
 . -petscdualspace_form_degree <deg>  - the form degree, say 0 for point evaluations, or 2 for area integrals
 . -petscdualspace_components <c>     - the number of components, say d for a vector field
-. -petscdualspace_refdim <d>         - The spatial dimension of the reference cell
 - -petscdualspace_refcell <celltype> - Reference cell type name
 
   Level: intermediate
@@ -286,12 +283,11 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 @*/
 PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 {
-  PetscDualSpaceReferenceCell refCell = PETSCDUALSPACE_REFCELL_SIMPLEX;
-  PetscInt                    refDim  = 0;
-  PetscBool                   flg;
-  const char                 *defaultType;
-  char                        name[256];
-  PetscErrorCode              ierr;
+  DMPolytopeType refCell;
+  const char    *defaultType;
+  char           name[256];
+  PetscBool      flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
@@ -315,13 +311,11 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBoundedInt("-petscdualspace_refdim", "The spatial dimension of the reference cell", "PetscDualSpaceSetReferenceCell", refDim, &refDim, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-petscdualspace_refcell", "Reference cell", "PetscDualSpaceSetReferenceCell", PetscDualSpaceReferenceCells, (PetscEnum) refCell, (PetscEnum *) &refCell, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-petscdualspace_refcell", "Reference cell shape", "PetscDualSpaceSetReferenceCell", DMPolytopeTypes, (PetscEnum) refCell, (PetscEnum *) &refCell, &flg);CHKERRQ(ierr);
   if (flg) {
     DM K;
 
-    PetscCheckFalse(!refDim,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_INCOMP, "Reference cell specified without a dimension. Use -petscdualspace_refdim.");
-    ierr = PetscDualSpaceCreateReferenceCell(sp, refDim, refCell == PETSCDUALSPACE_REFCELL_SIMPLEX ? PETSC_TRUE : PETSC_FALSE, &K);CHKERRQ(ierr);
+    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, refCell, &K);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetDM(sp, K);CHKERRQ(ierr);
     ierr = DMDestroy(&K);CHKERRQ(ierr);
   }
@@ -1004,34 +998,6 @@ PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, Pe
     }
   }
   ierr = PetscFree3(v0, sv0, J);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  PetscDualSpaceCreateReferenceCell - Create a DMPLEX with the appropriate FEM reference cell
-
-  Collective on sp
-
-  Input Parameters:
-+ sp      - The PetscDualSpace
-. dim     - The spatial dimension
-- simplex - Flag for simplex, otherwise use a tensor-product cell
-
-  Output Parameter:
-. refdm - The reference cell
-
-  Note: This DM is on PETSC_COMM_SELF.
-
-  Level: intermediate
-
-.seealso: PetscDualSpaceCreate(), DMPLEX
-@*/
-PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim, PetscBool simplex, DM *refdm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, simplex), refdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
