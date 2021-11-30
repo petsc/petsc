@@ -567,10 +567,12 @@ cdef class SNES(Object):
     def reset(self):
         CHKERR( SNESReset(self.snes) )
 
-    def solve(self, Vec b or None, Vec x):
+    def solve(self, Vec b = None, Vec x = None):
         cdef PetscVec rhs = NULL
+        cdef PetscVec sol = NULL
         if b is not None: rhs = b.vec
-        CHKERR( SNESSolve(self.snes, rhs, x.vec) )
+        if x is not None: sol = x.vec
+        CHKERR( SNESSolve(self.snes, rhs, sol) )
 
     def setConvergedReason(self, reason):
         cdef PetscSNESConvergedReason eval = reason

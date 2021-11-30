@@ -4765,6 +4765,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       }
     }
   }
+  if (!x) { x = snes->vec_sol; }
   if (!x) {
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(dm,&xcreated);CHKERRQ(ierr);
