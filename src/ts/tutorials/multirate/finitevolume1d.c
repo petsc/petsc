@@ -4,18 +4,16 @@
 #include <petsc/private/tsimpl.h>
 
 #include <petsc/private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
-const char *FVBCTypes[] = {"PERIODIC","OUTFLOW","FVBCType","FVBC_",0};
+const char *FVBCTypes[] = {"PERIODIC","OUTFLOW","INFLOW","FVBCType","FVBC_",0};
 
 PETSC_STATIC_INLINE PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
 PETSC_STATIC_INLINE PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
 PETSC_STATIC_INLINE PetscReal Sqr(PetscReal a) { return a*a; }
-//PETSC_STATIC_INLINE PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
+
 PETSC_UNUSED PETSC_STATIC_INLINE PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
 PETSC_STATIC_INLINE PetscReal MinMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
 PETSC_STATIC_INLINE PetscReal MaxMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
 PETSC_STATIC_INLINE PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c) {return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
-
-//PETSC_STATIC_INLINE PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
 
 /* ----------------------- Lots of limiters, these could go in a separate library ------------------------- */
 void Limit_Upwind(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
@@ -431,6 +429,7 @@ void Limit3_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,co
     for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i],(jL[i]+2*jR[i])/3,2*jR[i])/info->hxs;
   }
 }
+
 PetscErrorCode RiemannListAdd(PetscFunctionList *flist,const char *name,RiemannFunction rsolve)
 {
   PetscErrorCode ierr;
@@ -469,8 +468,45 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,Reco
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------- Physics ----------------------------------- */
+PetscErrorCode RiemannListAdd_2WaySplit(PetscFunctionList *flist,const char *name,RiemannFunction_2WaySplit rsolve)
+{
+  PetscErrorCode ierr;
 
+  PetscFunctionBeginUser;
+  ierr = PetscFunctionListAdd(flist,name,rsolve);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode RiemannListFind_2WaySplit(PetscFunctionList flist,const char *name,RiemannFunction_2WaySplit *rsolve)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
+  if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ReconstructListAdd_2WaySplit(PetscFunctionList *flist,const char *name,ReconstructFunction_2WaySplit r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscFunctionListAdd(flist,name,r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist,const char *name,ReconstructFunction_2WaySplit *r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
+  if (!*r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------- Physics ------- */
 PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
 {
   PetscErrorCode ierr;
@@ -480,8 +516,7 @@ PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------- Finite Volume Solver ----------------------------------- */
-
+/* --------------------------------- Finite Volume Solver --------------- */
 PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
@@ -513,6 +548,7 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       for (j=0; j<dof; j++) x[i*dof+j] = x[(xs+xm-1)*dof+j];
     }
   }
+
   for (i=xs-1; i<xs+xm+1; i++) {
     struct _LimitInfo info;
     PetscScalar       *cjmpL,*cjmpR;
@@ -572,7 +608,9 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
     if (dt > 0.5/ctx->cfl_idt) {
-      ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
+      if (1) {
+        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
+      } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
     }
   }
   PetscFunctionReturn(0);
