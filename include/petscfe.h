@@ -45,6 +45,7 @@ typedef const char* PetscSpaceType;
 #define PETSCSPACESUM        "sum"
 #define PETSCSPACEPOINT      "point"
 #define PETSCSPACESUBSPACE   "subspace"
+#define PETSCSPACEWXY        "wxy"
 
 PETSC_EXTERN PetscFunctionList PetscSpaceList;
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate(MPI_Comm, PetscSpace *);
