@@ -314,6 +314,10 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
     if (isForest) {adaptor->adaptCriterion = DM_ADAPTATION_LABEL;}
 #if defined(PETSC_HAVE_PRAGMATIC)
     else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
+#elif defined(PETSC_HAVE_MMG)
+    else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
+#elif defined(PETSC_HAVE_PARMMG)
+    else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
 #else
     else          {adaptor->adaptCriterion = DM_ADAPTATION_REFINE;}
 #endif
