@@ -1,5 +1,6 @@
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdm.h>
+#include <petscdmswarm.h>
 #include <petscdraw.h>
 
 /*@C
@@ -1161,26 +1162,30 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 @*/
 PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
 {
-  PetscErrorCode    ierr;
-  TSMonitorSPCtx    ctx = (TSMonitorSPCtx)dctx;
+  PetscErrorCode     ierr;
+  DM                 cdm;
+  TSMonitorSPCtx     ctx = (TSMonitorSPCtx)dctx;
   const PetscScalar *yy;
-  PetscReal       *y,*x;
-  PetscInt          Np, p, dim=2;
-  DM                dm;
+  PetscReal         *y,*x;
+  PetscInt           Np, p, dim=2;
+  DM                 dm;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
-    ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Particles","X","Y");CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLimits(axis, -5, 5, -5, 5);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE);CHKERRQ(ierr);
+    PetscReal     dmboxlower[2], dmboxupper[2];
     ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     if (dim!=2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimensions improper for monitor arguments! Current support: two dimensions.");
+    ierr = DMSwarmGetCellDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetBoundingBox(cdm, dmboxlower, dmboxupper);CHKERRQ(ierr);
     ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
     Np /= 2*dim;
+    ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Particles","X","V");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], -5, 5);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscDrawSPSetDimension(ctx->sp, Np);CHKERRQ(ierr);
     ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
   }
@@ -1191,10 +1196,15 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
   /* get points from solution vector */
   for (p=0; p<Np; ++p) {
     x[p] = PetscRealPart(yy[2*dim*p]);
-    y[p] = PetscRealPart(yy[2*dim*p+1]);
+    y[p] = PetscRealPart(yy[(2*dim*p)+dim]);
   }
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
+    PetscDraw draw;
+    ierr = PetscDrawSPGetDraw(ctx->sp, &draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
     ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
     ierr = PetscDrawSPDraw(ctx->sp,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);

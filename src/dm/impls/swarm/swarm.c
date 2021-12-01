@@ -1799,6 +1799,7 @@ PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
   (*newdm)->data = swarm;
   ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMSWARM);CHKERRQ(ierr);
   ierr = DMInitialize_Swarm(*newdm);CHKERRQ(ierr);
+  (*newdm)->dim = dm->dim;
   PetscFunctionReturn(0);
 }
 
