@@ -75,6 +75,7 @@ struct _p_SNES {
   PetscErrorCode      (*monitordestroy[MAXSNESMONITORS])(void**);                 /* monitor context destroy routine */
   void                *monitorcontext[MAXSNESMONITORS];                           /* monitor context */
   PetscInt            numbermonitors;                                             /* number of monitors */
+  PetscBool           pauseFinal;                                                 /* pause all drawing monitor at the final iterate */
   void                *cnvP;                                                      /* convergence context */
   SNESConvergedReason reason;                                                     /* converged reason */
   PetscErrorCode      (*reasonview[MAXSNESREASONVIEWS])(SNES,void*);              /* snes converged reason view */
