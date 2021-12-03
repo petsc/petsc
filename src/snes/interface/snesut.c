@@ -250,6 +250,17 @@ PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (vf->format == PETSC_VIEWER_DRAW_LG) {
+    ierr = KSPMonitorLGCreate(PetscObjectComm((PetscObject) vf->viewer), NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &vf->lg);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
    SNESMonitorDefault - Monitors progress of the SNES solvers (default).
 
