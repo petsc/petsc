@@ -630,10 +630,10 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
     break;
     case DM_ADAPTATION_METRIC:
     {
-      DM           dmGrad,   dmHess,   dmMetric;
-      Vec          xGrad,    xHess,    metric;
+      DM           dmGrad, dmHess, dmMetric;
+      Vec          xGrad, xHess, metric;
       PetscReal    N;
-      DMLabel      bdLabel;
+      DMLabel      bdLabel = NULL, rgLabel = NULL;
       PetscInt     Nd = coordDim*coordDim, f, vStart, vEnd;
 
       /*     Setup finite element spaces */
@@ -686,7 +686,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       ierr = DMDestroy(&dmHess);CHKERRQ(ierr);
       /*     Adapt DM from metric */
       ierr = DMGetLabel(dm, "marker", &bdLabel);CHKERRQ(ierr);
-      ierr = DMAdaptMetric(dm, metric, bdLabel, NULL, &odm);CHKERRQ(ierr);
+      ierr = DMAdaptMetric(dm, metric, bdLabel, rgLabel, &odm);CHKERRQ(ierr);
       adapted = PETSC_TRUE;
       /*     Cleanup */
       ierr = VecDestroy(&metric);CHKERRQ(ierr);
