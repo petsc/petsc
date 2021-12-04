@@ -1298,6 +1298,26 @@ int main(int argc, char **argv)
     nsize: 4
     args: -dist_dm_distribute -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -dm_plex_dim 3 -num_comp 3
 
+  # 3D WXY on a triangular prism
+  test:
+    suffix: wxy_0
+    args: -dm_plex_reference_cell_domain -dm_plex_cell triangular_prism -qorder 2 -porder 0 \
+          -field_petscspace_type sum \
+          -field_petscspace_variables 3 \
+          -field_petscspace_components 3 \
+          -field_petscspace_sum_spaces 2 \
+          -field_petscspace_sum_concatenate false \
+          -field_sumcomp_0_petscspace_variables 3 \
+          -field_sumcomp_0_petscspace_components 3 \
+          -field_sumcomp_0_petscspace_degree 1 \
+          -field_sumcomp_1_petscspace_variables 3 \
+          -field_sumcomp_1_petscspace_components 3 \
+          -field_sumcomp_1_petscspace_type wxy \
+          -field_petscdualspace_refcell triangular_prism \
+          -field_petscdualspace_form_degree 0 \
+          -field_petscdualspace_order 1 \
+          -field_petscdualspace_components 3
+
 TEST*/
 
 /*
