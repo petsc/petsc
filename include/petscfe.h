@@ -239,8 +239,10 @@ PETSC_EXTERN PetscErrorCode PetscFESetName(PetscFE, const char []);
 PETSC_EXTERN PetscErrorCode PetscFEView(PetscFE,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFERegister(const char [], PetscErrorCode (*)(PetscFE));
 PETSC_EXTERN PetscErrorCode PetscFERegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscFECreateDefault(MPI_Comm, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE *);
+PETSC_EXTERN PetscErrorCode PetscFECreateDefault(MPI_Comm, PetscInt, PetscInt, PetscBool, const char[], PetscInt, PetscFE *);
+PETSC_EXTERN PetscErrorCode PetscFECreateByCell(MPI_Comm, PetscInt, PetscInt, DMPolytopeType, const char[], PetscInt, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFECreateLagrange(MPI_Comm, PetscInt, PetscInt, PetscBool, PetscInt, PetscInt, PetscFE *);
+PETSC_EXTERN PetscErrorCode PetscFECreateLagrangeByCell(MPI_Comm, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscFE *);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEGetSpatialDimension(PetscFE, PetscInt *);

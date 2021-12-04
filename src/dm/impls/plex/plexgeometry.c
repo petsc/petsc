@@ -1395,6 +1395,12 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       }
     }
     for (j = 0; j < dim; j++) {
+      /* Nodal basis for evaluation at the vertices: (1 \mp xi) (1 \mp eta):
+           \phi^0 = (1 - xi - eta + xi eta) --> 1      = 1/4 ( \phi^0 + \phi^1 + \phi^2 + \phi^3)
+           \phi^1 = (1 + xi - eta - xi eta) --> xi     = 1/4 (-\phi^0 + \phi^1 - \phi^2 + \phi^3)
+           \phi^2 = (1 - xi + eta - xi eta) --> eta    = 1/4 (-\phi^0 - \phi^1 + \phi^2 + \phi^3)
+           \phi^3 = (1 + xi + eta + xi eta) --> xi eta = 1/4 ( \phi^0 - \phi^1 - \phi^2 + \phi^3)
+      */
       zCoeff[dim * 0 + j] = 0.25 * (  zOrder[dim * 0 + j] + zOrder[dim * 1 + j] + zOrder[dim * 2 + j] + zOrder[dim * 3 + j]);
       zCoeff[dim * 1 + j] = 0.25 * (- zOrder[dim * 0 + j] + zOrder[dim * 1 + j] - zOrder[dim * 2 + j] + zOrder[dim * 3 + j]);
       zCoeff[dim * 2 + j] = 0.25 * (- zOrder[dim * 0 + j] - zOrder[dim * 1 + j] + zOrder[dim * 2 + j] + zOrder[dim * 3 + j]);
@@ -1601,6 +1607,138 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexComputeTriangularPrismGeometry_Internal(DM dm, PetscInt e, PetscInt Nq, const PetscReal points[], PetscReal v[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords = NULL;
+  const PetscInt dim = 3;
+  PetscInt       d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
+  if (!Nq) {
+    /* Assume that the map to the reference is affine */
+    *detJ = 0.0;
+    if (v)   {for (d = 0; d < dim; d++) v[d] = PetscRealPart(coords[d]);}
+    if (J)    {
+      for (d = 0; d < dim; d++) {
+        J[d*dim+0] = 0.5*(PetscRealPart(coords[2*dim+d]) - PetscRealPart(coords[0*dim+d]));
+        J[d*dim+1] = 0.5*(PetscRealPart(coords[1*dim+d]) - PetscRealPart(coords[0*dim+d]));
+        J[d*dim+2] = 0.5*(PetscRealPart(coords[4*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      }
+      ierr = PetscLogFlops(18.0);CHKERRQ(ierr);
+      DMPlex_Det3D_Internal(detJ, J);
+    }
+    if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
+  } else {
+    const PetscInt dim  = 3;
+    const PetscInt dimR = 3;
+    const PetscInt Nv   = 6;
+    PetscReal verts[18];
+    PetscReal coeff[18];
+    PetscInt  i, j, k, l;
+
+    for (i = 0; i < Nv; ++i) for (j = 0; j < dim; ++j) verts[dim * i + j] = PetscRealPart(coords[dim * i + j]);
+    for (j = 0; j < dim; ++j) {
+      /* Check for triangle,
+           phi^0 = -1/2 (xi + eta)  chi^0 = delta(-1, -1)   x(xi) = \sum_k x_k phi^k(xi) = \sum_k chi^k(x) phi^k(xi)
+           phi^1 =  1/2 (1 + xi)    chi^1 = delta( 1, -1)   y(xi) = \sum_k y_k phi^k(xi) = \sum_k chi^k(y) phi^k(xi)
+           phi^2 =  1/2 (1 + eta)   chi^2 = delta(-1,  1)
+
+           phi^0 + phi^1 + phi^2 = 1    coef_1   = 1/2 (         chi^1 + chi^2)
+          -phi^0 + phi^1 - phi^2 = xi   coef_xi  = 1/2 (-chi^0 + chi^1)
+          -phi^0 - phi^1 + phi^2 = eta  coef_eta = 1/2 (-chi^0         + chi^2)
+
+          < chi_0 chi_1 chi_2> A /  1  1  1 \ / phi_0 \   <chi> I <phi>^T  so we need the inverse transpose
+                                 | -1  1 -1 | | phi_1 | =
+                                 \ -1 -1  1 / \ phi_2 /
+
+          Check phi^0: 1/2 (phi^0 chi^1 + phi^0 chi^2 + phi^0 chi^0 - phi^0 chi^1 + phi^0 chi^0 - phi^0 chi^2) = phi^0 chi^0
+      */
+      /* Nodal basis for evaluation at the vertices: {-xi - eta, 1 + xi, 1 + eta} (1 \mp zeta):
+           \phi^0 = 1/4 (   -xi - eta        + xi zeta + eta zeta) --> /  1  1  1  1  1  1 \ 1
+           \phi^1 = 1/4 (1      + eta - zeta           - eta zeta) --> | -1  1 -1 -1 -1  1 | eta
+           \phi^2 = 1/4 (1 + xi       - zeta - xi zeta)            --> | -1 -1  1 -1  1 -1 | xi
+           \phi^3 = 1/4 (   -xi - eta        - xi zeta - eta zeta) --> | -1 -1 -1  1  1  1 | zeta
+           \phi^4 = 1/4 (1 + xi       + zeta + xi zeta)            --> |  1  1 -1 -1  1 -1 | xi zeta
+           \phi^5 = 1/4 (1      + eta + zeta           + eta zeta) --> \  1 -1  1 -1 -1  1 / eta zeta
+           1/4 /  0  1  1  0  1  1 \
+               | -1  1  0 -1  0  1 |
+               | -1  0  1 -1  1  0 |
+               |  0 -1 -1  0  1  1 |
+               |  1  0 -1 -1  1  0 |
+               \  1 -1  0 -1  0  1 /
+      */
+      coeff[dim * 0 + j] = (1./4.) * (                      verts[dim * 1 + j] + verts[dim * 2 + j]                      + verts[dim * 4 + j] + verts[dim * 5 + j]);
+      coeff[dim * 1 + j] = (1./4.) * (-verts[dim * 0 + j] + verts[dim * 1 + j]                      - verts[dim * 3 + j]                      + verts[dim * 5 + j]);
+      coeff[dim * 2 + j] = (1./4.) * (-verts[dim * 0 + j]                      + verts[dim * 2 + j] - verts[dim * 3 + j] + verts[dim * 4 + j]);
+      coeff[dim * 3 + j] = (1./4.) * (                    - verts[dim * 1 + j] - verts[dim * 2 + j]                      + verts[dim * 4 + j] + verts[dim * 5 + j]);
+      coeff[dim * 4 + j] = (1./4.) * ( verts[dim * 0 + j]                      - verts[dim * 2 + j] - verts[dim * 3 + j] + verts[dim * 4 + j]);
+      coeff[dim * 5 + j] = (1./4.) * ( verts[dim * 0 + j] - verts[dim * 1 + j]                      - verts[dim * 3 + j]                      + verts[dim * 5 + j]);
+      /* For reference prism:
+      {0, 0, 0}
+      {0, 1, 0}
+      {1, 0, 0}
+      {0, 0, 1}
+      {0, 0, 0}
+      {0, 0, 0}
+      */
+    }
+    for (i = 0; i < Nq; ++i) {
+      const PetscReal xi = points[dimR * i], eta = points[dimR * i + 1], zeta = points[dimR * i + 2];
+
+      if (v) {
+        PetscReal extPoint[6];
+        PetscInt  c;
+
+        extPoint[0] = 1.;
+        extPoint[1] = eta;
+        extPoint[2] = xi;
+        extPoint[3] = zeta;
+        extPoint[4] = xi * zeta;
+        extPoint[5] = eta * zeta;
+        for (c = 0; c < dim; ++c) {
+          PetscReal val = 0.;
+
+          for (k = 0; k < Nv; ++k) {
+            val += extPoint[k] * coeff[k*dim + c];
+          }
+          v[i*dim + c] = val;
+        }
+      }
+      if (J) {
+        PetscReal extJ[18];
+
+        extJ[0]  = 0.  ; extJ[1]  = 0.  ; extJ[2]  = 0. ;
+        extJ[3]  = 0.  ; extJ[4]  = 1.  ; extJ[5]  = 0. ;
+        extJ[6]  = 1.  ; extJ[7]  = 0.  ; extJ[8]  = 0. ;
+        extJ[9]  = 0.  ; extJ[10] = 0.  ; extJ[11] = 1. ;
+        extJ[12] = zeta; extJ[13] = 0.  ; extJ[14] = xi ;
+        extJ[15] = 0.  ; extJ[16] = zeta; extJ[17] = eta;
+
+        for (j = 0; j < dim; j++) {
+          for (k = 0; k < dimR; k++) {
+            PetscReal val = 0.;
+
+            for (l = 0; l < Nv; l++) {
+              val += coeff[dim * l + j] * extJ[dimR * l + k];
+            }
+            J[i * dim * dim + dim * j + k] = val;
+          }
+        }
+        DMPlex_Det3D_Internal(&detJ[i], &J[i * dim * dim]);
+        if (invJ) {DMPlex_Invert3D_Internal(&invJ[i * dim * dim], &J[i * dim * dim], detJ[i]);}
+      }
+    }
+  }
+  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal *v, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
   DMPolytopeType  ct;
@@ -1654,7 +1792,11 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
     ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
     isAffine = PETSC_FALSE;
     break;
-    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No element geometry for cell %D with type %s", cell, DMPolytopeTypes[ct]);
+    case DM_POLYTOPE_TRI_PRISM:
+    ierr = DMPlexComputeTriangularPrismGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
+    isAffine = PETSC_FALSE;
+    break;
+    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No element geometry for cell %" PetscInt_FMT " with type %s", cell, DMPolytopeTypes[PetscMax(0, PetscMin(ct, DM_NUM_POLYTOPES))]);
   }
   if (isAffine && Nq) {
     if (v) {

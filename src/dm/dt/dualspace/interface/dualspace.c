@@ -283,7 +283,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 @*/
 PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 {
-  DMPolytopeType refCell;
+  DMPolytopeType refCell = DM_POLYTOPE_TRIANGLE;
   const char    *defaultType;
   char           name[256];
   PetscBool      flg;

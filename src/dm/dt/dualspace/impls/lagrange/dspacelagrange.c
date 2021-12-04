@@ -1354,8 +1354,6 @@ static PetscErrorCode PetscDualSpaceCreateFacetSubspace_Lagrange(PetscDualSpace 
   ierr = PetscDualSpaceDuplicate(sp,bdsp);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFormDegree(*bdsp,k);CHKERRQ(ierr);
   if (!K) {
-    PetscBool isSimplex;
-
     if (depth == dim) {
       DMPolytopeType ct;
 

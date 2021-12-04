@@ -59,6 +59,7 @@ PETSC_EXTERN PetscErrorCode PetscQuadratureSetData(PetscQuadrature, PetscInt, Pe
 PETSC_EXTERN PetscErrorCode PetscQuadratureView(PetscQuadrature, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *);
 
+PETSC_EXTERN PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature, PetscQuadrature, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscQuadraturePushForward(PetscQuadrature, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, PetscQuadrature *);
