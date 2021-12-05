@@ -1,0 +1,63 @@
+Vertex 18: 0 0
+  Vertex 19: 1 0
+  Edge 0 (18 19)
+  Vertex 21: 0 1
+  Edge 1 (18 21)
+Vertex 19: 1 0
+  Vertex 20: 2 0
+  Edge 2 (19 20)
+  Vertex 22: 1 1
+  Edge 3 (19 22)
+Vertex 20: 2 0
+  Vertex 18: 0 0
+  Edge 4 (20 18)
+  Vertex 23: 2 1
+  Edge 5 (20 23)
+Vertex 21: 0 1
+  Vertex 22: 1 1
+  Edge 6 (21 22)
+  Vertex 24: 0 2
+  Edge 7 (21 24)
+Vertex 22: 1 1
+  Vertex 23: 2 1
+  Edge 8 (22 23)
+  Vertex 25: 1 2
+  Edge 9 (22 25)
+Vertex 23: 2 1
+  Vertex 21: 0 1
+  Edge 10 (23 21)
+  Vertex 26: 2 2
+  Edge 11 (23 26)
+Vertex 24: 0 2
+  Vertex 25: 1 2
+  Edge 12 (24 25)
+  Vertex 18: 0 0
+  Edge 13 (24 18)
+Vertex 25: 1 2
+  Vertex 26: 2 2
+  Edge 14 (25 26)
+  Vertex 19: 1 0
+  Edge 15 (25 19)
+Vertex 26: 2 2
+  Vertex 24: 0 2
+  Edge 16 (26 24)
+  Vertex 20: 2 0
+  Edge 17 (26 20)
+Vertex 0: 0 0 0. 0.
+Vertex 1: 1 0 0.333333 0.
+Vertex 2: 2 0 0.666667 0.
+Vertex 3: 0 1 0. 0.333333
+Vertex 4: 1 1 0.333333 0.333333
+Vertex 5: 2 1 0.666667 0.333333
+Vertex 6: 0 2 0. 0.666667
+Vertex 7: 1 2 0.333333 0.666667
+Vertex 8: 2 2 0.666667 0.666667
+DM Object: Generated Mesh 1 MPI process
+  type: plex
+Generated Mesh in 2 dimensions:
+  Number of 0-cells per rank: 9
+  Number of 2-cells per rank: 18
+Labels:
+  marker: 0 strata with value/size ()
+  celltype: 2 strata with value/size (0 (9), 1 (18))
+  depth: 2 strata with value/size (0 (9), 1 (18))
