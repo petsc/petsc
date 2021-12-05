@@ -6706,6 +6706,49 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMPlexVecSetStar(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode)
+{
+  const PetscInt *supp, *cone;
+  PetscScalar    *a;
+  PetscInt        dim, Ns, dof, off, n = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!section) PetscCall(DMGetLocalSection(dm, &section));
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt vStart, vEnd;
+
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    PetscCheck(point >= vStart && point < vEnd, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " must be a vertex in [%" PetscInt_FMT ", %" PetscInt_FMT "]", point, vStart, vEnd);
+  }
+  PetscValidScalarPointer(values, 5);
+
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetSupportSize(dm, point, &Ns));
+  PetscCall(DMPlexGetSupport(dm, point, &supp));
+  PetscCheck(Ns == 2 * dim, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " has support size %" PetscInt_FMT " != %" PetscInt_FMT, point, Ns, 2 * dim);
+  PetscCall(VecGetArray(v, &a));
+  PetscCall(PetscSectionGetDof(section, point, &dof));
+  PetscCall(PetscSectionGetOffset(section, point, &off));
+  for (PetscInt i = 0; i < dof; ++i) a[off + i] = values[n++];
+  for (PetscInt d = 0; d < dim; ++d) {
+    // Left edge
+    PetscCall(DMPlexGetCone(dm, supp[2 * d + 0], &cone));
+    PetscCall(PetscSectionGetDof(section, cone[0], &dof));
+    PetscCall(PetscSectionGetOffset(section, cone[0], &off));
+    for (PetscInt i = 0; i < dof; ++i) a[off + i] = values[n++];
+    // Right edge
+    PetscCall(DMPlexGetCone(dm, supp[2 * d + 1], &cone));
+    PetscCall(PetscSectionGetDof(section, cone[1], &dof));
+    PetscCall(PetscSectionGetOffset(section, cone[1], &off));
+    for (PetscInt i = 0; i < dof; ++i) a[off + i] = values[n++];
+  }
+  PetscCall(VecRestoreArray(v, &a));
+  PetscFunctionReturn(0);
+}
+
 /* Check whether the given point is in the label. If not, update the offset to skip this point */
 static inline PetscErrorCode CheckPoint_Private(DMLabel label, PetscInt labelId, PetscSection section, PetscInt point, PetscInt f, PetscInt *offset, PetscBool *contains)
 {
