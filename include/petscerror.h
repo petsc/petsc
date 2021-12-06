@@ -822,8 +822,12 @@ typedef struct {
               petscstack.petscroutine[petscstack.currentsize] &&        \
               (petscstack.function[petscstack.currentsize]    !=        \
                (const char*)funct))) {                                  \
-          printf("Invalid stack: push from %s, pop from %s\n",          \
-                 petscstack.function[petscstack.currentsize],funct);    \
+          /* We need this string comparison because "unknown" can be defined in different static strings: */ \
+          PetscBool _cmpflg;                                            \
+          const char *_funct = petscstack.function[petscstack.currentsize]; \
+          PetscStrcmp(_funct,funct,&_cmpflg);                           \
+          if (!_cmpflg)                                                 \
+            printf("Invalid stack: push from %s, pop from %s\n", _funct,funct); \
         }                                                               \
         petscstack.function[petscstack.currentsize] = PETSC_NULLPTR;    \
         petscstack.file[petscstack.currentsize]     = PETSC_NULLPTR;    \
