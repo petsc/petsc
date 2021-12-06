@@ -2933,4 +2933,13 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,
 */
 PETSC_EXTERN PetscErrorCode  PetscHasExternalPackage(const char[],PetscBool*);
 
+/*
+ OpenMP support
+*/
+#if defined(_OPENMP)
+#define PetscPragmaOMP(...) _Pragma(PetscStringize(omp __VA_ARGS__))
+#else // no OpenMP so no threads
+#define PetscPragmaOMP(...)
+#endif
+
 #endif
