@@ -134,6 +134,7 @@ class BaseTestPlex(object):
         if self.DIM == 1: return
         self.plex.distribute()
         if self.CELLS is None and not self.plex.isSimplex(): return
+        self.plex.orient()
 
         h_min = 1.0e-30
         h_max = 1.0e+30
@@ -178,6 +179,9 @@ class BaseTestPlex(object):
         assert np.allclose(metric.array, metric1.array)
         metric = self.plex.metricEnforceSPD(metric)
         assert np.allclose(metric.array, metric1.array)
+        nMetric = self.plex.metricNormalize(metric, restrictSizes=False, restrictAnisotropy=False)
+        metric.scale(pow(target, 2.0/self.DIM))
+        assert np.allclose(metric.array, nMetric.array)
 
     def testAdapt(self):
         if self.DIM == 1: return
