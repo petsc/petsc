@@ -1172,7 +1172,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     cbody = "extern void "+asub+"(void);\nint main(int argc,char **args)\n{\n  "+asub+"();\n  return 0;\n}\n";
     cxxbody = 'extern "C" void '+asub+'(void);\nint main(int argc,char **args)\n{\n  '+asub+'();\n  return 0;\n}\n';
     self.pushLanguage('FC')
-    if self.checkLink(includes='#include <mpif.h>',body='      call MPI_Allreduce()\n'):
+    if self.checkLink(body='      use mpi\n      call MPI_Allreduce()\n'):
+      fbody = "      subroutine asub()\n      use mpi\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
+    elif self.checkLink(includes='#include <mpif.h>',body='      call MPI_Allreduce()\n'):
       fbody = "      subroutine asub()\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
     else:
       fbody = "      subroutine asub()\n      print*,'testing'\n      return\n      end\n"
