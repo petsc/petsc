@@ -219,7 +219,8 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
 {
   DMGeneratorFunctionList fl;
   char                    adaptname[PETSC_MAX_PATH_LEN];
-  const char             *name = "pragmatic";
+  const char             *name;
+  const char * const      adaptors[3] = {"pragmatic", "mmg", "parmmg"};
   PetscInt                dim;
   PetscBool               flg, found = PETSC_FALSE;
   PetscErrorCode          ierr;
@@ -233,7 +234,18 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
   *dmAdapt = NULL;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_adaptor", adaptname, sizeof(adaptname), &flg);CHKERRQ(ierr);
+
+  /* Default to Mmg in serial and ParMmg in parallel */
   if (flg) name = adaptname;
+  else {
+    MPI_Comm                comm;
+    PetscMPIInt             size;
+
+    ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+    if (size == 1) name = adaptors[1];
+    else           name = adaptors[2];
+  }
 
   fl = DMGenerateList;
   while (fl) {
