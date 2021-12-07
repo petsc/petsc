@@ -49,7 +49,6 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   TAO_BQNK       *bqnk = (TAO_BQNK*)bnk->ctx;
   PetscErrorCode ierr;
-  KSPType        ksp_type;
   PetscBool      is_spd;
 
   PetscFunctionBegin;
@@ -63,8 +62,6 @@ static PetscErrorCode TaoSetFromOptions_BQNLS(PetscOptionItems *PetscOptionsObje
   ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
-  bnk->is_nash = bnk->is_gltr = bnk->is_stcg = PETSC_FALSE;
   ierr = MatSetFromOptions(bqnk->B);CHKERRQ(ierr);
   ierr = MatGetOption(bqnk->B, MAT_SPD, &is_spd);CHKERRQ(ierr);
   if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric positive-definite");

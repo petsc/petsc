@@ -12,17 +12,17 @@ static const char *BNK_AS[64] = {"none", "bertsekas"};
 
 PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  PC                           pc;
-
-  PetscReal                    f_min, ftrial, prered, actred, kappa, sigma, resnorm;
-  PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
-  PetscBool                    is_bfgs, is_jacobi, is_symmetric, sym_set;
-  PetscInt                     n, N, nDiff;
-  PetscInt                     i_max = 5;
-  PetscInt                     j_max = 1;
-  PetscInt                     i, j;
+  PetscErrorCode    ierr;
+  TAO_BNK           *bnk = (TAO_BNK *)tao->data;
+  PC                pc;
+  PetscReal         f_min, ftrial, prered, actred, kappa, sigma, resnorm;
+  PetscReal         tau, tau_1, tau_2, tau_max, tau_min, max_radius;
+  PetscBool         is_bfgs, is_jacobi, is_symmetric, sym_set;
+  PetscInt          n, N, nDiff;
+  PetscInt          i_max = 5;
+  PetscInt          j_max = 1;
+  PetscInt          i, j;
+  PetscVoidFunction kspTR;
 
   PetscFunctionBegin;
   /* Project the current point onto the feasible set */
@@ -97,8 +97,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   /* Initialize trust-region radius.  The initialization is only performed
      when we are using Nash, Steihaug-Toint or the Generalized Lanczos method. */
   *needH = PETSC_TRUE;
-  if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
-    switch(initType) {
+  ierr = PetscObjectQueryFunction((PetscObject)tao->ksp,"KSPCGSetRadius_C",&kspTR);CHKERRQ(ierr);
+  if (kspTR) {
+    switch (initType) {
     case BNK_INIT_CONSTANT:
       /* Use the initial radius specified */
       tao->trust = tao->trust0;
@@ -429,11 +430,12 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
 
 PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  PetscInt                     bfgsUpdates = 0;
-  PetscInt                     kspits;
-  PetscBool                    is_lmvm;
+  PetscErrorCode    ierr;
+  TAO_BNK           *bnk = (TAO_BNK *)tao->data;
+  PetscInt          bfgsUpdates = 0;
+  PetscInt          kspits;
+  PetscBool         is_lmvm;
+  PetscVoidFunction kspTR;
 
   PetscFunctionBegin;
   /* If there are no inactive variables left, save some computation and return an adjusted zero step
@@ -471,12 +473,13 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     bnk->G_inactive = bnk->unprojected_gradient;
     bnk->X_inactive = tao->stepdirection;
   }
-  if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
+  ierr = PetscObjectQueryFunction((PetscObject)tao->ksp,"KSPCGSetRadius_C",&kspTR);CHKERRQ(ierr);
+  if (kspTR) {
     ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-    tao->ksp_its+=kspits;
-    tao->ksp_tot_its+=kspits;
+    tao->ksp_its += kspits;
+    tao->ksp_tot_its += kspits;
     ierr = KSPCGGetNormD(tao->ksp,&bnk->dnorm);CHKERRQ(ierr);
 
     if (0.0 == tao->trust) {
@@ -499,8 +502,8 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
         ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
         ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
         ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-        tao->ksp_its+=kspits;
-        tao->ksp_tot_its+=kspits;
+        tao->ksp_its += kspits;
+        tao->ksp_tot_its += kspits;
         ierr = KSPCGGetNormD(tao->ksp,&bnk->dnorm);CHKERRQ(ierr);
 
         if (bnk->dnorm == 0.0) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_PLIB, "Initial direction zero");
@@ -510,7 +513,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
     tao->ksp_its += kspits;
-    tao->ksp_tot_its+=kspits;
+    tao->ksp_tot_its += kspits;
   }
   /* Restore sub vectors back */
   if (bnk->active_idx) {
@@ -558,8 +561,8 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
 
 PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode ierr;
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
   /* Extract subvectors associated with the inactive set */
@@ -595,11 +598,10 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
 
 PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, PetscInt *stepType)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-
-  PetscReal                    gdx, e_min;
-  PetscInt                     bfgsUpdates;
+  PetscErrorCode ierr;
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  PetscReal      gdx, e_min;
+  PetscInt       bfgsUpdates;
 
   PetscFunctionBegin;
   switch (*stepType) {
@@ -609,9 +611,12 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       /* Newton step is not descent or direction produced Inf or NaN
         Update the perturbation for next time */
       if (bnk->pert <= 0.0) {
+        PetscBool is_gltr;
+
         /* Initialize the perturbation */
         bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-        if (bnk->is_gltr) {
+        ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPGLTR,&is_gltr);CHKERRQ(ierr);
+        if (is_gltr) {
           ierr = KSPGLTRGetMinEig(tao->ksp,&e_min);CHKERRQ(ierr);
           bnk->pert = PetscMax(bnk->pert, -e_min);
         }
@@ -668,9 +673,12 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       case KSP_CONVERGED_CG_NEG_CURVE:
         /* Matrix or preconditioner is indefinite; increase perturbation */
         if (bnk->pert <= 0.0) {
+          PetscBool is_gltr;
+
           /* Initialize the perturbation */
           bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-          if (bnk->is_gltr) {
+          ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPGLTR,&is_gltr);CHKERRQ(ierr);
+          if (is_gltr) {
             ierr = KSPGLTRGetMinEig(tao->ksp, &e_min);CHKERRQ(ierr);
             bnk->pert = PetscMax(bnk->pert, -e_min);
           }
@@ -729,12 +737,11 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
 
 PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *steplen, TaoLineSearchConvergedReason *reason)
 {
-  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
-  PetscErrorCode ierr;
+  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode               ierr;
   TaoLineSearchConvergedReason ls_reason;
-
-  PetscReal      e_min, gdx;
-  PetscInt       bfgsUpdates;
+  PetscReal                    e_min, gdx;
+  PetscInt                     bfgsUpdates;
 
   PetscFunctionBegin;
   /* Perform the linesearch */
@@ -752,9 +759,12 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
       /* Failed to obtain acceptable iterate with Newton step
          Update the perturbation for next time */
       if (bnk->pert <= 0.0) {
+        PetscBool is_gltr;
+
         /* Initialize the perturbation */
         bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-        if (bnk->is_gltr) {
+        ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPGLTR,&is_gltr);CHKERRQ(ierr);
+        if (is_gltr) {
           ierr = KSPGLTRGetMinEig(tao->ksp,&e_min);CHKERRQ(ierr);
           bnk->pert = PetscMax(bnk->pert, -e_min);
         }
@@ -1028,7 +1038,6 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
   PetscInt       i;
-  KSPType        ksp_type;
 
   PetscFunctionBegin;
   if (!tao->gradient) {
@@ -1097,10 +1106,6 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
       ierr = PetscObjectReference((PetscObject)(tao->monitorcontext[i]));CHKERRQ(ierr);
     }
   }
-  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPNASH,&bnk->is_nash);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPSTCG,&bnk->is_stcg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPGLTR,&bnk->is_gltr);CHKERRQ(ierr);
   bnk->X_inactive = NULL;
   bnk->G_inactive = NULL;
   bnk->inactive_work = NULL;
@@ -1408,15 +1413,11 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->dmin = 1.0e-6;
   bnk->dmax = 1.0e6;
 
-  bnk->M               = NULL;
-  bnk->bfgs_pre        = NULL;
-  bnk->init_type       = BNK_INIT_INTERPOLATION;
-  bnk->update_type     = BNK_UPDATE_REDUCTION;
-  bnk->as_type         = BNK_AS_BERTSEKAS;
-
-  bnk->is_stcg         = PETSC_FALSE;
-  bnk->is_gltr         = PETSC_FALSE;
-  bnk->is_nash         = PETSC_FALSE;
+  bnk->M           = NULL;
+  bnk->bfgs_pre    = NULL;
+  bnk->init_type   = BNK_INIT_INTERPOLATION;
+  bnk->update_type = BNK_UPDATE_REDUCTION;
+  bnk->as_type     = BNK_AS_BERTSEKAS;
 
   /* Create the embedded BNCG solver */
   ierr = TaoCreate(PetscObjectComm((PetscObject)tao), &bnk->bncg);CHKERRQ(ierr);
