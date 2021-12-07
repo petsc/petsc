@@ -182,6 +182,8 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObje
   ierr = PetscOptionsBool("-tao_blmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",blmP->recycle,&blmP->recycle,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(blmP->M, ((PetscObject)tao)->prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(blmP->M, "tao_blmvm_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(blmP->M);CHKERRQ(ierr);
   ierr = MatGetOption(blmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
   if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric positive-definite");
@@ -266,13 +268,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
 
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)tao)->comm, &blmP->M);CHKERRQ(ierr);
   ierr = MatSetType(blmP->M, MATLMVMBFGS);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)blmP->M, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(blmP->M, "tao_blmvm_");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
