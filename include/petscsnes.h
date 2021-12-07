@@ -112,6 +112,7 @@ PETSC_EXTERN PetscErrorCode MatSNESMFGetReuseBase(Mat,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMFFDComputeJacobian(SNES,Vec,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode SNESGetType(SNES,SNESType*);
+PETSC_EXTERN PetscErrorCode SNESMonitorDefaultSetUp(SNES,PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorDefault(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorScaling(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRange(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
