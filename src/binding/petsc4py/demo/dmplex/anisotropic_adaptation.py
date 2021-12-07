@@ -34,7 +34,7 @@ dim = OptDB.getInt('dim', 2)
 numEdges = 10
 simplex = True
 plex = PETSc.DMPlex().createBoxMesh([numEdges]*dim, simplex=simplex)
-plex.distribute(overlap=1)
+plex.distribute()
 plex.view()
 viewer = PETSc.Viewer().createVTK('base_mesh.vtk', 'w')
 viewer(plex)
@@ -88,7 +88,7 @@ for i in range(4):
 
     # Call adapt routine - boundary label None by default
     plex = plex.adaptMetric(metric)
-    plex.distribute(overlap=1)
+    plex.distribute()
     plex.view()
 
 # Write to VTK file

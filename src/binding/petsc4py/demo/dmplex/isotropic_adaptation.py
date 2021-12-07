@@ -7,6 +7,7 @@ OptDB = PETSc.Options()
 
 dim = OptDB.getInt('dim', 2)
 plex = PETSc.DMPlex().createBoxMesh([4]*dim, simplex=True)
+plex.distribute()
 plex.view()
 
 # Create two metric tensor fields corresponding to uniform mesh sizes of 0.1 and 0.2
