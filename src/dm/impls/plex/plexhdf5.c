@@ -669,7 +669,7 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, IS globalC
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCoordinatesView_HDF5_V_1_0_Private(DM dm, PetscViewer viewer)
+static PetscErrorCode DMPlexCoordinatesView_HDF5_Legacy_Private(DM dm, PetscViewer viewer)
 {
   DM             cdm;
   Vec            coordinates, newcoords;
@@ -718,7 +718,7 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     ierr = DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ || version.major <= 1) {
-      ierr = DMPlexCoordinatesView_HDF5_V_1_0_Private(dm, viewer);CHKERRQ(ierr);
+      ierr = DMPlexCoordinatesView_HDF5_Legacy_Private(dm, viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }
@@ -1367,7 +1367,7 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCoordinatesLoad_HDF5_V0_Private(DM dm, PetscViewer viewer)
+static PetscErrorCode DMPlexCoordinatesLoad_HDF5_Legacy_Private(DM dm, PetscViewer viewer)
 {
   PetscSection    coordSection;
   Vec             coordinates;
@@ -1429,7 +1429,7 @@ PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, Pe
   /* If the file is old, it not only has different path to the coordinates, but   */
   /* does not contain coordinateDMs, so must fall back to the old implementation. */
   if (version.major <= 1) {
-    ierr = DMPlexCoordinatesLoad_HDF5_V0_Private(dm, viewer);CHKERRQ(ierr);
+    ierr = DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
