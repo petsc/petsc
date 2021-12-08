@@ -363,12 +363,8 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-/*
-
-  Creates a TS Monitor SPCtx for use with DM Swarm particle visualizations
-
-*/
-PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorSPCtx *ctx)
+/* Creates a TS Monitor SPCtx for use with DMSwarm particle visualizations */
+PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,PetscInt retain,PetscBool phase,TSMonitorSPCtx *ctx)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -380,8 +376,9 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char l
   ierr = PetscDrawSPCreate(draw,1,&(*ctx)->sp);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   (*ctx)->howoften = howoften;
+  (*ctx)->retain   = retain;
+  (*ctx)->phase    = phase;
   PetscFunctionReturn(0);
-
 }
 
 /*
@@ -1155,20 +1152,22 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 -  dctx - the TSMonitorSPCtx object that contains all the options for the monitoring, this is created with TSMonitorSPCtxCreate()
 
    Options Database:
-.   -ts_monitor_sp_swarm
++ -ts_monitor_sp_swarm <n>          - Monitor the solution every n steps, or -1 for plotting only the final solution
+. -ts_monitor_sp_swarm_retain <n>   - Retain n old points so we can see the history, or -1 for all points
+- -ts_monitor_sp_swarm_phase <bool> - Plot in phase space, as opposed to coordinate space
 
    Level: intermediate
 
+.seealso: TSMonitoSet()
 @*/
-PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
+PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
 {
-  PetscErrorCode     ierr;
-  DM                 cdm;
-  TSMonitorSPCtx     ctx = (TSMonitorSPCtx)dctx;
+  TSMonitorSPCtx     ctx = (TSMonitorSPCtx) dctx;
+  DM                 dm, cdm;
   const PetscScalar *yy;
-  PetscReal         *y,*x;
-  PetscInt           Np, p, dim=2;
-  DM                 dm;
+  PetscReal         *y, *x;
+  PetscInt           Np, p, dim = 2;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
@@ -1177,11 +1176,11 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
     PetscReal     dmboxlower[2], dmboxupper[2];
     ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    if (dim!=2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimensions improper for monitor arguments! Current support: two dimensions.");
+    if (dim != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Monitor only supports two dimensional fields");
     ierr = DMSwarmGetCellDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMGetBoundingBox(cdm, dmboxlower, dmboxupper);CHKERRQ(ierr);
     ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
-    Np /= 2*dim;
+    Np /= dim*2;
     ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Particles","X","V");CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], -5, 5);CHKERRQ(ierr);
@@ -1190,23 +1189,30 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
     ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
   }
   ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
-  Np /= 2*dim;
+  Np /= dim*2;
   ierr = VecGetArrayRead(u,&yy);CHKERRQ(ierr);
   ierr = PetscMalloc2(Np, &x, Np, &y);CHKERRQ(ierr);
   /* get points from solution vector */
-  for (p=0; p<Np; ++p) {
-    x[p] = PetscRealPart(yy[2*dim*p]);
-    y[p] = PetscRealPart(yy[(2*dim*p)+dim]);
+  for (p = 0; p < Np; ++p) {
+    if (ctx->phase) {
+      x[p] = PetscRealPart(yy[p*dim*2]);
+      y[p] = PetscRealPart(yy[p*dim*2 + dim]);
+    } else {
+      x[p] = PetscRealPart(yy[p*dim*2]);
+      y[p] = PetscRealPart(yy[p*dim*2 + 1]);
+    }
   }
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     PetscDraw draw;
     ierr = PetscDrawSPGetDraw(ctx->sp, &draw);CHKERRQ(ierr);
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+    if ((ctx->retain == 0) || (ctx->retain > 0 && !(step % ctx->retain))) {
+      ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+    }
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
-    ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
-    ierr = PetscDrawSPDraw(ctx->sp,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscDrawSPAddPoint(ctx->sp, x, y);CHKERRQ(ierr);
+    ierr = PetscDrawSPDraw(ctx->sp, PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);
   }
   ierr = PetscFree2(x, y);CHKERRQ(ierr);

@@ -381,12 +381,18 @@ int main(int argc, char **argv)
      requires: triangle !single !complex
    test:
      suffix: bsi1
-     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -ts_basicsymplectic_type 1 -ts_max_time 0.1 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
+           -ts_basicsymplectic_type 1 -ts_max_time 0.1 -ts_convergence_estimate -convest_num_refine 2 \
+           -dm_view -sw_view -ts_monitor_sp_swarm -ts_monitor_sp_swarm_retain -ts_monitor_sp_swarm_phase 0
    test:
      suffix: bsi2
-     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -ts_basicsymplectic_type 2 -ts_max_time 0.1 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
+           -ts_basicsymplectic_type 2 -ts_max_time 0.1 -ts_convergence_estimate -convest_num_refine 2 \
+           -dm_view -sw_view -ts_monitor_sp_swarm -ts_monitor_sp_swarm_retain -ts_monitor_sp_swarm_phase 0
    test:
      suffix: euler
-     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -ts_type euler -ts_max_time 0.1 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
+           -ts_type euler -ts_max_time 0.1 -ts_convergence_estimate -convest_num_refine 2 \
+           -dm_view -sw_view -ts_monitor_sp_swarm -ts_monitor_sp_swarm_retain -ts_monitor_sp_swarm_phase 0
 
 TEST*/
