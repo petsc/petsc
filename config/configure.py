@@ -157,6 +157,7 @@ def chksynonyms():
     name = name.replace('with-mpich','with-mpi')
     name = name.replace('with-blas-lapack','with-blaslapack')
     name = name.replace('with-cuda-gencodearch','with-cuda-arch')
+    name = name.replace('download-hdf5-fortran-bindings','with-hdf5-fortran-bindings')
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
       if name.find('=') == -1:
