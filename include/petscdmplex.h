@@ -466,7 +466,7 @@ PETSC_EXTERN PetscErrorCode DMPlexMetricGetNumIterations(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricCreate(DM, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricCreateUniform(DM, PetscInt, PetscReal, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricCreateIsotropic(DM, PetscInt, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode DMPlexMetricEnforceSPD(DM, PetscBool, PetscBool, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexMetricEnforceSPD(DM, Vec, PetscBool, PetscBool, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricNormalize(DM, Vec, PetscBool, PetscBool, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricAverage(DM, PetscInt, PetscReal[], Vec[], Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricAverage2(DM, Vec, Vec, Vec *);

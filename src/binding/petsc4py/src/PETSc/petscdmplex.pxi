@@ -160,7 +160,7 @@ cdef extern from * nogil:
     int DMPlexMetricCreate(PetscDM,PetscInt,PetscVec*)
     int DMPlexMetricCreateUniform(PetscDM,PetscInt,PetscReal,PetscVec*)
     int DMPlexMetricCreateIsotropic(PetscDM,PetscInt,PetscVec,PetscVec*)
-    int DMPlexMetricEnforceSPD(PetscDM,PetscBool,PetscBool,PetscVec)
+    int DMPlexMetricEnforceSPD(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec*,PetscVec*)
     int DMPlexMetricNormalize(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec*)
     int DMPlexMetricAverage2(PetscDM,PetscVec,PetscVec,PetscVec*)
     int DMPlexMetricAverage3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec*)

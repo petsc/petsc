@@ -828,7 +828,7 @@ defined. This can be checked using
 
 .. code-block::
 
-   DMPlexMetricEnforceSPD(DM dm, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metric);
+   DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut, Vec *determinant);
 
 This routine may also be used to enforce minimum and maximum tolerated metric
 magnitudes (i.e. cell sizes), as well as maximum anisotropy. These quantities

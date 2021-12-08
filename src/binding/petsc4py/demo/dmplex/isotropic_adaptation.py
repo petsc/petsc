@@ -14,8 +14,8 @@ metric1 = plex.metricCreateUniform(100.0)
 metric2 = plex.metricCreateUniform(25.0)
 
 # Ensure that we do ineed have metrics, i.e. they are SPD
-plex.metricEnforceSPD(metric1)
-plex.metricEnforceSPD(metric2)
+metric1 = plex.metricEnforceSPD(metric1)
+metric2 = plex.metricEnforceSPD(metric2)
 
 # The metrics can be combined using intersection, the result of which corresponds to
 # the maximum ellipsoid at each point

@@ -176,7 +176,7 @@ class BaseTestPlex(object):
         assert np.allclose(metric.array, metric2.array)
         metric = self.plex.metricIntersection2(metric1, metric2)
         assert np.allclose(metric.array, metric1.array)
-        self.plex.metricEnforceSPD(metric)
+        metric = self.plex.metricEnforceSPD(metric)
         assert np.allclose(metric.array, metric1.array)
 
     def testAdapt(self):
