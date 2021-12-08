@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   MPI_Comm        comm;
   PetscBool       uniform = PETSC_FALSE, isotropic = PETSC_FALSE;
   PetscErrorCode  ierr;
-  PetscInt       *faces, dim = 3, numEdges = 4, d;
+  PetscInt       *faces, dim = 3, d;
   PetscReal       scaling = 1.0;
   Vec             metric;
 
@@ -27,14 +27,13 @@ int main(int argc, char **argv) {
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex60.c", dim, &dim, NULL, 2, 3);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_edges", "Number of edges on each boundary of the initial mesh", "ex60.c", numEdges, &numEdges, NULL, 0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-uniform", "Should the metric be assumed uniform?", "ex60.c", uniform, &uniform, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-isotropic", "Should the metric be assumed isotropic, or computed as a recovered Hessian?", "ex60.c", isotropic, &isotropic, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   /* Create box mesh */
   ierr = PetscMalloc1(dim, &faces);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) faces[d] = numEdges;
+  for (d = 0; d < dim; ++d) faces[d] = 4;
   ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = PetscFree(faces);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
@@ -104,8 +103,9 @@ int main(int argc, char **argv) {
 
   /* Test metric routines */
   {
+    DM        dmDet;
     PetscReal errornorm, norm, tol = 1.0e-10, weights[2] = {0.8, 0.2};
-    Vec       metric1, metric2, metricComb;
+    Vec       metric1, metric2, metricComb, determinant;
     Vec       metrics[2];
 
     ierr = VecDuplicate(metric, &metric1);CHKERRQ(ierr);
@@ -134,19 +134,32 @@ int main(int argc, char **argv) {
       errornorm /= norm;
       if (errornorm > tol) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric intersection test failed (L2 error %f)", errornorm);
     }
+    ierr = VecDestroy(&metric1);CHKERRQ(ierr);
     ierr = VecDestroy(&metric2);CHKERRQ(ierr);
     ierr = VecDestroy(&metricComb);CHKERRQ(ierr);
-    ierr = VecCopy(metric, metric1);CHKERRQ(ierr);
 
     /* Test metric SPD enforcement */
-    ierr = DMPlexMetricEnforceSPD(dm, PETSC_TRUE, PETSC_TRUE, metric);CHKERRQ(ierr);
+    ierr = DMPlexMetricEnforceSPD(dm, metric, PETSC_TRUE, PETSC_TRUE, &metric1, &determinant);CHKERRQ(ierr);
     if (isotropic) {
+      Vec err;
+
+      ierr = VecDuplicate(determinant, &err);CHKERRQ(ierr);
+      ierr = VecSet(err, 1.0);CHKERRQ(ierr);
+      ierr = VecNorm(err, NORM_2, &norm);CHKERRQ(ierr);
+      ierr = VecAXPY(err, -1, determinant);CHKERRQ(ierr);
+      ierr = VecNorm(err, NORM_2, &errornorm);CHKERRQ(ierr);
+      ierr = VecDestroy(&err);CHKERRQ(ierr);
+      errornorm /= norm;
+      if (errornorm > tol) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Determinant is not unit (L2 error %f)", errornorm);
       ierr = VecAXPY(metric1, -1, metric);CHKERRQ(ierr);
       ierr = VecNorm(metric1, NORM_2, &errornorm);CHKERRQ(ierr);
       errornorm /= norm;
       if (errornorm > tol) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric SPD enforcement test failed (L2 error %f)", errornorm);
     }
     ierr = VecDestroy(&metric1);CHKERRQ(ierr);
+    ierr = VecGetDM(determinant, &dmDet);CHKERRQ(ierr);
+    ierr = VecDestroy(&determinant);CHKERRQ(ierr);
+    ierr = DMDestroy(&dmDet);CHKERRQ(ierr);
 
     /* Test metric normalization */
     ierr = DMPlexMetricNormalize(dm, metric, PETSC_TRUE, PETSC_TRUE, &metric1);CHKERRQ(ierr);
