@@ -648,7 +648,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPEig(TS,PetscInt,PetscReal,Vec,void *);
 
 typedef struct _n_TSMonitorSPCtx* TSMonitorSPCtx;
-PETSC_EXTERN PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorSPCtx*);
+PETSC_EXTERN PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,PetscInt,PetscBool,TSMonitorSPCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPSwarmSolution(TS,PetscInt,PetscReal,Vec,void*);
 
