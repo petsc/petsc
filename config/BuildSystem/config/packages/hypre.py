@@ -103,7 +103,7 @@ class Configure(config.package.GNUPackage):
       self.pushLanguage('HIP')
       cucc = self.getCompiler()
       devflags += ' -x hip -std=c++14 '
-      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.HIPPPFLAGS + ' ' + self.mpi.includepaths
+      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.HIPPPFLAGS + ' ' + self.mpi.includepaths + ' ' + self.headers.toString(self.dinclude)
       devflags = devflags.replace('-fvisibility=hidden','')
       self.popLanguage()
     elif self.cuda.found:
@@ -121,7 +121,7 @@ class Configure(config.package.GNUPackage):
       self.pushLanguage('CUDA')
       cucc = self.getCompiler()
       devflags += ' -expt-extended-lambda -std=c++11 --x cu '
-      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths
+      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
     elif self.openmp.found:
       args.append('--with-openmp')
