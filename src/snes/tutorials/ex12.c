@@ -1543,19 +1543,34 @@ int main(int argc, char **argv)
 
   # Full solve simplicial AMR
   test:
-    suffix: tri_p1_adapt_0
+    suffix: tri_p1_adapt_init_pragmatic
     requires: pragmatic
-    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor pragmatic
 
   test:
-    suffix: tri_p1_adapt_1
-    requires: pragmatic
-    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05
+    suffix: tri_p1_adapt_init_mmg
+    requires: mmg
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor mmg
 
   test:
-    suffix: tri_p1_adapt_analytic_0
+    suffix: tri_p1_adapt_seq_pragmatic
     requires: pragmatic
-    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor pragmatic
+
+  test:
+    suffix: tri_p1_adapt_seq_mmg
+    requires: mmg
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor mmg
+
+  test:
+    suffix: tri_p1_adapt_analytic_pragmatic
+    requires: pragmatic
+    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor pragmatic
+
+  test:
+    suffix: tri_p1_adapt_analytic_mmg
+    requires: mmg
+    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor mmg
 
   # Full solve tensor AMR
   test:
