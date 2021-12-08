@@ -173,7 +173,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   ierr = PetscFree2(bdFaces, faceTags);CHKERRQ(ierr);
   ierr = PetscFree2(verTags, cellTags);CHKERRQ(ierr);
 
-  /* Retrieve mesh from Mmg and create new Plex*/
+  /* Retrieve mesh from Mmg */
   switch (dim) {
   case 2:
     numCornersNew = 3;
@@ -194,9 +194,15 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     ierr = MMG3D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
     ierr = MMG3D_Get_tetrahedra(mmg_mesh, cellsNew, cellTagsNew, requiredCells);
     ierr = MMG3D_Get_triangles(mmg_mesh, facesNew, faceTagsNew, requiredFaces);
+
+    /* Reorder for consistency with DMPlex */
+    for (i = 0; i < numCellsNew; ++i) { ierr = DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4*i]);CHKERRQ(ierr); }
     break;
+
   default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
   }
+
+  /* Create new Plex */
   for (i = 0; i < (dim+1)*numCellsNew; i++) cellsNew[i] -= 1;
   for (i = 0; i < dim*numFacesNew; i++) facesNew[i] -= 1;
   ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNew, NULL, NULL, dmNew);CHKERRQ(ierr);
