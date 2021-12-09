@@ -2492,7 +2492,9 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscBool      simplex = PETSC_TRUE, interpolate = PETSC_TRUE, adjCone = PETSC_FALSE, adjClosure = PETSC_TRUE, refDomain = PETSC_FALSE;
   PetscBool      flg, flg2, fflg, bdfflg, nameflg;
   MPI_Comm       comm;
-  char           filename[PETSC_MAX_PATH_LEN], bdFilename[PETSC_MAX_PATH_LEN], plexname[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN]   = "<unspecified>";
+  char           bdFilename[PETSC_MAX_PATH_LEN] = "<unspecified>";
+  char           plexname[PETSC_MAX_PATH_LEN]   = "";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2635,6 +2637,9 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     }
   }
   ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);
+  if (!((PetscObject)dm)->name && nameflg) {
+    ierr = PetscObjectSetName((PetscObject)dm, plexname);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4107,7 +4112,6 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = idm;
     }
-    ierr = PetscObjectSetName((PetscObject)(*dm), plexname);CHKERRQ(ierr);
   } else if (isMed) {
     ierr = DMPlexCreateMedFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isPLY) {
@@ -4125,6 +4129,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   } else if (isCV) {
     ierr = DMPlexCreateCellVertexFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
+  ierr = PetscStrlen(plexname, &len);CHKERRQ(ierr);
+  if (len) {ierr = PetscObjectSetName((PetscObject)(*dm), plexname);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(DMPLEX_CreateFromFile,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
