@@ -773,8 +773,7 @@ in generating the test harness.
 Test Output Standards: TAP
 --------------------------
 
-The PETSc test system is designed to be compliant with the Test Anything
-Protocal (TAP); see https://testanything.org/tap-specification.html
+The PETSc test system is designed to be compliant with the `Test Anything Protocal (TAP) <https://testanything.org/tap-specification.html>`__.
 
 This is a simple standard designed to allow testing tools to work
 together easily. There are libraries to enable the output to be used
