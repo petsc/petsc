@@ -17,7 +17,7 @@ PetscErrorCode MatView_SeqAIJ_Inode(Mat A,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_INFO) {
       if (a->inode.size) {
-        ierr = PetscViewerASCIIPrintf(viewer,"using I-node routines: found %D nodes, limit used is %D\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"using I-node routines: found %" PetscInt_FMT " nodes, limit used is %" PetscInt_FMT "\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"not using I-node routines\n");CHKERRQ(ierr);
       }

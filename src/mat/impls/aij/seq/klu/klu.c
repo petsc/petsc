@@ -217,13 +217,13 @@ static PetscErrorCode MatView_Info_KLU(Mat A,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"KLU stats:\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Number of diagonal blocks: %d\n",Numeric->nblocks);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Total nonzeros=%d\n",Numeric->lnz+Numeric->unz);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Number of diagonal blocks: %" PetscInt_FMT "\n",(PetscInt)(Numeric->nblocks));
+  ierr = PetscViewerASCIIPrintf(viewer,"  Total nonzeros=%" PetscInt_FMT "\n",(PetscInt)(Numeric->lnz+Numeric->unz));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"KLU runtime parameters:\n");CHKERRQ(ierr);
   /* Control parameters used by numeric factorization */
   ierr = PetscViewerASCIIPrintf(viewer,"  Partial pivoting tolerance: %g\n",lu->Common.tol);CHKERRQ(ierr);
   /* BTF preordering */
-  ierr = PetscViewerASCIIPrintf(viewer,"  BTF preordering enabled: %d\n",lu->Common.btf);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  BTF preordering enabled: %" PetscInt_FMT "\n",(PetscInt)(lu->Common.btf));CHKERRQ(ierr);
   /* mat ordering */
   if (!lu->PetscMatOrdering) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Ordering: %s (not using the PETSc ordering)\n",KluOrderingTypes[(int)lu->Common.ordering]);CHKERRQ(ierr);

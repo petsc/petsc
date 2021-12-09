@@ -291,12 +291,12 @@ static PetscErrorCode MatView_Htool(Mat A,PetscViewer pv)
       ierr = PetscViewerASCIIPrintf(pv,"scaling: %g\n",(double)a->s);CHKERRQ(ierr);
 #endif
     }
-    ierr = PetscViewerASCIIPrintf(pv,"minimum cluster size: %D\n",a->bs[0]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"maximum block size: %D\n",a->bs[1]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"minimum cluster size: %" PetscInt_FMT "\n",a->bs[0]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"maximum block size: %" PetscInt_FMT "\n",a->bs[1]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"epsilon: %g\n",(double)a->epsilon);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"eta: %g\n",(double)a->eta);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"minimum target depth: %D\n",a->depth[0]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pv,"minimum source depth: %D\n",a->depth[1]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"minimum target depth: %" PetscInt_FMT "\n",a->depth[0]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"minimum source depth: %" PetscInt_FMT "\n",a->depth[1]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"compressor: %s\n",MatHtoolCompressorTypes[a->compressor]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"clustering: %s\n",MatHtoolClusteringTypes[a->clustering]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pv,"compression ratio: %s\n",a->hmatrix->get_infos("Compression_ratio").c_str());CHKERRQ(ierr);
@@ -489,7 +489,7 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
     PetscInt N;
     ierr = MatGetSize(C,NULL,&N);CHKERRQ(ierr);
     ierr = MatDenseGetLDA(C,&lda);CHKERRQ(ierr);
-    if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%D != %D)",lda,C->rmap->n);
+    if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
     ierr = MatDenseGetArrayRead(product->B,&in);CHKERRQ(ierr);
     ierr = MatDenseGetArrayWrite(C,&out);CHKERRQ(ierr);
     a->hmatrix->mvprod_local_to_local(in,out,N);
@@ -730,7 +730,7 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A,MatType newtype,MatReuse reus
     C = *B;
     if (C->rmap->n != A->rmap->n || C->cmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible dimensions");
     ierr = MatDenseGetLDA(C,&lda);CHKERRQ(ierr);
-    if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%D != %D)",lda,C->rmap->n);
+    if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
   } else {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);

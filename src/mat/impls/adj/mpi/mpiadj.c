@@ -182,7 +182,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
     for (j=0; j<irow_n; j++) {
       for (k=sxadj[j]; k<sxadj[j+1]; k++) {
         ierr = PetscFindInt(sadjncy[k],nindx,indices,&loc);CHKERRQ(ierr);
-        if (loc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %D",sadjncy[k]);
+        if (loc<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %" PetscInt_FMT,sadjncy[k]);
         sadjncy[k] = loc;
       }
     }
@@ -243,12 +243,12 @@ static PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %D:",i+A->rmap->rstart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %" PetscInt_FMT ":",i+A->rmap->rstart);CHKERRQ(ierr);
       for (j=a->i[i]; j<a->i[i+1]; j++) {
         if (a->values) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%D, %D) ",a->j[j], a->values[j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%" PetscInt_FMT ", %" PetscInt_FMT ") ",a->j[j], a->values[j]);CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D ",a->j[j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %" PetscInt_FMT " ",a->j[j]);CHKERRQ(ierr);
         }
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -280,7 +280,7 @@ static PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, NZ=%D",mat->rmap->n,mat->cmap->n,a->nz);
+  PetscLogObjectState((PetscObject)mat,"Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT,mat->rmap->n,mat->cmap->n,a->nz);
 #endif
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
   if (a->freeaij) {
@@ -635,12 +635,12 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   if (PetscDefined(USE_DEBUG)) {
     PetscInt ii;
 
-    if (i[0] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
+    if (i[0] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %" PetscInt_FMT "\n",i[0]);
     for (ii=1; ii<B->rmap->n; ii++) {
-      if (i[ii] < 0 || i[ii] < i[ii-1]) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i[%D]=%D index is out of range: i[%D]=%D",ii,i[ii],ii-1,i[ii-1]);
+      if (i[ii] < 0 || i[ii] < i[ii-1]) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i[%" PetscInt_FMT "]=%" PetscInt_FMT " index is out of range: i[%" PetscInt_FMT "]=%" PetscInt_FMT,ii,i[ii],ii-1,i[ii-1]);
     }
     for (ii=0; ii<i[B->rmap->n]; ii++) {
-      if (j[ii] < 0 || j[ii] >= B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %D out of range %D\n",ii,j[ii]);
+      if (j[ii] < 0 || j[ii] >= B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %" PetscInt_FMT " out of range %" PetscInt_FMT "\n",ii,j[ii]);
     }
   }
   B->preallocated = PETSC_TRUE;
@@ -719,7 +719,7 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   nz   = adj->nz;
-  if (adj->i[m] != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nz %D not correct i[m] %d",nz,adj->i[m]);
+  if (PetscUnlikely(adj->i[m] != nz)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nz %" PetscInt_FMT " not correct i[m] %" PetscInt_FMT,nz,adj->i[m]);
   ierr = MPI_Allreduce(&nz,&NZ,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
 
   ierr = PetscMPIIntCast(nz,&mnz);CHKERRQ(ierr);

@@ -293,7 +293,7 @@ static PetscErrorCode MatView_Info_UMFPACK(Mat A,PetscViewer viewer)
 
   /* mat ordering */
   if (!lu->perm_c) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ORDERING]: AMD (not using the PETSc ordering)\n",UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ORDERING]: %s (not using the PETSc ordering)\n",UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

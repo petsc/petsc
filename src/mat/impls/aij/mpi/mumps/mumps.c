@@ -289,7 +289,7 @@ static PetscErrorCode MatMumpsSolveSchur_Private(Mat F)
     ierr = MatCopy(X,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
+    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %d",F->schur_status);
   }
   ierr = MatFactorRestoreSchurComplement(F,&S,schurstatus);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -517,7 +517,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,PetscInt shift,MatReu
         nz++;
       }
     }
-    if (nz != aa->nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Different numbers of nonzeros %D != %D",nz,aa->nz);
+    if (PetscUnlikely(nz != aa->nz)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Different numbers of nonzeros %" PetscInt64_FMT " != %" PetscInt_FMT,nz,aa->nz);
   }
   if (reuse == MAT_INITIAL_MATRIX) mumps->nnz = nz;
   PetscFunctionReturn(0);
@@ -1835,11 +1835,11 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsIntArray("-mat_mumps_view_info","request INFO local to each processor","",info,&ninfo,NULL);CHKERRQ(ierr);
   if (ninfo) {
-    if (ninfo > 80) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"number of INFO %d must <= 80\n",ninfo);
+    if (PetscUnlikely(ninfo > 80)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"number of INFO %" PetscInt_FMT " must <= 80\n",ninfo);
     ierr = PetscMalloc1(ninfo,&mumps->info);CHKERRQ(ierr);
     mumps->ninfo = ninfo;
     for (i=0; i<ninfo; i++) {
-      if (info[i] < 0 || info[i]>80) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %d must between 1 and 80\n",ninfo);
+      if (PetscUnlikely(info[i] < 0 || info[i]>80)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %" PetscInt_FMT " must between 1 and 80\n",ninfo);
       else  mumps->info[i] = info[i];
     }
   }
@@ -2224,7 +2224,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       if (mumps->ninfo && mumps->ninfo <= 80) {
         PetscInt i;
         for (i=0; i<mumps->ninfo; i++) {
-          ierr = PetscViewerASCIIPrintf(viewer, "  INFO(%d): \n",mumps->info[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "  INFO(%" PetscInt_FMT "): \n",mumps->info[i]);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d\n",mumps->myid,mumps->id.INFO(mumps->info[i]));CHKERRQ(ierr);
           ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
         }

@@ -85,7 +85,7 @@ PetscErrorCode PetscHeapAdd(PetscHeap h,PetscInt id,PetscInt val)
   PetscFunctionBegin;
   if (1 < h->end && h->end < ARITY) h->end = ARITY;
   loc = h->end++;
-  if (h->end > h->stash) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Addition would exceed allocation %D (%D stashed)",h->alloc,(h->alloc-h->stash));
+  if (h->end > h->stash) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Addition would exceed allocation %" PetscInt_FMT " (%" PetscInt_FMT " stashed)",h->alloc,(h->alloc-h->stash));
   h->base[loc].id    = id;
   h->base[loc].value = val;
 
@@ -186,7 +186,7 @@ PetscErrorCode PetscHeapView(PetscHeap h,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Heap size %D with %D stashed\n",h->end-1,h->alloc-h->stash);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Heap size %" PetscInt_FMT " with %" PetscInt_FMT " stashed\n",h->end-1,h->alloc-h->stash);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Heap in (id,value) pairs\n");CHKERRQ(ierr);
     ierr = PetscIntView(2*(h->end-1),(const PetscInt*)(h->base+1),viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Stash in (id,value) pairs\n");CHKERRQ(ierr);

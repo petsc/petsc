@@ -2089,7 +2089,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz = ai[k+1] - ai[k] - 1;     /* exclude diag[k] */
     while (nz--) x[*vj++] += (*v++) * x[k];
     diagk = PetscRealPart(aa[adiag[k]]); /* note: aa[adiag[k]] = 1/D(k) */
-    if (PetscImaginaryPart(aa[adiag[k]]) || diagk < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Diagonal (%g,%g) must be real and nonnegative",PetscRealPart(aa[adiag[k]]),PetscImaginaryPart(aa[adiag[k]]));
+    if (PetscUnlikely(PetscImaginaryPart(aa[adiag[k]]) || (diagk < 0))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Diagonal (%g,%g) must be real and nonnegative",(double)PetscRealPart(aa[adiag[k]]),(double)PetscImaginaryPart(aa[adiag[k]]));
     x[k] *= PetscSqrtReal(diagk);
   }
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
@@ -2120,7 +2120,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,V
     nz = ai[k+1] - ai[k] - 1;     /* exclude diag[k] */
     while (nz--) x[*vj++] += (*v++) * x[k];
     diagk = PetscRealPart(aa[ai[k]]); /* note: aa[diag[k]] = 1/D(k) */
-    if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Diagonal (%g,%g) must be real and nonnegative",PetscRealPart(aa[ai[k]]),PetscImaginaryPart(aa[ai[k]]));
+    if (PetscUnlikely(PetscImaginaryPart(aa[ai[k]]) || (diagk < 0))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Diagonal (%g,%g) must be real and nonnegative",(double)PetscRealPart(aa[ai[k]]),(double)PetscImaginaryPart(aa[ai[k]]));
     x[k] *= PetscSqrtReal(diagk);
   }
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
@@ -2323,7 +2323,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
 #if defined(PETSC_USE_INFO)
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %g needed %g\n",reallocs,(double)f,(double)af);CHKERRQ(ierr);
+    ierr = PetscInfo3(A,"Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n",reallocs,(double)f,(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g);\n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
@@ -2399,9 +2399,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT,A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,d);
   if (bs > 1) {
     ierr = MatICCFactorSymbolic_SeqSBAIJ_inplace(fact,A,perm,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -2460,7 +2460,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       /* initialize lnk by the column indices of row k */
       nzk   = 0;
       ncols = ai[k+1] - ai[k];
-      if (!ncols) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row %D in matrix ",k);
+      if (!ncols) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row %" PetscInt_FMT " in matrix ",k);
       cols = aj+ai[k];
       ierr = PetscIncompleteLLInit(ncols,cols,am,rip,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
       nzk += nlnk;
@@ -2502,7 +2502,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       }
 
       /* copy data into free_space and free_space_lvl, then initialize lnk */
-      if (nzk == 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Empty row %D in ICC matrix factor",k);
+      if (nzk == 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Empty row %" PetscInt_FMT " in ICC matrix factor",k);
       ierr = PetscIncompleteLLClean(am,am,nzk,lnk,lnk_lvl,current_space->array,current_space_lvl->array,lnkbt);CHKERRQ(ierr);
 
       /* add the k-th row into il and jl */
@@ -2576,7 +2576,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
 #if defined(PETSC_USE_INFO)
   if (ai[am] != 0) {
     PetscReal af = fact->info.fill_ratio_needed;
-    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %g needed %g\n",reallocs,(double)fill,(double)af);CHKERRQ(ierr);
+    ierr = PetscInfo3(A,"Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n",reallocs,(double)fill,(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g) for best performance.\n",(double)af);CHKERRQ(ierr);
   } else {
@@ -2772,7 +2772,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
 #if defined(PETSC_USE_INFO)
   if (ai[am] != 0) {
     PetscReal af = fact->info.fill_ratio_needed;
-    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %g needed %g\n",reallocs,(double)fill,(double)af);CHKERRQ(ierr);
+    ierr = PetscInfo3(A,"Reallocs %" PetscInt_FMT " Fill ratio:given %g needed %g\n",reallocs,(double)fill,(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g) for best performance.\n",(double)af);CHKERRQ(ierr);
   } else {

@@ -117,24 +117,24 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)c,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",(double)c->error_rel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Umin=%g\n",(double)c->umin);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%D\n",c->ncolors);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%" PetscInt_FMT "\n",c->ncolors);CHKERRQ(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format != PETSC_VIEWER_ASCII_INFO) {
       PetscInt row,col,nz;
       nz = 0;
       for (i=0; i<c->ncolors; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  Information for color %D\n",i);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    Number of columns %D\n",c->ncolumns[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Information for color %" PetscInt_FMT "\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    Number of columns %" PetscInt_FMT "\n",c->ncolumns[i]);CHKERRQ(ierr);
         for (j=0; j<c->ncolumns[i]; j++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"      %D\n",c->columns[i][j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"      %" PetscInt_FMT "\n",c->columns[i][j]);CHKERRQ(ierr);
         }
-        ierr = PetscViewerASCIIPrintf(viewer,"    Number of rows %D\n",c->nrows[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    Number of rows %" PetscInt_FMT "\n",c->nrows[i]);CHKERRQ(ierr);
         if (c->matentry) {
           for (j=0; j<c->nrows[i]; j++) {
             row  = c->matentry[nz].row;
             col  = c->matentry[nz++].col;
-            ierr = PetscViewerASCIIPrintf(viewer,"      %D %D \n",row,col);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"      %" PetscInt_FMT " %" PetscInt_FMT " \n",row,col);CHKERRQ(ierr);
           }
         }
       }

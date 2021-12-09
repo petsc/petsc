@@ -68,7 +68,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       ierr = MatGetOwnershipRange(pmat,&rstart,NULL);CHKERRQ(ierr);
       for (i=0; i<pmat->rmap->n; i++) {
         for (j=xadj[i]; j<xadj[i+1]; j++) {
-          if (adjncy[j] == i+rstart) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row %D has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
+          if (adjncy[j] == i+rstart) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row %" PetscInt_FMT " has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
         }
       }
     }
@@ -248,9 +248,9 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using sequential coarse grid partitioner\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  Using %D fold factor\n",pmetis->foldfactor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Using %" PetscInt_FMT " fold factor\n",pmetis->foldfactor);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %D\n",rank,pmetis->cuts);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %" PetscInt_FMT "\n",rank,pmetis->cuts);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }

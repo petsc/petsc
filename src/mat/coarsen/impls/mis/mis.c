@@ -217,7 +217,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     } else break; /* all done */
   } /* outer parallel MIS loop */
   ierr = ISRestoreIndices(perm,&perm_ix);CHKERRQ(ierr);
-  ierr = PetscInfo3(Gmat,"\t removed %D of %D vertices.  %D selected.\n",nremoved,nloc,nselected);CHKERRQ(ierr);
+  ierr = PetscInfo3(Gmat,"\t removed %" PetscInt_FMT " of %" PetscInt_FMT " vertices.  %" PetscInt_FMT " selected.\n",nremoved,nloc,nselected);CHKERRQ(ierr);
 
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {

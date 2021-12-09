@@ -90,7 +90,7 @@ PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
   PetscFunctionBegin;
   ierr = MatStashScatterBegin_Private(A, &A->stash, A->rmap->range);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&A->stash, &nstash, &reallocs);CHKERRQ(ierr);
-  ierr = PetscInfo2(A, "Stash has %D entries, uses %D mallocs.\n", nstash, reallocs);CHKERRQ(ierr);
+  ierr = PetscInfo2(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -169,7 +169,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
       rowstarts[i+1] = rowstarts[i] + p->dnz[i] + p->onz[i];
       maxrow = PetscMax(maxrow, p->dnz[i] + p->onz[i]);
     }
-    if (rowstarts[rEnd-rStart] != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash claims %D entries, but dnz+onz counts %D",n,rowstarts[rEnd-rStart]);
+    if (rowstarts[rEnd-rStart] != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash claims %" PetscInt_FMT " entries, but dnz+onz counts %" PetscInt_FMT,n,rowstarts[rEnd-rStart]);
 
     PetscHashIterBegin(p->ht,hi);
     for (PetscInt i=0; !PetscHashIterAtEnd(p->ht,hi); i++) {

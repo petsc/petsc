@@ -346,8 +346,8 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if ((pend-pstart)>size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%D, %D] should be smaller than or equal to size %D",pstart,pend,size);
-  if (pstart>pend) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," pstart %D should be smaller than pend %D",pstart,pend);
+  if ((pend-pstart)>size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%" PetscInt_FMT ", %" PetscInt_FMT "] should be smaller than or equal to size %" PetscInt_FMT,pstart,pend,size);
+  if (pstart>pend) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," pstart %" PetscInt_FMT " should be smaller than pend %" PetscInt_FMT,pstart,pend);
   ierr = ISGetLocalSize(partitioning,&plocalsize);CHKERRQ(ierr);
   ierr = PetscMalloc1(plocalsize,&dest_indices);CHKERRQ(ierr);
   ierr = ISGetIndices(partitioning,&part_indices);CHKERRQ(ierr);
@@ -374,14 +374,14 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer," Number of coarse parts: %D\n",hpart->ncoarseparts);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Number of coarse parts: %" PetscInt_FMT "\n",hpart->ncoarseparts);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," Coarse partitioner: %s\n",hpart->coarseparttype);CHKERRQ(ierr);
     if (hpart->coarseMatPart) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatPartitioningView(hpart->coarseMatPart,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer," Number of fine parts: %D\n",hpart->nfineparts);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Number of fine parts: %" PetscInt_FMT "\n",hpart->nfineparts);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer," Fine partitioner: %s\n",hpart->fineparttype);CHKERRQ(ierr);
     ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     if (rank == 0 && hpart->fineMatPart) {

@@ -363,7 +363,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscInfo2(mat,"Current differencing parameter: %g + %g i\n",(double)PetscRealPart(h),(double)PetscImaginaryPart(h));CHKERRQ(ierr);
 #else
-  ierr = PetscInfo1(mat,"Current differencing parameter: %15.12e\n",h);CHKERRQ(ierr);
+  ierr = PetscInfo1(mat,"Current differencing parameter: %15.12e\n",(double)PetscRealPart(h));CHKERRQ(ierr);
 #endif
   if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) {
     ctx->historyh[ctx->ncurrenth] = h;
