@@ -2097,12 +2097,13 @@ PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf,
   /* f is the field number in the DS, g is the field number in u[] */
   for (f = 0, g = 0; f < Nf; ++f) {
     PetscFE          fe   = (PetscFE) ds->disc[f];
-    const PetscInt   cdim = T[f]->cdim;
+    const PetscInt   dEt  = T[f]->cdim;
+    const PetscInt   dE   = fegeom->dimEmbed;
     const PetscInt   Nq   = T[f]->Np;
     const PetscInt   Nbf  = T[f]->Nb;
     const PetscInt   Ncf  = T[f]->Nc;
     const PetscReal *Bq   = &T[f]->T[0][(r*Nq+q)*Nbf*Ncf];
-    const PetscReal *Dq   = &T[f]->T[1][(r*Nq+q)*Nbf*Ncf*cdim];
+    const PetscReal *Dq   = &T[f]->T[1][(r*Nq+q)*Nbf*Ncf*dEt];
     PetscBool        isCohesive;
     PetscInt         Ns, s;
 
@@ -2112,18 +2113,18 @@ PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS ds, PetscInt Nf,
     for (s = 0; s < Ns; ++s, ++g) {
       PetscInt b, c, d;
 
-      for (c = 0; c < Ncf; ++c)      u[fOffset+c] = 0.0;
-      for (d = 0; d < cdim*Ncf; ++d) u_x[fOffset*cdim+d] = 0.0;
+      for (c = 0; c < Ncf; ++c)    u[fOffset+c]      = 0.0;
+      for (d = 0; d < dE*Ncf; ++d) u_x[fOffset*dE+d] = 0.0;
       for (b = 0; b < Nbf; ++b) {
         for (c = 0; c < Ncf; ++c) {
           const PetscInt cidx = b*Ncf+c;
 
           u[fOffset+c] += Bq[cidx]*coefficients[dOffset+b];
-          for (d = 0; d < cdim; ++d) u_x[(fOffset+c)*cdim+d] += Dq[cidx*cdim+d]*coefficients[dOffset+b];
+          for (d = 0; d < dEt; ++d) u_x[(fOffset+c)*dE+d] += Dq[cidx*dEt+d]*coefficients[dOffset+b];
         }
       }
       ierr = PetscFEPushforward(fe, fegeom, 1, &u[fOffset]);CHKERRQ(ierr);
-      ierr = PetscFEPushforwardGradient(fe, fegeom, 1, &u_x[fOffset*cdim]);CHKERRQ(ierr);
+      ierr = PetscFEPushforwardGradient(fe, fegeom, 1, &u_x[fOffset*dE]);CHKERRQ(ierr);
       if (u_t) {
         for (c = 0; c < Ncf; ++c) u_t[fOffset+c] = 0.0;
         for (b = 0; b < Nbf; ++b) {
@@ -2180,7 +2181,6 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
   PetscInt         q, b, c, d;
   PetscErrorCode   ierr;
 
-  for (b = 0; b < Nb; ++b) elemVec[b] = 0.0;
   for (q = 0; q < Nq; ++q) {
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Nc; ++c) {
@@ -2188,6 +2188,7 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
 
         tmpBasis[bcidx] = basis[q*Nb*Nc+bcidx];
         for (d = 0; d < dEt; ++d) tmpBasisDer[bcidx*dE+d] = basisDer[q*Nb*Nc*dEt+bcidx*dEt+d];
+        for (d = dEt; d < dE; ++d) tmpBasisDer[bcidx*dE+d] = 0.0;
       }
     }
     ierr = PetscFEGeomGetCellPoint(fegeom, e, q, &pgeom);CHKERRQ(ierr);
@@ -2217,7 +2218,6 @@ PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulati
   PetscInt         q, b, c, d;
   PetscErrorCode   ierr;
 
-  for (b = 0; b < Nb; ++b) elemVec[Nb*s+b] = 0.0;
   for (q = 0; q < Nq; ++q) {
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Nc; ++c) {

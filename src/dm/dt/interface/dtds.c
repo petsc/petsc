@@ -397,6 +397,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   prob->totDim = prob->totComp = 0;
   ierr = PetscMalloc2(Nf,&prob->Nc,Nf,&prob->Nb);CHKERRQ(ierr);
   ierr = PetscCalloc2(Nf+1,&prob->off,Nf+1,&prob->offDer);CHKERRQ(ierr);
+  ierr = PetscCalloc6(Nf+1,&prob->offCohesive[0],Nf+1,&prob->offCohesive[1],Nf+1,&prob->offCohesive[2],Nf+1,&prob->offDerCohesive[0],Nf+1,&prob->offDerCohesive[1],Nf+1,&prob->offDerCohesive[2]);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf,&prob->T,Nf,&prob->Tf);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscObject     obj;
@@ -434,6 +435,12 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     prob->Nb[f]       = Nb;
     prob->off[f+1]    = Nc     + prob->off[f];
     prob->offDer[f+1] = Nc*dim + prob->offDer[f];
+    prob->offCohesive[0][f+1]    = (prob->cohesive[f] ? Nc : Nc*2)          + prob->offCohesive[0][f];
+    prob->offDerCohesive[0][f+1] = (prob->cohesive[f] ? Nc : Nc*2)*dimEmbed + prob->offDerCohesive[0][f];
+    prob->offCohesive[1][f]      = (prob->cohesive[f] ? 0 : Nc)             + prob->offCohesive[0][f];
+    prob->offDerCohesive[1][f]   = (prob->cohesive[f] ? 0 : Nc)*dimEmbed    + prob->offDerCohesive[0][f];
+    prob->offCohesive[2][f+1]    = (prob->cohesive[f] ? Nc : Nc*2)          + prob->offCohesive[2][f];
+    prob->offDerCohesive[2][f+1] = (prob->cohesive[f] ? Nc : Nc*2)*dimEmbed + prob->offDerCohesive[2][f];
     if (q) {ierr = PetscQuadratureGetData(q, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
     NqMax          = PetscMax(NqMax, Nq);
     NbMax          = PetscMax(NbMax, Nb);
@@ -443,6 +450,8 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     /* There are two faces for all fields on a cohesive cell, except for cohesive fields */
     if (prob->isCohesive && !prob->cohesive[f]) prob->totDim += Nb;
   }
+  prob->offCohesive[1][Nf]    = prob->offCohesive[0][Nf];
+  prob->offDerCohesive[1][Nf] = prob->offDerCohesive[0][Nf];
   /* Allocate works space */
   NsMax = 2; /* A non-cohesive discretizations can be used on a cohesive cell, so we need this extra workspace for all DS */
   ierr = PetscMalloc3(NsMax*prob->totComp,&prob->u,NsMax*prob->totComp,&prob->u_t,NsMax*prob->totComp*dimEmbed + (hasH ? NsMax*prob->totComp*dimEmbed*dimEmbed : 0),&prob->u_x);CHKERRQ(ierr);
@@ -462,6 +471,7 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
   PetscFunctionBegin;
   ierr = PetscFree2(prob->Nc,prob->Nb);CHKERRQ(ierr);
   ierr = PetscFree2(prob->off,prob->offDer);CHKERRQ(ierr);
+  ierr = PetscFree6(prob->offCohesive[0],prob->offCohesive[1],prob->offCohesive[2],prob->offDerCohesive[0],prob->offDerCohesive[1],prob->offDerCohesive[2]);CHKERRQ(ierr);
   ierr = PetscFree2(prob->T,prob->Tf);CHKERRQ(ierr);
   ierr = PetscFree3(prob->u,prob->u_t,prob->u_x);CHKERRQ(ierr);
   ierr = PetscFree5(prob->x,prob->basisReal, prob->basisDerReal,prob->testReal,prob->testDerReal);CHKERRQ(ierr);
@@ -3118,6 +3128,66 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
   PetscValidPointer(offsets, 2);
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
   *offsets = prob->offDer;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSGetComponentOffsetsCohesive - Returns the offset of each field on an evaluation point
+
+  Not collective
+
+  Input Parameters:
++ ds - The PetscDS object
+- s  - The cohesive side, 0 for negative, 1 for positive, 2 for cohesive
+
+  Output Parameter:
+. offsets - The offsets
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscInt *offsets[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(offsets, 3);
+  if (!ds->isCohesive) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cohesive offsets are only valid for a cohesive DS");
+  if ((s < 0) || (s > 2)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %D is not in [0, 2]", s);
+  ierr = PetscDSSetUp(ds);CHKERRQ(ierr);
+  *offsets = ds->offCohesive[s];
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSGetComponentDerivativeOffsetsCohesive - Returns the offset of each field derivative on an evaluation point
+
+  Not collective
+
+  Input Parameters:
++ ds - The PetscDS object
+- s  - The cohesive side, 0 for negative, 1 for positive, 2 for cohesive
+
+  Output Parameter:
+. offsets - The offsets
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt s, PetscInt *offsets[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  PetscValidPointer(offsets, 3);
+  if (!ds->isCohesive) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cohesive offsets are only valid for a cohesive DS");
+  if ((s < 0) || (s > 2)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %D is not in [0, 2]", s);
+  ierr = PetscDSSetUp(ds);CHKERRQ(ierr);
+  *offsets = ds->offDerCohesive[s];
   PetscFunctionReturn(0);
 }
 

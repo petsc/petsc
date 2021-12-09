@@ -126,6 +126,8 @@ struct _p_PetscDS {
   PetscInt        *Nb;                 /* Number of basis functions for each field */
   PetscInt        *off;                /* Offsets for each field */
   PetscInt        *offDer;             /* Derivative offsets for each field */
+  PetscInt        *offCohesive[3];     /* Offsets for each field on side s of a cohesive cell */
+  PetscInt        *offDerCohesive[3];  /* Derivative offsets for each field on side s of a cohesive cell */
   PetscTabulation *T;                  /* Basis function and derivative tabulation for each field */
   PetscTabulation *Tf;                 /* Basis function and derivative tabulation for each local face and field */
   /* Work space */
