@@ -1969,7 +1969,7 @@ set via ``-tao_bncg_as_tol`` and ``-tao_bncg_as_step``, respectively.
 In addition to automatic scaled gradient descent restarts under certain
 local curvature conditions, we also employ restarts based on a check on
 descent direction such that
-:math:`\nabla f(x_k)^T d_k \in [-10^{11}, -1^{-9}]`. Furthermore, we
+:math:`\nabla f(x_k)^T d_k \in [-10^{11}, -10^{-9}]`. Furthermore, we
 allow for a variety of alternative restart strategies, all disabled by
 default. The ``-tao_bncg_unscaled_restart`` flag allows one to disable
 rescaling of the gradient for gradient descent steps. The

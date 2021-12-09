@@ -87,18 +87,18 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->ops->setfromoptions = NULL;
   tao->ops->destroy = NULL;
 
-  tao->solution=NULL;
-  tao->gradient=NULL;
+  tao->solution = NULL;
+  tao->gradient = NULL;
   tao->ls_res = NULL;
   tao->ls_jac = NULL;
-  tao->constraints=NULL;
-  tao->constraints_equality=NULL;
-  tao->constraints_inequality=NULL;
-  tao->res_weights_v=NULL;
-  tao->res_weights_w=NULL;
-  tao->stepdirection=NULL;
-  tao->niter=0;
-  tao->ntotalits=0;
+  tao->constraints = NULL;
+  tao->constraints_equality = NULL;
+  tao->constraints_inequality = NULL;
+  tao->res_weights_v = NULL;
+  tao->res_weights_w = NULL;
+  tao->stepdirection = NULL;
+  tao->niter = 0;
+  tao->ntotalits = 0;
   tao->XL = NULL;
   tao->XU = NULL;
   tao->IL = NULL;
@@ -123,37 +123,38 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->state_is = NULL;
   tao->design_is = NULL;
 
-  tao->max_it     = 10000;
-  tao->max_funcs   = 10000;
+  tao->max_it    = 10000;
+  tao->max_funcs = 10000;
 #if defined(PETSC_USE_REAL_SINGLE)
-  tao->gatol       = 1e-5;
-  tao->grtol       = 1e-5;
-  tao->crtol       = 1e-5;
-  tao->catol       = 1e-5;
+  tao->gatol     = 1e-5;
+  tao->grtol     = 1e-5;
+  tao->crtol     = 1e-5;
+  tao->catol     = 1e-5;
 #else
-  tao->gatol       = 1e-8;
-  tao->grtol       = 1e-8;
-  tao->crtol       = 1e-8;
-  tao->catol       = 1e-8;
+  tao->gatol     = 1e-8;
+  tao->grtol     = 1e-8;
+  tao->crtol     = 1e-8;
+  tao->catol     = 1e-8;
 #endif
-  tao->gttol       = 0.0;
-  tao->steptol     = 0.0;
-  tao->trust0      = PETSC_INFINITY;
-  tao->fmin        = PETSC_NINFINITY;
-  tao->hist_malloc = PETSC_FALSE;
-  tao->hist_reset = PETSC_TRUE;
-  tao->hist_max = 0;
-  tao->hist_len = 0;
-  tao->hist_obj = NULL;
-  tao->hist_resid = NULL;
-  tao->hist_cnorm = NULL;
-  tao->hist_lits = NULL;
+  tao->gttol     = 0.0;
+  tao->steptol   = 0.0;
+  tao->trust0    = PETSC_INFINITY;
+  tao->fmin      = PETSC_NINFINITY;
 
-  tao->numbermonitors=0;
-  tao->viewsolution=PETSC_FALSE;
-  tao->viewhessian=PETSC_FALSE;
-  tao->viewgradient=PETSC_FALSE;
-  tao->viewjacobian=PETSC_FALSE;
+  tao->hist_malloc = PETSC_FALSE;
+  tao->hist_reset  = PETSC_TRUE;
+  tao->hist_max    = 0;
+  tao->hist_len    = 0;
+  tao->hist_obj    = NULL;
+  tao->hist_resid  = NULL;
+  tao->hist_cnorm  = NULL;
+  tao->hist_lits   = NULL;
+
+  tao->numbermonitors = 0;
+  tao->viewsolution = PETSC_FALSE;
+  tao->viewhessian = PETSC_FALSE;
+  tao->viewgradient = PETSC_FALSE;
+  tao->viewjacobian = PETSC_FALSE;
   tao->viewconstraints = PETSC_FALSE;
 
   tao->bounded = PETSC_FALSE;
@@ -167,16 +168,16 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->header_printed = PETSC_FALSE;
 
   /* These flags prevents algorithms from overriding user options */
-  tao->max_it_changed   =PETSC_FALSE;
-  tao->max_funcs_changed=PETSC_FALSE;
-  tao->gatol_changed    =PETSC_FALSE;
-  tao->grtol_changed    =PETSC_FALSE;
-  tao->gttol_changed    =PETSC_FALSE;
-  tao->steptol_changed  =PETSC_FALSE;
-  tao->trust0_changed   =PETSC_FALSE;
-  tao->fmin_changed     =PETSC_FALSE;
-  tao->catol_changed    =PETSC_FALSE;
-  tao->crtol_changed    =PETSC_FALSE;
+  tao->max_it_changed    = PETSC_FALSE;
+  tao->max_funcs_changed = PETSC_FALSE;
+  tao->gatol_changed     = PETSC_FALSE;
+  tao->grtol_changed     = PETSC_FALSE;
+  tao->gttol_changed     = PETSC_FALSE;
+  tao->steptol_changed   = PETSC_FALSE;
+  tao->trust0_changed    = PETSC_FALSE;
+  tao->fmin_changed      = PETSC_FALSE;
+  tao->catol_changed     = PETSC_FALSE;
+  tao->crtol_changed     = PETSC_FALSE;
   ierr = TaoResetStatistics(tao);CHKERRQ(ierr);
   *newtao = tao;
   PetscFunctionReturn(0);
@@ -2091,8 +2092,8 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
 
    This would enable use of different options for each system, such as
 .vb
-      -sys1_tao_method blmvm -sys1_tao_gtol 1.e-3
-      -sys2_tao_method lmvm  -sys2_tao_gtol 1.e-4
+      -sys1_tao_method blmvm -sys1_tao_grtol 1.e-3
+      -sys2_tao_method lmvm  -sys2_tao_grtol 1.e-4
 .ve
 
    Level: advanced

@@ -489,16 +489,16 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
 /* Computes F(t,U,U_t) where F() = 0 is the DAE to be solved. */
 PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *user)
 {
-  PetscErrorCode                     ierr;
-  DM                                 networkdm;
-  Vec                                localX,localXdot,localF;
-  PetscInt                           vfrom,vto,offsetfrom,offsetto;
-  PetscInt                           v,vStart,vEnd,e;
-  PetscScalar                        *farr;
-  PetscScalar                        Vd,Vq,SE;
-  const PetscScalar                  *xarr,*xdotarr;
-  void*                              component;
-  PetscScalar                        Vr=0, Vi=0;
+  PetscErrorCode    ierr;
+  DM                networkdm;
+  Vec               localX,localXdot,localF;
+  PetscInt          vfrom,vto,offsetfrom,offsetto;
+  PetscInt          v,vStart,vEnd,e;
+  PetscScalar       *farr;
+  PetscScalar       Vd=0,Vq=0,SE;
+  const PetscScalar *xarr,*xdotarr;
+  void*             component;
+  PetscScalar       Vr=0, Vi=0;
 
   PetscFunctionBegin;
   ierr = VecSet(F,0.0);CHKERRQ(ierr);

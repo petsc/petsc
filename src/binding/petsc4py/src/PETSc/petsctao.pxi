@@ -93,10 +93,6 @@ cdef extern from * nogil:
     int TaoSetMonitor(PetscTAO,TaoMonitor,void*,TaoMonitorDestroy)
     int TaoCancelMonitors(PetscTAO)
 
-
-
-
-
     int TaoComputeObjective(PetscTAO,PetscVec,PetscReal*)
     int TaoComputeResidual(PetscTAO,PetscVec,PetscVec)
     int TaoComputeGradient(PetscTAO,PetscVec,PetscVec)
