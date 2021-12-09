@@ -6143,10 +6143,12 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   dm->dim = dim;
-  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
-  for (n = 0; n < Nds; ++n) {
-    ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
-    if (ds->dimEmbed < 0) {ierr = PetscDSSetCoordinateDimension(ds, dim);CHKERRQ(ierr);}
+  if (dm->dim >= 0) {
+    ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+    for (n = 0; n < Nds; ++n) {
+      ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
+      if (ds->dimEmbed < 0) {ierr = PetscDSSetCoordinateDimension(ds, dim);CHKERRQ(ierr);}
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -6611,10 +6613,12 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->dimEmbed = dim;
-  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
-  for (n = 0; n < Nds; ++n) {
-    ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
-    ierr = PetscDSSetCoordinateDimension(ds, dim);CHKERRQ(ierr);
+  if (dm->dim >= 0) {
+    ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+    for (n = 0; n < Nds; ++n) {
+      ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
+      ierr = PetscDSSetCoordinateDimension(ds, dim);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
