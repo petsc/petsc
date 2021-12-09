@@ -111,7 +111,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
     if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the %s numfact and solve: residual %g\n",k,factortype,(double)norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the %s numfact and solve: residual %g\n",k,factortype,(double)norm);CHKERRQ(ierr);
     }
   }
 

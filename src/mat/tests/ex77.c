@@ -133,13 +133,13 @@ int main(int argc,char **args)
   ierr   = MatNorm(sA,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",(double)norm1);CHKERRQ(ierr);
   }
   ierr   = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
   ierr   = MatNorm(sA,NORM_INFINITY,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",(double)norm1);CHKERRQ(ierr);
   }
 
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */

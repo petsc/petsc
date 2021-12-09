@@ -151,7 +151,7 @@ int main(int argc,char **args)
   ierr = MatCreateComposite(PETSC_COMM_WORLD,nmat,A,&B);CHKERRQ(ierr);
   ierr = MatCompositeGetNumberMat(B,&n);CHKERRQ(ierr);
   if (nmat != n) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetNumberMat %D != %D\n",nmat,n);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with GetNumberMat %" PetscInt_FMT " != %" PetscInt_FMT "\n",nmat,n);CHKERRQ(ierr);
   }
   ierr = MatCompositeGetMat(B,0,&A[nmat+2]);CHKERRQ(ierr);
   if (A[0] != A[nmat+2]) {

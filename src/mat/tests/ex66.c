@@ -265,7 +265,7 @@ int main(int argc,char **argv)
         ierr = MatMult(B,x,y);CHKERRQ(ierr);
         ierr = VecAXPY(y,-1.0,v);CHKERRQ(ierr);
         ierr = VecNorm(y,NORM_INFINITY,&err);CHKERRQ(ierr);
-        if (err > 10.*PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMat err %D %g\n",i,err);CHKERRQ(ierr); }
+        if (err > 10.*PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMat err %" PetscInt_FMT " %g\n",i,err);CHKERRQ(ierr); }
       }
       ierr = VecDestroy(&y);CHKERRQ(ierr);
       ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -289,7 +289,7 @@ int main(int argc,char **argv)
           ierr = MatMultTranspose(B,x,y);CHKERRQ(ierr);
           ierr = VecAXPY(y,-1.0,v);CHKERRQ(ierr);
           ierr = VecNorm(y,NORM_INFINITY,&err);CHKERRQ(ierr);
-          if (err > 10.*PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransMat err %D %g\n",i,err);CHKERRQ(ierr); }
+          if (err > 10.*PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransMat err %" PetscInt_FMT " %g\n",i,err);CHKERRQ(ierr); }
         }
         ierr = VecDestroy(&y);CHKERRQ(ierr);
         ierr = VecDestroy(&x);CHKERRQ(ierr);

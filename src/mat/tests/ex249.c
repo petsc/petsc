@@ -64,7 +64,7 @@ int main(int argc,char **args)
   /* Compare submats and submats2 */
   for (i=0; i<n; i++) {
     ierr = MatEqual(submats[i],submats2[i],&same);CHKERRQ(ierr);
-    if (!same) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"submatrix %d is not same\n",i);
+    if (!same) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"submatrix %" PetscInt_FMT " is not same\n",i);
   }
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);

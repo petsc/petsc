@@ -36,7 +36,7 @@ int main(int argc,char **args)
     N = 1;
     for (k=0; k<i; k++){dim[k] = n; N*=n;}
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "\n %D dimensions: FFTW on vector of size %D \n",DIM,N);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "\n %" PetscInt_FMT " dimensions: FFTW on vector of size %" PetscInt_FMT " \n",DIM,N);CHKERRQ(ierr);
 
     /* create FFTW object */
     ierr = MatCreateFFT(PETSC_COMM_SELF,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);

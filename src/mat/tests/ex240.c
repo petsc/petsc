@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   for (i=0; i<n; i++) colors[map[i]]= icolors[i];
   ierr = PetscFree(map);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"[%d]Global colors \n",rank);CHKERRQ(ierr);
-  for (i=0; i<N; i++) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%D %D\n",i,colors[i]);CHKERRQ(ierr);}
+  for (i=0; i<N; i++) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i,colors[i]);CHKERRQ(ierr);}
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
 
   /*   second, compress the A matrix */
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   for (i=0; i<nrow; i++) {
     ierr = MatGetRow(A,rstart+i,&ncols,&cols,&vals);CHKERRQ(ierr);
     for (j=0; j<ncols; j++) {
-      if (colors[cols[j]] < 0) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global column %D had no color",cols[j]);
+      if (colors[cols[j]] < 0) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global column %" PetscInt_FMT " had no color",cols[j]);
       cm[i + nrow*colors[cols[j]]] = vals[j];
     }
     ierr = MatRestoreRow(A,rstart+i,&ncols,&cols,&vals);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"[%d] Compressed matrix \n",rank);CHKERRQ(ierr);
   for (i=0; i<nrow; i++) {
     for (j=0; j<nc; j++) {
-      ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"%12.4e  ",cm[i+nrow*j]);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"%12.4e  ",(double)PetscAbsScalar(cm[i+nrow*j]));CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"\n");CHKERRQ(ierr);
   }

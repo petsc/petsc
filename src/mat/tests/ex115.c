@@ -265,7 +265,7 @@ int main(int argc,char **args)
     for (i=0;i<3;i++) {
       MatStructure str;
 
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Dup/Copy tests: %D %D\n",j,i);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Dup/Copy tests: %" PetscInt_FMT " %" PetscInt_FMT "\n",j,i);CHKERRQ(ierr);
 
       str = DIFFERENT_NONZERO_PATTERN;
       if (i==1) str = SAME_NONZERO_PATTERN;
@@ -284,7 +284,7 @@ int main(int argc,char **args)
         ierr = MatViewFromOptions(A,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(B,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(C,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
-        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 1 MatDuplicate/MatCopy %g (%D,%D)",err,j,i);
+        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 1 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
       }
       /* AXPY with HYPRE and HYPRE */
       ierr = MatAXPY(D,-1.0,B,str);CHKERRQ(ierr);
@@ -292,7 +292,7 @@ int main(int argc,char **args)
         ierr = MatViewFromOptions(A,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(B,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(D,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
-        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 2 MatDuplicate/MatCopy %g (%D,%D)",err,j,i);
+        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 2 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
       }
       /* Copy from HYPRE to AIJ */
       ierr = MatCopy(B,C,str);CHKERRQ(ierr);
@@ -309,7 +309,7 @@ int main(int argc,char **args)
         ierr = MatViewFromOptions(A,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(C,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(D,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
-        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 3 MatDuplicate/MatCopy %g (%D,%D)",err,j,i);
+        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 3 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
       }
       ierr = MatDestroy(&C);CHKERRQ(ierr);
       ierr = MatDestroy(&D);CHKERRQ(ierr);

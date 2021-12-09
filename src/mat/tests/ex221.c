@@ -175,11 +175,11 @@ int main(int argc,char **args)
 
     ierr = MatMultAddEqual(A,S,10,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mult add\n",test);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error mult add\n",test);CHKERRQ(ierr);
     }
     ierr = MatMultTransposeAddEqual(A,S,10,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mult add (T)\n",test);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error mult add (T)\n",test);CHKERRQ(ierr);
     }
     if (testzerorows) {
       Mat       ST,B,C,BT,BTT;
@@ -253,7 +253,7 @@ int main(int argc,char **args)
         ierr = VecAXPY(b,-1.0,b2);CHKERRQ(ierr);
         ierr = VecNorm(b,NORM_INFINITY,&err);CHKERRQ(ierr);
         if (err >= tol) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error b %g\n",test,(double)err);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error b %g\n",test,(double)err);CHKERRQ(ierr);
         }
         ierr = VecDestroy(&b);CHKERRQ(ierr);
       }
@@ -277,14 +277,14 @@ int main(int argc,char **args)
       ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(C,NORM_FROBENIUS,&err);CHKERRQ(ierr);
       if (err >= tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat mult after %s %g\n",test,ronl ? "MatZeroRows" : "MatZeroRowsColumns",(double)err);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error mat mult after %s %g\n",test,ronl ? "MatZeroRows" : "MatZeroRowsColumns",(double)err);CHKERRQ(ierr);
       }
 
       ierr = MatConvert(A,MATDENSE,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
       ierr = MatAXPY(C,-1.0,BTT,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(C,NORM_FROBENIUS,&err);CHKERRQ(ierr);
       if (err >= tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat mult transpose after %s %g\n",test,ronl ? "MatZeroRows" : "MatZeroRowsColumns",(double)err);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error mat mult transpose after %s %g\n",test,ronl ? "MatZeroRows" : "MatZeroRowsColumns",(double)err);CHKERRQ(ierr);
       }
 
       ierr = MatDestroy(&ST);CHKERRQ(ierr);
@@ -330,7 +330,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(dA,-1.0,dS);CHKERRQ(ierr);
       ierr = VecNorm(dA,NORM_INFINITY,&err);CHKERRQ(ierr);
       if (err >= tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error diag %g\n",test,(double)err);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error diag %g\n",test,(double)err);CHKERRQ(ierr);
       }
       ierr = VecDestroy(&dA);CHKERRQ(ierr);
       ierr = VecDestroy(&dS);CHKERRQ(ierr);
@@ -360,18 +360,18 @@ int main(int argc,char **args)
       ierr = MatCreateSubMatrix(S,r,c,MAT_INITIAL_MATRIX,&sS);CHKERRQ(ierr);
       ierr = MatMultAddEqual(sA,sS,10,&flg);CHKERRQ(ierr);
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error submatrix mult add\n",test);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error submatrix mult add\n",test);CHKERRQ(ierr);
       }
       ierr = MatMultTransposeAddEqual(sA,sS,10,&flg);CHKERRQ(ierr);
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error submatrix mult add (T)\n",test);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error submatrix mult add (T)\n",test);CHKERRQ(ierr);
       }
       ierr = MatConvert(sA,MATDENSE,MAT_INITIAL_MATRIX,&dA);CHKERRQ(ierr);
       ierr = MatConvert(sS,MATDENSE,MAT_INITIAL_MATRIX,&dS);CHKERRQ(ierr);
       ierr = MatAXPY(dA,-1.0,dS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(dA,NORM_FROBENIUS,&err);CHKERRQ(ierr);
       if (err >= tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat submatrix %g\n",test,(double)err);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error mat submatrix %g\n",test,(double)err);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&sA);CHKERRQ(ierr);
       ierr = MatDestroy(&sS);CHKERRQ(ierr);
@@ -383,18 +383,18 @@ int main(int argc,char **args)
       ierr = MatCreateSubMatrix(St,c,r,MAT_INITIAL_MATRIX,&sS);CHKERRQ(ierr);
       ierr = MatMultAddEqual(sA,sS,10,&flg);CHKERRQ(ierr);
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error submatrix (T) mult add\n",test);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error submatrix (T) mult add\n",test);CHKERRQ(ierr);
       }
       ierr = MatMultTransposeAddEqual(sA,sS,10,&flg);CHKERRQ(ierr);
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error submatrix (T) mult add (T)\n",test);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error submatrix (T) mult add (T)\n",test);CHKERRQ(ierr);
       }
       ierr = MatConvert(sA,MATDENSE,MAT_INITIAL_MATRIX,&dA);CHKERRQ(ierr);
       ierr = MatConvert(sS,MATDENSE,MAT_INITIAL_MATRIX,&dS);CHKERRQ(ierr);
       ierr = MatAXPY(dA,-1.0,dS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(dA,NORM_FROBENIUS,&err);CHKERRQ(ierr);
       if (err >= tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat submatrix (T) %g\n",test,(double)err);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error mat submatrix (T) %g\n",test,(double)err);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&sA);CHKERRQ(ierr);
       ierr = MatDestroy(&sS);CHKERRQ(ierr);
@@ -426,18 +426,18 @@ int main(int argc,char **args)
       ierr = MatDestroy(&tS);CHKERRQ(ierr);
       ierr = MatMultAddEqual(A,S,10,&flg);CHKERRQ(ierr);
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error axpy mult add\n",test);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error axpy mult add\n",test);CHKERRQ(ierr);
       }
       ierr = MatMultTransposeAddEqual(A,S,10,&flg);CHKERRQ(ierr);
       if (!flg) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error axpy mult add (T)\n",test);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error axpy mult add (T)\n",test);CHKERRQ(ierr);
       }
       ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&dA);CHKERRQ(ierr);
       ierr = MatConvert(S,MATDENSE,MAT_INITIAL_MATRIX,&dS);CHKERRQ(ierr);
       ierr = MatAXPY(dA,-1.0,dS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(dA,NORM_FROBENIUS,&err);CHKERRQ(ierr);
       if (err >= tol) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %D] Error mat submatrix %g\n",test,(double)err);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"[test %" PetscInt_FMT "] Error mat submatrix %g\n",test,(double)err);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&dA);CHKERRQ(ierr);
       ierr = MatDestroy(&dS);CHKERRQ(ierr);

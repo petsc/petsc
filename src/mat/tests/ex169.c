@@ -38,13 +38,13 @@ int main(int argc,char **args)
      Determines amount of subcomunicators
   */
   ierr = PetscOptionsGetInt(NULL,NULL,"-nsub",&ns,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Splitting in %d subcommunicators\n",ns);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Splitting in %" PetscInt_FMT " subcommunicators\n",ns);CHKERRQ(ierr);
   ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)A),&subc);CHKERRQ(ierr);
   ierr = PetscSubcommSetNumber(subc,ns);CHKERRQ(ierr);
   ierr = PetscSubcommSetType(subc,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
   ierr = PetscSubcommSetFromOptions(subc);CHKERRQ(ierr);
   ierr = MatCreateRedundantMatrix(A,0,PetscSubcommChild(subc),MAT_INITIAL_MATRIX,&Ar);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Copying matrix\n",ns);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Copying matrix\n");CHKERRQ(ierr);
   ierr = MatDuplicate(Ar,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
   ierr = MatAXPY(Ar,0.1,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&subc);CHKERRQ(ierr);

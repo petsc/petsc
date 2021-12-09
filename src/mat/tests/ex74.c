@@ -170,19 +170,19 @@ int main(int argc,char **args)
   ierr  = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n",(double)norm1,(double)norm2);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
   ierr  = MatNorm(sB,NORM_INFINITY,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",(double)norm1,(double)norm2);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
   ierr  = MatNorm(sB,NORM_1,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",(double)norm1,(double)norm2);CHKERRQ(ierr);
   }
 
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
@@ -331,7 +331,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(s2,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_2,&norm2);CHKERRQ(ierr);
       if (10*norm1 < norm2) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g, bs=%D\n",(double)norm2,bs);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g, bs=%" PetscInt_FMT "\n",(double)norm2,bs);CHKERRQ(ierr);
       }
     }
 
@@ -342,7 +342,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     if (10*norm1 < norm2 && lf-inc != -1) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%D, %D, Norm of error=%g, %g\n",lf-inc,lf,(double)norm1,(double)norm2);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%" PetscInt_FMT ", %" PetscInt_FMT ", Norm of error=%g, %g\n",lf-inc,lf,(double)norm1,(double)norm2);CHKERRQ(ierr);
     }
     norm1 = norm2;
     if (norm2 < tol && lf != -1) break;

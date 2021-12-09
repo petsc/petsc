@@ -131,7 +131,7 @@ int main(int argc,char **args)
     for (b=0; b<bs; b++, Ii++) {
       boundary_indices[k*bs+b] = Ii;
       boundary_values[k*bs+b] = v;
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d %D %f\n", rank, Ii, (double)PetscRealPart(v));CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d %" PetscInt_FMT " %f\n", rank, Ii, (double)PetscRealPart(v));CHKERRQ(ierr);
       v += 0.1;
     }
   }
