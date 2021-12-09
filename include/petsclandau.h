@@ -29,7 +29,7 @@ PETSC_EXTERN PetscErrorCode LandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,
 #define LANDAU_MAX_GRIDS 3
 #endif
 
-#define LANDAU_MAX_BATCH_SZ 32
+#define LANDAU_MAX_BATCH_SZ 320
 
 #if !defined(LANDAU_MAX_Q)
 #if defined(LANDAU_MAX_NQ)
