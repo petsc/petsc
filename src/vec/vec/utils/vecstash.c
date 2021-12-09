@@ -447,7 +447,7 @@ PetscErrorCode VecStashGetOwnerList_Private(VecStash *stash,PetscLayout map,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (bs != 1 && bs != map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Stash block size %D does not match layout block size %D",bs,map->bs);
+  if (bs != 1 && bs != map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Stash block size %" PetscInt_FMT " does not match layout block size %" PetscInt_FMT "",bs,map->bs);
   ierr = PetscSegBufferCreate(sizeof(PetscMPIInt),50,&seg);CHKERRQ(ierr);
   *nowners = 0;
   for (i=0,r=-1; i<stash->n; i++) {

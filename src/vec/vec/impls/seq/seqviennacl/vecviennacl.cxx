@@ -321,7 +321,7 @@ static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
   PetscFunctionBegin;
   ierr = PetscObjectSAWsViewOff(v);CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
+  PetscLogObjectState((PetscObject)v,"Length=%" PetscInt_FMT "",v->map->n);
 #endif
   if (vs->array_allocated) { ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr); }
   ierr = PetscFree(vs);CHKERRQ(ierr);

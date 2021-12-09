@@ -42,14 +42,14 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(subset,IS_CLASSID,1);
-  if (subset_mult) {
-    PetscValidHeaderSpecific(subset_mult,IS_CLASSID,2);
-  }
-  if (!N && !subset_n) PetscFunctionReturn(0);
+  if (subset_mult) PetscValidHeaderSpecific(subset_mult,IS_CLASSID,2);
+  if (N) PetscValidIntPointer(N,3);
+  else if (!subset_n) PetscFunctionReturn(0);
+  PetscValidPointer(subset_n,4);
   ierr = ISGetLocalSize(subset,&n);CHKERRQ(ierr);
   if (subset_mult) {
     ierr = ISGetLocalSize(subset_mult,&i);CHKERRQ(ierr);
-    if (i != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %d != %d",n,i);
+    if (PetscUnlikely(i != n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %" PetscInt_FMT " != %" PetscInt_FMT,n,i);
   }
   /* create workspace layout for computing global indices of subset */
   ierr = ISGetIndices(subset,&idxs);CHKERRQ(ierr);
@@ -1888,7 +1888,7 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidLogicalCollectiveInt(is,bs,2);
-  if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
+  if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Block size %" PetscInt_FMT ", must be positive",bs);
   ierr = (*is->ops->setblocksize)(is,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

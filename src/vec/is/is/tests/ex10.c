@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = ISGeneralFilter(is, start, end);CHKERRQ(ierr);
   ierr = ISView(is,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   ierr = ISGetSize(is, &N);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(comm), "global size: %D\n", N);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(comm), "global size: %" PetscInt_FMT "\n", N);CHKERRQ(ierr);
 
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscFinalize();

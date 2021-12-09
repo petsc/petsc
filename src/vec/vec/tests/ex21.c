@@ -28,10 +28,10 @@ int main(int argc,char **argv)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
   ierr = VecMax(x,NULL,&value2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %D (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
   ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
   ierr = VecMin(x,NULL,&value2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %D (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
 

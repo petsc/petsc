@@ -348,7 +348,7 @@ PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, Petsc
   ierr = PetscLayoutSetUp(mapout);CHKERRQ(ierr);
   if (mapin->n) PetscValidIntPointer(keysin, 3);
   if (mapout->n) PetscValidIntPointer(keysout, 4);
-  if (mapin->N != mapout->N) SETERRQ2(mapin->comm, PETSC_ERR_ARG_SIZ, "Input and output layouts have different global sizes (%D != %D)", mapin->N, mapout->N);
+  if (mapin->N != mapout->N) SETERRQ2(mapin->comm, PETSC_ERR_ARG_SIZ, "Input and output layouts have different global sizes (%" PetscInt_FMT " != %" PetscInt_FMT ")", mapin->N, mapout->N);
   ierr = MPI_Comm_size(mapin->comm, &size);CHKERRMPI(ierr);
   if (size == 1) {
     if (keysout != keysin) {

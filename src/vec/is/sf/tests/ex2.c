@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArrayRead(y,&yval);CHKERRQ(ierr);
   /* Display the first and the last entries of y to see if it is valid on host */
-  ierr = PetscPrintf(PETSC_COMM_SELF,"y[0]=%.f, y[%D] = %.f\n",(float)PetscRealPart(yval[0]),n-1,(float)PetscRealPart(yval[n-1]));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"y[0]=%.f, y[%" PetscInt_FMT "] = %.f\n",(float)PetscRealPart(yval[0]),n-1,(float)PetscRealPart(yval[n-1]));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(y,&yval);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);

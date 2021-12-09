@@ -98,10 +98,10 @@ int main(int argc, char **argv)
 
       ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
       if (iascii) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Num boxes: %D\n",nint);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Num boxes: %" PetscInt_FMT "\n",nint);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         for (i = 0, k = 0; i < nint; i++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%D: ",i);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT ": ",i);CHKERRQ(ierr);
           for (j = 0; j < bs; j++, k++) {
             if (j) {ierr = PetscViewerASCIIPrintf(viewer," x ");CHKERRQ(ierr);}
 #if !defined(PETSC_USE_COMPLEX)

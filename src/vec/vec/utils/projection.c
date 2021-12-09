@@ -550,7 +550,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
     ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vreduced, &m);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(vfull, &rstart, &rend);CHKERRQ(ierr);
-    if (m != n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %D not equal to Vec local length %D", n, m);
+    if (m != n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %" PetscInt_FMT " not equal to Vec local length %" PetscInt_FMT "", n, m);
     if (mode == SCATTER_FORWARD) {
       PetscScalar       *y;
       const PetscScalar *x;

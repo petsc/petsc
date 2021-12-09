@@ -29,7 +29,7 @@ int main(int argc,char **argv)
     ierr = WaitForCUDA();CHKERRQ(ierr);
     ierr = PetscTime(&v1);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Iteration %D: Time= %g\n",i,(double)(v1-v0));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Iteration %" PetscInt_FMT ": Time= %g\n",i,(double)(v1-v0));CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
   return ierr;

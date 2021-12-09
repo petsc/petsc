@@ -410,7 +410,7 @@ static PetscErrorCode VecTaggerView_CDF(VecTagger tagger,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"CDF computation method: %s\n",VecTaggerCDFMethods[cuml->method]);CHKERRQ(ierr);
     if (cuml->method == VECTAGGER_CDF_ITERATIVE) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"max its: %D, abs tol: %g, rel tol %g\n",cuml->maxit,(double) cuml->atol,(double) cuml->rtol);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"max its: %" PetscInt_FMT ", abs tol: %g, rel tol %g\n",cuml->maxit,(double) cuml->atol,(double) cuml->rtol);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }

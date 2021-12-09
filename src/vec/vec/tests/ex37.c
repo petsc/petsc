@@ -77,17 +77,17 @@ PetscErrorCode test_view(void)
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
   ierr = VecMax(b, &index, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-b) = %f : index = %D \n",(double) val, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-b) = %f : index = %" PetscInt_FMT " \n",(double) val, index);CHKERRQ(ierr);
 
   ierr = VecMin(b, &index, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-b) = %f : index = %D \n",(double) val, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-b) = %f : index = %" PetscInt_FMT " \n",(double) val, index);CHKERRQ(ierr);
 
   ierr = VecDestroy(&b);CHKERRQ(ierr);
 
   ierr = VecMax(X, &index, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %D \n",(double) val, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %" PetscInt_FMT " \n",(double) val, index);CHKERRQ(ierr);
   ierr = VecMin(X, &index, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %D \n",(double) val, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %" PetscInt_FMT " \n",(double) val, index);CHKERRQ(ierr);
 
   ierr = VecView(X, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -252,9 +252,9 @@ PetscErrorCode test_axpy_dot_max(void)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "X.Y = %lf + %lfi     norm2(Y) = %lf\n", (double)PetscRealPart(scalar), (double)PetscImaginaryPart(scalar), (double)real2);CHKERRQ(ierr);
 
   ierr = VecMax(X, &index, &real);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %D \n",(double) real, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %" PetscInt_FMT " \n",(double) real, index);CHKERRQ(ierr);
   ierr = VecMin(X, &index, &real);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %D \n",(double) real, index);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %" PetscInt_FMT " \n",(double) real, index);CHKERRQ(ierr);
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
