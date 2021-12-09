@@ -187,58 +187,116 @@ For forming a search, it is recommended to always use ``print-test`` instead of
 The three basic and recommended arguments are:
 
 + ``search`` (or ``s``)
-     - Searches based on name of test target (see above)
-     - Use the familiar glob syntax (like the Unix ``ls`` command)
-     - Example: ``ptmake print-test search='vec_is*ex1*basic*1'``
-     - Equivalently: ``ptmake print-test s='vec_is*ex1*basic*1'``
-     - It also takes full paths
-     - Example: ``ptmake print-test s='src/vec/is/tests/ex1.c'``
-     - Example: ``ptmake print-test s='src/dm/impls/plex/tests/'``
-     - Example: ``ptmake print-test s='src/dm/impls/plex/tests/ex1.c'``
+
+  -  Searches based on name of test target (see above)
+  -  Use the familiar glob syntax (like the Unix ``ls`` command). Example:
+
+     .. code-block:: console
+
+        $ ptmake print-test search='vec_is*ex1*basic*1'
+
+     Equivalently:
+
+     .. code-block:: console
+
+        $ ptmake print-test s='vec_is*ex1*basic*1'
+
+  -  It also takes full paths. Examples:
+
+     .. code-block:: console
+
+        $ ptmake print-test s='src/vec/is/tests/ex1.c'
+
+     .. code-block:: console
+
+        $ ptmake print-test s='src/dm/impls/plex/tests/'
+
+     .. code-block:: console
+
+        $ ptmake print-test s='src/dm/impls/plex/tests/ex1.c'
+
 
 + ``query`` and ``queryval`` (or ``q`` and ``qv``)
-     - ``query`` corresponds to test harness keyword, ``queryval`` to the value.
-     - Example: ``ptmake print-test query='suffix' queryval='basic_1'``
-     - Invokes ``config/query_tests.py`` to query the tests (see
-       ``config/query_tests.py --help`` for more information).
-     - See below for how to use as it has many features
+
+  -  ``query`` corresponds to test harness keyword, ``queryval`` to the value. Example:
+
+     .. code-block:: console
+
+        $ ptmake print-test query='suffix' queryval='basic_1'
+
+  -  Invokes ``config/query_tests.py`` to query the tests (see
+     ``config/query_tests.py --help`` for more information).
+  -  See below for how to use as it has many features
 
 + ``searchin`` (or ``i``)
-     - Filters results of above searches
-     - Example: ``ptmake print-test s='src/dm/impls/plex/tests/ex1.c' i='*refine_overlap_2d*'``
 
+  -  Filters results of above searches. Example:
+
+     .. code-block:: console
+
+        $ ptmake print-test s='src/dm/impls/plex/tests/ex1.c' i='*refine_overlap_2d*'
 
 Searching using gmake's native regexp functionality is kept for people who like it, but most developers will likely prefer the above methods:
 
 + ``gmakesearch``
-     - Use gmake's own filter capability.
-     - Fast, but requires knowing gmake regex syntax which uses ``%`` instead of ``*``
-     - Also very limited (cannot use two ``%``'s for example)
-     - Example: ``ptmake test gmakesearch='vec_is%ex1_basic_1'``
+
+  -  Use gmake's own filter capability.
+  -  Fast, but requires knowing gmake regex syntax which uses ``%`` instead of ``*``
+  -  Also very limited (cannot use two ``%``'s for example)
+  -  Example:
+
+     .. code-block:: console
+
+        $ ptmake test gmakesearch='vec_is%ex1_basic_1'
+
 + ``gmakesearchin``
-     - Use gmake's own filter capability to search in previous results
-     - Example: ``ptmake test gmakesearch='vec_is%1' gmakesearchin='basic'``
+
+  -  Use gmake's own filter capability to search in previous results. Example:
+
+     .. code-block:: console
+
+        $ ptmake test gmakesearch='vec_is%1' gmakesearchin='basic'
 
 + ``argsearch``
-     - search on arguments using gmake.  This is deprecated in favor of the query/queryval method as described below.
-     - Example: ``ptmake test argsearch='sf_type'``
-     - Not very powerful
 
+  -  search on arguments using gmake.  This is deprecated in favor of the query/queryval method as described below. Example:
+
+     .. code-block:: console
+
+        $ ptmake test argsearch='sf_type'
+
+  - Not very powerful
 
 Query-based searching
 ~~~~~~~~~~~~~~~~~~~~~
 
 Basic examples.  Note the the use of glob style matching is also accepted in the value field:
 
-- Example: ``ptmake print-test query='suffix' queryval='basic_1'``
-- Example: ``ptmake print-test query='requires' queryval='cuda'``
-- Example: ``ptmake print-test query='requires' queryval='defined(PETSC_HAVE_MPI_GPU_AWARE)'``
-- Example: ``ptmake print-test query='requires' queryval='*GPU_AWARE*'``
+.. code-block:: console
+
+   $ ptmake print-test query='suffix' queryval='basic_1'
+
+.. code-block:: console
+
+   $ ptmake print-test query='requires' queryval='cuda'
+
+.. code-block:: console
+
+   $ ptmake print-test query='requires' queryval='defined(PETSC_HAVE_MPI_GPU_AWARE)'
+
+.. code-block:: console
+
+   $ ptmake print-test query='requires' queryval='*GPU_AWARE*'
 
 Using the ``name`` field is equivalent to the search above:
 
-- Example: ``ptmake print-test query='name' queryval='vec_is*ex1*basic*1'``
-- Useful because this can be combined with union/intersect queries as discussed below
+-  Example:
+
+   .. code-block:: console
+
+      $ ptmake print-test query='name' queryval='vec_is*ex1*basic*1'
+
+-  Useful because this can be combined with union/intersect queries as discussed below
 
 Arguments are tricky to search for.  Consider
 
@@ -255,28 +313,49 @@ Search terms are
 Certain items are ignored:
 
 + Numbers (see ``ksp_max_it`` above), but floats are ignored as well.
-+ Loops:
-    ``args: -pc_fieldsplit_diag_use_amat {{0 1}}`` gives ``pc_fieldsplit_diag_use_amat`` as the search term
++ Loops: ``args: -pc_fieldsplit_diag_use_amat {{0 1}}`` gives ``pc_fieldsplit_diag_use_amat`` as the search term
 + Input files: ``-f *``
 
 Examples of argument searching:
 
-+ ``ptmake print-test query='args' queryval='ksp_monitor'``
-+ ``ptmake print-test query='args' queryval='*monitor*'``
-+ ``ptmake print-test query='args' queryval='pc_type ml'``
+.. code-block:: console
+
+   $ ptmake print-test query='args' queryval='ksp_monitor'
+
+.. code-block:: console
+
+   $ ptmake print-test query='args' queryval='*monitor*'
+
+.. code-block:: console
+
+   $ ptmake print-test query='args' queryval='pc_type ml'
 
 
 Multiple simultaneous queries can be performed with union (``,``), and intesection (``|``)  operators in the ``query`` field.  Examples:
 
-+ ``ptmake print-test query='requires,requires' queryval='cuda,hip'``
-   - All examples using cuda + all examples using hip
-+ ``ptmake print-test query='requires|requires' queryval='ctetgen,triangle'``
-   - Examples that require both triangle and ctetgen (intersection of tests)
-+ ``ptmake print-test query='requires,requires' queryval='ctetgen,triangle'``
-   - Tests that require either ctetgen or triangle
+-  All examples using ``cuda`` and all examples using ``hip``:
 
-+ ``ptmake print-test query='requires|name' queryval='cuda,dm*'``
-   - Find cuda examples in the ``dm`` package.
+   .. code-block:: console
+
+      $ ptmake print-test query='requires,requires' queryval='cuda,hip'
+
+-  Examples that require both triangle and ctetgen (intersection of tests)
+
+   .. code-block:: console
+
+      $ ptmake print-test query='requires|requires' queryval='ctetgen,triangle'
+
+-  Tests that require either ``ctetgen`` or ``triangle``
+
+   .. code-block:: console
+
+      $ ptmake print-test query='requires,requires' queryval='ctetgen,triangle'
+
+-  Find ``cuda`` examples in the ``dm`` package.
+
+   .. code-block:: console
+
+      $ ptmake print-test query='requires|name' queryval='cuda,dm*'
 
 
 Here is a way of getting a feel for how the union and intersect operators work:
@@ -409,7 +488,7 @@ entirely or multiple executable/diff tests within a single test. At the
 core, the executable/diff test combination will look something like
 this:
 
-.. code-block:: console
+.. code-block:: sh
 
     mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
     diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
