@@ -261,8 +261,9 @@ static PetscErrorCode PCSetFromOptions_KSP(PetscOptionItems *PetscOptionsObject,
    Level: intermediate
 
    Notes:
-    Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
-          the incorrect answer) unless you use KSPFGMRES as the other Krylov method
+    The application of an inexact Krylov solve is a nonlinear operation. Thus, performing a solve with KSP is,
+    in general, a nonlinear operation, so PCKSP is in general a nonlinear preconditioner.
+    Thus, one can see divergence or an incorrect answer unless using a flexible Krylov method (e.g. KSPFGMRES, KSPGCR, or KSPFCG) for the outer Krylov solve.
 
    Developer Notes:
     If the outer Krylov method has a nonzero initial guess it will compute a new residual based on that initial guess
