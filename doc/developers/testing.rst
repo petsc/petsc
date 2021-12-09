@@ -3,22 +3,20 @@ PETSc Testing System
 
 The PETSc test system consists of
 
-*     A language contained within the example source files that describes the tests to be run
-*     The *test generator* (``config/gmakegentest.py``) that at the ``make`` step parses the example source files and generates the makefiles and shell scripts.
-*    The *petsc test harness* that consists of makefile and shell scripts that runs the executables with several logging and reporting features.
+* A language contained within the example source files that describes the tests to be run
+* The *test generator* (``config/gmakegentest.py``) that at the ``make`` step parses the example source files and generates the makefiles and shell scripts
+* The *PETSc test harness* that consists of makefile and shell scripts that runs the executables with several logging and reporting features
 
 Details on using the harness may be found in the :ref:`user's manual <sec_runningtests>`.
 
 
-In the examples below, we often make use of this command:  ``make -f gmakefile ...`` or 
-when testing, we have the equivalent of ``make -f gmakefile.test ...``.  Here is a useful alias:
+In the examples below, we make use of the following alias for a commonly-used command:
 
 .. code-block:: console
 
    $ alias ptmake='make -f gmakefile.test'
 
-where ``ptmake`` stands for "petsc test make".  We will use this syntax below to make 
-the commands nicer.
+where ``ptmake`` stands for "PETSc test make".
 
 Getting help
 ------------
