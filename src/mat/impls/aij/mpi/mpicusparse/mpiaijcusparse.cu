@@ -802,7 +802,7 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     h_mat->rend   = A->rmap->rend;
     h_mat->cstart = A->cmap->rstart;
     h_mat->cend   = A->cmap->rend;
-    h_mat->N      = A->cmap->N;
+    h_mat->M      = A->cmap->N;
 #if defined(PETSC_USE_64BIT_INDICES)
     {
       if (sizeof(PetscInt) != 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"size pof PetscInt = %d",sizeof(PetscInt));
