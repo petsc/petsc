@@ -92,7 +92,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
+  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   tdata = (char*)todata;
   ierr  = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
   for (i=0; i<nto; i++) {
@@ -169,7 +169,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr     = MPIU_Allreduce(MPI_IN_PLACE,iflags,size,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   nrecvs   = iflags[rank];
   ierr     = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
+  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
   ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
@@ -218,7 +218,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
   ierr     = MPI_Reduce_scatter_block(iflags,&nrecvs,1,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   ierr     = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
+  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
   ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
@@ -337,7 +337,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
   ierr = PetscMalloc1(*nfrom*ntags,&recvreq);CHKERRQ(ierr);
 
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
+  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   for (i=0; i<nto; i++) {
     PetscMPIInt k;
     for (k=0; k<ntags; k++) sendreq[i*ntags+k] = MPI_REQUEST_NULL;
@@ -378,7 +378,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
     ierr = PetscCommGetNewTag(comm,&tags[i]);CHKERRQ(ierr);
   }
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
+  if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   tdata = (char*)todata;
   ierr = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
   ierr = PetscMalloc1(nto*ntags,&usendreqs);CHKERRQ(ierr);

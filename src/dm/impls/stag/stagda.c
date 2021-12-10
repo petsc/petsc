@@ -486,7 +486,7 @@ PetscErrorCode DMStagVecSplitToDMDA(DM dm,Vec vec,DMStagStencilLocation loc,Pets
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMStagGetLocationDOF(dm,loc,&locdof);CHKERRQ(ierr);
-  if (c >= locdof) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Location %s has %D dof, but component %D requested\n",DMStagStencilLocations[loc],locdof,c);
+  if (c >= locdof) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Location %s has %D dof, but component %D requested",DMStagStencilLocations[loc],locdof,c);
   ierr = DMStagStencilLocationCanonicalize(loc,&locCanonical);CHKERRQ(ierr);
   ierr = DMStagCreateCompatibleDMDA(dm,locCanonical,c,pda);CHKERRQ(ierr);
   da = *pda;

@@ -56,7 +56,7 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
       }
       ierr = PetscInfo1(0,"Opening file %s\n",fname);CHKERRQ(ierr);
       fd   = fopen(fname,mode);
-      if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s\n",fname);
+      if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",fname);
     }
   } else fd = NULL;
   *fp = fd;

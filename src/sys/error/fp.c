@@ -462,10 +462,10 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
     cw = _EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW;
-    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler\n");
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler");
   } else {
     cw = 0;
-    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler\n");
+    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler");
   }
   (void)_controlfp(0, cw);
   _trapmode = on;
@@ -549,10 +549,10 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
     /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
-    if (feclearexcept(FE_ALL_EXCEPT)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot clear floating point exception flags\n");
+    if (feclearexcept(FE_ALL_EXCEPT)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot clear floating point exception flags");
 #if defined(FE_NOMASK_ENV)
     /* Could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
-    if (feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions\n");
+    if (feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions");
 #elif defined PETSC_HAVE_XMMINTRIN_H
    _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_DIV_ZERO);
    _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_UNDERFLOW);
@@ -561,11 +561,11 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 #else
     /* C99 does not provide a way to modify the environment so there is no portable way to activate trapping. */
 #endif
-    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler\n");
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler");
   } else {
     if (fesetenv(FE_DFL_ENV)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot disable floating point exceptions");
     /* can use _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() | _MM_MASK_UNDERFLOW); if PETSC_HAVE_XMMINTRIN_H exists */
-    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler\n");
+    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler");
   }
   _trapmode = on;
   PetscFunctionReturn(0);
@@ -621,7 +621,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
     fpsetsticky(fpgetsticky());
 #endif
     fpsetmask(FP_X_INV | FP_X_DZ | FP_X_OFL |  FP_X_OFL);
-    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler\n");
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler");
   } else {
 #if defined(PETSC_HAVE_FPPRESETSTICKY)
     fpresetsticky(fpgetsticky());
@@ -629,7 +629,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
     fpsetsticky(fpgetsticky());
 #endif
     fpsetmask(0);
-    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler\n");
+    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler");
   }
   _trapmode = on;
   PetscFunctionReturn(0);

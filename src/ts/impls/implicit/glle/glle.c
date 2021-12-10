@@ -959,7 +959,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
         ierr = VecScale(X[i],PetscPowRealInt(0.5,i));CHKERRQ(ierr);
       }
     }
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures\n",k,gl->stage_time,rejections);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures",k,gl->stage_time,rejections);
 
 accepted:
     /* This term is not error, but it *would* be the leading term for a lower order method */

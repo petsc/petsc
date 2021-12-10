@@ -72,7 +72,7 @@ int main(int argc,char **args)
 
   /* Test MatMissingDiagonal() */
   ierr = MatMissingDiagonal(C,&flg,NULL);CHKERRQ(ierr);
-  if (flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMissingDiagonal() did not return false!\n");
+  if (flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMissingDiagonal() did not return false!");
 
   /* Set unowned matrix entries - add subdiagonals and diagonals from proc[0] */
   if (rank == 0) {

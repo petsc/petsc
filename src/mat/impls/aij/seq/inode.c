@@ -951,7 +951,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
       tmp[row++]=sum5;
       break;
     default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported \n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported ");
     }
   }
   /* backward solve the upper triangular */
@@ -1134,7 +1134,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
       x[*c--] = tmp[row] = sum5*a_a[ad[row]]; row--;
       break;
     default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported \n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported ");
     }
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
@@ -1809,7 +1809,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         break;
 
       default:
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Node size not yet supported \n");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Node size not yet supported ");
       }
       if (sctx.newshift) break; /* break for (inod=0,i=0; inod<node_max; inod++) */
       i += nodesz;                 /* Update the row */
@@ -2253,7 +2253,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
         break;
 
       default:
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Node size not yet supported \n");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Node size not yet supported ");
       }
       row += nodesz;                 /* Update the row */
     }
@@ -2485,7 +2485,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
       tmp[row++]=sum5;
       break;
     default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported \n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported ");
     }
   }
   /* backward solve the upper triangular */
@@ -2656,7 +2656,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
       x[c[row]] = tmp[row] = sum5*v5[nz+4]; row--;
       break;
     default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported \n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported ");
     }
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);

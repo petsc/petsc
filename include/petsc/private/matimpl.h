@@ -805,7 +805,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const Mat
       fact->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       fact->factorerror_zeropivot_value = PetscAbsScalar(sctx->pv);
       fact->factorerror_zeropivot_row   = row;
-    } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %" PetscInt_FMT " value %g tolerance %g\n",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
+    } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %" PetscInt_FMT " value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);
 }

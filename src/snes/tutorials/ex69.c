@@ -3304,12 +3304,12 @@ static PetscErrorCode CorrectDiscretePressure(DM dm, MatNullSpace nullspace, Vec
   ierr = PetscDSSetObjective(ds, 1, pressure);CHKERRQ(ierr);
   ierr = MatNullSpaceGetVecs(nullspace, NULL, NULL, &nullvecs);CHKERRQ(ierr);
   ierr = VecDot(nullvecs[0], u, &pintd);CHKERRQ(ierr);
-  if (PetscAbsScalar(pintd) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g\n", (double) PetscRealPart(pintd));
+  if (PetscAbsScalar(pintd) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g", (double) PetscRealPart(pintd));
   ierr = DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, user);CHKERRQ(ierr);
   ierr = DMPlexComputeIntegralFEM(dm, u, intc, user);CHKERRQ(ierr);
   ierr = VecAXPY(u, -intc[1]/intn[1], nullvecs[0]);CHKERRQ(ierr);
   ierr = DMPlexComputeIntegralFEM(dm, u, intc, user);CHKERRQ(ierr);
-  if (PetscAbsScalar(intc[1]) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g\n", (double) PetscRealPart(intc[1]));
+  if (PetscAbsScalar(intc[1]) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double) PetscRealPart(intc[1]));
   PetscFunctionReturn(0);
 }
 

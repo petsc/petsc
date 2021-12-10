@@ -793,7 +793,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           n  = *pt++; kk = *pt++;
           while (n--) {
             PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;
-            if (lid_matched[lid1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recieved deleted gid %" PetscInt_FMT ", deleted by (lid) %" PetscInt_FMT " from proc %" PetscInt_FMT "\n",sub_it,gid1,kk);
+            if (lid_matched[lid1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recieved deleted gid %" PetscInt_FMT ", deleted by (lid) %" PetscInt_FMT " from proc %" PetscInt_FMT "",sub_it,gid1,kk);
             lid_matched[lid1] = PETSC_TRUE; /* keep track of what we've done this round */
             ierr              = PetscCDSizeAt(agg_llists, lid1, &kk);CHKERRQ(ierr);
             count2           += kk + 2;

@@ -454,7 +454,7 @@ static PetscErrorCode MatSeqAIJKokkosBcast(Mat B,MatReuse reuse,PetscInt N,const
     ierr = MatCreateSeqAIJKokkosWithCSRMatrix(PETSC_COMM_SELF,ckok,&C);CHKERRQ(ierr);
     ierr = PetscFree3(sdisp,rdisp,reqs);CHKERRQ(ierr);
     ierr = PetscFree(Browlens);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unsupported MatReuse enum %d\n",reuse);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unsupported MatReuse enum %d",reuse);
   PetscFunctionReturn(0);
 }
 
@@ -531,7 +531,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A,MatReuse reuse,PetscBool local
     ierr = PetscSFGetLeafRanks(ownerSF,&niranks,&iranks,&ioffset,&rows);CHKERRQ(ierr); /* recv info: iranks[] will send rows to me */
     ierr = PetscSFGetRootRanks(ownerSF,&nranks,&ranks,&roffset,NULL/*rmine*/,NULL/*rremote*/);CHKERRQ(ierr); /* send info */
     ierr = PetscSFGetGraph(ownerSF,&nroots,&nleaves,NULL,NULL);CHKERRQ(ierr);
-    if (nleaves != Am) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ownerSF's nleaves(%" PetscInt_FMT ") != row size of A(%" PetscInt_FMT ")\n",nleaves,Am);
+    if (nleaves != Am) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ownerSF's nleaves(%" PetscInt_FMT ") != row size of A(%" PetscInt_FMT ")",nleaves,Am);
     Cm    = nroots;
     nrows = ioffset[niranks]; /* # of rows to be received. Might receive same row (each is partial) from different senders */
 
@@ -556,7 +556,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A,MatReuse reuse,PetscBool local
     for (i=0; i<nrows; i++) {
       r = rows[i]; /* local row id of i-th received row */
      #if defined(PETSC_USE_DEBUG)
-      if (r<0 || r>=Cm) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"local row id (%" PetscInt_FMT ") is out of range [0,%" PetscInt_FMT ")\n",r,Cm);
+      if (r<0 || r>=Cm) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"local row id (%" PetscInt_FMT ") is out of range [0,%" PetscInt_FMT ")",r,Cm);
      #endif
       Ci_ptr[r+1] += rrowlens[i]; /* add to length of row r in C */
     }
@@ -643,7 +643,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A,MatReuse reuse,PetscBool local
     /* Build C with Ca, Ci, Cj */
     C    = KokkosCsrMatrix("csrmat",Cm,N,Cnnz,Ca,Ci,Cj);
     ierr = PetscFree2(srowlens,reqs);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unsupported MatReuse enum %d\n",reuse);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unsupported MatReuse enum %d",reuse);
   PetscFunctionReturn(0);
 }
 
@@ -863,7 +863,7 @@ static PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJKokkos(Mat C,MatColI
   /* Build l2g -- the local to global mapping of C's cols */
   ierr = ISLocalToGlobalMappingGetIndices(l2gmap,&garray);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(l2gmap,&sz);CHKERRQ(ierr);
-  if (C->cmap->n != sz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"matrix column size(%" PetscInt_FMT ") != l2g mapping size(%" PetscInt_FMT ")\n", C->cmap->n,sz);
+  if (C->cmap->n != sz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"matrix column size(%" PetscInt_FMT ") != l2g mapping size(%" PetscInt_FMT ")", C->cmap->n,sz);
 
   ConstMatColIdxKokkosViewHost tmp(garray,sz);
   l2g = MatColIdxKokkosView("l2g",sz);

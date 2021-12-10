@@ -412,7 +412,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   if (imageDim < PetscAbsInt(formDegree)) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Cannot represent a %D-form in %D dimensions", PetscAbsInt(formDegree), imageDim);
   ierr = PetscQuadratureGetData(q, &dim, &Nc, &Npoints, &points, &weights);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &formSize);CHKERRQ(ierr);
-  if (Nc % formSize) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Number of components %D is not a multiple of formSize %D\n", Nc, formSize);
+  if (Nc % formSize) SETERRQ2(PetscObjectComm((PetscObject)q), PETSC_ERR_ARG_INCOMP, "Number of components %D is not a multiple of formSize %D", Nc, formSize);
   Ncopies = Nc / formSize;
   ierr = PetscDTBinomialInt(imageDim, PetscAbsInt(formDegree), &imageFormSize);CHKERRQ(ierr);
   imageNc = Ncopies * imageFormSize;
@@ -651,9 +651,9 @@ PetscErrorCode PetscDTJacobiNorm(PetscReal alpha, PetscReal beta, PetscInt n, Pe
   PetscReal gr;
 
   PetscFunctionBegin;
-  if (alpha <= -1.) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent alpha %g <= -1. invalid\n", (double) alpha);
-  if (beta <= -1.) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent beta %g <= -1. invalid\n", (double) beta);
-  if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n %D < 0 invalid\n", n);
+  if (alpha <= -1.) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent alpha %g <= -1. invalid", (double) alpha);
+  if (beta <= -1.) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exponent beta %g <= -1. invalid", (double) beta);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n %D < 0 invalid", n);
   twoab1 = PetscPowReal(2., alpha + beta + 1.);
 #if defined(PETSC_HAVE_LGAMMA)
   if (!n) {

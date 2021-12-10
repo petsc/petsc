@@ -141,7 +141,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   frob_err = PetscSqrtReal(frob_err);
 
   if (frob_err > PETSC_SMALL) {
-    SETERRQ4(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: trimmed projection error %g\n", dim, deg, form, (double) frob_err);
+    SETERRQ4(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: trimmed projection error %g", dim, deg, form, (double) frob_err);
   }
 
   // P trimmed is also supposed to contain the polynomials of one degree less: construction M_moment[0:sub,:] * M_trimmed^{-1} * M_moments[0:sub,:]^T should be the identity matrix
@@ -155,7 +155,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   ierr = MatShift(Mm1, -1.);CHKERRQ(ierr);
   ierr = MatNorm(Mm1, NORM_FROBENIUS, &frob_err);CHKERRQ(ierr);
   if (frob_err > PETSC_SMALL) {
-    SETERRQ4(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: trimmed reverse projection error %g\n", dim, deg, form, (double) frob_err);
+    SETERRQ4(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: trimmed reverse projection error %g", dim, deg, form, (double) frob_err);
   }
   ierr = MatDestroy(&Mm1);CHKERRQ(ierr);
   ierr = MatDestroy(&AinvB);CHKERRQ(ierr);
@@ -257,7 +257,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     ierr = MatAXPY(prod, -1., mat_koszul, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(prod, NORM_FROBENIUS, &frob_err);CHKERRQ(ierr);
     if (frob_err > PETSC_SMALL) {
-      SETERRQ5(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, forms (%D, %D): koszul projection error %g\n", dim, deg, form, form < 0 ? (form-1):(form+1), (double) frob_err);
+      SETERRQ5(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, forms (%D, %D): koszul projection error %g", dim, deg, form, form < 0 ? (form-1):(form+1), (double) frob_err);
     }
 
     ierr = MatDestroy(&prod);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   frob_err = PetscSqrtReal(frob_err);
 
   if (frob_err > PETSC_SMALL) {
-    SETERRQ4(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: jet error %g\n", dim, deg, form, (double) frob_err);
+    SETERRQ4(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %D, degree %D, form %D: jet error %g", dim, deg, form, (double) frob_err);
   }
 
   ierr = PetscFree(M_moment_real);CHKERRQ(ierr);

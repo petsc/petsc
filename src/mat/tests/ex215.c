@@ -129,7 +129,7 @@ int main(int argc,char **args)
     ierr = MatCholeskyFactor(F,NULL,NULL);CHKERRQ(ierr);
   } else if (ftyp == MAT_FACTOR_QR) {
     ierr = MatQRFactor(F,NULL,NULL);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example\n", MatFactorTypes[ftyp]);
+  } else SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example", MatFactorTypes[ftyp]);
 
   for (nsolve = 0; nsolve < 2; nsolve++) {
     ierr = VecSetRandom(x,rand);CHKERRQ(ierr);

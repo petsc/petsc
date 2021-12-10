@@ -343,7 +343,7 @@ PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
   PetscFunctionBegin;
   if (!ports) PetscFunctionReturn(0);
   PetscValidPointer(ports,1);
-  if (PetscUnlikely(port < 0 || port > ports->nports-1)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %" PetscInt_FMT " from 0 to %" PetscInt_FMT "\n",port,ports->nports-1);
+  if (PetscUnlikely(port < 0 || port > ports->nports-1)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %" PetscInt_FMT " from 0 to %" PetscInt_FMT "",port,ports->nports-1);
   ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -109,7 +109,7 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 #if defined(PETSC_HAVE_OPENCL)
       else if (flg_opencl) viennacl::backend::default_memory_type(viennacl::OPENCL_MEMORY);
 #endif
-      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Backend not recognized or available: %s.\n Pass -viennacl_view to see available backends for ViennaCL.\n", string);
+      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Backend not recognized or available: %s.\n Pass -viennacl_view to see available backends for ViennaCL.", string);
     } catch (std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }

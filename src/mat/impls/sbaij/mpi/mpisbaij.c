@@ -1073,7 +1073,7 @@ PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
   ierr = VecSet(a->slvec1b,0.0);CHKERRQ(ierr);
 
   /* subdiagonal part */
-  if (!a->B->ops->multhermitiantranspose) SETERRQ1(PetscObjectComm((PetscObject)a->B),PETSC_ERR_SUP,"Not for type %s\n",((PetscObject)a->B)->type_name);
+  if (!a->B->ops->multhermitiantranspose) SETERRQ1(PetscObjectComm((PetscObject)a->B),PETSC_ERR_SUP,"Not for type %s",((PetscObject)a->B)->type_name);
   ierr = (*a->B->ops->multhermitiantranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
 
   /* copy x into the vec slvec0 */
@@ -1136,7 +1136,7 @@ PetscErrorCode MatMultAdd_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecSet(a->slvec1b,zero);CHKERRQ(ierr);
 
   /* subdiagonal part */
-  if (!a->B->ops->multhermitiantranspose) SETERRQ1(PetscObjectComm((PetscObject)a->B),PETSC_ERR_SUP,"Not for type %s\n",((PetscObject)a->B)->type_name);
+  if (!a->B->ops->multhermitiantranspose) SETERRQ1(PetscObjectComm((PetscObject)a->B),PETSC_ERR_SUP,"Not for type %s",((PetscObject)a->B)->type_name);
   ierr = (*a->B->ops->multhermitiantranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
 
   /* copy x into the vec slvec0 */

@@ -278,7 +278,7 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
     * For the following cases, we do not need to use HP
     * */
    if (osm->N==PETSC_DETERMINE || osm->N>=size || osm->N==1) PetscFunctionReturn(0);
-   if (size%osm->N != 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"have to specify the total number of subdomains %D to be a factor of the number of processors %d \n",osm->N,size);
+   if (size%osm->N != 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"have to specify the total number of subdomains %D to be a factor of the number of processors %d ",osm->N,size);
    nlocalsubdomains = size/osm->N;
    osm->n           = 1;
    ierr = MatPartitioningCreate(comm,&part);CHKERRQ(ierr);
@@ -1002,7 +1002,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
     */
     osm->overlap = -1;
     /* inner subdomains must be provided  */
-    if (!iis) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"inner indices have to be provided \n");
+    if (!iis) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"inner indices have to be provided ");
   }/* end if */
   if (iis) {
     ierr = PetscMalloc1(n,&osm->iis);CHKERRQ(ierr);

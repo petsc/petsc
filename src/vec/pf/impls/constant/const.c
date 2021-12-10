@@ -130,7 +130,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Identity(PF pf,void *value)
   PetscInt       *loc;
 
   PetscFunctionBegin;
-  if (pf->dimout != pf->dimin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Input dimension must match output dimension for Identity function, dimin = %" PetscInt_FMT " dimout = %" PetscInt_FMT "\n",pf->dimin,pf->dimout);
+  if (pf->dimout != pf->dimin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Input dimension must match output dimension for Identity function, dimin = %" PetscInt_FMT " dimout = %" PetscInt_FMT "",pf->dimin,pf->dimout);
   ierr   = PetscNew(&loc);CHKERRQ(ierr);
   loc[0] = pf->dimout;
   ierr   = PFSet(pf,PFApply_Identity,PFApplyVec_Identity,PFView_Identity,PFDestroy_Identity,loc);CHKERRQ(ierr);
