@@ -1771,7 +1771,7 @@ Use the following code-snippet:
    !------------------------------------------------------------------------
 
    program test_snes
-   use iso_c_binding
+   use,intrinsic :: iso_c_binding
    use petsc
    use context_module
    implicit none

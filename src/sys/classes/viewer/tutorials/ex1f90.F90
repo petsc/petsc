@@ -3,7 +3,7 @@
 
 #include <petsc/finclude/petscsys.h>
       use petscsys
-      use iso_c_binding
+      use,intrinsic :: iso_c_binding
       implicit none
 
       PetscViewer viewer
