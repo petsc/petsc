@@ -34,7 +34,7 @@ PetscErrorCode VecTaggerSetFromOptions_Simple(PetscOptionItems *PetscOptionsObje
   ierr = PetscOptionsScalarArray("-vec_tagger_box","lower and upper bounds of the box",funcstring,inBoxVals,&nvals,&set);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (set) {
-    if (nvals != 2 *bs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"Expect array of %" PetscInt_FMT " values for -vec_tagger_box, got %" PetscInt_FMT "",2 * bs,nvals);
+    if (nvals != 2 *bs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"Expect array of %" PetscInt_FMT " values for -vec_tagger_box, got %" PetscInt_FMT,2 * bs,nvals);
     ierr = VecTaggerSetBox_Simple(tagger,(VecTaggerBox *)inBoxVals);CHKERRQ(ierr);
   }
   ierr = PetscFree(inBoxVals);CHKERRQ(ierr);
