@@ -176,7 +176,7 @@ DAG to select the points. ``DMPlexGetDepth(,&depth)`` routines the depth
 of the DAG, hence ``DMPlexGetDepthStratum(dm,depth-1-h,)`` returns the
 same values as ``DMPlexGetHeightStratum(dm,h,)``.
 
-For P3 elements there is one degree of freedom at each vertex, 2 along
+For :math:`P_3` elements there is one degree of freedom at each vertex, 2 along
 each edge (resulting in a total of 4 degrees of freedom alone each edge
 including the vertices, thus being able to reproduce a cubic function)
 and 1 degree of freedom within the cell (the bubble function which is
@@ -222,7 +222,7 @@ Partitioning and Ordering
 
 In exactly the same way as in ``MatPartitioning`` or with
 ``MatGetOrdering()``, the results of a partition using
-``DMPlexPartition`` or reordering using ``DMPlexPermute`` are encoded in
+``PetscPartitionerDMPlexPartition`` or reordering using ``DMPlexPermute`` are encoded in
 an ``IS``. However, the graph is not the adjacency graph of the problem
 Jacobian, but the mesh itself. Once the mesh is partitioned and
 reordered, the data layout from a ``PetscSection`` can be used to
