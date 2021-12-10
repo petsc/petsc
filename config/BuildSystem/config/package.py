@@ -1092,8 +1092,35 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     oldFlags = getattr(self.compilers, flagsArg)
     setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
     self.compilers.saveLog()
+
+    # X.py uses a weird list of two headers.
+    if not isinstance(self.versioninclude,list):
+      headerList = [self.versioninclude]
+    else:
+      headerList = self.versioninclude
+
+    includeLines = ''
+    for header in headerList:
+      includeLines += '#include "'+header+'"\n'
     try:
-      output = self.outputPreprocess('#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n')
+      # We once used '#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n',
+      # but some preprocessors are picky (ex. dpcpp -E), reporting errors on the code above even
+      # it is just supposed to do preprocessing:
+      #
+      #  error: C++ requires a type specifier for all declarations
+      #  petscpkgver(__SYCL_COMPILER_VERSION);
+      #  ^
+      #
+      # So we instead use this compilable code.
+      output = self.outputPreprocess(
+'''
+{x}
+#define  PetscXstr_(s) PetscStr_(s)
+#define  PetscStr_(s)  #s
+char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
+'''.format(x=includeLines, y=self.versionname))
+       # Ex. char *ver = "petscpkgver(" "20211206" ")";
+       # But after stripping spaces, quotes etc below, it becomes char*ver=petscpkgver(20211206);
       self.logWrite(self.compilers.restoreLog())
     except:
       self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
@@ -1108,11 +1135,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     output = re.sub('#.*\n','\n',output)
     #strip newlines,spaces,quotes
     output = re.sub('[\n "]*','',output)
+    #strip backslash. Mumps' version macro already has "" around it, giving output: char *ver = petscpkgver(" "\"5.4.1\"" ")";
+    output = output.replace('\\','')
     #now split over ';'
     loutput = output.split(';')
     version = ''
     for i in loutput:
       if i.find('petscpkgver') >=0:
+        self.log.write('Found version string: ' + i +'\n')
         version = i.split('(')[1].split(')')[0]
         break
     if not version:
