@@ -123,7 +123,8 @@ int main(int argc, char **argv) {
     ierr = VecNorm(metric, NORM_2, &norm);CHKERRQ(ierr);
     ierr = VecNorm(metricComb, NORM_2, &errornorm);CHKERRQ(ierr);
     errornorm /= norm;
-    if (errornorm > tol) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric average test failed (L2 error %f)", errornorm);
+    ierr = PetscPrintf(comm, "Metric average L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+    if (errornorm > tol) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric average test failed");
     ierr = VecDestroy(&metricComb);CHKERRQ(ierr);
 
     /* Test metric intersection */
@@ -132,7 +133,8 @@ int main(int argc, char **argv) {
       ierr = VecAXPY(metricComb, -1, metric1);CHKERRQ(ierr);
       ierr = VecNorm(metricComb, NORM_2, &errornorm);CHKERRQ(ierr);
       errornorm /= norm;
-      if (errornorm > tol) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric intersection test failed (L2 error %f)", errornorm);
+      ierr = PetscPrintf(comm, "Metric intersection L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+      if (errornorm > tol) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric intersection test failed");
     }
     ierr = VecDestroy(&metric1);CHKERRQ(ierr);
     ierr = VecDestroy(&metric2);CHKERRQ(ierr);
@@ -150,11 +152,13 @@ int main(int argc, char **argv) {
       ierr = VecNorm(err, NORM_2, &errornorm);CHKERRQ(ierr);
       ierr = VecDestroy(&err);CHKERRQ(ierr);
       errornorm /= norm;
-      if (errornorm > tol) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Determinant is not unit (L2 error %f)", errornorm);
+      ierr = PetscPrintf(comm, "Metric determinant L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+      if (errornorm > tol) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Determinant is not unit");
       ierr = VecAXPY(metric1, -1, metric);CHKERRQ(ierr);
       ierr = VecNorm(metric1, NORM_2, &errornorm);CHKERRQ(ierr);
       errornorm /= norm;
-      if (errornorm > tol) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric SPD enforcement test failed (L2 error %f)", errornorm);
+      ierr = PetscPrintf(comm, "Metric SPD enforcement L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+      if (errornorm > tol) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric SPD enforcement test failed");
     }
     ierr = VecDestroy(&metric1);CHKERRQ(ierr);
     ierr = VecGetDM(determinant, &dmDet);CHKERRQ(ierr);
@@ -172,13 +176,13 @@ int main(int argc, char **argv) {
       ierr = VecAXPY(metric2, -1, metric1);CHKERRQ(ierr);
       ierr = VecNorm(metric2, NORM_2, &errornorm);CHKERRQ(ierr);
       errornorm /= norm;
-      if (errornorm > tol) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric normalization test failed (L2 error %f)", errornorm);
+      ierr = PetscPrintf(comm, "Metric normalization L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+      if (errornorm > tol) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric normalization test failed");
     }
     ierr = VecCopy(metric1, metric);CHKERRQ(ierr);
     ierr = VecDestroy(&metric2);CHKERRQ(ierr);
     ierr = VecDestroy(&metric1);CHKERRQ(ierr);
   }
-  ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Adapt the mesh */
   ierr = DMAdaptMetric(dm, metric, bdLabel, rgLabel, &dmAdapt);CHKERRQ(ierr);
@@ -186,7 +190,6 @@ int main(int argc, char **argv) {
   ierr = PetscObjectSetName((PetscObject) dmAdapt, "DM_adapted");CHKERRQ(ierr);
   ierr = VecDestroy(&metric);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dmAdapt, NULL, "-adapted_mesh_view");CHKERRQ(ierr);
-  ierr = DMView(dmAdapt, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Clean up */
   ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
