@@ -29,7 +29,7 @@ particular specifying a “covering” relation among the points. For
 example, an edge is defined by being covered by two vertices, and a
 triangle can be defined by being covered by three edges (or even by
 three vertices). In fact, this structure has been known for a long time.
-It is a Hasse Diagram `Hasse Diagram <http://en.wikipedia.org/wiki/Hasse_diagram>`__, which is a
+It is a `Hasse Diagram <http://en.wikipedia.org/wiki/Hasse_diagram>`__, which is a
 Directed Acyclic Graph (DAG) representing a cell complex using the
 covering relation. The graph edges represent the relation, which also
 encodes a partially ordered set (poset).
@@ -168,7 +168,7 @@ a continuous Galerkin :math:`P_3` finite element method,
        PetscSectionSetDof(s, e, 2);
    PetscSectionSetUp(s);
 
-DMPlexGetHeightStratum() returns all the points of the requested height
+``DMPlexGetHeightStratum()`` returns all the points of the requested height
 in the DAG. Since this problem is in two dimensions the edges are at
 height 1 and the vertices at height 2 (the cells are always at height
 0). One can also use ``DMPlexGetDepthStratum()`` to use the depth in the
@@ -176,7 +176,7 @@ DAG to select the points. ``DMPlexGetDepth(,&depth)`` routines the depth
 of the DAG, hence ``DMPlexGetDepthStratum(dm,depth-1-h,)`` returns the
 same values as ``DMPlexGetHeightStratum(dm,h,)``.
 
-For P3 elements there is one degree of freedom at each vertex, 2 along
+For :math:`P_3` elements there is one degree of freedom at each vertex, 2 along
 each edge (resulting in a total of 4 degrees of freedom alone each edge
 including the vertices, thus being able to reproduce a cubic function)
 and 1 degree of freedom within the cell (the bubble function which is
@@ -222,7 +222,7 @@ Partitioning and Ordering
 
 In exactly the same way as in ``MatPartitioning`` or with
 ``MatGetOrdering()``, the results of a partition using
-``DMPlexPartition`` or reordering using ``DMPlexPermute`` are encoded in
+``PetscPartitionerDMPlexPartition`` or reordering using ``DMPlexPermute`` are encoded in
 an ``IS``. However, the graph is not the adjacency graph of the problem
 Jacobian, but the mesh itself. Once the mesh is partitioned and
 reordered, the data layout from a ``PetscSection`` can be used to
