@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   DM              dm, dmDist, dmAdapt;
   DMLabel         bdLabel = NULL, rgLabel = NULL;
   MPI_Comm        comm;
-  PetscBool       uniform = PETSC_FALSE, isotropic = PETSC_FALSE;
+  PetscBool       uniform = PETSC_FALSE, isotropic = PETSC_FALSE, noTagging = PETSC_FALSE;
   PetscErrorCode  ierr;
   PetscInt       *faces, dim = 3, d;
   PetscReal       scaling = 1.0;
@@ -29,6 +29,7 @@ int main(int argc, char **argv) {
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex60.c", dim, &dim, NULL, 2, 3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-uniform", "Should the metric be assumed uniform?", "ex60.c", uniform, &uniform, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-isotropic", "Should the metric be assumed isotropic, or computed as a recovered Hessian?", "ex60.c", isotropic, &isotropic, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-noTagging", "Should tag preservation testing be turned off?", "ex60.c", noTagging, &noTagging, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   /* Create box mesh */
@@ -46,6 +47,55 @@ int main(int argc, char **argv) {
   }
   ierr = PetscObjectSetName((PetscObject) dm, "DM_init");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-initial_mesh_view");CHKERRQ(ierr);
+
+  /* Set tags to be preserved */
+  if (!noTagging) {
+    DM                 cdm;
+    PetscInt           cStart, cEnd, c, fStart, fEnd, f, vStart, vEnd;
+    const PetscScalar *coords;
+    Vec                coordinates;
+
+    /* Cell tags */
+    ierr = DMCreateLabel(dm, "Cell Sets");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "Cell Sets", &rgLabel);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    for (c = cStart; c < cEnd; ++c) {
+      PetscReal centroid[3], volume, x;
+
+      ierr = DMPlexComputeCellGeometryFVM(dm, c, &volume, centroid, NULL);CHKERRQ(ierr);
+      x = centroid[0];
+      if (x < 0.5) { ierr = DMLabelSetValue(rgLabel, c, 3);CHKERRQ(ierr); }
+      else         { ierr = DMLabelSetValue(rgLabel, c, 4);CHKERRQ(ierr); }
+    }
+
+    /* Face tags */
+    ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "Face Sets", &bdLabel);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(dm, 1, bdLabel);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+    for (f = fStart; f < fEnd; ++f) {
+      PetscBool flg = PETSC_TRUE;
+      PetscInt *closure = NULL, closureSize, cl;
+      PetscReal eps = 1.0e-08;
+
+      ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (cl = 0; cl < closureSize*2; cl += 2) {
+        PetscInt   off = closure[cl];
+        PetscReal *x;
+
+        if ((off < vStart) || (off >= vEnd)) continue;
+        ierr = DMPlexPointLocalRead(cdm, off, coords, &x);CHKERRQ(ierr);
+        if ((x[0] < 0.5 - eps) || (x[0] > 0.5 + eps)) flg = PETSC_FALSE;
+      }
+      if (flg) { ierr = DMLabelSetValue(bdLabel, f, 2);CHKERRQ(ierr); }
+      ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  }
 
   /* Construct metric */
   if (uniform) {
@@ -191,6 +241,28 @@ int main(int argc, char **argv) {
   ierr = VecDestroy(&metric);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dmAdapt, NULL, "-adapted_mesh_view");CHKERRQ(ierr);
 
+  /* Test tag preservation */
+  if (!noTagging) {
+    PetscBool hasTag;
+    PetscInt  size;
+
+    ierr = DMGetLabel(dmAdapt, "Face Sets", &bdLabel);CHKERRQ(ierr);
+    ierr = DMLabelHasStratum(bdLabel, 1, &hasTag);CHKERRQ(ierr);
+    if (!hasTag) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 1");
+    ierr = DMLabelHasStratum(bdLabel, 2, &hasTag);CHKERRQ(ierr);
+    if (!hasTag) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 2");
+    ierr = DMLabelGetNumValues(bdLabel, &size);CHKERRQ(ierr);
+    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of face tags (got %d, expected 2)", size);
+
+    ierr = DMGetLabel(dmAdapt, "Cell Sets", &rgLabel);CHKERRQ(ierr);
+    ierr = DMLabelHasStratum(rgLabel, 3, &hasTag);CHKERRQ(ierr);
+    if (!hasTag) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 3");
+    ierr = DMLabelHasStratum(rgLabel, 4, &hasTag);CHKERRQ(ierr);
+    if (!hasTag) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 4");
+    ierr = DMLabelGetNumValues(rgLabel, &size);CHKERRQ(ierr);
+    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of cell tags (got %d, expected 2)", size);
+  }
+
   /* Clean up */
   ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -202,27 +274,27 @@ int main(int argc, char **argv) {
   test:
     suffix: uniform_2d_pragmatic
     requires: pragmatic
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -uniform -isotropic
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -uniform -isotropic -noTagging
   test:
     suffix: uniform_3d_pragmatic
     requires: pragmatic tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -uniform -isotropic
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -uniform -isotropic -noTagging
   test:
     suffix: iso_2d_pragmatic
     requires: pragmatic
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -isotropic
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -isotropic -noTagging
   test:
     suffix: iso_3d_pragmatic
     requires: pragmatic tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -isotropic
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -isotropic -noTagging
   test:
     suffix: hessian_2d_pragmatic
     requires: pragmatic
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic
+    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -noTagging
   test:
     suffix: hessian_3d_pragmatic
     requires: pragmatic tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic
+    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -noTagging
   test:
     suffix: uniform_2d_mmg
     requires: mmg
