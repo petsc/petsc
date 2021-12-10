@@ -65,8 +65,8 @@
 #define PETSC_ERR_MPI              98  /* general MPI error */
 #define PETSC_ERR_MAX_VALUE        99  /* this is always the one more than the largest error code */
 
-#define PetscStringize_(a) #a
-#define PetscStringize(a) PetscStringize_(a)
+#define PetscStringize_(...) #__VA_ARGS__
+#define PetscStringize(...) PetscStringize_(__VA_ARGS__)
 
 /*MC
    SETERRQ - Macro to be called when an error has been detected,

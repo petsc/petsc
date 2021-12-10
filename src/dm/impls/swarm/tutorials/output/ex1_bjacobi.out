@@ -29,4 +29,4 @@ DMSwarmDataBucketView:
     [  4]             w_q : Mem. usage       = 4.00e-04 (MB) [rank0]
                             blocksize        = 1 
   Total mem. usage                           = 2.00e-03 (MB) (collective)
-Total number =   5.000000000000e+01. energy =   5.000000000000e+01 error =   2.842170943040e-16
+Total number =   5.000000000000e+01. energy =   5.000000000000e+01 error =   1.563194018672e-15
