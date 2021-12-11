@@ -4048,7 +4048,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
-  PetscValidCharPointer(plexname, 3);
+  if (plexname) PetscValidCharPointer(plexname, 3);
   PetscValidPointer(dm, 5);
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_CreateFromFile,0,0,0,0);CHKERRQ(ierr);
