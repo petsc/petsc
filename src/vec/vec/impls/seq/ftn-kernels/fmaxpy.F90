@@ -18,7 +18,7 @@
       PETSC_AssertAlignx(16,Y2(1))
       PETSC_AssertAlignx(16,Y3(1))
       do i=1,n
-          x(i)  = x(i) + a0*y0(i) + a1*y1(i) + a2*y2(i) + a3*y3(i)
+          x(i)  = x(i) + (a0*y0(i) + a1*y1(i) + a2*y2(i) + a3*y3(i))
       enddo
       return
       end
@@ -34,7 +34,7 @@
       PETSC_AssertAlignx(16,y1(1))
       PETSC_AssertAlignx(16,y2(1))
       do 10,i=1,n
-         x(i) = x(i) + a0*y0(i) + a1*y1(i) + a2*y2(i)
+         x(i) = x(i) + (a0*y0(i) + a1*y1(i) + a2*y2(i))
   10  continue
       return
       end
@@ -48,7 +48,7 @@
       PETSC_AssertAlignx(16,y0(1))
       PETSC_AssertAlignx(16,y1(1))
       do i=1,n
-          x(i)  = x(i) + a0*y0(i) + a1*y1(i)
+          x(i)  = x(i) + (a0*y0(i) + a1*y1(i))
       enddo
       return
       end
