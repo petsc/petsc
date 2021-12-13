@@ -155,6 +155,7 @@ Changes: Development
 - Change ``DMAdaptMetric`` so that it takes an additional argument for cell tags
 - Change ``DMTransformAdaptLabel`` so that it takes an additional argument for cell tags
 - Change ``DMGenerateRegister`` so that it registers routines that take an additional argument for cell tags
+- Change ``DMPlexFindVertices()`` to take ``Vec`` and ``IS`` arguments instead of arrays
 
 .. rubric:: FE/FV:
 

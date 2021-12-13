@@ -10,41 +10,52 @@
 
   Input Parameters:
 + dm - The DMPlex object
-. npoints - The number of sought points
-. coords - The array of coordinates of the sought points
+. coordinates - The Vec of coordinates of the sought points
 - eps - The tolerance or PETSC_DEFAULT
 
   Output Parameters:
-. dagPoints - The array of found DAG points, or -1 if not found
+. points - The IS of found DAG points or -1
 
   Level: intermediate
 
   Notes:
-  The length of the array coords must be npoints * dim where dim is the spatial dimension returned by DMGetDimension().
+  The length of Vec coordinates must be npoints * dim where dim is the spatial dimension returned by DMGetCoordinateDim() and npoints is the number of sought points.
 
-  The output array dagPoints is NOT newly allocated; the user must pass an array of length npoints.
+  The output IS is living on PETSC_COMM_SELF and its length is npoints.
+  Each rank does the search independently.
+  If this rank's local DMPlex portion contains the DAG point corresponding to the i-th tuple of coordinates, the i-th entry of the output IS is set to that DAG point, otherwise to -1.
 
-  Each rank does the search independently; a nonnegative value is returned only if this rank's local DMPlex portion contains the point.
+  The output IS must be destroyed by user.
 
   The tolerance is interpreted as the maximum Euclidean (L2) distance of the sought point from the specified coordinates.
 
-  Complexity of this function is currently O(mn) with m number of vertices to find and n number of vertices in the local mesh. This could probably be improved.
+  Complexity of this function is currently O(mn) with m number of vertices to find and n number of vertices in the local mesh. This could probably be improved if needed.
 
 .seealso: DMPlexCreate(), DMGetCoordinatesLocal()
 @*/
-PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord[], PetscReal eps, PetscInt dagPoints[])
+PetscErrorCode DMPlexFindVertices(DM dm, Vec coordinates, PetscReal eps, IS *points)
 {
   PetscInt          c, cdim, i, j, o, p, vStart, vEnd;
+  PetscInt          npoints;
+  const PetscScalar *coord;
   Vec               allCoordsVec;
   const PetscScalar *allCoords;
-  PetscReal         norm;
+  PetscInt          *dagPoints;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (eps < 0) eps = PETSC_SQRT_MACHINE_EPSILON;
   ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  {
+    PetscInt n;
+
+    ierr = VecGetLocalSize(coordinates, &n);CHKERRQ(ierr);
+    if (n % cdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Given coordinates Vec has local length %D not divisible by coordinate dimension %D of given DM", n, cdim);
+    npoints = n / cdim;
+  }
   ierr = DMGetCoordinatesLocal(dm, &allCoordsVec);CHKERRQ(ierr);
   ierr = VecGetArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coord);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG)) {
     /* check coordinate section is consistent with DM dimension */
@@ -57,12 +68,13 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
       if (PetscUnlikely(ndof != cdim)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "point %D: ndof = %D != %D = cdim", p, ndof, cdim);
     }
   }
+  ierr = PetscMalloc1(npoints, &dagPoints);CHKERRQ(ierr);
   if (eps == 0.0) {
     for (i=0,j=0; i < npoints; i++,j+=cdim) {
       dagPoints[i] = -1;
       for (p = vStart,o=0; p < vEnd; p++,o+=cdim) {
         for (c = 0; c < cdim; c++) {
-          if (coord[j+c] != PetscRealPart(allCoords[o+c])) break;
+          if (coord[j+c] != allCoords[o+c]) break;
         }
         if (c == cdim) {
           dagPoints[i] = p;
@@ -70,24 +82,27 @@ PetscErrorCode DMPlexFindVertices(DM dm, PetscInt npoints, const PetscReal coord
         }
       }
     }
-    ierr = VecRestoreArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  for (i=0,j=0; i < npoints; i++,j+=cdim) {
-    dagPoints[i] = -1;
-    for (p = vStart,o=0; p < vEnd; p++,o+=cdim) {
-      norm = 0.0;
-      for (c = 0; c < cdim; c++) {
-        norm += PetscSqr(coord[j+c] - PetscRealPart(allCoords[o+c]));
-      }
-      norm = PetscSqrtReal(norm);
-      if (norm <= eps) {
-        dagPoints[i] = p;
-        break;
+  } else {
+    for (i=0,j=0; i < npoints; i++,j+=cdim) {
+      PetscReal         norm;
+
+      dagPoints[i] = -1;
+      for (p = vStart,o=0; p < vEnd; p++,o+=cdim) {
+        norm = 0.0;
+        for (c = 0; c < cdim; c++) {
+          norm += PetscRealPart(PetscSqr(coord[j+c] - allCoords[o+c]));
+        }
+        norm = PetscSqrtReal(norm);
+        if (norm <= eps) {
+          dagPoints[i] = p;
+          break;
+        }
       }
     }
   }
   ierr = VecRestoreArrayRead(allCoordsVec, &allCoords);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coordinates, &coord);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, npoints, dagPoints, PETSC_OWN_POINTER, points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
