@@ -235,6 +235,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
   ierr = VecDestroy(&(*tao)->IU);CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->DE);CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->DI);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->constraints);CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->constraints_equality);CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->constraints_inequality);CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->stepdirection);CHKERRQ(ierr);
