@@ -8,6 +8,7 @@ Changes: Development
    * Use imperative, e.g., Add, Improve, Change, etc.
    * Don't use a period (.) at the end of entries
    * If multiple sentences are needed, use a period or semicolon to divide sentences, but not at the end of the final sentence
+   * Use full function names, for ease of searching and so that man pages links are generated
 
 .. rubric:: General:
 
