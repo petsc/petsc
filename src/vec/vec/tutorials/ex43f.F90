@@ -3,7 +3,7 @@
 
     module mymoduleex43f
 #include <petsc/finclude/petscvec.h>
-      use iso_c_binding
+      use,intrinsic :: iso_c_binding
       interface
         subroutine fillupvector(vaddr,ierr) bind ( C, name = "fillupvector")
 !
@@ -11,7 +11,7 @@
 !     Warning: Variable 'vaddr' at (1) is a dummy argument of the BIND(C)
 !              procedure 'fillupvector' but may not be C interoperable
 !
-          use iso_c_binding
+          use,intrinsic :: iso_c_binding
           integer(c_long_long) vaddr
           integer(c_int) ierr
         end subroutine fillupvector
@@ -19,7 +19,7 @@
     end module
 
 #include <petsc/finclude/petscvec.h>
-        use iso_c_binding
+        use,intrinsic :: iso_c_binding
         use petscvec
         use mymoduleex43f
        implicit none

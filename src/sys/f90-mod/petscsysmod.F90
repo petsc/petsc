@@ -290,7 +290,7 @@
 !DEC$ ATTRIBUTES DLLEXPORT::petscrandomequals
 #endif
         module petscsys
-        use iso_c_binding
+        use,intrinsic :: iso_c_binding
         use petscsysdef
         PetscChar(80) PETSC_NULL_CHARACTER = ''
         PetscInt PETSC_NULL_INTEGER(1)

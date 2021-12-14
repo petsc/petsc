@@ -227,7 +227,7 @@
 #if defined(PETSC_USE_LOG)
       Interface
       function PetscASend(c, d) bind(c,name='PetscASend') result(i)
-          use iso_c_binding
+          use,intrinsic :: iso_c_binding
           implicit none
           integer(c_int), value :: c
           integer(c_int), value :: d
@@ -235,7 +235,7 @@
       end function PetscASend
 
       function PetscARecv(c, d) bind(c,name='PetscARecv') result(i)
-          use iso_c_binding
+          use,intrinsic :: iso_c_binding
           implicit none
           integer(c_int), value :: c
           integer(c_int), value :: d
@@ -243,7 +243,7 @@
       end function PetscARecv
 
       function PetscAReduce() bind(c,name='PetscAReduce') result(i)
-          use iso_c_binding
+          use,intrinsic :: iso_c_binding
           implicit none
           integer(c_int)        :: i
       end function PetscAReduce
