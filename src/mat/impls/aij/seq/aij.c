@@ -1423,12 +1423,13 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  const MatScalar   *aa;
   PetscScalar       *y;
   const PetscScalar *x;
   PetscErrorCode    ierr;
   PetscInt          m = A->rmap->n;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
-  const MatScalar   *v,*aa;
+  const MatScalar   *v;
   PetscScalar       alpha;
   PetscInt          n,i,j;
   const PetscInt    *idx,*ii,*ridx=NULL;
