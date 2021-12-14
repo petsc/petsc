@@ -177,7 +177,7 @@ cdef class TAO(Object):
     def setJacobianResidual(self, jacobian, Mat J=None, Mat P=None, args=None, kargs=None):
         """
         """
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
@@ -208,7 +208,7 @@ cdef class TAO(Object):
     def setVariableBounds(self, varbounds, args=None, kargs=None):
         """
         """
-        cdef Vec xl=None, xu=None
+        cdef Vec xl = None, xu = None
         if (isinstance(varbounds, list) or isinstance(varbounds, tuple)):
             ol, ou = varbounds
             xl = <Vec?> ol; xu = <Vec?> ou
@@ -228,7 +228,7 @@ cdef class TAO(Object):
     def setConstraints(self, constraints, Vec C=None, args=None, kargs=None):
         """
         """
-        cdef PetscVec Cvec=NULL
+        cdef PetscVec Cvec = NULL
         if C is not None: Cvec = C.vec
         if args is None: args = ()
         if kargs is None: kargs = {}
@@ -238,7 +238,7 @@ cdef class TAO(Object):
 
     def setHessian(self, hessian, Mat H=None, Mat P=None,
                    args=None, kargs=None):
-        cdef PetscMat Hmat=NULL
+        cdef PetscMat Hmat = NULL
         if H is not None: Hmat = H.mat
         cdef PetscMat Pmat = Hmat
         if P is not None: Pmat = P.mat
@@ -252,7 +252,7 @@ cdef class TAO(Object):
                     args=None, kargs=None):
         """
         """
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
@@ -276,7 +276,7 @@ cdef class TAO(Object):
                          args=None, kargs=None):
         """
         """
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
@@ -293,7 +293,7 @@ cdef class TAO(Object):
                           args=None, kargs=None):
         """
         """
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         if args is None: args = ()
         if kargs is None: kargs = {}
@@ -301,6 +301,35 @@ cdef class TAO(Object):
         self.set_attr("__jacobian_design__", context)
         CHKERR( TaoSetJacobianDesignRoutine(self.tao, Jmat,
                                             TAO_JacobianDesign, <void*>context) )
+
+
+    def setEqualityConstraints(self, equality_constraints, Vec c,
+                               args=None, kargs=None):
+        """
+        """
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        context = (equality_constraints, args, kargs)
+        self.set_attr("__equality_constraints__", context)
+        CHKERR( TaoSetEqualityConstraintsRoutine(self.tao, c.vec,
+                                                 TAO_EqualityConstraints, <void*>context) )
+
+
+    def setJacobianEquality(self, jacobian_equality, Mat J=None, Mat P=None,
+                            args=None, kargs=None):
+        """
+        """
+        cdef PetscMat Jmat = NULL
+        if J is not None: Jmat = J.mat
+        cdef PetscMat Pmat = Jmat
+        if P is not None: Pmat = P.mat
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        context = (jacobian_equality, args, kargs)
+        self.set_attr("__jacobian_equality__", context)
+        CHKERR( TaoSetJacobianEqualityRoutine(self.tao, Jmat, Pmat,
+                                              TAO_JacobianEquality, <void*>context) )
+
 
     # --------------
 
@@ -598,7 +627,7 @@ cdef class TAO(Object):
         CHKERR( TaoBRGNSetRegularizerObjectiveAndGradientRoutine(self.tao, TAO_BRGNRegObjGrad, <void*>context) )
 
     def setBRGNRegularizerHessian(self, hessian, Mat H=None, args=None, kargs=None):
-        cdef PetscMat Hmat=NULL
+        cdef PetscMat Hmat = NULL
         if H is not None: Hmat = H.mat
         if args is None: args = ()
         if kargs is None: kargs = {}
