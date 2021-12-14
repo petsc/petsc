@@ -917,7 +917,7 @@ static PetscErrorCode LAPACKsyevFail(PetscInt dim, PetscScalar Mpos[])
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, PetscReal h_max, PetscReal a_max, PetscScalar Mp[])
+static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, PetscReal h_max, PetscReal a_max, PetscScalar Mp[], PetscScalar *detMp)
 {
   PetscErrorCode ierr;
   PetscInt       i, j, k;
@@ -982,9 +982,11 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
     max_eig = PetscMax(eigs[i], max_eig);
   }
 
-  /* Enforce maximum anisotropy */
+  /* Enforce maximum anisotropy and compute determinant */
+  *detMp = 1.0;
   for (i = 0; i < dim; ++i) {
     if (a_max > 1.0) eigs[i] = PetscMax(eigs[i], max_eig*la_min);
+    *detMp *= eigs[i];
   }
 
   /* Reconstruct Hessian */
@@ -1006,22 +1008,24 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
 
   Input parameters:
 + dm                 - The DM
+. metricIn           - The metric
 . restrictSizes      - Should maximum/minimum metric magnitudes be enforced?
-. restrictAnisotropy - Should maximum anisotropy be enforced?
-- metric             - The metric
+- restrictAnisotropy - Should maximum anisotropy be enforced?
 
   Output parameter:
-. metric             - The metric
++ metricOut          - The metric
+- determinant        - Its determinant
 
   Level: beginner
 
 .seealso: DMPlexMetricNormalize(), DMPlexMetricIntersection()
 */
-PetscErrorCode DMPlexMetricEnforceSPD(DM dm, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metric)
+PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut, Vec *determinant)
 {
+  DM             dmDet;
   PetscErrorCode ierr;
   PetscInt       dim, vStart, vEnd, v;
-  PetscScalar   *met;
+  PetscScalar   *met, *det;
   PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0;
 
   PetscFunctionBegin;
@@ -1040,15 +1044,24 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, PetscBool restrictSizes, PetscBool 
     a_max = PetscMin(a_max, 1.0e+30);
   }
 
+  /* Setup output metric and determinant */
+  ierr = DMPlexMetricCreate(dm, 0, metricOut);CHKERRQ(ierr);
+  ierr = VecCopy(metricIn, *metricOut);CHKERRQ(ierr);
+  ierr = DMClone(dm, &dmDet);CHKERRQ(ierr);
+  ierr = DMPlexP1FieldCreate_Private(dmDet, 0, 1, determinant);CHKERRQ(ierr);
+
   /* Enforce SPD */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = VecGetArray(metric, &met);CHKERRQ(ierr);
+  ierr = VecGetArray(*metricOut, &met);CHKERRQ(ierr);
+  ierr = VecGetArray(*determinant, &det);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
-    PetscScalar *vmet;
+    PetscScalar *vmet, *vdet;
     ierr = DMPlexPointLocalRef(dm, v, met, &vmet);CHKERRQ(ierr);
-    ierr = DMPlexMetricModify_Private(dim, h_min, h_max, a_max, vmet);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRef(dmDet, v, det, &vdet);CHKERRQ(ierr);
+    ierr = DMPlexMetricModify_Private(dim, h_min, h_max, a_max, vmet, vdet);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(metric, &met);CHKERRQ(ierr);
+  ierr = VecRestoreArray(*determinant, &det);CHKERRQ(ierr);
+  ierr = VecRestoreArray(*metricOut, &met);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1059,11 +1072,8 @@ static void detMFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                      PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscScalar p = constants[0];
-  PetscReal         detH = 0.0;
 
-  if      (dim == 2) DMPlex_Det2D_Scalar_Internal(&detH, u);
-  else if (dim == 3) DMPlex_Det3D_Scalar_Internal(&detH, u);
-  f0[0] = PetscPowReal(detH, p/(2.0*p + dim));
+  f0[0] = PetscPowReal(u[0], p/(2.0*p + dim));
 }
 
 /*
@@ -1084,13 +1094,15 @@ static void detMFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 */
 PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut)
 {
+  DM               dmDet;
   MPI_Comm         comm;
   PetscBool        restrictAnisotropyFirst;
   PetscDS          ds;
   PetscErrorCode   ierr;
   PetscInt         dim, Nd, vStart, vEnd, v, i;
-  PetscScalar     *met, integral, constants[1];
-  PetscReal        p, h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0, factGlob, target;
+  PetscScalar     *met, *det, integral, constants[1];
+  PetscReal        p, h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0, factGlob, target, realIntegral;
+  Vec              determinant;
 
   PetscFunctionBegin;
 
@@ -1100,20 +1112,21 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   Nd = dim*dim;
 
   /* Set up metric and ensure it is SPD */
-  ierr = DMPlexMetricCreate(dm, 0, metricOut);CHKERRQ(ierr);
-  ierr = VecCopy(metricIn, *metricOut);CHKERRQ(ierr);
   ierr = DMPlexMetricRestrictAnisotropyFirst(dm, &restrictAnisotropyFirst);CHKERRQ(ierr);
-  ierr = DMPlexMetricEnforceSPD(dm, PETSC_FALSE, (PetscBool)(restrictAnisotropy && restrictAnisotropyFirst), *metricOut);CHKERRQ(ierr);
+  ierr = DMPlexMetricEnforceSPD(dm, metricIn, PETSC_FALSE, (PetscBool)(restrictAnisotropy && restrictAnisotropyFirst), metricOut, &determinant);CHKERRQ(ierr);
 
   /* Compute global normalization factor */
   ierr = DMPlexMetricGetTargetComplexity(dm, &target);CHKERRQ(ierr);
   ierr = DMPlexMetricGetNormalizationOrder(dm, &p);CHKERRQ(ierr);
   constants[0] = p;
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = VecGetDM(determinant, &dmDet);CHKERRQ(ierr);
+  ierr = DMGetDS(dmDet, &ds);CHKERRQ(ierr);
   ierr = PetscDSSetConstants(ds, 1, constants);CHKERRQ(ierr);
   ierr = PetscDSSetObjective(ds, 0, detMFunc);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dm, *metricOut, &integral, NULL);CHKERRQ(ierr);
-  factGlob = PetscPowReal(target/PetscRealPart(integral), 2.0/dim);
+  ierr = DMPlexComputeIntegralFEM(dmDet, determinant, &integral, NULL);CHKERRQ(ierr);
+  realIntegral = PetscRealPart(integral);
+  if (realIntegral < 1.0e-30) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global metric normalization factor should be strictly positive, not %.4e Is the input metric positive-definite?", realIntegral);
+  factGlob = PetscPowReal(target/realIntegral, 2.0/dim);
 
   /* Apply local scaling */
   if (restrictSizes) {
@@ -1128,20 +1141,22 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
     a_max = PetscMin(a_max, 1.0e+30);
   }
   ierr = VecGetArray(*metricOut, &met);CHKERRQ(ierr);
+  ierr = VecGetArray(determinant, &det);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
-    PetscScalar *Mp;
-    PetscReal    detM, fact;
+    PetscScalar *Mp, *detM;
+    PetscReal    fact;
 
     ierr = DMPlexPointLocalRef(dm, v, met, &Mp);CHKERRQ(ierr);
-    if      (dim == 2) DMPlex_Det2D_Scalar_Internal(&detM, Mp);
-    else if (dim == 3) DMPlex_Det3D_Scalar_Internal(&detM, Mp);
-    else SETERRQ1(comm, PETSC_ERR_SUP, "Dimension %d not supported", dim);
-    fact = factGlob * PetscPowReal(PetscAbsReal(detM), -1.0/(2*p+dim));
+    ierr = DMPlexPointLocalRef(dmDet, v, det, &detM);CHKERRQ(ierr);
+    fact = factGlob * PetscPowReal(PetscAbsScalar(detM[0]), -1.0/(2*p+dim));
     for (i = 0; i < Nd; ++i) Mp[i] *= fact;
-    if (restrictSizes) { ierr = DMPlexMetricModify_Private(dim, h_min, h_max, a_max, Mp);CHKERRQ(ierr); }
+    if (restrictSizes) { ierr = DMPlexMetricModify_Private(dim, h_min, h_max, a_max, Mp, detM);CHKERRQ(ierr); }
   }
+  ierr = VecRestoreArray(determinant, &det);CHKERRQ(ierr);
   ierr = VecRestoreArray(*metricOut, &met);CHKERRQ(ierr);
+  ierr = VecDestroy(&determinant);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmDet);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

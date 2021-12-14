@@ -1,24 +1,5 @@
-DM Object: DM_init 1 MPI processes
-  type: plex
-DM_init in 3 dimensions:
-  Number of 0-cells per rank: 125
-  Number of 1-cells per rank: 604
-  Number of 2-cells per rank: 864
-  Number of 3-cells per rank: 384
-Labels:
-  marker: 1 strata with value/size (1 (317))
-  celltype: 4 strata with value/size (0 (125), 6 (384), 3 (864), 1 (604))
-  depth: 4 strata with value/size (0 (125), 1 (604), 2 (864), 3 (384))
-Field P1:
-  adjacency FEM
-DM Object: DM_adapted 1 MPI processes
-  type: plex
-DM_adapted in 3 dimensions:
-  Number of 0-cells per rank: 285
-  Number of 1-cells per rank: 1436
-  Number of 2-cells per rank: 2112
-  Number of 3-cells per rank: 960
-Labels:
-  celltype: 4 strata with value/size (0 (285), 6 (960), 3 (2112), 1 (1436))
-  depth: 4 strata with value/size (0 (285), 1 (1436), 2 (2112), 3 (960))
-  _boundary_: 1 strata with value/size (1 (384))
+Metric average L2 error: 0.0000%
+Metric intersection L2 error: 0.0000%
+Metric determinant L2 error: 0.0000%
+Metric SPD enforcement L2 error: 0.0000%
+Metric normalization L2 error: 0.0000%

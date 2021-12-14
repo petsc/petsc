@@ -129,7 +129,10 @@ Changes: Development
     - Add ``DMPlexMetricSetNormalizationOrder()`` for specifying the order of L-p normalization
     - Add ``DMPlexMetricGetNormalizationOrder()`` for retrieving the order of L-p normalization
     - Change ``DMPlexMetricCtx`` so that it is only instantiated when one of the above routines are called
-    - Change ``DMPlexMetricEnforceSPD()`` to have another argument, for controlling whether anisotropy is restricted
+    - Change ``DMPlexMetricEnforceSPD()`` to have more arguments:
+        - control whether anisotropy is restricted
+        - output the modified metric, rather than modifying the input
+        - output the determinant
     - Change ``DMPlexMetricNormalize()`` to have another argument, for controlling whether anisotropy is restricted
 - Change ``DMAdaptor`` so that its ``-adaptor_refinement_h_min/h_max/a_max/p`` command line arguments become ``-dm_plex_metric_h_min/h_max/a_max/p``
 - Add 2D and 3D mesh adaptation interface to Mmg and 3D mesh adaptation interface to ParMmg. Mmg/ParMmg specific changes:

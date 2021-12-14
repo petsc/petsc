@@ -789,7 +789,10 @@ cdef class DMPlex(DM):
         return metric
 
     def metricEnforceSPD(self, Vec metric, restrictSizes=False, restrictAnisotropy=False):
-        CHKERR( DMPlexMetricEnforceSPD(self.dm, restrictSizes, restrictAnisotropy, metric.vec) )
+        cdef Vec ometric = Vec()
+        cdef Vec determinant = Vec()
+        CHKERR( DMPlexMetricEnforceSPD(self.dm, metric.vec, restrictSizes, restrictAnisotropy, &ometric.vec, &determinant.vec) )
+        return ometric
 
     def metricNormalize(self, Vec metric, restrictSizes=True, restrictAnisotropy=True):
         cdef Vec ometric = Vec()

@@ -7,32 +7,25 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   const char        *bdName = "_boundary_";
   const char        *rgName = "_regions_";
   DM                 udm, cdm;
-  DMLabel            bdLabelFull;
+  DMLabel            bdLabelNew, rgLabelNew;
   const char        *bdLabelName, *rgLabelName;
-  IS                 bdIS, globalVertexNum;
+  IS                 globalVertexNum;
   PetscSection       coordSection;
   Vec                coordinates;
   PetscSF            sf;
   const PetscScalar *coords, *met;
-  const PetscInt    *bdFacesFull;
-  PetscInt          *bdFaces, *bdFaceIds;
-  PetscReal         *vertices, *metric, *verticesNew;
-  PetscInt          *cells;
-  const PetscInt    *gV, *ioffset, *irootloc, *roffset, *rmine, *rremote;
+  PetscReal         *vertices, *metric, *verticesNew, *verticesNewLoc, gradationFactor;
+  PetscInt          *cells, *cellsNew, *cellTags, *cellTagsNew, *verTags, *verTagsNew;
+  PetscInt          *bdFaces, *faceTags, *facesNew, *faceTagsNew;
+  PetscInt          *corners, *requiredCells, *requiredVer, *ridges, *requiredFaces;
+  PetscInt           cStart, cEnd, c, numCells, fStart, fEnd, f, numFaceTags, vStart, vEnd, v, numVertices;
+  PetscInt           dim, off, coff, maxConeSize, bdSize, i, j, k, Neq, verbosity, numIter;
   PetscInt          *numVerInterfaces, *ngbRanks, *verNgbRank, *interfaces_lv, *interfaces_gv, *intOffset;
-  PetscInt           niranks, nrranks, numNgbRanks, numVerNgbRanksTotal, count, sliceSize;
-  PetscInt          *verTags, *cellTags;
-  PetscInt           dim, Neq, cStart, cEnd, numCells, coff, vStart, vEnd, numVertices;
-  PetscInt           maxConeSize, numBdFaces, bdSize, fStart, fEnd;
-  PetscBool          flg, noInsert, noSwap, noMove;
-  DMLabel            bdLabelNew, rgLabelNew;
-  PetscReal         *verticesNewLoc, gradationFactor;
-  PetscInt          *verTagsNew, *cellsNew, *cellTagsNew, *corners;
-  PetscInt          *requiredCells, *requiredVer, *facesNew, *faceTagsNew, *ridges, *requiredFaces;
-  PetscInt          *gv_new, *owners, *verticesNewSorted;
+  PetscInt           niranks, nrranks, numNgbRanks, numVerNgbRanksTotal, count, sliceSize, p, r, n, lv, gv;
+  PetscInt          *gv_new, *owners, *verticesNewSorted, pStart, pEnd;
   PetscInt           numCellsNew, numVerticesNew, numCornersNew, numFacesNew, numVerticesNewLoc;
-  PetscInt           i, j, k, p, r, n, v, c, f, off, lv, gv;
-  PetscInt           verbosity, numIter;
+  const PetscInt    *gV, *ioffset, *irootloc, *roffset, *rmine, *rremote;
+  PetscBool          flg = PETSC_FALSE, noInsert, noSwap, noMove;
   const PetscMPIInt *iranks, *rranks;
   PetscMPIInt        numProcs, rank;
   PMMG_pParMesh      parmesh = NULL;
@@ -59,6 +52,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   if (dim != 3) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "ParMmg only works in 3D.\n");
   Neq  = (dim*(dim+1))/2;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(udm, &maxConeSize, NULL);CHKERRQ(ierr);
@@ -88,37 +82,42 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   }
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
 
-  /* Get boundary mesh */
-  ierr = DMLabelCreate(PETSC_COMM_SELF, bdName, &bdLabelFull);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, 1, bdLabelFull);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(bdLabelFull, 1, &bdIS);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumSize(bdLabelFull, 1, &numBdFaces);CHKERRQ(ierr);
-  ierr = ISGetIndices(bdIS, &bdFacesFull);CHKERRQ(ierr);
-  for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
-    PetscInt *closure = NULL;
-    PetscInt  closureSize, cl;
+  /* Get face tags */
+  if (!bdLabel) {
+    flg = PETSC_TRUE;
+    ierr = DMLabelCreate(PETSC_COMM_SELF, bdName, &bdLabel);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(dm, 1, bdLabel);CHKERRQ(ierr);
+  }
+  ierr = DMLabelGetBounds(bdLabel, &pStart, &pEnd);CHKERRQ(ierr);
+  for (f = pStart, bdSize = 0, numFaceTags = 0; f < pEnd; ++f) {
+    PetscBool hasPoint;
+    PetscInt *closure = NULL, closureSize, cl;
 
-    ierr = DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMLabelHasPoint(bdLabel, f, &hasPoint);CHKERRQ(ierr);
+    if ((!hasPoint) || (f < fStart) || (f >= fEnd)) continue;
+    numFaceTags++;
+
+    ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (cl = 0; cl < closureSize*2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc2(bdSize, &bdFaces, numBdFaces, &bdFaceIds);CHKERRQ(ierr);
-  for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
-    PetscInt *closure = NULL;
-    PetscInt  closureSize, cl;
+  ierr = PetscMalloc2(bdSize, &bdFaces, numFaceTags, &faceTags);CHKERRQ(ierr);
+  for (f = pStart, bdSize = 0, numFaceTags = 0; f < pEnd; ++f) {
+    PetscBool hasPoint;
+    PetscInt *closure = NULL, closureSize, cl;
 
-    ierr = DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMLabelHasPoint(bdLabel, f, &hasPoint);CHKERRQ(ierr);
+    if ((!hasPoint) || (f < fStart) || (f >= fEnd)) continue;
+
+    ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (cl = 0; cl < closureSize*2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart+1;
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    if (bdLabel) {ierr = DMLabelGetValue(bdLabel, bdFacesFull[f], &bdFaceIds[f]);CHKERRQ(ierr);}
-    else         {bdFaceIds[f] = 1;}
+    ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMLabelGetValue(bdLabel, f, &faceTags[numFaceTags++]);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(&bdIS);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&bdLabelFull);CHKERRQ(ierr);
 
   /* Get cell tags */
   ierr = PetscCalloc2(numVertices, &verTags, numCells, &cellTags);CHKERRQ(ierr);
@@ -236,7 +235,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexMetricGetNumIterations(dm, &numIter);CHKERRQ(ierr);
   ierr = DMPlexMetricGetGradationFactor(dm, &gradationFactor);CHKERRQ(ierr);
   ierr = PMMG_Init_parMesh(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, tmpComm, PMMG_ARG_end);
-  ierr = PMMG_Set_meshSize(parmesh, numVertices, numCells, 0, numBdFaces, 0, 0);
+  ierr = PMMG_Set_meshSize(parmesh, numVertices, numCells, 0, numFaceTags, 0, 0);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_APImode, PMMG_APIDISTRIB_nodes);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_noinsert, noInsert);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_noswap, noSwap);
@@ -247,7 +246,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PMMG_Set_dparameter(parmesh, PMMG_DPARAM_hgrad, gradationFactor);
   ierr = PMMG_Set_vertices(parmesh, vertices, verTags);
   ierr = PMMG_Set_tetrahedra(parmesh, cells, cellTags);
-  ierr = PMMG_Set_triangles(parmesh, bdFaces, bdFaceIds);
+  ierr = PMMG_Set_triangles(parmesh, bdFaces, faceTags);
   ierr = PMMG_Set_metSize(parmesh, MMG5_Vertex, numVertices, MMG5_Tensor);
   ierr = PMMG_Set_tensorMets(parmesh, metric);
   ierr = PMMG_Set_numberOfNodeCommunicators(parmesh, numNgbRanks);
@@ -258,7 +257,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PMMG_parmmglib_distributed(parmesh);
   ierr = PetscFree(cells);CHKERRQ(ierr);
   ierr = PetscFree2(metric, vertices);CHKERRQ(ierr);
-  ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
+  ierr = PetscFree2(bdFaces, faceTags);CHKERRQ(ierr);
   ierr = PetscFree2(verTags, cellTags);CHKERRQ(ierr);
   if (numProcs > 1) {
     ierr = PetscFree2(ngbRanks, verNgbRank);CHKERRQ(ierr);
@@ -294,14 +293,18 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   }
   ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNewLoc, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNewLoc, NULL, &verticesNewSorted, dmNew);CHKERRQ(ierr);
   ierr = PMMG_Free_all(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_end);
+  ierr = PetscFree4(verticesNew, verTagsNew, corners, requiredVer);CHKERRQ(ierr);
 
-  /* Rebuild boundary label*/
-  ierr = DMPlexGetHeightStratum(*dmNew, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  /* Get adapted mesh information */
   ierr = DMPlexGetHeightStratum(*dmNew, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(*dmNew, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(*dmNew, 0, &vStart, &vEnd);CHKERRQ(ierr);
+
+  /* Rebuild boundary label */
   ierr = DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName);CHKERRQ(ierr);
   ierr = DMGetLabel(*dmNew, bdLabel ? bdLabelName : bdName, &bdLabelNew);CHKERRQ(ierr);
   for (i = 0; i < numFacesNew; i++) {
+    PetscBool       hasTag = PETSC_FALSE;
     PetscInt        numCoveredPoints, numFaces = 0, facePoints[3];
     const PetscInt *coveredPoints = NULL;
 
@@ -319,20 +322,20 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
       }
     }
     if (numFaces != 1) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "%d vertices cannot define more than 1 facet (%d)", dim, numFaces);
-    ierr = DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]);CHKERRQ(ierr);
+    ierr = DMLabelHasStratum(bdLabel, faceTagsNew[i], &hasTag);CHKERRQ(ierr);
+    if (hasTag) { ierr = DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]);CHKERRQ(ierr); }
     ierr = DMPlexRestoreJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);
   }
+  ierr = PetscFree4(facesNew, faceTagsNew, ridges, requiredFaces);CHKERRQ(ierr);
+  ierr = PetscFree2(owners, gv_new);CHKERRQ(ierr);
+  ierr = PetscFree2(verticesNewLoc, verticesNewSorted);CHKERRQ(ierr);
+  if (flg) { ierr = DMLabelDestroy(&bdLabel);CHKERRQ(ierr); }
 
   /* Rebuild cell labels */
   ierr = DMCreateLabel(*dmNew, rgLabel ? rgLabelName : rgName);CHKERRQ(ierr);
   ierr = DMGetLabel(*dmNew, rgLabel ? rgLabelName : rgName, &rgLabelNew);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) { ierr = DMLabelSetValue(rgLabelNew, c, cellTagsNew[c-cStart]);CHKERRQ(ierr); }
-
-  /* Clean up */
-  ierr = PetscFree4(verticesNew, verTagsNew, corners, requiredVer);CHKERRQ(ierr);
   ierr = PetscFree3(cellsNew, cellTagsNew, requiredCells);CHKERRQ(ierr);
-  ierr = PetscFree4(facesNew, faceTagsNew, ridges, requiredFaces);CHKERRQ(ierr);
-  ierr = PetscFree2(owners, gv_new);CHKERRQ(ierr);
-  ierr = PetscFree2(verticesNewLoc, verticesNewSorted);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }

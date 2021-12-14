@@ -314,6 +314,10 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
     if (isForest) {adaptor->adaptCriterion = DM_ADAPTATION_LABEL;}
 #if defined(PETSC_HAVE_PRAGMATIC)
     else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
+#elif defined(PETSC_HAVE_MMG)
+    else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
+#elif defined(PETSC_HAVE_PARMMG)
+    else          {adaptor->adaptCriterion = DM_ADAPTATION_METRIC;}
 #else
     else          {adaptor->adaptCriterion = DM_ADAPTATION_REFINE;}
 #endif
@@ -626,13 +630,13 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
     break;
     case DM_ADAPTATION_METRIC:
     {
-      DM           dmGrad,   dmHess,   dmMetric;
-      Vec          xGrad,    xHess,    metric;
+      DM           dmGrad, dmHess, dmMetric;
+      Vec          xGrad, xHess, metric;
       PetscReal    N;
-      DMLabel      bdLabel;
+      DMLabel      bdLabel = NULL, rgLabel = NULL;
       PetscInt     Nd = coordDim*coordDim, f, vStart, vEnd;
 
-      /*     Compute vertexwise gradients from cellwise gradients */
+      /*     Setup finite element spaces */
       ierr = DMClone(dm, &dmGrad);CHKERRQ(ierr);
       ierr = DMClone(dm, &dmHess);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
@@ -645,14 +649,15 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
         ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+        if (Nc > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple components not yet considered");
         ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDM(Q, &K);CHKERRQ(ierr);
         ierr = DMPlexGetDepthStratum(K, 0, &vStart, &vEnd);CHKERRQ(ierr);
         ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
         ierr = PetscQuadratureGetOrder(q, &qorder);CHKERRQ(ierr);
         ierr = PetscObjectGetOptionsPrefix((PetscObject) fe, &prefix);CHKERRQ(ierr);
-        ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmGrad), dim, Nc*coordDim, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feGrad);CHKERRQ(ierr);
-        ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmHess), dim, Nc*Nd, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feHess);CHKERRQ(ierr);
+        ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmGrad), dim, Nc*coordDim, PETSC_TRUE, prefix, qorder, &feGrad);CHKERRQ(ierr);
+        ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dmHess), dim, Nc*Nd, PETSC_TRUE, prefix, qorder, &feHess);CHKERRQ(ierr);
         ierr = DMSetField(dmGrad, f, NULL, (PetscObject)feGrad);CHKERRQ(ierr);
         ierr = DMSetField(dmHess, f, NULL, (PetscObject)feHess);CHKERRQ(ierr);
         ierr = DMCreateDS(dmGrad);CHKERRQ(ierr);
@@ -660,31 +665,31 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         ierr = PetscFEDestroy(&feGrad);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feHess);CHKERRQ(ierr);
       }
-      ierr = DMGetGlobalVector(dmGrad, &xGrad);CHKERRQ(ierr);
+      /*     Compute vertexwise gradients from cellwise gradients */
+      ierr = DMCreateLocalVector(dmGrad, &xGrad);CHKERRQ(ierr);
       ierr = VecViewFromOptions(locX, NULL, "-sol_adapt_loc_pre_view");CHKERRQ(ierr);
       ierr = DMPlexComputeGradientClementInterpolant(dm, locX, xGrad);CHKERRQ(ierr);
       ierr = VecViewFromOptions(xGrad, NULL, "-adapt_gradient_view");CHKERRQ(ierr);
       /*     Compute vertexwise Hessians from cellwise Hessians */
-      ierr = DMGetGlobalVector(dmHess, &xHess);CHKERRQ(ierr);
+      ierr = DMCreateLocalVector(dmHess, &xHess);CHKERRQ(ierr);
       ierr = DMPlexComputeGradientClementInterpolant(dmGrad, xGrad, xHess);CHKERRQ(ierr);
       ierr = VecViewFromOptions(xHess, NULL, "-adapt_hessian_view");CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(dmGrad, &xGrad);CHKERRQ(ierr);
+      ierr = VecDestroy(&xGrad);CHKERRQ(ierr);
       ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
-      /*     Set target metric complexity */
+      /*     Compute L-p normalized metric */
       ierr = DMClone(dm, &dmMetric);CHKERRQ(ierr);
       N    = adaptor->Nadapt >= 0 ? adaptor->Nadapt : PetscPowRealInt(adaptor->refinementFactor, dim)*((PetscReal) (vEnd - vStart));
       if (adaptor->monitor) {ierr = PetscPrintf(PETSC_COMM_SELF, "N_orig: %D N_adapt: %g\n", vEnd - vStart, N);CHKERRQ(ierr);}
       ierr = DMPlexMetricSetTargetComplexity(dmMetric, (PetscReal) N);CHKERRQ(ierr);
-      /*     Compute L-p normalized metric */
       ierr = DMPlexMetricNormalize(dmMetric, xHess, PETSC_TRUE, PETSC_TRUE, &metric);CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(dmHess, &xHess);CHKERRQ(ierr);
+      ierr = VecDestroy(&xHess);CHKERRQ(ierr);
       ierr = DMDestroy(&dmHess);CHKERRQ(ierr);
       /*     Adapt DM from metric */
       ierr = DMGetLabel(dm, "marker", &bdLabel);CHKERRQ(ierr);
-      ierr = DMAdaptMetric(dm, metric, bdLabel, NULL, &odm);CHKERRQ(ierr);
+      ierr = DMAdaptMetric(dm, metric, bdLabel, rgLabel, &odm);CHKERRQ(ierr);
       adapted = PETSC_TRUE;
       /*     Cleanup */
-      ierr = DMRestoreLocalVector(dmMetric, &metric);CHKERRQ(ierr);
+      ierr = VecDestroy(&metric);CHKERRQ(ierr);
       ierr = DMDestroy(&dmMetric);CHKERRQ(ierr);
     }
     break;
