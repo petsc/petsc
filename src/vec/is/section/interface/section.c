@@ -3525,5 +3525,6 @@ PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Da
   } else {
     ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   }
+  ierr = ISRestoreIndices(points, &points_);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
