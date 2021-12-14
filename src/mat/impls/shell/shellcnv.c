@@ -220,7 +220,7 @@ static PetscErrorCode MatProductSetFromOptions_CF(Mat D)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatConvertFrom_Shell(Mat A, MatType newtype,MatReuse reuse,Mat *B)
+PetscErrorCode MatConvertFrom_Shell(Mat A,MatType newtype,MatReuse reuse,Mat *B)
 {
   Mat            M;
   PetscBool      flg;

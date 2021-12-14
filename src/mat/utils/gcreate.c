@@ -439,9 +439,9 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   ierr  = PetscMemcpy(&buffer,A,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ierr  = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ierr  = PetscMemcpy(*C,&buffer,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  ((PetscObject)A)->refct   = refct;
-  ((PetscObject)A)->state   = state + 1;
-  A->stencil                = stencil;
+  ((PetscObject)A)->refct = refct;
+  ((PetscObject)A)->state = state + 1;
+  A->stencil              = stencil;
 
   ((PetscObject)*C)->refct = 1;
   ierr = MatShellSetOperation(*C,MATOP_DESTROY,(void(*)(void))NULL);CHKERRQ(ierr);
