@@ -335,15 +335,14 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   if (numCells < 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
 
   if (size == 1) {
-    PetscReal *dcoords;
     numVertices = numCells + 1;
-    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&dcoords);CHKERRQ(ierr);
+    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&coords);CHKERRQ(ierr);
     for (i=0; i<numCells; i++) {
       cells[2*i] = i; cells[2*i+1] = i + 1;
-      dcoords[2*i] = i; dcoords[2*i+1] = i + 1;
+      coords[2*i] = i; coords[2*i+1] = i + 1;
     }
 
-    ierr = DMPlexCreateFromCellListPetsc(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, user->dim, dcoords, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListPetsc(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, user->dim, coords, dm);CHKERRQ(ierr);
     ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
