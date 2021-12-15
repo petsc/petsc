@@ -131,6 +131,7 @@ cdef extern from * nogil:
     int DMPlexComputeCellGeometryFVM(PetscDM,PetscInt,PetscReal*,PetscReal[],PetscReal[])
     int DMPlexConstructGhostCells(PetscDM,const char[],PetscInt*,PetscDM*)
 
+    int DMPlexMetricSetFromOptions(PetscDM)
     int DMPlexMetricSetIsotropic(PetscDM,PetscBool)
     int DMPlexMetricIsIsotropic(PetscDM,PetscBool*)
     int DMPlexMetricSetRestrictAnisotropyFirst(PetscDM,PetscBool)

@@ -669,6 +669,9 @@ cdef class DMPlex(DM):
 
     # Metric
 
+    def metricSetFromOptions(self):
+        CHKERR( DMPlexMetricSetFromOptions(self.dm) )
+
     def metricSetIsotropic(self, PetscBool isotropic):
         CHKERR( DMPlexMetricSetIsotropic(self.dm, isotropic) )
 
