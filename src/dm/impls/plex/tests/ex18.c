@@ -201,7 +201,7 @@ typedef struct {
   PetscBool  customView;                   /* Show results of DMPlexIsInterpolated() etc. */
   PetscInt   ornt[2];                      /* Orientation of interface on rank 0 and rank 1 */
   PetscInt   faces[3];                     /* Number of faces per dimension for generator */
-  PetscReal  coords[128];
+  PetscScalar coords[128];
   PetscReal  coordsTol;
   PetscInt   ncoords;
   PetscInt   pointsToExpand[128];
@@ -279,7 +279,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   if (!options->distribute && options->interpolate == AFTER_DISTRIBUTE) SETERRQ(comm, PETSC_ERR_SUP, "-interpolate after_distribute  needs  -distribute 1");
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
   options->ncoords = 128;
-  ierr = PetscOptionsRealArray("-view_vertices_from_coords", "Print DAG points corresponding to vertices with given coordinates", "ex18.c", options->coords, &options->ncoords, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsScalarArray("-view_vertices_from_coords", "Print DAG points corresponding to vertices with given coordinates", "ex18.c", options->coords, &options->ncoords, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-view_vertices_from_coords_tol", "Tolerance for -view_vertices_from_coords", "ex18.c", options->coordsTol, &options->coordsTol, NULL);CHKERRQ(ierr);
   options->nPointsToExpand = 128;
   ierr = PetscOptionsIntArray("-test_expand_points", "Expand given array of DAG point using DMPlexGetConeRecursive() and print results", "ex18.c", options->pointsToExpand, &options->nPointsToExpand, NULL);CHKERRQ(ierr);
@@ -335,15 +335,14 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   if (numCells < 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
 
   if (size == 1) {
-    PetscReal *dcoords;
     numVertices = numCells + 1;
-    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&dcoords);CHKERRQ(ierr);
+    ierr = PetscMalloc2(2*numCells,&cells,2*numVertices,&coords);CHKERRQ(ierr);
     for (i=0; i<numCells; i++) {
       cells[2*i] = i; cells[2*i+1] = i + 1;
-      dcoords[2*i] = i; dcoords[2*i+1] = i + 1;
+      coords[2*i] = i; coords[2*i+1] = i + 1;
     }
 
-    ierr = DMPlexCreateFromCellListPetsc(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, user->dim, dcoords, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListPetsc(comm, user->dim, numCells, numVertices, numCorners, PETSC_FALSE, cells, user->dim, coords, dm);CHKERRQ(ierr);
     ierr = PetscFree2(cells,coords);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -844,7 +843,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode coord2str(char buf[], size_t len, PetscInt dim, PetscReal *coords, PetscReal tol)
+#define ps2d(number) ((double) PetscRealPart(number))
+PETSC_STATIC_INLINE PetscErrorCode coord2str(char buf[], size_t len, PetscInt dim, const PetscScalar coords[], PetscReal tol)
 {
   PetscErrorCode ierr;
 
@@ -852,24 +852,26 @@ PETSC_STATIC_INLINE PetscErrorCode coord2str(char buf[], size_t len, PetscInt di
   if (dim > 3) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "dim must be less than or equal 3");
   if (tol >= 1e-3) {
     switch (dim) {
-      case 1: ierr = PetscSNPrintf(buf,len,"(%12.3f)",(double)coords[0]);CHKERRQ(ierr);
-      case 2: ierr = PetscSNPrintf(buf,len,"(%12.3f, %12.3f)",(double)coords[0],(double)coords[1]);CHKERRQ(ierr);
-      case 3: ierr = PetscSNPrintf(buf,len,"(%12.3f, %12.3f, %12.3f)",(double)coords[0],(double)coords[1],(double)coords[2]);CHKERRQ(ierr);
+      case 1: ierr = PetscSNPrintf(buf,len,"(%12.3f)",ps2d(coords[0]));CHKERRQ(ierr);
+      case 2: ierr = PetscSNPrintf(buf,len,"(%12.3f, %12.3f)",ps2d(coords[0]),ps2d(coords[1]));CHKERRQ(ierr);
+      case 3: ierr = PetscSNPrintf(buf,len,"(%12.3f, %12.3f, %12.3f)",ps2d(coords[0]),ps2d(coords[1]),ps2d(coords[2]));CHKERRQ(ierr);
     }
   } else {
     switch (dim) {
-      case 1: ierr = PetscSNPrintf(buf,len,"(%12.6f)",(double)coords[0]);CHKERRQ(ierr);
-      case 2: ierr = PetscSNPrintf(buf,len,"(%12.6f, %12.6f)",(double)coords[0],(double)coords[1]);CHKERRQ(ierr);
-      case 3: ierr = PetscSNPrintf(buf,len,"(%12.6f, %12.6f, %12.6f)",(double)coords[0],(double)coords[1],(double)coords[2]);CHKERRQ(ierr);
+      case 1: ierr = PetscSNPrintf(buf,len,"(%12.6f)",ps2d(coords[0]));CHKERRQ(ierr);
+      case 2: ierr = PetscSNPrintf(buf,len,"(%12.6f, %12.6f)",ps2d(coords[0]),ps2d(coords[1]));CHKERRQ(ierr);
+      case 3: ierr = PetscSNPrintf(buf,len,"(%12.6f, %12.6f, %12.6f)",ps2d(coords[0]),ps2d(coords[1]),ps2d(coords[2]));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ViewVerticesFromCoords(DM dm, PetscInt npoints, PetscReal coords[], PetscReal tol, PetscViewer viewer)
+static PetscErrorCode ViewVerticesFromCoords(DM dm, Vec coordsVec, PetscReal tol, PetscViewer viewer)
 {
-  PetscInt       dim, i;
-  PetscInt       *points;
+  PetscInt       dim, i, npoints;
+  IS             pointsIS;
+  const PetscInt *points;
+  const PetscScalar *coords;
   char           coordstr[128];
   MPI_Comm       comm;
   PetscMPIInt    rank;
@@ -880,8 +882,10 @@ static PetscErrorCode ViewVerticesFromCoords(DM dm, PetscInt npoints, PetscReal 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npoints, &points);CHKERRQ(ierr);
-  ierr = DMPlexFindVertices(dm, npoints, coords, tol, points);CHKERRQ(ierr);
+  ierr = DMPlexFindVertices(dm, coordsVec, tol, &pointsIS);CHKERRQ(ierr);
+  ierr = ISGetIndices(pointsIS, &points);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(pointsIS, &npoints);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordsVec, &coords);CHKERRQ(ierr);
   for (i=0; i < npoints; i++) {
     ierr = coord2str(coordstr, sizeof(coordstr), dim, &coords[i*dim], tol);CHKERRQ(ierr);
     if (rank == 0 && i) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, "-----\n");CHKERRQ(ierr);}
@@ -889,7 +893,9 @@ static PetscErrorCode ViewVerticesFromCoords(DM dm, PetscInt npoints, PetscReal 
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
-  ierr = PetscFree(points);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coordsVec, &coords);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(pointsIS, &points);CHKERRQ(ierr);
+  ierr = ISDestroy(&pointsIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1065,46 +1071,14 @@ static PetscErrorCode PetscSectionReplicate_Private(MPI_Comm comm, PetscMPIInt r
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecToPetscReal_Private(Vec vec, PetscReal *rvals[])
-{
-  PetscInt          n;
-  const PetscScalar *svals;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = VecGetLocalSize(vec, &n);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(vec, &svals);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n, rvals);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  {
-    PetscInt i;
-    for (i=0; i<n; i++) (*rvals)[i] = PetscRealPart(svals[i]);
-  }
-#else
-  ierr = PetscMemcpy(*rvals, svals, n*sizeof(PetscReal));CHKERRQ(ierr);
-#endif
-  ierr = VecRestoreArrayRead(vec, &svals);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode DMPlexExpandedVerticesCoordinatesToFaces_Private(DM ipdm, PortableBoundary bnd, IS *face_is)
 {
-  PetscInt            dim, ncoords, npoints;
-  PetscReal           *rcoords;
-  PetscInt            *points;
   IS                  faces_expanded_is;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(ipdm, &dim);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(bnd->coordinates, &ncoords);CHKERRQ(ierr);
-  ierr = VecToPetscReal_Private(bnd->coordinates, &rcoords);CHKERRQ(ierr);
-  npoints = ncoords / dim;
-  ierr = PetscMalloc1(npoints, &points);CHKERRQ(ierr);
-  ierr = DMPlexFindVertices(ipdm, npoints, rcoords, 0.0, points);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, npoints, points, PETSC_OWN_POINTER, &faces_expanded_is);CHKERRQ(ierr);
+  ierr = DMPlexFindVertices(ipdm, bnd->coordinates, 0.0, &faces_expanded_is);CHKERRQ(ierr);
   ierr = DMPlexExpandedVerticesToFaces_Private(ipdm, faces_expanded_is, bnd->depth, bnd->sections, face_is);CHKERRQ(ierr);
-  ierr = PetscFree(rcoords);CHKERRQ(ierr);
   ierr = ISDestroy(&faces_expanded_is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1382,14 +1356,12 @@ static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewe
     p = points[i];
     ierr = DMLabelGetValue(label, p, &depth);CHKERRQ(ierr);
     if (!depth) {
-      PetscInt        c, n, o;
-      PetscReal       coords[3];
+      PetscInt        n, o;
       char            coordstr[128];
 
       ierr = PetscSectionGetDof(coordsSection, p, &n);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordsSection, p, &o);CHKERRQ(ierr);
-      for (c=0; c<n; c++) coords[c] = PetscRealPart(coordsScalar[o+c]);
-      ierr = coord2str(coordstr, sizeof(coordstr), n, coords, 1.0);CHKERRQ(ierr);
+      ierr = coord2str(coordstr, sizeof(coordstr), n, &coordsScalar[o], 1.0);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(v, "vertex %D w/ coordinates %s\n", p, coordstr);CHKERRQ(ierr);
     } else {
       char            entityType[16];
@@ -1593,7 +1565,11 @@ int main(int argc, char **argv)
     ierr = TestExpandPoints(dm, &user);CHKERRQ(ierr);
   }
   if (user.ncoords) {
-    ierr = ViewVerticesFromCoords(dm, user.ncoords/user.dim, user.coords, user.coordsTol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    Vec coords;
+
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, user.ncoords, user.ncoords, user.coords, &coords);CHKERRQ(ierr);
+    ierr = ViewVerticesFromCoords(dm, coords, user.coordsTol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecDestroy(&coords);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
