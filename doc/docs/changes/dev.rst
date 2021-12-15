@@ -167,6 +167,8 @@ Changes: Development
 
 .. rubric:: DMNetwork:
 
+-  ``DMNetworkAddComponent()`` now requires a valid component key for each call.
+
 .. rubric:: DMStag:
 
 .. rubric:: DT:

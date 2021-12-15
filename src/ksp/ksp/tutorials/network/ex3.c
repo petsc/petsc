@@ -96,19 +96,7 @@ int main(int argc,char ** argv)
     ierr = DMNetworkGetSubnetwork(dmnetwork,net,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
     for (v=0; v<nv; v++) {
       ierr = DMNetworkIsSharedVertex(dmnetwork,vtx[v],&sharedv);CHKERRQ(ierr);
-      if (sharedv) {
-        #if 0
-        /* current version requirs all processess add componenets and nvar at the shared vertices! */
-        if (net == 0) {
-          //printf("[%d] net %d, v[%d]=%d is a shared vertex, add comp0[0]\n",rank,net,v,vtx[v]);
-          ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey0,&comp0,1);CHKERRQ(ierr);
-        } else if (net == 1) {
-          //printf("[%d] net %d, v[%d]=%d is a shared vertex, add comp1\n",rank,net,v,vtx[v]);
-          ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey1,&comp1,2);CHKERRQ(ierr);
-        }
-        #endif
-        continue;
-      }
+      if (sharedv) continue;
 
       if (!net) {
         ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey0,&comp0,1);CHKERRQ(ierr);
@@ -118,11 +106,9 @@ int main(int argc,char ** argv)
     }
   }
 
-  /* Add components and nvar to shared vertex -- only owner of the vertex does this! */
+  /* Add components and nvar to shared vertex -- owning and all ghost ranks must call DMNetworkAddComponent() */
   ierr = DMNetworkGetSharedVertices(dmnetwork,&nv,&vtx);CHKERRQ(ierr);
   for (v=0; v<nv; v++) {
-    ierr = DMNetworkIsGhostVertex(dmnetwork,vtx[v],&ghost);CHKERRQ(ierr);
-    if (ghost) continue;
     ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey0,&comp0,1);CHKERRQ(ierr);
     ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey1,&comp1,2);CHKERRQ(ierr);
   }

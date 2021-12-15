@@ -10,7 +10,7 @@ int main(int argc,char ** argv)
   DM                network;
   PetscMPIInt       size,rank;
   MPI_Comm          comm;
-  PetscInt          e,ne,nv,v;
+  PetscInt          e,ne,nv,v,ecompkey,vcompkey;
   PetscInt          *edgelist = NULL;
   const PetscInt    *nodes,*edges;
   DM                plex;
@@ -25,6 +25,10 @@ int main(int argc,char ** argv)
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&network);CHKERRQ(ierr);
+
+  /* Register zero size componets to get compkeys to be used by DMNetworkAddComponent() */
+  ierr = DMNetworkRegisterComponent(network,"ecomp",0,&ecompkey);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(network,"vcomp",0,&vcompkey);CHKERRQ(ierr);
 
   Ne = 2;
   Ni = 1;
@@ -47,10 +51,10 @@ int main(int argc,char ** argv)
   ierr = DMNetworkGetSubnetwork(network,0,&nv,&ne,&nodes,&edges);CHKERRQ(ierr);
   for (e = 0; e < ne; e++) {
     /* The edges have no degrees of freedom */
-    ierr = DMNetworkAddComponent(network,edges[e],-1,NULL,1);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(network,edges[e],ecompkey,NULL,1);CHKERRQ(ierr);
   }
   for (v = 0; v < nv; v++) {
-    ierr = DMNetworkAddComponent(network,nodes[v],-1,NULL,2);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(network,nodes[v],vcompkey,NULL,2);CHKERRQ(ierr);
   }
 
   ierr = DMSetUp(network);CHKERRQ(ierr);
