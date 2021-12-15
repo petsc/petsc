@@ -70,7 +70,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
 }
 
 /* Mark the CSR data on device as modified */
-static PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat A)
+PETSC_INTERN PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat A)
 {
   PetscErrorCode   ierr;
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);

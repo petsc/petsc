@@ -1379,9 +1379,12 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (size == 1) {
     ierr   = MatSeqAIJKokkosGetDeviceMat(A,&d_mat);CHKERRQ(ierr);
+    ierr   = MatSeqAIJKokkosModifyDevice(A);CHKERRQ(ierr); /* Since we are going to modify matrix values on device */
   } else {
     Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)A->data;
     ierr   = MatSeqAIJKokkosGetDeviceMat(aij->A,&d_mat);CHKERRQ(ierr);
+    ierr   = MatSeqAIJKokkosModifyDevice(aij->A);CHKERRQ(ierr);
+    ierr   = MatSeqAIJKokkosModifyDevice(aij->B);CHKERRQ(ierr);
   }
   // act like MatSetValues because not called on host
   if (A->assembled) {
