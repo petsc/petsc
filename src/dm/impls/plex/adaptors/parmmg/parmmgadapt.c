@@ -306,8 +306,8 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexGetDepthStratum(*dmNew, 0, &vStart, &vEnd);CHKERRQ(ierr);
 
   /* Rebuild boundary label */
-  ierr = DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName);CHKERRQ(ierr);
-  ierr = DMGetLabel(*dmNew, bdLabel ? bdLabelName : bdName, &bdLabelNew);CHKERRQ(ierr);
+  ierr = DMCreateLabel(*dmNew, flg ? bdName : bdLabelName);CHKERRQ(ierr);
+  ierr = DMGetLabel(*dmNew, flg ? bdName : bdLabelName, &bdLabelNew);CHKERRQ(ierr);
   for (i = 0; i < numFacesNew; i++) {
     PetscBool       hasTag = PETSC_FALSE;
     PetscInt        numCoveredPoints, numFaces = 0, facePoints[3];
