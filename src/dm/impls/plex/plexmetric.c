@@ -43,7 +43,7 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetIsotropic - Record whether a metric is isotropic
 
   Input parameters:
@@ -53,7 +53,7 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   Level: beginner
 
 .seealso: DMPlexMetricIsIsotropic(), DMPlexMetricSetRestrictAnisotropyFirst()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetIsotropic(DM dm, PetscBool isotropic)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -68,7 +68,7 @@ PetscErrorCode DMPlexMetricSetIsotropic(DM dm, PetscBool isotropic)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricIsIsotropic - Is a metric is isotropic?
 
   Input parameters:
@@ -80,7 +80,7 @@ PetscErrorCode DMPlexMetricSetIsotropic(DM dm, PetscBool isotropic)
   Level: beginner
 
 .seealso: DMPlexMetricSetIsotropic(), DMPlexMetricRestrictAnisotropyFirst()
-*/
+@*/
 PetscErrorCode DMPlexMetricIsIsotropic(DM dm, PetscBool *isotropic)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -95,7 +95,7 @@ PetscErrorCode DMPlexMetricIsIsotropic(DM dm, PetscBool *isotropic)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetRestrictAnisotropyFirst - Record whether anisotropy should be restricted before normalization
 
   Input parameters:
@@ -105,7 +105,7 @@ PetscErrorCode DMPlexMetricIsIsotropic(DM dm, PetscBool *isotropic)
   Level: beginner
 
 .seealso: DMPlexMetricSetIsotropic(), DMPlexMetricRestrictAnisotropyFirst()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetRestrictAnisotropyFirst(DM dm, PetscBool restrictAnisotropyFirst)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -120,7 +120,7 @@ PetscErrorCode DMPlexMetricSetRestrictAnisotropyFirst(DM dm, PetscBool restrictA
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricRestrictAnisotropyFirst - Is anisotropy restricted before normalization or after?
 
   Input parameters:
@@ -132,7 +132,7 @@ PetscErrorCode DMPlexMetricSetRestrictAnisotropyFirst(DM dm, PetscBool restrictA
   Level: beginner
 
 .seealso: DMPlexMetricIsIsotropic(), DMPlexMetricSetRestrictAnisotropyFirst()
-*/
+@*/
 PetscErrorCode DMPlexMetricRestrictAnisotropyFirst(DM dm, PetscBool *restrictAnisotropyFirst)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -147,7 +147,7 @@ PetscErrorCode DMPlexMetricRestrictAnisotropyFirst(DM dm, PetscBool *restrictAni
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetNoInsertion - Should node insertion and deletion be turned off?
 
   Input parameters:
@@ -156,8 +156,11 @@ PetscErrorCode DMPlexMetricRestrictAnisotropyFirst(DM dm, PetscBool *restrictAni
 
   Level: beginner
 
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricNoInsertion(), DMPlexMetricSetNoSwapping(), DMPlexMetricSetNoMovement()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetNoInsertion(DM dm, PetscBool noInsert)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -172,7 +175,7 @@ PetscErrorCode DMPlexMetricSetNoInsertion(DM dm, PetscBool noInsert)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricNoInsertion - Are node insertion and deletion turned off?
 
   Input parameters:
@@ -183,8 +186,11 @@ PetscErrorCode DMPlexMetricSetNoInsertion(DM dm, PetscBool noInsert)
 
   Level: beginner
 
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricSetNoInsertion(), DMPlexMetricNoSwapping(), DMPlexMetricNoMovement()
-*/
+@*/
 PetscErrorCode DMPlexMetricNoInsertion(DM dm, PetscBool *noInsert)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -199,7 +205,7 @@ PetscErrorCode DMPlexMetricNoInsertion(DM dm, PetscBool *noInsert)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetNoSwapping - Should facet swapping be turned off?
 
   Input parameters:
@@ -208,8 +214,11 @@ PetscErrorCode DMPlexMetricNoInsertion(DM dm, PetscBool *noInsert)
 
   Level: beginner
 
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricNoSwapping(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoMovement()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetNoSwapping(DM dm, PetscBool noSwap)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -224,7 +233,7 @@ PetscErrorCode DMPlexMetricSetNoSwapping(DM dm, PetscBool noSwap)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricNoSwapping - Is facet swapping turned off?
 
   Input parameters:
@@ -235,8 +244,11 @@ PetscErrorCode DMPlexMetricSetNoSwapping(DM dm, PetscBool noSwap)
 
   Level: beginner
 
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricSetNoSwapping(), DMPlexMetricNoInsertion(), DMPlexMetricNoMovement()
-*/
+@*/
 PetscErrorCode DMPlexMetricNoSwapping(DM dm, PetscBool *noSwap)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -251,7 +263,7 @@ PetscErrorCode DMPlexMetricNoSwapping(DM dm, PetscBool *noSwap)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetNoMovement - Should node movement be turned off?
 
   Input parameters:
@@ -260,8 +272,11 @@ PetscErrorCode DMPlexMetricNoSwapping(DM dm, PetscBool *noSwap)
 
   Level: beginner
 
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricNoMovement(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoSwapping()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetNoMovement(DM dm, PetscBool noMove)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -276,7 +291,7 @@ PetscErrorCode DMPlexMetricSetNoMovement(DM dm, PetscBool noMove)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricNoMovement - Is node movement turned off?
 
   Input parameters:
@@ -287,8 +302,11 @@ PetscErrorCode DMPlexMetricSetNoMovement(DM dm, PetscBool noMove)
 
   Level: beginner
 
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricSetNoMovement(), DMPlexMetricNoInsertion(), DMPlexMetricNoSwapping()
-*/
+@*/
 PetscErrorCode DMPlexMetricNoMovement(DM dm, PetscBool *noMove)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -303,7 +321,7 @@ PetscErrorCode DMPlexMetricNoMovement(DM dm, PetscBool *noMove)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetMinimumMagnitude - Set the minimum tolerated metric magnitude
 
   Input parameters:
@@ -313,7 +331,7 @@ PetscErrorCode DMPlexMetricNoMovement(DM dm, PetscBool *noMove)
   Level: beginner
 
 .seealso: DMPlexMetricGetMinimumMagnitude(), DMPlexMetricSetMaximumMagnitude()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetMinimumMagnitude(DM dm, PetscReal h_min)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -329,7 +347,7 @@ PetscErrorCode DMPlexMetricSetMinimumMagnitude(DM dm, PetscReal h_min)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricGetMinimumMagnitude - Get the minimum tolerated metric magnitude
 
   Input parameters:
@@ -341,7 +359,7 @@ PetscErrorCode DMPlexMetricSetMinimumMagnitude(DM dm, PetscReal h_min)
   Level: beginner
 
 .seealso: DMPlexMetricSetMinimumMagnitude(), DMPlexMetricGetMaximumMagnitude()
-*/
+@*/
 PetscErrorCode DMPlexMetricGetMinimumMagnitude(DM dm, PetscReal *h_min)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -356,7 +374,7 @@ PetscErrorCode DMPlexMetricGetMinimumMagnitude(DM dm, PetscReal *h_min)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetMaximumMagnitude - Set the maximum tolerated metric magnitude
 
   Input parameters:
@@ -366,7 +384,7 @@ PetscErrorCode DMPlexMetricGetMinimumMagnitude(DM dm, PetscReal *h_min)
   Level: beginner
 
 .seealso: DMPlexMetricGetMaximumMagnitude(), DMPlexMetricSetMinimumMagnitude()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetMaximumMagnitude(DM dm, PetscReal h_max)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -382,7 +400,7 @@ PetscErrorCode DMPlexMetricSetMaximumMagnitude(DM dm, PetscReal h_max)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricGetMaximumMagnitude - Get the maximum tolerated metric magnitude
 
   Input parameters:
@@ -394,7 +412,7 @@ PetscErrorCode DMPlexMetricSetMaximumMagnitude(DM dm, PetscReal h_max)
   Level: beginner
 
 .seealso: DMPlexMetricSetMaximumMagnitude(), DMPlexMetricGetMinimumMagnitude()
-*/
+@*/
 PetscErrorCode DMPlexMetricGetMaximumMagnitude(DM dm, PetscReal *h_max)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -409,7 +427,7 @@ PetscErrorCode DMPlexMetricGetMaximumMagnitude(DM dm, PetscReal *h_max)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetMaximumAnisotropy - Set the maximum tolerated metric anisotropy
 
   Input parameters:
@@ -421,7 +439,7 @@ PetscErrorCode DMPlexMetricGetMaximumMagnitude(DM dm, PetscReal *h_max)
   Note: If the value zero is given then anisotropy will not be restricted. Otherwise, it should be at least one.
 
 .seealso: DMPlexMetricGetMaximumAnisotropy(), DMPlexMetricSetMaximumMagnitude()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetMaximumAnisotropy(DM dm, PetscReal a_max)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -437,7 +455,7 @@ PetscErrorCode DMPlexMetricSetMaximumAnisotropy(DM dm, PetscReal a_max)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricGetMaximumAnisotropy - Get the maximum tolerated metric anisotropy
 
   Input parameters:
@@ -449,7 +467,7 @@ PetscErrorCode DMPlexMetricSetMaximumAnisotropy(DM dm, PetscReal a_max)
   Level: beginner
 
 .seealso: DMPlexMetricSetMaximumAnisotropy(), DMPlexMetricGetMaximumMagnitude()
-*/
+@*/
 PetscErrorCode DMPlexMetricGetMaximumAnisotropy(DM dm, PetscReal *a_max)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -464,7 +482,7 @@ PetscErrorCode DMPlexMetricGetMaximumAnisotropy(DM dm, PetscReal *a_max)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetTargetComplexity - Set the target metric complexity
 
   Input parameters:
@@ -474,7 +492,7 @@ PetscErrorCode DMPlexMetricGetMaximumAnisotropy(DM dm, PetscReal *a_max)
   Level: beginner
 
 .seealso: DMPlexMetricGetTargetComplexity(), DMPlexMetricSetNormalizationOrder()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetTargetComplexity(DM dm, PetscReal targetComplexity)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -490,7 +508,7 @@ PetscErrorCode DMPlexMetricSetTargetComplexity(DM dm, PetscReal targetComplexity
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricGetTargetComplexity - Get the target metric complexity
 
   Input parameters:
@@ -502,7 +520,7 @@ PetscErrorCode DMPlexMetricSetTargetComplexity(DM dm, PetscReal targetComplexity
   Level: beginner
 
 .seealso: DMPlexMetricSetTargetComplexity(), DMPlexMetricGetNormalizationOrder()
-*/
+@*/
 PetscErrorCode DMPlexMetricGetTargetComplexity(DM dm, PetscReal *targetComplexity)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -517,7 +535,7 @@ PetscErrorCode DMPlexMetricGetTargetComplexity(DM dm, PetscReal *targetComplexit
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetNormalizationOrder - Set the order p for L-p normalization
 
   Input parameters:
@@ -527,7 +545,7 @@ PetscErrorCode DMPlexMetricGetTargetComplexity(DM dm, PetscReal *targetComplexit
   Level: beginner
 
 .seealso: DMPlexMetricGetNormalizationOrder(), DMPlexMetricSetTargetComplexity()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetNormalizationOrder(DM dm, PetscReal p)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -543,7 +561,7 @@ PetscErrorCode DMPlexMetricSetNormalizationOrder(DM dm, PetscReal p)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricGetNormalizationOrder - Get the order p for L-p normalization
 
   Input parameters:
@@ -555,7 +573,7 @@ PetscErrorCode DMPlexMetricSetNormalizationOrder(DM dm, PetscReal p)
   Level: beginner
 
 .seealso: DMPlexMetricSetNormalizationOrder(), DMPlexMetricGetTargetComplexity()
-*/
+@*/
 PetscErrorCode DMPlexMetricGetNormalizationOrder(DM dm, PetscReal *p)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -570,7 +588,7 @@ PetscErrorCode DMPlexMetricGetNormalizationOrder(DM dm, PetscReal *p)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetGradationFactor - Set the metric gradation factor
 
   Input parameters:
@@ -585,8 +603,10 @@ PetscErrorCode DMPlexMetricGetNormalizationOrder(DM dm, PetscReal *p)
 
   Turn off gradation by passing the value -1. Otherwise, pass a positive value.
 
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricGetGradationFactor()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetGradationFactor(DM dm, PetscReal beta)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -601,7 +621,7 @@ PetscErrorCode DMPlexMetricSetGradationFactor(DM dm, PetscReal beta)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricGetGradationFactor - Get the metric gradation factor
 
   Input parameters:
@@ -612,10 +632,16 @@ PetscErrorCode DMPlexMetricSetGradationFactor(DM dm, PetscReal beta)
 
   Level: beginner
 
-  Note: The gradation factor is the maximum tolerated length ratio between adjacent edges.
+  Notes:
+
+  The gradation factor is the maximum tolerated length ratio between adjacent edges.
+
+  The value -1 implies that gradation is turned off.
+
+  This is only used by Mmg and ParMmg (not Pragmatic).
 
 .seealso: DMPlexMetricSetGradationFactor()
-*/
+@*/
 PetscErrorCode DMPlexMetricGetGradationFactor(DM dm, PetscReal *beta)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -630,15 +656,20 @@ PetscErrorCode DMPlexMetricGetGradationFactor(DM dm, PetscReal *beta)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetVerbosity - Set the verbosity of the mesh adaptation package
 
   Input parameters:
 + dm        - The DM
 - verbosity - The verbosity, where -1 is silent and 10 is maximum
 
+  Level: beginner
+
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricGetVerbosity(), DMPlexMetricSetNumIterations()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetVerbosity(DM dm, PetscInt verbosity)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -653,7 +684,7 @@ PetscErrorCode DMPlexMetricSetVerbosity(DM dm, PetscInt verbosity)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricGetVerbosity - Get the verbosity of the mesh adaptation package
 
   Input parameters:
@@ -662,8 +693,13 @@ PetscErrorCode DMPlexMetricSetVerbosity(DM dm, PetscInt verbosity)
   Output parameters:
 . verbosity - The verbosity, where -1 is silent and 10 is maximum
 
+  Level: beginner
+
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
 .seealso: DMPlexMetricSetVerbosity(), DMPlexMetricGetNumIterations()
-*/
+@*/
 PetscErrorCode DMPlexMetricGetVerbosity(DM dm, PetscInt *verbosity)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -678,17 +714,20 @@ PetscErrorCode DMPlexMetricGetVerbosity(DM dm, PetscInt *verbosity)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricSetNumIterations - Set the number of parallel adaptation iterations
 
   Input parameters:
 + dm      - The DM
 - numIter - the number of parallel adaptation iterations
 
-  Note: This option is only used by ParMmg, not Mmg or Pragmatic.
+  Level: beginner
+
+  Notes:
+  This is only used by ParMmg (not Pragmatic or Mmg).
 
 .seealso: DMPlexMetricSetVerbosity(), DMPlexMetricGetNumIterations()
-*/
+@*/
 PetscErrorCode DMPlexMetricSetNumIterations(DM dm, PetscInt numIter)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -703,7 +742,7 @@ PetscErrorCode DMPlexMetricSetNumIterations(DM dm, PetscInt numIter)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricGetNumIterations - Get the number of parallel adaptation iterations
 
   Input parameters:
@@ -712,10 +751,13 @@ PetscErrorCode DMPlexMetricSetNumIterations(DM dm, PetscInt numIter)
   Output parameters:
 . numIter - the number of parallel adaptation iterations
 
-  Note: This option is only used by ParMmg, not Mmg or Pragmatic.
+  Level: beginner
+
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic or Mmg).
 
 .seealso: DMPlexMetricSetNumIterations(), DMPlexMetricGetVerbosity()
-*/
+@*/
 PetscErrorCode DMPlexMetricGetNumIterations(DM dm, PetscInt *numIter)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -753,7 +795,7 @@ PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricCreate - Create a Riemannian metric field
 
   Input parameters:
@@ -771,16 +813,29 @@ PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec
 
   Command line options for Riemannian metrics:
 
-  -dm_plex_metric_isotropic                 - Is the metric isotropic?
-  -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
-  -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
-  -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
-  -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
-  -dm_plex_metric_p                         - L-p normalization order
-  -dm_plex_metric_target_complexity         - Target metric complexity
++ -dm_plex_metric_isotropic                 - Is the metric isotropic?
+. -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
+. -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
+. -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
+. -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
+. -dm_plex_metric_p                         - L-p normalization order
+. -dm_plex_metric_target_complexity         - Target metric complexity
+
+  Switching between remeshers can be achieved using
+
+. -dm_adaptor <pragmatic/mmg/parmmg>
+
+  Further options that are only relevant to Mmg and ParMmg:
+
++ -dm_plex_metric_gradation_factor          - Maximum ratio by which edge lengths may grow during gradation
+. -dm_plex_metric_num_iterations            - Number of parallel mesh adaptation iterations for ParMmg
+. -dm_plex_metric_no_insert                 - Should node insertion/deletion be turned off?
+. -dm_plex_metric_no_swap                   - Should facet swapping be turned off?
+. -dm_plex_metric_no_move                   - Should node movement be turned off?
+- -dm_plex_metric_verbosity                 - Choose a verbosity level from -1 (silent) to 10 (maximum).
 
 .seealso: DMPlexMetricCreateUniform(), DMPlexMetricCreateIsotropic()
-*/
+@*/
 PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
@@ -816,7 +871,7 @@ static PetscErrorCode diagonal(PetscInt dim, PetscReal time, const PetscReal x[]
   return 0;
 }
 
-/*
+/*@
   DMPlexMetricCreateUniform - Construct a uniform isotropic metric
 
   Input parameters:
@@ -832,7 +887,7 @@ static PetscErrorCode diagonal(PetscInt dim, PetscReal time, const PetscReal x[]
   Note: It is assumed that the DM is comprised of simplices.
 
 .seealso: DMPlexMetricCreate(), DMPlexMetricCreateIsotropic()
-*/
+@*/
 PetscErrorCode DMPlexMetricCreateUniform(DM dm, PetscInt f, PetscReal alpha, Vec *metric)
 {
   DMPlexMetricUniformCtx user;
@@ -851,7 +906,7 @@ PetscErrorCode DMPlexMetricCreateUniform(DM dm, PetscInt f, PetscReal alpha, Vec
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricCreateIsotropic - Construct an isotropic metric from an error indicator
 
   Input parameters:
@@ -871,7 +926,7 @@ PetscErrorCode DMPlexMetricCreateUniform(DM dm, PetscInt f, PetscReal alpha, Vec
   The indicator needs to be a scalar field defined at *vertices*.
 
 .seealso: DMPlexMetricCreate(), DMPlexMetricCreateUniform()
-*/
+@*/
 PetscErrorCode DMPlexMetricCreateIsotropic(DM dm, PetscInt f, Vec indicator, Vec *metric)
 {
   DM                 dmIndi;
@@ -1003,7 +1058,7 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricEnforceSPD - Enforce symmetric positive-definiteness of a metric
 
   Input parameters:
@@ -1018,8 +1073,16 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
 
   Level: beginner
 
+  Notes:
+
+  Relevant command line options:
+
++ -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
+. -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
+- -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
+
 .seealso: DMPlexMetricNormalize(), DMPlexMetricIntersection()
-*/
+@*/
 PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut, Vec *determinant)
 {
   DM             dmDet;
@@ -1076,7 +1139,7 @@ static void detMFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[0] = PetscPowReal(u[0], p/(2.0*p + dim));
 }
 
-/*
+/*@
   DMPlexMetricNormalize - Apply L-p normalization to a metric
 
   Input parameters:
@@ -1090,8 +1153,19 @@ static void detMFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   Level: beginner
 
+  Notes:
+
+  Relevant command line options:
+
++ -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
+. -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
+. -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
+. -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
+. -dm_plex_metric_p                         - L-p normalization order
+- -dm_plex_metric_target_complexity         - Target metric complexity
+
 .seealso: DMPlexMetricEnforceSPD(), DMPlexMetricIntersection()
-*/
+@*/
 PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut)
 {
   DM               dmDet;
@@ -1161,7 +1235,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricAverage - Compute the average of a list of metrics
 
   Input Parameter:
@@ -1181,7 +1255,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   If weights are not provided then an unweighted average is used.
 
 .seealso: DMPlexMetricAverage2(), DMPlexMetricAverage3(), DMPlexMetricIntersection()
-*/
+@*/
 PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights[], Vec metrics[], Vec *metricAvg)
 {
   PetscBool      haveWeights = PETSC_TRUE;
@@ -1211,7 +1285,7 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricAverage2 - Compute the unweighted average of two metrics
 
   Input Parameter:
@@ -1225,7 +1299,7 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
   Level: beginner
 
 .seealso: DMPlexMetricAverage(), DMPlexMetricAverage3()
-*/
+@*/
 PetscErrorCode DMPlexMetricAverage2(DM dm, Vec metric1, Vec metric2, Vec *metricAvg)
 {
   PetscErrorCode ierr;
@@ -1237,7 +1311,7 @@ PetscErrorCode DMPlexMetricAverage2(DM dm, Vec metric1, Vec metric2, Vec *metric
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricAverage3 - Compute the unweighted average of three metrics
 
   Input Parameter:
@@ -1252,7 +1326,7 @@ PetscErrorCode DMPlexMetricAverage2(DM dm, Vec metric1, Vec metric2, Vec *metric
   Level: beginner
 
 .seealso: DMPlexMetricAverage(), DMPlexMetricAverage2()
-*/
+@*/
 PetscErrorCode DMPlexMetricAverage3(DM dm, Vec metric1, Vec metric2, Vec metric3, Vec *metricAvg)
 {
   PetscErrorCode ierr;
@@ -1383,7 +1457,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricIntersection - Compute the intersection of a list of metrics
 
   Input Parameter:
@@ -1403,7 +1477,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
   The implementation used here is only consistent with the maximal ellipsoid definition in the case numMetrics = 2.
 
 .seealso: DMPlexMetricIntersection2(), DMPlexMetricIntersection3(), DMPlexMetricAverage()
-*/
+@*/
 PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec *metricInt)
 {
   PetscErrorCode ierr;
@@ -1439,7 +1513,7 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricIntersection2 - Compute the intersection of two metrics
 
   Input Parameter:
@@ -1453,7 +1527,7 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
   Level: beginner
 
 .seealso: DMPlexMetricIntersection(), DMPlexMetricIntersection3()
-*/
+@*/
 PetscErrorCode DMPlexMetricIntersection2(DM dm, Vec metric1, Vec metric2, Vec *metricInt)
 {
   PetscErrorCode ierr;
@@ -1464,7 +1538,7 @@ PetscErrorCode DMPlexMetricIntersection2(DM dm, Vec metric1, Vec metric2, Vec *m
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMPlexMetricIntersection3 - Compute the intersection of three metrics
 
   Input Parameter:
@@ -1479,7 +1553,7 @@ PetscErrorCode DMPlexMetricIntersection2(DM dm, Vec metric1, Vec metric2, Vec *m
   Level: beginner
 
 .seealso: DMPlexMetricIntersection(), DMPlexMetricIntersection2()
-*/
+@*/
 PetscErrorCode DMPlexMetricIntersection3(DM dm, Vec metric1, Vec metric2, Vec metric3, Vec *metricInt)
 {
   PetscErrorCode ierr;
