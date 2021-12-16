@@ -13,7 +13,7 @@ int main(int argc, char **args)
   Vec            X, Y;
   Mat            A,B,Af;
   PetscBool      flg;
-  PetscReal      xnorm,ynorm;
+  PetscReal      xnorm,ynorm,anorm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 
@@ -29,6 +29,8 @@ int main(int argc, char **args)
   ierr = MatShift(A,5.0);CHKERRQ(ierr);
   ierr = MatScale(A,.5);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatNorm(A,NORM_FROBENIUS,&anorm);CHKERRQ(ierr);
+  if (PetscAbsReal(anorm - 4.0) > PETSC_SMALL) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm 4.0 actual norm %g\n",(double)anorm);
 
   /* Convert to AIJ (exercises MatGetRow/MatRestoreRow) */
   ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);

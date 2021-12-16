@@ -86,6 +86,16 @@ static PetscErrorCode MatMultTransposeAdd_ConstantDiagonal(Mat mat,Vec v1,Vec v2
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatNorm_ConstantDiagonal(Mat A,NormType type,PetscReal *nrm)
+{
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)A->data;
+
+  PetscFunctionBegin;
+  if (type == NORM_FROBENIUS || type == NORM_2 || type == NORM_1 || type == NORM_INFINITY) *nrm = PetscAbsScalar(ctx->diag);
+  else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Unsupported norm");
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDuplicate_ConstantDiagonal(Mat A, MatDuplicateOption op, Mat *B)
 {
   PetscErrorCode       ierr;
@@ -288,6 +298,7 @@ PETSC_EXTERN PetscErrorCode  MatCreate_ConstantDiagonal(Mat A)
   A->ops->multadd          = MatMultAdd_ConstantDiagonal;
   A->ops->multtranspose    = MatMultTranspose_ConstantDiagonal;
   A->ops->multtransposeadd = MatMultTransposeAdd_ConstantDiagonal;
+  A->ops->norm             = MatNorm_ConstantDiagonal;
   A->ops->duplicate        = MatDuplicate_ConstantDiagonal;
   A->ops->missingdiagonal  = MatMissingDiagonal_ConstantDiagonal;
   A->ops->getrow           = MatGetRow_ConstantDiagonal;
