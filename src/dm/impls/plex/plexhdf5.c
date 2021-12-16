@@ -1367,6 +1367,8 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscFunctionReturn(0);
 }
 
+/* If the file is old, it not only has different path to the coordinates, but   */
+/* does not contain coordinateDMs, so must fall back to the old implementation. */
 static PetscErrorCode DMPlexCoordinatesLoad_HDF5_Legacy_Private(DM dm, PetscViewer viewer)
 {
   PetscSection    coordSection;
@@ -1421,17 +1423,19 @@ PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, Pe
   PetscSF               lsf;
   const char           *topologydm_name;
   char                 *coordinatedm_name, *coordinates_name;
-  DMPlexStorageVersion  version;
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexStorageVersionGet_Private(dm, viewer, &version);CHKERRQ(ierr);
-  /* If the file is old, it not only has different path to the coordinates, but   */
-  /* does not contain coordinateDMs, so must fall back to the old implementation. */
-  if (version.major <= 1) {
-    ierr = DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  {
+    DMPlexStorageVersion  version;
+
+    ierr = DMPlexStorageVersionGet_Private(dm, viewer, &version);CHKERRQ(ierr);
+    if (version.major <= 1) {
+      ierr = DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
   }
+  if (!sfXC) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
   ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
@@ -1460,15 +1464,32 @@ PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, Pe
   PetscFunctionReturn(0);
 }
 
-/* The first version will read everything onto proc 0, letting the user distribute
-   The next will create a naive partition, and then rebalance after reading
-*/
-PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
+static PetscErrorCode DMPlexLoad_HDF5_Legacy_Private(DM dm, PetscViewer viewer)
 {
-  PetscSF         sfXC;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL);CHKERRQ(ierr);
+  ierr = DMPlexLabelsLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
+  ierr = DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
+{
+  PetscSF               sfXC;
+  PetscErrorCode        ierr;
+
+  PetscFunctionBegin;
+  {
+    DMPlexStorageVersion  version;
+
+    ierr = DMPlexStorageVersionGet_Private(dm, viewer, &version);CHKERRQ(ierr);
+    if (version.major <= 1) {
+      ierr = DMPlexLoad_HDF5_Legacy_Private(dm, viewer);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
   ierr = DMPlexTopologyLoad_HDF5_Internal(dm, viewer, &sfXC);CHKERRQ(ierr);
   ierr = DMPlexLabelsLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
   ierr = DMPlexCoordinatesLoad_HDF5_Internal(dm, viewer, sfXC);CHKERRQ(ierr);
