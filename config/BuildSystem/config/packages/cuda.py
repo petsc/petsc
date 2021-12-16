@@ -277,6 +277,7 @@ to set the right generation for your hardware.')
         self.addDefine('CUDA_GENERATION',self.cudaArch)
 
     self.addDefine('HAVE_CUDA','1')
+    self.addDefine('HAVE_CUPM','1') # Have either CUDA or HIP
     if not self.version_tuple:
       self.checkVersion(); # set version_tuple
     if self.version_tuple[0] >= 11:
