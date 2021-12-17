@@ -96,6 +96,19 @@ static PetscErrorCode MatNorm_ConstantDiagonal(Mat A,NormType type,PetscReal *nr
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatCreateSubMatrices_ConstantDiagonal(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+
+{
+  PetscErrorCode ierr;
+  Mat            B;
+
+  PetscFunctionBegin;
+  ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(B,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDuplicate_ConstantDiagonal(Mat A, MatDuplicateOption op, Mat *B)
 {
   PetscErrorCode       ierr;
@@ -299,6 +312,7 @@ PETSC_EXTERN PetscErrorCode  MatCreate_ConstantDiagonal(Mat A)
   A->ops->multtranspose    = MatMultTranspose_ConstantDiagonal;
   A->ops->multtransposeadd = MatMultTransposeAdd_ConstantDiagonal;
   A->ops->norm             = MatNorm_ConstantDiagonal;
+  A->ops->createsubmatrices= MatCreateSubMatrices_ConstantDiagonal;
   A->ops->duplicate        = MatDuplicate_ConstantDiagonal;
   A->ops->missingdiagonal  = MatMissingDiagonal_ConstantDiagonal;
   A->ops->getrow           = MatGetRow_ConstantDiagonal;
