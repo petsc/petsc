@@ -1317,7 +1317,7 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
        Once a coloring is available MatFDColoringCreate() creates an object that can be used to efficiently compute Jacobians using that coloring. This
        same object can also be used to efficiently convert data created by Automatic Differentation tools to PETSc sparse matrices.
 
-.seealso:  MatFDColoringCreate(), MatColoringWeightType, ISColoring, MatFDColoring, DMCreateColoring(), MatColoringCreate(), MatOrdering, MatPartitioning
+.seealso:  MatFDColoringCreate(), MatColoringWeightType, ISColoring, MatFDColoring, DMCreateColoring(), MatColoringCreate(), MatOrdering, MatPartitioning, MatColoringType
 S*/
 typedef struct _p_MatColoring* MatColoring;
 
