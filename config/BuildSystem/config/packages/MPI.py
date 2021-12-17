@@ -716,7 +716,7 @@ Unable to run hostname to check the network')
       # --no-as-needed since we always need MPI
       libsOutput   = self.executeShellCommand([self.compilers.CC, '--no-as-needed', '--cray-print-opts=libs'], env=env, log = self.log)[0]
     else:
-      cflagsOutput = self.executeShellCommand([self.compilers.CC, '-show'], log = self.log)[0]
+      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' -show', log = self.log)[0] # not list since CC might be 'mpicc -cc=clang'
       libsOutput   = cflagsOutput # same output as -show
 
     # find include paths
