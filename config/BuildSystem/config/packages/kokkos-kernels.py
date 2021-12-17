@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'e9496bbfefad465ea9fba77314759f912898fdea' # develop of 2021-11-3
+    self.gitcommit        = '6c786cd6900b977e7b3b19a1f88c0c433a49cbcc' # develop of 2021-12-20
     self.versionname      = 'KOKKOS_KERNELS_VERSION'  # It looks kokkos-kernels does not yet have a macro for version number
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
