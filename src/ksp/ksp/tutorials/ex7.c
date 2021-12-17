@@ -302,7 +302,7 @@ int main(int argc,char **args)
       test:
         suffix: gamg_kokkos
         nsize: {{1 2}separate output}
-        requires: kokkos_kernels
+        requires: !sycl kokkos_kernels
         args: -mat_type aijkokkos
 
 TEST*/

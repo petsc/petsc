@@ -677,7 +677,7 @@ int main(int argc, char **argv)
     args: -potential_petscspace_degree 1 -dm_refine 1 -adjoint -adjoint_petscspace_degree 1 -error_petscspace_degree 0
   test:
     nsize: 2
-    requires: kokkos_kernels
+    requires: !sycl kokkos_kernels
     suffix: kokkos
     args: -dm_plex_dim 3 -dm_plex_box_faces 2,3,6 -dm_distribute -petscpartitioner_type simple -dm_plex_simplex 0 -potential_petscspace_degree 1 \
          -dm_refine 0 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 1000 -pc_gamg_threshold 0.0 \

@@ -76,7 +76,7 @@ int main(int argc,char **argv)
         suffix:  viennacl
         args: -vec_type viennacl
       test:
-        requires: kokkos_kernels
+        requires: !sycl kokkos_kernels
         suffix: kokkos
         args: -vec_type kokkos
       test:

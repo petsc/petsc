@@ -86,7 +86,7 @@ int main(int argc,char **argv)
       args: -vec_type kokkos
       output_file: output/ex4_1.out
       filter: grep -v type
-      requires: kokkos_kernels
+      requires: !sycl kokkos_kernels
 
    testset:
       diff_args: -j
