@@ -12,10 +12,10 @@ Labels:
 DM Object: DMadapt (adapt_) 1 MPI processes
   type: plex
 DMadapt in 2 dimensions:
-  Number of 0-cells per rank: 225
-  Number of 1-cells per rank: 616
-  Number of 2-cells per rank: 392
+  Number of 0-cells per rank: 219
+  Number of 1-cells per rank: 600
+  Number of 2-cells per rank: 382
 Labels:
-  celltype: 3 strata with value/size (0 (225), 3 (392), 1 (616))
-  depth: 3 strata with value/size (0 (225), 1 (616), 2 (392))
-  marker: 1 strata with value/size (1 (56))
+  celltype: 3 strata with value/size (0 (219), 3 (382), 1 (600))
+  depth: 3 strata with value/size (0 (219), 1 (600), 2 (382))
+  marker: 1 strata with value/size (1 (54))

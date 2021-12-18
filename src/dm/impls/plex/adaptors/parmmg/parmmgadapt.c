@@ -264,7 +264,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
     ierr = PetscFree3(interfaces_lv, interfaces_gv, intOffset);CHKERRQ(ierr);
   }
 
-  /* Retrieve mesh from Mmg and create new Plex */
+  /* Retrieve mesh from Mmg */
   numCornersNew = 4;
   ierr = PMMG_Get_meshSize(parmesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0);
   ierr = PetscMalloc4(dim*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer);CHKERRQ(ierr);
@@ -291,6 +291,11 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
         c++;
     }
   }
+
+  /* Reorder for consistency with DMPlex */
+  for (i = 0; i < numCellsNew; ++i) { ierr = DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4*i]);CHKERRQ(ierr); }
+
+  /* Create new plex */
   ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNewLoc, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNewLoc, NULL, &verticesNewSorted, dmNew);CHKERRQ(ierr);
   ierr = PMMG_Free_all(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_end);
   ierr = PetscFree4(verticesNew, verTagsNew, corners, requiredVer);CHKERRQ(ierr);
