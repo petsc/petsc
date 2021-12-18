@@ -38,28 +38,6 @@ PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt *id)
 }
 
 PETSC_STATIC_INLINE
-PetscErrorCode MatProductGetType(Mat mat,MatProductType *mtype)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(mtype,2);
-  *mtype = MATPRODUCT_UNSPECIFIED;
-  if (mat->product) *mtype = mat->product->type;
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE
-PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (A) *A = mat->product ? mat->product->A : NULL;
-  if (B) *B = mat->product ? mat->product->B : NULL;
-  if (C) *C = mat->product ? mat->product->C : NULL;
-  PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE
 PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
 {
   PetscErrorCode ierr;
