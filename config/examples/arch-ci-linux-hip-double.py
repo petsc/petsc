@@ -10,24 +10,25 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    '--with-cc=/scratch/soft/mpich/bin/mpicc',
-    '--with-cxx=/scratch/soft/mpich/bin/mpicxx',
-    '--with-fc=/scratch/soft/mpich/bin/mpif90',
-    'LDFLAGS=-L/opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/lib -lquadmath',
+    '--with-mpi-dir=/home/users/balay/soft/mpich-3.4.2',
+    '--with-blaslapack-dir=/home/users/balay/soft/fblaslapack',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
     '--with-cuda=0',
     '--with-hip=1',
-    '--with-hipc=hipcc',
+    '--with-hipc=/opt/rocm/bin/hipcc',
     '--with-hip-dir=/opt/rocm',
     '--with-precision=double',
     '--with-clanguage=c',
-    '--download-fblaslapack',
+    '--download-kokkos',
+    '--download-kokkos-kernels',
+    #'--download-hypre',
+    #'--download-hypre-configure-arguments=--enable-unified-memory',
+    #'--with-hypre-gpuarch=gfx908',
     '--download-magma',
-    '--download-hypre',
-    '--download-hypre-configure-arguments=--enable-unified-memory',
     '--with-magma-fortran-bindings=0',
+    '--with-magma-gputarget=gfx908',
   ]
 
   configure.petsc_configure(configure_options)

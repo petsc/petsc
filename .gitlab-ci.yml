@@ -462,12 +462,12 @@ freebsd-pkgs-opt:
 linux-hip-double:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_noflags
   tags:
-    - gpu:amd, os:linux, name:hip-txcorp
+    - gpu:amd, os:linux, name:hip-instinct
   variables:
-    PATH: /opt/rh/devtoolset-7/root/usr/bin:/opt/rocm/bin:/opt/rocm/llvm/bin:/usr/sbin:/usr/bin:/sbin:/bin
     TEST_ARCH: arch-ci-linux-hip-double
+    LOAD_MODULES: gcc/10.2 cmake/3.19.6
 
 linux-sycl-double:
   extends:
