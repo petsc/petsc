@@ -1731,6 +1731,9 @@ cdef class Mat(Object):
     def setDM(self, DM dm):
         CHKERR( MatSetDM(self.mat, dm.dm) )
 
+    # backward compatibility
+    PtAP = ptap
+
     #
 
     property sizes:
