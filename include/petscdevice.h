@@ -5,7 +5,7 @@
 #include <petscdevicetypes.h>
 #include <petscpkg_version.h>
 
-#if PetscDefined(HAVE_CUDA)
+#if defined(PETSC_HAVE_CUDA)
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
@@ -125,9 +125,9 @@ PETSC_EXTERN cudaStream_t   PetscDefaultCudaStream; /* The default stream used b
 
 PETSC_EXTERN PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t*);
 PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t*);
-#endif /* PetscDefined(HAVE_CUDA) */
+#endif /* PETSC_HAVE_CUDA */
 
-#if PetscDefined(HAVE_HIP)
+#if defined(PETSC_HAVE_HIP)
 #include <hip/hip_runtime.h>
 #include <hipblas.h>
 #if defined(__HIP_PLATFORM_NVCC__)
@@ -232,10 +232,10 @@ PETSC_EXTERN hipStream_t    PetscDefaultHipStream; /* The default stream used by
 
 PETSC_EXTERN PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t*);
 PETSC_EXTERN PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t*);
-#endif /* PetscDefined(HAVE_HIP) */
+#endif /* PETSC_HAVE_HIP */
 
 /* Cannot use the device context api without C++11 */
-#if PetscDefined(HAVE_CXX_DIALECT_CXX11)
+#if defined(PETSC_HAVE_CXX_DIALECT_CXX11)
 PETSC_EXTERN PetscErrorCode PetscDeviceInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscDeviceFinalizePackage(void);
 
@@ -264,5 +264,5 @@ PETSC_EXTERN PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext*);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm,const char[],PetscDeviceContext);
-#endif /* PetscDefined(HAVE_CXX_DIALECT_CXX11) */
+#endif /* PETSC_HAVE_CXX_DIALECT_CXX11 */
 #endif /* PETSCDEVICE_H */

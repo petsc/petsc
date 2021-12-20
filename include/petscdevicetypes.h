@@ -1,4 +1,4 @@
-#if !defined(PETSCDEVICETYPES_H)
+#ifndef PETSCDEVICETYPES_H
 #define PETSCDEVICETYPES_H
 
 /* for PETSC_HAVE_CUDA/HIP/KOKKOS etc */
@@ -110,9 +110,9 @@ typedef enum {
   PETSC_DEVICE_MAX
 } PetscDeviceType;
 PETSC_EXTERN const char *const PetscDeviceTypes[];
-#if PetscDefined(HAVE_HIP)
+#if defined(PETSC_HAVE_HIP)
 #  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_HIP
-#elif PetscDefined(HAVE_CUDA)
+#elif defined(PETSC_HAVE_CUDA)
 #  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_CUDA
 #elif PetscDefined(HAVE_SYCL)
 #  define PETSC_DEVICE_DEFAULT PETSC_DEVICE_SYCL
