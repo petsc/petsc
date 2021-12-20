@@ -22,7 +22,7 @@ Information on refinement:
 
 typedef enum {NEUMANN, DIRICHLET, NONE} BCType;
 typedef enum {RUN_FULL, RUN_EXACT, RUN_TEST, RUN_PERF} RunType;
-typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR, COEFF_CIRCLE, COEFF_CROSS, COEFF_CHECKERBOARD_0, COEFF_CHECKERBOARD_1} CoeffType;
+typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR, COEFF_BALL, COEFF_CROSS, COEFF_CHECKERBOARD_0, COEFF_CHECKERBOARD_1} CoeffType;
 
 typedef struct {
   RunType        runType;           /* Whether to run tests, or solve the full problem */
@@ -99,7 +99,7 @@ static void quadratic_u_field_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   uexact[0] = a[0];
 }
 
-static PetscErrorCode circle_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+static PetscErrorCode ball_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   const PetscReal alpha   = 500.;
   const PetscReal radius2 = PetscSqr(0.15);
@@ -127,23 +127,24 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[0] = 4.0;
 }
 
-static void f0_circle_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                        PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+static void f0_ball_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                      PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  const PetscReal alpha   = 500.;
-  const PetscReal radius2 = PetscSqr(0.15);
-  const PetscReal r2      = PetscSqr(x[0] - 0.5) + PetscSqr(x[1] - 0.5);
-  const PetscReal xi      = alpha*(radius2 - r2);
+  PetscInt        d;
+  const PetscReal alpha = 500., radius2 = PetscSqr(0.15);
+  PetscReal       r2, xi;
 
-  f0[0] = (-4.0*alpha - 8.0*PetscSqr(alpha)*r2*PetscTanhReal(xi)) * PetscSqr(1.0/PetscCoshReal(xi));
+  for (d = 0, r2 = 0.0; d < dim; ++d) r2 += PetscSqr(x[d] - 0.5);
+  xi = alpha*(radius2 - r2);
+  f0[0] = (-2.0*dim*alpha - 8.0*PetscSqr(alpha)*r2*PetscTanhReal(xi)) * PetscSqr(1.0/PetscCoshReal(xi));
 }
 
-static void f0_cross_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                       PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+static void f0_cross_u_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscReal alpha = 50*4;
   const PetscReal xy    = (x[0]-0.5)*(x[1]-0.5);
@@ -405,12 +406,43 @@ static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscRe
   return 0;
 }
 
+static PetscErrorCode ball_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  const PetscReal alpha   = 500.;
+  const PetscReal radius2 = PetscSqr(0.15);
+  const PetscReal r2      = PetscSqr(x[0] - 0.5) + PetscSqr(x[1] - 0.5) + PetscSqr(x[2] - 0.5);
+  const PetscReal xi      = alpha*(radius2 - r2);
+
+  *u = PetscTanhScalar(xi) + 1.0;
+  return 0;
+}
+
 static void quadratic_u_field_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                  PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[])
 {
   uexact[0] = a[0];
+}
+
+static PetscErrorCode cross_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  const PetscReal alpha = 50*4;
+  const PetscReal xyz   = (x[0]-0.5)*(x[1]-0.5)*(x[2]-0.5);
+
+  *u = PetscSinReal(alpha*xyz) * (alpha*PetscAbsReal(xyz) < 2*PETSC_PI ? (alpha*PetscAbsReal(xyz) > -2*PETSC_PI ? 1.0 : 0.01) : 0.01);
+  return 0;
+}
+
+static void f0_cross_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal alpha = 50*4;
+  const PetscReal xyz   = (x[0]-0.5)*(x[1]-0.5)*(x[2]-0.5);
+
+  f0[0] = PetscSinReal(alpha*xyz) * (alpha*PetscAbsReal(xyz) < 2*PETSC_PI ? (alpha*PetscAbsReal(xyz) > -2*PETSC_PI ? 1.0 : 0.01) : 0.01);
 }
 
 static void bd_integral_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -425,7 +457,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
   const char    *runTypes[4] = {"full", "exact", "test", "perf"};
-  const char    *coeffTypes[8] = {"none", "analytic", "field", "nonlinear", "circle", "cross", "checkerboard_0", "checkerboard_1"};
+  const char    *coeffTypes[8] = {"none", "analytic", "field", "nonlinear", "ball", "cross", "checkerboard_0", "checkerboard_1"};
   PetscInt       bc, run, coeff;
   PetscErrorCode ierr;
 
@@ -582,12 +614,21 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     ierr = PetscDSSetResidual(ds, 0, f0_analytic_nonlinear_u, f1_analytic_nonlinear_u);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_analytic_nonlinear_uu);CHKERRQ(ierr);
     break;
-  case COEFF_CIRCLE:
-    ierr = PetscDSSetResidual(ds, 0, f0_circle_u, f1_u);CHKERRQ(ierr);
+  case COEFF_BALL:
+    ierr = PetscDSSetResidual(ds, 0, f0_ball_u, f1_u);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
     break;
   case COEFF_CROSS:
-    ierr = PetscDSSetResidual(ds, 0, f0_cross_u, f1_u);CHKERRQ(ierr);
+    switch (dim) {
+    case 2:
+      ierr = PetscDSSetResidual(ds, 0, f0_cross_u_2d, f1_u);CHKERRQ(ierr);
+      break;
+    case 3:
+      ierr = PetscDSSetResidual(ds, 0, f0_cross_u_3d, f1_u);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+    }
     ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
     break;
   case COEFF_CHECKERBOARD_0:
@@ -599,8 +640,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   switch (dim) {
   case 2:
     switch (user->variableCoefficient) {
-    case COEFF_CIRCLE:
-      user->exactFuncs[0]  = circle_u_2d;break;
+    case COEFF_BALL:
+      user->exactFuncs[0]  = ball_u_2d;break;
     case COEFF_CROSS:
       user->exactFuncs[0]  = cross_u_2d;break;
     case COEFF_CHECKERBOARD_0:
@@ -625,8 +666,15 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     }
     break;
   case 3:
-    user->exactFuncs[0]  = quadratic_u_3d;
-    user->exactFields[0] = quadratic_u_field_3d;
+    switch (user->variableCoefficient) {
+    case COEFF_BALL:
+      user->exactFuncs[0]  = ball_u_3d;break;
+    case COEFF_CROSS:
+      user->exactFuncs[0]  = cross_u_3d;break;
+    default:
+      user->exactFuncs[0]  = quadratic_u_3d;
+      user->exactFields[0] = quadratic_u_field_3d;
+    }
     if (user->bcType == NEUMANN) {
       ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
       ierr = DMAddBoundary(dm, DM_BC_NATURAL, "wall", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd);CHKERRQ(ierr);
@@ -1545,22 +1593,22 @@ int main(int argc, char **argv)
   test:
     suffix: tri_p1_adapt_init_pragmatic
     requires: pragmatic
-    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor pragmatic
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor pragmatic
 
   test:
     suffix: tri_p1_adapt_init_mmg
     requires: mmg
-    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor mmg
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
 
   test:
     suffix: tri_p1_adapt_seq_pragmatic
     requires: pragmatic
-    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor pragmatic
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor pragmatic
 
   test:
     suffix: tri_p1_adapt_seq_mmg
     requires: mmg
-    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor mmg
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
 
   test:
     suffix: tri_p1_adapt_analytic_pragmatic
@@ -1570,33 +1618,33 @@ int main(int argc, char **argv)
   test:
     suffix: tri_p1_adapt_analytic_mmg
     requires: mmg
-    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor mmg
+    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
 
   test:
     suffix: tri_p1_adapt_uniform_pragmatic
     requires: pragmatic tetgen
-    nsize: 2
-    args: -run_type exact -dm_refine 2 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_initial 1 -adaptor_target_num 400 -dm_plex_metric_h_min 0.001 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
+    nsize: 4
+    args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
     timeoutfactor: 2
 
   test:
     suffix: tri_p1_adapt_uniform_mmg
     requires: mmg tetgen
-    args: -run_type exact -dm_refine 2 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_initial 1 -adaptor_target_num 400 -dm_plex_metric_h_min 0.001 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor mmg
+    args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor mmg
     timeoutfactor: 2
 
   test:
     suffix: tri_p1_adapt_uniform_parmmg
     requires: parmmg tetgen
-    nsize: 2
-    args: -run_type exact -dm_refine 2 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_initial 1 -adaptor_target_num 400 -dm_plex_metric_h_min 0.001 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
+    nsize: 4
+    args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
     timeoutfactor: 2
 
   # Full solve tensor AMR
   test:
     suffix: quad_q1_adapt_0
     requires: p4est
-    args: -run_type exact -dm_plex_simplex 0 -dm_plex_convert_type p4est -bc_type dirichlet -petscspace_degree 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4 -snes_adapt_initial 1 -dm_view
+    args: -run_type exact -dm_plex_simplex 0 -dm_plex_convert_type p4est -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4 -snes_adapt_initial 1 -dm_view
     filter: grep -v DM_
 
   test:
@@ -1718,7 +1766,7 @@ int main(int argc, char **argv)
     nsize: 4
     requires: hpddm slepc parmetis !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     filter: sed -e "s/linear solver iterations=17/linear solver iterations=16/g"
-    args: -run_type full -dm_distribute -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient circle -dm_plex_gmsh_periodic 0
+    args: -run_type full -dm_distribute -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient ball -dm_plex_gmsh_periodic 0
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
       filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=1[5-7]/total number of linear solver iterations=16/g"
