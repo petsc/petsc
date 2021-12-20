@@ -21,11 +21,11 @@ const char *const PetscDeviceContextJoinModes[] = {
 };
 
 /* Define the allocator */
-struct PetscDeviceContextAllocator : Petsc::Allocator<PetscDeviceContext>
+struct PetscDeviceContextAllocator : Petsc::AllocatorBase<PetscDeviceContext>
 {
   static PetscInt PetscDeviceContextID;
 
-  PETSC_NODISCARD static PetscErrorCode create(PetscDeviceContext *dctx) PETSC_NOEXCEPT
+  PETSC_NODISCARD static PetscErrorCode create(PetscDeviceContext *dctx) noexcept
   {
     PetscDeviceContext dc;
     PetscErrorCode     ierr;
@@ -39,7 +39,7 @@ struct PetscDeviceContextAllocator : Petsc::Allocator<PetscDeviceContext>
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode destroy(PetscDeviceContext dctx) PETSC_NOEXCEPT
+  PETSC_NODISCARD static PetscErrorCode destroy(PetscDeviceContext dctx) noexcept
   {
     PetscErrorCode ierr;
 
@@ -52,7 +52,7 @@ struct PetscDeviceContextAllocator : Petsc::Allocator<PetscDeviceContext>
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode reset(PetscDeviceContext dctx) PETSC_NOEXCEPT
+  PETSC_NODISCARD static PetscErrorCode reset(PetscDeviceContext dctx) noexcept
   {
     PetscErrorCode ierr;
 
@@ -66,7 +66,7 @@ struct PetscDeviceContextAllocator : Petsc::Allocator<PetscDeviceContext>
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static constexpr PetscErrorCode finalize() PETSC_NOEXCEPT { return 0; }
+  PETSC_NODISCARD static constexpr PetscErrorCode finalize() noexcept { return 0; }
 };
 /* an ID = 0 is invalid */
 PetscInt PetscDeviceContextAllocator::PetscDeviceContextID = 1;
@@ -407,7 +407,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
     /* No need to do the extra function lookup and event record if the stream were waiting on isn't doing anything */
     ierr = PetscDeviceContextValidateIdle_Internal(dctxb);CHKERRQ(ierr);
   } else {
-    ierr = (*dctxa->ops->waitforctx)(dctxa,dctxb);CHKERRQ(ierr);
+    ierr = (*dctxa->ops->waitforcontext)(dctxa,dctxb);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -713,7 +713,7 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private(void)
   /* we call the allocator directly here since the ObjectPool creates a PetscContainer which
    * eventually tries to call logging functions. However, this routine may be purposefully
    * called __before__ logging is initialized, so the logging function would PETSCABORT */
-  ierr = PetscDeviceContextAllocator::create(&globalContext);CHKERRQ(ierr);
+  ierr = contextPool.allocator().create(&globalContext);CHKERRQ(ierr);
   ierr = PetscDeviceContextSetStreamType(globalContext,rootStreamType);CHKERRQ(ierr);
   ierr = PetscDeviceContextSetDefaultDeviceForType_Internal(globalContext,rootDeviceType);CHKERRQ(ierr);
   ierr = PetscDeviceContextSetUp(globalContext);CHKERRQ(ierr);

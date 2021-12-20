@@ -1,10 +1,12 @@
 #include "../cupmcontext.hpp" /*I "petscdevice.h" I*/
 
+using namespace Petsc::Device::CUPM;
+
 PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx)
 {
-  static const Petsc::CUPMContextCuda  contextCuda;
-  PetscDeviceContext_(CUDA)           *dci;
-  PetscErrorCode                       ierr;
+  static constexpr auto     contextCuda = CUPMContextCuda();
+  PetscDeviceContext_(CUDA) *dci;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(&dci);CHKERRQ(ierr);

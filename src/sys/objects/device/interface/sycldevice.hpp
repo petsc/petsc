@@ -8,16 +8,23 @@
 
 namespace Petsc
 {
+
+namespace Device
+{
+
+namespace SYCL
+{
+
 #define PETSC_SYCL_DEVICE_HOST -1  // Note -1 is also used by PETSC_DECIDE, so user needs to pass -2 to explicitly select the host
 #define PETSC_SYCL_DEVICE_NONE -3
 
-class SyclDevice
+class Device
 {
 public:
   using createContextFunction_t = PetscErrorCode (*)(PetscDeviceContext);
 
-  explicit SyclDevice(createContextFunction_t func) noexcept : create_(func) { }
-  ~SyclDevice() {static_cast<void>(finalize_());}
+  explicit Device(createContextFunction_t func) noexcept : create_(func) { }
+  ~Device() {static_cast<void>(finalize_());}
 
   PETSC_NODISCARD static PetscErrorCode initialize(MPI_Comm,PetscInt*,PetscDeviceInitType*) noexcept;
   PETSC_NODISCARD PetscErrorCode getDevice(PetscDevice,PetscInt) const noexcept;
@@ -26,13 +33,13 @@ public:
 
 private:
   // opaque class representing a single device instance
-  class SyclDeviceInternal;
+  class DeviceInternal;
 
   const createContextFunction_t create_;
 
   // currently stores sycl host and gpu devices
-  static std::array<SyclDeviceInternal*,PETSC_DEVICE_MAX_DEVICES> devices_array_;
-  static SyclDeviceInternal **devices_; // alias to devices_array_, but shifted to support devices_[-1] for sycl host device
+  static std::array<DeviceInternal*,PETSC_DEVICE_MAX_DEVICES> devices_array_;
+  static DeviceInternal **devices_; // alias to devices_array_, but shifted to support devices_[-1] for sycl host device
 
   // this rank's default device. If equals to PETSC_SYCL_DEVICE_NONE, then all sycl devices are disabled
   static int defaultDevice_;
@@ -44,6 +51,10 @@ private:
   PETSC_NODISCARD static PetscErrorCode finalize_() noexcept;
 };
 
+} // namespace SYCL
+
+} // namespace Device
 
 } // namespace Petsc
+
 #endif /* PETSCSYCLDEVICE_HPP */

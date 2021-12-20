@@ -13,17 +13,23 @@
 namespace Petsc
 {
 
+namespace Device
+{
+
+namespace SYCL
+{
+
 // definition for static
-std::array<SyclDevice::SyclDeviceInternal*,PETSC_DEVICE_MAX_DEVICES> SyclDevice::devices_array_ = {};
-SyclDevice::SyclDeviceInternal**                                     SyclDevice::devices_       = &SyclDevice::devices_array_[1];
-int                                                                  SyclDevice::defaultDevice_ = PETSC_SYCL_DEVICE_NONE;
-bool                                                                 SyclDevice::initialized_   = false;
+std::array<Device::DeviceInternal*,PETSC_DEVICE_MAX_DEVICES> Device::devices_array_ = {};
+Device::DeviceInternal**                                     Device::devices_       = &Device::devices_array_[1];
+int                                                          Device::defaultDevice_ = PETSC_SYCL_DEVICE_NONE;
+bool                                                         Device::initialized_   = false;
 
 static std::jmp_buf MPISyclAwareJumpBuffer;
 static bool         MPISyclAwareJumpBufferSet;
 
 // internal "impls" class for SyclDevice. Each instance represents a single sycl device
-class PETSC_NODISCARD SyclDevice::SyclDeviceInternal
+class PETSC_NODISCARD Device::DeviceInternal
 {
   const int            id_; // -1 for the host device; 0 and up for gpu devices
   bool                 devInitialized_;
@@ -31,7 +37,7 @@ class PETSC_NODISCARD SyclDevice::SyclDeviceInternal
 
 public:
   // default constructor
-  SyclDeviceInternal(int id) noexcept : id_(id),devInitialized_(false),syclDevice_(chooseSYCLDevice_(id)){}
+  DeviceInternal(int id) noexcept : id_(id),devInitialized_(false),syclDevice_(chooseSYCLDevice_(id)){}
   int  id() const {return id_;}
   bool initialized() const {return devInitialized_;}
 
@@ -117,7 +123,7 @@ private:
   }
 };
 
-PetscErrorCode SyclDevice::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscDeviceInitType *defaultInitType) noexcept
+PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscDeviceInitType *defaultInitType) noexcept
 {
   PetscInt       initType = *defaultInitType,id = *defaultDeviceId;
   PetscBool      view = PETSC_FALSE,flg;
@@ -161,7 +167,7 @@ PetscErrorCode SyclDevice::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, 
   if (PetscUnlikely(initType == PETSC_DEVICE_INIT_EAGER && id == PETSC_SYCL_DEVICE_NONE)) SETERRQ(comm,PETSC_ERR_USER_INPUT,"Cannot eagerly initialize sycl devices as you disabled them by -device_enable_sycl none");
 
   if (initType == PETSC_DEVICE_INIT_EAGER) {
-    devices_[defaultDevice_] = new SyclDeviceInternal(defaultDevice_);
+    devices_[defaultDevice_] = new DeviceInternal(defaultDevice_);
     ierr = devices_[defaultDevice_]->initialize();CHKERRQ(ierr);
     if (view) {
       PetscViewer viewer;
@@ -177,7 +183,7 @@ PetscErrorCode SyclDevice::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SyclDevice::finalize_() noexcept
+PetscErrorCode Device::finalize_() noexcept
 {
   PetscFunctionBegin;
   if (!initialized_) PetscFunctionReturn(0);
@@ -187,7 +193,7 @@ PetscErrorCode SyclDevice::finalize_() noexcept
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SyclDevice::getDevice(PetscDevice device, PetscInt id) const noexcept
+PetscErrorCode Device::getDevice(PetscDevice device, PetscInt id) const noexcept
 {
   PetscErrorCode ierr;
 
@@ -197,7 +203,7 @@ PetscErrorCode SyclDevice::getDevice(PetscDevice device, PetscInt id) const noex
   if ((id < PETSC_SYCL_DEVICE_HOST) || (id-PETSC_SYCL_DEVICE_HOST >= PETSC_DEVICE_MAX_DEVICES)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_array_.size(),id);
   if (devices_[id]) {
     if (id != devices_[id]->id()) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %" PetscInt_FMT,id,devices_[id]->id());
-  } else devices_[id] = new SyclDeviceInternal(id);
+  } else devices_[id] = new DeviceInternal(id);
   ierr = devices_[id]->initialize();CHKERRQ(ierr);
   device->deviceId           = devices_[id]->id(); // technically id = devices_[id]->id_ here
   device->ops->createcontext = create_;
@@ -206,14 +212,14 @@ PetscErrorCode SyclDevice::getDevice(PetscDevice device, PetscInt id) const noex
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SyclDevice::configureDevice(PetscDevice device) noexcept
+PetscErrorCode Device::configureDevice(PetscDevice device) noexcept
 {
   PetscFunctionBegin;
   // Nothing for now
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SyclDevice::viewDevice(PetscDevice device, PetscViewer viewer) noexcept
+PetscErrorCode Device::viewDevice(PetscDevice device, PetscViewer viewer) noexcept
 {
   PetscErrorCode ierr;
 
@@ -221,5 +227,9 @@ PetscErrorCode SyclDevice::viewDevice(PetscDevice device, PetscViewer viewer) no
   ierr = devices_[device->deviceId]->view(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+} // namespace SYCL
+
+} // namespace Device
 
 } // namespace Petsc
