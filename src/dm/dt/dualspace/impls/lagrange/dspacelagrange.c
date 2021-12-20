@@ -800,7 +800,7 @@ static PetscErrorCode PetscLagNodeIndicesMerge(PetscLagNodeIndices niA, PetscLag
 }
 
 #define PETSCTUPINTCOMPREVLEX(N)                                   \
-static int PetscTupIntCompRevlex_##N(const void *a, const void *b) \
+static int PetscConcat_(PetscTupIntCompRevlex_,N)(const void *a, const void *b) \
 {                                                                  \
   const PetscInt *A = (const PetscInt *) a;                        \
   const PetscInt *B = (const PetscInt *) b;                        \
