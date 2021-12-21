@@ -615,13 +615,9 @@ int main(int argc,char **args)
   ierr = MatDestroy(&T2);CHKERRQ(ierr);
 
   if (testnest) { /* test with MatNest */
-    Mat        NA;
-    const char *vtype;
+    Mat NA;
 
     ierr = MatCreateNest(PETSC_COMM_WORLD,1,NULL,1,NULL,&A,&NA);CHKERRQ(ierr);
-    /* needed to test against CUSPARSE matrices */
-    ierr = MatGetVecType(A,&vtype);CHKERRQ(ierr);
-    ierr = MatSetVecType(NA,vtype);CHKERRQ(ierr);
     ierr = MatViewFromOptions(NA,NULL,"-NA_view");CHKERRQ(ierr);
     ierr = MatMatMult(NA,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&X);CHKERRQ(ierr);
     ierr = CheckLocal(B,X,aB,aX);CHKERRQ(ierr);
