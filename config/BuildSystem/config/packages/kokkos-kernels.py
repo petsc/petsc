@@ -88,8 +88,13 @@ class Configure(config.package.CMakePackage):
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.kokkos.systemSyclc)
 
-    # -DCMAKE_CXX_STANDARD= will be taken from Kokkos
+    # These options will be taken from Kokkos configuration
     args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_FLAGS')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_C_COMPILER=')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_C_FLAGS')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_AR')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_RANLIB')
     return args
 
   def configureLibrary(self):
