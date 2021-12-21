@@ -299,7 +299,7 @@ int main (int argc, char * argv[]) {
     requires: pragmatic
 
   testset:
-    args: -dm_plex_box_faces 4,4,4 -dm_adaptor pragmatic -met 2 -init_dm_view -adapt_dm_view
+    args: -dm_plex_box_faces 4,4,4 -dm_adaptor pragmatic -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
 
     test:
       suffix: 0
@@ -317,7 +317,7 @@ int main (int argc, char * argv[]) {
   # Pragmatic hangs for simple partitioner
   testset:
     requires: parmetis
-    args: -dm_plex_box_faces 2,2 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis -met 2 -init_dm_view -adapt_dm_view
+    args: -dm_plex_box_faces 2,2 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
 
     test:
       suffix: 4
@@ -331,26 +331,26 @@ int main (int argc, char * argv[]) {
     suffix: 6
     nsize: 2
     args: -dm_plex_dim 3 -dm_plex_box_faces 9,9,9 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis \
-          -met 0 -hmin 0.01 -hmax 0.03 -init_dm_view -adapt_dm_view
+          -met 0 -hmin 0.01 -hmax 0.03 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
   test:
     requires: parmetis
     suffix: 7
     nsize: 2
     args: -dm_plex_box_faces 19,19 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis \
-          -met 2 -hmax 0.5 -hmin 0.001 -init_dm_view -adapt_dm_view
+          -met 2 -hmax 0.5 -hmin 0.001 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
   test:
     suffix: proj_0
     args: -dm_plex_box_faces 2,2 -dm_plex_hash_location -dm_adaptor pragmatic -init_dm_view -adapt_dm_view -do_L2 \
-          -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
+          -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu -dm_adaptor pragmatic
   test:
     suffix: proj_1
     args: -dm_plex_box_faces 4,4 -dm_plex_hash_location -dm_adaptor pragmatic -init_dm_view -adapt_dm_view -do_L2 \
-          -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu
+          -petscspace_degree 1 -petscfe_default_quadrature_order 1 -pc_type lu -dm_adaptor pragmatic
 
   test:
     suffix: sensor
     args: -dm_plex_box_faces 9,9 -met 3 -dm_adaptor pragmatic -init_dm_view -adapt_dm_view \
           -dm_plex_metric_h_min 1.e-10 -dm_plex_metric_h_max 1.0e-01 -dm_plex_metric_a_max 1.0e+05 -dm_plex_metric_p 1.0 \
-            -dm_plex_metric_target_complexity 10000.0
+            -dm_plex_metric_target_complexity 10000.0 -dm_adaptor pragmatic
 
 TEST*/
