@@ -271,68 +271,70 @@ int main(int argc, char **argv) {
 
 /*TEST
 
-  test:
-    suffix: uniform_2d_pragmatic
+  testset:
     requires: pragmatic
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -uniform -isotropic -noTagging
-  test:
-    suffix: uniform_3d_pragmatic
+    args: -dm_plex_metric_target_complexity 100 -dm_adaptor pragmatic -noTagging -dim 2
+
+    test:
+      suffix: uniform_2d_pragmatic
+      args: -uniform -isotropic
+    test:
+      suffix: iso_2d_pragmatic
+      args: -isotropic
+    test:
+      suffix: hessian_2d_pragmatic
+
+  testset:
     requires: pragmatic tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -uniform -isotropic -noTagging
-  test:
-    suffix: iso_2d_pragmatic
-    requires: pragmatic
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -isotropic -noTagging
-  test:
-    suffix: iso_3d_pragmatic
-    requires: pragmatic tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -isotropic -noTagging
-  test:
-    suffix: hessian_2d_pragmatic
-    requires: pragmatic
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor pragmatic -noTagging
-  test:
-    suffix: hessian_3d_pragmatic
-    requires: pragmatic tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor pragmatic -noTagging
-  test:
-    suffix: uniform_2d_mmg
+    args: -dm_plex_metric_target_complexity 100 -dm_adaptor pragmatic -noTagging -dim 3
+
+    test:
+      suffix: uniform_3d_pragmatic
+      args: -uniform -isotropic -noTagging
+    test:
+      suffix: iso_3d_pragmatic
+      args: -isotropic -noTagging
+    test:
+      suffix: hessian_3d_pragmatic
+
+  testset:
     requires: mmg
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor mmg -uniform -isotropic
-  test:
-    suffix: uniform_3d_mmg
+    args: -dm_plex_metric_target_complexity 100 -dm_adaptor mmg -dim 2
+
+    test:
+      suffix: uniform_2d_mmg
+      args: -uniform -isotropic
+    test:
+      suffix: iso_2d_mmg
+      args: -isotropic
+    test:
+      suffix: hessian_2d_mmg
+
+  testset:
     requires: mmg tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor mmg -uniform -isotropic
-  test:
-    suffix: iso_2d_mmg
-    requires: mmg
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor mmg -isotropic
-  test:
-    suffix: iso_3d_mmg
-    requires: mmg tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor mmg -isotropic
-  test:
-    suffix: hessian_2d_mmg
-    requires: mmg
-    args: -dm_plex_metric_target_complexity 100 -dim 2 -dm_adaptor mmg
-  test:
-    suffix: hessian_3d_mmg
-    requires: mmg tetgen
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor mmg
-  test:
-    suffix: uniform_3d_parmmg
+    args: -dm_plex_metric_target_complexity 100 -dm_adaptor mmg -dim 3
+
+    test:
+      suffix: uniform_3d_mmg
+      args: -uniform -isotropic
+    test:
+      suffix: iso_3d_mmg
+      args: -isotropic
+    test:
+      suffix: hessian_3d_mmg
+
+  testset:
     requires: parmmg tetgen
     nsize: 2
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor parmmg -uniform -isotropic
-  test:
-    suffix: iso_3d_parmmg
-    requires: parmmg tetgen
-    nsize: 2
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor parmmg -isotropic
-  test:
-    suffix: hessian_3d_parmmg
-    requires: parmmg tetgen
-    nsize: 2
-    args: -dm_plex_metric_target_complexity 100 -dim 3 -dm_adaptor parmmg
+    args: -dm_plex_metric_target_complexity 100 -dm_adaptor parmmg -dim 3
+
+    test:
+      suffix: uniform_3d_parmmg
+      args: -uniform -isotropic
+    test:
+      suffix: iso_3d_parmmg
+      args: -isotropic
+    test:
+      suffix: hessian_3d_parmmg
 
 TEST*/
