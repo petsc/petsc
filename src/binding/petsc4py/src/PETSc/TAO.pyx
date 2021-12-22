@@ -418,6 +418,19 @@ cdef class TAO(Object):
         CHKERR( TaoGetTolerances(self.tao, &_gatol, &_grtol, &_gttol) )
         return (toReal(_gatol), toReal(_grtol), toReal(_gttol))
 
+    def setMaximumFunctionEvaluations(self, mit):
+        """
+        """
+        cdef PetscInt _mit = asInt(mit)
+        CHKERR( TaoSetMaximumFunctionEvaluations(self.tao, _mit) )
+
+    def getMaximumFunctionEvaluations(self):
+        """
+        """
+        cdef PetscInt _mit = PETSC_DEFAULT
+        CHKERR( TaoGetMaximumFunctionEvaluations(self.tao, &_mit) )
+        return toInt(_mit)
+
     def setConstraintTolerances(self, catol=None, crtol=None):
         """
         """

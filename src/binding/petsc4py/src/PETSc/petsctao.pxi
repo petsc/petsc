@@ -70,8 +70,8 @@ cdef extern from * nogil:
     int TaoGetConstraintTolerances(PetscTAO,PetscReal*,PetscReal*)
 
     int TaoSetFunctionLowerBound(PetscTAO,PetscReal)
-    int TaoSetMaximumIterates(PetscTAO, PetscInt)
-    int TaoSetMaximumFunctionEvaluations(PetscTAO, PetscInt)
+    int TaoSetMaximumFunctionEvaluations(PetscTAO,PetscInt)
+    int TaoGetMaximumFunctionEvaluations(PetscTAO,PetscInt*)
 
     int TaoSetTrustRegionTolerance(PetscTAO,PetscReal)
     int TaoGetInitialTrustRegionRadius(PetscTAO,PetscReal*)
