@@ -8349,22 +8349,27 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
 /*@C
   DMCompareLabels - Compare labels of two DMPlex meshes
 
-  Collective on dmA
+  Collective
 
   Input Parameters:
 + dm0 - First DM object
 - dm1 - Second DM object
 
   Output Parameters
-+ same    - (Optional) Flag whether labels of dm0 and dm1 are the same
++ equal   - (Optional) Flag whether labels of dm0 and dm1 are the same
 - message - (Optional) Message describing the difference, or NULL if there is no difference
 
   Level: intermediate
 
   Notes:
-  If both same and message is passed as NULL, and difference is found, an error is thrown with a message describing the difference.
+  The output flag equal is the same on all processes.
+  If it is passed as NULL and difference is found, an error is thrown on all processes.
+  Make sure to pass NULL on all processes.
 
-  Message must be freed by user.
+  The output message is set independently on each rank.
+  It is set to NULL if no difference was found on the current rank. It must be freed by user.
+  If message is passed as NULL and difference is found, the difference description is printed to stderr in synchronized manner.
+  Make sure to pass NULL on all processes.
 
   Labels are matched by name. If the number of labels and their names are equal,
   DMLabelCompare() is used to compare each pair of labels with the same name.
@@ -8374,27 +8379,36 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
 
 .seealso: DMAddLabel(), DMCopyLabelsMode, DMLabelCompare()
 @*/
-PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *same, char **message)
+PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char **message)
 {
-  PetscInt        n0, n1, i;
+  PetscInt        n, i;
   char            msg[PETSC_MAX_PATH_LEN] = "";
+  PetscBool       eq;
   MPI_Comm        comm;
+  PetscMPIInt     rank;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm0,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm1,DM_CLASSID,2);
   PetscCheckSameComm(dm0,1,dm1,2);
-  if (same) PetscValidBoolPointer(same,3);
+  if (equal) PetscValidBoolPointer(equal,3);
   if (message) PetscValidPointer(message, 4);
   ierr = PetscObjectGetComm((PetscObject)dm0, &comm);CHKERRQ(ierr);
-  ierr = DMGetNumLabels(dm0, &n0);CHKERRQ(ierr);
-  ierr = DMGetNumLabels(dm1, &n1);CHKERRQ(ierr);
-  if (n0 != n1) {
-    ierr = PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %D != %D = Number of labels in dm1", n0, n1);CHKERRQ(ierr);
-    goto finish;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  {
+    PetscInt n1;
+
+    ierr = DMGetNumLabels(dm0, &n);CHKERRQ(ierr);
+    ierr = DMGetNumLabels(dm1, &n1);CHKERRQ(ierr);
+    eq = (PetscBool) (n == n1);
+    if (!eq) {
+      ierr = PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %D != %D = Number of labels in dm1", n, n1);CHKERRQ(ierr);
+    }
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+    if (!eq) goto finish;
   }
-  for (i=0; i<n0; i++) {
+  for (i=0; i<n; i++) {
     DMLabel     l0, l1;
     const char *name;
     char       *msgInner;
@@ -8405,22 +8419,31 @@ PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *same, char **message)
     ierr = DMGetLabel(dm1, name, &l1);CHKERRQ(ierr);
     if (!l1) {
       ierr = PetscSNPrintf(msg, sizeof(msg), "Label \"%s\" (#%D in dm0) not found in dm1", name, i);CHKERRQ(ierr);
-      goto finish;
+      eq = PETSC_FALSE;
+      break;
     }
-    ierr = DMLabelCompare(l0, l1, NULL, &msgInner);CHKERRQ(ierr);
+    ierr = DMLabelCompare(comm, l0, l1, &eq, &msgInner);CHKERRQ(ierr);
     ierr = PetscStrncpy(msg, msgInner, sizeof(msg));CHKERRQ(ierr);
     ierr = PetscFree(msgInner);CHKERRQ(ierr);
-    if (msg[0]) goto finish;
+    if (!eq) break;
   }
+  ierr = MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
 finish:
-  if (msg[0] && !same && !message) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, msg);
-  if (same) *same = (PetscBool) !msg[0];
+  /* If message output arg not set, print to stderr */
   if (message) {
     *message = NULL;
     if (msg[0]) {
       ierr = PetscStrallocpy(msg, message);CHKERRQ(ierr);
     }
+  } else {
+    if (msg[0]) {
+      ierr = PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] %s\n", rank, msg);CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedFlush(comm, PETSC_STDERR);CHKERRQ(ierr);
   }
+  /* If same output arg not ser and labels are not equal, throw error */
+  if (equal) *equal = eq;
+  else if (!eq) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "DMLabels are not the same in dm0 and dm1");
   PetscFunctionReturn(0);
 }
 

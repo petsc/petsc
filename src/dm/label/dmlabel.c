@@ -574,75 +574,78 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 /*@C
   DMLabelCompare - Compare two DMLabel objects
 
-  Collective on dmA
+  Collective on comm
 
   Input Parameters:
 + l0 - First DMLabel
 - l1 - Second DMLabel
 
   Output Parameters
-+ same    - (Optional) Flag whether the two labels are equal
-- message - (Optional) Message describing the difference, or NULL if there is no difference
++ equal   - (Optional) Flag whether the two labels are equal
+- message - (Optional) Message describing the difference
 
   Level: intermediate
 
   Notes:
-  If both same and message is passed as NULL, and difference is found, an error is thrown with a message describing the difference.
+  The output flag equal is the same on all processes.
+  If it is passed as NULL and difference is found, an error is thrown on all processes.
+  Make sure to pass NULL on all processes.
 
-  Message must be freed by user.
+  The output message is set independently on each rank.
+  It is set to NULL if no difference was found on the current rank. It must be freed by user.
+  If message is passed as NULL and difference is found, the difference description is printed to stderr in synchronized manner.
+  Make sure to pass NULL on all processes.
 
   For the comparison, we ignore the order of stratum values, and strata with no points.
+
+  The communicator needs to be specified because currently DMLabel can live on PETSC_COMM_SELF even if the underlying DM is parallel.
 
   Fortran Notes:
   This function is currently not available from Fortran.
 
 .seealso: DMCompareLabels(), DMLabelGetNumValues(), DMLabelGetDefaultValue(), DMLabelGetNonEmptyStratumValuesIS(), DMLabelGetStratumIS()
 @*/
-PetscErrorCode DMLabelCompare(DMLabel l0, DMLabel l1, PetscBool *same, char **message)
+PetscErrorCode DMLabelCompare(MPI_Comm comm, DMLabel l0, DMLabel l1, PetscBool *equal, char **message)
 {
   const char     *name0, *name1;
   char            msg[PETSC_MAX_PATH_LEN] = "";
+  PetscBool       eq;
+  PetscMPIInt     rank;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(l0, DMLABEL_CLASSID, 1);
-  PetscValidHeaderSpecific(l1, DMLABEL_CLASSID, 2);
-  if (same) PetscValidBoolPointer(same, 3);
-  if (message) PetscValidPointer(message, 4);
+  PetscValidHeaderSpecific(l0, DMLABEL_CLASSID, 2);
+  PetscValidHeaderSpecific(l1, DMLABEL_CLASSID, 3);
+  if (equal) PetscValidBoolPointer(equal, 4);
+  if (message) PetscValidPointer(message, 5);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscObjectGetName((PetscObject)l0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)l1, &name1);CHKERRQ(ierr);
-  {
-    PetscMPIInt   result;
-
-    ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)l0), PetscObjectComm((PetscObject)l1), &result);CHKERRMPI(ierr);
-    if (result != MPI_CONGRUENT && result != MPI_IDENT) {
-      ierr = PetscSNPrintf(msg, sizeof(msg), "DMLabel l0 \"%s\" has different communicator than DMLabel l1 \"%s\"", name0, name1);CHKERRQ(ierr);
-      goto finish;
-    }
-  }
   {
     PetscInt v0, v1;
 
     ierr = DMLabelGetDefaultValue(l0, &v0);CHKERRQ(ierr);
     ierr = DMLabelGetDefaultValue(l1, &v1);CHKERRQ(ierr);
-    if (v0 != v1) {
+    eq = (PetscBool) (v0 == v1);
+    if (!eq) {
       ierr = PetscSNPrintf(msg, sizeof(msg), "Default value of DMLabel l0 \"%s\" = %D != %D = Default value of DMLabel l1 \"%s\"", name0, v0, v1, name1);CHKERRQ(ierr);
-      goto finish;
     }
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+    if (!eq) goto finish;
   }
   {
     IS              is0, is1;
-    PetscBool       flg;
 
     ierr = DMLabelGetNonEmptyStratumValuesIS(l0, &is0);CHKERRQ(ierr);
     ierr = DMLabelGetNonEmptyStratumValuesIS(l1, &is1);CHKERRQ(ierr);
-    ierr = ISEqual(is0, is1, &flg);CHKERRQ(ierr);
+    ierr = ISEqual(is0, is1, &eq);CHKERRQ(ierr);
     ierr = ISDestroy(&is0);CHKERRQ(ierr);
     ierr = ISDestroy(&is1);CHKERRQ(ierr);
-    if (!flg) {
+    if (!eq) {
       ierr = PetscSNPrintf(msg, sizeof(msg), "Stratum values in DMLabel l0 \"%s\" are different than in DMLabel l1 \"%s\"", name0, name1);CHKERRQ(ierr);
-      goto finish;
     }
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+    if (!eq) goto finish;
   }
   {
     PetscInt i, nValues;
@@ -652,31 +655,37 @@ PetscErrorCode DMLabelCompare(DMLabel l0, DMLabel l1, PetscBool *same, char **me
       const PetscInt  v = l0->stratumValues[i];
       PetscInt        n;
       IS              is0, is1;
-      PetscBool       flg;
 
       ierr = DMLabelGetStratumSize_Private(l0, i, &n);CHKERRQ(ierr);
       if (!n) continue;
       ierr = DMLabelGetStratumIS(l0, v, &is0);CHKERRQ(ierr);
       ierr = DMLabelGetStratumIS(l1, v, &is1);CHKERRQ(ierr);
-      ierr = ISEqualUnsorted(is0, is1, &flg);CHKERRQ(ierr);
+      ierr = ISEqualUnsorted(is0, is1, &eq);CHKERRQ(ierr);
       ierr = ISDestroy(&is0);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
-      if (!flg) {
+      if (!eq) {
         ierr = PetscSNPrintf(msg, sizeof(msg), "Stratum #%D with value %D contains different points in DMLabel l0 \"%s\" and DMLabel l1 \"%s\"", i, v, name0, name1);CHKERRQ(ierr);
-        goto finish;
+        break;
       }
     }
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
   }
-  if (same) *same = PETSC_TRUE;
 finish:
-  if (msg[0] && !same && !message) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, msg);
-  if (same) *same = (PetscBool) !msg[0];
+  /* If message output arg not set, print to stderr */
   if (message) {
     *message = NULL;
     if (msg[0]) {
       ierr = PetscStrallocpy(msg, message);CHKERRQ(ierr);
     }
+  } else {
+    if (msg[0]) {
+      ierr = PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] %s\n", rank, msg);CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedFlush(comm, PETSC_STDERR);CHKERRQ(ierr);
   }
+  /* If same output arg not ser and labels are not equal, throw error */
+  if (equal) *equal = eq;
+  else if (!eq) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "DMLabels l0 \"%s\" and l1 \"%s\" are not equal");
   PetscFunctionReturn(0);
 }
 
