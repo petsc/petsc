@@ -117,6 +117,7 @@ PETSC_EXTERN PetscErrorCode ISCreateSubIS(IS,IS,IS*);
 /* ISGENERAL specific */
 PETSC_EXTERN PetscErrorCode ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,IS *);
 PETSC_EXTERN PetscErrorCode ISGeneralSetIndices(IS,PetscInt,const PetscInt[],PetscCopyMode);
+PETSC_EXTERN PetscErrorCode ISGeneralSetIndicesFromMask(IS,PetscInt,PetscInt,const PetscBool[]);
 PETSC_EXTERN PetscErrorCode ISGeneralFilter(IS,PetscInt,PetscInt);
 
 /* ISBLOCK specific */
