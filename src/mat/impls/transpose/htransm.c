@@ -213,6 +213,10 @@ PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
   (*N)->ops->multadd                   = MatMultAdd_HT;
   (*N)->ops->multhermitiantranspose    = MatMultHermitianTranspose_HT;
   (*N)->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_HT;
+#if !defined(PETSC_USE_COMPLEX)
+  (*N)->ops->multtranspose             = MatMultHermitianTranspose_HT;
+  (*N)->ops->multtransposeadd          = MatMultHermitianTransposeAdd_HT;
+#endif
   (*N)->ops->duplicate                 = MatDuplicate_HT;
   (*N)->ops->getvecs                   = MatCreateVecs_HT;
   (*N)->ops->axpy                      = MatAXPY_HT;
