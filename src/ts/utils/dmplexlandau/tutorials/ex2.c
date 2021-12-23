@@ -158,7 +158,7 @@ static PetscErrorCode testNone(TS ts, Vec X, PetscInt stepi, PetscReal time, Pet
 static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, PetscBool islast, LandauCtx *ctx, REctx *rectx)
 {
   PetscErrorCode    ierr;
-  PetscInt          ii;
+  PetscInt          ii,nDMs;
   PetscDS           prob;
   static PetscReal  old_ratio = 1e10;
   TSConvergedReason reason;
@@ -166,20 +166,22 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   PetscScalar       user[2] = {0.,ctx->charges[0]}, q[LANDAU_MAX_SPECIES],tt[LANDAU_MAX_SPECIES],vz;
   PetscReal         dt;
   DM                pack, plexe = ctx->plex[0], plexi = (ctx->num_grids==1) ? NULL : ctx->plex[1];
-  Vec               XsubArray[LANDAU_MAX_GRIDS*LANDAU_MAX_BATCH_SZ];
+  Vec               *XsubArray;
 
   PetscFunctionBeginUser;
   if (ctx->num_species!=2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "ctx->num_species %D != 2",ctx->num_species);
   ierr = VecGetDM(X, &pack);CHKERRQ(ierr);
   if (!pack) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "no DM");
-  ierr = DMCompositeGetAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, XsubArray);CHKERRQ(ierr); // read only
+  ierr = DMCompositeGetNumberDM(pack,&nDMs);CHKERRQ(ierr);
+  if (nDMs != ctx->num_grids*ctx->batch_sz)  SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "nDMs != ctx->num_grids*ctx->batch_sz %D != %D",nDMs,ctx->num_grids*ctx->batch_sz);
+  ierr = PetscMalloc(sizeof(*XsubArray)*nDMs, &XsubArray);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccessArray(pack, X, nDMs, NULL, XsubArray);CHKERRQ(ierr); // read only
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
   /* get current for each grid */
   for (ii=0;ii<ctx->num_species;ii++) q[ii] = ctx->charges[ii];
   ierr = DMGetDS(plexe, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetConstants(prob, 2, &q[0]);CHKERRQ(ierr);
   ierr = PetscDSSetObjective(prob, 0, &f0_jz_sum);CHKERRQ(ierr);
-  //ierr = DMPlexComputeIntegralFEM(plexe,XsubArray[ctx->batch_view_idx*ctx->num_grids],tt,NULL);CHKERRQ(ierr);
   ierr = DMPlexComputeIntegralFEM(plexe,XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx,0) ],tt,NULL);CHKERRQ(ierr);
   J = -ctx->n_0*ctx->v_0*PetscRealPart(tt[0]);
   if (plexi) { // add first (only) ion
@@ -223,7 +225,8 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
     ierr = DMPlexComputeIntegralFEM(plexe,XsubArray[LAND_PACK_IDX(ctx->batch_view_idx,0)],tt,NULL);CHKERRQ(ierr);
   } else tt[0] = 0;
   J_re = -ctx->n_0*ctx->v_0*PetscRealPart(tt[0]);
-  ierr = DMCompositeRestoreAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, XsubArray);CHKERRQ(ierr); // read only
+  ierr = DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, XsubArray);CHKERRQ(ierr); // read only
+  ierr = PetscFree(XsubArray);CHKERRQ(ierr);
 
   if (rectx->use_spitzer_eta) {
     E = ctx->Ez = spit_eta*(rectx->j-J_re);
@@ -468,22 +471,30 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     /* diagnostics + change E field with Sptizer (not just a monitor) - can we lag this? */
     ierr = rectx->test(ts,X,stepi,time,reason ? PETSC_TRUE : PETSC_FALSE, ctx, rectx);CHKERRQ(ierr);
   }
-  ierr = DMCompositeRestoreAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, globXArray);CHKERRQ(ierr);
-  /* parallel check */
-  if (reason && ctx->verbose > 0) {
+  /* parallel check that only works of all batches are identical */
+  if (reason && ctx->verbose > 3) {
     PetscReal    val,rval;
     PetscMPIInt  rank;
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
-    ierr = TSGetSolution(ts, &X);CHKERRQ(ierr);
-    ierr = VecNorm(X,NORM_2,&val);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&val,&rval,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-    if (rval != val) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, " ***** [%D] ERROR max |x| = %22.15e, my |x| = %22.15e diff=%e\n",rank,rval,val,rval-val);CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "[%D] parallel consistency check OK\n",rank);CHKERRQ(ierr);
+    for (PetscInt grid=0;grid<ctx->num_grids;grid++) {
+      PetscInt nerrors=0;
+      for (PetscInt i=0; i<ctx->batch_sz;i++) {
+        ierr = VecNorm(globXArray[ LAND_PACK_IDX(i,grid) ],NORM_2,&val);CHKERRQ(ierr);
+        if (i==0) rval = val;
+        else if ((val=PetscAbs(val-rval)/rval) > 1000*PETSC_MACHINE_EPSILON) {
+          PetscPrintf(PETSC_COMM_SELF, " [%D] Warning %D.%D) diff = %2.15e\n",rank,grid,i,val);CHKERRQ(ierr);
+          nerrors++;
+        }
+      }
+      if (nerrors) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, " ***** [%D] ERROR max %D errors\n",rank,nerrors);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "[%D] %D) batch consistency check OK\n",rank,grid);CHKERRQ(ierr);
+      }
     }
   }
   rectx->idx = 0;
+  ierr = DMCompositeRestoreAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, globXArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -638,12 +649,21 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatrixNfDestroy(void *ptr)
+{
+  PetscInt *nf = (PetscInt *)ptr;
+  PetscErrorCode  ierr;
+  PetscFunctionBegin;
+  ierr = PetscFree(nf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv)
 {
   DM             pack;
-  Vec            X,XsubArray[LANDAU_MAX_GRIDS*LANDAU_MAX_BATCH_SZ];
+  Vec            X,*XsubArray;
   PetscErrorCode ierr;
-  PetscInt       dim = 2;
+  PetscInt       dim = 2, nDMs;
   TS             ts;
   Mat            J;
   PetscDS        prob;
@@ -656,6 +676,7 @@ int main(int argc, char **argv)
 #if defined(PETSC_HAVE_THREADSAFETY)
   double         starttime, endtime;
 #endif
+  PetscContainer container;
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   if (rank) { /* turn off output stuff for duplicate runs */
@@ -672,6 +693,8 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
   ierr = LandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, "", &X, &J, &pack);CHKERRQ(ierr);
+  ierr = DMCompositeGetNumberDM(pack,&nDMs);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(*XsubArray)*nDMs, &XsubArray);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)J, "Jacobian");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)X, "f");CHKERRQ(ierr);
   ierr = LandauCreateMassMatrix(pack, NULL);CHKERRQ(ierr);
@@ -682,12 +705,13 @@ int main(int argc, char **argv)
   ctx->data = rectx;
   ierr = ProcessREOptions(rectx,ctx,pack,"");CHKERRQ(ierr);
   ierr = DMGetDS(pack, &prob);CHKERRQ(ierr);
-  ierr = DMCompositeGetAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, XsubArray);CHKERRQ(ierr); // read only
+  ierr = DMCompositeGetAccessArray(pack, X, nDMs, NULL, XsubArray);CHKERRQ(ierr); // read only
   ierr = PetscObjectSetName((PetscObject) XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx, rectx->grid_view_idx) ], rectx->grid_view_idx==0 ? "ue" : "ui");CHKERRQ(ierr);
   ierr = DMViewFromOptions(ctx->plex[rectx->grid_view_idx],NULL,"-dm_view");CHKERRQ(ierr);
   ierr = DMViewFromOptions(ctx->plex[rectx->grid_view_idx], NULL,"-dm_view_0");CHKERRQ(ierr);
   ierr = VecViewFromOptions(XsubArray[ LAND_PACK_IDX(ctx->batch_view_idx,rectx->grid_view_idx) ], NULL,"-vec_view_0");CHKERRQ(ierr); // initial condition (monitor plots after step)
-  ierr = DMCompositeRestoreAccessArray(pack, X, ctx->num_grids*ctx->batch_sz, NULL, XsubArray);CHKERRQ(ierr); // read only
+  ierr = DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, XsubArray);CHKERRQ(ierr); // read only
+  ierr = PetscFree(XsubArray);CHKERRQ(ierr);
   ierr = VecViewFromOptions(X, NULL,"-vec_view_global");CHKERRQ(ierr); // initial condition (monitor plots after step)
   ierr = DMSetOutputSequenceNumber(pack, 0, 0.0);CHKERRQ(ierr);
   /* Create timestepping solver context */
@@ -701,7 +725,16 @@ int main(int argc, char **argv)
   ierr = TSSetApplicationContext(ts, ctx);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,Monitor,ctx,NULL);CHKERRQ(ierr);
   ierr = TSSetPreStep(ts,PreStep);CHKERRQ(ierr);
-
+  {
+    PetscInt *pNf;
+    ierr = PetscContainerCreate(PETSC_COMM_SELF, &container);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(*pNf), &pNf);CHKERRQ(ierr);
+    *pNf = ctx->batch_sz + 100000*ctx->numConcurrency;
+    ierr = PetscContainerSetPointer(container, (void *)pNf);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(container, MatrixNfDestroy);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)ctx->J, "batch size", (PetscObject) container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  }
   rectx->Ez_initial = ctx->Ez;       /* cache for induction caclulation - applied E field */
   if (1) { /* warm up an test just LandauIJacobian */
     Vec           vec;
@@ -728,7 +761,7 @@ int main(int argc, char **argv)
   }
   /* go */
   ierr = PetscLogStageRegister("Solve", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Landau", &ctx->stage);CHKERRQ(ierr);
+  ctx->stage = 0; // lets not use this stage
 #if defined(PETSC_HAVE_THREADSAFETY)
   ctx->stage = 1; // not set with thread safty
 #endif
@@ -749,6 +782,7 @@ int main(int argc, char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = PetscFree(rectx);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
