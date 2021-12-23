@@ -284,13 +284,27 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
 
       if (coloring->htype[0] == 'w') {
         for (l=0; l<nrows_k; l++) {
-          row                      = Jentry2[nz].row;   /* local row index */
-          *(Jentry2[nz++].valaddr) = dy[row]*dx;
+          row  = Jentry2[nz].row;   /* local row index */
+          /* The 'useless' ifdef is due to a bug in NVIDIA nvc 21.11, which triggers a segfault on this line. We write it in
+             another way, and it seems work. See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html
+           */
+         #if defined(PETSC_USE_COMPLEX)
+          PetscScalar *tmp = Jentry2[nz].valaddr;
+          *tmp = dy[row]*dx;
+         #else
+          *(Jentry2[nz].valaddr) = dy[row]*dx;
+         #endif
+          nz++;
         }
       } else { /* htype == 'ds' */
         for (l=0; l<nrows_k; l++) {
-          row                   = Jentry[nz].row;   /* local row index */
+          row = Jentry[nz].row;   /* local row index */
+         #if defined(PETSC_USE_COMPLEX) /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+          PetscScalar *tmp = Jentry[nz].valaddr;
+          *tmp = dy[row]*vscale_array[Jentry[nz].col];
+         #else
           *(Jentry[nz].valaddr) = dy[row]*vscale_array[Jentry[nz].col];
+         #endif
           nz++;
         }
       }
@@ -338,13 +352,24 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
       ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
       if (coloring->htype[0] == 'w') {
         for (l=0; l<nrows_k; l++) {
-          row                      = Jentry2[nz].row;   /* local row index */
-          *(Jentry2[nz++].valaddr) = y[row]*dx;
+          row  = Jentry2[nz].row;   /* local row index */
+         #if defined(PETSC_USE_COMPLEX) /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+          PetscScalar *tmp = Jentry2[nz].valaddr;
+          *tmp = y[row]*dx;
+         #else
+          *(Jentry2[nz].valaddr) = y[row]*dx;
+         #endif
+          nz++;
         }
       } else { /* htype == 'ds' */
         for (l=0; l<nrows_k; l++) {
-          row                   = Jentry[nz].row;   /* local row index */
+          row  = Jentry[nz].row;   /* local row index */
+         #if defined(PETSC_USE_COMPLEX) /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+          PetscScalar *tmp = Jentry[nz].valaddr;
+          *tmp = y[row]*vscale_array[Jentry[nz].col];
+         #else
           *(Jentry[nz].valaddr) = y[row]*vscale_array[Jentry[nz].col];
+         #endif
           nz++;
         }
       }
