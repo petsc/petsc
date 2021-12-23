@@ -9,8 +9,9 @@ class Configure(config.package.Package):
     self.versionname      = 'HIP_VERSION_MAJOR.HIP_VERSION_MINOR'
     self.versioninclude   = 'hip/hip_version.h'
     self.requiresversion  = 1
-    self.functionsCxx     = [1,'', 'hipblasCreate']
-    self.includes         = ['hipblas.h','hipsparse.h']
+    self.functionsCxx     = [1,'', 'rocblas_create']
+    self.includes         = ['hip/hip_runtime.h']
+    # PETSc does not use hipsparse or hipblas, but dependencies can (e.g., magma)
     self.liblist          = [['libhipsparse.a','libhipblas.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a'],
                              ['hipsparse.lib','hipblas.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib'],]
     self.precisions       = ['single','double']
