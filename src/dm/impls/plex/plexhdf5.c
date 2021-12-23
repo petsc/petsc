@@ -1310,8 +1310,13 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *lname, const H5L_info
   DM             dm  = ctx->dm;
   hsize_t        idx = 0;
   PetscErrorCode ierr;
+  PetscBool      flg;
   herr_t         err;
 
+  ierr = DMHasLabel(dm, lname, &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMRemoveLabel(dm, lname, NULL);CHKERRQ(ierr);
+  }
   ierr = DMCreateLabel(dm, lname); if (ierr) return (herr_t) ierr;
   ierr = DMGetLabel(dm, lname, &ctx->label); if (ierr) return (herr_t) ierr;
   ierr = PetscViewerHDF5PushGroup(ctx->viewer, lname);CHKERRQ(ierr); /* labels/<lname> */
