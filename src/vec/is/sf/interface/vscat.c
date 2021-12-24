@@ -958,7 +958,8 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
 #else
     PetscInt       j,k,n,disp,rlentotal,*sstart,*xindices_sorted,*yindices_sorted;
     const PetscInt *yrange;
-    PetscMPIInt    nsend,nrecv,nreq,count,yrank,*slens,*rlens,*sendto,*recvfrom,tag1,tag2;
+    PetscMPIInt    nsend,nrecv,nreq,yrank,*sendto,*recvfrom,tag1,tag2;
+    PetscInt       *slens,*rlens,count;
     PetscInt       *rxindices,*ryindices;
     MPI_Request    *reqs,*sreqs,*rreqs;
 
@@ -1017,8 +1018,8 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
        rxindices - [rlentotal] recv buffer for xindices_sorted
        ryindices - [rlentotal] recv buffer for yindices_sorted
      */
-    ierr = PetscGatherNumberOfMessages(ycomm,NULL,slens,&nrecv);CHKERRQ(ierr);
-    ierr = PetscGatherMessageLengths(ycomm,nsend,nrecv,slens,&recvfrom,&rlens);CHKERRQ(ierr);
+    ierr = PetscGatherNumberOfMessages_Private(ycomm,NULL,slens,&nrecv);CHKERRQ(ierr);
+    ierr = PetscGatherMessageLengths_Private(ycomm,nsend,nrecv,slens,&recvfrom,&rlens);CHKERRQ(ierr);
     ierr = PetscFree(slens);CHKERRQ(ierr); /* Free the O(P) array ASAP */
     rlentotal = 0; for (i=0; i<nrecv; i++) rlentotal += rlens[i];
 
@@ -1035,15 +1036,15 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
 
     for (i=disp=0; i<nrecv; i++) {
       count = rlens[i];
-      ierr  = MPI_Irecv(rxindices+disp,count,MPIU_INT,recvfrom[i],tag1,ycomm,rreqs+i);CHKERRMPI(ierr);
-      ierr  = MPI_Irecv(ryindices+disp,count,MPIU_INT,recvfrom[i],tag2,ycomm,rreqs+nrecv+i);CHKERRMPI(ierr);
+      ierr  = MPIU_Irecv(rxindices+disp,count,MPIU_INT,recvfrom[i],tag1,ycomm,rreqs+i);CHKERRMPI(ierr);
+      ierr  = MPIU_Irecv(ryindices+disp,count,MPIU_INT,recvfrom[i],tag2,ycomm,rreqs+nrecv+i);CHKERRMPI(ierr);
       disp += rlens[i];
     }
 
     for (i=0; i<nsend; i++) {
-      ierr  = PetscMPIIntCast(sstart[i+1]-sstart[i],&count);CHKERRQ(ierr);
-      ierr  = MPI_Isend(xindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag1,ycomm,sreqs+i);CHKERRMPI(ierr);
-      ierr  = MPI_Isend(yindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag2,ycomm,sreqs+nsend+i);CHKERRMPI(ierr);
+      count = sstart[i+1]-sstart[i];
+      ierr  = MPIU_Isend(xindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag1,ycomm,sreqs+i);CHKERRMPI(ierr);
+      ierr  = MPIU_Isend(yindices_sorted+sstart[i],count,MPIU_INT,sendto[i],tag2,ycomm,sreqs+nsend+i);CHKERRMPI(ierr);
     }
     ierr = MPI_Waitall(nreq,reqs,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
 
@@ -1063,7 +1064,6 @@ PetscErrorCode VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newsf)
     }
 
     ierr = PetscFree2(sstart,sendto);CHKERRQ(ierr);
-    ierr = PetscFree(slens);CHKERRQ(ierr);
     ierr = PetscFree(rlens);CHKERRQ(ierr);
     ierr = PetscFree(recvfrom);CHKERRQ(ierr);
     ierr = PetscFree(reqs);CHKERRQ(ierr);

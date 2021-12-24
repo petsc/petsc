@@ -3,6 +3,9 @@
 
 #include <petscsys.h>
 
+PETSC_EXTERN PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm,const PetscMPIInt[],const PetscInt[],PetscMPIInt*);
+PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm,PetscMPIInt,PetscMPIInt,const PetscInt[],PetscMPIInt**,PetscInt**);
+
 #if !defined(PETSC_HAVE_MPI_LARGE_COUNT) /* No matter PetscInt is 32-bit or 64-bit, without MPI large count we always do casting before MPI calls */
   /* Cast PetscInt <a> to PetscMPIInt <b>, where <a> is likely used for the 'count' argument in MPI routines.
     It is similar to PetscMPIIntCast() execept that here it returns an MPI error code.
