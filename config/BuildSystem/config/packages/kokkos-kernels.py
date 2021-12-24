@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'e9496bbfefad465ea9fba77314759f912898fdea' # develop of 2021-11-3
+    self.gitcommit        = '6c786cd6900b977e7b3b19a1f88c0c433a49cbcc' # develop of 2021-12-20
     self.versionname      = 'KOKKOS_KERNELS_VERSION'  # It looks kokkos-kernels does not yet have a macro for version number
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
@@ -37,7 +37,8 @@ class Configure(config.package.CMakePackage):
     self.deps                = [self.kokkos]
     self.cuda                = framework.require('config.packages.cuda',self)
     self.hip                 = framework.require('config.packages.hip',self)
-    self.odeps               = [self.cuda,self.hip]
+    self.sycl                = framework.require('config.packages.sycl',self)
+    self.odeps               = [self.cuda,self.hip,self.sycl]
     return
 
   def versionToStandardForm(self,ver):
@@ -78,19 +79,22 @@ class Configure(config.package.CMakePackage):
       self.system = 'HIP'
       with self.Language('HIP'):
         petscHipc = self.getCompiler()
-        hipFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
-        # kokkos uses clang and offload flag
-        hipFlags = ' '.join([i for i in hipFlags.split() if '--amdgpu-target' not in i])
-      self.getExecutable(petscHipc,getFullPath=1,resultName='systemHipc')
+        self.getExecutable(petscHipc,getFullPath=1,resultName='systemHipc')
       if not hasattr(self,'systemHipc'):
         raise RuntimeError('HIP error: could not find path of hipc')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.systemHipc)
-      args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
-      args.append('-DCMAKE_CXX_FLAGS="' + hipFlags + '"')
+    elif self.sycl.found:
+      args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
+      args.append('-DCMAKE_CXX_COMPILER='+self.kokkos.systemSyclc)
 
-    # -DCMAKE_CXX_STANDARD= will be taken from Kokkos
+    # These options will be taken from Kokkos configuration
     args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_FLAGS')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_C_COMPILER=')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_C_FLAGS')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_AR')
+    args = self.rmArgsStartsWith(args,'-DCMAKE_RANLIB')
     return args
 
   def configureLibrary(self):

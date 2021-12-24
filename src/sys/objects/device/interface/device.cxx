@@ -10,11 +10,16 @@ static CUPMDevice<CUPMDeviceType::CUDA> CUDADevice(PetscDeviceContextCreate_CUDA
 #if PetscDefined(HAVE_HIP)
 static CUPMDevice<CUPMDeviceType::HIP>  HIPDevice(PetscDeviceContextCreate_HIP);
 #endif
+#if PetscDefined(HAVE_SYCL)
+#include "sycldevice.hpp"
+static SyclDevice                       SYCLDevice(PetscDeviceContextCreate_SYCL);
+#endif
 
 const char *const PetscDeviceTypes[] = {
   "invalid",
   "cuda",
   "hip",
+  "sycl",
   "max",
   "PetscDeviceType",
   "PETSC_DEVICE_",
@@ -101,6 +106,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
   switch (type) {
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,getDevice,dev,devid);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(HIP,getDevice,dev,devid);
+    PETSC_DEVICE_CASE_IF_PETSC_DEFINED(SYCL,getDevice,dev,devid);
   default:
     PETSC_DEVICE_UNUSED_IF_NO_DEVICE(devid);
     PETSC_DEVICE_DEFAULT_CASE(PETSC_COMM_SELF,type);
@@ -165,6 +171,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
     switch (device->type) {
     case PETSC_DEVICE_CUDA: if (PetscDefined(HAVE_CUDA)) break;
     case PETSC_DEVICE_HIP:  if (PetscDefined(HAVE_HIP))  break;
+    case PETSC_DEVICE_SYCL: if (PetscDefined(HAVE_SYCL)) break;
     default:
       PETSC_DEVICE_DEFAULT_CASE(PETSC_COMM_SELF,device->type);
       break;
@@ -291,6 +298,7 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
   switch (type) {
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,initialize,comm,&defaultDeviceId,defaultInitType);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(HIP,initialize,comm,&defaultDeviceId,defaultInitType);
+    PETSC_DEVICE_CASE_IF_PETSC_DEFINED(SYCL,initialize,comm,&defaultDeviceId,defaultInitType);
   default:
     PETSC_DEVICE_DEFAULT_CASE(comm,type);
     break;

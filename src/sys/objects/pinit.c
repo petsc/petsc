@@ -952,7 +952,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
    3. Petsc error handling initialized, specifically signal handlers. This expects to set up its own SIGSEV handler via
       the push/pop interface.
   */
-#if (PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP))
+#if (PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP) || PetscDefined(HAVE_SYCL))
   ierr = PetscDeviceInitializeFromOptions_Internal(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #endif
 

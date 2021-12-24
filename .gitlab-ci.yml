@@ -340,7 +340,7 @@ pause-for-approval:
 #
 # The tags variable used in the tests below connects the particular test with the runners
 # listed on the left hand side of https://gitlab.com/petsc/petsc/-/settings/ci_cd.
-# For example the test linux-sycl-double  any runner that has the tag 'name:pj01'
+# For example the test linux-sycl-double any runner that has the tags 'gce-nfs, linux-fast'
 # (in a blue box beneath it)
 #
 
@@ -472,13 +472,13 @@ linux-hip-double:
 linux-sycl-double:
   extends:
     - .stage-3
-    - .linux_test_nofflags
+    - .linux_test_noflags
   tags:
-    - os:linux, name:pj01
+    - gce-nfs, linux-fast
   variables:
     TEST_ARCH: arch-ci-linux-sycl-double
-    INIT_SCRIPT: /home/glci/bin/ci-inteloneapi.sh
-    DISABLE_TESTS: 1
+    LOAD_MODULES: compiler/latest mpi/latest
+    TEST_OPTS: query=requires queryval=kokkos_kernels
 
 linux-c-exodus-dbg:
   extends:

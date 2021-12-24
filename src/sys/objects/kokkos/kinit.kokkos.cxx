@@ -38,8 +38,7 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     args.disable_warnings = true;
 #endif
 
-#if PETSC_AND_KOKKOS_HAVE(CUDA) || PETSC_AND_KOKKOS_HAVE(HIP)
-    /* Kokkos does not support CUDA and HIP at the same time (but we do :)) */
+#if PETSC_AND_KOKKOS_HAVE(CUDA) || PETSC_AND_KOKKOS_HAVE(HIP) || PETSC_AND_KOKKOS_HAVE(SYCL)
     PetscDeviceContext dctx;
     PetscErrorCode     ierr;
 

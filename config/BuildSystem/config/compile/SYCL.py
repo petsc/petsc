@@ -26,7 +26,7 @@ class Preprocessor(config.compile.processor.Processor):
 class Compiler(config.compile.processor.Processor):
   '''The SYCL compiler'''
   def __init__(self, argDB, usePreprocessorFlags = False):
-    config.compile.processor.Processor.__init__(self, argDB, 'SYCLCXX', 'SYCLCXXFLAGS', '.sycl.cxx', '.o')
+    config.compile.processor.Processor.__init__(self, argDB, 'SYCLC', 'SYCLFLAGS', '.sycl.cxx', '.o')
     self.language        = 'SYCL'
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'
@@ -37,13 +37,18 @@ class Compiler(config.compile.processor.Processor):
     return
 
   def getTarget(self, source):
-    '''Return None for header files'''
+    '''Return the object file name for 'source'; None if 'source' is a header file'''
     import os
 
-    base, ext = os.path.splitext(source)
-    if ext in ['.h', '.hh', '.hpp']:
+    # SYCL files are foo.sycl.cxx
+    base1, ext1 = os.path.splitext(source)
+    base2, ext2 = os.path.splitext(base1)
+    if ext1 in ['.h', '.hh', '.hpp']:
       return None
-    return base+'.o'
+    # If there is no .sycl, then not a sycl file
+    if ext2 != '.sycl':
+        return None
+    return base2+'.o'
 
   def getCommand(self, sourceFiles, outputFile = None):
     '''If no outputFile is given, do not execute anything'''
@@ -52,12 +57,12 @@ class Compiler(config.compile.processor.Processor):
     return config.compile.processor.Processor.getCommand(self, sourceFiles, outputFile)
 
 class Linker(config.compile.C.Linker):
-  '''The SYCLCXX linker'''
+  '''The SYCL linker'''
   def __init__(self, argDB):
     self.compiler        = Compiler(argDB, usePreprocessorFlags = False)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB, tmpDir = os.getcwd()))
     config.compile.processor.Processor.__init__(self, argDB,
-                                                [self.compiler.name], ['SYCLCXX_LINKER_FLAGS'], '.o', '.a')
+                                                [self.compiler.name], ['SYCLC_LINKER_FLAGS'], '.o', '.a')
     self.language   = 'SYCL'
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
@@ -70,14 +75,14 @@ class Linker(config.compile.C.Linker):
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
 
 class SharedLinker(config.compile.C.SharedLinker):
-  '''The SYCLCXX shared linker: Just use Cxx linker for now'''
+  '''The SYCL shared linker: Just use Cxx linker for now'''
   def __init__(self, argDB):
     config.compile.Cxx.SharedLinker.__init__(self, argDB)
     self.language = 'SYCL'
     return
 
 class StaticLinker(config.compile.C.StaticLinker):
-  '''The SYCLCXX static linker, just use Cxx for now'''
+  '''The SYCL static linker, just use Cxx for now'''
   def __init__(self, argDB):
     config.compile.Cxx.StaticLinker.__init__(self, argDB)
     self.language = 'SYCL'

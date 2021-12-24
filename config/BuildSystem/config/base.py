@@ -563,7 +563,7 @@ class Configure(script.Script):
     elif language == 'HIP':
       flagsArg = 'HIPFLAGS'
     elif language == 'SYCL':
-      flagsArg = 'SYCLCXXFLAGS'
+      flagsArg = 'SYCLFLAGS'
     elif language == 'FC':
       flagsArg = 'FFLAGS'
     else:

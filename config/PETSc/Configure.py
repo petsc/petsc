@@ -334,6 +334,7 @@ prepend-path PATH "%s"
     if hasattr(self.compilers, 'CUDAC'):
       self.setCompilers.pushLanguage('CUDA')
       self.addMakeMacro('CUDAC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('CUDAPP_FLAGS',self.setCompilers.CUDAPPFLAGS)
       self.setCompilers.popLanguage()
 
     if hasattr(self.compilers, 'HIPC'):
@@ -342,9 +343,10 @@ prepend-path PATH "%s"
       self.addMakeMacro('HIPPP_FLAGS',self.setCompilers.HIPPPFLAGS)
       self.setCompilers.popLanguage()
 
-    if hasattr(self.compilers, 'SYCLCXX'):
+    if hasattr(self.compilers, 'SYCLC'):
       self.setCompilers.pushLanguage('SYCL')
-      self.addMakeMacro('SYCLCXX_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('SYCLC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('SYCLPP_FLAGS',self.setCompilers.SYCLPPFLAGS)
       self.setCompilers.popLanguage()
 
     # shared library linker values

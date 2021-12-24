@@ -220,7 +220,7 @@ getautoconfargs:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx .raja.cxx
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx .raja.cxx *.sycl.cxx
 
 #
 #
@@ -282,6 +282,9 @@ getautoconfargs:
 #   Compiles CUDA code
 .cu.o:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
+
+.sycl.cxx.o:
+	${PETSC_SYCLCOMPILE_SINGLE} `pwd`/$<
 
 .raja.cxx.o:
 	${PETSC_RAJACOMPILE_SINGLE} `pwd`/$<
