@@ -29,7 +29,9 @@ class Configure(config.package.Package):
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
     self.cuda            = framework.require('config.packages.cuda',self)
     self.thrust          = framework.require('config.packages.thrust',self)
-    self.odeps           = [self.cuda,self.thrust]
+    self.hypre           = framework.require('config.packages.hypre',self)
+    self.SuiteSparse     = framework.require('config.packages.SuiteSparse',self)
+    self.odeps           = [self.cuda,self.thrust,self.hypre,self.SuiteSparse]
     return
 
   def Install(self):
