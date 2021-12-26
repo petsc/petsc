@@ -2653,7 +2653,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
                                      mmdata->spgemmDesc);CHKERRCUSPARSE(stat);
   ierr = PetscInfo9(C,"Buffer sizes for type %s, result %D x %D (k %D, nzA %D, nzB %D, nzC %D) are: %ldKB %ldKB\n",MatProductTypes[ptype],m,n,k,a->nz,b->nz,c->nz,bufferSize4/1024,bufferSize5/1024);CHKERRQ(ierr);
  }
- #else // ~PETSC_PKG_CUDA_VERSION_GE(11,4,0)
+ #else
   size_t bufSize2;
   /* ask bufferSize bytes for external memory */
   stat = cusparseSpGEMM_workEstimation(Ccusp->handle, opA, opB,
@@ -2695,7 +2695,7 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqAIJCUSPARSE(Mat C)
   stat = cusparseSpGEMM_copy(Ccusp->handle, opA, opB,
                              Cmat->alpha_one, Amat->matDescr, BmatSpDescr, Cmat->beta_zero, Cmat->matDescr,
                              cusparse_scalartype, CUSPARSE_SPGEMM_DEFAULT, mmdata->spgemmDesc);CHKERRCUSPARSE(stat);
- #endif
+ #endif // PETSC_PKG_CUDA_VERSION_GE(11,4,0)
 #else
   stat = cusparseSetPointerMode(Ccusp->handle, CUSPARSE_POINTER_MODE_HOST);CHKERRCUSPARSE(stat);
   stat = cusparseXcsrgemmNnz(Ccusp->handle, opA, opB,
