@@ -11,9 +11,10 @@
 
 #include <cuda_runtime.h>
 #include <thrust/device_ptr.h>
-#include <thrust/transform.h>
 #include <thrust/functional.h>
+#include <thrust/iterator/counting_iterator.h>
 #include <thrust/reduce.h>
+#include <thrust/transform.h>
 
 /*
     Allocates space for the vector array on the GPU if it does not exist.

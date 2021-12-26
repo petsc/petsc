@@ -12,7 +12,12 @@
 #include <petsc/private/vecimpl.h>
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
+#include <thrust/adjacent_difference.h>
 #include <thrust/async/for_each.h>
+#include <thrust/iterator/constant_iterator.h>
+#include <thrust/remove.h>
+#include <thrust/sort.h>
+#include <thrust/unique.h>
 
 const char *const MatCUSPARSEStorageFormats[]    = {"CSR","ELL","HYB","MatCUSPARSEStorageFormat","MAT_CUSPARSE_",0};
 #if PETSC_PKG_CUDA_VERSION_GE(11,0,0)

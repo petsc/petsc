@@ -6,6 +6,9 @@
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 #include <../src/mat/impls/aij/mpi/mpicusparse/mpicusparsematimpl.h>
 #include <thrust/advance.h>
+#include <thrust/partition.h>
+#include <thrust/sort.h>
+#include <thrust/unique.h>
 #include <petscsf.h>
 
 struct VecCUDAEquals
