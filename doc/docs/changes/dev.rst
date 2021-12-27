@@ -157,6 +157,7 @@ Changes: Development
 - Change ``DMTransformAdaptLabel`` so that it takes an additional argument for cell tags
 - Change ``DMGenerateRegister`` so that it registers routines that take an additional argument for cell tags
 - Change ``DMPlexFindVertices()`` to take ``Vec`` and ``IS`` arguments instead of arrays
+- Add ``DMPlexTSComputeRHSFEM()`` to support explicit timestepping
 
 .. rubric:: FE/FV:
 
@@ -171,5 +172,6 @@ Changes: Development
 .. rubric:: DT:
 
 - Add ``PetscDTPTrimmedEvalJet()`` to evaluate a stable basis for trimmed polynomials, and ``PetscDTPTrimmedSize()`` for the size of that space
+- Add ``PetscDSGetRHSResidual()`` and ``PetscDSSetRHSResidual()`` to support explicit timestepping
 
 .. rubric:: Fortran:

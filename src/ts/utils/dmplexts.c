@@ -133,7 +133,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
   Level: developer
 
-.seealso: DMPlexComputeJacobianActionFEM()
+.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeRHSFEM()
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {
@@ -190,7 +190,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
   Level: developer
 
-.seealso: DMPlexComputeJacobianActionFEM()
+.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeRHSFEM()
 @*/
 PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
@@ -231,6 +231,61 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
       ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
     }
     ierr = DMPlexComputeJacobian_Internal(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user);CHKERRQ(ierr);
+    ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexTSComputeRHSFEM - Form the local residual G from the local input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. t - The time
+. locX  - Local solution
+- user - The user context
+
+  Output Parameter:
+. locG  - Local output vector
+
+  Level: developer
+
+.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeIJacobianFEM()
+@*/
+PetscErrorCode DMPlexTSComputeRHSFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
+{
+  DM             plex;
+  IS             allcellIS;
+  PetscInt       Nds, s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMTSConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexGetAllCells_Internal(plex, &allcellIS);CHKERRQ(ierr);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (s = 0; s < Nds; ++s) {
+    PetscDS          ds;
+    IS               cellIS;
+    PetscFormKey key;
+
+    ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
+    key.value = 0;
+    key.field = 0;
+    key.part  = 100;
+    if (!key.label) {
+      ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
+      cellIS = allcellIS;
+    } else {
+      IS pointIS;
+
+      key.value = 1;
+      ierr = DMLabelGetStratumIS(key.label, key.value, &pointIS);CHKERRQ(ierr);
+      ierr = ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locG, user);CHKERRQ(ierr);
     ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
