@@ -9232,6 +9232,43 @@ static void g0_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   g0[0] = 1.0;
 }
 
+PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass)
+{
+  DM             dmc;
+  PetscDS        ds;
+  Vec            ones, locmass;
+  IS             cellIS;
+  PetscFormKey   key;
+  PetscInt       depth;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMClone(dm, &dmc);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, dmc);CHKERRQ(ierr);
+  ierr = DMGetDS(dmc, &ds);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(ds, 0, 0, g0_identity_private, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dmc, mass);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmc, &ones);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmc, &locmass);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dmc, &depth);CHKERRQ(ierr);
+  ierr = DMGetStratumIS(dmc, "depth", depth, &cellIS);CHKERRQ(ierr);
+  ierr = VecSet(locmass, 0.0);CHKERRQ(ierr);
+  ierr = VecSet(ones, 1.0);CHKERRQ(ierr);
+  key.label = NULL;
+  key.value = 0;
+  key.field = 0;
+  key.part  = 0;
+  ierr = DMPlexComputeJacobian_Action_Internal(dmc, key, cellIS, 0.0, 0.0, ones, NULL, ones, locmass, NULL);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  ierr = VecSet(*mass, 0.0);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dmc, locmass, ADD_VALUES, *mass);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dmc, locmass, ADD_VALUES, *mass);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dmc, &ones);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dmc, &locmass);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
 {
   PetscSection   gsc, gsf;
@@ -9243,16 +9280,19 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
 
   PetscFunctionBegin;
   if (dmFine == dmCoarse) {
-    DM       dmc;
-    PetscDS  ds;
-    Vec      u;
-    IS       cellIS;
-    PetscFormKey key;
-    PetscInt depth;
+    DM            dmc;
+    PetscDS       ds;
+    PetscWeakForm wf;
+    Vec           u;
+    IS            cellIS;
+    PetscFormKey  key;
+    PetscInt      depth;
 
     ierr = DMClone(dmFine, &dmc);CHKERRQ(ierr);
     ierr = DMCopyDisc(dmFine, dmc);CHKERRQ(ierr);
     ierr = DMGetDS(dmc, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetWeakForm(ds, &wf);CHKERRQ(ierr);
+    ierr = PetscWeakFormClear(wf);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds, 0, 0, g0_identity_private, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dmc, mass);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dmc, &u);CHKERRQ(ierr);

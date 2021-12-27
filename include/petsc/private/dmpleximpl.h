@@ -692,6 +692,7 @@ PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS*, Mat*, PetscErro
 PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 PETSC_INTERN PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 PETSC_INTERN PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mat);
+PETSC_INTERN PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dmCoarse, Vec *lm);
 PETSC_INTERN PetscErrorCode DMCreateLocalSection_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);

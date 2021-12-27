@@ -3029,6 +3029,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->creatematrix                    = DMCreateMatrix_Plex;
   dm->ops->createinterpolation             = DMCreateInterpolation_Plex;
   dm->ops->createmassmatrix                = DMCreateMassMatrix_Plex;
+  dm->ops->createmassmatrixlumped          = DMCreateMassMatrixLumped_Plex;
   dm->ops->createinjection                 = DMCreateInjection_Plex;
   dm->ops->refine                          = DMRefine_Plex;
   dm->ops->coarsen                         = DMCoarsen_Plex;

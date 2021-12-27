@@ -1122,6 +1122,16 @@ implicit time-stepping solvers ``TSTHETA``, ``TSARKIMEX``, and
 
 .. _sec_tchem:
 
+Explicit integrators with finite flement mass matrices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Discretized finite element problems often have the form :math:`M \dot u = G(t, u)` where :math:`M` is the mass matrix.
+Such problems can be solved using ``DMTSSetIFunction()`` with implicit integrators.
+When :math:`M` is nonsingular (i.e., the problem is an ODE, not a DAE), explicit integrators can be applied to :math:`\dot u = M^{-1} G(t, u)` or :math:`\dot u = \hat M^{-1} G(t, u)`, where :math:`\hat M` is the lumped mass matrix.
+While the true mass matrix generally has a dense inverse and thus must be solved iteratively, the lumped mass matrix is diagonal (e.g., computed via collocated quadrature or row sums of :math:`M`).
+To have PETSc create and apply a (lumped) mass matrix automatically, first use ``DMTSSetRHSFunction()` to specify :math:`G` and set a ``PetscFE` using ``DMAddField()`` and ``DMCreateDS()``, then call either ``DMTSCreateRHSMassMatrix()`` or ``DMTSCreateRHSMassMatrixLumped()`` to automatically create the mass matrix and a ``KSP`` that will be used to apply :math:`M^{-1}`.
+This ``KSP`` can be customized using the ``"mass_"`` prefix.
+
 Using TChem from PETSc
 ~~~~~~~~~~~~~~~~~~~~~~
 
