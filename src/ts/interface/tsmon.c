@@ -1,5 +1,6 @@
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdm.h>
+#include <petscds.h>
 #include <petscdmswarm.h>
 #include <petscdraw.h>
 
@@ -1240,27 +1241,63 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
-PetscErrorCode  TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
+PetscErrorCode TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode    ierr;
-  Vec               y;
-  PetscReal         nrm;
-  PetscBool         flg;
+  DM             dm;
+  PetscDS        ds = NULL;
+  PetscInt       Nf = -1, f;
+  PetscBool      flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
-  ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,u);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(vf->viewer,"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
+  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+  if (dm) {ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);}
+  if (ds) {ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);}
+  if (Nf <= 0) {
+    Vec       y;
+    PetscReal nrm;
+
+    ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
+    ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,-1.0,u);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vf->viewer,"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecView(y,vf->viewer);CHKERRQ(ierr);
+    }
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+  } else {
+    PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+    void            **ctxs;
+    Vec               v;
+    PetscReal         ferrors[1];
+
+    ierr = PetscMalloc2(Nf, &exactFuncs, Nf, &ctxs);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]);CHKERRQ(ierr);}
+    ierr = DMComputeL2FieldDiff(dm, ptime, exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [", (int) step, (double) ptime);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      if (f > 0) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "%2.3g", (double) ferrors[f]);CHKERRQ(ierr);
+    }
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
+
+    ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
+
+    ierr = PetscOptionsHasName(NULL, NULL, "-exact_vec_view", &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
+      ierr = DMProjectFunction(dm, ptime, exactFuncs, ctxs, INSERT_ALL_VALUES, v);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) v, "Exact Solution");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(v, NULL, "-exact_vec_view");CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(exactFuncs, ctxs);CHKERRQ(ierr);
   }
-  ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecView(y,vf->viewer);CHKERRQ(ierr);
-  }
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
