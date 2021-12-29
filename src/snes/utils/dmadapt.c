@@ -527,6 +527,20 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
   PetscFunctionReturn(0);
 }
 
+static void identityFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                         PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
+{
+  PetscInt i, j;
+
+  for (i = 0; i < dim; ++i) {
+    for (j = 0; j < dim; ++j) {
+      f[i+dim*j] = u[i+dim*j];
+    }
+  }
+}
+
 static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx, PetscBool doSolve, DM *adm, Vec *ax)
 {
   PetscDS        prob;
@@ -634,7 +648,15 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       Vec          xGrad, xHess, metric;
       PetscReal    N;
       DMLabel      bdLabel = NULL, rgLabel = NULL;
+      PetscBool    higherOrder = PETSC_FALSE;
       PetscInt     Nd = coordDim*coordDim, f, vStart, vEnd;
+      void       (**funcs)(PetscInt, PetscInt, PetscInt,
+                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                           PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+
+      ierr = PetscMalloc(1, &funcs);
+      funcs[0] = identityFunc;
 
       /*     Setup finite element spaces */
       ierr = DMClone(dm, &dmGrad);CHKERRQ(ierr);
@@ -643,14 +665,18 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       for (f = 0; f < numFields; ++f) {
         PetscFE         fe, feGrad, feHess;
         PetscDualSpace  Q;
+        PetscSpace      space;
         DM              K;
         PetscQuadrature q;
-        PetscInt        Nc, qorder;
+        PetscInt        Nc, qorder, p;
         const char     *prefix;
 
         ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
         if (Nc > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple components not yet considered");  // TODO
+        ierr = PetscFEGetBasisSpace(fe, &space);CHKERRQ(ierr);
+        ierr = PetscSpaceGetDegree(space, NULL, &p);CHKERRQ(ierr);
+        if (p > 1) higherOrder = PETSC_TRUE;
         ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDM(Q, &K);CHKERRQ(ierr);
         ierr = DMPlexGetDepthStratum(K, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -687,6 +713,14 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         ierr = PetscPrintf(PETSC_COMM_SELF, "[%D] N_orig: %D N_adapt: %g\n", rank, vEnd - vStart, N);CHKERRQ(ierr);
       }
       ierr = DMPlexMetricSetTargetComplexity(dmMetric, (PetscReal) N);CHKERRQ(ierr);
+      if (higherOrder) {
+        /*   Project Hessian into P1 space, if required */
+        ierr = DMPlexMetricCreate(dmMetric, 0, &metric);CHKERRQ(ierr);
+        ierr = DMProjectFieldLocal(dmMetric, 0.0, xHess, funcs, INSERT_ALL_VALUES, metric);CHKERRQ(ierr);
+        ierr = VecDestroy(&xHess);CHKERRQ(ierr);
+        xHess = metric;
+      }
+      ierr = PetscFree(funcs);CHKERRQ(ierr);
       ierr = DMPlexMetricNormalize(dmMetric, xHess, PETSC_TRUE, PETSC_TRUE, &metric);CHKERRQ(ierr);
       ierr = VecDestroy(&xHess);CHKERRQ(ierr);
       ierr = DMDestroy(&dmHess);CHKERRQ(ierr);

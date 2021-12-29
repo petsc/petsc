@@ -1596,9 +1596,19 @@ int main(int argc, char **argv)
     args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor pragmatic
 
   test:
+    suffix: tri_p2_adapt_init_pragmatic
+    requires: pragmatic
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor pragmatic
+
+  test:
     suffix: tri_p1_adapt_init_mmg
     requires: mmg
     args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
+
+  test:
+    suffix: tri_p2_adapt_init_mmg
+    requires: mmg
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_initial 1 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
 
   test:
     suffix: tri_p1_adapt_seq_pragmatic
@@ -1606,9 +1616,19 @@ int main(int argc, char **argv)
     args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor pragmatic
 
   test:
+    suffix: tri_p2_adapt_seq_pragmatic
+    requires: pragmatic
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor pragmatic
+
+  test:
     suffix: tri_p1_adapt_seq_mmg
     requires: mmg
     args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
+
+  test:
+    suffix: tri_p2_adapt_seq_mmg
+    requires: mmg
+    args: -run_type exact -dm_refine 5 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient ball -snes_converged_reason ::ascii_info_detail -pc_type lu -snes_adapt_sequence 2 -adaptor_target_num 4000 -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
 
   test:
     suffix: tri_p1_adapt_analytic_pragmatic
@@ -1616,9 +1636,19 @@ int main(int argc, char **argv)
     args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor pragmatic
 
   test:
+    suffix: tri_p2_adapt_analytic_pragmatic
+    requires: pragmatic
+    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_min 0.0001 -dm_plex_metric_h_max 0.05 -dm_adaptor pragmatic
+
+  test:
     suffix: tri_p1_adapt_analytic_mmg
     requires: mmg
     args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
+
+  test:
+    suffix: tri_p2_adapt_analytic_mmg
+    requires: mmg
+    args: -run_type exact -dm_refine 3 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_plex_metric_h_max 0.5 -dm_adaptor mmg
 
   test:
     suffix: tri_p1_adapt_uniform_pragmatic
@@ -1628,10 +1658,23 @@ int main(int argc, char **argv)
     timeoutfactor: 2
 
   test:
+    suffix: tri_p2_adapt_uniform_pragmatic
+    requires: pragmatic tetgen
+    nsize: 4
+    args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
+    timeoutfactor: 1
+
+  test:
     suffix: tri_p1_adapt_uniform_mmg
     requires: mmg tetgen
     args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor mmg
     timeoutfactor: 2
+
+  test:
+    suffix: tri_p2_adapt_uniform_mmg
+    requires: mmg tetgen
+    args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor mmg
+    timeoutfactor: 1
 
   test:
     suffix: tri_p1_adapt_uniform_parmmg
@@ -1639,6 +1682,13 @@ int main(int argc, char **argv)
     nsize: 4
     args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
     timeoutfactor: 2
+
+  test:
+    suffix: tri_p2_adapt_uniform_parmmg
+    requires: parmmg tetgen
+    nsize: 4
+    args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
+    timeoutfactor: 1
 
   # Full solve tensor AMR
   test:
