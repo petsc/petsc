@@ -4237,6 +4237,122 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMPlexStratify_CellType_Private(DM dm, DMLabel label)
+{
+  PetscInt *pMin, *pMax;
+  PetscInt  pStart, pEnd;
+  PetscInt  dmin = PETSC_MAX_INT, dmax = PETSC_MIN_INT;
+
+  PetscFunctionBegin;
+  {
+    DMLabel label2;
+
+    PetscCall(DMPlexGetCellTypeLabel(dm, &label2));
+    PetscCall(PetscObjectViewFromOptions((PetscObject)label2, NULL, "-ct_view"));
+  }
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    DMPolytopeType ct;
+
+    PetscCall(DMPlexGetCellType(dm, p, &ct));
+    dmin = PetscMin(DMPolytopeTypeGetDim(ct), dmin);
+    dmax = PetscMax(DMPolytopeTypeGetDim(ct), dmax);
+  }
+  PetscCall(PetscMalloc2(dmax + 1, &pMin, dmax + 1, &pMax));
+  for (PetscInt d = dmin; d <= dmax; ++d) {
+    pMin[d] = PETSC_MAX_INT;
+    pMax[d] = PETSC_MIN_INT;
+  }
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    DMPolytopeType ct;
+    PetscInt       d;
+
+    PetscCall(DMPlexGetCellType(dm, p, &ct));
+    d       = DMPolytopeTypeGetDim(ct);
+    pMin[d] = PetscMin(p, pMin[d]);
+    pMax[d] = PetscMax(p, pMax[d]);
+  }
+  for (PetscInt d = dmin; d <= dmax; ++d) {
+    if (pMin[d] > pMax[d]) continue;
+    PetscCall(DMPlexCreateDepthStratum(dm, label, d, pMin[d], pMax[d] + 1));
+  }
+  PetscCall(PetscFree2(pMin, pMax));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
+{
+  PetscInt pStart, pEnd;
+  PetscInt numRoots = 0, numLeaves = 0;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  {
+    /* Initialize roots and count leaves */
+    PetscInt sMin = PETSC_MAX_INT;
+    PetscInt sMax = PETSC_MIN_INT;
+    PetscInt coneSize, supportSize;
+
+    for (PetscInt p = pStart; p < pEnd; ++p) {
+      PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
+      PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
+      if (!coneSize && supportSize) {
+        sMin = PetscMin(p, sMin);
+        sMax = PetscMax(p, sMax);
+        ++numRoots;
+      } else if (!supportSize && coneSize) {
+        ++numLeaves;
+      } else if (!supportSize && !coneSize) {
+        /* Isolated points */
+        sMin = PetscMin(p, sMin);
+        sMax = PetscMax(p, sMax);
+      }
+    }
+    PetscCall(DMPlexCreateDepthStratum(dm, label, 0, sMin, sMax + 1));
+  }
+
+  if (numRoots + numLeaves == (pEnd - pStart)) {
+    PetscInt sMin = PETSC_MAX_INT;
+    PetscInt sMax = PETSC_MIN_INT;
+    PetscInt coneSize, supportSize;
+
+    for (PetscInt p = pStart; p < pEnd; ++p) {
+      PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
+      PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
+      if (!supportSize && coneSize) {
+        sMin = PetscMin(p, sMin);
+        sMax = PetscMax(p, sMax);
+      }
+    }
+    PetscCall(DMPlexCreateDepthStratum(dm, label, 1, sMin, sMax + 1));
+  } else {
+    PetscInt level = 0;
+    PetscInt qStart, qEnd;
+
+    PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
+    while (qEnd > qStart) {
+      PetscInt sMin = PETSC_MAX_INT;
+      PetscInt sMax = PETSC_MIN_INT;
+
+      for (PetscInt q = qStart; q < qEnd; ++q) {
+        const PetscInt *support;
+        PetscInt        supportSize;
+
+        PetscCall(DMPlexGetSupportSize(dm, q, &supportSize));
+        PetscCall(DMPlexGetSupport(dm, q, &support));
+        for (PetscInt s = 0; s < supportSize; ++s) {
+          sMin = PetscMin(support[s], sMin);
+          sMax = PetscMax(support[s], sMax);
+        }
+      }
+      PetscCall(DMLabelGetNumValues(label, &level));
+      PetscCall(DMPlexCreateDepthStratum(dm, label, level, sMin, sMax + 1));
+      PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMPlexStratify - Computes the strata for all points in the `DMPLEX`
 
@@ -4280,83 +4396,22 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
 @*/
 PetscErrorCode DMPlexStratify(DM dm)
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-  DMLabel  label;
-  PetscInt pStart, pEnd, p;
-  PetscInt numRoots = 0, numLeaves = 0;
+  DM_Plex  *mesh = (DM_Plex *)dm->data;
+  DMLabel   label;
+  PetscBool flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(PetscLogEventBegin(DMPLEX_Stratify, dm, 0, 0, 0));
 
-  /* Create depth label */
-  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  // Create depth label
   PetscCall(DMCreateLabel(dm, "depth"));
   PetscCall(DMPlexGetDepthLabel(dm, &label));
 
-  {
-    /* Initialize roots and count leaves */
-    PetscInt sMin = PETSC_MAX_INT;
-    PetscInt sMax = PETSC_MIN_INT;
-    PetscInt coneSize, supportSize;
+  PetscCall(PetscOptionsGetBool(NULL, dm->hdr.prefix, "-dm_plex_stratify_celltype", &flg, NULL));
+  if (flg) PetscCall(DMPlexStratify_CellType_Private(dm, label));
+  else PetscCall(DMPlexStratify_Topological_Private(dm, label));
 
-    for (p = pStart; p < pEnd; ++p) {
-      PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
-      PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
-      if (!coneSize && supportSize) {
-        sMin = PetscMin(p, sMin);
-        sMax = PetscMax(p, sMax);
-        ++numRoots;
-      } else if (!supportSize && coneSize) {
-        ++numLeaves;
-      } else if (!supportSize && !coneSize) {
-        /* Isolated points */
-        sMin = PetscMin(p, sMin);
-        sMax = PetscMax(p, sMax);
-      }
-    }
-    PetscCall(DMPlexCreateDepthStratum(dm, label, 0, sMin, sMax + 1));
-  }
-
-  if (numRoots + numLeaves == (pEnd - pStart)) {
-    PetscInt sMin = PETSC_MAX_INT;
-    PetscInt sMax = PETSC_MIN_INT;
-    PetscInt coneSize, supportSize;
-
-    for (p = pStart; p < pEnd; ++p) {
-      PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
-      PetscCall(DMPlexGetSupportSize(dm, p, &supportSize));
-      if (!supportSize && coneSize) {
-        sMin = PetscMin(p, sMin);
-        sMax = PetscMax(p, sMax);
-      }
-    }
-    PetscCall(DMPlexCreateDepthStratum(dm, label, 1, sMin, sMax + 1));
-  } else {
-    PetscInt level = 0;
-    PetscInt qStart, qEnd, q;
-
-    PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
-    while (qEnd > qStart) {
-      PetscInt sMin = PETSC_MAX_INT;
-      PetscInt sMax = PETSC_MIN_INT;
-
-      for (q = qStart; q < qEnd; ++q) {
-        const PetscInt *support;
-        PetscInt        supportSize, s;
-
-        PetscCall(DMPlexGetSupportSize(dm, q, &supportSize));
-        PetscCall(DMPlexGetSupport(dm, q, &support));
-        for (s = 0; s < supportSize; ++s) {
-          sMin = PetscMin(support[s], sMin);
-          sMax = PetscMax(support[s], sMax);
-        }
-      }
-      PetscCall(DMLabelGetNumValues(label, &level));
-      PetscCall(DMPlexCreateDepthStratum(dm, label, level, sMin, sMax + 1));
-      PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
-    }
-  }
   { /* just in case there is an empty process */
     PetscInt numValues, maxValues = 0, v;
 
