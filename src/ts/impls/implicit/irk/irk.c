@@ -896,17 +896,11 @@ static PetscErrorCode TSDestroy_IRK(TS ts)
 
   TSIRK uses the sparse Kronecker product matrix implementation of MATKAIJ to achieve good arithmetic intensity.
 
-  The default is TSIRK3, it can be changed with TSIRKSetType() or -ts_irk_type
-
-  If the equation is implicit or a DAE, then TSSetEquationType() needs to be set accordingly. Refer to the manual for further information.
-
-  Consider trying TSROSW if the stiff part is linear or weakly nonlinear.
+  Gauss-Legrendre methods are currently supported. These are A-stable symplectic methods with an arbitrary number of stages. The order of accuracy is 2s when using s stages. The default method uses three stages and thus has an order of six. The number of stages (thus order) can be set with -ts_irk_nstages or TSIRKSetNumStages().
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSIRKSetType(), TSIRKGetType(),
-           TSIRK1BEE, TSIRK2C, TSIRK2D, TSIRK2E, TSIRK3, TSIRKL2, TSIRKA2, TSIRKARS122,
-           TSIRK4, TSIRK5, TSIRKPRSSP2, TSIRKARS443, TSIRKBPR3, TSIRKType, TSIRKRegister()
+.seealso:  TSCreate(), TS, TSSetType(), TSIRKSetType(), TSIRKGetType(), TSIRKGAUSS, TSIRKRegister(), TSIRKSetNumStages()
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS ts)
