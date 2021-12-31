@@ -87,6 +87,19 @@ static PetscErrorCode DMPlexStorageVersionGet_Private(DM dm, PetscViewer viewer,
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexGetHDF5Name_Private(DM dm, const char *name[])
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (((PetscObject)dm)->name) {
+    ierr = PetscObjectGetName((PetscObject)dm, name);CHKERRQ(ierr);
+  } else {
+    *name = "plex";
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar value, PetscViewer viewer)
 {
   Vec            stamp;
@@ -442,7 +455,7 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   PetscFunctionBegin;
   ierr = DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version);CHKERRQ(ierr);
   ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
@@ -713,7 +726,7 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
   ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)cdm, &coordinatedm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)coords, &coordinates_name);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5WriteAttribute(viewer, NULL, "coordinateDMName", PETSC_STRING, coordinatedm_name);CHKERRQ(ierr);
@@ -884,7 +897,7 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
   PetscFunctionBegin;
   ierr = DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version);CHKERRQ(ierr);
   ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   if (version.major <= 1) {
     ierr = PetscStrcpy(group, "/labels");CHKERRQ(ierr);
   } else {
@@ -1006,7 +1019,7 @@ PetscErrorCode DMPlexSectionView_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)sectiondm, &comm);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
@@ -1063,7 +1076,7 @@ PetscErrorCode DMPlexGlobalVectorView_HDF5_Internal(DM dm, PetscViewer viewer, D
     ierr = DMGetPointSF(sectiondm, &pointsf1);CHKERRQ(ierr);
     if (pointsf1 != pointsf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
   }
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
@@ -1129,7 +1142,7 @@ PetscErrorCode DMPlexLocalVectorView_HDF5_Internal(DM dm, PetscViewer viewer, DM
     ierr = DMGetPointSF(sectiondm, &pointsf1);CHKERRQ(ierr);
     if (pointsf1 != pointsf) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatching point SFs for dm and sectiondm");
   }
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
@@ -1228,7 +1241,7 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &ctx.rank);CHKERRMPI(ierr);
   ctx.dm     = dm;
   ctx.viewer = viewer;
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = DMPlexStorageVersionGet_Private(dm, viewer, &version);CHKERRQ(ierr);
   if (version.major <= 1) {
     ierr = PetscStrcpy(group, "/labels");CHKERRQ(ierr);
@@ -1265,7 +1278,7 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = DMPlexStorageVersionGet_Private(dm, viewer, &version);CHKERRQ(ierr);
   if (version.major <= 1) {
     ierr = PetscStrcpy(group, "/topology");CHKERRQ(ierr);
@@ -1419,7 +1432,7 @@ PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, Pe
     ierr = DMPlexCoordinatesLoad_HDF5_V0_Private(dm, viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadAttribute(viewer, NULL, "coordinateDMName", PETSC_STRING , NULL, &coordinatedm_name);CHKERRQ(ierr);
@@ -1527,7 +1540,7 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, topologydm_name);CHKERRQ(ierr);
@@ -1695,7 +1708,7 @@ PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM section
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &topologydm_name);CHKERRQ(ierr);
+  ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)vec, &vec_name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "topologies");CHKERRQ(ierr);
