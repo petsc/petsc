@@ -122,6 +122,26 @@ PetscErrorCode VecGetType(Vec vec, VecType *type)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
+{
+  PetscErrorCode ierr;
+  PetscBool      iscuda, iship, iskokkos, isvcl;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
+  PetscValidPointer(vtype,2);
+  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iscuda,VECCUDA,VECMPICUDA,VECSEQCUDA,"");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iship,VECHIP,VECMPIHIP,VECSEQHIP,"");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iskokkos,VECKOKKOS,VECMPIKOKKOS,VECSEQKOKKOS,"");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&isvcl,VECVIENNACL,VECMPIVIENNACL,VECSEQVIENNACL,"");CHKERRQ(ierr);
+  if (iscuda)        { *vtype = VECCUDA;     }
+  else if (iship)    { *vtype = VECHIP;      }
+  else if (iskokkos) { *vtype = VECKOKKOS;   }
+  else if (isvcl)    { *vtype = VECVIENNACL; }
+  else               { *vtype = VECSTANDARD; }
+  PetscFunctionReturn(0);
+}
+
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /*@C

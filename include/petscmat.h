@@ -208,6 +208,8 @@ PETSC_EXTERN PetscErrorCode MatProductNumeric(Mat);
 PETSC_EXTERN PetscErrorCode MatProductReplaceMats(Mat,Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatProductClear(Mat);
 PETSC_EXTERN PetscErrorCode MatProductView(Mat,PetscViewer);
+PETSC_EXTERN PetscErrorCode MatProductGetType(Mat,MatProductType*);
+PETSC_EXTERN PetscErrorCode MatProductGetMats(Mat,Mat*,Mat*,Mat*);
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
@@ -1534,8 +1536,8 @@ PETSC_EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);
 
 /*
-    If you add entries here you must also add them to include/petscmat.h
-    and src/mat/f90-mod/petscmat.h
+    If you add entries here you must also add them to src/mat/f90-mod/petscmat.h
+    If any of the enum values are changed, also update dMatOps dict at src/binding/petsc4py/src/libpetsc4py/libpetsc4py.pyx
 */
 typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW=1,

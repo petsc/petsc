@@ -1206,3 +1206,55 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   mat->product                    = product;
   PetscFunctionReturn(0);
 }
+
+/*@
+   MatProductGetType - Returns the type of the MatProduct.
+
+   Not collective
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  mtype - the MatProduct type
+
+   Level: intermediate
+
+.seealso: MatProductCreateWithMat(), MatProductSetType(), MatProductCreate()
+@*/
+PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(mtype,2);
+  *mtype = MATPRODUCT_UNSPECIFIED;
+  if (mat->product) *mtype = mat->product->type;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatProductGetMats - Returns the matrices associated with the MatProduct.
+
+   Not collective
+
+   Input Parameter:
+.  mat - the product matrix
+
+   Output Parameters:
++  A - the first matrix
+.  B - the second matrix
+-  C - the third matrix (optional)
+
+   Level: intermediate
+
+.seealso: MatProductCreateWithMat(), MatProductSetType(), MatProductSetAlgorithm()
+@*/
+PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (A) *A = mat->product ? mat->product->A : NULL;
+  if (B) *B = mat->product ? mat->product->B : NULL;
+  if (C) *C = mat->product ? mat->product->C : NULL;
+  PetscFunctionReturn(0);
+}

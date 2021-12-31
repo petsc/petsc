@@ -274,7 +274,7 @@ cdef class SNES(Object):
     def getInitialGuess(self):
         return self.get_attr('__initialguess__')
 
-    def setFunction(self, function, Vec f, args=None, kargs=None):
+    def setFunction(self, function, Vec f or None, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         if function is not None:
@@ -567,10 +567,12 @@ cdef class SNES(Object):
     def reset(self):
         CHKERR( SNESReset(self.snes) )
 
-    def solve(self, Vec b or None, Vec x):
+    def solve(self, Vec b = None, Vec x = None):
         cdef PetscVec rhs = NULL
+        cdef PetscVec sol = NULL
         if b is not None: rhs = b.vec
-        CHKERR( SNESSolve(self.snes, rhs, x.vec) )
+        if x is not None: sol = x.vec
+        CHKERR( SNESSolve(self.snes, rhs, sol) )
 
     def setConvergedReason(self, reason):
         cdef PetscSNESConvergedReason eval = reason

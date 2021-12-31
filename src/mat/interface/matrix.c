@@ -2066,8 +2066,8 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
 
    Input Parameters:
 +  x - the matrix
-.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()   or ISLocalToGlobalMappingCreateIS()
-- cmapping - column mapping
+.  rmapping - row mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
+-  cmapping - column mapping
 
    Level: intermediate
 
@@ -2080,9 +2080,8 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_CLASSID,1);
   PetscValidType(x,1);
-  PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
-  PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
-
+  if (rmapping) PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
+  if (cmapping) PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,rmapping,cmapping);CHKERRQ(ierr);
   } else {
@@ -2644,6 +2643,7 @@ PetscErrorCode MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 PetscErrorCode MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 {
   PetscErrorCode ierr;
+  PetscErrorCode (*op)(Mat,Vec,Vec,Vec) = (!mat->ops->multtransposeadd && mat->symmetric) ? mat->ops->multadd : mat->ops->multtransposeadd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -2654,16 +2654,16 @@ PetscErrorCode MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!mat->ops->multtransposeadd) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  if (v1 == v3) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_IDN,"v1 and v3 must be different vectors");
   if (mat->rmap->N != v1->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec v1: global dim %D %D",mat->rmap->N,v1->map->N);
   if (mat->cmap->N != v2->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: global dim %D %D",mat->cmap->N,v2->map->N);
   if (mat->cmap->N != v3->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec v3: global dim %D %D",mat->cmap->N,v3->map->N);
+  if (v1 == v3) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_IDN,"v1 and v3 must be different vectors");
+  if (!op) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = VecLockReadPush(v1);CHKERRQ(ierr);
-  ierr = (*mat->ops->multtransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
+  ierr = (*op)(mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = VecLockReadPop(v1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v3);CHKERRQ(ierr);
@@ -3583,9 +3583,9 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
 {
   PetscErrorCode ierr;
   Vec            b,x;
-  PetscInt       m,N,i;
-  PetscScalar    *bb,*xx;
+  PetscInt       N,i;
   PetscErrorCode (*f)(Mat,Vec,Vec);
+  PetscBool      Abound,Bneedconv = PETSC_FALSE,Xneedconv = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (A->factorerrortype) {
@@ -3593,25 +3593,33 @@ static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X,PetscBool trans)
     ierr = MatSetInf(X);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  f = trans ? A->ops->solvetranspose : A->ops->solve;
+  f = (!trans || (!A->ops->solvetranspose && A->symmetric)) ? A->ops->solve : A->ops->solvetranspose;
   if (!f) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type %s",((PetscObject)A)->type_name);
-
-  ierr = MatDenseGetArrayRead(B,(const PetscScalar**)&bb);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);  /* number local rows */
-  ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
-  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
-  for (i=0; i<N; i++) {
-    ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
-    ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
-    ierr = (*f)(A,b,x);CHKERRQ(ierr);
-    ierr = VecResetArray(x);CHKERRQ(ierr);
-    ierr = VecResetArray(b);CHKERRQ(ierr);
+  ierr = MatBoundToCPU(A,&Abound);CHKERRQ(ierr);
+  if (!Abound) {
+    ierr = PetscObjectTypeCompareAny((PetscObject)B,&Bneedconv,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompareAny((PetscObject)X,&Xneedconv,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(B,(const PetscScalar**)&bb);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(X,&xx);CHKERRQ(ierr);
+  if (Bneedconv) {
+    ierr = MatConvert(B,MATDENSECUDA,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+  }
+  if (Xneedconv) {
+    ierr = MatConvert(X,MATDENSECUDA,MAT_INPLACE_MATRIX,&X);CHKERRQ(ierr);
+  }
+  ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);
+  for (i=0; i<N; i++) {
+    ierr = MatDenseGetColumnVecRead(B,i,&b);CHKERRQ(ierr);
+    ierr = MatDenseGetColumnVecWrite(X,i,&x);CHKERRQ(ierr);
+    ierr = (*f)(A,b,x);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumnVecWrite(X,i,&x);CHKERRQ(ierr);
+    ierr = MatDenseRestoreColumnVecRead(B,i,&b);CHKERRQ(ierr);
+  }
+  if (Bneedconv) {
+    ierr = MatConvert(B,MATDENSE,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+  }
+  if (Xneedconv) {
+    ierr = MatConvert(X,MATDENSE,MAT_INPLACE_MATRIX,&X);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4004,6 +4012,7 @@ PetscErrorCode MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 PetscErrorCode MatSolveTranspose(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
+  PetscErrorCode (*f)(Mat,Vec,Vec) = (!mat->ops->solvetranspose && mat->symmetric) ? mat->ops->solve : mat->ops->solvetranspose;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4022,8 +4031,8 @@ PetscErrorCode MatSolveTranspose(Mat mat,Vec b,Vec x)
     ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr);
   } else {
-    if (!mat->ops->solvetranspose) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s",((PetscObject)mat)->type_name);
-    ierr = (*mat->ops->solvetranspose)(mat,b,x);CHKERRQ(ierr);
+    if (!f) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s",((PetscObject)mat)->type_name);
+    ierr = (*f)(mat,b,x);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
@@ -4061,6 +4070,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
   PetscScalar    one = 1.0;
   PetscErrorCode ierr;
   Vec            tmp;
+  PetscErrorCode (*f)(Mat,Vec,Vec,Vec) = (!mat->ops->solvetransposeadd && mat->symmetric) ? mat->ops->solveadd : mat->ops->solvetransposeadd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4077,14 +4087,14 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
   if (mat->cmap->N != y->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->cmap->N,y->map->N);
   if (x->map->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vec x,Vec y: local dim %D %D",x->map->n,y->map->n);
   if (!mat->rmap->N && !mat->cmap->N) PetscFunctionReturn(0);
-   MatCheckPreallocated(mat,1);
+  MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
   if (mat->factorerrortype) {
     ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr);
-  } else if (mat->ops->solvetransposeadd) {
-    ierr = (*mat->ops->solvetransposeadd)(mat,b,y,x);CHKERRQ(ierr);
+  } else if (f) {
+    ierr = (*f)(mat,b,y,x);CHKERRQ(ierr);
   } else {
     /* do the solve then the add manually */
     if (x != y) {
@@ -5391,7 +5401,7 @@ PetscErrorCode MatPermute(Mat mat,IS row,IS col,Mat *B)
    Level: intermediate
 
 @*/
-PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
+PetscErrorCode MatEqual(Mat A,Mat B,PetscBool *flg)
 {
   PetscErrorCode ierr;
 
@@ -5402,16 +5412,16 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
   PetscValidType(B,2);
   PetscValidBoolPointer(flg,3);
   PetscCheckSameComm(A,1,B,2);
+  MatCheckPreallocated(A,1);
   MatCheckPreallocated(B,2);
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->rmap->N != B->rmap->N || A->cmap->N != B->cmap->N) SETERRQ4(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %D %D %D %D",A->rmap->N,B->rmap->N,A->cmap->N,B->cmap->N);
-  if (!A->ops->equal) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type %s",((PetscObject)A)->type_name);
-  if (!B->ops->equal) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type %s",((PetscObject)B)->type_name);
-  if (A->ops->equal != B->ops->equal) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"A is type: %s\nB is type: %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
-  MatCheckPreallocated(A,1);
-
-  ierr = (*A->ops->equal)(A,B,flg);CHKERRQ(ierr);
+  if (A->ops->equal && A->ops->equal == B->ops->equal) {
+    ierr = (*A->ops->equal)(A,B,flg);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultEqual(A,B,10,flg);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -10826,13 +10836,11 @@ PetscErrorCode MatHasOperation(Mat mat,MatOperation op,PetscBool *has)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  /* symbolic product can be set before matrix type */
-  if (op != MATOP_PRODUCTSYMBOLIC) PetscValidType(mat,1);
   PetscValidPointer(has,3);
   if (mat->ops->hasoperation) {
     ierr = (*mat->ops->hasoperation)(mat,op,has);CHKERRQ(ierr);
   } else {
-    if (((void**)mat->ops)[op]) *has =  PETSC_TRUE;
+    if (((void**)mat->ops)[op]) *has = PETSC_TRUE;
     else {
       *has = PETSC_FALSE;
       if (op == MATOP_CREATE_SUBMATRIX) {

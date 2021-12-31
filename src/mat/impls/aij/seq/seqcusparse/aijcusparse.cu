@@ -3527,7 +3527,10 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->factortype != MAT_FACTOR_NONE) PetscFunctionReturn(0);
+  if (A->factortype != MAT_FACTOR_NONE) {
+    A->boundtocpu = flg;
+    PetscFunctionReturn(0);
+  }
   if (flg) {
     ierr = MatSeqAIJCUSPARSECopyFromGPU(A);CHKERRQ(ierr);
 
@@ -3679,7 +3682,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverTypeRegister(MATSOLVERCUSPARSEBAND, MATSEQAIJ, MAT_FACTOR_LU,MatGetFactor_seqaijcusparse_cusparse_band);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERCUSPARSEBAND,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_seqaijcusparse_cusparse_band);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERCUSPARSE,MATSEQAIJCUSPARSE,MAT_FACTOR_LU,MatGetFactor_seqaijcusparse_cusparse);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERCUSPARSE,MATSEQAIJCUSPARSE,MAT_FACTOR_CHOLESKY,MatGetFactor_seqaijcusparse_cusparse);CHKERRQ(ierr);
   ierr = MatSolverTypeRegister(MATSOLVERCUSPARSE,MATSEQAIJCUSPARSE,MAT_FACTOR_ILU,MatGetFactor_seqaijcusparse_cusparse);CHKERRQ(ierr);

@@ -85,8 +85,8 @@ int main(int argc,char **args)
 
    testset:
       nsize: 1
-      requires: h2opus !thrust
-      args: -pc_type h2opus
+      requires: h2opus
+      args: -pc_type h2opus -pc_h2opus_init_mat_h2opus_leafsize 10
       test:
          suffix: 3
          output_file: output/ex77_preonly.out

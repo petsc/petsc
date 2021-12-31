@@ -213,6 +213,11 @@ cdef class PC(Object):
             cflag = PETSC_TRUE
         CHKERR( PCSetUseAmat(self.pc, cflag) )
 
+    def getUseAmat(self):
+        cdef PetscBool cflag = PETSC_FALSE
+        CHKERR( PCGetUseAmat(self.pc, &cflag) )
+        return toBool(cflag)
+
     def setReusePreconditioner(self, flag):
         cdef PetscBool cflag = PETSC_FALSE
         if flag:
@@ -230,6 +235,9 @@ cdef class PC(Object):
 
     def apply(self, Vec x, Vec y):
         CHKERR( PCApply(self.pc, x.vec, y.vec) )
+
+    def matApply(self, Mat x, Mat y):
+        CHKERR( PCMatApply(self.pc, x.mat, y.mat) )
 
     def applyTranspose(self, Vec x, Vec y):
         CHKERR( PCApplyTranspose(self.pc, x.vec, y.vec) )
