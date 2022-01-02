@@ -262,23 +262,30 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Ma
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
   } else {
-    /* Can we just use ilen? */
-    ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
-    for (i=0; i<m; i++) {
-      rowlengths[i] = ai[i+1] - ai[i];
+    if (PetscDefined(USE_DEBUG) || !a->ilen) {
+      ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
+      for (i=0; i<m; i++) {
+        rowlengths[i] = ai[i+1] - ai[i];
+      }
     }
-
+    if (PetscDefined(USE_DEBUG) && a->ilen) {
+      PetscBool eq;
+      ierr = PetscMemcmp(rowlengths,a->ilen,m*sizeof(PetscInt),&eq);CHKERRQ(ierr);
+      if (!eq) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SeqAIJ ilen array incorrect");
+      ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+      rowlengths = a->ilen;
+    } else if (a->ilen) rowlengths = a->ilen;
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQSELL);CHKERRQ(ierr);
     ierr = MatSeqSELLSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
-    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+    if (rowlengths != a->ilen) {ierr = PetscFree(rowlengths);CHKERRQ(ierr);}
   }
 
   for (row=0; row<m; row++) {
-    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    ierr = MatSetValues(B,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatGetRow_SeqAIJ(A,row,&ncols,(PetscInt**)&cols,(PetscScalar**)&vals);CHKERRQ(ierr);
+    ierr = MatSetValues_SeqSELL(B,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqAIJ(A,row,&ncols,(PetscInt**)&cols,(PetscScalar**)&vals);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
