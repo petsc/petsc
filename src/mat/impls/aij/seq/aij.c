@@ -4435,7 +4435,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat
   Developer Notes:
     It would be nice if all matrix formats supported passing NULL in for the numerical values
 
-.seealso: MatCreateSeqAIJ(), MatSetFromOptions(), MatSetType(), MatCreate(), MatType
+.seealso: MatCreateSeqAIJ(), MatSetFromOptions(), MatSetType(), MatCreate(), MatType, MATSELL, MATSEQSELL, MATMPISELL
 M*/
 
 /*MC
@@ -4443,9 +4443,9 @@ M*/
 
    This matrix type is identical to MATSEQAIJ when constructed with a single process communicator,
    and MATMPIAIJ otherwise.  As a result, for single process communicators,
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation() is supported
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.
+   MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported
+   for communicators controlling multiple processes.  It is recommended that you call both of
+   the above preallocation routines for simplicity.
 
    Options Database Keys:
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
@@ -4456,7 +4456,7 @@ M*/
 
   Level: beginner
 
-.seealso: MatCreateAIJ(), MatCreateSeqAIJ(), MATSEQAIJ,MATMPIAIJ
+.seealso: MatCreateAIJ(), MatCreateSeqAIJ(), MATSEQAIJ, MATMPIAIJ, MATSELL, MATSEQSELL, MATMPISELL
 M*/
 
 /*MC
@@ -4465,8 +4465,8 @@ M*/
    This matrix type is identical to MATSEQAIJCRL when constructed with a single process communicator,
    and MATMPIAIJCRL otherwise.  As a result, for single process communicators,
    MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.
+   for communicators controlling multiple processes.  It is recommended that you call both of
+   the above preallocation routines for simplicity.
 
    Options Database Keys:
 . -mat_type aijcrl - sets the matrix type to "aijcrl" during a call to MatSetFromOptions()
