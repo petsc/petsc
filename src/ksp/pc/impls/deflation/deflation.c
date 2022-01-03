@@ -671,7 +671,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       red = def->reductionfact;
       if (red < 0) {
         ierr = MPI_Comm_size(comm,&commsize);CHKERRMPI(ierr);
-        red  = ceil((float)commsize/ceil((float)m/commsize));
+        red  = PetscCeilInt(commsize,PetscCeilInt(m,commsize));
         ierr = PetscObjectTypeCompareAny((PetscObject)(def->WtAW),&match,MATSEQDENSE,MATMPIDENSE,MATDENSE,"");CHKERRQ(ierr);
         if (match) red = commsize;
         ierr = PetscInfo1(pc,"Auto choosing reduction factor %D\n",red);CHKERRQ(ierr);

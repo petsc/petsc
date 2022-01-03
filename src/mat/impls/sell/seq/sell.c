@@ -114,7 +114,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
 
   b = (Mat_SeqSELL*)B->data;
 
-  totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* ceil(n/8) */
+  totalslices = PetscCeilInt(B->rmap->n,8);
   b->totalslices = totalslices;
   if (!skipallocation) {
     if (B->rmap->n & 0x07) {ierr = PetscInfo1(B,"Padding rows to the SEQSELL matrix because the number of rows is not the multiple of 8 (value %" PetscInt_FMT ")\n",B->rmap->n);CHKERRQ(ierr);}

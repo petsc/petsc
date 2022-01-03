@@ -937,5 +937,27 @@ M*/
 M*/
 #define PetscGTE(x,b)  ((x) >= (PetscRealConstant(b)-PETSC_SMALL))
 
+/*MC
+    PetscCeilInt - Returns the ceiling of the quotation of two positive integers
+
+   Synopsis:
+   #include <petscmath.h>
+   PetscInt PetscCeilInt(PetscInt x,PetscInt y)
+
+   Not Collective
+
+   Input Parameters:
++   x - the numerator
+-   y - the denominator
+
+   Level: advanced
+
+.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscLTE()
+
+M*/
+#define PetscCeilInt(x,y)  ((((PetscInt)(x))/((PetscInt)(y))) +  ((((PetscInt)(x)) % ((PetscInt)(y))) ? 1 : 0))
+
+#define PetscCeilInt64(x,y)  ((((PetscInt64)(x))/((PetscInt64)(y))) +  ((((PetscInt64)(x)) % ((PetscInt64)(y))) ? 1 : 0))
+
 PETSC_EXTERN PetscErrorCode PetscLinearRegression(PetscInt,const PetscReal[],const PetscReal[],PetscReal*,PetscReal*);
 #endif
