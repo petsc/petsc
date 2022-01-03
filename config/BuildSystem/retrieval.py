@@ -121,7 +121,7 @@ Unable to download package %s from: %s
       submodopt =''
       for itm in submodules:
         submodopt += ' --recurse-submodules='+itm
-      config.base.Configure.executeShellCommand('%s clone %s %s %s' % (self.sourceControl.git, submodopt, d, newgitrepo), log = self.log)
+      config.base.Configure.executeShellCommand('%s clone %s %s %s' % (self.sourceControl.git, submodopt, d, newgitrepo), log = self.log, timeout = 120.0)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
       err = str(e)
@@ -137,7 +137,7 @@ Unable to download package %s from: %s
     newgitrepo = os.path.join(root,'hg.'+package)
     self.removeTarget(newgitrepo)
     try:
-      config.base.Configure.executeShellCommand('%s clone %s %s' % (self.sourceControl.hg, d, newgitrepo), log = self.log)
+      config.base.Configure.executeShellCommand('%s clone %s %s' % (self.sourceControl.hg, d, newgitrepo), log = self.log, timeout = 120.0)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
       err = str(e)
