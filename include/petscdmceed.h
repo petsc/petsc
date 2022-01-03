@@ -18,4 +18,8 @@ void PetscCallCEED(CeedErrorType);
 
 PETSC_EXTERN PetscErrorCode DMGetCeed(DM, Ceed *);
 
+PETSC_EXTERN PetscErrorCode VecGetCeedVector(Vec, Ceed, CeedVector *);
+PETSC_EXTERN PetscErrorCode VecGetCeedVectorRead(Vec, Ceed, CeedVector *);
+PETSC_EXTERN PetscErrorCode VecRestoreCeedVector(Vec, CeedVector *);
+PETSC_EXTERN PetscErrorCode VecRestoreCeedVectorRead(Vec, CeedVector *);
 #endif
