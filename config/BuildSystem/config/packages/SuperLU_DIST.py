@@ -67,17 +67,21 @@ class Configure(config.package.CMakePackage):
 
     args.append('-Denable_tests=0')
     args.append('-Denable_examples=0')
-    args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
-    args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
-    args.append('-DMPI_C_HEADER_DIR:STRING=""')
-    args.append('-DMPI_C_LIBRARIES:STRING=""')
+    empty = True
+    if 'download-superlu_dist-cmake-arguments' in self.argDB and self.argDB['download-superlu_dist-cmake-arguments']:
+      empty = (not '-DMPI_GUESS_LIBRARY_NAME=' in self.argDB['download-superlu_dist-cmake-arguments'])
+    if empty:
+      args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
+      args.append('-DMPI_C_INCLUDE_PATH:STRING=""')
+      args.append('-DMPI_C_HEADER_DIR:STRING=""')
+      args.append('-DMPI_C_LIBRARIES:STRING=""')
     return args
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
     self.pushLanguage('C')
     oldFlags = self.compilers.CPPFLAGS # Disgusting save and restore
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.dinclude)
     if self.defaultIndexSize == 64:
       if not self.checkCompile('#include "superlu_ddefs.h"','#if !defined(_LONGINT)\n#error "No longint"\n#endif\n'):
         raise RuntimeError('PETSc is being configured using --with-64-bit-indices but SuperLU_DIST library is built for 32 bit integers.\n\

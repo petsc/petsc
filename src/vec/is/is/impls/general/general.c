@@ -192,6 +192,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   hsize_t         dim, maxDims[3], dims[3], chunkDims[3], count[3],offset[3];
   PetscBool       timestepping;
   PetscInt        bs, N, n, timestep=PETSC_MIN_INT, low;
+  hsize_t         chunksize;
   const PetscInt *ind;
   const char     *isname;
   PetscErrorCode  ierr;
@@ -217,6 +218,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
    * permit extending dataset).
    */
   dim = 0;
+  chunksize = 1;
   if (timestep >= 0) {
     dims[dim]      = timestep+1;
     maxDims[dim]   = H5S_UNLIMITED;
@@ -229,12 +231,26 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 
   maxDims[dim]   = dims[dim];
   chunkDims[dim] = PetscMax(1,dims[dim]);
+  chunksize      *= chunkDims[dim];
   ++dim;
   if (bs >= 1) {
     dims[dim]      = bs;
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
+    chunksize      *= chunkDims[dim];
     ++dim;
+  }
+  /* hdf5 chunks must be less than 4GB */
+  if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE/64) {
+    if (bs >= 1) {
+      if (chunkDims[dim-2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE/64))) {
+        chunkDims[dim-2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE/64));
+      } if (chunkDims[dim-1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE/64))) {
+        chunkDims[dim-1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE/64));
+      }
+    } else {
+      chunkDims[dim-1] = PETSC_HDF5_MAX_CHUNKSIZE/64;
+    }
   }
   PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
