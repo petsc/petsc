@@ -42,6 +42,7 @@ typedef enum {
 #define PetscMemTypeSYCL(m)    (((m) & 0xF) == PETSC_MEMTYPE_SYCL)
 #define PetscMemTypeNVSHMEM(m) ((m) == PETSC_MEMTYPE_NVSHMEM)
 
+#define PETSC_OFFLOAD_VECKOKKOS_DEPRECATED PETSC_OFFLOAD_VECKOKKOS PETSC_DEPRECATED_ENUM("Use PETSC_OFFLOAD_KOKKOS (since version 3.17.0)")
 /*E
   PetscOffloadMask - indicates which memory (CPU, GPU, or none) contains valid data
 
@@ -53,7 +54,6 @@ $ PETSC_OFFLOAD_KOKKOS      - Reserved for Kokkos matrix and vector. It means th
 
   Level: developer
 E*/
-#define PETSC_OFFLOAD_VECKOKKOS_DEPRECATED PETSC_OFFLOAD_VECKOKKOS PETSC_DEPRECATED_ENUM("Use PETSC_OFFLOAD_KOKKOS (since version 3.17.0)")
 typedef enum {
   PETSC_OFFLOAD_UNALLOCATED = 0x0,
   PETSC_OFFLOAD_CPU         = 0x1,
