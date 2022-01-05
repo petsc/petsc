@@ -106,6 +106,8 @@ Changes: Development
 
 .. rubric:: PetscSection:
 
+- Add ``PetscSectionResetClosurePermutation()``
+
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:

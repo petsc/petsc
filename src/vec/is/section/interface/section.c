@@ -2426,7 +2426,17 @@ PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
   } else SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 }
 
-static PetscErrorCode PetscSectionResetClosurePermutation_Private(PetscSection section)
+/*@
+  PetscSectionResetClosurePermutation - Remove any existing closure permutation
+
+  Input Parameter:
+. section - The Section
+
+  Level: intermediate
+
+.seealso: PetscSectionSetClosurePermutation(), PetscSectionSetClosureIndex(), PetscSectionReset()
+@*/
+PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
 {
   PetscSectionClosurePermVal clVal;
 
@@ -2475,7 +2485,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   PetscCall(PetscSectionDestroy(&s->clSection));
   PetscCall(ISDestroy(&s->clPoints));
   PetscCall(ISDestroy(&s->perm));
-  PetscCall(PetscSectionResetClosurePermutation_Private(s));
+  PetscCall(PetscSectionResetClosurePermutation(s));
   PetscCall(PetscSectionSymDestroy(&s->sym));
   PetscCall(PetscSectionDestroy(&s->clSection));
   PetscCall(ISDestroy(&s->clPoints));
@@ -2876,7 +2886,7 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(clSection, PETSC_SECTION_CLASSID, 3);
   PetscValidHeaderSpecific(clPoints, IS_CLASSID, 4);
-  if (section->clObj != obj) PetscCall(PetscSectionResetClosurePermutation_Private(section));
+  if (section->clObj != obj) PetscCall(PetscSectionResetClosurePermutation(section));
   section->clObj = obj;
   PetscCall(PetscObjectReference((PetscObject)clSection));
   PetscCall(PetscObjectReference((PetscObject)clPoints));
