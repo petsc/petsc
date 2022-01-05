@@ -26,15 +26,17 @@ struct _n_SplitCSRMat {
    CUDA devices of compute capability 6.x and higher. See also sfcuda.cu
 */
 #if defined(PETSC_USE_REAL_DOUBLE) && defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 600)
-  #define atomicAdd(x,y) do { \
-    double *address = x, val = y; \
-    unsigned long long *address_as_ull = (unsigned long long*)address; \
-    unsigned long long old = *address_as_ull, assumed; \
-    do { \
-      assumed = old; \
-      old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed))); \
-    } while (assumed != old); \
-  } while (0)
+  __device__ double atomicAdd(double* x,double y) {
+    typedef unsigned long long int ullint;
+    double *address = x, val = y;
+    ullint *address_as_ull = (ullint*)address;
+    ullint old = *address_as_ull, assumed;
+    do {
+      assumed = old;
+      old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed)));
+    } while (assumed != old);
+    return __longlong_as_double(old);
+  }
 #endif
 
 #if defined(KOKKOS_INLINE_FUNCTION)
