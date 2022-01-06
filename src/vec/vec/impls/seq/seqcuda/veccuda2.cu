@@ -15,6 +15,9 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/reduce.h>
 #include <thrust/transform.h>
+#if defined(PETSC_USE_COMPLEX)
+#include <thrust/transform_reduce.h>
+#endif
 
 #if THRUST_VERSION >= 101600 && !PetscDefined(USE_DEBUG)
 static thrust::cuda_cub::par_nosync_t::stream_attachment_type VecCUDAThrustPolicy(Vec x) {
