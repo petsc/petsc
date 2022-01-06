@@ -89,7 +89,6 @@ typedef struct {
   PetscBool      gpu_assembly;
   MPI_Comm       comm; /* global communicator to use for errors and diagnostics */
   double         times[LANDAU_NUM_TIMERS];
-  PetscBool      initialized;
   PetscBool      use_matrix_mass;
   /* FE */
   PetscFE        fe[LANDAU_MAX_SPECIES];
@@ -183,7 +182,7 @@ typedef struct _lP4estVertexMaps {
 
 PETSC_EXTERN PetscErrorCode LandauCreateColoring(Mat, DM, PetscContainer *);
 #if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode LandauCUDAJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[], const PetscInt, const PetscScalar[],
+PETSC_EXTERN PetscErrorCode LandauCUDAJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[], const PetscScalar[],
                                                const LandauStaticData *, const PetscInt, const PetscReal, const PetscLogEvent[],const PetscInt[], const PetscInt[], Mat[], Mat);
 PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt[], PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps *, PetscInt);
@@ -192,7 +191,7 @@ PETSC_EXTERN PetscErrorCode LandauCUDAStaticDataSet(DM, const PetscInt, const Pe
 PETSC_EXTERN PetscErrorCode LandauCUDAStaticDataClear(LandauStaticData *);
 #endif
 #if defined(PETSC_HAVE_KOKKOS)
-PETSC_EXTERN PetscErrorCode LandauKokkosJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[],  const PetscInt, const PetscScalar[],
+PETSC_EXTERN PetscErrorCode LandauKokkosJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[],  const PetscScalar[],
                                                  const LandauStaticData *, const PetscInt, const PetscReal, const PetscLogEvent[], const PetscInt[], const PetscInt[], Mat[], Mat);
 PETSC_EXTERN PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt[], PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps *, PetscInt);
