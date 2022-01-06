@@ -561,7 +561,7 @@ PetscErrorCode DMStagGetEntriesPerElement(DM dm,PetscInt *entriesPerElement)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagSetStencilType(), DMStagStencilType, DMDAGetInfo()
+.seealso: DMSTAG, DMStagSetStencilType(), DMStagGetStencilWidth, DMStagStencilType
 @*/
 PetscErrorCode DMStagGetStencilType(DM dm,DMStagStencilType *stencilType)
 {
@@ -586,7 +586,7 @@ PetscErrorCode DMStagGetStencilType(DM dm,DMStagStencilType *stencilType)
 
   Level: beginner
 
-.seealso: DMSTAG, DMDAGetStencilWidth(), DMDAGetInfo()
+.seealso: DMSTAG, DMStagSetStencilWidth(), DMStagGetStencilType(), DMDAGetStencilType()
 @*/
 PetscErrorCode DMStagGetStencilWidth(DM dm,PetscInt *stencilWidth)
 {
@@ -1125,7 +1125,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetStencilType(), DMStagStencilType, DMDASetStencilType()
+.seealso: DMSTAG, DMStagGetStencilType(), DMStagSetStencilWidth(), DMStagStencilType
 @*/
 PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 {
@@ -1148,9 +1148,12 @@ PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 + dm - the DMStag object
 - stencilWidth - stencil/halo/ghost width in elements
 
+  Notes:
+  The width value is not used when DMSTAG_STENCIL_NONE is specified.
+
   Level: beginner
 
-.seealso: DMSTAG, DMDASetStencilWidth()
+.seealso: DMSTAG, DMStagGetStencilWidth(), DMStagGetStencilType(), DMStagStencilType
 @*/
 PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
 {
