@@ -390,7 +390,7 @@ int main(int argc,char **args)
    test:
      suffix: 9_mkl
      TODO: broken MatScale?
-     requires: mkl datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
+     requires: mkl_sparse datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -A_mat_type aijmkl -B_mat_type aijmkl
      output_file: output/ex62_1.out
 

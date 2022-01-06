@@ -6109,7 +6109,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     PetscBool    use_pod = PETSC_FALSE;
 
     /* MKL SVD with same input gives different results on different processes! */
-#if defined(PETSC_MISSING_LAPACK_GESVD) || defined(PETSC_HAVE_MKL)
+#if defined(PETSC_MISSING_LAPACK_GESVD) || defined(PETSC_HAVE_MKL_LIBS)
     use_pod = PETSC_TRUE;
 #endif
     /* Get index sets for faces, edges and vertices from graph */
