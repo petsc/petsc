@@ -2,13 +2,13 @@ masses:        e= 9.109e-31; ions in proton mass units:    2.000e+00  4.000e+00 
 charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  1.800e+01
 n:             e:  1.000e+00                           i:  1.000e+00  1.000e-05
 thermal T (K): e= 5.802e+07 i= 5.802e+07  5.802e+06. v_0= 2.965e+07 ( 9.892e-02c) n_0= 1.000e+20 t_0= 6.470e-05, classical, Intuitive, 1 batched
-Domain radius (AMR levels) grid 0: 5. (2) , 1:  8.252e-02 (1) 
+Domain radius (AMR levels) grid 0: 5. (2) , 1:  8.252e-02 (1)
+0) FormLandau 352 IPs, 22 cells total, Nb=16, Nq=16, dim=2, Tab: Nb=16 Nf=3 Np=16 cdim=2 N=324
   0) species-0: charge density= -1.6024538233648e+01 z-momentum=  1.0250925192584e-19 energy=  1.2009868166183e+05
   0) species-1: charge density=  1.6068752193414e+01 z-momentum=  2.3233492887737e-17 energy=  1.1752123333205e+05
   0) species-2: charge density=  2.7152642046328e-04 z-momentum= -4.6658578685673e-21 energy=  1.1701658725855e+00
 	  0) Total: charge density=  4.4485486187278e-02, momentum=  2.3331336281794e-17, energy=  2.3762108515975e+05 (m_i[0]/m_e = 3670.94, 14 cells on electron grid)
 0 TS dt 0.1 time 0.
-0) FormLandau 352 IPs, 22 cells total, Nb=16, Nq=16, dim=2, Tab: Nb=16 Nf=3 Np=16 cdim=2 N=324
     0 SNES Function norm 5.936579579553e-03 
     1 SNES Function norm 3.869178989611e-05 
     2 SNES Function norm 5.878584907762e-07 
