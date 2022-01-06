@@ -340,6 +340,9 @@ endif
 ifdef i
    searchin = $(i)
 endif
+ifdef gs
+  gmakesearch = $(gs)
+endif
 ifdef gmakesearch
   TESTTARGETS := $(filter $(gmakesearch),$(alltesttargets))
   ifdef gmakesearchin
