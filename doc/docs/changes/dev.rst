@@ -19,6 +19,8 @@ Changes: Development
 - Fix for requesting no C++ dialect flag via ``--with-cxx-dialect=0``. Previously ``configure`` would bail out immediately without running the tests and therefore wouldn't set any of the capability defines. ``configure`` now runs all tests, just doesn't add the flag in the end
 - Fix a number of corner-cases when handling C++ dialect detection
 - Remove deprecated PETSC_VERSION_PATCH so as to not have confusion with patch releases where the subminor version changes
+- Change PETSC_HAVE_MKL to PETSC_HAVE_MKL_LIBS
+- Add PETSC_HAVE_MKL_INCLUDES
 
 .. rubric:: Sys:
 
