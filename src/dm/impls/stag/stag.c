@@ -68,72 +68,50 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm,Vec *vec)
 
 static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
 {
-  PetscErrorCode         ierr;
-  MatType                matType;
-  PetscBool              isaij,isshell;
-  PetscInt               entries,width,nNeighbors,dim,dof[DMSTAG_MAX_STRATA],stencilWidth;
-  DMStagStencilType      stencilType;
-  ISLocalToGlobalMapping ltogmap;
+  PetscErrorCode ierr;
+  MatType        mat_type;
+  PetscBool      is_shell,is_aij;
+  PetscInt       dim;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = DMGetMatType(dm,&matType);CHKERRQ(ierr);
-  ierr = PetscStrcmp(matType,MATAIJ,&isaij);CHKERRQ(ierr);
-  ierr = PetscStrcmp(matType,MATSHELL,&isshell);CHKERRQ(ierr);
-  ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
-  ierr = DMStagGetStencilWidth(dm,&stencilWidth);CHKERRQ(ierr);
-  ierr = DMStagGetStencilType(dm,&stencilType);CHKERRQ(ierr);
+  ierr = DMGetMatType(dm,&mat_type);CHKERRQ(ierr);
 
-  if (isaij) {
-    /* This implementation gives a very dense stencil, which is likely unsuitable for
-       real applications. */
-    switch (stencilType) {
-      case DMSTAG_STENCIL_NONE:
-        nNeighbors = 1;
+  /* Compare to similar and perhaps superior logic in DMCreateMatrix_DA, which creates
+     the matrix first and then performs this logic by checking for preallocation functions */
+  ierr = PetscStrcmp(mat_type,MATAIJ,&is_aij);CHKERRQ(ierr);
+  if (!is_aij) {
+    ierr = PetscStrcmp(mat_type,MATSEQAIJ,&is_aij);CHKERRQ(ierr);
+  } else if (!is_aij) {
+    ierr = PetscStrcmp(mat_type,MATMPIAIJ,&is_aij);CHKERRQ(ierr);
+  }
+  ierr = PetscStrcmp(mat_type,MATSHELL,&is_shell);CHKERRQ(ierr);
+  if (is_aij) {
+    switch (dim) {
+      case 1:
+        ierr = DMCreateMatrix_Stag_1D_AIJ(dm,mat);CHKERRQ(ierr);
         break;
-      case DMSTAG_STENCIL_STAR:
-        switch (dim) {
-          case 1 :
-            nNeighbors = 2*stencilWidth + 1;
-            break;
-          case 2 :
-            nNeighbors = 4*stencilWidth + 3;
-            break;
-          case 3 :
-            nNeighbors = 6*stencilWidth + 5;
-            break;
-          default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
-        }
+      case 2:
+        ierr = DMCreateMatrix_Stag_2D_AIJ(dm,mat);CHKERRQ(ierr);
         break;
-      case DMSTAG_STENCIL_BOX:
-        switch (dim) {
-          case 1 :
-            nNeighbors = (2*stencilWidth + 1);
-            break;
-          case 2 :
-            nNeighbors = (2*stencilWidth + 1) * (2*stencilWidth + 1);
-            break;
-          case 3 :
-            nNeighbors = (2*stencilWidth + 1) * (2*stencilWidth + 1) * (2*stencilWidth + 1);
-            break;
-          default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
-        }
+      case 3:
+        ierr = DMCreateMatrix_Stag_3D_AIJ(dm,mat);CHKERRQ(ierr);
         break;
-      default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported stencil");
+      default: SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %D for Mattype %s",dim,mat_type);
     }
-    width = (dof[0] + dof[1] + dof[2] + dof[3]) * nNeighbors;
-    ierr = MatCreateAIJ(PetscObjectComm((PetscObject)dm),entries,entries,PETSC_DETERMINE,PETSC_DETERMINE,width,NULL,width,NULL,mat);CHKERRQ(ierr);
-  } else if (isshell) {
+  } else if (is_shell) {
+    PetscInt               entries;
+    ISLocalToGlobalMapping ltogmap;
+
+    ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)dm),mat);CHKERRQ(ierr);
     ierr = MatSetSizes(*mat,entries,entries,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(*mat,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(*mat);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for Mattype %s",matType);
-
-  ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*mat,ltogmap,ltogmap);CHKERRQ(ierr);
-  ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*mat,ltogmap,ltogmap);CHKERRQ(ierr);
+    ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for Mattype %s",mat_type);
   PetscFunctionReturn(0);
 }
 
