@@ -51,6 +51,7 @@ class Package(config.base.Configure):
     self.linkedbypetsc          = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
     self.gitcommit              = None # Git commit to use for downloads
     self.gitcommitmain          = None # Git commit to use for petsc/main or similar non-release branches
+    self.gitsubmodules          = []   # List of git submodues that should be cloned along with the repo
     self.download               = []   # list of URLs where repository or tarballs may be found (git is tested before tarballs)
     self.deps                   = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.odeps                  = []   # dependent packages that are optional
@@ -755,7 +756,10 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
           else:
             raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
         try:
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+          if self.gitsubmodules:
+            config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '--recurse-submodules', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+          else:
+            config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
         except:
           raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\nPerhaps its a git error!')
       # write a commit-tag file
@@ -838,7 +842,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
           continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
+        retriever.genericRetrieve(url, self.externalPackagesDir, self.package, self.gitsubmodules)
         self.logWrite(retriever.restoreLog())
         retriever.saveLog()
         pkgdir = self.getDir()
