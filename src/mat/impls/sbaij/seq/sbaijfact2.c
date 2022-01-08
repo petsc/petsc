@@ -330,10 +330,10 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering(const PetscInt *ai,con
     x0 = xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; x4=xp[4]; x5=xp[5]; x6=xp[6]; /* Dk*xk = k-th block of x */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*7;
     PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+49*nz,49*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*7;
       /* x(:) += U(k,:)^T*(Dk*xk) */
       xp[0]+=  v[0]*x0 +  v[1]*x1 +  v[2]*x2 + v[3]*x3 + v[4]*x4 + v[5]*x5 + v[6]*x6;
       xp[1]+=  v[7]*x0 +  v[8]*x1 +  v[9]*x2+ v[10]*x3+ v[11]*x4+ v[12]*x5+ v[13]*x6;
@@ -343,7 +343,6 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering(const PetscInt *ai,con
       xp[5]+= v[35]*x0 + v[36]*x1 + v[37]*x2+ v[38]*x3+ v[39]*x4+ v[40]*x5+ v[41]*x6;
       xp[6]+= v[42]*x0 + v[43]*x1 + v[44]*x2+ v[45]*x3+ v[46]*x4+ v[47]*x5+ v[48]*x6;
       vj++;
-      xp = x + (*vj)*7;
       v += 49;
     }
     /* xk = inv(Dk)*(Dk*xk) */
@@ -374,10 +373,10 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(const PetscInt *ai,co
     x0 = xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; x4=xp[4]; x5=xp[5]; x6=xp[6]; /* xk */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*7;
     PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v-49*nz,49*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*7;
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*xp[0] + v[7]*xp[1] + v[14]*xp[2] + v[21]*xp[3] + v[28]*xp[4] + v[35]*xp[5] + v[42]*xp[6];
       x1 += v[1]*xp[0] + v[8]*xp[1] + v[15]*xp[2] + v[22]*xp[3] + v[29]*xp[4] + v[36]*xp[5] + v[43]*xp[6];
@@ -387,9 +386,9 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(const PetscInt *ai,co
       x5 += v[5]*xp[0]+ v[12]*xp[1] + v[19]*xp[2] + v[26]*xp[3] + v[33]*xp[4] + v[40]*xp[5] + v[47]*xp[6];
       x6 += v[6]*xp[0]+ v[13]*xp[1] + v[20]*xp[2] + v[27]*xp[3] + v[34]*xp[4] + v[41]*xp[5] + v[48]*xp[6];
       vj++;
-      v += 49; xp = x + (*vj)*7;
+      v += 49;
     }
-    xp   = x + k*7;
+    xp = x + k*7;
     xp[0]=x0; xp[1]=x1; xp[2]=x2; xp[3]=x3; xp[4]=x4; xp[5]=x5; xp[6]=x6;
   }
   PetscFunctionReturn(0);
@@ -574,10 +573,10 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(const PetscInt *ai,con
     x0 = xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; x4=xp[4]; x5=xp[5]; /* Dk*xk = k-th block of x */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*6;
     PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+36*nz,36*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*6;
       /* x(:) += U(k,:)^T*(Dk*xk) */
       xp[0] +=  v[0]*x0 +  v[1]*x1 +  v[2]*x2 + v[3]*x3 + v[4]*x4 + v[5]*x5;
       xp[1] +=  v[6]*x0 +  v[7]*x1 +  v[8]*x2 + v[9]*x3+ v[10]*x4+ v[11]*x5;
@@ -586,7 +585,6 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(const PetscInt *ai,con
       xp[4] += v[24]*x0 + v[25]*x1 + v[26]*x2+ v[27]*x3+ v[28]*x4+ v[29]*x5;
       xp[5] += v[30]*x0 + v[31]*x1 + v[32]*x2+ v[33]*x3+ v[34]*x4+ v[35]*x5;
       vj++;
-      xp = x + (*vj)*6;
       v += 36;
     }
     /* xk = inv(Dk)*(Dk*xk) */
@@ -615,10 +613,10 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(const PetscInt *ai,co
     x0 = xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; x4=xp[4]; x5=xp[5]; /* xk */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*6;
     PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v-36*nz,36*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*6;
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*xp[0] + v[6]*xp[1] + v[12]*xp[2] + v[18]*xp[3] + v[24]*xp[4] + v[30]*xp[5];
       x1 += v[1]*xp[0] + v[7]*xp[1] + v[13]*xp[2] + v[19]*xp[3] + v[25]*xp[4] + v[31]*xp[5];
@@ -627,7 +625,7 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(const PetscInt *ai,co
       x4 += v[4]*xp[0]+ v[10]*xp[1] + v[16]*xp[2] + v[22]*xp[3] + v[28]*xp[4] + v[34]*xp[5];
       x5 += v[5]*xp[0]+ v[11]*xp[1] + v[17]*xp[2] + v[23]*xp[3] + v[29]*xp[4] + v[35]*xp[5];
       vj++;
-      v += 36; xp = x + (*vj)*6;
+      v += 36;
     }
     xp   = x + k*6;
     xp[0]=x0; xp[1]=x1; xp[2]=x2; xp[3]=x3; xp[4]=x4; xp[5]=x5;
@@ -811,10 +809,10 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering(const PetscInt *ai,con
     x0 = xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; x4=xp[4];/* Dk*xk = k-th block of x */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*5;
     PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+25*nz,25*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*5;
       /* x(:) += U(k,:)^T*(Dk*xk) */
       xp[0] +=  v[0]*x0 +  v[1]*x1 +  v[2]*x2 + v[3]*x3 + v[4]*x4;
       xp[1] +=  v[5]*x0 +  v[6]*x1 +  v[7]*x2 + v[8]*x3 + v[9]*x4;
@@ -822,7 +820,6 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering(const PetscInt *ai,con
       xp[3] += v[15]*x0 + v[16]*x1 + v[17]*x2+ v[18]*x3+ v[19]*x4;
       xp[4] += v[20]*x0 + v[21]*x1 + v[22]*x2+ v[23]*x3+ v[24]*x4;
       vj++;
-      xp = x + (*vj)*5;
       v += 25;
     }
     /* xk = inv(Dk)*(Dk*xk) */
@@ -851,10 +848,10 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(const PetscInt *ai,co
     x0 = xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; x4=xp[4]; /* xk */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*5;
     PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v-25*nz,25*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*5;
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*xp[0] + v[5]*xp[1] + v[10]*xp[2] + v[15]*xp[3] + v[20]*xp[4];
       x1 += v[1]*xp[0] + v[6]*xp[1] + v[11]*xp[2] + v[16]*xp[3] + v[21]*xp[4];
@@ -862,7 +859,7 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(const PetscInt *ai,co
       x3 += v[3]*xp[0] + v[8]*xp[1] + v[13]*xp[2] + v[18]*xp[3] + v[23]*xp[4];
       x4 += v[4]*xp[0] + v[9]*xp[1] + v[14]*xp[2] + v[19]*xp[3] + v[24]*xp[4];
       vj++;
-      v += 25; xp = x + (*vj)*5;
+      v += 25;
     }
     xp   = x + k*5;
     xp[0]=x0; xp[1]=x1; xp[2]=x2; xp[3]=x3; xp[4]=x4;
@@ -1041,17 +1038,16 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering(const PetscInt *ai,con
     x0 = xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; /* Dk*xk = k-th block of x */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*4;
     PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+16*nz,16*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*4;
       /* x(:) += U(k,:)^T*(Dk*xk) */
       xp[0] += v[0]*x0 + v[1]*x1 + v[2]*x2 + v[3]*x3;
       xp[1] += v[4]*x0 + v[5]*x1 + v[6]*x2 + v[7]*x3;
       xp[2] += v[8]*x0 + v[9]*x1 + v[10]*x2+ v[11]*x3;
       xp[3] += v[12]*x0+ v[13]*x1+ v[14]*x2+ v[15]*x3;
       vj++;
-      xp = x + (*vj)*4;
       v += 16;
     }
     /* xk = inv(Dk)*(Dk*xk) */
@@ -1079,17 +1075,17 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering(const PetscInt *ai,co
     x0 = xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; /* xk */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*4;
     PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);      /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v-16*nz,16*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*4;
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*xp[0] + v[4]*xp[1] + v[8]*xp[2] + v[12]*xp[3];
       x1 += v[1]*xp[0] + v[5]*xp[1] + v[9]*xp[2] + v[13]*xp[3];
       x2 += v[2]*xp[0] + v[6]*xp[1]+ v[10]*xp[2] + v[14]*xp[3];
       x3 += v[3]*xp[0] + v[7]*xp[1]+ v[11]*xp[2] + v[15]*xp[3];
       vj++;
-      v += 16; xp = x + (*vj)*4;
+      v += 16;
     }
     xp    = x + k*4;
     xp[0] = x0; xp[1] = x1; xp[2] = x2; xp[3] = x3;
@@ -1263,16 +1259,15 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering(const PetscInt *ai,con
     x0 = xp[0]; x1 = xp[1]; x2 = xp[2]; /* Dk*xk = k-th block of x */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*3;
     PetscPrefetchBlock(vj+nz,nz,0,PETSC_PREFETCH_HINT_NTA);    /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+9*nz,9*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*3;
       /* x(:) += U(k,:)^T*(Dk*xk) */
       xp[0] += v[0]*x0 + v[1]*x1 + v[2]*x2;
       xp[1] += v[3]*x0 + v[4]*x1 + v[5]*x2;
       xp[2] += v[6]*x0 + v[7]*x1 + v[8]*x2;
       vj++;
-      xp = x + (*vj)*3;
       v += 9;
     }
     /* xk = inv(Dk)*(Dk*xk) */
@@ -1299,16 +1294,16 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering(const PetscInt *ai,co
     x0 = xp[0]; x1 = xp[1]; x2 = xp[2];  /* xk */
     nz = ai[k+1] - ai[k];
     vj = aj + ai[k];
-    xp = x + (*vj)*3;
     PetscPrefetchBlock(vj-nz,nz,0,PETSC_PREFETCH_HINT_NTA);    /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v-9*nz,9*nz,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     while (nz--) {
+      xp = x + (*vj)*3;
       /* xk += U(k,:)*x(:) */
       x0 += v[0]*xp[0] + v[3]*xp[1] + v[6]*xp[2];
       x1 += v[1]*xp[0] + v[4]*xp[1] + v[7]*xp[2];
       x2 += v[2]*xp[0] + v[5]*xp[1] + v[8]*xp[2];
       vj++;
-      v += 9; xp = x + (*vj)*3;
+      v += 9;
     }
     xp    = x + k*3;
     xp[0] = x0; xp[1] = x1; xp[2] = x2;
