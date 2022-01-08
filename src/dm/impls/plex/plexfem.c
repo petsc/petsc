@@ -1481,12 +1481,12 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscFEGeom      fegeom;
     PetscReal       *coords, *gcoords;
     PetscScalar     *funcVal, *interpolant;
-    PetscBool        isHybrid;
+    PetscBool        isCohesive;
     PetscInt         qNc, Nq, totNc, cStart = 0, cEnd, c, dsNf;
 
     ierr = DMGetRegionNumDS(dm, s, &label, &fieldIS, &ds);CHKERRQ(ierr);
     ierr = ISGetIndices(fieldIS, &fields);CHKERRQ(ierr);
-    ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
+    ierr = PetscDSIsCohesive(ds, &isCohesive);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(ds, &dsNf);CHKERRQ(ierr);
     ierr = PetscDSGetTotalComponents(ds, &totNc);CHKERRQ(ierr);
     ierr = PetscDSGetQuadrature(ds, &quad);CHKERRQ(ierr);
@@ -1501,28 +1501,30 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
       ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     }
     for (c = cStart; c < cEnd; ++c) {
-      const PetscInt cell = points ? points[c] : c;
-      PetscScalar   *x    = NULL;
-      PetscInt       qc   = 0, fOff = 0, dep, fStart = isHybrid ? dsNf-1 : 0;
+      const PetscInt cell  = points ? points[c] : c;
+      PetscScalar    *x    = NULL;
+      const PetscInt *cone;
+      PetscInt        qc   = 0, fOff = 0, dep;
 
       ierr = DMLabelGetValue(depthLabel, cell, &dep);CHKERRQ(ierr);
       if (dep != depth-1) continue;
-      if (isHybrid) {
-        const PetscInt *cone;
-
+      if (isCohesive) {
         ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
         ierr = DMPlexComputeCellGeometryFEM(dm, cone[0], quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
       } else {
         ierr = DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
       }
       ierr = DMPlexVecGetClosure(dm, NULL, localX, cell, NULL, &x);CHKERRQ(ierr);
-      for (f = fStart; f < dsNf; ++f) {
+      for (f = 0; f < dsNf; ++f) {
         PetscObject  obj;
         PetscClassId id;
         void * const ctx = ctxs ? ctxs[fields[f]] : NULL;
         PetscInt     Nb, Nc, q, fc;
         PetscReal    elemDiff = 0.0;
+        PetscBool    cohesive;
 
+        ierr = PetscDSGetCohesive(ds, f, &cohesive);CHKERRQ(ierr);
+        if (isCohesive && !cohesive) continue;
         ierr = PetscDSGetDiscretization(ds, f, &obj);CHKERRQ(ierr);
         ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
@@ -3426,11 +3428,20 @@ static PetscErrorCode DMPlexGetHybridAuxFields(DM dm, DM dmAux[], PetscDS dsAux[
     ierr = DMPlexGetConeOrientation(dm, cell, &ornt);CHKERRQ(ierr);
     if (ornt[0]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_SUP, "Face %D in hybrid cell %D has orientation %D != 0", cone[0], cell, ornt[0]);
     for (s = 0; s < 2; ++s) {
-      PetscScalar   *x = NULL, *al = a[s];
-      const PetscInt tdA = totDimAux[s];
-      PetscInt       subface, Na, i;
+      const PetscInt *support;
+      PetscScalar    *x = NULL, *al = a[s];
+      const PetscInt  tdA = totDimAux[s];
+      PetscInt        ssize, scell;
+      PetscInt        subface, Na, i;
 
-      ierr = DMGetEnclosurePoint(plexA[s], dm, encAux[s], cone[s], &subface);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, cone[s], &support);CHKERRQ(ierr);
+      ierr = DMPlexGetSupportSize(dm, cone[s], &ssize);CHKERRQ(ierr);
+      if (ssize != 2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D from cell %D has support size %D != 2", cone[s], cell, ssize);
+      if      (support[0] == cell) scell = support[1];
+      else if (support[1] == cell) scell = support[0];
+      else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D does not have cell %D in its support", cone[s], cell);
+
+      ierr = DMGetEnclosurePoint(plexA[s], dm, encAux[s], scell, &subface);CHKERRQ(ierr);
       ierr = DMPlexVecGetClosure(plexA[s], sectionAux[s], locA[s], subface, &Na, &x);CHKERRQ(ierr);
       for (i = 0; i < Na; ++i) al[cind*tdA+i] = x[i];
       ierr = DMPlexVecRestoreClosure(plexA[s], sectionAux[s], locA[s], subface, &Na, &x);CHKERRQ(ierr);
@@ -4884,6 +4895,11 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if ((key[0].label == key[1].label) && (key[0].value == key[1].value) && (key[0].part == key[1].part)) {
+    const char *name;
+    ierr = PetscObjectGetName((PetscObject) key[0].label, &name);CHKERRQ(ierr);
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Form keys for each side of a cohesive surface must be different (%s, %D, %D)", name, key[0].value, key[0].part);
+  }
   ierr = PetscLogEventBegin(DMPLEX_ResidualFEM,dm,0,0,0);CHKERRQ(ierr);
   /* TODO The places where we have to use isFE are probably the member functions for the PetscDisc class */
   /* FEM */
@@ -4977,6 +4993,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
       PetscFEGeom    *chunkGeom = NULL, *remGeom = NULL;
       PetscQuadrature quad = affineQuad ? affineQuad : quads[f];
       PetscInt        numChunks, numBatches, batchSize, numBlocks, blockSize, Ne, Nr, offset, Nq, Nb;
+      PetscBool       isCohesiveField;
 
       ierr = PetscDSGetDiscretization(ds, f, (PetscObject *) &fe);CHKERRQ(ierr);
       if (!fe) continue;
@@ -4992,19 +5009,17 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
       offset    = numCells - Nr;
       ierr = PetscFEGeomGetChunk(geom,0,offset,&chunkGeom);CHKERRQ(ierr);
       ierr = PetscFEGeomGetChunk(geom,offset,numCells,&remGeom);CHKERRQ(ierr);
-      chunkGeom->isHybrid = remGeom->isHybrid = PETSC_TRUE;
-      if (f == Nf-1) {
-        key[2].field = f;
-        ierr = PetscFEIntegrateHybridResidual(ds, key[2], 0, Ne, chunkGeom, u, u_t, dsAux[2], a[2], t, elemVec);CHKERRQ(ierr);
-        ierr = PetscFEIntegrateHybridResidual(ds, key[2], 0, Nr, remGeom,  &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[2], &a[2][offset*totDimAux[2]], t, &elemVec[offset*totDim]);CHKERRQ(ierr);
-      } else {
-        key[0].field = f;
-        key[1].field = f;
-        ierr = PetscFEIntegrateHybridResidual(ds, key[0], 0, Ne, chunkGeom, u, u_t, dsAux[0], a[0], t, elemVec);CHKERRQ(ierr);
-        ierr = PetscFEIntegrateHybridResidual(ds, key[1], 1, Ne, chunkGeom, u, u_t, dsAux[1], a[1], t, elemVec);CHKERRQ(ierr);
-        ierr = PetscFEIntegrateHybridResidual(ds, key[0], 0, Nr, remGeom,  &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[0], &a[0][offset*totDimAux[0]], t, &elemVec[offset*totDim]);CHKERRQ(ierr);
-        ierr = PetscFEIntegrateHybridResidual(ds, key[1], 1, Nr, remGeom,  &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[1], &a[1][offset*totDimAux[1]], t, &elemVec[offset*totDim]);CHKERRQ(ierr);
-      }
+      ierr = PetscDSGetCohesive(ds, f, &isCohesiveField);CHKERRQ(ierr);
+      chunkGeom->isCohesive = remGeom->isCohesive = PETSC_TRUE;
+      key[0].field = f;
+      key[1].field = f;
+      key[2].field = f;
+      ierr = PetscFEIntegrateHybridResidual(ds, key[0], 0, Ne, chunkGeom, u, u_t, dsAux[0], a[0], t, elemVec);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateHybridResidual(ds, key[0], 0, Nr, remGeom,  &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[0], &a[0][offset*totDimAux[0]], t, &elemVec[offset*totDim]);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateHybridResidual(ds, key[1], 1, Ne, chunkGeom, u, u_t, dsAux[1], a[1], t, elemVec);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateHybridResidual(ds, key[1], 1, Nr, remGeom,  &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[1], &a[1][offset*totDimAux[1]], t, &elemVec[offset*totDim]);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateHybridResidual(ds, key[2], 2, Ne, chunkGeom, u, u_t, dsAux[2], a[2], t, elemVec);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateHybridResidual(ds, key[2], 2, Nr, remGeom,  &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[2], &a[2][offset*totDimAux[2]], t, &elemVec[offset*totDim]);CHKERRQ(ierr);
       ierr = PetscFEGeomRestoreChunk(geom,offset,numCells,&remGeom);CHKERRQ(ierr);
       ierr = PetscFEGeomRestoreChunk(geom,0,offset,&chunkGeom);CHKERRQ(ierr);
     }
@@ -5510,12 +5525,15 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscInt         maxDegree = PETSC_MAX_INT;
   PetscQuadrature  affineQuad = NULL, *quads = NULL;
   PetscFEGeom     *affineGeom = NULL, **geoms = NULL;
-  PetscBool        repeatKey = PETSC_FALSE, isMatIS = PETSC_FALSE, isMatISP = PETSC_FALSE, hasBdJac, hasBdPrec;
+  PetscBool        isMatIS = PETSC_FALSE, isMatISP = PETSC_FALSE, hasBdJac, hasBdPrec;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  /* If keys are the same, both kernel will be run using the first key */
-  repeatKey = ((key[0].label == key[1].label) && (key[0].value == key[1].value)) ? PETSC_TRUE : PETSC_FALSE;
+  if ((key[0].label == key[1].label) && (key[0].value == key[1].value) && (key[0].part == key[1].part)) {
+    const char *name;
+    ierr = PetscObjectGetName((PetscObject) key[0].label, &name);CHKERRQ(ierr);
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Form keys for each side of a cohesive surface must be different (%s, %D, %D)", name, key[0].value, key[0].part);
+  }
   ierr = PetscLogEventBegin(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
   ierr = ISGetLocalSize(cellIS, &numCells);CHKERRQ(ierr);
   ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
@@ -5615,6 +5633,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
       PetscFEGeom    *chunkGeom = NULL, *remGeom = NULL;
       PetscQuadrature quad = affineQuad ? affineQuad : quads[fieldI];
       PetscInt        numChunks, numBatches, batchSize, numBlocks, blockSize, Ne, Nr, offset, Nq, Nb;
+      PetscBool       isCohesiveField;
 
       ierr = PetscDSGetDiscretization(ds, fieldI, (PetscObject *) &feI);CHKERRQ(ierr);
       if (!feI) continue;
@@ -5630,40 +5649,34 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
       offset    = numCells - Nr;
       ierr = PetscFEGeomGetChunk(geom,0,offset,&chunkGeom);CHKERRQ(ierr);
       ierr = PetscFEGeomGetChunk(geom,offset,numCells,&remGeom);CHKERRQ(ierr);
+      ierr = PetscDSGetCohesive(ds, fieldI, &isCohesiveField);CHKERRQ(ierr);
       for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
         PetscFE feJ;
 
         ierr = PetscDSGetDiscretization(ds, fieldJ, (PetscObject *) &feJ);CHKERRQ(ierr);
         if (!feJ) continue;
-        if (fieldI == Nf-1) {
-          key[2].field = fieldI*Nf+fieldJ;
-          if (hasBdJac) {
-            ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[2], Ne, chunkGeom, u, u_t, dsAux[2], a[2], t, X_tShift, elemMat);CHKERRQ(ierr);
-            ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[2], Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[2], &a[2][offset*totDimAux[2]], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
-          }
-          if (hasBdPrec) {
-            ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[2], Ne, chunkGeom, u, u_t, dsAux[2], a[2], t, X_tShift, elemMatP);CHKERRQ(ierr);
-            ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[2], Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[2], &a[2][offset*totDimAux[2]], t, X_tShift, &elemMatP[offset*totDim*totDim]);CHKERRQ(ierr);
-          }
-        } else {
-          key[0].field = fieldI*Nf+fieldJ;
-          key[1].field = fieldI*Nf+fieldJ;
-          if (hasBdJac) {
-            ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[0], Ne, chunkGeom, u, u_t, dsAux[0], a[0], t, X_tShift, elemMat);CHKERRQ(ierr);
-            ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[0], Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[0], &a[0][offset*totDimAux[0]], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
-            if (!repeatKey) {
-              ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[1], Ne, chunkGeom, u, u_t, dsAux[1], a[1], t, X_tShift, elemMat);CHKERRQ(ierr);
-              ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[1], Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[1], &a[1][offset*totDimAux[1]], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
-            }
-          }
-          if (hasBdPrec) {
-            ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[0], Ne, chunkGeom, u, u_t, dsAux[0], a[0], t, X_tShift, elemMatP);CHKERRQ(ierr);
-            ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[0], Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[0], &a[0][offset*totDimAux[0]], t, X_tShift, &elemMatP[offset*totDim*totDim]);CHKERRQ(ierr);
-            if (!repeatKey) {
-              ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[1], Ne, chunkGeom, u, u_t, dsAux[1], a[1], t, X_tShift, elemMatP);CHKERRQ(ierr);
-              ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[1], Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[1], &a[1][offset*totDimAux[1]], t, X_tShift, &elemMatP[offset*totDim*totDim]);CHKERRQ(ierr);
-            }
-          }
+        key[0].field = fieldI*Nf+fieldJ;
+        key[1].field = fieldI*Nf+fieldJ;
+        key[2].field = fieldI*Nf+fieldJ;
+        if (hasBdJac) {
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[0], 0, Ne, chunkGeom, u, u_t, dsAux[0], a[0], t, X_tShift, elemMat);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[0], 0, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[0], &a[0][offset*totDimAux[0]], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[1], 1, Ne, chunkGeom, u, u_t, dsAux[1], a[1], t, X_tShift, elemMat);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[1], 1, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[1], &a[1][offset*totDimAux[1]], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
+        }
+        if (hasBdPrec) {
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[0], 0, Ne, chunkGeom, u, u_t, dsAux[0], a[0], t, X_tShift, elemMatP);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[0], 0, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[0], &a[0][offset*totDimAux[0]], t, X_tShift, &elemMatP[offset*totDim*totDim]);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[1], 1, Ne, chunkGeom, u, u_t, dsAux[1], a[1], t, X_tShift, elemMatP);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[1], 1, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[1], &a[1][offset*totDimAux[1]], t, X_tShift, &elemMatP[offset*totDim*totDim]);CHKERRQ(ierr);
+        }
+        if (hasBdJac) {
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[2], 2, Ne, chunkGeom, u, u_t, dsAux[2], a[2], t, X_tShift, elemMat);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN, key[2], 2, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[2], &a[2][offset*totDimAux[2]], t, X_tShift, &elemMat[offset*totDim*totDim]);CHKERRQ(ierr);
+        }
+        if (hasBdPrec) {
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[2], 2, Ne, chunkGeom, u, u_t, dsAux[2], a[2], t, X_tShift, elemMatP);CHKERRQ(ierr);
+          ierr = PetscFEIntegrateHybridJacobian(ds, PETSCFE_JACOBIAN_PRE, key[2], 2, Nr, remGeom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, dsAux[2], &a[2][offset*totDimAux[2]], t, X_tShift, &elemMatP[offset*totDim*totDim]);CHKERRQ(ierr);
         }
       }
       ierr = PetscFEGeomRestoreChunk(geom,offset,numCells,&remGeom);CHKERRQ(ierr);
