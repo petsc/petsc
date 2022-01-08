@@ -7,6 +7,7 @@ class Configure(config.package.CMakePackage):
     self.gitcommit          = 'v0.14.0'
     self.versionname        = 'RAJA_VERSION_MAJOR.RAJA_VERSION_MINOR.RAJA_VERSION_PATCHLEVEL'
     self.download           = ['git://https://github.com/LLNL/RAJA.git']
+    self.gitsubmodules      = ['.']
     self.downloaddirnames   = ['raja']
     # TODO: BuildSystem checks C++ headers blindly using CXX. However, when Raja  is compiled by CUDAC, for example, using
     # CXX to compile a Raja code raises an error. As a workaround, we set this field to skip checking headers in includes.
