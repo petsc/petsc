@@ -753,17 +753,60 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm,Mat,PetscI
 -  mode - either INSERT_VALUES or ADD_VALUES
 
    Notes:
-   For efficiency one should use MatSetValues() and set several or many
-   values simultaneously if possible.
+   For efficiency one should use MatSetValues() and set several values simultaneously.
 
    Level: beginner
 
-.seealso: MatSetValues(), MatSetValueLocal()
+.seealso: MatGetValue(), MatSetValues(), MatSetValueLocal(), MatSetValuesLocal()
 M*/
 PETSC_STATIC_INLINE PetscErrorCode MatSetValue(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValues(v,1,&i,1,&j,&va,mode);}
 
-PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat v,PetscInt i,PetscInt j,PetscScalar *va) {return MatGetValues(v,1,&i,1,&j,va);}
+/*@C
+   MatGetValue - Gets a single value from a matrix
 
+   Not Collective; can only return a value owned by the given process
+
+   Input Parameters:
++  mat - the matrix
+.  row - the row location of the entry
+-  col - the column location of the entry
+
+   Output Parameter:
+.  va - the value
+
+   Notes:
+   For efficiency one should use MatGetValues() and get several values simultaneously.
+
+   See notes for MatGetValues().
+
+   Level: advanced
+
+.seealso: MatSetValue(), MatGetValueLocal(), MatGetValues()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat mat,PetscInt row,PetscInt col,PetscScalar *va) {return MatGetValues(mat,1,&row,1,&col,va);}
+
+/*MC
+   MatSetValueLocal - Inserts or adds a single value into a matrix,
+   using a local numbering of the nodes.
+
+   Not Collective
+
+   Input Parameters:
++  m - the matrix
+.  row - the row location of the entry
+.  col - the column location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes:
+   For efficiency one should use MatSetValuesLocal() and set several values simultaneously.
+
+   See notes for MatSetValuesLocal() for additional information on when and how this function can be used.
+
+   Level: intermediate
+
+.seealso: MatSetValue(), MatSetValuesLocal()
+M*/
 PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
 
 /*MC
