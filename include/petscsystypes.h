@@ -269,7 +269,7 @@ M*/
     #if defined(PETSC_DESIRE_KOKKOS_COMPLEX) /* Defined in petscvec_kokkos.hpp for *.kokkos.cxx files */
       #define petsccomplexlib Kokkos
       #include <Kokkos_Complex.hpp>
-    #elif defined(PETSC_HAVE_CUDA)
+    #elif defined(__CUDACC__) || defined(__HIPCC__)
       #define petsccomplexlib thrust
       #include <thrust/complex.h>
     #elif defined(PETSC_USE_REAL___FLOAT128)
