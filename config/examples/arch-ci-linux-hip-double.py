@@ -10,8 +10,10 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
-    '--with-mpi-dir=/home/users/balay/soft/mpich-3.4.2',
-    '--with-blaslapack-dir=/home/users/balay/soft/fblaslapack',
+    '--with-mpi-dir=/scratch/soft/mpich',
+    '--download-fblaslapack',
+    '--download-cmake',
+    'LDFLAGS=-L/opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/lib -lquadmath',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
