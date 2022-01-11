@@ -684,7 +684,7 @@ For Fortran, the equivalent is
     !  test:
     !TEST*/
 
-A more complete example showing just the part within the `/*TEST`:
+A more complete example, showing just the lines between ``/*TEST`` and ``TEST*/``:
 
 .. code-block:: yaml
 

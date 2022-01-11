@@ -344,6 +344,16 @@ pause-for-approval:
 # (in a blue box beneath it)
 #
 
+osx-m1:
+  extends:
+    - .stage-2
+    - .osx_test
+  tags:
+    - os:macos-m1
+  variables:
+    TEST_ARCH: arch-ci-osx-m1
+    PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout -nox -nox_warning -malloc_dump
+
 freebsd-cxx-cmplx-64idx-dbg:
   extends:
     - .stage-2
@@ -464,10 +474,9 @@ linux-hip-double:
     - .stage-3
     - .linux_test_noflags
   tags:
-    - gpu:amd, os:linux, name:hip-instinct
+    - gpu:amd, os:linux, name:hip-txcorp
   variables:
     TEST_ARCH: arch-ci-linux-hip-double
-    LOAD_MODULES: gcc/10.2 cmake/3.19.6
 
 linux-sycl-double:
   extends:

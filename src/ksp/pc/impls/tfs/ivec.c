@@ -160,11 +160,17 @@ PetscInt PCTFS_ivec_sum(PetscInt *arg1,  PetscInt n)
 }
 
 /***********************************ivec.c*************************************/
-PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *arg1, PetscInt *arg2,  PetscInt n,  PetscInt *arg3)
+PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *arg1, PetscInt *arg2,  PetscInt n, ...)
 {
   PetscInt i, j, type;
+  PetscInt *arg3;
+  va_list  ap;
 
   PetscFunctionBegin;
+  va_start(ap, n);
+  arg3 = va_arg(ap, PetscInt*);
+  va_end(ap);
+
   /* LATER: if we're really motivated we can sort and then unsort */
   for (i=0; i<n;) {
     /* clump 'em for now */
