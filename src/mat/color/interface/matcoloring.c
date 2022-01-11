@@ -49,7 +49,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 .  mcptr - the new MatColoring context
 
    Options Database Keys:
-+   -mat_coloring_type - the type of coloring algorithm used
++   -mat_coloring_type - the type of coloring algorithm used. See MatColoringType.
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
 .   -mat_coloring_view - print information about the coloring and the produced index sets
@@ -67,7 +67,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 
           Some coloring types only support distance two colorings
 
-.seealso: MatColoring, MatColoringApply(), MatFDColoringCreate(), DMCreateColoring()
+.seealso: MatColoring, MatColoringApply(), MatFDColoringCreate(), DMCreateColoring(), MatColoringType
 @*/
 PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 {
@@ -172,7 +172,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 .  mc - MatColoring context
 
    Options Database Keys:
-+   -mat_coloring_type - the type of coloring algorithm used
++   -mat_coloring_type - the type of coloring algorithm used. See MatColoringType.
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
 .   -mat_coloring_view - print information about the coloring and the produced index sets
@@ -181,7 +181,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 
    Level: beginner
 
-.seealso: MatColoring, MatColoringApply(), MatColoringSetDistance(), SNESComputeJacobianDefaultColor()
+.seealso: MatColoring, MatColoringApply(), MatColoringSetDistance(), SNESComputeJacobianDefaultColor(), MatColoringType
 @*/
 PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 {
