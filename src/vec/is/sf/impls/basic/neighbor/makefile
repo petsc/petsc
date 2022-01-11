@@ -1,3 +1,4 @@
+#requiresdefine 'PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES'
 ALL: lib
 
 SOURCEH   =
