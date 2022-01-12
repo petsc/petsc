@@ -481,6 +481,35 @@ Unable to run hostname to check the network')
     self.logWrite(self.framework.restoreLog())
     return
 
+
+  def configureMPI4(self):
+    '''Check for functions added to the interface in MPI-4'''
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.framework.saveLog()
+
+    if self.checkLink('#include <mpi.h>\n',
+    '''
+      int         buf[1]={0},dest=1,source=1,tag=0;
+      MPI_Count   count=1;
+      MPI_Request req;
+      MPI_Status  stat;
+      if (MPI_Send_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD)) return 1;
+      if (MPI_Send_init_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Isend_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Recv_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&stat)) return 1;
+      if (MPI_Recv_init_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Irecv_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&req)) return 1;
+    '''):
+      self.addDefine('HAVE_MPI_LARGE_COUNT', 1)
+
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    self.logWrite(self.framework.restoreLog())
+    return
+
   def configureMPITypes(self):
     '''Checking for MPI Datatype handles'''
     oldFlags = self.compilers.CPPFLAGS
@@ -814,6 +843,7 @@ Unable to run hostname to check the network')
 You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to prevent such hangs. warning message *****')
     self.executeTest(self.configureMPI2) #depends on checkMPIDistro
     self.executeTest(self.configureMPI3) #depends on checkMPIDistro
+    self.executeTest(self.configureMPI4)
     self.executeTest(self.configureMPIEXEC)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)

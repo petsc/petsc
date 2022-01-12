@@ -4,6 +4,7 @@
 #include <petscvec.h>
 #include <petscsf.h>
 #include <petsc/private/deviceimpl.h>
+#include <petsc/private/mpiutils.h>
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;
