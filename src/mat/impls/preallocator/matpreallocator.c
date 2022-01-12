@@ -246,7 +246,7 @@ PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A)
 
   Level: advanced
 
-.seealso: Mat
+.seealso: Mat, MatPreallocatorPreallocate()
 
 M*/
 
