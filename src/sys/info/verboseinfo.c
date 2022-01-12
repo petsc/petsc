@@ -119,7 +119,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
     PetscLogPrintInfo = oldflag;
     /* PetscFOpen will write to PETSC_STDOUT and not PetscInfoFile here, so we disable the PetscInfo call inside it, and
      call it afterwards so that it actually writes to file */
-    ierr = PetscInfo1(NULL, "Opened PetscInfo file %s\n", fname);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL, "Opened PetscInfo file %s\n", fname);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -506,8 +506,8 @@ PETSC_INTERN FILE *petsc_history;
    Synopsis:
        #include <petscsys.h>
        PetscErrorCode PetscInfo(PetscObject obj, const char message[])
-       PetscErrorCode PetscInfo1(PetscObject obj, const char formatmessage[],arg1)
-       PetscErrorCode PetscInfo2(PetscObject obj, const char formatmessage[],arg1,arg2)
+       PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1)
+       PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1,arg2)
        ...
 
     Collective on obj
@@ -542,13 +542,13 @@ $   -info [filename][:[~]<list,of,classnames>[:[~]self]]
 $     Mat A;
 $     PetscInt alpha;
 $     ...
-$     PetscInfo1(A,"Matrix uses parameter alpha=%" PetscInt_FMT "\n",alpha);
+$     PetscInfo(A,"Matrix uses parameter alpha=%" PetscInt_FMT "\n",alpha);
 
     Options Examples:
     Each call of the form
 $     PetscInfo(obj, msg);
-$     PetscInfo1(obj, msg, arg1);
-$     PetscInfo2(obj, msg, arg1, arg2);
+$     PetscInfo(obj, msg, arg1);
+$     PetscInfo(obj, msg, arg1, arg2);
     is evaluated as follows.
 $     -info or -info :: prints msg to PETSC_STDOUT, for any obj regardless class or communicator
 $     -info :mat:self prints msg to PETSC_STDOUT only if class of obj is Mat, and its communicator has size = 1
@@ -560,7 +560,7 @@ $     -info :sys:~self
 
     Fortran Note:
     This function does not take the obj argument, there is only the PetscInfo()
-     version, not PetscInfo1() etc.
+     version, not PetscInfo() etc.
 
     Level: intermediate
 

@@ -67,7 +67,7 @@ static PetscErrorCode MatProductSymbolic_PtAP_Unsafe(Mat C)
   PetscReal      fill=product->fill;
 
   PetscFunctionBegin;
-  ierr = PetscInfo2((PetscObject)C,"for A %s, P %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name);CHKERRQ(ierr);
+  ierr = PetscInfo((PetscObject)C,"for A %s, P %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name);CHKERRQ(ierr);
   /* AP = A*P */
   ierr = MatProductCreate(A,P,NULL,&AP);CHKERRQ(ierr);
   ierr = MatProductSetType(AP,MATPRODUCT_AB);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ static PetscErrorCode MatProductSymbolic_RARt_Unsafe(Mat C)
   PetscReal      fill=product->fill;
 
   PetscFunctionBegin;
-  ierr = PetscInfo2((PetscObject)C,"for A %s, R %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name);CHKERRQ(ierr);
+  ierr = PetscInfo((PetscObject)C,"for A %s, R %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name);CHKERRQ(ierr);
   /* RA = R*A */
   ierr = MatProductCreate(R,A,NULL,&RA);CHKERRQ(ierr);
   ierr = MatProductSetType(RA,MATPRODUCT_AB);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static PetscErrorCode MatProductSymbolic_ABC_Unsafe(Mat mat)
   PetscReal      fill=product->fill;
 
   PetscFunctionBegin;
-  ierr = PetscInfo3((PetscObject)mat,"for A %s, B %s, C %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name,((PetscObject)product->C)->type_name);CHKERRQ(ierr);
+  ierr = PetscInfo((PetscObject)mat,"for A %s, B %s, C %s is used\n",((PetscObject)product->A)->type_name,((PetscObject)product->B)->type_name,((PetscObject)product->C)->type_name);CHKERRQ(ierr);
   /* Symbolic BC = B*C */
   ierr = MatProductCreate(B,C,NULL,&BC);CHKERRQ(ierr);
   ierr = MatProductSetType(BC,MATPRODUCT_AB);CHKERRQ(ierr);
@@ -431,9 +431,9 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   fB = B->ops->productsetfromoptions;
   fC = C ? C->ops->productsetfromoptions : fA;
   if (C) {
-    ierr = PetscInfo5(mat,"MatProductType %s for A %s, %s %s, C %s\n",MatProductTypes[product->type],((PetscObject)A)->type_name,bname,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
+    ierr = PetscInfo(mat,"MatProductType %s for A %s, %s %s, C %s\n",MatProductTypes[product->type],((PetscObject)A)->type_name,bname,((PetscObject)B)->type_name,((PetscObject)C)->type_name);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo4(mat,"MatProductType %s for A %s, %s %s\n",MatProductTypes[product->type],((PetscObject)A)->type_name,bname,((PetscObject)B)->type_name);CHKERRQ(ierr);
+    ierr = PetscInfo(mat,"MatProductType %s for A %s, %s %s\n",MatProductTypes[product->type],((PetscObject)A)->type_name,bname,((PetscObject)B)->type_name);CHKERRQ(ierr);
   }
   if (fA == fB && fA == fC && fA) {
     ierr = PetscInfo(mat,"  matching op\n");CHKERRQ(ierr);
@@ -453,14 +453,14 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     ierr = PetscStrlcat(mtypes,"_C",sizeof(mtypes));CHKERRQ(ierr);
 
     ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
-    ierr = PetscInfo2(mat,"  querying %s from A? %p\n",mtypes,f);CHKERRQ(ierr);
+    ierr = PetscInfo(mat,"  querying %s from A? %p\n",mtypes,f);CHKERRQ(ierr);
     if (!f) {
       ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo3(mat,"  querying %s from %s? %p\n",mtypes,bname,f);CHKERRQ(ierr);
+      ierr = PetscInfo(mat,"  querying %s from %s? %p\n",mtypes,bname,f);CHKERRQ(ierr);
     }
     if (!f && C) {
       ierr = PetscObjectQueryFunction((PetscObject)C,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s from C? %p\n",mtypes,f);CHKERRQ(ierr);
+      ierr = PetscInfo(mat,"  querying %s from C? %p\n",mtypes,f);CHKERRQ(ierr);
     }
     if (f) { ierr = (*f)(mat);CHKERRQ(ierr); }
 
@@ -469,14 +469,14 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     if (!mat->ops->productsymbolic) {
       ierr = PetscStrncpy(mtypes,"MatProductSetFromOptions_anytype_C",sizeof(mtypes));CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)A,mtypes,&f);CHKERRQ(ierr);
-      ierr = PetscInfo2(mat,"  querying %s from A? %p\n",mtypes,f);CHKERRQ(ierr);
+      ierr = PetscInfo(mat,"  querying %s from A? %p\n",mtypes,f);CHKERRQ(ierr);
       if (!f) {
         ierr = PetscObjectQueryFunction((PetscObject)B,mtypes,&f);CHKERRQ(ierr);
-        ierr = PetscInfo3(mat,"  querying %s from %s? %p\n",mtypes,bname,f);CHKERRQ(ierr);
+        ierr = PetscInfo(mat,"  querying %s from %s? %p\n",mtypes,bname,f);CHKERRQ(ierr);
       }
       if (!f && C) {
         ierr = PetscObjectQueryFunction((PetscObject)C,mtypes,&f);CHKERRQ(ierr);
-        ierr = PetscInfo2(mat,"  querying %s from C? %p\n",mtypes,f);CHKERRQ(ierr);
+        ierr = PetscInfo(mat,"  querying %s from C? %p\n",mtypes,f);CHKERRQ(ierr);
       }
     }
     if (f) { ierr = (*f)(mat);CHKERRQ(ierr); }

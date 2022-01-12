@@ -25,13 +25,13 @@ static PetscErrorCode SNESTRDC_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal
   PetscFunctionBegin;
   ierr = (*ctx->convtest)(ksp,n,rnorm,reason,ctx->convctx);CHKERRQ(ierr);
   if (*reason) {
-    ierr = PetscInfo2(snes,"Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n",n,(double)rnorm);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n",n,(double)rnorm);CHKERRQ(ierr);
   }
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm >= neP->delta) {
-    ierr    = PetscInfo2(snes,"Ending linear iteration early, delta=%g, length=%g\n",(double)neP->delta,(double)nrm);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Ending linear iteration early, delta=%g, length=%g\n",(double)neP->delta,(double)nrm);CHKERRQ(ierr);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
   PetscFunctionReturn(0);
@@ -63,10 +63,10 @@ static PetscErrorCode SNESTRDC_Converged_Private(SNES snes,PetscInt it,PetscReal
   PetscFunctionBegin;
   *reason = SNES_CONVERGED_ITERATING;
   if (neP->delta < xnorm * snes->deltatol) {
-    ierr    = PetscInfo3(snes,"Diverged due to too small a trust region %g<%g*%g\n",(double)neP->delta,(double)xnorm,(double)snes->deltatol);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Diverged due to too small a trust region %g<%g*%g\n",(double)neP->delta,(double)xnorm,(double)snes->deltatol);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_TR_DELTA;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-    ierr    = PetscInfo1(snes,"Exceeded maximum number of function evaluations: %" PetscInt_FMT "\n",snes->max_funcs);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Exceeded maximum number of function evaluations: %" PetscInt_FMT "\n",snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
   PetscFunctionReturn(0);
@@ -414,7 +414,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
         ierr = VecNorm(YCtmp,NORM_2,&ycnorm);CHKERRQ(ierr);  /* ycnorm <- || Y_cauchy || */
         if (ycnorm >= delta) {  /* see if the Cauchy solution meets the criteria */
             ierr = VecCopy(YCtmp,Y);CHKERRQ(ierr);
-            ierr = PetscInfo3(snes,"DL evaluated. delta: %8.4e, ynnorm: %8.4e, ycnorm: %8.4e\n",(double)delta,(double)ynnorm,(double)ycnorm);CHKERRQ(ierr);
+            ierr = PetscInfo(snes,"DL evaluated. delta: %8.4e, ynnorm: %8.4e, ycnorm: %8.4e\n",(double)delta,(double)ynnorm,(double)ycnorm);CHKERRQ(ierr);
         } else {  /* take ratio, tau, of Cauchy and Newton direction and step */
           ierr    = VecAXPY(YNtmp,-1.0,YCtmp);CHKERRQ(ierr);  /* YCtmp = A, YNtmp = B */
           ierr    = VecNorm(YNtmp,NORM_2,&c0);CHKERRQ(ierr);  /* this could be improved */
@@ -426,7 +426,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
           tau_pos = (c1 + PetscSqrtReal(PetscSqr(c1) - 4.*c0*c2))/(2.*c0); /* quadratic formula */
           tau_neg = (c1 - PetscSqrtReal(PetscSqr(c1) - 4.*c0*c2))/(2.*c0);
           tau     = PetscMax(tau_pos, tau_neg);  /* can tau_neg > tau_pos? I don't think so, but just in case. */
-          ierr    = PetscInfo3(snes,"DL evaluated. tau: %8.4e, ynnorm: %8.4e, ycnorm: %8.4e\n",(double)tau,(double)ynnorm,(double)ycnorm);CHKERRQ(ierr);
+          ierr    = PetscInfo(snes,"DL evaluated. tau: %8.4e, ynnorm: %8.4e, ycnorm: %8.4e\n",(double)tau,(double)ynnorm,(double)ycnorm);CHKERRQ(ierr);
           ierr    = VecWAXPY(W,tau,YNtmp,YCtmp);CHKERRQ(ierr);
           ierr    = VecAXPY(W,-tau,YCtmp);CHKERRQ(ierr);
           ierr    = VecCopy(W, Y);CHKERRQ(ierr); /* this could be improved */
@@ -556,7 +556,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
 
   /* ierr         = PetscFree(inorms);CHKERRQ(ierr); */
   if (i == maxits) {
-    ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",maxits);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",maxits);CHKERRQ(ierr);
     if (!reason) reason = SNES_DIVERGED_MAX_IT;
   }
   ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);

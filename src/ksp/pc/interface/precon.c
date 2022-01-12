@@ -500,7 +500,7 @@ PetscErrorCode  PCMatApply(PC pc,Mat X,Mat Y)
     ierr = (*pc->ops->matapply)(pc, X, Y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PC_MatApply, pc, X, Y, 0);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo1(pc, "PC type %s applying column by column\n", ((PetscObject)pc)->type_name);CHKERRQ(ierr);
+    ierr = PetscInfo(pc, "PC type %s applying column by column\n", ((PetscObject)pc)->type_name);CHKERRQ(ierr);
     for (n1 = 0; n1 < N1; ++n1) {
       ierr = MatDenseGetColumnVecRead(X, n1, &cx);CHKERRQ(ierr);
       ierr = MatDenseGetColumnVecWrite(Y, n1, &cy);CHKERRQ(ierr);

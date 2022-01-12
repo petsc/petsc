@@ -254,7 +254,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -322,7 +322,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-      ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
     }
   }
 
@@ -349,7 +349,7 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
       ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
       if (kspreason < 0) {
         ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-        ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+        ierr = PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
       }
     }
   }
@@ -490,7 +490,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-      ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
     }
   }
 
@@ -521,7 +521,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
       if (kspreason < 0) {
         ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
-        ierr = PetscInfo2(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
+        ierr = PetscInfo(ts,"Step=%D, %Dth cost function, transposed linear solve fails, stopping 2nd-order adjoint solve\n",ts->steps,nadj);CHKERRQ(ierr);
       }
     }
   }
@@ -859,7 +859,7 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
     ierr = KSPGetConvergedReason(ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       ts->reason = TSFORWARD_DIVERGED_LINEAR_SOLVE;
-      ierr = PetscInfo2(ts,"Step=%D, %Dth tangent linear solve, linear solve fails, stopping tangent linear solve\n",ts->steps,ntlm);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step=%D, %Dth tangent linear solve, linear solve fails, stopping tangent linear solve\n",ts->steps,ntlm);CHKERRQ(ierr);
     }
     ierr = VecResetArray(VecDeltaFwdSensipCol);CHKERRQ(ierr);
     ierr = MatDenseRestoreColumn(MatDeltaFwdSensip,&barr);CHKERRQ(ierr);

@@ -225,11 +225,11 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
   ierr = PetscMalloc2(size,&owners,size,&ranks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
   ict  = 0;
-  ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
+  ierr = PetscInfo(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (owners[i]) {
       ranks[ict] = i; ict++;
-      ierr       = PetscInfo1(da,"%D ",i);CHKERRQ(ierr);
+      ierr       = PetscInfo(da,"%D ",i);CHKERRQ(ierr);
     }
   }
   ierr = PetscInfo(da,"\n");CHKERRQ(ierr);
@@ -293,11 +293,11 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
 
   ierr = PetscMalloc2(size, &firstPoints, size, &subgroupRanks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRMPI(ierr);
-  ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
+  ierr = PetscInfo(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
   for (p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
       subgroupRanks[subgroupSize++] = p;
-      ierr = PetscInfo1(da, "%D ", p);CHKERRQ(ierr);
+      ierr = PetscInfo(da, "%D ", p);CHKERRQ(ierr);
     }
   }
   ierr = PetscInfo(da, "\n");CHKERRQ(ierr);

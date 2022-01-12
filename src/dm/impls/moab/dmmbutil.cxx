@@ -229,7 +229,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   x = ( m * genCtx.A + a) * genCtx.q;
   y = ( n * genCtx.B + b) * genCtx.q;
   z = ( k * genCtx.C + c) * genCtx.q;
-  PetscInfo3(NULL, "Starting offset for coordinates := %d, %d, %d\n", x, y, z);
+  PetscInfo(NULL, "Starting offset for coordinates := %d, %d, %d\n", x, y, z);
   ix = 0;
   moab::Range verts(startv, startv + nnodes - 1);
   for (kk = 0; kk < (genCtx.dim > 2 ? genCtx.blockSizeVertexXYZ[2] : 1); kk++) {
@@ -239,7 +239,7 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
         arrays[0][ix] = (x + ii) * genCtx.dx + genCtx.xyzbounds[0];
         arrays[1][ix] = (y + jj) * genCtx.dy + genCtx.xyzbounds[2];
         arrays[2][ix] = (z + kk) * genCtx.dz + genCtx.xyzbounds[4];
-        PetscInfo3(NULL, "Creating vertex with coordinates := %f, %f, %f\n", arrays[0][ix], arrays[1][ix], arrays[2][ix]);
+        PetscInfo(NULL, "Creating vertex with coordinates := %f, %f, %f\n", arrays[0][ix], arrays[1][ix], arrays[2][ix]);
 
         /* If we want to set some tags on the vertices -> use the following entity handle definition:
            moab::EntityHandle v = startv + ix;
@@ -361,7 +361,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
     if (rank < genCtx.remainder)    /* This process gets "fraction+1" elements */
       genCtx.fraction++;
 
-    PetscInfo3(NULL, "Fraction = %D, Remainder = %D, Cumulative fraction = %D\n", genCtx.fraction, genCtx.remainder, genCtx.cumfraction);
+    PetscInfo(NULL, "Fraction = %D, Remainder = %D, Cumulative fraction = %D\n", genCtx.fraction, genCtx.remainder, genCtx.cumfraction);
     switch (genCtx.dim) {
     case 1:
       genCtx.blockSizeElementXYZ[0] = genCtx.fraction;
@@ -473,13 +473,13 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   if (genCtx.dim > 1 && (genCtx.xyzbounds[2] >= genCtx.xyzbounds[3])) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Y-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[2], genCtx.xyzbounds[3]);
   if (genCtx.dim > 2 && (genCtx.xyzbounds[4] >= genCtx.xyzbounds[5])) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Z-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[4], genCtx.xyzbounds[5]);
 
-  PetscInfo3(NULL, "Local elements:= %d, %d, %d\n", genCtx.blockSizeElementXYZ[0], genCtx.blockSizeElementXYZ[1], genCtx.blockSizeElementXYZ[2]);
-  PetscInfo3(NULL, "Local vertices:= %d, %d, %d\n", genCtx.blockSizeVertexXYZ[0], genCtx.blockSizeVertexXYZ[1], genCtx.blockSizeVertexXYZ[2]);
-  PetscInfo3(NULL, "Local blocks/processors := %d, %d, %d\n", genCtx.A, genCtx.B, genCtx.C);
-  PetscInfo3(NULL, "Local processors := %d, %d, %d\n", genCtx.M, genCtx.N, genCtx.K);
-  PetscInfo3(NULL, "Local nexyz:= %d, %d, %d\n", genCtx.nex, genCtx.ney, genCtx.nez);
-  PetscInfo3(NULL, "Local delxyz:= %g, %g, %g\n", genCtx.dx, genCtx.dy, genCtx.dz);
-  PetscInfo3(NULL, "Local strides:= %d, %d, %d\n", genCtx.xstride, genCtx.ystride, genCtx.zstride);
+  PetscInfo(NULL, "Local elements:= %d, %d, %d\n", genCtx.blockSizeElementXYZ[0], genCtx.blockSizeElementXYZ[1], genCtx.blockSizeElementXYZ[2]);
+  PetscInfo(NULL, "Local vertices:= %d, %d, %d\n", genCtx.blockSizeVertexXYZ[0], genCtx.blockSizeVertexXYZ[1], genCtx.blockSizeVertexXYZ[2]);
+  PetscInfo(NULL, "Local blocks/processors := %d, %d, %d\n", genCtx.A, genCtx.B, genCtx.C);
+  PetscInfo(NULL, "Local processors := %d, %d, %d\n", genCtx.M, genCtx.N, genCtx.K);
+  PetscInfo(NULL, "Local nexyz:= %d, %d, %d\n", genCtx.nex, genCtx.ney, genCtx.nez);
+  PetscInfo(NULL, "Local delxyz:= %g, %g, %g\n", genCtx.dx, genCtx.dy, genCtx.dz);
+  PetscInfo(NULL, "Local strides:= %d, %d, %d\n", genCtx.xstride, genCtx.ystride, genCtx.zstride);
   PetscFunctionReturn(0);
 }
 
@@ -853,7 +853,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   ierr = DMMoab_GetReadOptions_Private(dmmoab->partition_by_rank, nprocs, dim, nghost, dmmoab->read_mode,
                                        dmmoab->rw_dbglevel, dmmoab->extra_read_options, usrreadopts, &readopts);CHKERRQ(ierr);
 
-  PetscInfo2(*dm, "Reading file %s with options: %s\n", filename, readopts);
+  PetscInfo(*dm, "Reading file %s with options: %s\n", filename, readopts);
 
   /* Load the mesh from a file. */
   if (dmmoab->fileset) {
@@ -881,7 +881,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
   merr = pcomm->collective_sync_partition();MBERR("Collective sync failed", merr);
 #endif
 
-  PetscInfo3(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size());
+  PetscInfo(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size());
   ierr = PetscFree(readopts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

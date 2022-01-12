@@ -68,7 +68,7 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   if (PetscRealPart(dp) < minres->haptol && np > minres->haptol) {
     if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
-    ierr = PetscInfo2(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
+    ierr = PetscInfo(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(0);
   }
@@ -146,7 +146,7 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
         residual norm to check for convergence
     */
     if (PetscRealPart(dp) < minres->haptol) {
-      ierr = PetscInfo2(ksp,"Possible indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp,"Possible indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
       ierr = KSP_MatMult(ksp,Amat,X,VOLD);CHKERRQ(ierr);
       ierr = VecAXPY(VOLD,none,B);CHKERRQ(ierr);
       ierr = VecNorm(VOLD,NORM_2,&np);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
     if (PetscRealPart(dp) < minres->haptol) {
       if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
-      ierr = PetscInfo2(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
       break;
     }

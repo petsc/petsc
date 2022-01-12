@@ -591,10 +591,10 @@ PetscErrorCode  PetscDetermineInitialFPTrap(void)
 #endif
 #if defined(FE_NOMASK_ENV) || defined PETSC_HAVE_XMMINTRIN_H
     _trapmode = PETSC_FP_TRAP_ON;
-    ierr = PetscInfo1(NULL,"Floating point trapping is on by default %d\n",flags);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Floating point trapping is on by default %d\n",flags);CHKERRQ(ierr);
   } else {
     _trapmode = PETSC_FP_TRAP_OFF;
-    ierr = PetscInfo1(NULL,"Floating point trapping is off by default %d\n",flags);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Floating point trapping is off by default %d\n",flags);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 #endif

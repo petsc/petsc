@@ -18,9 +18,9 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   *accept = PETSC_TRUE;
   if (h > cfltimestep * ccfl) {
     if (adapt->always_accept) {
-      ierr = PetscInfo3(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, proceeding anyway\n",(double)h,(double)ccfl,(double)cfltimestep);CHKERRQ(ierr);
+      ierr = PetscInfo(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, proceeding anyway\n",(double)h,(double)ccfl,(double)cfltimestep);CHKERRQ(ierr);
     } else {
-      ierr = PetscInfo3(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, step REJECTED\n",(double)h,(double)ccfl,(double)cfltimestep);CHKERRQ(ierr);
+      ierr = PetscInfo(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, step REJECTED\n",(double)h,(double)ccfl,(double)cfltimestep);CHKERRQ(ierr);
       *accept  = PETSC_FALSE;
     }
   }
@@ -28,7 +28,7 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   /* The optimal new step based purely on CFL constraint for this step. */
   hcfl = adapt->safety * cfltimestep * ccfl;
   if (hcfl < adapt->dt_min) {
-    ierr = PetscInfo4(adapt,"Cannot satisfy CFL constraint %g (with %g safety) at minimum time step %g with method coefficient %g, proceding anyway\n",(double)cfltimestep,(double)adapt->safety,(double)adapt->dt_min,(double)ccfl);CHKERRQ(ierr);
+    ierr = PetscInfo(adapt,"Cannot satisfy CFL constraint %g (with %g safety) at minimum time step %g with method coefficient %g, proceding anyway\n",(double)cfltimestep,(double)adapt->safety,(double)adapt->dt_min,(double)ccfl);CHKERRQ(ierr);
   }
 
   *next_sc = 0;

@@ -21,7 +21,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_Delete_Fn(MPI_Comm comm,Petsc
   PetscShmComm p = (PetscShmComm)val;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(NULL,"Deleting shared memory subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscInfo(NULL,"Deleting shared memory subcommunicator in a MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
   ierr = MPI_Comm_free(&p->shmcomm);CHKERRMPI(ierr);
   ierr = PetscFree(p->globranks);CHKERRMPI(ierr);
   ierr = PetscFree(val);CHKERRMPI(ierr);
@@ -117,7 +117,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm,PetscShmComm *pshmcomm)
   ierr = MPI_Group_free(&shmgroup);CHKERRMPI(ierr);
 
   for (i=0; i<(*pshmcomm)->shmsize; i++) {
-    ierr = PetscInfo2(NULL,"Shared memory rank %d global rank %d\n",i,(*pshmcomm)->globranks[i]);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Shared memory rank %d global rank %d\n",i,(*pshmcomm)->globranks[i]);CHKERRQ(ierr);
   }
   ierr = MPI_Comm_set_attr(globcomm,Petsc_ShmComm_keyval,*pshmcomm);CHKERRMPI(ierr);
   PetscFunctionReturn(0);

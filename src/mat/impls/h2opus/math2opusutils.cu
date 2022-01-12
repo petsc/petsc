@@ -229,7 +229,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
       ierr = VecNorm(z,NORM_INFINITY,&normz);CHKERRQ(ierr);
       ierr = VecDot(x,z,&dot);CHKERRQ(ierr);
       adot = PetscAbsScalar(dot);
-      ierr = PetscInfo4(A,"%s norm it %" PetscInt_FMT " -> (%g %g)\n",NormTypes[normtype],i,(double)normz,(double)adot);CHKERRQ(ierr);
+      ierr = PetscInfo(A,"%s norm it %" PetscInt_FMT " -> (%g %g)\n",NormTypes[normtype],i,(double)normz,(double)adot);CHKERRQ(ierr);
       if (normz <= adot && i > 0) {
         ierr = VecNorm(y,NORM_1,n);CHKERRQ(ierr);
         break;
@@ -237,7 +237,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
       ierr = VecMax(z,&j,&normz);CHKERRQ(ierr);
       if (j == jold) {
         ierr = VecNorm(y,NORM_1,n);CHKERRQ(ierr);
-        ierr = PetscInfo2(A,"%s norm it %" PetscInt_FMT " -> breakdown (j==jold)\n",NormTypes[normtype],i);CHKERRQ(ierr);
+        ierr = PetscInfo(A,"%s norm it %" PetscInt_FMT " -> breakdown (j==jold)\n",NormTypes[normtype],i);CHKERRQ(ierr);
         break;
       }
       jold = j;
@@ -266,7 +266,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
       ierr = VecNorm(z,NORM_2,&normz);CHKERRQ(ierr);
       ierr = VecDot(x,z,&dot);CHKERRQ(ierr);
       adot = PetscAbsScalar(dot);
-      ierr = PetscInfo5(A,"%s norm it %" PetscInt_FMT " -> %g (%g %g)\n",NormTypes[normtype],i,(double)*n,(double)normz,(double)adot);CHKERRQ(ierr);
+      ierr = PetscInfo(A,"%s norm it %" PetscInt_FMT " -> %g (%g %g)\n",NormTypes[normtype],i,(double)*n,(double)normz,(double)adot);CHKERRQ(ierr);
       if (normz <= adot) break;
       if (i < normsamples - 1) {
         Vec t;
@@ -284,7 +284,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
   default:
     SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"%s norm not supported",NormTypes[normtype]);
   }
-  ierr = PetscInfo3(A,"%s norm %g computed in %" PetscInt_FMT " iterations\n",NormTypes[normtype],(double)*n,i);CHKERRQ(ierr);
+  ierr = PetscInfo(A,"%s norm %g computed in %" PetscInt_FMT " iterations\n",NormTypes[normtype],(double)*n,i);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

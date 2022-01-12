@@ -123,7 +123,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   ierr = PetscFree(bi);CHKERRQ(ierr);
   ierr = PetscFree(bj);CHKERRQ(ierr);
 
-  ierr = PetscInfo1(NULL,"    compression rate for spbas_compress_pattern %g \n",(double)mem_reduction);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"    compression rate for spbas_compress_pattern %g \n",(double)mem_reduction);CHKERRQ(ierr);
 
   /* Make Cholesky decompositions with larger Manteuffel shifts until no more    negative diagonals are found. */
   ierr = ISGetIndices(ip,&rip);CHKERRQ(ierr);
@@ -139,12 +139,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
     if (!success) {
       shiftnz *= 1.5;
       if (shiftnz < 1e-5) shiftnz=1e-5;
-      ierr = PetscInfo1(NULL,"spbas_incomplete_cholesky found a negative diagonal. Trying again with Manteuffel shift=%g\n",(double)shiftnz);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"spbas_incomplete_cholesky found a negative diagonal. Trying again with Manteuffel shift=%g\n",(double)shiftnz);CHKERRQ(ierr);
     }
   }
   ierr = spbas_delete(Pattern);CHKERRQ(ierr);
 
-  ierr = PetscInfo1(NULL,"    memory_usage for  spbas_incomplete_cholesky  %g bytes per row\n", (double)(PetscReal) (spbas_memory_requirement(matrix_LT)/ (PetscReal) mbs));CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"    memory_usage for  spbas_incomplete_cholesky  %g bytes per row\n", (double)(PetscReal) (spbas_memory_requirement(matrix_LT)/ (PetscReal) mbs));CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iip,&riip);CHKERRQ(ierr);

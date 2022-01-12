@@ -119,7 +119,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
           A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
           A->factorerror_zeropivot_value = PetscAbsScalar(diag[0]);
           A->factorerror_zeropivot_row   = i;
-          ierr = PetscInfo1(A,"Zero pivot, row %" PetscInt_FMT "\n",i);CHKERRQ(ierr);
+          ierr = PetscInfo(A,"Zero pivot, row %" PetscInt_FMT "\n",i);CHKERRQ(ierr);
         } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %" PetscInt_FMT " pivot value %g tolerance %g",i,(double)PetscAbsScalar(diag[0]),(double)PETSC_MACHINE_EPSILON);
       }
 
@@ -1118,7 +1118,7 @@ PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat A,PetscBool  *missing,PetscInt *d)
       if (diag[i] >= ii[i+1]) {
         *missing = PETSC_TRUE;
         if (d) *d = i;
-        ierr = PetscInfo1(A,"Matrix is missing block diagonal number %" PetscInt_FMT "\n",i);CHKERRQ(ierr);
+        ierr = PetscInfo(A,"Matrix is missing block diagonal number %" PetscInt_FMT "\n",i);CHKERRQ(ierr);
         break;
       }
     }
@@ -1321,7 +1321,7 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
   case MAT_SORTED_FULL:
-    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_SPD:
   case MAT_SYMMETRIC:
@@ -2002,9 +2002,9 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     a->diag = NULL;
   }
   if (fshift && a->nounused == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Unused space detected in matrix: %" PetscInt_FMT " X %" PetscInt_FMT " block size %" PetscInt_FMT ", %" PetscInt_FMT " unneeded", m, A->cmap->n, A->rmap->bs, fshift*bs2);
-  ierr = PetscInfo5(A,"Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT ", block size %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded, %" PetscInt_FMT " used\n",m,A->cmap->n,A->rmap->bs,fshift*bs2,a->nz*bs2);CHKERRQ(ierr);
-  ierr = PetscInfo1(A,"Number of mallocs during MatSetValues is %" PetscInt_FMT "\n",a->reallocs);CHKERRQ(ierr);
-  ierr = PetscInfo1(A,"Most nonzeros blocks in any row is %" PetscInt_FMT "\n",rmax);CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT ", block size %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded, %" PetscInt_FMT " used\n",m,A->cmap->n,A->rmap->bs,fshift*bs2,a->nz*bs2);CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Number of mallocs during MatSetValues is %" PetscInt_FMT "\n",a->reallocs);CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Most nonzeros blocks in any row is %" PetscInt_FMT "\n",rmax);CHKERRQ(ierr);
 
   A->info.mallocs    += a->reallocs;
   a->reallocs         = 0;
@@ -2928,13 +2928,13 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
       case 1:
         B->ops->mult    = MatMult_SeqBAIJ_9_AVX2;
         B->ops->multadd = MatMultAdd_SeqBAIJ_9_AVX2;
-        ierr = PetscInfo1((PetscObject)B,"Using AVX2 for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using AVX2 for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
         break;
 #endif
       default:
         B->ops->mult    = MatMult_SeqBAIJ_N;
         B->ops->multadd = MatMultAdd_SeqBAIJ_N;
-        ierr = PetscInfo1((PetscObject)B,"Using BLAS for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using BLAS for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
         break;
       }
       break;
@@ -2951,24 +2951,24 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
       case 1:
         B->ops->mult    = MatMult_SeqBAIJ_12_ver1;
         B->ops->multadd = MatMultAdd_SeqBAIJ_12_ver1;
-        ierr = PetscInfo2((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
         break;
       case 2:
         B->ops->mult    = MatMult_SeqBAIJ_12_ver2;
         B->ops->multadd = MatMultAdd_SeqBAIJ_12_ver2;
-        ierr = PetscInfo2((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
         break;
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
       case 3:
         B->ops->mult    = MatMult_SeqBAIJ_12_AVX2;
         B->ops->multadd = MatMultAdd_SeqBAIJ_12_ver1;
-        ierr = PetscInfo1((PetscObject)B,"Using AVX2 for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using AVX2 for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
         break;
 #endif
       default:
         B->ops->mult    = MatMult_SeqBAIJ_N;
         B->ops->multadd = MatMultAdd_SeqBAIJ_N;
-        ierr = PetscInfo1((PetscObject)B,"Using BLAS for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using BLAS for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
         break;
       }
       break;
@@ -2980,23 +2980,23 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
       switch (version) {
       case 1:
         B->ops->mult    = MatMult_SeqBAIJ_15_ver1;
-        ierr = PetscInfo2((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
         break;
       case 2:
         B->ops->mult    = MatMult_SeqBAIJ_15_ver2;
-        ierr = PetscInfo2((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
         break;
       case 3:
         B->ops->mult    = MatMult_SeqBAIJ_15_ver3;
-        ierr = PetscInfo2((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
         break;
       case 4:
         B->ops->mult    = MatMult_SeqBAIJ_15_ver4;
-        ierr = PetscInfo2((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using version %" PetscInt_FMT " of MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",version,bs);CHKERRQ(ierr);
         break;
       default:
         B->ops->mult    = MatMult_SeqBAIJ_N;
-        ierr = PetscInfo1((PetscObject)B,"Using BLAS for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
+        ierr = PetscInfo((PetscObject)B,"Using BLAS for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
         break;
       }
       B->ops->multadd = MatMultAdd_SeqBAIJ_N;
@@ -3005,7 +3005,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
     default:
       B->ops->mult    = MatMult_SeqBAIJ_N;
       B->ops->multadd = MatMultAdd_SeqBAIJ_N;
-      ierr = PetscInfo1((PetscObject)B,"Using BLAS for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
+      ierr = PetscInfo((PetscObject)B,"Using BLAS for MatMult for BAIJ for blocksize %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
       break;
     }
   }

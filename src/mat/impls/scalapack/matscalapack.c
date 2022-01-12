@@ -1269,7 +1269,7 @@ PetscErrorCode MatAssemblyBegin_ScaLAPACK(Mat A,MatAssemblyType type)
   if (A->nooffprocentries) PetscFunctionReturn(0);
   ierr = MatStashScatterBegin_Private(A,&A->stash,NULL);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&A->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  ierr = PetscInfo2(A,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1588,10 +1588,10 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
     }
   }
 #if defined(PETSC_USE_INFO)
-  ierr = PetscInfo1(NULL,"No of messages: %" PetscInt_FMT "\n",nsends);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"No of messages: %" PetscInt_FMT "\n",nsends);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (sizes[i]) {
-      ierr = PetscInfo2(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt))));CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt))));CHKERRQ(ierr);
     }
   }
 #endif

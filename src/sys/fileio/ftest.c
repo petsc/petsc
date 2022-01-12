@@ -33,10 +33,10 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_ACCESS)
   if (!access(fname, m)) {
-    ierr = PetscInfo1(NULL,"System call access() succeeded on file %s\n",fname);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"System call access() succeeded on file %s\n",fname);CHKERRQ(ierr);
     *flg = PETSC_TRUE;
   } else {
-    ierr = PetscInfo1(NULL,"System call access() failed on file %s\n",fname);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"System call access() failed on file %s\n",fname);CHKERRQ(ierr);
     *flg = PETSC_FALSE;
   }
 #else
@@ -127,10 +127,10 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 #if defined(EOVERFLOW)
     if (errno == EOVERFLOW) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
 #endif
-    ierr    = PetscInfo1(NULL,"System call stat() failed on file %s\n",fname);CHKERRQ(ierr);
+    ierr    = PetscInfo(NULL,"System call stat() failed on file %s\n",fname);CHKERRQ(ierr);
     *exists = PETSC_FALSE;
   } else {
-    ierr      = PetscInfo1(NULL,"System call stat() succeeded on file %s\n",fname);CHKERRQ(ierr);
+    ierr      = PetscInfo(NULL,"System call stat() succeeded on file %s\n",fname);CHKERRQ(ierr);
     *exists   = PETSC_TRUE;
     *fileUid  = statbuf.st_uid;
     *fileGid  = statbuf.st_gid;
@@ -257,7 +257,7 @@ PetscErrorCode  PetscLs(MPI_Comm comm,const char dirname[],char found[],size_t t
     ierr = PetscStrlen(found,&len);CHKERRQ(ierr);
     f    = fgets(found+len,tlen-len,fp);
   }
-  if (*flg) {ierr = PetscInfo2(NULL,"ls on %s gives \n%s\n",dirname,found);CHKERRQ(ierr);}
+  if (*flg) {ierr = PetscInfo(NULL,"ls on %s gives \n%s\n",dirname,found);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPClose(comm,fp);CHKERRQ(ierr);
 #else

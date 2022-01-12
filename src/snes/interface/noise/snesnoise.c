@@ -208,7 +208,7 @@ theend:
   }
   */
   fcount = neP->function_count - fcount;
-  ierr   = PetscInfo5(snes,"fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",fcount,neP->function_count,(double)rerrf,(double)PetscSqrtReal(*fnoise),(double)*hopt);CHKERRQ(ierr);
+  ierr   = PetscInfo(snes,"fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",fcount,neP->function_count,(double)rerrf,(double)PetscSqrtReal(*fnoise),(double)*hopt);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-noise_test",&noise_test,NULL);CHKERRQ(ierr);
   if (noise_test) {

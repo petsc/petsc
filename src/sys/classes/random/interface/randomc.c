@@ -99,7 +99,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   r->seed = seed;
-  ierr    = PetscInfo1(NULL,"Setting seed to %d\n",(int)seed);CHKERRQ(ierr);
+  ierr    = PetscInfo(NULL,"Setting seed to %d\n",(int)seed);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

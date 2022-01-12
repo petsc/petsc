@@ -962,7 +962,7 @@ PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_id *gs,  PetscScalar *vals,  const char
     PCTFS_gs_gop_vec_plus(gs,vals,step);
     break;
   default:
-    ierr = PetscInfo1(0,"PCTFS_gs_gop_vec() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_gs_gop_vec() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
     ierr = PetscInfo(0,"PCTFS_gs_gop_vec() :: default :: plus\n");CHKERRQ(ierr);
     PCTFS_gs_gop_vec_plus(gs,vals,step);
     break;
@@ -1256,7 +1256,7 @@ PetscErrorCode PCTFS_gs_gop_hc(PCTFS_gs_id *gs,  PetscScalar *vals,  const char 
     PCTFS_gs_gop_plus_hc(gs,vals,dim);
     break;
   default:
-    ierr = PetscInfo1(0,"PCTFS_gs_gop_hc() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_gs_gop_hc() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
     ierr = PetscInfo(0,"PCTFS_gs_gop_hc() :: default :: plus\n");CHKERRQ(ierr);
     PCTFS_gs_gop_plus_hc(gs,vals,dim);
     break;

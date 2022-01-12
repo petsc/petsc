@@ -1193,7 +1193,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
     ierr = KSPGetIterationNumber(fetidp->innerksp,&its);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_PC_FAILED;
     ierr = VecSetInf(Xl);CHKERRQ(ierr);
-    ierr = PetscInfo3(ksp,"Inner KSP solve failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
+    ierr = PetscInfo(ksp,"Inner KSP solve failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
   }
   ierr = PCBDDCMatFETIDPGetSolution(F,Xl,X);CHKERRQ(ierr);
   ierr = MatGetNullSpace(A,&nsp);CHKERRQ(ierr);

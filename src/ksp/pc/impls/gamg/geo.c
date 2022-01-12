@@ -753,10 +753,10 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
 
       ierr = MPIU_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm);CHKERRMPI(ierr);
       if (tm > 1.) { /* needs to be globalized - should not happen */
-        ierr = PetscInfo1(pc," failed metric for coarse grid %e\n",(double)tm);CHKERRQ(ierr);
+        ierr = PetscInfo(pc," failed metric for coarse grid %e\n",(double)tm);CHKERRQ(ierr);
         ierr = MatDestroy(&Prol);CHKERRQ(ierr);
       } else if (metric > .0) {
-        ierr = PetscInfo1(pc,"worst metric for coarse grid = %e\n",(double)metric);CHKERRQ(ierr);
+        ierr = PetscInfo(pc,"worst metric for coarse grid = %e\n",(double)metric);CHKERRQ(ierr);
       }
     } else SETERRQ(comm,PETSC_ERR_PLIB,"3D not implemented for 'geo' AMG");
     { /* create next coords - output */

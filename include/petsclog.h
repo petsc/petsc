@@ -10,28 +10,20 @@
 /* General logging of information; different from event logging */
 PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],PetscObject,const char[],...) PETSC_ATTRIBUTE_FORMAT(3,4);
 #if defined(PETSC_USE_INFO)
-#define PetscInfo(A,S)                             PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S)
-#define PetscInfo1(A,S,a1)                         PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1)
-#define PetscInfo2(A,S,a1,a2)                      PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2)
-#define PetscInfo3(A,S,a1,a2,a3)                   PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3)
-#define PetscInfo4(A,S,a1,a2,a3,a4)                PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4)
-#define PetscInfo5(A,S,a1,a2,a3,a4,a5)             PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5)
-#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)          PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6)
-#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7)       PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6,a7)
-#define PetscInfo8(A,S,a1,a2,a3,a4,a5,a6,a7,a8)    PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6,a7,a8)
-#define PetscInfo9(A,S,a1,a2,a3,a4,a5,a6,a7,a8,a9) PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),S,a1,a2,a3,a4,a5,a6,a7,a8,a9)
+#define PetscInfo(A,...) PetscInfo_Private(PETSC_FUNCTION_NAME,((PetscObject)A),__VA_ARGS__)
 #else
-#define PetscInfo(A,S)                             0
-#define PetscInfo1(A,S,a1)                         0
-#define PetscInfo2(A,S,a1,a2)                      0
-#define PetscInfo3(A,S,a1,a2,a3)                   0
-#define PetscInfo4(A,S,a1,a2,a3,a4)                0
-#define PetscInfo5(A,S,a1,a2,a3,a4,a5)             0
-#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)          0
-#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7)       0
-#define PetscInfo8(A,S,a1,a2,a3,a4,a5,a6,a7,a8)    0
-#define PetscInfo9(A,S,a1,a2,a3,a4,a5,a6,a7,a8,a9) 0
+#define PetscInfo(A,...) 0
 #endif
+
+#define PetscInfo1(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
+#define PetscInfo2(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
+#define PetscInfo3(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS_)_
+#define PetscInfo4(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
+#define PetscInfo5(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
+#define PetscInfo6(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
+#define PetscInfo7(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
+#define PetscInfo8(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
+#define PetscInfo9(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
 
 /*E
     PetscInfoCommFlag - Describes the method by which to filter PetscInfo() by communicator size

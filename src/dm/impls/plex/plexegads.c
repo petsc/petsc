@@ -564,8 +564,8 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
   if (cOff != numCells) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
   ierr = DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numVertices, numCorners, PETSC_TRUE, cells, cdim, coords, &dm);CHKERRQ(ierr);
   ierr = PetscFree3(coords, cells, cone);CHKERRQ(ierr);
-  ierr = PetscInfo2(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells);CHKERRQ(ierr);
-  ierr = PetscInfo2(dm, " Total Number of Unique Vertices = %D (%D)\n", numVertices, newVertices);CHKERRQ(ierr);
+  ierr = PetscInfo(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells);CHKERRQ(ierr);
+  ierr = PetscInfo(dm, " Total Number of Unique Vertices = %D (%D)\n", numVertices, newVertices);CHKERRQ(ierr);
   /* Embed EGADS model in DM */
   {
     PetscContainer modelObj, contextObj;
@@ -943,8 +943,8 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
   // Generate DMPlex
   ierr = DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numPoints, numCorners, PETSC_TRUE, cells, cdim, coords, &dm);CHKERRQ(ierr);
   ierr = PetscFree2(coords, cells);CHKERRQ(ierr);
-  ierr = PetscInfo1(dm, " Total Number of Unique Cells    = %D \n", numCells);CHKERRQ(ierr);
-  ierr = PetscInfo1(dm, " Total Number of Unique Vertices = %D \n", numVertices);CHKERRQ(ierr);
+  ierr = PetscInfo(dm, " Total Number of Unique Cells    = %D \n", numCells);CHKERRQ(ierr);
+  ierr = PetscInfo(dm, " Total Number of Unique Vertices = %D \n", numVertices);CHKERRQ(ierr);
 
   // Embed EGADS model in DM
   {

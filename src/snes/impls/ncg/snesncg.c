@@ -448,7 +448,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     }
     ierr = VecAYPX(lX, beta, dX);CHKERRQ(ierr);
   }
-  ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
+  ierr = PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
   if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   PetscFunctionReturn(0);
 }

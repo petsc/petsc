@@ -265,9 +265,9 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   {
     PetscInt nstash,reallocs;
     ierr = VecStashGetInfo_Private(&X->stash,&nstash,&reallocs);CHKERRQ(ierr);
-    ierr = PetscInfo2(X,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+    ierr = PetscInfo(X,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
     ierr = VecStashGetInfo_Private(&X->bstash,&nstash,&reallocs);CHKERRQ(ierr);
-    ierr = PetscInfo2(X,"Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+    ierr = PetscInfo(X,"Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

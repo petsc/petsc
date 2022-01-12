@@ -143,7 +143,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     }
 
     /* convergence monitoring */
-    ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
 
     if (snes->npc && snes->npcside== PC_RIGHT) {
       ierr = PetscLogEventBegin(SNES_NPCSolve,snes->npc,X,0,0);CHKERRQ(ierr);
@@ -223,7 +223,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     }
   }
   if (i == snes->max_its) {
-    ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", snes->max_its);CHKERRQ(ierr);
+    ierr = PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", snes->max_its);CHKERRQ(ierr);
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);

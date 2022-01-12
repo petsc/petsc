@@ -674,7 +674,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         red  = PetscCeilInt(commsize,PetscCeilInt(m,commsize));
         ierr = PetscObjectTypeCompareAny((PetscObject)(def->WtAW),&match,MATSEQDENSE,MATMPIDENSE,MATDENSE,"");CHKERRQ(ierr);
         if (match) red = commsize;
-        ierr = PetscInfo1(pc,"Auto choosing reduction factor %D\n",red);CHKERRQ(ierr);
+        ierr = PetscInfo(pc,"Auto choosing reduction factor %D\n",red);CHKERRQ(ierr);
       }
       ierr = PCTelescopeSetReductionFactor(pcinner,red);CHKERRQ(ierr);
       ierr = PCSetUp(pcinner);CHKERRQ(ierr);

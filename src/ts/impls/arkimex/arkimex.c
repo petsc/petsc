@@ -701,7 +701,7 @@ static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts,PetscBool *id)
     *id = PETSC_TRUE;
   } else {
     *id = PETSC_FALSE;
-    ierr = PetscInfo1((PetscObject)ts,"IFunction(Udot = random) - IFunction(Udot = 0) is not near Udot, %g, suspect mass matrix implied in IFunction() is not the identity as required\n",(double)norm);CHKERRQ(ierr);
+    ierr = PetscInfo((PetscObject)ts,"IFunction(Udot = random) - IFunction(Udot = 0) is not near Udot, %g, suspect mass matrix implied in IFunction() is not the identity as required\n",(double)norm);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&Udot);CHKERRQ(ierr);
   ierr = VecDestroy(&Y1);CHKERRQ(ierr);
@@ -901,7 +901,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

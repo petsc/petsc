@@ -1782,7 +1782,7 @@ static PetscErrorCode MatMissingDiagonal_HYPRE(Mat A, PetscBool *missing, PetscI
         found = (jj[j] == i) ? PETSC_TRUE : PETSC_FALSE;
 
       if (!found) {
-        PetscInfo1(A,"Matrix is missing local diagonal entry %" PetscInt_FMT "\n",i);
+        PetscInfo(A,"Matrix is missing local diagonal entry %" PetscInt_FMT "\n",i);
         if (missing) *missing = PETSC_TRUE;
         if (dd) *dd = i+rst;
         PetscFunctionReturn(0);

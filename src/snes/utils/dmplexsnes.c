@@ -110,7 +110,7 @@ PetscErrorCode SNESConvergedCorrectPressure(SNES snes, PetscInt it, PetscReal xn
     ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceGetVecs(nullspace, NULL, NULL, &nullvecs);CHKERRQ(ierr);
     ierr = VecDot(nullvecs[0], u, &pintd);CHKERRQ(ierr);
-    ierr = PetscInfo1(snes, "SNES: Discrete integral of pressure: %g\n", (double) PetscRealPart(pintd));CHKERRQ(ierr);
+    ierr = PetscInfo(snes, "SNES: Discrete integral of pressure: %g\n", (double) PetscRealPart(pintd));CHKERRQ(ierr);
   }
   if (*reason > 0) {
     Mat          J;

@@ -1662,7 +1662,7 @@ static PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitna
 
   PetscFunctionBegin;
   if (jac->splitdefined) {
-    ierr = PetscInfo1(pc,"Ignoring new split \"%s\" because the splits have already been defined\n",splitname);CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"Ignoring new split \"%s\" because the splits have already been defined\n",splitname);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   for (i=0; i<n; i++) {
@@ -1854,7 +1854,7 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
 
   PetscFunctionBegin;
   if (jac->splitdefined) {
-    ierr = PetscInfo1(pc,"Ignoring new split \"%s\" because the splits have already been defined\n",splitname);CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"Ignoring new split \"%s\" because the splits have already been defined\n",splitname);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscNew(&ilink);CHKERRQ(ierr);

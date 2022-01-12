@@ -269,7 +269,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"xyt_generate() :: null space exists %D %D %D\n",m,j,xyt_handle->ns);CHKERRQ(ierr);
   }
 
-  ierr = PetscInfo2(0,"xyt_generate() :: X(%D,%D)\n",n,m);CHKERRQ(ierr);
+  ierr = PetscInfo(0,"xyt_generate() :: X(%D,%D)\n",n,m);CHKERRQ(ierr);
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */
@@ -506,7 +506,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
   /* close off stages for execution phase */
   while (dim!=level) {
     stages[dim++]=i;
-    ierr         = PetscInfo2(0,"disconnected!!! dim(%D)!=level(%D)\n",dim,level);CHKERRQ(ierr);
+    ierr         = PetscInfo(0,"disconnected!!! dim(%D)!=level(%D)\n",dim,level);CHKERRQ(ierr);
   }
   stages[dim]=i;
 

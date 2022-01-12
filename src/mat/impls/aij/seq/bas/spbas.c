@@ -340,7 +340,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
     B->icols[i] = B->icols[ipoint[i]];
   }
   ierr = PetscInfo(NULL,"Row patterns have been compressed\n");CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL,"         (%g nonzeros per row)\n", (double) ((PetscReal) nnz / (PetscReal) nrows));CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"         (%g nonzeros per row)\n", (double) ((PetscReal) nnz / (PetscReal) nrows));CHKERRQ(ierr);
 
   ierr = PetscFree(isort);CHKERRQ(ierr);
   ierr = PetscFree(used);CHKERRQ(ierr);

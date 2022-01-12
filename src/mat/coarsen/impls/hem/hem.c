@@ -955,7 +955,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         ierr = VecGetArray(ghostMaxPE, &cpcol_max_pe);CHKERRQ(ierr);
         ierr = VecRestoreArray(locMaxEdge, &lid_max_ew);CHKERRQ(ierr);
       } /* deal with deleted ghost */
-      ierr = PetscInfo3(a_Gmat,"\t %" PetscInt_FMT ".%" PetscInt_FMT ": %" PetscInt_FMT " active edges.\n",iter,sub_it,nactive_edges);CHKERRQ(ierr);
+      ierr = PetscInfo(a_Gmat,"\t %" PetscInt_FMT ".%" PetscInt_FMT ": %" PetscInt_FMT " active edges.\n",iter,sub_it,nactive_edges);CHKERRQ(ierr);
       if (!nactive_edges) break;
     } /* sub_it loop */
 

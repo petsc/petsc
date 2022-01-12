@@ -438,7 +438,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
   /* close off stages for execution phase */
   while (dim!=level) {
     stages[dim++] = i;
-    ierr          = PetscInfo2(0,"disconnected!!! dim(%D)!=level(%D)\n",dim,level);CHKERRQ(ierr);
+    ierr          = PetscInfo(0,"disconnected!!! dim(%D)!=level(%D)\n",dim,level);CHKERRQ(ierr);
   }
   stages[dim]=i;
 

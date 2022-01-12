@@ -185,7 +185,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   // Columns = Parent DoFs ;  Rows = Child DoFs
   // Interpolation matrix: \sum_{i=1}^P Owned(Child) * (Owned(Parent) + Ghosted(Parent))
   // Size: nlsizc * nlghsizp
-  PetscInfo4(NULL, "Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
+  PetscInfo(NULL, "Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
 
   ierr = DMGetDimension(dmp, &dim);CHKERRQ(ierr);
 
@@ -243,7 +243,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
     nnz[tc] = std::min(nlsizp, nnz[tc]);
     onz[tc] = std::min(ngsizp - nlsizp, onz[tc]);
 
-    PetscInfo3(NULL, "  %d: NNZ = %d, ONZ = %d\n", tc, nnz[tc], onz[tc]);
+    PetscInfo(NULL, "  %d: NNZ = %d, ONZ = %d\n", tc, nnz[tc], onz[tc]);
 
     innz = (innz < nnz[tc] ? nnz[tc] : innz);
     ionz = (ionz < onz[tc] ? onz[tc] : ionz);
@@ -427,8 +427,8 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   PetscValidPointer(dmref, 4);
 
   if ((dmb->hlevel == dmb->nhlevels && refine) || (dmb->hlevel == 0 && !refine)) {
-    if (dmb->hlevel + 1 > dmb->nhlevels && refine) PetscInfo2(NULL, "Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D. Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels);
-    if (dmb->hlevel - 1 < 0 && !refine) PetscInfo1(NULL, "Invalid multigrid coarsen hierarchy level specified (%D). Creating a NULL object.\n", dmb->hlevel - 1);
+    if (dmb->hlevel + 1 > dmb->nhlevels && refine) PetscInfo(NULL, "Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D. Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels);
+    if (dmb->hlevel - 1 < 0 && !refine) PetscInfo(NULL, "Invalid multigrid coarsen hierarchy level specified (%D). Creating a NULL object.\n", dmb->hlevel - 1);
     *dmref = PETSC_NULL;
     PetscFunctionReturn(0);
   }

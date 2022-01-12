@@ -155,7 +155,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   ierr = PetscStrcat(request,contentlength);CHKERRQ(ierr);
   ierr = PetscStrcat(request,body);CHKERRQ(ierr);
   ierr = PetscStrlen(request,&request_len);CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL,"HTTPS request follows: \n%s\n",request);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"HTTPS request follows: \n%s\n",request);CHKERRQ(ierr);
 
   *outrequest = request;
   PetscFunctionReturn(0);
@@ -244,7 +244,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
       foundbody = PETSC_TRUE;
     }
   } while (!foundbody);
-  ierr = PetscInfo1(NULL,"HTTPS result follows: \n%s\n",buff);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"HTTPS result follows: \n%s\n",buff);CHKERRQ(ierr);
 
   SSL_free(ssl);
   ierr = PetscFree(request);CHKERRQ(ierr);
@@ -284,7 +284,7 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
   ierr = PetscFree(request);CHKERRQ(ierr);
   PetscBinaryRead(sock,buff,buffsize,NULL,PETSC_CHAR);
   buff[buffsize-1] = 0;
-  ierr = PetscInfo1(NULL,"HTTP result follows: \n%s\n",buff);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"HTTP result follows: \n%s\n",buff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

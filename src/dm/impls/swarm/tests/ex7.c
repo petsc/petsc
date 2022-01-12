@@ -80,7 +80,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
     ierr = MatGetLocalSize(M_p, &M, &N);CHKERRQ(ierr);
     if (N>M) {
       PC        pc;
-      ierr = PetscInfo2(ksp, " M (%D) < M (%D) -- skip revert to lsqr\n",M,N);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp, " M (%D) < M (%D) -- skip revert to lsqr\n",M,N);CHKERRQ(ierr);
       is_lsqr = PETSC_TRUE;
       ierr = KSPSetType(ksp,KSPLSQR);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
       }
       ierr = MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(D, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      PetscInfo2(M_p,"createMtMKSP Have %D eqs, nzl = %D\n",N,nzl);
+      PetscInfo(M_p,"createMtMKSP Have %D eqs, nzl = %D\n",N,nzl);
       ierr = KSPSetOperators(ksp, MtM, D);CHKERRQ(ierr);
       ierr = MatViewFromOptions(D,NULL,"-ftop2_D_mat_view");CHKERRQ(ierr);
       ierr = MatViewFromOptions(M_p,NULL,"-ftop2_Mp_mat_view");CHKERRQ(ierr);
@@ -281,7 +281,7 @@ PetscErrorCode go()
         h[i] = (hi[i] - lo[i])/faces[i];
         hp[i] = (hi[i] - lo[i])/Np[i];
         vol *= (hi[i] - lo[i]);
-        ierr = PetscInfo5(dm_t[tid]," lo = %g hi = %g n = %D h = %g hp = %g\n",lo[i],hi[i],faces[i],h[i],hp[i]);CHKERRQ(ierr);
+        ierr = PetscInfo(dm_t[tid]," lo = %g hi = %g n = %D h = %g hp = %g\n",lo[i],hi[i],faces[i],h[i],hp[i]);CHKERRQ(ierr);
       }
     }
   }

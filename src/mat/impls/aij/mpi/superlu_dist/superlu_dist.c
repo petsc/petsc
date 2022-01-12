@@ -393,14 +393,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
     else {
       if (sinfo <= lu->A_sup.ncol) {
         F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        ierr = PetscInfo1(F,"U(i,i) is exactly zero, i= %d\n",sinfo);CHKERRQ(ierr);
+        ierr = PetscInfo(F,"U(i,i) is exactly zero, i= %d\n",sinfo);CHKERRQ(ierr);
       } else if (sinfo > lu->A_sup.ncol) {
         /*
          number of bytes allocated when memory allocation
          failure occurred, plus A->ncol.
          */
         F->factorerrortype = MAT_FACTOR_OUTMEMORY;
-        ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %d\n",sinfo);CHKERRQ(ierr);
+        ierr = PetscInfo(F,"Number of bytes allocated when memory allocation fails %d\n",sinfo);CHKERRQ(ierr);
       }
     }
   } else if (PetscUnlikely(sinfo < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %d, argument in p*gssvx() had an illegal value", sinfo);

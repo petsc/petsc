@@ -123,11 +123,11 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     }
     ierr = PetscViewerASCIISubtractTab(jac->monitor,((PetscObject)pc)->tablevel);CHKERRQ(ierr);
   }
-  ierr = PetscInfo2(pc,"Largest and smallest singular values %14.12e %14.12e\n",(double)PetscRealPart(d[0]),(double)PetscRealPart(d[n-1]));CHKERRQ(ierr);
+  ierr = PetscInfo(pc,"Largest and smallest singular values %14.12e %14.12e\n",(double)PetscRealPart(d[0]),(double)PetscRealPart(d[n-1]));CHKERRQ(ierr);
   for (i=0; i<n-jac->nzero; i++) d[i] = 1.0/d[i];
   for (; i<n; i++) d[i] = 0.0;
   if (jac->essrank > 0) for (i=0; i<n-jac->nzero-jac->essrank; i++) d[i] = 0.0; /* Skip all but essrank eigenvalues */
-  ierr = PetscInfo1(pc,"Number of zero or nearly singular values %D\n",jac->nzero);CHKERRQ(ierr);
+  ierr = PetscInfo(pc,"Number of zero or nearly singular values %D\n",jac->nzero);CHKERRQ(ierr);
   ierr = VecRestoreArray(jac->diag,&d);CHKERRQ(ierr);
 #if defined(foo)
   {

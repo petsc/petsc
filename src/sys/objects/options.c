@@ -475,7 +475,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
       ierr = PetscSegBufferCreate(1,2000,&aseg);CHKERRQ(ierr);
 
       /* the following line will not work when opening initial files (like .petscrc) since info is not yet set */
-      ierr = PetscInfo1(NULL,"Opened options file %s\n",file);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"Opened options file %s\n",file);CHKERRQ(ierr);
 
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */

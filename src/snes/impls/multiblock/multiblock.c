@@ -579,7 +579,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
     if (snes->reason) break;
   }
   if (i == maxits) {
-    ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
+    ierr = PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
@@ -595,7 +595,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
 
   PetscFunctionBegin;
   if (mb->defined) {
-    ierr = PetscInfo1(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name);CHKERRQ(ierr);
+    ierr = PetscInfo(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   for (i = 0; i < n; ++i) {
@@ -648,7 +648,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
 
   PetscFunctionBegin;
   if (mb->defined) {
-    ierr = PetscInfo1(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name);CHKERRQ(ierr);
+    ierr = PetscInfo(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscNew(&newblock);CHKERRQ(ierr);

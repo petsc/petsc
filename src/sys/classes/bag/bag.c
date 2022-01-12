@@ -901,7 +901,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
   size_t         totalsize = bagsize+sizeof(struct _n_PetscBag)+sizeof(PetscScalar);
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(NULL,"Creating Bag with total size %d\n",(int)totalsize);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"Creating Bag with total size %d\n",(int)totalsize);CHKERRQ(ierr);
   ierr = PetscMalloc(totalsize,bag);CHKERRQ(ierr);
   ierr = PetscMemzero(*bag,bagsize+sizeof(struct _n_PetscBag)+sizeof(PetscScalar));CHKERRQ(ierr);
 

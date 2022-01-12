@@ -96,7 +96,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       ierr  = KSP_PCApplyBAorAB(ksp,z,y,w);CHKERRQ(ierr); /* y = BAz = BABr */
       ierr  = VecDotNorm2(z,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (Br)^T(BABR); abr = (BABr)^T (BABr) */
       scale = rdot/abr;
-      ierr  = PetscInfo1(ksp,"Self-scale factor %g\n",(double)PetscRealPart(scale));CHKERRQ(ierr);
+      ierr  = PetscInfo(ksp,"Self-scale factor %g\n",(double)PetscRealPart(scale));CHKERRQ(ierr);
       ierr  = VecAXPY(x,scale,z);CHKERRQ(ierr);   /*   x  <- x + scale z */
       ierr  = VecAXPY(r,-scale,w);CHKERRQ(ierr);  /*  r <- r - scale*Az */
       ierr  = VecAXPY(z,-scale,y);CHKERRQ(ierr);  /*  z <- z - scale*y */

@@ -316,7 +316,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
   }
   v /= n;
   T  = E*m/n - v*v;
-  ierr = PetscInfo4(ts, "Time %.2f: mass %.4f velocity: %+.4f temperature: %.4f\n", t, n, v, T);CHKERRQ(ierr);
+  ierr = PetscInfo(ts, "Time %.2f: mass %.4f velocity: %+.4f temperature: %.4f\n", t, n, v, T);CHKERRQ(ierr);
   ierr = CheckDistribution(plex, m, n, T, &v);CHKERRQ(ierr);
   /*
      Begin cellwise evaluation of the collision operator. Essentially, penalize the weights of the particles
@@ -347,7 +347,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
     eqE += ComputeCDF(m, n, T, vcoords[0], vcoords[1])*m2;
     ierr = DMPlexVecRestoreClosure(plex, coordSection, coordsLocal, p, NULL, &vcoords);CHKERRQ(ierr);
   }
-  ierr = PetscInfo6(ts, "Time %.2f: mass update %.8f velocity update: %+.8f energy update: %.8f (%.8f, %.8f)\n", t, cn, cv, cE, pE, eqE);CHKERRQ(ierr);
+  ierr = PetscInfo(ts, "Time %.2f: mass update %.8f velocity update: %+.8f energy update: %.8f (%.8f, %.8f)\n", t, cn, cv, cE, pE, eqE);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(U, &u);CHKERRQ(ierr);
   ierr = VecRestoreArray(R, &r);CHKERRQ(ierr);

@@ -88,7 +88,7 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
       PetscInt   index;
       ierr = PetscStrendswithwhich(name,suffixes,&index);CHKERRQ(ierr);
       if (!suffixes[index]) {
-        ierr      = PetscInfo1(NULL,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
+        ierr      = PetscInfo(NULL,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
         name[l-1] = 0;
       }
     }

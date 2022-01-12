@@ -148,7 +148,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Check the termination criteria */
-    ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"iter %D, merit: %g, ||dpsi||: %g\n",tao->niter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
     ierr = TaoLogConvergenceHistory(tao,asls->merit,ndpsi,0.0,tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao,tao->niter,asls->merit,ndpsi,0.0,t);CHKERRQ(ierr);
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
@@ -194,7 +194,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     ierr = ISComplementVec(asls->fixed,asls->t1, &asls->free);CHKERRQ(ierr);
 
     ierr = ISGetSize(asls->fixed,&nf);CHKERRQ(ierr);
-    ierr = PetscInfo1(tao,"Number of fixed variables: %D\n", nf);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Number of fixed variables: %D\n", nf);CHKERRQ(ierr);
 
     /* We now have our partition.  Now calculate the direction in the
        fixed variable space. */
@@ -260,8 +260,8 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     ierr = VecDot(tao->stepdirection, asls->dpsi, &innerd);CHKERRQ(ierr);
 
     if (innerd <= asls->delta*PetscPowReal(normd, asls->rho)) {
-      ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
-      ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", tao->niter);CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
+      ierr = PetscInfo(tao, "Iteration %D: newton direction not descent\n", tao->niter);CHKERRQ(ierr);
       ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecDot(asls->dpsi, tao->stepdirection, &innerd);CHKERRQ(ierr);
     }

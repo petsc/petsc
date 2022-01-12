@@ -1353,13 +1353,13 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   ierr = MPI_Allreduce(minMaxInd,minMaxIndGlobal,2,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
   minInd = minMaxIndGlobal[0];
   maxInd = -minMaxIndGlobal[1];
-  ierr = PetscInfo2(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
+  ierr = PetscInfo(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
   if (nRefine || nCoarsen) { /* at least one cell is over the refinement threshold */
     ierr = DMAdaptLabel(dm,adaptLabel,&adaptedDM);CHKERRQ(ierr);
   }
   ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
   if (adaptedDM) {
-    ierr = PetscInfo2(ts, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nRefine, nCoarsen);CHKERRQ(ierr);
+    ierr = PetscInfo(ts, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nRefine, nCoarsen);CHKERRQ(ierr);
     if (tsNew) {ierr = initializeTS(adaptedDM, user, tsNew);CHKERRQ(ierr);}
     if (solNew) {
       ierr = DMCreateGlobalVector(adaptedDM, solNew);CHKERRQ(ierr);
@@ -1610,7 +1610,7 @@ int main(int argc, char **argv)
       TS             tsNew = NULL;
 
       ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-      ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
+      ierr = PetscInfo(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dm, NULL, "-initial_dm_view");CHKERRQ(ierr);
       ierr = VecViewFromOptions(X, NULL, "-initial_vec_view");CHKERRQ(ierr);
 #if 0
@@ -1704,7 +1704,7 @@ int main(int argc, char **argv)
       PetscLogDouble bytes;
 
       ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-      ierr = PetscInfo2(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
+      ierr = PetscInfo(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
       ierr = PetscFVSetLimiter(fvm,noneLimiter);CHKERRQ(ierr);
       ierr = adaptToleranceFVM(fvm,ts,X,refineTag,coarsenTag,user,&tsNew,&solNew);CHKERRQ(ierr);
       ierr = PetscFVSetLimiter(fvm,limiter);CHKERRQ(ierr);

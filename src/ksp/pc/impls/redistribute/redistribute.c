@@ -120,7 +120,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
 
     ierr = MatGetSize(pc->pmat,&NN,NULL);CHKERRQ(ierr);
-    ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));CHKERRQ(ierr);
 
     if (size > 1) {
       /* the following block of code assumes MPI can send messages to self, which is not supported for MPI-uni hence we need to handle the size 1 case as a special case */

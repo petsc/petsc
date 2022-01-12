@@ -419,7 +419,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
   /* Calculate velocity at t_n+1/2 (fill remote requests) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeRemote,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL, "Calculating %d remote velocities at t_{n - 1/2}\n", c->queueRemoteSize);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL, "Calculating %d remote velocities at t_{n - 1/2}\n", c->queueRemoteSize);CHKERRQ(ierr);
   for (n = 0; n < c->queueRemoteSize; n++) {
     Qi = c->queueRemote[n];
     interpIndices[0] = Qi.x;
@@ -499,7 +499,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
   /* GET VALUE AT FULL TIME IN THE PAST (REMOTE REQUESTS) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeRemote,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL, "Calculating %d remote field points at t_{n}\n", c->queueRemoteSize);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL, "Calculating %d remote field points at t_{n}\n", c->queueRemoteSize);CHKERRQ(ierr);
   for (n = 0; n < c->queueRemoteSize; n++) {
     interpIndices[0] = c->queueRemote[n].x;
     interpIndices[1] = c->queueRemote[n].y;
@@ -605,11 +605,11 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
 
   /* Send and Receive requests for values at t_n+1/2, giving the coordinates for interpolation */
   for (n = 1; n < c->numNeighbors; n++) {
-    ierr = PetscInfo2(NULL, "Receiving %d requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL, "Receiving %d requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]);CHKERRQ(ierr);
     ierr = MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n-1]));CHKERRMPI(ierr);
   }
   for (n = 1; n < c->numNeighbors; n++) {
-    ierr = PetscInfo2(NULL, "Sending %d requests for values from proc %d\n", c->needCount[n], c->neighbors[n]);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL, "Sending %d requests for values from proc %d\n", c->needCount[n], c->neighbors[n]);CHKERRQ(ierr);
     ierr = MPI_Send(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c));CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
@@ -677,7 +677,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
   if (0) { /* Check the order of the queue before sorting */
     ierr = PetscInfo(NULL, "Before Heap sort\n");CHKERRQ(ierr);
     for (n=0; n<size; n++) {
-      ierr = PetscInfo2(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
     }
   }
 
@@ -694,7 +694,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
   if (0) { /* Check the order of the queue after sorting */
     ierr = PetscInfo(NULL, "Avter  Heap sort\n");CHKERRQ(ierr);
     for (n=0; n<size; n++) {
-      ierr = PetscInfo2(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

@@ -389,7 +389,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     (*iscoloring)->allocated = PETSC_FALSE;
   }
   ierr = ISColoringViewFromOptions(*iscoloring,NULL,"-is_coloring_view");CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Number of colors %" PetscInt_FMT "\n",nc);CHKERRQ(ierr);
+  ierr = PetscInfo(0,"Number of colors %" PetscInt_FMT "\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

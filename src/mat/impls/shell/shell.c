@@ -829,7 +829,7 @@ static PetscErrorCode MatProductSetFromOptions_Shell_X(Mat D)
     matmat = matmat->next;
   }
   if (flg) { D->ops->productsymbolic = MatProductSymbolic_Shell_X; }
-  else { ierr = PetscInfo2(D,"  symbolic product %s not registered for product type %s\n",composedname,MatProductTypes[product->type]);CHKERRQ(ierr); }
+  else { ierr = PetscInfo(D,"  symbolic product %s not registered for product type %s\n",composedname,MatProductTypes[product->type]);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -872,7 +872,7 @@ set:
   ierr = PetscFree(matmat->resultname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(composedname,&matmat->composedname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(resultname,&matmat->resultname);CHKERRQ(ierr);
-  ierr = PetscInfo3(A,"Composing %s for product type %s with result %s\n",matmat->composedname,MatProductTypes[matmat->ptype],matmat->resultname ? matmat->resultname : "not specified");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Composing %s for product type %s with result %s\n",matmat->composedname,MatProductTypes[matmat->ptype],matmat->resultname ? matmat->resultname : "not specified");CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,matmat->composedname,MatProductSetFromOptions_Shell_X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

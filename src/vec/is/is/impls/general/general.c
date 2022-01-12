@@ -329,7 +329,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   if (timestepping) {
     ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)is,"timestepping",PETSC_BOOL,&timestepping);CHKERRQ(ierr);
   }
-  ierr = PetscInfo1(is, "Wrote IS object with name %s\n", isname);CHKERRQ(ierr);
+  ierr = PetscInfo(is, "Wrote IS object with name %s\n", isname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

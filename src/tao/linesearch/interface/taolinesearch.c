@@ -369,31 +369,31 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   ls->nfgeval = 0;
   /* Check parameter values */
   if (ls->ftol < 0.0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: ftol (%g) < 0\n",(double)ls->ftol);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: ftol (%g) < 0\n",(double)ls->ftol);CHKERRQ(ierr);
     *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->rtol < 0.0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: rtol (%g) < 0\n",(double)ls->rtol);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: rtol (%g) < 0\n",(double)ls->rtol);CHKERRQ(ierr);
     *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->gtol < 0.0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: gtol (%g) < 0\n",(double)ls->gtol);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: gtol (%g) < 0\n",(double)ls->gtol);CHKERRQ(ierr);
     *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->stepmin < 0.0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: stepmin (%g) < 0\n",(double)ls->stepmin);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: stepmin (%g) < 0\n",(double)ls->stepmin);CHKERRQ(ierr);
     *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->stepmax < ls->stepmin) {
-    ierr = PetscInfo2(ls,"Bad Line Search Parameter: stepmin (%g) > stepmax (%g)\n",(double)ls->stepmin,(double)ls->stepmax);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: stepmin (%g) > stepmax (%g)\n",(double)ls->stepmin,(double)ls->stepmax);CHKERRQ(ierr);
     *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->max_funcs < 0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: max_funcs (%D) < 0\n",ls->max_funcs);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: max_funcs (%" PetscInt_FMT ") < 0\n",ls->max_funcs);CHKERRQ(ierr);
     *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (PetscIsInfOrNanReal(*f)) {
-    ierr = PetscInfo1(ls,"Initial Line Search Function Value is Inf or Nan (%g)\n",(double)*f);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Initial Line Search Function Value is Inf or Nan (%g)\n",(double)*f);CHKERRQ(ierr);
     *reason = TAOLINESEARCH_FAILED_INFORNAN;
   }
 
@@ -963,7 +963,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
       PetscStackPop;
     }
     ierr = PetscLogEventEnd(TAOLINESEARCH_Eval,ls,0,0,0);CHKERRQ(ierr);
-    ierr = PetscInfo1(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
   }
   ls->nfgeval++;
   PetscFunctionReturn(0);
@@ -1054,7 +1054,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   ierr = (*ls->ops->computeobjectiveandgts)(ls,x,ls->stepdirection,f,gts,ls->userctx_funcgts);CHKERRQ(ierr);
   PetscStackPop;
   ierr = PetscLogEventEnd(TAOLINESEARCH_Eval,ls,0,0,0);CHKERRQ(ierr);
-  ierr = PetscInfo1(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
+  ierr = PetscInfo(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
   ls->nfeval++;
   PetscFunctionReturn(0);
 }

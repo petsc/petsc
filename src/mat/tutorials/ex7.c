@@ -36,21 +36,21 @@ int main(int argc, char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD, &b);CHKERRQ(ierr);
 
   ierr = PetscInfo(A, "Mat info on PETSC_COMM_WORLD with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo1(A, "Mat info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
+  ierr = PetscInfo(A, "Mat info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
   ierr = PetscInfo(b, "Vec info on PETSC_COMM_WORLD with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo1(b, "Vec info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
+  ierr = PetscInfo(b, "Vec info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
   ierr = PetscInfo(NULL, "Sys info on PETSC_COMM_WORLD with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL, "Sys info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL, "Sys info on PETSC_COMM_WORLD with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_SELF, &Aself);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, &bself);CHKERRQ(ierr);
 
   ierr = PetscInfo(Aself, "Mat info on PETSC_COMM_SELF with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo1(Aself, "Mat info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
+  ierr = PetscInfo(Aself, "Mat info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
   ierr = PetscInfo(bself, "Vec info on PETSC_COMM_SELF with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo1(bself, "Vec info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
+  ierr = PetscInfo(bself, "Vec info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
   ierr = PetscInfo(NULL, "Sys info on PETSC_COMM_SELF with no arguments\n");CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL, "Sys info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL, "Sys info on PETSC_COMM_SELF with 1 argument equal to 1234: %" PetscInt_FMT "\n", testarg);CHKERRQ(ierr);
 
   ierr = MatDestroy(&Aself);CHKERRQ(ierr);
   ierr = VecDestroy(&bself);CHKERRQ(ierr);

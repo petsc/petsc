@@ -89,7 +89,7 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
       }
       for (k = 0; k < npoints; k++) I_quad += w[k] * (Pi[k] * Pj[k]);
       err = PetscAbsReal(I_exact - I_quad);
-      ierr = PetscInfo7(NULL,"npoints %D, alpha %g, beta %g, i %D, j %D, exact %g, err %g\n", npoints, (double) alpha, (double) beta, i, j, (double) I_exact, (double) err);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"npoints %D, alpha %g, beta %g, i %D, j %D, exact %g, err %g\n", npoints, (double) alpha, (double) beta, i, j, (double) I_exact, (double) err);CHKERRQ(ierr);
       if (err > tol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrectly integrated P_%D * P_%D using %D point rule with alpha = %g, beta = %g: exact %g, err %g", i, j, npoints, (double) alpha, (double) beta, (double) I_exact, (double) err);
     }
   }
@@ -127,7 +127,7 @@ static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, P
       wdiff = PetscAbsReal(w[i] - w2[i]);
       xtol = eps * (1. + PetscMin(PetscAbsReal(x[i]),1. - PetscAbsReal(x[i])));
       wtol = eps * (1. + w[i]);
-      ierr = PetscInfo6(NULL,"npoints %D, alpha %g, beta %g, i %D, xdiff/xtol %g, wdiff/wtol %g\n", npoints, (double) alpha, (double) beta, i, (double) xdiff/xtol, (double) wdiff/wtol);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"npoints %D, alpha %g, beta %g, i %D, xdiff/xtol %g, wdiff/wtol %g\n", npoints, (double) alpha, (double) beta, i, (double) xdiff/xtol, (double) wdiff/wtol);CHKERRQ(ierr);
       if (xdiff > xtol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatch quadrature point: %D points, alpha = %g, beta = %g, i = %D, xdiff = %g", npoints, (double) alpha, (double) beta, i, (double) xdiff);
       if (wdiff > wtol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatch quadrature weight: %D points, alpha = %g, beta = %g, i = %D, wdiff = %g", npoints, (double) alpha, (double) beta, i, (double) wdiff);
     }

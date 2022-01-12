@@ -584,8 +584,8 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   global_work_size[0] = x * local_work_size[0];
   global_work_size[1] = y * local_work_size[1];
   global_work_size[2] = z * local_work_size[2];
-  ierr = PetscInfo7(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
-  ierr = PetscInfo2(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);CHKERRQ(ierr);
+  ierr = PetscInfo(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
+  ierr = PetscInfo(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);CHKERRQ(ierr);
   /* Generate code */
   if (probAux) {
     PetscSpace P;

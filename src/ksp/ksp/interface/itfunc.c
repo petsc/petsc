@@ -1246,7 +1246,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     /* by default, do a single solve with all columns */
     if (Bbn == PETSC_DECIDE) Bbn = N2;
     else if (Bbn < 1) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() batch size %D must be positive", Bbn);
-    ierr = PetscInfo2(ksp, "KSP type %s solving using batches of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
+    ierr = PetscInfo(ksp, "KSP type %s solving using batches of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
     /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
       ierr = (*ksp->ops->matsolve)(ksp, B, X);CHKERRQ(ierr);
@@ -1290,7 +1290,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     }
     ierr = PetscLogEventEnd(KSP_MatSolve, ksp, B, X, 0);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo1(ksp, "KSP type %s solving column by column\n", ((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+    ierr = PetscInfo(ksp, "KSP type %s solving column by column\n", ((PetscObject)ksp)->type_name);CHKERRQ(ierr);
     for (n2 = 0; n2 < N2; ++n2) {
       ierr = MatDenseGetColumnVecRead(B, n2, &cb);CHKERRQ(ierr);
       ierr = MatDenseGetColumnVecWrite(X, n2, &cx);CHKERRQ(ierr);

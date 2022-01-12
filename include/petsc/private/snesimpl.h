@@ -324,7 +324,7 @@ PETSC_INTERN const char SNESCitation[];
         PetscFunctionReturn(0);\
       } else {\
         if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {\
-          ierr         = PetscInfo3(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed %D, stopping solve\n",snes->iter,snes->numLinearSolveFailures,snes->maxLinearSolveFailures);CHKERRQ(ierr);\
+          ierr         = PetscInfo(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed %D, stopping solve\n",snes->iter,snes->numLinearSolveFailures,snes->maxLinearSolveFailures);CHKERRQ(ierr);\
           snes->reason = SNES_DIVERGED_LINEAR_SOLVE;\
           PetscFunctionReturn(0);\
         }\

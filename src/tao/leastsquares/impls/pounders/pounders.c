@@ -50,7 +50,7 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
   } else {
     ierr = VecDot(F,F,fsum);CHKERRQ(ierr);
   }
-  ierr = PetscInfo1(tao,"Least-squares residual norm: %20.19e\n",(double)*fsum);CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"Least-squares residual norm: %20.19e\n",(double)*fsum);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(*fsum)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   PetscFunctionReturn(0);
 }
@@ -693,7 +693,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* This provides enough information to approximate the gradient of the objective */
   /* using a forward difference scheme. */
 
-  ierr = PetscInfo1(tao,"Initialize simplex; delta = %10.9e\n",(double)mfqP->delta);CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"Initialize simplex; delta = %10.9e\n",(double)mfqP->delta);CHKERRQ(ierr);
   ierr = pounders_feval(tao,mfqP->Xhist[0],mfqP->Fhist[0],&mfqP->Fres[0]);CHKERRQ(ierr);
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[0];
@@ -716,7 +716,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   }
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
   ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->ls_res);CHKERRQ(ierr);
-  ierr = PetscInfo1(tao,"Finalize simplex; minnorm = %10.9e\n",(double)minnorm);CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"Finalize simplex; minnorm = %10.9e\n",(double)minnorm);CHKERRQ(ierr);
 
   /* Gather mpi vecs to one big local vec */
 
@@ -727,7 +727,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* (Column oriented for blas calls) */
   ii=0;
 
-  ierr = PetscInfo1(tao,"Build matrix: %D\n",(PetscInt)mfqP->size);CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"Build matrix: %D\n",(PetscInt)mfqP->size);CHKERRQ(ierr);
   if (1 == mfqP->size) {
     ierr = VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i];
@@ -798,7 +798,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
   blasncopy = blasn;
   PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasncopy,&info));
-  ierr = PetscInfo1(tao,"Linear solve return: %D\n",(PetscInt)info);CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"Linear solve return: %D\n",(PetscInt)info);CHKERRQ(ierr);
 
   ierr = pounders_update_res(tao);CHKERRQ(ierr);
 
@@ -818,7 +818,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
 
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
-  ierr = PetscInfo1(tao,"Initial gradient: %20.19e\n",(double)gnorm);CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"Initial gradient: %20.19e\n",(double)gnorm);CHKERRQ(ierr);
 
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
@@ -910,13 +910,13 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     /* Compute the next interpolation set */
     mfqP->q_is_I = 1;
     mfqP->nmodelpoints=0;
-    ierr = PetscInfo2(tao,"Affine Points: xmin = %20.19e, c1 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c1);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Affine Points: xmin = %20.19e, c1 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c1);CHKERRQ(ierr);
     ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1);CHKERRQ(ierr);
     if (mfqP->nmodelpoints == mfqP->n) {
       valid = PETSC_TRUE;
     } else {
       valid = PETSC_FALSE;
-      ierr = PetscInfo2(tao,"Affine Points: xmin = %20.19e, c2 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c2);CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Affine Points: xmin = %20.19e, c2 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c2);CHKERRQ(ierr);
       ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2);CHKERRQ(ierr);
       if (mfqP->n > mfqP->nmodelpoints) {
         ierr = PetscInfo(tao,"Model not valid -- adding geometry points\n");CHKERRQ(ierr);
@@ -949,7 +949,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     }
 
     /* Update the quadratic model */
-    ierr = PetscInfo2(tao,"Get Quad, size: %D, points: %D\n",mfqP->n,mfqP->nmodelpoints);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Get Quad, size: %D, points: %D\n",mfqP->n,mfqP->nmodelpoints);CHKERRQ(ierr);
     ierr = getquadpounders(mfqP);CHKERRQ(ierr);
     ierr = VecGetArrayRead(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione));

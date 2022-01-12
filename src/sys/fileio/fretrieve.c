@@ -33,7 +33,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(NULL,"Deleting tmp/shared data in an MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscInfo(NULL,"Deleting tmp/shared data in an MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
   ierr = PetscFree(count_val);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
@@ -197,7 +197,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
       } else if (sum != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
     }
     *tagvalp = (int)*shared;
-    ierr = PetscInfo2(NULL,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));CHKERRQ(ierr);
   } else *shared = (PetscBool) *tagvalp;
   PetscFunctionReturn(0);
 }
@@ -313,7 +313,7 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
     }
     *tagvalp = (int)*shared;
   } else *shared = (PetscBool) *tagvalp;
-  ierr = PetscInfo1(NULL,"processors %s working directory\n",(*shared) ? "shared" : "do NOT share");CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"processors %s working directory\n",(*shared) ? "shared" : "do NOT share");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -367,9 +367,9 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       ierr = PetscStrncpy(localname,url,llen);CHKERRQ(ierr);
       ierr = PetscTestFile(url,'r',found);CHKERRQ(ierr);
       if (*found) {
-        ierr = PetscInfo1(NULL,"Found file %s\n",url);CHKERRQ(ierr);
+        ierr = PetscInfo(NULL,"Found file %s\n",url);CHKERRQ(ierr);
       } else {
-        ierr = PetscInfo1(NULL,"Did not find file %s\n",url);CHKERRQ(ierr);
+        ierr = PetscInfo(NULL,"Did not find file %s\n",url);CHKERRQ(ierr);
       }
       goto done;
     }
