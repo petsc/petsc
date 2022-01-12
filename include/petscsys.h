@@ -627,6 +627,8 @@ PETSC_EXTERN PetscBool PetscViennaCLSynchronize;
 PETSC_EXTERN PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 PETSC_EXTERN PetscErrorCode PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PetscCommGetComm(MPI_Comm,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PetscCommRestoreComm(MPI_Comm,MPI_Comm*);
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Initialize Kokkos if not yet. */

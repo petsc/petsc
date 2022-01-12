@@ -41,6 +41,7 @@ Changes: Development
 - Move ``PetscInt64_FMT`` and ``MPIU_INT64`` definitions to ``petscsystypes.h``
 - Add ``PetscBLASInt_FMT``, ``PETSC_MPI_COMM_FMT``, and ``PETSC_MPI_WIN_FMT`` format specifiers
 - Add ``PetscHasAttribute()`` macro to query for existence of an ``__attribute__`` specifier
+- Add ``PetscCommGetComm()`` and ``PetscCommRestoreComm()`` to allow reuse of MPI communicator with external packages, as some MPI implementations have  broken ``MPI_Comm_free()``
 
 .. rubric:: PetscViewer:
 

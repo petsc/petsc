@@ -85,6 +85,93 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 }
 
 /*@C
+  PetscCommGetComm - get an MPI communicator from a PETSc communicator that can be passed off to another package
+
+  Collective
+
+  Input Parameter:
+. comm_in - Input communicator
+
+  Output Parameters:
+. comm_out - Output communicator
+
+  Notes:
+    Use PetscCommRestoreComm() to return the communicator when the external package no longer needs it
+
+    Certain MPI implementations have MPI_Comm_free() that do not work, thus one can run out of available MPI communicators causing
+    mysterious crashes in the code after running a long time. This routine allows reusing previously obtained MPI communicators that
+    are no longer needed.
+
+Level: developer
+
+.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy(), PetscCommRestoreComm()
+@*/
+PetscErrorCode  PetscCommGetComm(MPI_Comm comm_in,MPI_Comm *comm_out)
+{
+  PetscErrorCode   ierr;
+  PetscCommCounter *counter;
+  PetscMPIInt      flg;
+
+  PetscFunctionBegin;
+  ierr = PetscSpinlockLock(&PetscCommSpinLock);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
+  if (!flg) SETERRQ(comm_in,PETSC_ERR_ARG_WRONGSTATE,"Requires a PETSc communicator as input, do not use something like MPI_COMM_WORLD");
+
+  if (counter->comms) {
+    struct PetscCommStash *pcomms = counter->comms;
+
+    *comm_out = pcomms->comm;
+    counter->comms = pcomms->next;
+    ierr = PetscFree(pcomms);CHKERRQ(ierr);
+    ierr = PetscInfo2(NULL,"Reusing a communicator %ld %ld\n",(long)comm_in,(long)*comm_out);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Comm_dup(comm_in,comm_out);CHKERRMPI(ierr);
+  }
+  ierr = PetscSpinlockUnlock(&PetscCommSpinLock);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscCommRestoreComm - restores an MPI communicator that was obtained with PetscCommGetComm()
+
+  Collective
+
+  Input Parameters:
++  comm_in - Input communicator
+-  comm_out - returned communicator
+
+Level: developer
+
+.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy(), PetscCommRestoreComm()
+@*/
+PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in,MPI_Comm *comm_out)
+{
+  PetscErrorCode        ierr;
+  PetscCommCounter      *counter;
+  PetscMPIInt           flg;
+  struct PetscCommStash *pcomms,*ncomm;
+
+  PetscFunctionBegin;
+  ierr = PetscSpinlockLock(&PetscCommSpinLock);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
+  if (!flg) SETERRQ(comm_in,PETSC_ERR_ARG_WRONGSTATE,"Requires a PETSc communicator as input, do not use something like MPI_COMM_WORLD");
+
+  ierr = PetscMalloc(sizeof(struct PetscCommStash),&ncomm);CHKERRQ(ierr);
+  ncomm->comm = *comm_out;
+  ncomm->next = NULL;
+  pcomms = counter->comms;
+  while (pcomms && pcomms->next) pcomms = pcomms->next;
+  if (pcomms) {
+    pcomms->next   = ncomm;
+  } else {
+    counter->comms = ncomm;
+  }
+  *comm_out = 0;
+  ierr = PetscSpinlockUnlock(&PetscCommSpinLock);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
 
   Collective

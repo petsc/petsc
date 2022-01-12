@@ -1007,7 +1007,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscFree(mumps->recvcount);CHKERRQ(ierr);
   ierr = PetscFree(mumps->reqs);CHKERRQ(ierr);
   ierr = PetscFree(mumps->irhs_loc);CHKERRQ(ierr);
-  if (mumps->mumps_comm != MPI_COMM_NULL) {ierr = MPI_Comm_free(&mumps->mumps_comm);CHKERRMPI(ierr);}
+  if (mumps->mumps_comm != MPI_COMM_NULL) {ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&mumps->mumps_comm);CHKERRQ(ierr);}
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -1852,7 +1852,6 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 {
   PetscErrorCode ierr;
   PetscInt       nthreads=0;
-  MPI_Comm       newcomm=MPI_COMM_NULL;
 
   PetscFunctionBegin;
   mumps->petsc_comm = PetscObjectComm((PetscObject)A);
@@ -1880,8 +1879,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
 
   /* It looks like MUMPS does not dup the input comm. Dup a new comm for MUMPS to avoid any tag mismatches. */
   if (mumps->mumps_comm != MPI_COMM_NULL) {
-    ierr = MPI_Comm_dup(mumps->mumps_comm,&newcomm);CHKERRMPI(ierr);
-    mumps->mumps_comm = newcomm;
+    ierr =  PetscCommGetComm(PetscObjectComm((PetscObject)A),&mumps->mumps_comm);CHKERRQ(ierr);
   }
 
   mumps->id.comm_fortran = MPI_Comm_c2f(mumps->mumps_comm);
