@@ -881,15 +881,21 @@ PETSC_EXTERN PetscMPIInt Petsc_OuterComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_Seq_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_ShmComm_keyval;
 
+struct PetscCommStash {
+  struct PetscCommStash *next;
+  MPI_Comm              comm;
+};
+
 /*
   PETSc communicators have this attribute, see
   PetscCommDuplicate(), PetscCommDestroy(), PetscCommGetNewTag(), PetscObjectGetName()
 */
 typedef struct {
-  PetscMPIInt tag;              /* next free tag value */
-  PetscInt    refcount;         /* number of references, communicator can be freed when this reaches 0 */
-  PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
-  PetscMPIInt *iflags;          /* length of comm size, shared by all calls to PetscCommBuildTwoSided_Allreduce/RedScatter on this comm */
+  PetscMPIInt           tag;              /* next free tag value */
+  PetscInt              refcount;         /* number of references, communicator can be freed when this reaches 0 */
+  PetscInt              namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
+  PetscMPIInt           *iflags;          /* length of comm size, shared by all calls to PetscCommBuildTwoSided_Allreduce/RedScatter on this comm */
+  struct PetscCommStash *comms;           /* communicators available for PETSc to pass off to other packages */
 } PetscCommCounter;
 
 typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;

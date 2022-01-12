@@ -143,7 +143,7 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     /* Release the SuperLU_DIST process grid. Only if the matrix has its own copy, this is it is not in the communicator context */
     if (lu->comm_superlu) {
       PetscStackCall("SuperLU_DIST:superlu_gridexit",superlu_gridexit(&lu->grid));
-      ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRMPI(ierr);
+      ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu);CHKERRQ(ierr);
     } else {
       PetscSuperLU_DIST *context;
       MPI_Comm          comm;
@@ -617,10 +617,10 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
         ierr = MPI_Comm_dup(comm,&context->comm);CHKERRMPI(ierr);
         ierr = MPI_Comm_set_attr(comm,Petsc_Superlu_dist_keyval,context);CHKERRMPI(ierr);
       } else {
-        ierr = MPI_Comm_dup(comm,&lu->comm_superlu);CHKERRMPI(ierr);
+        ierr = PetscCommGetComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu);CHKERRQ(ierr);
       }
 
-      /* Default num of process columns and rows */
+      /* Default number of process columns and rows */
       lu->nprow = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
       if (!lu->nprow) lu->nprow = 1;
       while (lu->nprow > 0) {

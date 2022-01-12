@@ -1235,7 +1235,7 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
     if (!hA->inner_free) hypre_IJMatrixObject(hA->ij) = NULL;
     PetscStackCallStandard(HYPRE_IJMatrixDestroy,(hA->ij));
   }
-  if (hA->comm) {ierr = MPI_Comm_free(&hA->comm);CHKERRMPI(ierr);}
+  if (hA->comm) {ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&hA->comm);CHKERRQ(ierr);}
 
   ierr = MatStashDestroy_Private(&A->stash);CHKERRQ(ierr);
 
@@ -2278,7 +2278,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)B),1,&B->stash);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&hB->comm);CHKERRMPI(ierr);
+  ierr = PetscCommGetComm(PetscObjectComm((PetscObject)B),&hB->comm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_hypre_aij_C",MatConvert_HYPRE_AIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_hypre_is_C",MatConvert_HYPRE_IS);CHKERRQ(ierr);

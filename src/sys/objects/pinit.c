@@ -315,12 +315,19 @@ PETSC_EXTERN void MPIAPI PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_
 */
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Counter_Attr_Delete_Fn(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
-  PetscErrorCode   ierr;
-  PetscCommCounter *counter=(PetscCommCounter*)count_val;
+  PetscErrorCode        ierr;
+  PetscCommCounter      *counter=(PetscCommCounter*)count_val;
+  struct PetscCommStash *comms = counter->comms, *pcomm;
 
   PetscFunctionBegin;
   ierr = PetscInfo1(NULL,"Deleting counter data in an MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
   ierr = PetscFree(counter->iflags);CHKERRMPI(ierr);
+  while (comms) {
+    ierr  = MPI_Comm_free(&comms->comm);CHKERRMPI(ierr);
+    pcomm = comms;
+    comms = comms->next;
+    ierr  = PetscFree(pcomm);CHKERRQ(ierr);
+  }
   ierr = PetscFree(counter);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
