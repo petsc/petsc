@@ -1125,14 +1125,14 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
       }
     } else {
       ierr = PetscViewerASCIIPrintf(view,"  H-Matrix constructed from %s\n",h2opus->kernel ? "Kernel" : "Mat");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(view,"  PointCloud dim %D\n",h2opus->ptcloud ? h2opus->ptcloud->getDimension() : 0);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(view,"  Admissibility parameters: leaf size %D, eta %g\n",h2opus->leafsize,(double)h2opus->eta);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(view,"  PointCloud dim %" PetscInt_FMT "\n",h2opus->ptcloud ? h2opus->ptcloud->getDimension() : 0);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(view,"  Admissibility parameters: leaf size %" PetscInt_FMT ", eta %g\n",h2opus->leafsize,(double)h2opus->eta);CHKERRQ(ierr);
       if (!h2opus->kernel) {
-        ierr = PetscViewerASCIIPrintf(view,"  Sampling parameters: max_rank %D, samples %D, tolerance %g\n",h2opus->max_rank,h2opus->bs,(double)h2opus->rtol);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"  Sampling parameters: max_rank %" PetscInt_FMT ", samples %" PetscInt_FMT ", tolerance %g\n",h2opus->max_rank,h2opus->bs,(double)h2opus->rtol);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(view,"  Offdiagonal blocks approximation order %D\n",h2opus->basisord);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"  Offdiagonal blocks approximation order %" PetscInt_FMT "\n",h2opus->basisord);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(view,"  Number of samples for norms %D\n",h2opus->norm_max_samples);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(view,"  Number of samples for norms %" PetscInt_FMT "\n",h2opus->norm_max_samples);CHKERRQ(ierr);
       if (size == 1) {
         double dense_mem_cpu = h2opus->hmatrix ? h2opus->hmatrix->getDenseMemoryUsage() : 0;
         double low_rank_cpu = h2opus->hmatrix ? h2opus->hmatrix->getLowRankMemoryUsage() : 0;

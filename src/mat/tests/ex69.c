@@ -46,9 +46,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-l",&l,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-test",&test,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-use_shell",&use_shell,NULL);CHKERRQ(ierr);
-  if (k < 0) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"k %D must be positive",k);
-  if (l < 0) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"l %D must be positive",l);
-  if (l > k) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER,"l %D must be smaller or equal than k %D\n",l,k);
+  if (k < 0) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"k %" PetscInt_FMT " must be positive",k);
+  if (l < 0) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be positive",l);
+  if (l > k) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be smaller or equal than k %" PetscInt_FMT,l,k);
 
   /* sparse matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);

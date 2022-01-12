@@ -46,7 +46,7 @@ int main(int argc,char **args)
     ierr = MatShift(A,1.0);CHKERRQ(ierr);
   }
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
+  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
   ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"ex125: nrhs %D\n",nrhs);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"ex125: nrhs %" PetscInt_FMT "\n",nrhs);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(C,"rhs_");CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
@@ -169,10 +169,10 @@ int main(int argc,char **args)
 
   for (nfact = 0; nfact < 2; nfact++) {
     if (chol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," %D-the CHOLESKY numfactorization \n",nfact);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT "-the CHOLESKY numfactorization \n",nfact);CHKERRQ(ierr);
       ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," %D-the LU numfactorization \n",nfact);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT "-the LU numfactorization \n",nfact);CHKERRQ(ierr);
       ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
     }
     if (view) {
@@ -199,7 +199,7 @@ int main(int argc,char **args)
 #if !defined(PETSC_USE_COMPLEX)
       /* Test MatGetInertia() */
       ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD," MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n",nneg,nzero,npos);CHKERRQ(ierr);
 #endif
     }
 #endif
@@ -212,14 +212,14 @@ int main(int argc,char **args)
         ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,2.0,&RHS);CHKERRQ(ierr);
       }
       for (nsolve = 0; nsolve < 2; nsolve++) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"   %D-the MatMatSolve \n",nsolve);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"   %" PetscInt_FMT "-the MatMatSolve \n",nsolve);CHKERRQ(ierr);
         ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
 
         /* Check the error */
         ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
         if (norm > tol) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,(double)norm,nsolve);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the MatMatSolve: Norm of error %g, nsolve %" PetscInt_FMT "\n",nsolve,(double)norm,nsolve);CHKERRQ(ierr);
         }
       }
       if (matsolvexx) {
@@ -241,14 +241,14 @@ int main(int argc,char **args)
         ierr = MatConvert(RHST,MATAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
         ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
         for (nsolve = 0; nsolve < 2; nsolve++) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"   %D-the sparse MatMatSolve \n",nsolve);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"   %" PetscInt_FMT "-the sparse MatMatSolve \n",nsolve);CHKERRQ(ierr);
           ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
 
           /* Check the error */
           ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
           ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
           if (norm > tol) {
-            ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the sparse MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,(double)norm,nsolve);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the sparse MatMatSolve: Norm of error %g, nsolve %" PetscInt_FMT "\n",nsolve,(double)norm,nsolve);CHKERRQ(ierr);
           }
         }
         ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ int main(int argc,char **args)
         ierr = VecCopy(x,u);CHKERRQ(ierr);
         ierr = MatMult(A,x,b);CHKERRQ(ierr);
 
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"   %D-the MatSolve \n",nsolve);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"   %" PetscInt_FMT "-the MatSolve \n",nsolve);CHKERRQ(ierr);
         ierr = MatSolve(F,b,x);CHKERRQ(ierr);
 
         /* Check the error */
@@ -275,7 +275,7 @@ int main(int argc,char **args)
           ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve: Norm of error %g, resi %g, numfact %D\n",(double)norm,(double)resi,nfact);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve: Norm of error %g, resi %g, numfact %" PetscInt_FMT "\n",(double)norm,(double)resi,nfact);CHKERRQ(ierr);
         }
       }
     }

@@ -101,7 +101,7 @@ int main(int argc,char **args)
     ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n",nneg,nzero,npos);CHKERRQ(ierr);
     ierr = MatDestroy(&F);CHKERRQ(ierr);
     ierr = ISDestroy(&perm);CHKERRQ(ierr);
     ierr = ISDestroy(&iperm);CHKERRQ(ierr);

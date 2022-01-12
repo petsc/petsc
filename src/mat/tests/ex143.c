@@ -46,7 +46,7 @@ int main(int argc,char **args)
 
     DIM = 2;
     if (rank == 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Use FFTW without PETSc-FFTW interface, DIM %D\n",DIM);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Use FFTW without PETSc-FFTW interface, DIM %" PetscInt_FMT "\n",DIM);CHKERRQ(ierr);
     }
     fftw_mpi_init();
     N           = N0*N1;

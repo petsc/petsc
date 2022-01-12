@@ -254,7 +254,7 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
     Py_DecRef(module); module = NULL;
   } else {
     PetscPythonPrintError();
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it");
   }
   PetscFunctionReturn(0);
 }

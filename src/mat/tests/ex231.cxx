@@ -121,8 +121,8 @@ int main (int argc, char** argv)
   PetscInt n_nz_max = *std::max_element(n_nz.begin(), n_nz.end());
   PetscInt n_oz_max = *std::max_element(n_oz.begin(), n_oz.end());
 
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Max on-diagonal non-zeros: = %d\n", n_nz_max);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Max off-diagonal non-zeros: = %d\n", n_oz_max);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Max on-diagonal non-zeros: = %" PetscInt_FMT "\n", n_nz_max);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Max off-diagonal non-zeros: = %" PetscInt_FMT "\n", n_oz_max);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   // Initialize the matrix similar to what we do in the PetscMatrix

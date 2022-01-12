@@ -313,13 +313,13 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A,PetscViewer viewe
 
   k = 0;
   for (i=0; i<nrows; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer,"row %D: ",i);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"row %" PetscInt_FMT ": ",i);CHKERRQ(ierr);
     nz = ai[i+1] - ai[i];
     for (j=0; j<nz; j++) {
       if (aa) {
-        ierr = PetscViewerASCIIPrintf(viewer,"(%D, %g)  ",aj[k],PetscRealPart(aa[k]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"(%" PetscInt_FMT ", %g)  ",aj[k],PetscRealPart(aa[k]));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"(%D, NULL)",aj[k]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"(%" PetscInt_FMT ", NULL)",aj[k]);CHKERRQ(ierr);
       }
       k++;
     }

@@ -33,7 +33,7 @@ static PetscErrorCode Petsc1DNodeFamilyCreate(PetscDTNodeType family, PetscReal 
   f->endpoints = endpoints;
   f->gaussJacobiExp = 0.;
   if (family == PETSCDTNODES_GAUSSJACOBI) {
-    if (gaussJacobiExp <= -1.) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Gauss-Jacobi exponent must be > -1.\n");
+    if (gaussJacobiExp <= -1.) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Gauss-Jacobi exponent must be > -1.");
     f->gaussJacobiExp = gaussJacobiExp;
   }
   f->refct = 1;
@@ -159,8 +159,8 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dim < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative dimension\n");
-  if (degree < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative degree\n");
+  if (dim < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative dimension");
+  if (degree < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative degree");
   if (!dim) PetscFunctionReturn(0);
   ierr = PetscCalloc1(dim+2, &tup);CHKERRQ(ierr);
   k = 0;
@@ -620,7 +620,7 @@ static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices 
           break;
         }
       }
-      if (subi < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Did not find matching coordinate\n");
+      if (subi < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Did not find matching coordinate");
       /* that component in the vertp system becomes component i in the vert system for each dof */
       for (n = 0; n < nNodes; n++) pfNodeIdx[n * nodeIdxDim + i] = nodeIdx[n * subNodeIdxDim + subi];
     }

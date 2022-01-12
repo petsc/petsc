@@ -229,7 +229,7 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
           else i=1;
           for (;i<len; i++) {
             if (value[i] == '-') {
-              if (i == len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s\n",n,value);
+              if (i == len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
               value[i] = 0;
               ierr     = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);
               ierr     = PetscOptionsStringToInt(value+i+1,&end);CHKERRQ(ierr);

@@ -157,10 +157,10 @@ static PetscErrorCode MatView_ConstantDiagonal(Mat J,PetscViewer viewer)
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) PetscFunctionReturn(0);
-#if !defined(PETSC_USE_COMPLEX)
-    ierr = PetscViewerASCIIPrintf(viewer,"Diagonal value: %g\n",ctx->diag);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    ierr = PetscViewerASCIIPrintf(viewer,"Diagonal value: %g + i %g\n",(double)PetscRealPart(ctx->diag),(double)PetscImaginaryPart(ctx->diag));CHKERRQ(ierr);
 #else
-    ierr = PetscViewerASCIIPrintf(viewer,"Diagonal value: %g + i %g\n",PetscRealPart(ctx->diag),PetscImaginaryPart(ctx->diag));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Diagonal value: %g\n",(double)(ctx->diag));CHKERRQ(ierr);
 #endif
   }
   PetscFunctionReturn(0);

@@ -132,7 +132,7 @@ int main(int argc,char **args)
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
-  if (i-Ii || j-J) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetOwnershipRange() in MatSBAIJ format\n");
+  if (i-Ii || j-J) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetOwnershipRange() in MatSBAIJ format");
 
   /* Vectors */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ int main(int argc,char **args)
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
 
       if (displ) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %" PetscInt_FMT ", residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
     }
   }
@@ -225,7 +225,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
       if (displ) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %" PetscInt_FMT ", residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
     }
   }
@@ -281,7 +281,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     if (displ) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %" PetscInt_FMT ", residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
     }
   }
 

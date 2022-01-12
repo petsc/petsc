@@ -37,7 +37,7 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
   ierr = MatSetValuesBlocked(A,4,rc,4,rc,vals,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Matrix %s(%D)\n",mtype,bs);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Matrix %s(%" PetscInt_FMT ")\n",mtype,bs);CHKERRQ(ierr);
   ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);

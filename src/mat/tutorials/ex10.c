@@ -66,7 +66,7 @@ int main(int argc,char **args)
 
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetOption(A,MAT_SYMMETRIC,&flg);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"MAT_SYMMETRIC: %D\n",flg);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"MAT_SYMMETRIC: %" PetscInt_FMT "\n",(PetscInt)flg);CHKERRQ(ierr);
   ierr = MatViewFromOptions(A,NULL,"-mat_view");CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);

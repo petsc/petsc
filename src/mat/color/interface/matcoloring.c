@@ -350,6 +350,7 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
+  PetscValidPointer(coloring,2);
   ierr = PetscLogEventBegin(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
   ierr = (*mc->ops->apply)(mc,coloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
@@ -369,8 +370,8 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
     ierr = MatColoringView(mc,viewer);CHKERRQ(ierr);
     ierr = MatGetSize(mc->mat,NULL,&nc);CHKERRQ(ierr);
     ierr = ISColoringGetIS(*coloring,PETSC_USE_POINTER,&ncolors,NULL);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors %d\n",ncolors);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of total columns %d\n",nc);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors %" PetscInt_FMT "\n",ncolors);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of total columns %" PetscInt_FMT "\n",nc);CHKERRQ(ierr);
     if (nc <= 1000) {ierr = ISColoringView(*coloring,viewer);CHKERRQ(ierr);}
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -409,9 +410,9 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mc,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Weight type: %s\n",MatColoringWeightTypes[mc->weight_type]);CHKERRQ(ierr);
     if (mc->maxcolors > 0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %D, Max. Colors %D\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %" PetscInt_FMT ", Max. Colors %" PetscInt_FMT "\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %d\n",mc->dist);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %" PetscInt_FMT "\n",mc->dist);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

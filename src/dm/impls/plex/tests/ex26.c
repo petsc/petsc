@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
           dofA = dofAP2Hex;
         }
         break;
-        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Unknown element with closure size %D\n", closureSize);
+        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Unknown element with closure size %D", closureSize);
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, cellID[0], PETSC_TRUE, &closureSize, &closureA);CHKERRQ(ierr);
 
@@ -394,7 +394,7 @@ int main(int argc, char **argv) {
     ierr = VecLoad(tmpVec, viewer);CHKERRQ(ierr);
     ierr = VecAXPY(UA, -1.0, tmpVec);CHKERRQ(ierr);
     ierr = VecNorm(UA, NORM_INFINITY, &norm);CHKERRQ(ierr);
-    if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha ||Vin - Vout|| = %g\n", (double) norm);
+    if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha ||Vin - Vout|| = %g", (double) norm);
     ierr = DMRestoreGlobalVector(dmUA, &tmpVec);CHKERRQ(ierr);
 
     /* same thing with the UA2 Vec obtained from the superDM */
@@ -408,7 +408,7 @@ int main(int argc, char **argv) {
     ierr = VecLoad(tmpVec,viewer);CHKERRQ(ierr);
     ierr = VecAXPY(UA2, -1.0, tmpVec);CHKERRQ(ierr);
     ierr = VecNorm(UA2, NORM_INFINITY, &norm);CHKERRQ(ierr);
-    if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha2 ||Vin - Vout|| = %g\n", (double) norm);
+    if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha2 ||Vin - Vout|| = %g", (double) norm);
     ierr = DMRestoreGlobalVector(dmUA2, &tmpVec);CHKERRQ(ierr);
 
     /* Building and saving Sigma
@@ -462,7 +462,7 @@ int main(int argc, char **argv) {
     ierr = VecLoad(tmpVec,viewer);CHKERRQ(ierr);
     ierr = VecAXPY(S, -1.0, tmpVec);CHKERRQ(ierr);
     ierr = VecNorm(S, NORM_INFINITY, &norm);CHKERRQ(ierr);
-    if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g\n", (double) norm);
+    if (norm > PETSC_SQRT_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g", (double) norm);
     ierr = DMRestoreGlobalVector(dmS, &tmpVec);CHKERRQ(ierr);
   }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

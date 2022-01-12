@@ -91,7 +91,7 @@ PetscErrorCode TestInitialMatrix(void)
     ierr = MatDenseRestoreColumn(B,&valsB);CHKERRQ(ierr);
   }
   ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatMult(): %g\n",(double)norm);
+  if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatMult(): %g",(double)norm);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 

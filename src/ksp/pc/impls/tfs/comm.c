@@ -88,7 +88,7 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
   if ((type=oprs[0])==NON_UNIFORM) oprs++;
 
   /* major league hack */
-  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop() :: Could not retrieve function pointer!\n");
+  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop() :: Could not retrieve function pointer!");
 
   /* all msgs will be of the same length */
   /* if not a hypercube must colapse partial dim */
@@ -165,7 +165,7 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM) oprs++;
 
-  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop() :: Could not retrieve function pointer!\n");
+  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop() :: Could not retrieve function pointer!");
 
   /* all msgs will be of the same length */
   /* if not a hypercube must colapse partial dim */
@@ -248,7 +248,7 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM) oprs++;
 
-  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: Could not retrieve function pointer!\n");
+  if (!(fp = (vfp) PCTFS_rvec_fct_addr(type))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: Could not retrieve function pointer!");
 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1) {
     dest = PCTFS_my_id^mask;
@@ -359,7 +359,7 @@ PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscIn
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM) oprs++;
 
-  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: Could not retrieve function pointer!\n");
+  if (!(fp = (vfp) PCTFS_ivec_fct_addr(type))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: Could not retrieve function pointer!");
 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1) {
     dest = PCTFS_my_id^mask;

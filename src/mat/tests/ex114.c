@@ -118,7 +118,7 @@ int main(int argc,char **args)
   ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
   if (enorm > PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
   for (j = 0; j < n; j++) {
-    if (imin[j] != imax[j]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%D] %D != imax %D",j,imin[j],imax[j]);
+    if (imin[j] != imax[j]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT,j,imin[j],imax[j]);
   }
 
   /* MatGetRowMaxAbs() */
@@ -160,7 +160,7 @@ int main(int argc,char **args)
     if (enorm > PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
     for (j = 0; j < n; j++) {
       if (imin[j] != imax[j]) {
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%D] %D != imax %D for seqdense matrix",j,imin[j],imax[j]);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT " for seqdense matrix",j,imin[j],imax[j]);
       }
     }
 
@@ -196,7 +196,7 @@ int main(int argc,char **args)
     if (enorm > PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
     for (j = 0; j < n; j++) {
-      if (imaxabs[j] != imaxabsB[j]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imaxabs[%D] %D != imaxabsB %D",j,imin[j],imax[j]);
+      if (imaxabs[j] != imaxabsB[j]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"imaxabs[%" PetscInt_FMT "] %" PetscInt_FMT " != imaxabsB %" PetscInt_FMT,j,imin[j],imax[j]);
     }
     ierr = MatDestroy(&B);CHKERRQ(ierr);
 
@@ -234,14 +234,14 @@ int main(int argc,char **args)
     ierr = VecGetArrayRead(maxabsB2,&vals2);CHKERRQ(ierr);
     for (row=0; row<m; row++) {
       if (PetscAbsScalar(vals[row] - vals2[bs*row]) > PETSC_MACHINE_EPSILON)
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row %D maxabsB != maxabsB2",row);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row %" PetscInt_FMT " maxabsB != maxabsB2",row);
     }
     ierr = VecRestoreArrayRead(maxabsB,&vals);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(maxabsB2,&vals2);CHKERRQ(ierr);
 
     for (col=0; col<n; col++) {
       if (imaxabsB[col] != imaxabsB2[bs*col]/bs)
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"col %D imaxabsB != imaxabsB2",col);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"col %" PetscInt_FMT " imaxabsB != imaxabsB2",col);
     }
     ierr = VecDestroy(&maxabsB);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);

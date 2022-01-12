@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   /*  This is how one can screen matrix types if their application */
   /*  only supports a subset of the Matrix Market data types.      */
   if (!mm_is_matrix(matcode) || !mm_is_sparse(matcode)) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input must be a sparse matrix. Market Market type: [%s]\n", mm_typecode_to_str(matcode));
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input must be a sparse matrix. Market Market type: [%s]", mm_typecode_to_str(matcode));
   }
 
   if (mm_is_symmetric(matcode)) symmetric = PETSC_TRUE;
@@ -79,11 +79,11 @@ int main(int argc,char **argv)
   for (i=0; i<nz; i++) {
     if (pattern) {
       ninput = fscanf(file, "%d %d\n", &ia[i], &ja[i]);
-      if (ninput < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file\n");
+      if (ninput < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
       val[i] = 1.0;
     } else if (real) {
       ninput = fscanf(file, "%d %d %lg\n", &ia[i], &ja[i], &val[i]);
-      if (ninput < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file\n");
+      if (ninput < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
     }
     ia[i]--; ja[i]--;     /* adjust from 1-based to 0-based */
     if (ia[i] != ja[i]) { /* already counted the diagonals above */

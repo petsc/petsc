@@ -156,7 +156,7 @@ PETSC_STATIC_INLINE PetscErrorCode compare(PetscDataType dt, void *ptr0, void *p
       *flg = (PetscBool)(*(PetscInt*)ptr0 == *(PetscInt*)ptr1);
       if (verbose) {
         if (*flg) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT "", *(PetscInt*)ptr0);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT, *(PetscInt*)ptr0);CHKERRQ(ierr);
         } else {
           ierr = PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT " != %" PetscInt_FMT "\n", *(PetscInt*)ptr0, *(PetscInt*)ptr1);CHKERRQ(ierr);
         }
@@ -829,8 +829,8 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
   ints[1] = ints[0] * -333;
   ierr = PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_int", PETSC_INT, &ints[1], &ints[2]);CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadAttribute(viewer, "/", "attr_nonExisting_int", PETSC_INT, &ints[1], &ints[3]);CHKERRQ(ierr);
-  if (ints[2] != ints[0]) SETERRQ2(comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[2] != ints[0] = %" PetscInt_FMT "", ints[2], ints[0]);
-  if (ints[3] != ints[1]) SETERRQ2(comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[3] != ints[1] = %" PetscInt_FMT "", ints[3], ints[1]);
+  if (ints[2] != ints[0]) SETERRQ2(comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[2] != ints[0] = %" PetscInt_FMT, ints[2], ints[0]);
+  if (ints[3] != ints[1]) SETERRQ2(comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[3] != ints[1] = %" PetscInt_FMT, ints[3], ints[1]);
   if (verbose) {
     ierr = PetscIntView(nv, ints, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

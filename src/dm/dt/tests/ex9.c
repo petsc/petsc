@@ -165,7 +165,7 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
     PetscReal scale = 1. + PetscAbsReal(lgndre_jet[i]) + PetscAbsReal(pkd_jet[i]);
     PetscReal tol = 10. * PETSC_SMALL * scale;
 
-    if (PetscAbsReal(diff) > tol) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Jet mismatch between PKD and tensor Legendre bases: error %g at tolerance %g\n", (double) diff, (double) tol);
+    if (PetscAbsReal(diff) > tol) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Jet mismatch between PKD and tensor Legendre bases: error %g at tolerance %g", (double) diff, (double) tol);
   }
 
   ierr = PetscFree2(degtup,ktup);CHKERRQ(ierr);

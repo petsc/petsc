@@ -85,7 +85,7 @@ int main(int argc,char **args)
     ierr = MatCholeskyFactorSymbolic(F,A[0],perm,&info);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s\n",factortype);
+    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s",factortype);
   }
 
   /* Compute numeric factors using same F, then solve */
@@ -100,7 +100,7 @@ int main(int argc,char **args)
       ierr = MatCholeskyFactorNumeric(F,A[k],&info);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s\n",factortype);
+      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s",factortype);
     }
 
     /* Solve A[k] * x = b */
@@ -111,7 +111,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
     if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D-the %s numfact and solve: residual %g\n",k,factortype,(double)norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "-the %s numfact and solve: residual %g\n",k,factortype,(double)norm);CHKERRQ(ierr);
     }
   }
 

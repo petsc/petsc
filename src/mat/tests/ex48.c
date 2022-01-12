@@ -70,19 +70,19 @@ int main(int argc,char **args)
   ierr  = MatNorm(B,NORM_FROBENIUS,&s2norm);CHKERRQ(ierr);
   rnorm = PetscAbsReal(s2norm-s1norm)/s2norm;
   if (rnorm>tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS()- NormA=%16.14e NormB=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS()- NormA=%16.14e NormB=%16.14e bs = %" PetscInt_FMT "\n",(double)s1norm,(double)s2norm,bs);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_INFINITY,&s1norm);CHKERRQ(ierr);
   ierr  = MatNorm(B,NORM_INFINITY,&s2norm);CHKERRQ(ierr);
   rnorm = PetscAbsReal(s2norm-s1norm)/s2norm;
   if (rnorm>tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY()- NormA=%16.14e NormB=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY()- NormA=%16.14e NormB=%16.14e bs = %" PetscInt_FMT "\n",(double)s1norm,(double)s2norm,bs);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_1,&s1norm);CHKERRQ(ierr);
   ierr  = MatNorm(B,NORM_1,&s2norm);CHKERRQ(ierr);
   rnorm = PetscAbsReal(s2norm-s1norm)/s2norm;
   if (rnorm>tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_NORM_1()- NormA=%16.14e NormB=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_NORM_1()- NormA=%16.14e NormB=%16.14e bs = %" PetscInt_FMT "\n",(double)s1norm,(double)s2norm,bs);CHKERRQ(ierr);
   }
 
   /* MatShift() */
@@ -108,7 +108,7 @@ int main(int argc,char **args)
     ierr    = MatGetValues(B,2,rows,2,cols,vals2);CHKERRQ(ierr);
     ierr    = PetscArraycmp(vals1,vals2,4,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetValues bs = %D\n",bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetValues bs = %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
     }
   }
 
@@ -122,7 +122,7 @@ int main(int argc,char **args)
     ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"MatMult not equal to MatMultAdd Norm1=%e Norm2=%e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"MatMult not equal to MatMultAdd Norm1=%e Norm2=%e bs = %" PetscInt_FMT "\n",(double)s1norm,(double)s2norm,bs);CHKERRQ(ierr);
     }
   }
 
@@ -194,7 +194,7 @@ int main(int argc,char **args)
     ierr = MatMultAdd(A,s1,yy,yy);CHKERRQ(ierr);
     ierr = VecNorm(yy,NORM_2,&rnorm);CHKERRQ(ierr);
     if (rnorm<-tol || rnorm>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatForwardSolve/MatBackwardSolve - Norm1=%16.14e bs = %D\n",rnorm,bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatForwardSolve/MatBackwardSolve - Norm1=%16.14e bs = %" PetscInt_FMT "\n",(double)rnorm,bs);CHKERRQ(ierr);
     }
   }
 
@@ -211,7 +211,7 @@ int main(int argc,char **args)
     ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolveAdd - Norm1=%16.14e Norm2=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolveAdd - Norm1=%16.14e Norm2=%16.14e bs = %" PetscInt_FMT "\n",(double)s1norm,(double)s2norm,bs);CHKERRQ(ierr);
     }
   }
 
@@ -226,7 +226,7 @@ int main(int argc,char **args)
     ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolveAdd(same) - Norm1=%16.14e Norm2=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolveAdd(same) - Norm1=%16.14e Norm2=%16.14e bs = %" PetscInt_FMT "\n",(double)s1norm,(double)s2norm,bs);CHKERRQ(ierr);
     }
   }
 
@@ -239,7 +239,7 @@ int main(int argc,char **args)
     ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolve - Norm1=%16.14e Norm2=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolve - Norm1=%16.14e Norm2=%16.14e bs = %" PetscInt_FMT "\n",(double)s1norm,(double)s2norm,bs);CHKERRQ(ierr);
     }
   }
 
@@ -253,7 +253,7 @@ int main(int argc,char **args)
       ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolveTranspose - Norm1=%16.14e Norm2=%16.14e bs = %D\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolveTranspose - Norm1=%16.14e Norm2=%16.14e bs = %" PetscInt_FMT "\n",(double)s1norm,(double)s2norm,bs);CHKERRQ(ierr);
       }
     }
   }

@@ -119,7 +119,7 @@ PetscErrorCode PetscCDIntNdGetID(const PetscCDIntNd *a_this, PetscInt *a_gid)
 PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd **pos)
 {
   PetscFunctionBegin;
-  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"a_idx >= ail->size: a_idx=%D.",a_idx);
+  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"a_idx >= ail->size: a_idx=%" PetscInt_FMT ".",a_idx);
   *pos = ail->array[a_idx];
   PetscFunctionReturn(0);
 }
@@ -143,7 +143,7 @@ PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a
 
   PetscFunctionBegin;
   ierr = PetscCDGetNewNode(ail, &n, a_id);CHKERRQ(ierr);
-  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D out of range.",a_idx);
+  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_idx);
   if (!(n2=ail->array[a_idx])) ail->array[a_idx] = n;
   else {
     do {
@@ -166,7 +166,7 @@ PetscErrorCode PetscCDAppendNode(PetscCoarsenData *ail, PetscInt a_idx,  PetscCD
   PetscCDIntNd *n2;
 
   PetscFunctionBegin;
-  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D out of range.",a_idx);
+  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_idx);
   if (!(n2=ail->array[a_idx])) ail->array[a_idx] = a_n;
   else {
     do {
@@ -189,7 +189,7 @@ PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *ail, PetscInt a_idx,  Pet
   PetscCDIntNd *del;
 
   PetscFunctionBegin;
-  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D out of range.",a_idx);
+  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_idx);
   if (!a_last->next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"a_last should have a next");
   del          = a_last->next;
   a_last->next = del->next;
@@ -214,7 +214,7 @@ PetscErrorCode PetscCDPrint(const PetscCoarsenData *ail, MPI_Comm comm)
     n  = ail->array[ii];
     if (n) {ierr = PetscPrintf(comm,"[%d]%s list %d:\n",rank,PETSC_FUNCTION_NAME,ii);CHKERRQ(ierr);}
     while (n) {
-      ierr = PetscPrintf(comm,"\t[%d] %D) id %D\n",rank,++kk,n->gid);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"\t[%d] %" PetscInt_FMT ") id %" PetscInt_FMT "\n",rank,++kk,n->gid);CHKERRQ(ierr);
       n = n->next;
     }
   }
@@ -228,9 +228,9 @@ PetscErrorCode PetscCDAppendRemove(PetscCoarsenData *ail, PetscInt a_destidx, Pe
   PetscCDIntNd *n;
 
   PetscFunctionBegin;
-  if (a_srcidx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D out of range.",a_srcidx);
-  if (a_destidx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D out of range.",a_destidx);
-  if (a_destidx==a_srcidx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"a_destidx==a_srcidx %D.",a_destidx);
+  if (a_srcidx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_srcidx);
+  if (a_destidx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_destidx);
+  if (a_destidx==a_srcidx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"a_destidx==a_srcidx %" PetscInt_FMT ".",a_destidx);
   n = ail->array[a_destidx];
   if (!n) ail->array[a_destidx] = ail->array[a_srcidx];
   else {
@@ -253,7 +253,7 @@ PetscErrorCode PetscCDRemoveAll(PetscCoarsenData *ail, PetscInt a_idx)
   PetscCDIntNd *rem,*n1;
 
   PetscFunctionBegin;
-  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D out of range.",a_idx);
+  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_idx);
   rem               = ail->array[a_idx];
   ail->array[a_idx] = NULL;
   if (!(n1=ail->extra_nodes)) ail->extra_nodes = rem;
@@ -272,7 +272,7 @@ PetscErrorCode PetscCDSizeAt(const PetscCoarsenData *ail, PetscInt a_idx, PetscI
   PetscInt     sz = 0;
 
   PetscFunctionBegin;
-  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D out of range.",a_idx);
+  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_idx);
   n1 = ail->array[a_idx];
   while (n1) {
     n1 = n1->next;
@@ -287,7 +287,7 @@ PetscErrorCode PetscCDSizeAt(const PetscCoarsenData *ail, PetscInt a_idx, PetscI
 PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData *ail, PetscInt a_idx, PetscBool *a_e)
 {
   PetscFunctionBegin;
-  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %D out of range.",a_idx);
+  if (a_idx>=ail->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_idx);
   *a_e = (PetscBool)(ail->array[a_idx]==NULL);
   PetscFunctionReturn(0);
 }
@@ -384,7 +384,7 @@ PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a
   if (is_bcs) {
     is_loc[kk++] = is_bcs;
   }
-  if (*a_sz != kk) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"*a_sz %D != kk %D",*a_sz,kk);
+  if (*a_sz != kk) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"*a_sz %" PetscInt_FMT " != kk %" PetscInt_FMT,*a_sz,kk);
   *a_local_is = is_loc; /* out */
 
   PetscFunctionReturn(0);
@@ -793,18 +793,18 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           n  = *pt++; kk = *pt++;
           while (n--) {
             PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;
-            if (lid_matched[lid1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recieved deleted gid %D, deleted by (lid) %D from proc %D\n",sub_it,gid1,kk);
+            if (lid_matched[lid1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Recieved deleted gid %" PetscInt_FMT ", deleted by (lid) %" PetscInt_FMT " from proc %" PetscInt_FMT,sub_it,gid1,kk);
             lid_matched[lid1] = PETSC_TRUE; /* keep track of what we've done this round */
             ierr              = PetscCDSizeAt(agg_llists, lid1, &kk);CHKERRQ(ierr);
             count2           += kk + 2;
             count3++; /* number of verts requested (n) */
           }
-          if (count2 > count3*CHUNCK_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Irecv will be too small: %D",count2);
+          if (count2 > count3*CHUNCK_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Irecv will be too small: %" PetscInt_FMT,count2);
           /* send tag2 *[lid0, n, n*[gid] ] */
           ierr             = PetscMalloc(count2*sizeof(PetscInt) + sizeof(MPI_Request), &sbuff);CHKERRQ(ierr);
           request          = (MPI_Request*)sbuff;
           sreqs2[nSend2++] = request; /* cache request */
-          if (nSend2==REQ_BF_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for requests: %D",nSend2);
+          if (nSend2==REQ_BF_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for requests: %" PetscInt_FMT,nSend2);
           pt2 = sbuff = (PetscInt*)(request+1);
           pt  = rbuff;
           n   = *pt++; kk = *pt++;
@@ -955,7 +955,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
         ierr = VecGetArray(ghostMaxPE, &cpcol_max_pe);CHKERRQ(ierr);
         ierr = VecRestoreArray(locMaxEdge, &lid_max_ew);CHKERRQ(ierr);
       } /* deal with deleted ghost */
-      ierr = PetscInfo3(a_Gmat,"\t %D.%D: %D active edges.\n",iter,sub_it,nactive_edges);CHKERRQ(ierr);
+      ierr = PetscInfo3(a_Gmat,"\t %" PetscInt_FMT ".%" PetscInt_FMT ": %" PetscInt_FMT " active edges.\n",iter,sub_it,nactive_edges);CHKERRQ(ierr);
       if (!nactive_edges) break;
     } /* sub_it loop */
 

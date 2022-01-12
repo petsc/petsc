@@ -125,7 +125,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
 
   if (header) {
     ierr = PetscStrendswith(header,"\r\n",&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\\n");
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\");
   }
 
   ierr = PetscStrlen(type,&typelen);CHKERRQ(ierr);
