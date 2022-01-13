@@ -1440,7 +1440,7 @@ int main(int argc, char **argv)
     requires: pragmatic triangle
     TODO: broken
     args: -run_type full -variable_coefficient nonlinear -petscspace_degree 1 \
-          -dm_refine 2 -dm_coarsen_hierarchy 1 -dm_plex_hash_location \
+          -dm_refine 2 -dm_coarsen_hierarchy 1 -dm_plex_hash_location -dm_adaptor pragmatic \
           -snes_type fas -snes_fas_levels 2 -snes_converged_reason ::ascii_info_detail -snes_monitor_short -snes_view \
             -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -fas_coarse_snes_linesearch_type basic \
             -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
@@ -1450,7 +1450,7 @@ int main(int argc, char **argv)
     requires: triangle pragmatic
     TODO: broken
     args: -run_type full -petscspace_degree 1 \
-          -dm_refine 3 -dm_coarsen_hierarchy 3 -dm_plex_hash_location \
+          -dm_refine 3 -dm_coarsen_hierarchy 3 -dm_plex_hash_location -dm_adaptor pragmatic \
           -snes_atol 1.0e-8 -snes_rtol 0.0 -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view \
             -ksp_type richardson -ksp_atol 1.0e-8 -ksp_rtol 0.0 -ksp_norm_type unpreconditioned -ksp_monitor_true_residual \
               -pc_type mg -pc_mg_levels 4 \

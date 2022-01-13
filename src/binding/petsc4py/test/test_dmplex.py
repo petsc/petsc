@@ -185,12 +185,14 @@ class BaseTestPlex(object):
 
     def testAdapt(self):
         if self.DIM == 1: return
-        self.plex.distribute()
-        if self.CELLS is None and not self.plex.isSimplex(): return
+        self.plex.orient()
+        plex = self.plex.refine()
+        plex.distribute()
+        if self.CELLS is None and not plex.isSimplex(): return
         if sum(self.DOFS) > 1: return
-        metric = self.plex.metricCreateUniform(9.0)
+        metric = plex.metricCreateUniform(9.0)
         try:
-            newplex = self.plex.adaptMetric(metric,"")
+            newplex = plex.adaptMetric(metric,"")
         except PETSc.Error as exc:
             if exc.ierr != ERR_ARG_OUTOFRANGE: raise
 
