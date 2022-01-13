@@ -221,4 +221,10 @@ int main(int argc,char **args)
       nsize: 8
       args: -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 64 -n2 64
 
+   test:
+      suffix: 2
+      nsize: 8
+      args: -ksp_type qmrcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 64 -n2 64
+      output_file: output/ex38_1.out
+
 TEST*/

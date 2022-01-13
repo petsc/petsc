@@ -367,6 +367,9 @@ can be used by the options database command
   * - Improved BiCGSTAB
     - ``KSPIBCGS``
     - ``ibcgs``
+  * - QMRCGSTAB :cite:`chan1994qmrcgs`
+    - ``KSPQMRCGS``
+    - ``qmrcgs``
   * - Flexible BiCGSTAB
     - ``KSPFBCGS``
     - ``fbcgs``

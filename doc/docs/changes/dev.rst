@@ -85,6 +85,7 @@ Changes: Development
 .. rubric:: KSP:
 
 -  Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
+-  Add ``KSPQMRCGS`` to support qmrcgstab with right preconditioning
 
 .. rubric:: SNES:
 

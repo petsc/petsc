@@ -130,4 +130,10 @@ int main(int argc,char **args)
       args: -ksp_type fbcgsr -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32
       output_file: output/ex39_1.out
 
+   test:
+      suffix: 3
+      nsize: 8
+      args: -ksp_type qmrcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32
+      output_file: output/ex39_1.out
+
 TEST*/

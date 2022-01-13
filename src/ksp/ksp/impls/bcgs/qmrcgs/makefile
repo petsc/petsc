@@ -1,14 +1,13 @@
--include ../../../../../petscdir.mk
+-include ../../../../../../petscdir.mk
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = bcgs.c
+SOURCEC  = qmrcgs.c
 SOURCEF  =
 LIBBASE  = libpetscksp
-DIRS     = fbcgs fbcgsr qmrcgs pipebcgs
+LOCDIR   = src/ksp/ksp/impls/bcgs/qmrcgs/
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/bcgs/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
