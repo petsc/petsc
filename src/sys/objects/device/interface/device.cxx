@@ -3,8 +3,10 @@
 
 using namespace Petsc::Device;
 
-/* note to anyone adding more classes, the name must be ALL_CAPS_SHORT_NAME + Device exactly to
- * be picked up by the switch-case macros below. */
+/*
+  note to anyone adding more classes, the name must be ALL_CAPS_SHORT_NAME + Device exactly to
+  be picked up by the switch-case macros below
+*/
 #if PetscDefined(HAVE_CUDA)
 static CUPM::Device<CUPM::DeviceType::CUDA> CUDADevice(PetscDeviceContextCreate_CUDA);
 #endif
@@ -53,32 +55,33 @@ static_assert(
     auto ierr_ = PetscConcat_(IMPLS,Device).func(__VA_ARGS__);CHKERRQ(ierr_); \
   } break
 
-/* Suppose you have:
- *
- * CUDADevice.myFunction(arg1,arg2)
- *
- * that you would like to conditionally define and call in a switch-case:
- *
- * switch(PetscDeviceType) {
- * #if PetscDefined(HAVE_CUDA)
- * case PETSC_DEVICE_CUDA: {
- *   auto ierr = CUDADevice.myFunction(arg1,arg2);CHKERRQ(ierr);
- * } break;
- * #endif
- * }
- *
- * then calling this macro:
- *
- * PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,myFunction,arg1,arg2)
- *
- * will expand to the following case statement:
- *
- * case PETSC_DEVICE_CUDA: {
- *   auto ierr = CUDADevice.myFunction(arg1,arg2);CHKERRQ(ierr);
- * } break
- *
- * if PetscDefined(HAVE_CUDA) evaluates to 1, and expand to nothing otherwise
- */
+/*
+  Suppose you have:
+
+  CUDADevice.myFunction(arg1,arg2)
+
+  that you would like to conditionally define and call in a switch-case:
+
+  switch(PetscDeviceType) {
+  #if PetscDefined(HAVE_CUDA)
+  case PETSC_DEVICE_CUDA: {
+    auto ierr = CUDADevice.myFunction(arg1,arg2);CHKERRQ(ierr);
+  } break;
+  #endif
+  }
+
+  then calling this macro:
+
+  PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,myFunction,arg1,arg2)
+
+  will expand to the following case statement:
+
+  case PETSC_DEVICE_CUDA: {
+    auto ierr = CUDADevice.myFunction(arg1,arg2);CHKERRQ(ierr);
+  } break
+
+  if PetscDefined(HAVE_CUDA) evaluates to 1, and expand to nothing otherwise
+*/
 #define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS,func,...)                                     \
   PetscIfPetscDefined(PetscConcat_(HAVE_,IMPLS),PETSC_DEVICE_CASE,PetscExpandToNothing)(IMPLS,func,__VA_ARGS__)
 
@@ -119,8 +122,10 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
   dev->id     = PetscDeviceCounter++;
   dev->type   = type;
   dev->refcnt = 1;
-  /* if you are adding a device, you also need to add it's initialization in
-   * PetscDeviceInitializeTypeFromOptions_Private() below */
+  /*
+    if you are adding a device, you also need to add it's initialization in
+    PetscDeviceInitializeTypeFromOptions_Private() below
+  */
   switch (type) {
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,getDevice,dev,devid);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(HIP,getDevice,dev,devid);
@@ -185,8 +190,10 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
   PetscFunctionBegin;
   PetscValidDevice(device,1);
   if (PetscDefined(USE_DEBUG)) {
-    /* if no available configuration is available, this cascades all the way down to default
-     * and error */
+    /*
+      if no available configuration is available, this cascades all the way down to default
+      and error
+    */
     switch (device->type) {
     case PETSC_DEVICE_CUDA: if (PetscDefined(HAVE_CUDA)) break;
     case PETSC_DEVICE_HIP:  if (PetscDefined(HAVE_HIP))  break;
@@ -278,8 +285,10 @@ PetscBool PetscDeviceInitialized(PetscDeviceType type)
   return static_cast<PetscBool>(PetscDeviceConfiguredFor_Internal(type) && initializedDevice[type]);
 }
 
-/* Actual intialization function; any functions claiming to initialize PetscDevice or
- * PetscDeviceContext will have to run through this one */
+/*
+  Actual intialization function; any functions claiming to initialize PetscDevice or
+  PetscDeviceContext will have to run through this one
+*/
 PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type, PetscInt defaultDeviceId)
 {
   PetscErrorCode ierr;
@@ -313,8 +322,10 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
   default:
     SETERRQ1(comm,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[type]);
   }
-  /* defaultInitType and defaultDeviceId now represent what the individual TYPES have decided
-   * to initialize as */
+  /*
+    defaultInitType and defaultDeviceId now represent what the individual TYPES have decided to
+    initialize as
+  */
   if (*defaultInitType == PETSC_DEVICE_INIT_EAGER) {
     ierr = PetscInfo1(PETSC_NULLPTR,"Eagerly initializing %s PetscDevice\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
     ierr = PetscDeviceInitializeDefaultDevice_Internal(type,defaultDeviceId);CHKERRQ(ierr);
@@ -365,21 +376,24 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
   PetscFunctionReturn(0);
 }
 
-/* begins the init proceeedings for the entire PetscDevice stack. there are 3 stages of
- * initialization types:
- 1. defaultInitType - how does PetscDevice as a whole expect to initialize?
- 2. subTypeDefaultInitType - how does each PetscDevice implementation expect to initialize?
-    e.g. you may want to blanket disable PetscDevice init (and disable say Kokkos init), but
-    have all CUDA devices still initialize.
+/*
+  Begins the init proceeedings for the entire PetscDevice stack. there are 3 stages of
+  initialization types:
 
- All told the following happens:
- 0. defaultInitType -> LAZY
- 1. Check for log_view/log_summary, if yes defaultInitType -> EAGER
- 2. PetscDevice initializes each sub type with deviceDefaultInitType.
- 2.1 Each enabled PetscDevice sub-type then does the above disable or view check in addition
-     to checking for specific device init. if view or specific device init
-     subTypeDefaultInitType -> EAGER. disabled once again overrides all.
- */
+  1. defaultInitType - how does PetscDevice as a whole expect to initialize?
+  2. subTypeDefaultInitType - how does each PetscDevice implementation expect to initialize?
+     e.g. you may want to blanket disable PetscDevice init (and disable say Kokkos init), but
+     have all CUDA devices still initialize.
+
+  All told the following happens:
+
+  0. defaultInitType -> LAZY
+  1. Check for log_view/log_summary, if yes defaultInitType -> EAGER
+  2. PetscDevice initializes each sub type with deviceDefaultInitType.
+  2.1 Each enabled PetscDevice sub-type then does the above disable or view check in addition
+      to checking for specific device init. if view or specific device init
+      subTypeDefaultInitType -> EAGER. disabled once again overrides all.
+*/
 PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
 {
   PetscBool           flg,defaultView = PETSC_FALSE,initializeDeviceContextEagerly = PETSC_FALSE;
@@ -441,8 +455,10 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
   if (initializeDeviceContextEagerly) {
     PetscDeviceContext dctx;
 
-    /* somewhat inefficient here as the device context is potentially fully set up twice (once
-     * when retrieved then the second time if setfromoptions makes changes) */
+    /*
+      somewhat inefficient here as the device context is potentially fully set up twice (once
+      when retrieved then the second time if setfromoptions makes changes)
+    */
     ierr = PetscInfo1(PETSC_NULLPTR,"Eagerly initializing PetscDeviceContext with %s device\n",PetscDeviceTypes[deviceContextInitDevice]);CHKERRQ(ierr);
     ierr = PetscDeviceContextSetRootDeviceType_Internal(deviceContextInitDevice);CHKERRQ(ierr);
     ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
