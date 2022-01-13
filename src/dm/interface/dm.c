@@ -782,8 +782,8 @@ PetscErrorCode  DMDestroy(DM *dm)
   }
   ierr = DMMonitorCancel(*dm);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_LIBCEED
-  ierr = CeedElemRestrictionDestroy(&(*dm)->ceedERestrict);CHKERRQ(ierr);
-  ierr = CeedDestroy(&(*dm)->ceed);CHKERRQ(ierr);
+  ierr = CeedElemRestrictionDestroy(&(*dm)->ceedERestrict);CHKERRQ_CEED(ierr);
+  ierr = CeedDestroy(&(*dm)->ceed);CHKERRQ_CEED(ierr);
 #endif
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);

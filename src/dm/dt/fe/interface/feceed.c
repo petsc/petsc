@@ -23,7 +23,7 @@ PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
   if (fe->ceed == ceed) PetscFunctionReturn(0);
-  ierr = CeedReferenceCopy(ceed, &fe->ceed);CHKERRQ(ierr);
+  ierr = CeedReferenceCopy(ceed, &fe->ceed);CHKERRQ_CEED(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -61,7 +61,7 @@ PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
     ierr = PetscSpaceGetDegree(sp, &deg, NULL);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscQuadratureGetOrder(q, &ord);CHKERRQ(ierr);
-    ierr = CeedBasisCreateTensorH1Lagrange(fe->ceed, dim, Nc, deg+1, (ord+1)/2, CEED_GAUSS, &fe->ceedBasis);CHKERRQ(ierr);
+    ierr = CeedBasisCreateTensorH1Lagrange(fe->ceed, dim, Nc, deg+1, (ord+1)/2, CEED_GAUSS, &fe->ceedBasis);CHKERRQ_CEED(ierr);
   }
   *basis = fe->ceedBasis;
   PetscFunctionReturn(0);
