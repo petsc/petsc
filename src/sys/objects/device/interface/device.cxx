@@ -325,7 +325,7 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    PETSC_CONSTEXPR_17 auto PetscDeviceCheckAllDestroyedAfterFinalize = [](){
+    const auto PetscDeviceCheckAllDestroyedAfterFinalize = [](){
       PetscFunctionBegin;
       for (const auto &device : defaultDevices) {
         if (PetscUnlikely(device)) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_COR,"Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()",PetscDeviceTypes[device->type],device->refcnt);
