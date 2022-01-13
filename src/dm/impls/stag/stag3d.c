@@ -2,7 +2,7 @@
 #include <petsc/private/dmstagimpl.h>
 
 /*@C
-  DMStagCreate3d - Create an object to manage data living on the faces, edges, and vertices of a parallelized regular 3D grid.
+  DMStagCreate3d - Create an object to manage data living on the elements, faces, edges, and vertices of a parallelized regular 3D grid.
 
   Collective
 
@@ -17,7 +17,7 @@
 . dof3 - number of degrees of freedom per element/3-cell
 . stencilType - ghost/halo region type: DMSTAG_STENCIL_NONE, DMSTAG_STENCIL_BOX, or DMSTAG_STENCIL_STAR
 . stencilWidth - width, in elements, of halo/ghost region
-- lx,ly,lz - array sof local x,y,z element counts, of length equal to m,n,p, summing to M,N,P
+- lx,ly,lz - arrays of local x,y,z element counts, of length equal to m,n,p, summing to M,N,P
 
   Output Parameter:
 . dm - the new DMStag object
