@@ -1,6 +1,6 @@
 /*
    Private data structure used by the BCGS method. This data structure
-  must be identical to the beginning of the KSP_FBCGS data structure
+  must be identical to the beginning of the KSP_FBCGS and KSP_QMRCGS data structure
   so if you CHANGE anything here you must also change it there.
 */
 #if !defined(__BCGS)
