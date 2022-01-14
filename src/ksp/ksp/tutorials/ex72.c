@@ -682,7 +682,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 4
-      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !defined(PETSC_HAVE_I_MPI_NUMVERSION)
       args: -ksp_monitor_short -ksp_view
       test:
          suffix: xxt
