@@ -873,19 +873,14 @@ How do I compile and link my own PETSc application codes and can I use my own ``
 --------------------------------------------------------------------------------------------------------------------------------------------
 
 See the :ref:`section <sec_writing_application_codes>` of the users manual on writing
-application codes with PETSc. This provides a simple makefile that can be used to compiler
-user code. You are free to modify this makefile or completely replace it with your own
-makefile.
+application codes with PETSc. 
 
 Can I use Cmake to build my own project that depends on PETSc?
 --------------------------------------------------------------
 
-Use `FindPkgConfig.cmake
-<https://cmake.org/cmake/help/latest/module/FindPkgConfig.html>`__, which is installed by
-default with CMake. PETSc installs ``$PETSC_DIR/$PETSC_ARCH/lib/pkgconfig/petsc.pc``,
-which can be be read by ``FindPkgConfig.cmake``. If you must use a very old version of
-CMake and/or PETSc, you can use the ``FindPETSc.cmake`` module from `this repository
-<https://github.com/jedbrown/cmake-modules/>`__.
+See the :ref:`section <sec_writing_application_codes>` of the users manual on writing
+application codes with PETSc. 
+
 
 How can I put carriage returns in PetscPrintf() statements from Fortran?
 ------------------------------------------------------------------------

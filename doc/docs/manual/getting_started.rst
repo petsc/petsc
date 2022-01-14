@@ -651,8 +651,8 @@ merely to demonstrate the ease of extracting performance information.
 
 .. _sec_writing_application_codes:
 
-Writing Application Codes with PETSc
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Writing C/C++ or Fortran Applications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The examples throughout the library demonstrate the software usage and
 can serve as templates for developing custom applications. We suggest
@@ -664,53 +664,97 @@ of the PETSc libraries (listed in the following section), such as
 https://petsc.org/release/documentation/ provide links (organized by
 both routine names and concepts) to the tutorial examples.
 
-To write a new application program using PETSc, we suggest the following
-procedure:
+To develop an application program that uses PETSc, we suggest the following:
 
-#. Install and test PETSc according to the instructions at the PETSc web
-   site.
+* :ref:`Download <doc_download>` and :ref:`install <doc_install>` PETSc.
 
-#. Make a working directory for your source code: for example,
-   ``mkdir $HOME/application``
+* For completely new applications
 
-#. Change to that working directory; for
-   example,\ ``cd $HOME/application``
+   #. Make a directory for your source code: for example, ``mkdir $HOME/application``
 
-#. Copy one of the examples in the directory that corresponds to the
-   class of problem of interest into your working directory, for
-   example, ``cp $PETSC_DIR/src/snes/tutorials/ex19.c ex19.c``
+   #. Change to that directory; for
+      example, ``cd $HOME/application``
 
-#. Copy $PETSC_DIR/share/petsc/Makefile.user to your working directory,
-   for example, ``cp $PETSC_DIR/share/petsc/Makefile.user Makefile``
+   #. Copy an example in the directory that corresponds to the
+      problems of interest into your directory, for
+      example, ``cp $PETSC_DIR/src/snes/tutorials/ex19.c ex19.c``
 
-   Note: ``Makefile.user`` relies on the ``pkg-config`` tool, and
-   ``PETSC_DIR`` and ``PETSC_ARCH`` variables.  If ``pkg-config`` is not
-   available, use ``$PETSC_DIR/src/snes/tutorials/makefile``, it is
-   useful for simple usages. ``Makefile.user`` provides a better template
-   that helps in adapting to more complex usages (for example, an
-   application project might already have a complex makefile, and is
-   now adding in PETSc library usage to it).
+   #. Select an application build process. The ``PETSC_DIR`` (and ``PETSC_ARCH`` if the ``--prefix=directoryname``
+      option was not used when configuring PETSc) environmental variable(s) must be
+      set for any of these approaches.
 
-#. Compile and run the example program, for example,
-   ``make ex19; ./ex19``
+      * make (recommended). Copy $PETSC_DIR/share/petsc/Makefile.user or $PETSC_DIR/share/petsc/Makefile.basic.user
+        to your directory, for example, ``cp $PETSC_DIR/share/petsc/Makefile.user makefile``
 
-#. Use the example program as a starting point for developing a custom
-   code.
+        Examine the comments in your makefile
 
-We highly recommend against the following since it requires changing
-your makefile for each new configuration/computing system but if you do
-not wish to include any PETSc utilities in your makefile, you can use
-the following commands in the PETSc root directory to get the
-information needed by your makefile:
+        Makefile.user uses the `pkg-config <https://en.wikipedia.org/wiki/Pkg-config>`__ tool and is the recommended approach.
 
-.. code-block:: console
+        Use ``make ex19`` to compile your program
 
-   $ make getlinklibs getincludedirs getcflags getcxxflags getfortranflags getccompiler getfortrancompiler getcxxcompiler
+      * cmake. Copy $PETSC_DIR/share/petsc/CMakeLists.txt to your directory, for example, ``cp $PETSC_DIR/share/petsc/CMakeLists.txt CMakeLists.txt``
 
-All the libraries listed need to be linked into your executable and the
-include directories and flags need to be passed to the compiler. Usually
-this is done with ``CFLAGS=<list of -I and other flags>`` and
-``FFLAGS=<list of -I and other flags>`` in your makefile.
+        Edit CMakeLists.txt, read the comments on usage and change the name of application from ex1 to your application executable name.
+
+   #. Run the  program, for example,
+      ``./ex19``
+
+   #. Start to modify the program for developing your application.
+
+* For adding PETSc to an existing application
+
+   #. Start with a working version of your code that you build and run to confirm that it works.
+
+   #. Upgrade your build process. The ``PETSC_DIR`` (and ``PETSC_ARCH`` if the ``--prefix=directoryname``
+      option was not used when configuring PETSc) environmental variable(s) must be
+      set for any of these approaches.
+
+      * Using make. Update the application makefile to add the appropriate PETSc include
+        directories and libraries.
+
+        *  Recommended approach. Examine the comments in $PETSC_DIR/shared/petsc/Makefile.user and transfer selected portions of
+           that file to your makefile.
+
+        *  Minimalist. Add the line ``include ${PETSC_DIR}/lib/petsc/conf/variables`` to the bottom of your makefile.
+
+           This will provide a set of PETSc specific make variables you may used in your makefile. See
+           the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
+
+        *  Simple, but hands the build process over to PETSc's control. Add the lines
+
+           .. code-block:: console
+
+              include ${PETSC_DIR}/lib/petsc/conf/variables
+              include ${PETSC_DIR}/lib/petsc/conf/rules
+              include ${PETSC_DIR}/lib/petsc/conf/tests
+
+           to the bottom of your makefile. See the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
+           Since PETSc's rules now control the build process you will likely need to simplify and remove much of your makefile.
+
+        *  Not recommended since you must change your makefile for each new configuration/computing system. This approach does not require
+           that the environmental variable ``PETSC_DIR`` be set when building your application since the information will be hardwired in your
+           makefile. Run the following command in the PETSc root directory to get the information needed by your makefile:
+
+           .. code-block:: console
+
+             $ make getlinklibs getincludedirs getcflags getcxxflags getfortranflags getccompiler getfortrancompiler getcxxcompiler
+
+           All the libraries listed need to be linked into your executable and the
+           include directories and flags need to be passed to the compiler(s). Usually
+           this is done by setting ``LDFLAGS=<list of library flags and libraries>`` and
+           ``CFLAGS=<list of -I and other flags>`` and ``FFLAGS=<list of -I and other flags>`` etc in your makefile.
+
+      * Using CMake. Update the application CMakeLists.txt by examining the code and comments in
+        $PETSC_DIR/share/petsc/CMakeLists.txt
+
+   #. Rebuild your application and ensure it still runs correctly.
+
+   #. Add a ``PetscInitialize()`` near the beginning of your code and ``PetscFinalize()`` near the end with appropriate include commands
+      (and use commands in Fortran)
+
+   #. Rebuild your application and ensure it still runs correctly.
+
+   #. Slowly start utilizing PETSc functionality in your code, ensure that your code continues to build and run correctly.
 
 
 .. _sec_directory:
