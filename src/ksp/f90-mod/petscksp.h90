@@ -170,3 +170,11 @@
        PetscErrorCode z
       end subroutine
       end Interface
+
+      Interface
+      subroutine KSPDestroy(a,z)
+       import tKSP
+       KSP a
+       PetscErrorCode z
+      end subroutine
+      end Interface
