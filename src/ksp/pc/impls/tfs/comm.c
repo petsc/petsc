@@ -285,6 +285,7 @@ PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals,  PetscScalar *work,  PetscInt 
   PetscInt       stage_n;
   MPI_Status     status;
   PetscErrorCode ierr;
+  PetscMPIInt    *maxval,flg;
 
   PetscFunctionBegin;
   /* check to make sure comm package has been initialized */
@@ -313,6 +314,9 @@ PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals,  PetscScalar *work,  PetscInt 
     if (stage_n && !(PCTFS_my_id & mask)) {
       dest = edge_node[level-edge-1];
       type = MSGTAG6 + PCTFS_my_id + (PCTFS_num_nodes*edge);
+      ierr = MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg);CHKERRMPI(ierr);
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
+      if (*maxval <= type) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_TAG_UB for your current MPI implementation is not large enough to use PCTFS");
       if (PCTFS_my_id<dest) {
         ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,MPI_COMM_WORLD);CHKERRMPI(ierr);
       } else {
