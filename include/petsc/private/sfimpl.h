@@ -181,8 +181,17 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType,void*);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)
-PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
-PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
+  PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
+  PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
+ #if defined(PETSC_HAVE_CUDA)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_CUDA;
+ #elif defined(PETSC_HAVE_HIP)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_HIP;
+ #elif defined(PETSC_HAVE_SYCL)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_SYCL;
+ #else
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_HOST;
+ #endif
 #endif
 
 /* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.
