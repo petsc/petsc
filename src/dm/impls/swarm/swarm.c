@@ -24,9 +24,6 @@ const char DMSwarmField_rank[] = "DMSwarm_rank";
 const char DMSwarmPICField_coor[] = "DMSwarmPIC_coor";
 const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
 
-PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
-
 #if defined(PETSC_HAVE_HDF5)
 #include <petscviewerhdf5.h>
 
@@ -46,8 +43,7 @@ PetscErrorCode VecView_Swarm_HDF5_Internal(Vec v, PetscViewer viewer)
   ierr = DMGetOutputSequenceNumber(dm, &seqnum, &seqval);CHKERRQ(ierr);
   ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
   /* ierr = DMSequenceView_HDF5(dm, "time", seqnum, (PetscScalar) seqval, viewer);CHKERRQ(ierr); */
-  if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
-  else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
+  ierr = VecViewNative(v, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject) v, "Nc", PETSC_INT, (void *) &bs);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -66,8 +62,7 @@ PetscErrorCode DMSwarmView_HDF5(DM dm, PetscViewer viewer)
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/particles");CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) coordinates, VECSEQ, &isseq);CHKERRQ(ierr);
-  if (isseq) {ierr = VecView_Seq(coordinates, viewer);CHKERRQ(ierr);}
-  else       {ierr = VecView_MPI(coordinates, viewer);CHKERRQ(ierr);}
+  ierr = VecViewNative(coordinates, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject) coordinates, "Np", PETSC_INT, (void *) &Np);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = DMSwarmDestroyGlobalVectorFromField(dm, DMSwarmPICField_coor, &coordinates);CHKERRQ(ierr);
@@ -78,26 +73,22 @@ PetscErrorCode DMSwarmView_HDF5(DM dm, PetscViewer viewer)
 PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
 {
   DM             dm;
+#if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;
+#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+#if defined(PETSC_HAVE_HDF5)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
   if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
-    ierr = VecView_Swarm_HDF5_Internal(v, viewer);CHKERRQ(ierr);
-#else
-    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
-#endif
-  } else {
-    PetscBool isseq;
-
-    ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-    if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
-    else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
+      ierr = VecView_Swarm_HDF5_Internal(v, viewer);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
   }
+#endif
+  ierr = VecViewNative(v, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

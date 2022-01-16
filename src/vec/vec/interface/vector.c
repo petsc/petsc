@@ -652,6 +652,34 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 }
 #endif
 
+/*@C
+   VecViewNative - Views a vector object with the original type specific viewer
+
+   Collective on Vec
+
+   Input Parameters:
++  vec - the vector
+-  viewer - an optional visualization context
+
+   Level: developer
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscDrawLGCreate(), VecView()
+          PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
+          PetscRealView(), PetscScalarView(), PetscIntView(), PetscViewerHDF5SetTimestep()
+@*/
+PetscErrorCode  VecViewNative(Vec vec,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
+  PetscValidType(vec,1);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    VecGetSize - Returns the global number of elements of the vector.
 
