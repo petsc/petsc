@@ -276,7 +276,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkFinishCommunication(PetscSF sf,Pet
 }
 
 /* A set of helper routines for Pack/Unpack/Scatter on GPUs */
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP) || defined(PETSC_HAVE_SYCL)
 /* PetscSFLinkCopyXxxxBufferInCaseNotUseGpuAwareMPI routines are simple: if not use_gpu_aware_mpi, we need
    to copy the buffer from GPU to CPU before MPI calls, and from CPU to GPU after MPI calls.
 */
