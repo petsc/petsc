@@ -43,8 +43,7 @@ PetscErrorCode DMSwarmDataFieldCreate(const char registration_function[],const c
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(struct _p_DMSwarmDataField), &df);CHKERRQ(ierr);
-  ierr = PetscMemzero(df, sizeof(struct _p_DMSwarmDataField));CHKERRQ(ierr);
+  ierr = PetscNew(&df);CHKERRQ(ierr);
   ierr = PetscStrallocpy(registration_function, &df->registration_function);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, &df->name);CHKERRQ(ierr);
   df->atomic_size = size;
@@ -78,8 +77,7 @@ PetscErrorCode DMSwarmDataBucketCreate(DMSwarmDataBucket *DB)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(struct _p_DMSwarmDataBucket), &db);CHKERRQ(ierr);
-  ierr = PetscMemzero(db, sizeof(struct _p_DMSwarmDataBucket));CHKERRQ(ierr);
+  ierr = PetscNew(&db);CHKERRQ(ierr);
 
   db->finalised = PETSC_FALSE;
   /* create empty spaces for fields */
@@ -127,24 +125,20 @@ PetscErrorCode DMSwarmDataBucketQueryForActiveFields(DMSwarmDataBucket db,PetscB
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmDataBucketRegisterField(
-                              DMSwarmDataBucket db,
-                              const char registration_function[],
-                              const char field_name[],
-                              size_t atomic_size, DMSwarmDataField *_gfield)
+PetscErrorCode DMSwarmDataBucketRegisterField(DMSwarmDataBucket db,const char registration_function[],const char field_name[],size_t atomic_size, DMSwarmDataField *_gfield)
 {
-  PetscBool val;
+  PetscBool        val;
   DMSwarmDataField fp;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-        /* check we haven't finalised the registration of fields */
+  /* check we haven't finalised the registration of fields */
         /*
    if (db->finalised==PETSC_TRUE) {
    printf("ERROR: DMSwarmDataBucketFinalize() has been called. Cannot register more fields\n");
    ERROR();
    }
-   */
+  */
   /* check for repeated name */
   ierr = DMSwarmDataFieldStringInList(field_name, db->nfields, (const DMSwarmDataField*) db->field, &val);CHKERRQ(ierr);
   if (val == PETSC_TRUE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Field %s already exists. Cannot add same field twice",field_name);
@@ -420,10 +414,9 @@ PetscErrorCode DMSwarmDataFieldRestoreEntries(const DMSwarmDataField gfield,void
 }
 
 /* y = x */
-PetscErrorCode DMSwarmDataBucketCopyPoint(const DMSwarmDataBucket xb,const PetscInt pid_x,
-                         const DMSwarmDataBucket yb,const PetscInt pid_y)
+PetscErrorCode DMSwarmDataBucketCopyPoint(const DMSwarmDataBucket xb,const PetscInt pid_x,const DMSwarmDataBucket yb,const PetscInt pid_y)
 {
-  PetscInt f;
+  PetscInt       f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -444,10 +437,10 @@ PetscErrorCode DMSwarmDataBucketCopyPoint(const DMSwarmDataBucket xb,const Petsc
 
 PetscErrorCode DMSwarmDataBucketCreateFromSubset(DMSwarmDataBucket DBIn,const PetscInt N,const PetscInt list[],DMSwarmDataBucket *DB)
 {
-  PetscInt nfields;
+  PetscInt         nfields;
   DMSwarmDataField *fields;
-  PetscInt f,L,buffer,allocated,p;
-  PetscErrorCode ierr;
+  PetscInt         f,L,buffer,allocated,p;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = DMSwarmDataBucketCreate(DB);CHKERRQ(ierr);
@@ -515,8 +508,7 @@ PetscErrorCode DMSwarmDataBucketRemovePointAtIndex(const DMSwarmDataBucket db,co
 }
 
 /* copy x into y */
-PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt pid_x,const DMSwarmDataField field_x,
-                        const PetscInt pid_y,const DMSwarmDataField field_y)
+PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt pid_x,const DMSwarmDataField field_x,const PetscInt pid_y,const DMSwarmDataField field_y)
 {
   PetscErrorCode ierr;
 
@@ -551,7 +543,7 @@ PetscErrorCode DMSwarmDataFieldZeroPoint(const DMSwarmDataField field,const Pets
 /* zero ALL data for this point */
 PetscErrorCode DMSwarmDataBucketZeroPoint(const DMSwarmDataBucket db,const PetscInt index)
 {
-  PetscInt f;
+  PetscInt       f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -585,6 +577,7 @@ PetscErrorCode DMSwarmDataBucketRemovePoint(DMSwarmDataBucket db)
   PetscFunctionReturn(0);
 }
 
+/*  Should be redone to user PetscViewer */
 PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm,DMSwarmDataBucket db)
 {
   PetscInt       f;
@@ -619,7 +612,7 @@ PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm,DMSwarmDataBucket db)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmDataBucketView_SEQ(MPI_Comm comm,DMSwarmDataBucket db,const char filename[],DMSwarmDataBucketViewType type)
+PetscErrorCode DMSwarmDataBucketView_Seq(MPI_Comm comm,DMSwarmDataBucket db,const char filename[],DMSwarmDataBucketViewType type)
 {
   PetscErrorCode ierr;
 
@@ -661,13 +654,13 @@ PetscErrorCode DMSwarmDataBucketView_MPI(MPI_Comm comm,DMSwarmDataBucket db,cons
 
 PetscErrorCode DMSwarmDataBucketView(MPI_Comm comm,DMSwarmDataBucket db,const char filename[],DMSwarmDataBucketViewType type)
 {
-  PetscMPIInt size;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   if (size == 1) {
-    ierr = DMSwarmDataBucketView_SEQ(comm,db,filename,type);CHKERRQ(ierr);
+    ierr = DMSwarmDataBucketView_Seq(comm,db,filename,type);CHKERRQ(ierr);
   } else {
     ierr = DMSwarmDataBucketView_MPI(comm,db,filename,type);CHKERRQ(ierr);
   }
@@ -685,8 +678,8 @@ PetscErrorCode DMSwarmDataBucketDuplicateFields(DMSwarmDataBucket dbA,DMSwarmDat
   /* copy contents from dbA into db2 */
   for (f = 0; f < dbA->nfields; ++f) {
     DMSwarmDataField field;
-    size_t    atomic_size;
-    char      *name;
+    size_t           atomic_size;
+    char             *name;
 
     field = dbA->field[f];
     atomic_size = field->atomic_size;
@@ -705,8 +698,8 @@ PetscErrorCode DMSwarmDataBucketDuplicateFields(DMSwarmDataBucket dbA,DMSwarmDat
  */
 PetscErrorCode DMSwarmDataBucketInsertValues(DMSwarmDataBucket db1,DMSwarmDataBucket db2)
 {
-  PetscInt n_mp_points1,n_mp_points2;
-  PetscInt n_mp_points1_new,p;
+  PetscInt       n_mp_points1,n_mp_points2;
+  PetscInt       n_mp_points1_new,p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -777,9 +770,9 @@ PetscErrorCode DMSwarmDataBucketFillPackedArray(DMSwarmDataBucket db,const Petsc
 
 PetscErrorCode DMSwarmDataBucketInsertPackedArray(DMSwarmDataBucket db,const PetscInt idx,void *data)
 {
-  PetscInt f;
-  void *data_p;
-  size_t offset;
+  PetscInt       f;
+  void           *data_p;
+  size_t         offset;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

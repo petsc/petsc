@@ -310,7 +310,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   }
 #endif
 
-  { /* this performs two point locations: (i) on the initial points set prior to communication; and (ii) on the new (received) points */
+  { /* perform two point locations: (i) on the initial points set prior to communication; and (ii) on the new (received) points */
     PetscScalar      *LA_coor;
     PetscInt         npoints_from_neighbours,bs;
     DMSwarmDataField PField;
@@ -613,7 +613,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  DMSwarmDataEx         de;
+  DMSwarmDataEx  de;
   PetscInt       p,r,npoints,n_points_recv;
   PetscMPIInt    size,rank;
   void           *point_buffer,*recv_points;

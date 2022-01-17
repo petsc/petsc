@@ -6,11 +6,8 @@
 
 int sort_CompareSwarmPoint(const void *dataA,const void *dataB)
 {
-  SwarmPoint *pointA;
-  SwarmPoint *pointB;
-
-  pointA = (SwarmPoint*)dataA;
-  pointB = (SwarmPoint*)dataB;
+  SwarmPoint *pointA = (SwarmPoint*)dataA;
+  SwarmPoint *pointB = (SwarmPoint*)dataB;
 
   if (pointA->cell_index < pointB->cell_index) {
     return -1;
@@ -34,10 +31,9 @@ PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx)
   DMSwarmSort    ctx;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
-  ierr = PetscMemzero(ctx,sizeof(struct _p_DMSwarmSort));CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
   ctx->isvalid = PETSC_FALSE;
-  ctx->ncells = 0;
+  ctx->ncells  = 0;
   ctx->npoints = 0;
   ierr = PetscMalloc1(1,&ctx->pcell_offsets);CHKERRQ(ierr);
   ierr = PetscMalloc1(1,&ctx->list);CHKERRQ(ierr);
@@ -78,7 +74,6 @@ PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx,DM dm,PetscInt ncells)
     ctx->list[p].cell_index  = swarm_cellid[p];
   }
   ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
-
   ierr = DMSwarmSortApplyCellIndexSort(ctx);CHKERRQ(ierr);
 
   /* sum points per cell */
@@ -168,8 +163,9 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *np
    Level: advanced
 
    Notes:
-   - You must call DMSwarmSortGetAccess() before you can call DMSwarmSortGetPointsPerCell()
-   - The array pidlist is internally created and must be free'd by the user
+     You must call DMSwarmSortGetAccess() before you can call DMSwarmSortGetPointsPerCell()
+
+     The array pidlist is internally created and must be free'd by the user
 
 .seealso: DMSwarmSetType(), DMSwarmSortGetAccess(), DMSwarmSortGetNumberOfPointsPerCell()
 @*/
@@ -226,10 +222,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscIn
    first pass "marks" points for removal, and the second pass actually removes the points from the DMSwarm.
 
    Notes:
-   - You must call DMSwarmSortGetAccess() before you can call DMSwarmSortGetPointsPerCell() or DMSwarmSortGetNumberOfPointsPerCell()
-   - The sort context may become invalid if any re-sizing methods are applied which alter the first NP points
+     You must call DMSwarmSortGetAccess() before you can call DMSwarmSortGetPointsPerCell() or DMSwarmSortGetNumberOfPointsPerCell()
+
+     The sort context may become invalid if any re-sizing methods are applied which alter the first NP points
      within swarm at the time DMSwarmSortGetAccess() was called.
-   - You must call DMSwarmSortRestoreAccess() when you no longer need access to the sort context
+
+     You must call DMSwarmSortRestoreAccess() when you no longer need access to the sort context
 
    Level: advanced
 
@@ -237,11 +235,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscIn
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
 {
-  DM_Swarm        *swarm = (DM_Swarm*)dm->data;
-  PetscErrorCode  ierr;
-  PetscInt        ncells;
-  DM              celldm;
-  PetscBool       isda,isplex,isshell;
+  DM_Swarm       *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  PetscInt       ncells;
+  DM             celldm;
+  PetscBool      isda,isplex,isshell;
 
   PetscFunctionBegin;
   if (!swarm->sort_context) {
@@ -255,7 +253,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
   ierr = PetscObjectTypeCompare((PetscObject)celldm,DMSHELL,&isshell);CHKERRQ(ierr);
   ncells = 0;
   if (isda) {
-    PetscInt nel,npe;
+    PetscInt       nel,npe;
     const PetscInt *element;
 
     ierr = DMDAGetElements(celldm,&nel,&npe,&element);CHKERRQ(ierr);
@@ -277,7 +275,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm)
 
   /* setup */
   ierr = DMSwarmSortSetup(swarm->sort_context,dm,ncells);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -357,11 +354,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm,PetscInt *ncells,PetscInt 
 
   PetscFunctionBegin;
   if (!swarm->sort_context) {
-    if (ncells) { *ncells = 0; }
-    if (npoints) { *npoints = 0; }
+    if (ncells)  *ncells  = 0;
+    if (npoints) *npoints = 0;
     PetscFunctionReturn(0);
   }
-  if (ncells) { *ncells = swarm->sort_context->ncells; }
-  if (npoints) { *npoints = swarm->sort_context->npoints; }
+  if (ncells)  *ncells = swarm->sort_context->ncells;
+  if (npoints) *npoints = swarm->sort_context->npoints;
   PetscFunctionReturn(0);
 }

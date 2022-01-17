@@ -1,5 +1,5 @@
-#if !defined(__DMSWARM_DATA_EXCHANGER_H__)
-#define __DMSWARM_DATA_EXCHANGER_H__
+#if !defined(DMSWARM_DATA_EXCHANGER_H__)
+#define DMSWARM_DATA_EXCHANGER_H__
 
 #include <petscvec.h>
 #include <petscmat.h>

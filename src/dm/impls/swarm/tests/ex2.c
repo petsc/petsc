@@ -508,15 +508,15 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC)
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
-    PetscInt   *star = NULL;
-    PetscInt    starSize, st, d, fc;
+    PetscInt *star = NULL;
+    PetscInt starSize, st, d, fc;
 
     ierr = PetscArrayzero(gradsum, coordDim*numComponents);CHKERRQ(ierr);
     ierr = DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     for (st = 0; st < starSize*2; st += 2) {
       const PetscInt cell = star[st];
-      PetscScalar   *grad = &gradsum[coordDim*numComponents];
-      PetscScalar   *x    = NULL;
+      PetscScalar    *grad = &gradsum[coordDim*numComponents];
+      PetscScalar    *x    = NULL;
 
       if ((cell < cStart) || (cell >= cEnd)) continue;
       ierr = DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
@@ -638,7 +638,8 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-int main (int argc, char * argv[]) {
+int main (int argc, char *argv[])
+{
   MPI_Comm       comm;
   DM             dm, sw;
   AppCtx         user;

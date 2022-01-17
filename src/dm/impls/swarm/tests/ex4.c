@@ -267,8 +267,8 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
 {
   const PetscScalar *v;
   PetscScalar       *xres;
-  PetscInt           Np, p;
-  PetscErrorCode     ierr;
+  PetscInt          Np, p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(Xres, &xres);CHKERRQ(ierr);
@@ -287,8 +287,8 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   AppCtx            *user = (AppCtx *)ctx;
   const PetscScalar *x;
   PetscScalar       *vres;
-  PetscInt           Np, p;
-  PetscErrorCode     ierr;
+  PetscInt          Np, p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(Vres, &vres);CHKERRQ(ierr);
@@ -308,11 +308,11 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
 static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
 {
   AppCtx            *user = (AppCtx *) ctx;
-  DM                 dm;
+  DM                dm;
   const PetscScalar *u;
   PetscScalar       *g;
-  PetscInt           Np, p;
-  PetscErrorCode     ierr;
+  PetscInt          Np, p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
@@ -335,8 +335,7 @@ J= (0    1)
 */
 static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U , Mat J, Mat P, void *ctx)
 {
-  AppCtx            *user = (AppCtx *) ctx;
-
+  AppCtx             *user = (AppCtx *) ctx;
   PetscInt           Np;
   PetscInt           i, m, n;
   const PetscScalar *u;
@@ -375,13 +374,11 @@ PetscErrorCode Sfunc(TS ts, PetscReal t, Vec U, Mat S, void *ctx)
 {
   PetscInt           Np;
   PetscInt           i, m, n;
-
   const PetscScalar *u;
   PetscScalar        vals[4] = {0., 1., -1, 0.};
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
   Np /= 2;
@@ -422,12 +419,12 @@ PetscErrorCode Ffunc(TS ts, PetscReal t, Vec U, PetscScalar *F, void *ctx)
 PetscErrorCode gradFfunc(TS ts, PetscReal t, Vec U, Vec gradF, void *ctx)
 {
   AppCtx            *user = (AppCtx *) ctx;
-  DM                 dm;
+  DM                dm;
   const PetscScalar *u;
   PetscScalar       *g;
-  PetscInt           Np;
-  PetscInt           p;
-  PetscErrorCode     ierr;
+  PetscInt          Np;
+  PetscInt          p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
