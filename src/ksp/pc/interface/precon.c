@@ -1011,6 +1011,7 @@ PetscErrorCode  PCSetUp(PC pc)
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
     /* do not log solves and applications of preconditioners while constructing preconditioners; perhaps they should be logged separately from the regular solves */
+    ierr = KSPInitializePackage();CHKERRQ(ierr);
     ierr = PetscLogEventDeactivatePush(KSP_Solve);CHKERRQ(ierr);
     ierr = PetscLogEventDeactivatePush(PC_Apply);CHKERRQ(ierr);
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
