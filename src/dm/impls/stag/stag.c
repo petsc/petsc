@@ -363,7 +363,12 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer," %s",DMBoundaryTypes[stag->boundaryType[i]]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Elementwise ghost stencil: %s, width %D\n",DMStagStencilTypes[stag->stencilType],stag->stencilWidth);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Elementwise ghost stencil: %s",DMStagStencilTypes[stag->stencilType]);CHKERRQ(ierr);
+    if (stag->stencilType != DMSTAG_STENCIL_NONE) {
+      ierr = PetscViewerASCIIPrintf(viewer,", width %D\n",stag->stencilWidth);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"Stratum dof:");CHKERRQ(ierr);
     for (i=0; i<dim+1; ++i) {
       ierr = PetscViewerASCIIPrintf(viewer," %D:%D",i,stag->dof[i]);CHKERRQ(ierr);

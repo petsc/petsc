@@ -4,7 +4,7 @@ Dimension: 2
 Global sizes: 4 x 5
 Parallel decomposition: 2 x 3 ranks
 Boundary ghosting: NONE NONE
-Elementwise ghost stencil: NONE, width 0
+Elementwise ghost stencil: NONE
 Stratum dof: 0:1 1:1 2:1
 [0] Rank coordinates (0,0)
 [0] Local elements : 2 x 2 (2 x 2 with ghosts)
