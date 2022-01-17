@@ -148,22 +148,28 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
     ierr = PetscSFGetRootRanks(sf, &nrranks, &rranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
     ierr = PetscCalloc1(numProcs, &numVerInterfaces);CHKERRQ(ierr);
 
-    /* Counting */
+    /* Count number of roots associated with each leaf */
     for (r = 0; r < niranks; ++r) {
       for (i=ioffset[r], count=0; i<ioffset[r+1]; ++i) {
         if (irootloc[i] >= vStart && irootloc[i] < vEnd) count++;
       }
       numVerInterfaces[iranks[r]] += count;
     }
+
+    /* Count number of leaves associated with each root */
     for (r = 0; r < nrranks; ++r) {
       for (i=roffset[r], count=0; i<roffset[r+1]; ++i) {
         if (rmine[i] >= vStart && rmine[i] < vEnd) count++;
       }
       numVerInterfaces[rranks[r]] += count;
     }
+
+    /* Count global number of ranks */
     for (p = 0; p < numProcs; ++p) {
       if (numVerInterfaces[p]) numNgbRanks++;
     }
+
+    /* Provide numbers of vertex interfaces */
     ierr = PetscMalloc2(numNgbRanks, &ngbRanks, numNgbRanks, &verNgbRank);CHKERRQ(ierr);
     for (p = 0, n = 0; p < numProcs; ++p) {
       if (numVerInterfaces[p]) {
@@ -180,15 +186,17 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
     intOffset[0] = 0;
     for (p = 0, r = 0, i = 0; p < numNgbRanks; ++p) {
       intOffset[p+1] = intOffset[p];
+
+      /* Leaf case */
       if (iranks && iranks[i] == ngbRanks[p]) {
 
         /* Add the right slice of irootloc at the right place */
         sliceSize = ioffset[i+1]-ioffset[i];
         for (j = 0, count = 0; j < sliceSize; ++j) {
-          if (ioffset[i]+j >= ioffset[niranks]) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Offset out of range");
+          if (ioffset[i]+j >= ioffset[niranks]) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Leaf index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", ioffset[i]+j, ioffset[niranks]);
           v = irootloc[ioffset[i]+j];
           if (v >= vStart && v < vEnd) {
-            if (intOffset[p+1]+count >= numVerNgbRanksTotal) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Offset out of range");
+            if (intOffset[p+1]+count >= numVerNgbRanksTotal) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Leaf interface index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", intOffset[p+1]+count, numVerNgbRanksTotal);
             interfaces_lv[intOffset[p+1]+count] = v-vStart;
             count++;
           }
@@ -196,15 +204,17 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
         intOffset[p+1] += count;
         i++;
       }
+
+      /* Root case */
       if (rranks && rranks[r] == ngbRanks[p]) {
 
         /* Add the right slice of rmine at the right place */
         sliceSize = roffset[r+1]-roffset[r];
         for (j = 0, count = 0; j < sliceSize; ++j) {
-          if (roffset[r]+j >= roffset[nrranks]) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Offset out of range");
+          if (roffset[r]+j >= roffset[nrranks]) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Root index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", roffset[r]+j, roffset[nrranks]);
           v = rmine[roffset[r]+j];
           if (v >= vStart && v < vEnd) {
-            if (intOffset[p+1]+count >= numVerNgbRanksTotal) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Offset out of range");
+            if (intOffset[p+1]+count >= numVerNgbRanksTotal) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Root interface index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", intOffset[p+1]+count, numVerNgbRanksTotal);
             interfaces_lv[intOffset[p+1]+count] = v-vStart;
             count++;
           }
@@ -212,7 +222,9 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
         intOffset[p+1] += count;
         r++;
       }
-      if (intOffset[p+1] != intOffset[p] + verNgbRank[p]) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Unequal offsets");
+
+      /* Check validity of offsets */
+      if (intOffset[p+1] != intOffset[p]+verNgbRank[p]) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Missing offsets (expected %" PetscInt_FMT ", got %" PetscInt_FMT ")", intOffset[p]+verNgbRank[p], intOffset[p+1]);
     }
     ierr = DMPlexGetVertexNumbering(udm, &globalVertexNum);CHKERRQ(ierr);
     ierr = ISGetIndices(globalVertexNum, &gV);CHKERRQ(ierr);
