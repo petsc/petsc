@@ -344,7 +344,6 @@ int main(int argc, char **argv)
       /* B: loaded naive in-memory plex       */
       ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
       ierr = DMPlexTopologyLoad(dm, viewer, &sfXB);CHKERRQ(ierr);
-      ierr = DMPlexLabelsLoad(dm, viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)dm, exampleDMPlexName);CHKERRQ(ierr);
       {
@@ -369,6 +368,10 @@ int main(int argc, char **argv)
       ierr = PetscSFDestroy(&sfXB);CHKERRQ(ierr);
       ierr = PetscSFDestroy(&sfBC);CHKERRQ(ierr);
     }
+    /* Load labels */
+    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+    ierr = DMPlexLabelsLoad(dm, viewer, sfXC);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     /* Load coordinates */
     ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
     ierr = DMPlexCoordinatesLoad(dm, viewer, sfXC);CHKERRQ(ierr);
