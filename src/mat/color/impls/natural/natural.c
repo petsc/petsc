@@ -65,6 +65,13 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscolo
   PetscFunctionReturn(0);
 }
 
+/*MC
+  MATCOLORINGNATURAL - implements a trivial coloring routine with one color per column
+
+  Level: beginner
+
+.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MatColoringType
+M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc)
 {
     PetscFunctionBegin;
