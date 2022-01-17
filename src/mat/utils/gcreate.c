@@ -574,13 +574,21 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt c
 
    Input Parameters:
 +  A - matrix being preallocated
-.  ncoo - number of entries in the locally owned part of the parallel matrix
+.  ncoo - number of entries
 .  coo_i - row indices
 -  coo_j - column indices
 
    Level: beginner
 
-   Notes: Entries can be repeated, see MatSetValuesCOO(). Currently optimized for cuSPARSE matrices only.
+   Notes: Entries can be repeated, see MatSetValuesCOO().
+
+   If the matrix type is not AIJKOKKOS, then the entries must be owned by the local part
+   of the matrix and no row or column indices are allowed to be negative.
+
+   If the matrix type is AIJKOKKOS (sequential or parallel), the above constraints do not apply.
+   More specifically, entries with negative row or column indices are allowed but will be ignored.
+   The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries are allowed
+   and will be properly added or inserted to the matrix.
 
 .seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation()
 @*/
@@ -588,6 +596,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
 {
   PetscErrorCode (*f)(Mat,PetscInt,const PetscInt[],const PetscInt[]) = NULL;
   PetscErrorCode ierr;
+  PetscBool      isAIJKokkos;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -596,7 +605,8 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
   if (ncoo) PetscValidIntPointer(coo_j,4);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG)) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)A,&isAIJKokkos,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,NULL);CHKERRQ(ierr);
+  if (PetscDefined(USE_DEBUG) && !isAIJKokkos) {
     PetscInt i;
     for (i = 0; i < ncoo; i++) {
       if (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %" PetscInt_FMT "! Must be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",coo_i[i],A->rmap->rstart,A->rmap->rend);
@@ -629,7 +639,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
    Notes: The values must follow the order of the indices prescribed with MatSetPreallocationCOO().
           When repeated entries are specified in the COO indices the coo_v values are first properly summed.
           The imode flag indicates if coo_v must be added to the current values of the matrix (ADD_VALUES) or overwritten (INSERT_VALUES).
-          Currently optimized for cuSPARSE matrices only.
+          Currently optimized for AIJCUSPARSE and AIJKOKKOS matrices only.
           Passing coo_v == NULL is equivalent to passing an array of zeros.
 
 .seealso: MatSetPreallocationCOO(), InsertMode, INSERT_VALUES, ADD_VALUES

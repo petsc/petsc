@@ -25,7 +25,7 @@ EXAMPLESC    = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                ex181.c ex182.c ex183.c ex300.c ex301.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c ex199.c ex200.c \
                ex202.c ex203.c ex205.c ex206.c ex207.c ex208.c ex209.c ex210.c ex211.c ex213.c ex214.c ex220.c ex221.c ex222.c ex225.c ex226.c ex227.c \
                ex228.c ex230.c ex231.cxx ex232.c ex233.c ex234.c ex237.c \
-               ex238.c ex239.c ex240.c ex241.c ex242.c ex243.c ex245.c ex247.c ex248.c ex249.c ex250.c ex251.c ex252.c
+               ex238.c ex239.c ex240.c ex241.c ex242.c ex243.c ex245.c ex247.c ex248.c ex249.c ex250.c ex251.c ex252.c ex253.c ex254.c
 
 EXAMPLESF    = ex16f90.F90 ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F90 ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F90 ex201f.F ex209f.F90  ex212f.F90 ex219f.F90
 
