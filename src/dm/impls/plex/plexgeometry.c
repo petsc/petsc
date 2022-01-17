@@ -1127,12 +1127,6 @@ PETSC_STATIC_INLINE void Volume_Triangle_Internal(PetscReal *vol, PetscReal coor
   (void)PetscLogFlops(5.0);
 }
 
-PETSC_STATIC_INLINE void Volume_Triangle_Origin_Internal(PetscReal *vol, PetscReal coords[])
-{
-  DMPlex_Det2D_Internal(vol, coords);
-  *vol *= 0.5;
-}
-
 PETSC_UNUSED
 PETSC_STATIC_INLINE void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal coords[])
 {
@@ -2013,25 +2007,27 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  {
+    PetscReal c[3] = {0., 0., 0.}, n[3] = {0., 0., 0.}, origin[3] = {0., 0., 0.}, norm;
 
-  if (cdim > 2) {
-    PetscReal c[3] = {0., 0., 0.}, n[3] = {0., 0., 0.}, norm;
-
+    for (d = 0; d < cdim; d++) origin[d] = PetscRealPart(coords[d]);
     for (p = 0; p < numCorners-2; ++p) {
-      const PetscReal x0 = PetscRealPart(coords[cdim*fv[p+1]+0] - coords[0]), x1 = PetscRealPart(coords[cdim*fv[p+2]+0] - coords[0]);
-      const PetscReal y0 = PetscRealPart(coords[cdim*fv[p+1]+1] - coords[1]), y1 = PetscRealPart(coords[cdim*fv[p+2]+1] - coords[1]);
-      const PetscReal z0 = PetscRealPart(coords[cdim*fv[p+1]+2] - coords[2]), z1 = PetscRealPart(coords[cdim*fv[p+2]+2] - coords[2]);
-      const PetscReal dx = y0*z1 - z0*y1;
-      const PetscReal dy = z0*x1 - x0*z1;
-      const PetscReal dz = x0*y1 - y0*x1;
-      PetscReal       a  = PetscSqrtReal(dx*dx + dy*dy + dz*dz);
+      PetscReal e0[3] = {0., 0., 0.}, e1[3] = {0., 0., 0.};
+      for (d = 0; d < cdim; d++) {
+        e0[d] = PetscRealPart(coords[cdim*fv[p+1]+d]) - origin[d];
+        e1[d] = PetscRealPart(coords[cdim*fv[p+2]+d]) - origin[d];
+      }
+      const PetscReal dx = e0[1] * e1[2] - e0[2] * e1[1];
+      const PetscReal dy = e0[2] * e1[0] - e0[0] * e1[2];
+      const PetscReal dz = e0[0] * e1[1] - e0[1] * e1[0];
+      const PetscReal a  = PetscSqrtReal(dx*dx + dy*dy + dz*dz);
 
       n[0] += dx;
       n[1] += dy;
       n[2] += dz;
-      c[0] += a * PetscRealPart(coords[0] + coords[cdim*fv[p+1]+0] + coords[cdim*fv[p+2]+0])/3.;
-      c[1] += a * PetscRealPart(coords[1] + coords[cdim*fv[p+1]+1] + coords[cdim*fv[p+2]+1])/3.;
-      c[2] += a * PetscRealPart(coords[2] + coords[cdim*fv[p+1]+2] + coords[cdim*fv[p+2]+2])/3.;
+      for (d = 0; d < cdim; d++) {
+        c[d] += a * PetscRealPart(origin[d] + coords[cdim*fv[p+1]+d] + coords[cdim*fv[p+2]+d]) / 3.;
+      }
     }
     norm = PetscSqrtReal(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
     n[0] /= norm;
@@ -2043,24 +2039,6 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
     if (vol) *vol = 0.5*norm;
     if (centroid) for (d = 0; d < cdim; ++d) centroid[d] = c[d];
     if (normal) for (d = 0; d < cdim; ++d) normal[d] = n[d];
-  } else {
-    PetscReal vsum = 0.0, csum[2] = {0.0, 0.0}, vtmp, ctmp[4] = {0., 0., 0., 0.};
-
-    for (p = 0; p < numCorners; ++p) {
-      const PetscInt pi  = p < 4 ? fv[p] : p;
-      const PetscInt pin = p < 3 ? fv[(p+1)%numCorners] : (p+1)%numCorners;
-      /* Need to do this copy to get types right */
-      for (d = 0; d < cdim; ++d) {
-        ctmp[d]      = PetscRealPart(coords[pi*cdim+d]);
-        ctmp[cdim+d] = PetscRealPart(coords[pin*cdim+d]);
-      }
-      Volume_Triangle_Origin_Internal(&vtmp, ctmp);
-      vsum += vtmp;
-      for (d = 0; d < cdim; ++d) csum[d] += (ctmp[d] + ctmp[cdim+d])*vtmp;
-    }
-    if (vol) *vol = PetscAbsReal(vsum);
-    if (centroid) for (d = 0; d < cdim; ++d) centroid[d] = csum[d] / ((cdim+1)*vsum);
-    if (normal) for (d = 0; d < cdim; ++d) normal[d] = 0.0;
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2073,7 +2051,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   PetscSection    coordSection;
   Vec             coordinates;
   PetscScalar    *coords = NULL;
-  PetscReal       vsum = 0.0, vtmp, coordsTmp[3*3];
+  PetscReal       vsum = 0.0, vtmp, coordsTmp[3*3], origin[3];
   const PetscInt *faces, *facesO;
   PetscBool       isHybrid = PETSC_FALSE;
   PetscInt        numFaces, f, coordSize, p, d;
@@ -2104,13 +2082,17 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
     DMPolytopeType ct;
 
     ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords);CHKERRQ(ierr);
+    // If using zero as the origin vertex for each tetrahedron, an element far from the origin will have positive and
+    // negative volumes that nearly cancel, thus incurring rounding error. Here we define origin[] as the first vertex
+    // so that all tetrahedra have positive volume.
+    if (f == 0) for (d = 0; d < dim; d++) origin[d] = PetscRealPart(coords[d]);
     ierr = DMPlexGetCellType(dm, faces[f], &ct);CHKERRQ(ierr);
     switch (ct) {
     case DM_POLYTOPE_TRIANGLE:
       for (d = 0; d < dim; ++d) {
-        coordsTmp[0*dim+d] = PetscRealPart(coords[0*dim+d]);
-        coordsTmp[1*dim+d] = PetscRealPart(coords[1*dim+d]);
-        coordsTmp[2*dim+d] = PetscRealPart(coords[2*dim+d]);
+        coordsTmp[0*dim+d] = PetscRealPart(coords[0*dim+d]) - origin[d];
+        coordsTmp[1*dim+d] = PetscRealPart(coords[1*dim+d]) - origin[d];
+        coordsTmp[2*dim+d] = PetscRealPart(coords[2*dim+d]) - origin[d];
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
       if (facesO[f] < 0 || flip) vtmp = -vtmp;
@@ -2131,9 +2113,9 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
       /* DO FOR PYRAMID */
       /* First tet */
       for (d = 0; d < dim; ++d) {
-        coordsTmp[0*dim+d] = PetscRealPart(coords[fv[0]*dim+d]);
-        coordsTmp[1*dim+d] = PetscRealPart(coords[fv[1]*dim+d]);
-        coordsTmp[2*dim+d] = PetscRealPart(coords[fv[3]*dim+d]);
+        coordsTmp[0*dim+d] = PetscRealPart(coords[fv[0]*dim+d]) - origin[d];
+        coordsTmp[1*dim+d] = PetscRealPart(coords[fv[1]*dim+d]) - origin[d];
+        coordsTmp[2*dim+d] = PetscRealPart(coords[fv[3]*dim+d]) - origin[d];
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
       if (facesO[f] < 0 || flip) vtmp = -vtmp;
@@ -2145,9 +2127,9 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
       }
       /* Second tet */
       for (d = 0; d < dim; ++d) {
-        coordsTmp[0*dim+d] = PetscRealPart(coords[fv[1]*dim+d]);
-        coordsTmp[1*dim+d] = PetscRealPart(coords[fv[2]*dim+d]);
-        coordsTmp[2*dim+d] = PetscRealPart(coords[fv[3]*dim+d]);
+        coordsTmp[0*dim+d] = PetscRealPart(coords[fv[1]*dim+d]) - origin[d];
+        coordsTmp[1*dim+d] = PetscRealPart(coords[fv[2]*dim+d]) - origin[d];
+        coordsTmp[2*dim+d] = PetscRealPart(coords[fv[3]*dim+d]) - origin[d];
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
       if (facesO[f] < 0 || flip) vtmp = -vtmp;
@@ -2166,7 +2148,8 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   }
   if (vol)     *vol = PetscAbsReal(vsum);
   if (normal)   for (d = 0; d < dim; ++d) normal[d]    = 0.0;
-  if (centroid) for (d = 0; d < dim; ++d) centroid[d] /= (vsum*4);
+  if (centroid) for (d = 0; d < dim; ++d) centroid[d] = centroid[d] / (vsum*4) + origin[d];
+;
   PetscFunctionReturn(0);
 }
 
