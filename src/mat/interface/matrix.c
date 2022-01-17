@@ -10282,11 +10282,14 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat,IS *is)
 . values - the block inverses in column major order (FORTRAN-like)
 
    Note:
-   This routine is not available from Fortran.
+     The size of the blocks is determined by the block size of the matrix.
+
+   Fortran Note:
+     This routine is not available from Fortran.
 
   Level: advanced
 
-.seealso: MatInvertBockDiagonalMat
+.seealso: MatInvertBockDiagonalMat()
 @*/
 PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 {
