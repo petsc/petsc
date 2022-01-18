@@ -204,6 +204,19 @@ int main(int argc,char **args)
     }
 #endif
 
+#if defined(PETSC_HAVE_MUMPS)
+    /* mumps interface allows repeated call of MatCholeskyFactorSymbolic(), while the succession calls do nothing */
+    if (ipack == 2) {
+      if (chol) {
+        ierr = MatCholeskyFactorSymbolic(F,A,perm,&info);CHKERRQ(ierr);
+        ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
+      } else {
+        ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
+        ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
+      }
+    }
+#endif
+
     /* Test MatMatSolve() */
     if (testMatMatSolve) {
       if (!nfact) {
@@ -348,6 +361,13 @@ int main(int argc,char **args)
       requires: mumps
       args: -mat_solver_type 2
       output_file: output/ex125_mumps_par.out
+
+   test:
+      suffix: mumps_5
+      nsize: 3
+      requires: mumps
+      args: -mat_solver_type 2 -cholesky
+      output_file: output/ex125_mumps_par_cholesky.out
 
    test:
       suffix: superlu_dist
