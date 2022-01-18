@@ -7,56 +7,73 @@ static PetscErrorCode TransposeAXPY(Mat C,PetscScalar alpha,Mat mat,PetscErrorCo
 {
   Mat            D,E,F,G;
   PetscErrorCode ierr;
+  MatType        mtype;
 
   PetscFunctionBegin;
+  ierr = MatGetType(mat,&mtype);CHKERRQ(ierr);
   if (f == MatCreateTranspose) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  (C^T)^T = (C^T)^T + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nMatAXPY:  (C^T)^T = (C^T)^T + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  (C^H)^H = (C^H)^H + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nMatAXPY:  (C^H)^H = (C^H)^H + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
   }
-  ierr  = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
-  ierr  = f(C,&D);CHKERRQ(ierr);
-  ierr  = f(D,&E);CHKERRQ(ierr);
-  ierr  = MatAXPY(E,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr  = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr  = MatDestroy(&E);CHKERRQ(ierr);
-  ierr  = MatDestroy(&D);CHKERRQ(ierr);
-  ierr  = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+  ierr = f(C,&D);CHKERRQ(ierr);
+  ierr = f(D,&E);CHKERRQ(ierr);
+  ierr = MatAXPY(E,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatConvert(E,mtype,MAT_INPLACE_MATRIX,&E);CHKERRQ(ierr);
+  ierr = MatView(E,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&E);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   if (f == MatCreateTranspose) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * (A^T)^T, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * (A^H)^H, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
   }
-  ierr  = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
-  /* MATTRANSPOSE should have a MatTranspose_Transpose or MatTranspose_HT implementation */
   if (f == MatCreateTranspose) {
     ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
   } else {
     ierr = MatHermitianTranspose(mat,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
   }
-  ierr  = f(D,&E);CHKERRQ(ierr);
-  ierr  = MatAXPY(C,alpha,E,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr  = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr  = MatDestroy(&E);CHKERRQ(ierr);
-  ierr  = MatDestroy(&D);CHKERRQ(ierr);
-  ierr  = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = f(D,&E);CHKERRQ(ierr);
+  ierr = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+  ierr = MatAXPY(C,alpha,E,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&E);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   if (f == MatCreateTranspose) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  (C^T)^T = (C^T)^T + alpha * (A^T)^T, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  (C^H)^H = (C^H)^H + alpha * (A^H)^H, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
   }
-  ierr  = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
-  ierr  = f(C,&D);CHKERRQ(ierr);
-  ierr  = f(D,&E);CHKERRQ(ierr);
-  ierr  = f(mat,&F);CHKERRQ(ierr);
-  ierr  = f(F,&G);CHKERRQ(ierr);
-  ierr  = MatAXPY(E,alpha,G,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr  = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr  = MatDestroy(&G);CHKERRQ(ierr);
-  ierr  = MatDestroy(&F);CHKERRQ(ierr);
-  ierr  = MatDestroy(&E);CHKERRQ(ierr);
-  ierr  = MatDestroy(&D);CHKERRQ(ierr);
-  ierr  = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+  ierr = f(C,&D);CHKERRQ(ierr);
+  ierr = f(D,&E);CHKERRQ(ierr);
+  ierr = f(mat,&F);CHKERRQ(ierr);
+  ierr = f(F,&G);CHKERRQ(ierr);
+  ierr = MatAXPY(E,alpha,G,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatConvert(E,mtype,MAT_INPLACE_MATRIX,&E);CHKERRQ(ierr);
+  ierr = MatView(E,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&G);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  ierr = MatDestroy(&E);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+
+  /* Call f on a matrix that does not implement the transposition */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  Now without the transposition operation\n");CHKERRQ(ierr);
+  ierr = MatConvert(mat,MATSHELL,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+  ierr = f(C,&D);CHKERRQ(ierr);
+  ierr = f(D,&E);CHKERRQ(ierr);
+  /* XXX cannot use MAT_INPLACE_MATRIX, it leaks mat */
+  ierr = MatConvert(E,mtype,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+  ierr = MatAXPY(F,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  ierr = MatDestroy(&E);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -89,7 +106,7 @@ int main(int argc,char **argv)
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
-      v    = 10.0*i+j;
+      v    = 10.0*i+j+1.0;
       ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -107,8 +124,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(NULL,NULL,"-in_place",&flg);CHKERRQ(ierr);
   if (!rect && flg) {
     ierr = MatTranspose(mat,MAT_REUSE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
-    tmat = mat; mat = 0;
-  } else {      /* out-of-place transpose */
+    tmat = mat;
+    mat  = NULL;
+  } else { /* out-of-place transpose */
     ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
   }
 
@@ -156,7 +174,7 @@ int main(int argc,char **argv)
     if (rstart % 2 != 0) rstart++;
     for (i=rstart; i<rend; i += 2) {
       for (j=0; j<n; j += 2) {
-        v    = 10.0*i+j;
+        v    = 10.0*i+j+1.0;
         ierr = MatSetValues(matB,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
@@ -307,7 +325,7 @@ int main(int argc,char **argv)
       nsize: 3
       args: -mat_type mpiaijkokkos
       output_file: output/ex2_23.out
-      requires: kokkos_kernels
+      requires: !sycl kokkos_kernels
       filter: grep -v type | grep -v "MPI processes"
 
    test:

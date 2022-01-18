@@ -509,7 +509,7 @@ static PetscErrorCode MatTranspose_SeqAIJKokkos(Mat A,MatReuse reuse,Mat *B)
     CHKERRCXX(atkok   = new Mat_SeqAIJKokkos(*csrmatT));
     ierr = MatCreateSeqAIJKokkosWithCSRMatrix(PetscObjectComm((PetscObject)A),atkok,&At);CHKERRQ(ierr);
     if (reuse == MAT_INITIAL_MATRIX) *B = At;
-    else {ierr = MatHeaderMerge(A,&At);CHKERRQ(ierr);} /* Replace A with At inplace */
+    else {ierr = MatHeaderReplace(A,&At);CHKERRQ(ierr);} /* Replace A with At inplace */
   } else { /* MAT_REUSE_MATRIX, just need to copy values to B on device */
     if ((*B)->assembled) {
       bkok = static_cast<Mat_SeqAIJKokkos*>((*B)->spptr);
@@ -1067,9 +1067,9 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
 
 PETSC_INTERN PetscErrorCode  MatSetSeqAIJKokkosWithCSRMatrix(Mat A,Mat_SeqAIJKokkos *akok)
 {
-  PetscErrorCode     ierr;
-  Mat_SeqAIJ         *aseq;
-  PetscInt           i,m,n;
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aseq;
+  PetscInt       i,m,n;
 
   PetscFunctionBegin;
   if (A->spptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A->spptr is supposed to be empty");
@@ -1116,7 +1116,7 @@ PETSC_INTERN PetscErrorCode  MatSetSeqAIJKokkosWithCSRMatrix(Mat A,Mat_SeqAIJKok
  */
 PETSC_INTERN PetscErrorCode  MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm comm,Mat_SeqAIJKokkos *akok,Mat *A)
 {
-  PetscErrorCode     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);

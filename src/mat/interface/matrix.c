@@ -4320,7 +4320,7 @@ PetscErrorCode MatCopy(Mat A,Mat B,MatStructure str)
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
-PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
+PetscErrorCode MatConvert(Mat mat,MatType newtype,MatReuse reuse,Mat *M)
 {
   PetscErrorCode ierr;
   PetscBool      sametype,issame,flg,issymmetric,ishermitian;
@@ -4432,7 +4432,6 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
 
     /* 4) See if a good general converter is known for the current matrix */
     if (mat->ops->convert) conv = mat->ops->convert;
-
     ierr = PetscInfo2(mat,"Check general convert (%s) -> %d\n",((PetscObject)mat)->type_name,!!conv);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
