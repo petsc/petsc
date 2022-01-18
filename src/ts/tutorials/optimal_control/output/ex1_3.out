@@ -4,9 +4,9 @@
   2 TAO,  Function value: 0.855085,  Residual: 0.0220737 
   3 TAO,  Function value: 0.852475,  Residual: 0.0287703 
   4 TAO,  Function value: 0.850011,  Residual: 0.00385325 
-  5 TAO,  Function value: 0.849937,  Residual: 0.00014656 
-  6 TAO,  Function value: 0.849937,  Residual: 3.75585e-07 
-  7 TAO,  Function value: 0.849937,  Residual: 1.55146e-12 
+  5 TAO,  Function value: 0.849937,  Residual: 0.000146559 
+  6 TAO,  Function value: 0.849937,  Residual: 3.75599e-07 
+  7 TAO,  Function value: 0.849937,  Residual: 1.60656e-12 
 Tao Object: 1 MPI processes
   type: bntr
     CG steps: 0
@@ -45,10 +45,10 @@ Tao Object: 1 MPI processes
   total KSP iterations: 45
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.55146e-12
+  Residual in Function/Gradient:=1.60656e-12
   Objective value=0.849937
   total number of iterations=7,                          (max: 50)
-  total number of function/gradient evaluations=21,      (max: 10000)
+  total number of function/gradient evaluations=21,      (max: -1)
   total number of Hessian evaluations=8
   Solution converged:    ||g(X)|| <= gatol
 Vec Object: 1 MPI processes

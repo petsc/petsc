@@ -40,10 +40,10 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
   ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);
   /* set initial penalty factor and inner solver tolerance */
   switch (auglag->type) {
-    case (TAO_ALMM_CLASSIC):
+    case TAO_ALMM_CLASSIC:
       auglag->mu = auglag->mu0;
       break;
-    case (TAO_ALMM_PHR):
+    case TAO_ALMM_PHR:
       auglag->cenorm = 0.0;
       if (tao->eq_constrained) {
         ierr = VecDot(auglag->Ce, auglag->Ce, &auglag->cenorm);CHKERRQ(ierr);
@@ -144,11 +144,11 @@ static PetscErrorCode TaoView_ALMM(Tao tao,PetscViewer viewer)
 
 static PetscErrorCode TaoSetUp_ALMM(Tao tao)
 {
-  TAO_ALMM             *auglag = (TAO_ALMM*)tao->data;
-  VecType              vec_type;
-  Vec                  SL, SU;
-  PetscBool            is_cg = PETSC_FALSE, is_lmvm = PETSC_FALSE;
-  PetscErrorCode       ierr;
+  TAO_ALMM       *auglag = (TAO_ALMM*)tao->data;
+  VecType        vec_type;
+  Vec            SL, SU;
+  PetscBool      is_cg = PETSC_FALSE, is_lmvm = PETSC_FALSE;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (tao->ineq_doublesided) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TAOALMM does not support double-sided inequality constraint definition. Please restructure your inequality constrainst to fit the form c(x) >= 0.");
@@ -250,10 +250,10 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
   }
   /* set the Lagrangian formulation type for the subsolver */
   switch (auglag->type) {
-    case (TAO_ALMM_CLASSIC):
+    case TAO_ALMM_CLASSIC:
       auglag->sub_obj = TaoALMMComputeAugLagAndGradient_Private;
       break;
-    case (TAO_ALMM_PHR):
+    case TAO_ALMM_PHR:
       auglag->sub_obj = TaoALMMComputePHRLagAndGradient_Private;
       break;
     default:
@@ -261,6 +261,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
   }
   /* set up the subsolver */
   ierr = TaoSetInitialVector(auglag->subsolver, auglag->P);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveRoutine(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag);CHKERRQ(ierr);
   ierr = TaoSetObjectiveAndGradientRoutine(auglag->subsolver, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag);CHKERRQ(ierr);
   if (tao->bounded) {
     /* make sure that the subsolver is a bound-constrained method */
@@ -357,9 +358,8 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
 
 static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
-  TAO_ALMM     *auglag = (TAO_ALMM*)tao->data;
+  TAO_ALMM       *auglag = (TAO_ALMM*)tao->data;
   PetscInt       i;
-  PetscBool      compatible;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -375,9 +375,9 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsReal("-tao_almm_yi_max","maximum safeguard for inequality multipliers updates","",auglag->yi_max,&auglag->yi_max,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-tao_almm_type","augmented Lagrangian formulation type for the subproblem","TaoALMMType",TaoALMMTypes,(PetscEnum)auglag->type,(PetscEnum*)&auglag->type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = TaoSetOptionsPrefix(auglag->subsolver,((PetscObject)tao)->prefix);CHKERRQ(ierr);
+  ierr = TaoAppendOptionsPrefix(auglag->subsolver,"tao_almm_subsolver_");CHKERRQ(ierr);
   ierr = TaoSetFromOptions(auglag->subsolver);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)(auglag->subsolver), &compatible, TAOCG, TAOLMVM, TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, "");CHKERRQ(ierr);
-  if (!compatible) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method (TAOCG, TABNCG, TAOLMVM, TAOBQN-family");
   for (i=0; i<tao->numbermonitors; i++) {
     ierr = PetscObjectReference((PetscObject)tao->monitorcontext[i]);CHKERRQ(ierr);
     ierr = TaoSetMonitor(auglag->subsolver, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]);CHKERRQ(ierr);
@@ -394,16 +394,16 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
   TaoALMM - Augmented Lagrangian multiplier method for solving nonlinear optimization problems with general constraints.
 
   Options Database Keys:
-+ -tao_almm_mu_init <real>              - initial penalty parameter (default: 10.)
-. -tao_almm_mu_factor <real>            - increase factor for the penalty parameter (default: 100.)
-. -tao_almm_mu_max <real>               - maximum safeguard for penalty parameter updates (default: 1.e20)
-. -tao_almm_mu_power_good <real>        - exponential for penalty parameter when multiplier update is accepted (default: 0.9)
-. -tao_almm_mu_power_bad <real>         - exponential for penalty parameter when multiplier update is rejected (default: 0.1)
-. -tao_almm_ye_min <real>               - minimum safeguard for equality multiplier updates (default: -1.e20)
-. -tao_almm_ye_max <real>               - maximum safeguard for equality multiplier updates (default: 1.e20)
-. -tao_almm_yi_min <real>               - minimum safeguard for inequality multiplier updates (default: -1.e20)
-. -tao_almm_yi_max <real>               - maximum safeguard for inequality multiplier updates (default: 1.e20)
-- -tao_almm_type <classic,phr>          - change formulation of the augmented Lagrangian merit function for the subproblem (default: classic)
++ -tao_almm_mu_init <real>       - initial penalty parameter (default: 10.)
+. -tao_almm_mu_factor <real>     - increase factor for the penalty parameter (default: 100.)
+. -tao_almm_mu_max <real>        - maximum safeguard for penalty parameter updates (default: 1.e20)
+. -tao_almm_mu_power_good <real> - exponential for penalty parameter when multiplier update is accepted (default: 0.9)
+. -tao_almm_mu_power_bad <real>  - exponential for penalty parameter when multiplier update is rejected (default: 0.1)
+. -tao_almm_ye_min <real>        - minimum safeguard for equality multiplier updates (default: -1.e20)
+. -tao_almm_ye_max <real>        - maximum safeguard for equality multiplier updates (default: 1.e20)
+. -tao_almm_yi_min <real>        - minimum safeguard for inequality multiplier updates (default: -1.e20)
+. -tao_almm_yi_max <real>        - maximum safeguard for inequality multiplier updates (default: 1.e20)
+- -tao_almm_type <classic,phr>   - change formulation of the augmented Lagrangian merit function for the subproblem (default: classic)
 
   Level: beginner
 
@@ -445,8 +445,8 @@ static PetscErrorCode TaoSetFromOptions_ALMM(PetscOptionItems *PetscOptionsObjec
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
 {
-  TAO_ALMM         *auglag;
-  PetscErrorCode   ierr;
+  TAO_ALMM       *auglag;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao, &auglag);CHKERRQ(ierr);
@@ -490,7 +490,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
   ierr = TaoSetMaximumIterations(auglag->subsolver, 1000);CHKERRQ(ierr);
   ierr = TaoSetMaximumFunctionEvaluations(auglag->subsolver, 10000);CHKERRQ(ierr);
   ierr = TaoSetFunctionLowerBound(auglag->subsolver, PETSC_NINFINITY);CHKERRQ(ierr);
-  ierr = TaoSetOptionsPrefix(auglag->subsolver,"tao_almm_subsolver_");CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)auglag->subsolver,(PetscObject)tao,1);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetType_C", TaoALMMGetType_Private);CHKERRQ(ierr);
@@ -612,11 +611,11 @@ static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao, Vec P)
     ierr = TaoComputeInequalityConstraints(tao, auglag->Px, auglag->Ci);CHKERRQ(ierr);
     ierr = TaoComputeJacobianInequality(tao, auglag->Px, auglag->Ai, auglag->Ai);CHKERRQ(ierr);
     switch (auglag->type) {
-      case (TAO_ALMM_CLASSIC):
+      case TAO_ALMM_CLASSIC:
         /* classic formulation converts inequality to equality constraints via slack variables */
         ierr = VecAXPY(auglag->Ci, -1.0, auglag->Ps);CHKERRQ(ierr);
         break;
-      case (TAO_ALMM_PHR):
+      case TAO_ALMM_PHR:
         /* PHR is based on Ci <= 0 while TAO defines Ci >= 0 so we hit it with a negative sign */
         ierr = VecScale(auglag->Ci, -1.0);CHKERRQ(ierr);
         ierr = MatScale(auglag->Ai, -1.0);CHKERRQ(ierr);
@@ -716,9 +715,21 @@ static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode TaoALMMSubsolverObjective_Private(Tao tao, Vec P, PetscReal *Lval, void *ctx)
+{
+  TAO_ALMM       *auglag = (TAO_ALMM*)ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCopy(P, auglag->P);CHKERRQ(ierr);
+  ierr = (*auglag->sub_obj)(auglag->parent);CHKERRQ(ierr);
+  *Lval = auglag->Lval;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode TaoALMMSubsolverObjectiveAndGradient_Private(Tao tao, Vec P, PetscReal *Lval, Vec G, void *ctx)
 {
-  TAO_ALMM     *auglag = (TAO_ALMM*)ctx;
+  TAO_ALMM       *auglag = (TAO_ALMM*)ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

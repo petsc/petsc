@@ -131,10 +131,9 @@ static PetscErrorCode TaoSetFromOptions_BQNK(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   ierr = TaoSetFromOptions_BNK(PetscOptionsObject,tao);CHKERRQ(ierr);
-  ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   if (bnk->init_type == BNK_INIT_INTERPOLATION) bnk->init_type = BNK_INIT_DIRECTION;
+  ierr = MatSetOptionsPrefix(bqnk->B, ((PetscObject)tao)->prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(bqnk->B, "tao_bqnk_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(bqnk->B);CHKERRQ(ierr);
   ierr = MatGetOption(bqnk->B, MAT_SPD, &bqnk->is_spd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -181,7 +180,6 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
 
   PetscFunctionBegin;
   ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_bqnk_");CHKERRQ(ierr);
   tao->ops->solve = TaoSolve_BQNK;
   tao->ops->setfromoptions = TaoSetFromOptions_BQNK;
   tao->ops->destroy = TaoDestroy_BQNK;
@@ -199,7 +197,6 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
 
   ierr = MatCreate(PetscObjectComm((PetscObject)tao), &bqnk->B);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)bqnk->B, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(bqnk->B, "tao_bqnk_");CHKERRQ(ierr);
   ierr = MatSetType(bqnk->B, MATLMVMSR1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

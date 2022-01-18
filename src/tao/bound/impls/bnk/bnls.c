@@ -94,7 +94,6 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
-
   PetscReal                    steplen = 1.0, resnorm;
   PetscBool                    cgTerminate, needH = PETSC_TRUE, stepAccepted, shift = PETSC_TRUE;
   PetscInt                     stepType;

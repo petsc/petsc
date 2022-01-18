@@ -232,12 +232,15 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoSetUp_BNTL(Tao tao)
 {
-  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
+  KSP               ksp;
+  PetscVoidFunction valid;
 
   PetscFunctionBegin;
   ierr = TaoSetUp_BNK(tao);CHKERRQ(ierr);
-  if (!bnk->is_nash && !bnk->is_stcg && !bnk->is_gltr) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Must use a trust-region CG method for KSP (KSPNASH, KSPSTCG, KSPGLTR)");
+  ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetRadius_C",&valid);CHKERRQ(ierr);
+  if (!valid) SETERRQ1(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Not for KSP type %s. Must use a trust-region CG method for KSP (e.g. KSPNASH, KSPSTCG, KSPGLTR)",((PetscObject)ksp)->type_name);
   PetscFunctionReturn(0);
 }
 
