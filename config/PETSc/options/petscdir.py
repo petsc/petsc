@@ -7,7 +7,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.isPetsc      = 1
     return
 
   def __str1__(self):
@@ -24,23 +23,28 @@ class Configure(config.base.Configure):
     '''Checks PETSC_DIR and sets if not set'''
     if 'PETSC_DIR' in self.framework.argDB:
       self.dir = os.path.normpath(self.framework.argDB['PETSC_DIR'])
-      if self.dir == 'pwd':
-        raise RuntimeError('You have set -PETSC_DIR=pwd, you need to use back quotes around the pwd\n  like -PETSC_DIR=`pwd`')
-      if not os.path.isdir(self.dir):
-        raise RuntimeError('The value you set with -PETSC_DIR='+self.dir+' is not a directory')
+      msg1 = 'The configure option'
+      msg2 = ''
     elif 'PETSC_DIR' in os.environ:
       self.dir = os.path.normpath(os.environ['PETSC_DIR'])
-      if self.dir == 'pwd':
-        raise RuntimeError('''
-The environmental variable PETSC_DIR is set incorrectly. Please use the following: [notice backquotes]
-  For sh/bash  : PETSC_DIR=`pwd`; export PETSC_DIR
-  for csh/tcsh : setenv PETSC_DIR `pwd`''')
-      elif not os.path.isdir(self.dir):
-        raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' is not a directory')
+      msg1 = 'The environmental variable'
+      msg2 = 'export'
     else:
       self.dir = os.getcwd()
-    if self.isPetsc and not os.path.realpath(self.dir) == os.path.realpath(os.getcwd()):
-      raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' MUST be the current directory '+os.getcwd())
+      msg1 = ''
+      msg2 = ''
+
+    if self.dir == 'pwd':
+      raise RuntimeError('{0} PETSC_DIR=pwd is incorrect. You need to use back quotes around the pwd - i.e: {1} PETSC_DIR=`pwd`'.format(msg1, msg2))
+    elif self.dir.find(' ') > -1:
+      raise RuntimeError('{0} PETSC_DIR="{1}" has spaces in it; this is not allowed. Change the directory with PETSc to not have spaces in it'.format(msg1, self.dir))
+    elif not os.path.isabs(self.dir):
+      raise RuntimeError('{0} PETSC_DIR={1} is a relative path. Use absolute path - i.e: {2} PETSC_DIR={3}'.format(msg1, self.dir, msg2, os.path.abspath(self.dir)))
+    elif not os.path.isdir(self.dir):
+      raise RuntimeError('{0} PETSC_DIR={1} is not a directory'.format(msg1, self.dir))
+    elif os.path.realpath(self.dir) != os.path.realpath(os.getcwd()):
+      raise RuntimeError('{0} PETSC_DIR={1} MUST be the current directory {2}'.format(msg1, self.dir, os.getcwd()))
+
     self.version  = 'Unknown'
     versionHeader = os.path.join(self.dir, 'include', 'petscversion.h')
     versionInfo = []

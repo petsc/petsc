@@ -381,21 +381,15 @@ def print_final_timestamp(framework):
   return
 
 def petsc_configure(configure_options):
-  if 'PETSC_DIR' in os.environ:
-    petscdir = os.environ['PETSC_DIR']
-    if petscdir.find(' ') > -1:
-      raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
-    if not os.path.isabs(petscdir):
-      raise RuntimeError('PETSC_DIR ("'+petscdir+'") is set as a relative path. It must be set as an absolute path.')
-
-    try:
-      sys.path.append(os.path.join(petscdir,'lib','petsc','bin'))
-      import petscnagupgrade
-      file     = os.path.join(petscdir,'.nagged')
-      if not petscnagupgrade.naggedtoday(file):
-        petscnagupgrade.currentversion(petscdir)
-    except:
-      pass
+  petscdir = os.getcwd()
+  try:
+    sys.path.append(os.path.join(petscdir,'lib','petsc','bin'))
+    import petscnagupgrade
+    file     = os.path.join(petscdir,'.nagged')
+    if not petscnagupgrade.naggedtoday(file):
+      petscnagupgrade.currentversion(petscdir)
+  except:
+    pass
   banner_line = banner_length*'='
   print(banner_line)
   print('Configuring PETSc to compile on your system'.center(banner_length))
