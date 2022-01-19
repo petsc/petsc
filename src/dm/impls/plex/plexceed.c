@@ -38,8 +38,8 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   IS           iter_is;
 
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (domain_label) {
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMGetFirstLabelEntry_Internal(dm, dm, domain_label, 1, &label_value, dim, NULL, &ds);CHKERRQ(ierr);
   }
 
