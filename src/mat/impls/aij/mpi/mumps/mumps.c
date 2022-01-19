@@ -1703,7 +1703,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   if (!mumps->myid && mumps->id.ICNTL(16) > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  mumps->id.ICNTL(16):=%d",mumps->id.INFOG(16));
 
   F->assembled    = PETSC_TRUE;
-  mumps->matstruc = SAME_NONZERO_PATTERN;
+
   if (F->schur) { /* reset Schur status to unfactored */
 #if defined(PETSC_HAVE_CUDA)
     F->schur->offloadmask = PETSC_OFFLOAD_CPU;
@@ -1954,7 +1954,10 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   const PetscInt M = A->rmap->N;
 
   PetscFunctionBegin;
-  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
+  if (mumps->matstruc == SAME_NONZERO_PATTERN) {
+    /* F is assembled by a previous call of MatLUFactorSymbolic_AIJMUMPS() */
+    PetscFunctionReturn(0);
+  }
 
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
@@ -2007,6 +2010,8 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   F->ops->solvetranspose  = MatSolveTranspose_MUMPS;
   F->ops->matsolve        = MatMatSolve_MUMPS;
   F->ops->mattransposesolve = MatMatTransposeSolve_MUMPS;
+
+  mumps->matstruc = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -2019,7 +2024,10 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
   const PetscInt M = A->rmap->N;
 
   PetscFunctionBegin;
-  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
+  if (mumps->matstruc == SAME_NONZERO_PATTERN) {
+    /* F is assembled by a previous call of MatLUFactorSymbolic_AIJMUMPS() */
+    PetscFunctionReturn(0);
+  }
 
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
@@ -2062,6 +2070,8 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
   F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve           = MatSolve_MUMPS;
   F->ops->solvetranspose  = MatSolveTranspose_MUMPS;
+
+  mumps->matstruc = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -2074,7 +2084,10 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   const PetscInt M = A->rmap->N;
 
   PetscFunctionBegin;
-  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
+  if (mumps->matstruc == SAME_NONZERO_PATTERN) {
+    /* F is assembled by a previous call of MatLUFactorSymbolic_AIJMUMPS() */
+    PetscFunctionReturn(0);
+  }
 
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
@@ -2124,6 +2137,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
 #else
   F->ops->getinertia = MatGetInertia_SBAIJMUMPS;
 #endif
+
+  mumps->matstruc = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -3072,6 +3087,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
 
   *F = B;
+  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -3142,6 +3158,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
 
   *F = B;
+  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -3202,6 +3219,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
 
   *F = B;
+  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -3262,6 +3280,7 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
 
   *F = B;
+  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
