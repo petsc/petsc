@@ -429,7 +429,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   if (sp->has_cnst) {
     ierr = VecDuplicate(l,&r);CHKERRQ(ierr);
     ierr = VecGetSize(l,&N);CHKERRQ(ierr);
-    sum  = 1.0/N;
+    sum  = 1.0/PetscSqrtReal(N);
     ierr = VecSet(l,sum);CHKERRQ(ierr);
     ierr = MatMult(mat,l,r);CHKERRQ(ierr);
     ierr = VecNorm(r,NORM_2,&nrm);CHKERRQ(ierr);

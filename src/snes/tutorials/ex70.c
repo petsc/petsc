@@ -1,56 +1,52 @@
 static char help[] = "Poiseuille flow problem. Viscous, laminar flow in a 2D channel with parabolic velocity\n\
                       profile and linear pressure drop, exact solution of the 2D Stokes\n";
 
-/*---------------------------------------------------------------------------- */
-/* M A R I T I M E  R E S E A R C H  I N S T I T U T E  N E T H E R L A N D S  */
-/*---------------------------------------------------------------------------- */
-/* author : Christiaan M. Klaij                                                */
-/*---------------------------------------------------------------------------- */
-/*                                                                             */
-/* Poiseuille flow problem.                                                    */
-/*                                                                             */
-/* Viscous, laminar flow in a 2D channel with parabolic velocity               */
-/* profile and linear pressure drop, exact solution of the 2D Stokes           */
-/* equations.                                                                  */
-/*                                                                             */
-/* Discretized with the cell-centered finite-volume method on a                */
-/* Cartesian grid with co-located variables. Variables ordered as              */
-/* [u1...uN v1...vN p1...pN]^T. Matrix [A00 A01; A10, A11] solved with         */
-/* PCFIELDSPLIT. Lower factorization is used to mimic the Semi-Implicit        */
-/* Method for Pressure Linked Equations (SIMPLE) used as preconditioner        */
-/* instead of solver.                                                          */
-/*                                                                             */
-/* Disclaimer: does not contain the pressure-weighed interpolation             */
-/* method needed to suppress spurious pressure modes in real-life              */
-/* problems.                                                                   */
-/*                                                                             */
-/* Usage:                                                                      */
-/*                                                                             */
-/* mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_1_pc_type none */
-/*                                                                             */
-/*   Runs with PCFIELDSPLIT on 32x48 grid, no PC for the Schur                 */
-/*   complement because A11 is zero. FGMRES is needed because                  */
-/*   PCFIELDSPLIT is a variable preconditioner.                                */
-/*                                                                             */
-/* mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_pc */
-/*                                                                             */
-/*   Same as above but with user defined PC for the true Schur                 */
-/*   complement. PC based on the SIMPLE-type approximation (inverse of         */
-/*   A00 approximated by inverse of its diagonal).                             */
-/*                                                                             */
-/* mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_ksp */
-/*                                                                             */
-/*   Replace the true Schur complement with a user defined Schur               */
-/*   complement based on the SIMPLE-type approximation. Same matrix is         */
-/*   used as PC.                                                               */
-/*                                                                             */
-/* mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_type bjacobi -fieldsplit_1_pc_type jacobi -fieldsplit_1_inner_ksp_type preonly -fieldsplit_1_inner_pc_type jacobi -fieldsplit_1_upper_ksp_type preonly -fieldsplit_1_upper_pc_type jacobi */
-/*                                                                             */
-/*   Out-of-the-box SIMPLE-type preconditioning. The major advantage           */
-/*   is that the user neither needs to provide the approximation of            */
-/*   the Schur complement, nor the corresponding preconditioner.               */
-/*                                                                             */
-/*---------------------------------------------------------------------------- */
+/*
+     M A R I T I M E  R E S E A R C H  I N S T I T U T E  N E T H E R L A N D S
+   author : Christiaan M. Klaij
+
+   Poiseuille flow problem.
+
+   Viscous, laminar flow in a 2D channel with parabolic velocity
+   profile and linear pressure drop, exact solution of the 2D Stokes
+   equations.
+
+   Discretized with the cell-centered finite-volume method on a
+   Cartesian grid with co-located variables. Variables ordered as
+   [u1...uN v1...vN p1...pN]^T. Matrix [A00 A01; A10, A11] solved with
+   PCFIELDSPLIT. Lower factorization is used to mimic the Semi-Implicit
+   Method for Pressure Linked Equations (SIMPLE) used as preconditioner
+   instead of solver.
+
+   Disclaimer: does not contain the pressure-weighed interpolation
+   method needed to suppress spurious pressure modes in real-life
+   problems.
+
+   Usage:
+     mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_1_pc_type none
+
+     Runs with PCFIELDSPLIT on 32x48 grid, no PC for the Schur
+     complement because A11 is zero. FGMRES is needed because
+     PCFIELDSPLIT is a variable preconditioner.
+
+     mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_pc
+
+     Same as above but with user defined PC for the true Schur
+     complement. PC based on the SIMPLE-type approximation (inverse of
+     A00 approximated by inverse of its diagonal).
+
+     mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_ksp
+
+     Replace the true Schur complement with a user defined Schur
+     complement based on the SIMPLE-type approximation. Same matrix is
+     used as PC.
+
+     mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_type bjacobi -fieldsplit_1_pc_type jacobi -fieldsplit_1_inner_ksp_type preonly -fieldsplit_1_inner_pc_type jacobi -fieldsplit_1_upper_ksp_type preonly -fieldsplit_1_upper_pc_type jacobi
+
+     Out-of-the-box SIMPLE-type preconditioning. The major advantage
+     is that the user neither needs to provide the approximation of
+     the Schur complement, nor the corresponding preconditioner.
+*/
 
 #include <petscksp.h>
 
@@ -76,7 +72,7 @@ PetscErrorCode StokesStencilLaplacian(Stokes*, PetscInt, PetscInt, PetscInt*, Pe
 PetscErrorCode StokesStencilGradientX(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Gradient operator (x-component) */
 PetscErrorCode StokesStencilGradientY(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Gradient operator (y-component) */
 
-PetscErrorCode StokesRhs(Stokes*);                                               /* rhs vector */
+PetscErrorCode StokesRhs(Stokes*);                                         /* rhs vector */
 PetscErrorCode StokesRhsMomX(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of velocity (x-component) */
 PetscErrorCode StokesRhsMomY(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of velocity (y-component) */
 PetscErrorCode StokesRhsMass(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of pressure */
@@ -131,7 +127,6 @@ PetscErrorCode StokesWriteSolution(Stokes *s)
   PetscFunctionBeginUser;
   /* write data (*warning* only works sequential) */
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRMPI(ierr);
-  /*ierr = PetscPrintf(PETSC_COMM_WORLD," number of processors = %D\n",size);CHKERRQ(ierr);*/
   if (size == 1) {
     PetscViewer viewer;
     ierr = VecGetArrayRead(s->x, &array);CHKERRQ(ierr);
@@ -168,18 +163,14 @@ PetscErrorCode StokesSetupVectors(Stokes *s)
   ierr = VecCreate(PETSC_COMM_WORLD, &s->x);CHKERRQ(ierr);
   ierr = VecSetSizes(s->x, PETSC_DECIDE, 3*s->nx*s->ny);CHKERRQ(ierr);
   ierr = VecSetType(s->x, VECMPI);CHKERRQ(ierr);
-  /*  ierr = VecSetRandom(s->x, NULL);CHKERRQ(ierr); */
-  /*  ierr = VecView(s->x, (PetscViewer) PETSC_VIEWER_DEFAULT);CHKERRQ(ierr); */
 
   /* exact solution y */
   ierr = VecDuplicate(s->x, &s->y);CHKERRQ(ierr);
   ierr = StokesExactSolution(s);CHKERRQ(ierr);
-  /*  ierr = VecView(s->y, (PetscViewer) PETSC_VIEWER_DEFAULT);CHKERRQ(ierr); */
 
   /* rhs vector b */
   ierr = VecDuplicate(s->x, &s->b);CHKERRQ(ierr);
   ierr = StokesRhs(s);CHKERRQ(ierr);
-  /*ierr = VecView(s->b, (PetscViewer) PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
@@ -367,7 +358,7 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  /* Schur complement approximation: myS = A11 - A10 diag(A00)^(-1) A01 */
+  /* Schur complement approximation: myS = A11 - A10 inv(DIAGFORM(A00)) A01 */
   /* note: A11 is zero */
   /* note: in real life this matrix would be build directly, */
   /* i.e. without MatMatMult */
@@ -379,7 +370,7 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s)
   ierr = MatGetDiagonal(s->subA[0],diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
 
-  /* compute: - A10 diag(A00)^(-1) A01 */
+  /* compute: - A10 inv(DIAGFORM(A00)) A01 */
   ierr = MatDiagonalScale(s->subA[1],diag,NULL);CHKERRQ(ierr); /* (*warning* overwrites subA[1]) */
   ierr = MatMatMult(s->subA[2],s->subA[1],MAT_INITIAL_MATRIX,PETSC_DEFAULT,&s->myS);CHKERRQ(ierr);
   ierr = MatScale(s->myS,-1.0);CHKERRQ(ierr);
@@ -614,7 +605,6 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
   /* residual Ax-b (*warning* overwrites b) */
   ierr = VecScale(s->b, -1.0);CHKERRQ(ierr);
   ierr = MatMultAdd(s->A, s->x, s->b, s->b);CHKERRQ(ierr);
-  /*  ierr = VecView(s->b, (PetscViewer)PETSC_VIEWER_DEFAULT);CHKERRQ(ierr); */
 
   /* residual velocity */
   ierr = VecGetSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
@@ -644,7 +634,6 @@ PetscErrorCode StokesCalcError(Stokes *s)
   PetscFunctionBeginUser;
   /* error y-x */
   ierr = VecAXPY(s->y, -1.0, s->x);CHKERRQ(ierr);
-  /* ierr = VecView(s->y, (PetscViewer)PETSC_VIEWER_DEFAULT);CHKERRQ(ierr); */
 
   /* error in velocity */
   ierr = VecGetSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);

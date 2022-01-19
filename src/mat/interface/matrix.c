@@ -1919,7 +1919,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
 
    Level: advanced
 
-.seealso: MatGetRow(), MatCreateSubMatrices(), MatSetValues(), MatGetOwnershipRange(), MatGetValuesLocal()
+.seealso: MatGetRow(), MatCreateSubMatrices(), MatSetValues(), MatGetOwnershipRange(), MatGetValuesLocal(), MatGetValue()
 @*/
 PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
@@ -10313,11 +10313,14 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat,IS *is)
 . values - the block inverses in column major order (FORTRAN-like)
 
    Note:
-   This routine is not available from Fortran.
+     The size of the blocks is determined by the block size of the matrix.
+
+   Fortran Note:
+     This routine is not available from Fortran.
 
   Level: advanced
 
-.seealso: MatInvertBockDiagonalMat
+.seealso: MatInvertBockDiagonalMat()
 @*/
 PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 {
