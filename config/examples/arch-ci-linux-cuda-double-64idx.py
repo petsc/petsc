@@ -12,6 +12,7 @@ if __name__ == '__main__':
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-make-test-np=2',
     '--download-openmpi=1',
+    '--download-hypre=1',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
