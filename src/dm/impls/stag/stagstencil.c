@@ -79,7 +79,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt nStencil,DMStagStencil*
         for (p=0; p<pmax; ++p) {
           ss[p].i = i; ss[p].j = j; ss[p].k = k;
         }
-        ierr = DMStagStencilToIndexLocal(dm,pmax,ss,idxLocal);CHKERRQ(ierr);
+        ierr = DMStagStencilToIndexLocal(dm,dim,pmax,ss,idxLocal);CHKERRQ(ierr);
         for (p=0; p<pmax; ++p) {
           const PetscInt gidx = ltogidx[idxLocal[p]];
           if (gidx >= 0) {
@@ -312,16 +312,14 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMSta
 PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMStagStencil *posRow,PetscInt nCol,const DMStagStencil *posCol,const PetscScalar *val,InsertMode insertMode)
 {
   PetscErrorCode ierr;
-  PetscInt       dim;
   PetscInt       *ir,*ic;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = PetscMalloc2(nRow,&ir,nCol,&ic);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,dim,nRow,posRow,ir);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,dim,nCol,posCol,ic);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dm->dim,nRow,posRow,ir);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dm->dim,nCol,posCol,ic);CHKERRQ(ierr);
   ierr = MatSetValuesLocal(mat,nRow,ir,nCol,ic,val,insertMode);CHKERRQ(ierr);
   ierr = PetscFree2(ir,ic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -419,18 +417,17 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagS
 {
   PetscErrorCode    ierr;
   DM_Stag * const   stag = (DM_Stag*)dm->data;
-  PetscInt          nLocal,dim,idx;
+  PetscInt          nLocal,idx;
   PetscInt          *ix;
   PetscScalar const *arr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
   if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector should be a local vector. Local size %d does not match expected %d",nLocal,stag->entriesGhost);
   ierr = PetscMalloc1(n,&ix);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,dim,n,pos,ix);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dm->dim,n,pos,ix);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vec,&arr);CHKERRQ(ierr);
   for (idx=0; idx<n; ++idx) val[idx] = arr[ix[idx]];
   ierr = VecRestoreArrayRead(vec,&arr);CHKERRQ(ierr);
@@ -465,17 +462,16 @@ PetscErrorCode DMStagVecSetValuesStencil(DM dm,Vec vec,PetscInt n,const DMStagSt
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
-  PetscInt        dim,nLocal;
+  PetscInt        nLocal;
   PetscInt        *ix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
   if (nLocal != stag->entries) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Provided vec has a different number of local entries (%D) than expected (%D). It should be a global vector",nLocal,stag->entries);
   ierr = PetscMalloc1(n,&ix);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,dim,n,pos,ix);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dm->dim,n,pos,ix);CHKERRQ(ierr);
   ierr = VecSetValuesLocal(vec,n,ix,val,insertMode);CHKERRQ(ierr);
   ierr = PetscFree(ix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
