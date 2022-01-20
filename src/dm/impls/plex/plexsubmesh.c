@@ -3040,6 +3040,59 @@ PETSC_STATIC_INLINE PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt
   return subPoint < 0 ? subPoint : firstSubPoint+subPoint;
 }
 
+static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPoints[], const PetscInt *subpoints[], const PetscInt firstSubPoint[], DM subdm)
+{
+  PetscInt       Nl, l, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetNumLabels(dm, &Nl);CHKERRQ(ierr);
+  for (l = 0; l < Nl; ++l) {
+    DMLabel         label, newlabel;
+    const char     *lname;
+    PetscBool       isDepth, isDim, isCelltype;
+    IS              valueIS;
+    const PetscInt *values;
+    PetscInt        Nv, v;
+
+    ierr = DMGetLabelName(dm, l, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
+    ierr = PetscStrcmp(lname, "dim", &isDim);CHKERRQ(ierr);
+    ierr = PetscStrcmp(lname, "celltype", &isCelltype);CHKERRQ(ierr);
+    if (isDepth || isDim || isCelltype) continue;
+    ierr = DMCreateLabel(subdm, lname);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
+    ierr = DMGetLabel(subdm, lname, &newlabel);CHKERRQ(ierr);
+    ierr = DMLabelGetDefaultValue(label, &v);CHKERRQ(ierr);
+    ierr = DMLabelSetDefaultValue(newlabel, v);CHKERRQ(ierr);
+    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(valueIS, &Nv);CHKERRQ(ierr);
+    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+    for (v = 0; v < Nv; ++v) {
+      IS              pointIS;
+      const PetscInt *points;
+      PetscInt        Np, p;
+
+      ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pointIS, &Np);CHKERRQ(ierr);
+      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+      for (p = 0; p < Np; ++p) {
+        const PetscInt point = points[p];
+        PetscInt       subp;
+
+        ierr = DMPlexGetPointDepth(dm, point, &d);CHKERRQ(ierr);
+        subp = DMPlexFilterPoint_Internal(point, firstSubPoint[d], numSubPoints[d], subpoints[d]);
+        if (subp >= 0) {ierr = DMLabelSetValue(newlabel, subp, values[v]);CHKERRQ(ierr);}
+      }
+      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool markedFaces, PetscBool isCohesive, PetscInt cellHeight, DM subdm)
 {
   MPI_Comm         comm;
@@ -3319,6 +3372,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       ierr = ISRestoreIndices(subpIS, &subpoints);CHKERRQ(ierr);
     }
   }
+  /* Filter labels */
+  ierr = DMPlexFilterLabels_Internal(dm, numSubPoints, subpoints, firstSubPoint, subdm);CHKERRQ(ierr);
   /* Cleanup */
   for (d = 0; d <= dim; ++d) {
     if (subpointIS[d]) {ierr = ISRestoreIndices(subpointIS[d], &subpoints[d]);CHKERRQ(ierr);}
