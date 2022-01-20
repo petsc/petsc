@@ -371,4 +371,9 @@ int main(int argc,char **argv)
       args: -ts_dt 0.25 -ts_adapt_type basic -ts_adapt_wnormtype INFINITY -ts_adapt_monitor
       args: -ts_max_steps 1 -ts_max_reject {{0 1 2}separate_output} -ts_error_if_step_fails false
 
+    test:
+      requires: !single
+      suffix: o
+      args: -rhs-form -ts_type rk -ts_rk_type 2b -ts_trajectory_dirname ex40_o_dir
+      output_file: output/ex40.out
 TEST*/

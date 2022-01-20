@@ -271,6 +271,7 @@ cdef extern from * nogil:
     ctypedef const char* PetscTSRKType "TSRKType"
     PetscTSRKType TSRK1FE
     PetscTSRKType TSRK2A
+    PetscTSRKType TSRK2B
     PetscTSRKType TSRK3
     PetscTSRKType TSRK3BS
     PetscTSRKType TSRK4
