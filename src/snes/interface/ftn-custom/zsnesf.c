@@ -16,10 +16,10 @@
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
 #define snesgettype_                     SNESGETTYPE
 #define snessetfunction_                 SNESSETFUNCTION
-#define snessetngs_                       SNESSETNGS
-#define snessetupdate_                    SNESSETUPDATE
+#define snessetngs_                      SNESSETNGS
+#define snessetupdate_                   SNESSETUPDATE
 #define snesgetfunction_                 SNESGETFUNCTION
-#define snesgetngs_                       SNESGETNGS
+#define snesgetngs_                      SNESGETNGS
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
 #define snesconvergeddefault_            SNESCONVERGEDDEFAULT
 #define snesconvergedskip_               SNESCONVERGEDSKIP
