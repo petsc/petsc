@@ -200,7 +200,13 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 /*TEST
 
    test:
+      suffix: 1
       args: -snes_monitor_short -snes_max_it 1000
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -snes_monitor_short -snes_max_it 1000 -snes_type newtontrdc -snes_trdc_use_cauchy false
       requires: !single
 
 TEST*/

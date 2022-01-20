@@ -83,6 +83,8 @@ Changes: Development
 
 .. rubric:: SNES:
 
+-  Add ``SNESNewtonTRDCGetRhoFlag()``, ``SNESNewtonTRDCSetPreCheck()``, ``SNESNewtonTRDCGetPreCheck()``, ``SNESNewtonTRDCSetPostCheck()``, ``SNESNewtonTRDCGetPostCheck()``
+
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:

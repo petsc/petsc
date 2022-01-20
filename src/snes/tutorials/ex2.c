@@ -362,4 +362,9 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
       suffix: 3
       args: -nox -malloc no -options_left no -snes_monitor_cancel -snes_monitor_short -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
 
+   test:
+      suffix: 4
+      args: -nox -snes_monitor_cancel -snes_monitor_short -snes_type newtontrdc -snes_view
+      requires: !single
+
 TEST*/
