@@ -643,10 +643,10 @@ static PetscErrorCode DMSetFromOptions_Stag(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsEnum("-stag_boundary_type_x","Treatment of (physical) boundaries in x direction","DMStagSetBoundaryTypes",DMBoundaryTypes,(PetscEnum)stag->boundaryType[0],(PetscEnum*)&stag->boundaryType[0],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-stag_boundary_type_y","Treatment of (physical) boundaries in y direction","DMStagSetBoundaryTypes",DMBoundaryTypes,(PetscEnum)stag->boundaryType[1],(PetscEnum*)&stag->boundaryType[1],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-stag_boundary_type_z","Treatment of (physical) boundaries in z direction","DMStagSetBoundaryTypes",DMBoundaryTypes,(PetscEnum)stag->boundaryType[2],(PetscEnum*)&stag->boundaryType[2],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-stag_dof_0","Number of dof per 0-cell (vertex/corner)","DMStagSetDOF",stag->dof[0],&stag->dof[0],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-stag_dof_1","Number of dof per 1-cell (edge)",         "DMStagSetDOF",stag->dof[1],&stag->dof[1],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-stag_dof_2","Number of dof per 2-cell (face)",         "DMStagSetDOF",stag->dof[2],&stag->dof[2],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-stag_dof_3","Number of dof per 3-cell (hexahedron)",   "DMStagSetDOF",stag->dof[3],&stag->dof[3],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-stag_dof_0","Number of dof per 0-cell (vertex)","DMStagSetDOF",stag->dof[0],&stag->dof[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-stag_dof_1","Number of dof per 1-cell (element in 1D, face in 2D, edge in 3D)","DMStagSetDOF",stag->dof[1],&stag->dof[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-stag_dof_2","Number of dof per 2-cell (element in 2D, face in 3D)","DMStagSetDOF",stag->dof[2],&stag->dof[2],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-stag_dof_3","Number of dof per 3-cell (element in 3D)","DMStagSetDOF",stag->dof[3],&stag->dof[3],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
