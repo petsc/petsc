@@ -4,7 +4,8 @@ Dimension: 1
 Global size: 3
 Boundary ghosting: NONE
 Elementwise ghost stencil: BOX, width 1
-Stratum dof: 0:2 1:7
+2 DOF per vertex  (0D)
+7 DOF per element (1D)
 [0] Local elements : 1 (2 with ghosts)
 [0] Local native entries: 9
 [0] Local entries total : 18

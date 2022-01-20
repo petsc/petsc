@@ -583,11 +583,14 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"Stratum dof:");CHKERRQ(ierr);
-    for (i=0; i<dim+1; ++i) {
-      ierr = PetscViewerASCIIPrintf(viewer," %D:%D",i,stag->dof[i]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%D DOF per vertex (0D)\n",stag->dof[0]);CHKERRQ(ierr);
+    if (dim == 3) {
+      ierr = PetscViewerASCIIPrintf(viewer,"%D DOF per edge (1D)\n",stag->dof[1]);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    if (dim > 1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"%D DOF per face (%DD)\n",stag->dof[dim-1],dim-1);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"%D DOF per element (%DD)\n",stag->dof[dim],dim);CHKERRQ(ierr);
     if (dm->coordinateDM) {
       ierr = PetscViewerASCIIPrintf(viewer,"Has coordinate DM\n");CHKERRQ(ierr);
     }

@@ -4,7 +4,8 @@ Dimension: 1
 Global size: 11
 Boundary ghosting: NONE
 Elementwise ghost stencil: STAR, width 1
-Stratum dof: 0:1 1:1
+1 DOF per vertex  (0D)
+1 DOF per element (1D)
 [0] Local elements : 2 (3 with ghosts)
 [0] Local native entries: 4
 [0] Local entries total : 6
@@ -32,7 +33,8 @@ Dimension: 1
 Global size: 11
 Boundary ghosting: NONE
 Elementwise ghost stencil: STAR, width 1
-Stratum dof: 0:1 1:1
+1 DOF per vertex  (0D)
+1 DOF per element (1D)
 [0] Local elements : 2 (3 with ghosts)
 [0] Local native entries: 4
 [0] Local entries total : 6
@@ -60,7 +62,8 @@ Dimension: 1
 Global size: 11
 Boundary ghosting: NONE
 Elementwise ghost stencil: STAR, width 1
-Stratum dof: 0:1 1:0
+1 DOF per vertex  (0D)
+0 DOF per element (1D)
 [0] Local elements : 2 (3 with ghosts)
 [0] Local native entries: 2
 [0] Local entries total : 3
@@ -111,7 +114,8 @@ Dimension: 1
 Global size: 11
 Boundary ghosting: NONE
 Elementwise ghost stencil: STAR, width 1
-Stratum dof: 0:1 1:0
+1 DOF per vertex  (0D)
+0 DOF per element (1D)
 [0] Local elements : 2 (3 with ghosts)
 [0] Local native entries: 2
 [0] Local entries total : 3
@@ -139,7 +143,8 @@ Dimension: 1
 Global size: 11
 Boundary ghosting: NONE
 Elementwise ghost stencil: STAR, width 1
-Stratum dof: 0:0 1:1
+0 DOF per vertex  (0D)
+1 DOF per element (1D)
 [0] Local elements : 2 (3 with ghosts)
 [0] Local native entries: 2
 [0] Local entries total : 3
