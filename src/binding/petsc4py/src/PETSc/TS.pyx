@@ -34,6 +34,7 @@ class TSType(object):
 class TSRKType(object):
     RK1FE = S_(TSRK1FE)
     RK2A  = S_(TSRK2A)
+    RK2B  = S_(TSRK2B)
     RK4   = S_(TSRK4)
     RK3BS = S_(TSRK3BS)
     RK3   = S_(TSRK3)

@@ -827,6 +827,7 @@ J*/
 typedef const char* TSRKType;
 #define TSRK1FE   "1fe"
 #define TSRK2A    "2a"
+#define TSRK2B    "2b"
 #define TSRK3     "3"
 #define TSRK3BS   "3bs"
 #define TSRK4     "4"

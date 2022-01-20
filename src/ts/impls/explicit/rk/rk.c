@@ -32,12 +32,24 @@ static RKTableauLink RKTableauList;
 .seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
-     TSRK2A - Second order RK scheme.
+     TSRK2A - Second order RK scheme (Heun's method).
 
      This method has two stages.
 
      Options database:
 .     -ts_rk_type 2a
+
+     Level: advanced
+
+.seealso: TSRK, TSRKType, TSRKSetType()
+M*/
+/*MC
+     TSRK2B - Second order RK scheme (the midpoint method).
+
+     This method has two stages.
+
+     Options database:
+.     -ts_rk_type 2b
 
      Level: advanced
 
@@ -195,6 +207,13 @@ PetscErrorCode TSRKRegisterAll(void)
       b[2]      =  {RC(0.5),RC(0.5)},
       bembed[2] =  {RC(1.0),0};
     ierr = TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal
+      A[2][2]   = {{0,0},
+                   {RC(0.5),0}},
+      b[2]      =  {0,RC(1.0)},
+    ierr = TSRKRegister(TSRK2B,2,2,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -1293,7 +1312,7 @@ PetscErrorCode TSRKGetOrder(TS ts,PetscInt *order)
 
   Level: intermediate
 
-.seealso: TSRKGetType(), TSRK, TSRKType, TSRK1FE, TSRK2A, TSRK3, TSRK3BS, TSRK4, TSRK5F, TSRK5DP, TSRK5BS, TSRK6VR, TSRK7VR, TSRK8VR
+.seealso: TSRKGetType(), TSRK, TSRKType, TSRK1FE, TSRK2A, TSRK2B, TSRK3, TSRK3BS, TSRK4, TSRK5F, TSRK5DP, TSRK5BS, TSRK6VR, TSRK7VR, TSRK8VR
 @*/
 PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 {
