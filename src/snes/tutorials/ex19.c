@@ -700,6 +700,18 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       requires: x !single
 
    test:
+      suffix: 19
+      nsize: 2
+      args: -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full -snes_type newtontrdc
+      requires: !single
+
+   test:
+      suffix: 20
+      nsize: 2
+      args: -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full -snes_type newtontrdc -snes_trdc_use_cauchy false
+      requires: !single
+
+   test:
       suffix: 2
       nsize: 4
       args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds

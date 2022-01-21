@@ -759,4 +759,10 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
       args: -view_initial
       filter: grep -v "type:"
 
+   test:
+      suffix: 13
+      requires: double !complex !single
+      nsize: 4
+      args: -test_jacobian_domain_error -snes_converged_reason -snes_type newtontrdc -snes_check_jacobian_domain_error 1
+
 TEST*/

@@ -201,5 +201,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
       args: -snes_linesearch_type basic
    test:
       suffix: 3
+   test:
+      suffix: 4
+      args: -snes_type newtontrdc
+   test:
+      suffix: 5
+      args: -snes_type newtontrdc -snes_trdc_use_cauchy false
 
 TEST*/
