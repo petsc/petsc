@@ -1,20 +1,28 @@
 #include "cupmdevice.hpp" /* I "petscdevice.h" */
+#include <petsc/private/petscadvancedmacros.h>
 
-using namespace Petsc;
+using namespace Petsc::Device;
 
-/* note to anyone adding more classes, the name must be ALL_CAPS_SHORT_NAME + Device exactly to
- * be picked up by the switch-case macros below. */
+/*
+  note to anyone adding more classes, the name must be ALL_CAPS_SHORT_NAME + Device exactly to
+  be picked up by the switch-case macros below
+*/
 #if PetscDefined(HAVE_CUDA)
-static CUPMDevice<CUPMDeviceType::CUDA> CUDADevice(PetscDeviceContextCreate_CUDA);
+static CUPM::Device<CUPM::DeviceType::CUDA> CUDADevice(PetscDeviceContextCreate_CUDA);
 #endif
 #if PetscDefined(HAVE_HIP)
-static CUPMDevice<CUPMDeviceType::HIP>  HIPDevice(PetscDeviceContextCreate_HIP);
+static CUPM::Device<CUPM::DeviceType::HIP>  HIPDevice(PetscDeviceContextCreate_HIP);
 #endif
 #if PetscDefined(HAVE_SYCL)
 #include "sycldevice.hpp"
-static SyclDevice                       SYCLDevice(PetscDeviceContextCreate_SYCL);
+static SYCL::Device                         SYCLDevice(PetscDeviceContextCreate_SYCL);
 #endif
 
+static_assert(Petsc::util::integral_value(PETSC_DEVICE_INVALID) == 0,"");
+static_assert(Petsc::util::integral_value(PETSC_DEVICE_CUDA)    == 1,"");
+static_assert(Petsc::util::integral_value(PETSC_DEVICE_HIP)     == 2,"");
+static_assert(Petsc::util::integral_value(PETSC_DEVICE_SYCL)    == 3,"");
+static_assert(Petsc::util::integral_value(PETSC_DEVICE_MAX)     == 4,"");
 const char *const PetscDeviceTypes[] = {
   "invalid",
   "cuda",
@@ -26,6 +34,9 @@ const char *const PetscDeviceTypes[] = {
   PETSC_NULLPTR
 };
 
+static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_NONE)  == 0,"");
+static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_LAZY)  == 1,"");
+static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_EAGER) == 2,"");
 const char *const PetscDeviceInitTypes[] = {
   "none",
   "lazy",
@@ -39,30 +50,40 @@ static_assert(
   "Must change CUPMDevice<T>::initialize number of enum values in -device_enable_cupm to match!"
 );
 
-#define PETSC_DEVICE_DEFAULT_CASE(comm,type)                            \
-  SETERRQ1((comm),PETSC_ERR_PLIB,                                       \
-           "PETSc was seemingly configured for PetscDeviceType %s but " \
-           "we've fallen through all cases in a switch",                \
-           PetscDeviceTypes[type])
+#define PETSC_DEVICE_CASE(IMPLS,func,...)                                     \
+  case PetscConcat_(PETSC_DEVICE_,IMPLS): {                                   \
+    auto ierr_ = PetscConcat_(IMPLS,Device).func(__VA_ARGS__);CHKERRQ(ierr_); \
+  } break
 
-#define CAT_(a,...) a ## __VA_ARGS__
-#define CAT(a,...)  CAT_(a,__VA_ARGS__)
+/*
+  Suppose you have:
 
-#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED__0(IMPLS,func,...)
-#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED__1(IMPLS,func,...)           \
-  case CAT(PETSC_DEVICE_,IMPLS):                                        \
-  {                                                                     \
-    auto ierr = CAT(IMPLS,Device).func(__VA_ARGS__);CHKERRQ(ierr);      \
-    break;                                                              \
+  CUDADevice.myFunction(arg1,arg2)
+
+  that you would like to conditionally define and call in a switch-case:
+
+  switch(PetscDeviceType) {
+  #if PetscDefined(HAVE_CUDA)
+  case PETSC_DEVICE_CUDA: {
+    auto ierr = CUDADevice.myFunction(arg1,arg2);CHKERRQ(ierr);
+  } break;
+  #endif
   }
 
-#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED_(IMPLS,...)                  \
-  CAT(PETSC_DEVICE_CASE_IF_PETSC_DEFINED__,PetscDefined(CAT(HAVE_,IMPLS)))(IMPLS,__VA_ARGS__)
+  then calling this macro:
 
-#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS,...)           \
-  PETSC_DEVICE_CASE_IF_PETSC_DEFINED_(IMPLS,__VA_ARGS__)
+  PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,myFunction,arg1,arg2)
 
-#define PETSC_DEVICE_UNUSED_IF_NO_DEVICE(var) (void)(var)
+  will expand to the following case statement:
+
+  case PETSC_DEVICE_CUDA: {
+    auto ierr = CUDADevice.myFunction(arg1,arg2);CHKERRQ(ierr);
+  } break
+
+  if PetscDefined(HAVE_CUDA) evaluates to 1, and expand to nothing otherwise
+*/
+#define PETSC_DEVICE_CASE_IF_PETSC_DEFINED(IMPLS,func,...)                                     \
+  PetscIfPetscDefined(PetscConcat_(HAVE_,IMPLS),PETSC_DEVICE_CASE,PetscExpandToNothing)(IMPLS,func,__VA_ARGS__)
 
 /*@C
   PetscDeviceCreate - Get a new handle for a particular device type
@@ -101,15 +122,18 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
   dev->id     = PetscDeviceCounter++;
   dev->type   = type;
   dev->refcnt = 1;
-  /* if you are adding a device, you also need to add it's initialization in
-     PetscDeviceInitializeTypeFromOptions_Private() below */
+  /*
+    if you are adding a device, you also need to add it's initialization in
+    PetscDeviceInitializeTypeFromOptions_Private() below
+  */
   switch (type) {
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,getDevice,dev,devid);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(HIP,getDevice,dev,devid);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(SYCL,getDevice,dev,devid);
   default:
-    PETSC_DEVICE_UNUSED_IF_NO_DEVICE(devid);
-    PETSC_DEVICE_DEFAULT_CASE(PETSC_COMM_SELF,type);
+    /* in case the above macros expand to nothing this silences any unused variable warnings */
+    (void)(devid);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[type]);
   }
   *device = dev;
   PetscFunctionReturn(0);
@@ -166,15 +190,16 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
   PetscFunctionBegin;
   PetscValidDevice(device,1);
   if (PetscDefined(USE_DEBUG)) {
-    /* if no available configuration is available, this cascades all the way down to default
-       and error */
+    /*
+      if no available configuration is available, this cascades all the way down to default
+      and error
+    */
     switch (device->type) {
     case PETSC_DEVICE_CUDA: if (PetscDefined(HAVE_CUDA)) break;
     case PETSC_DEVICE_HIP:  if (PetscDefined(HAVE_HIP))  break;
     case PETSC_DEVICE_SYCL: if (PetscDefined(HAVE_SYCL)) break;
     default:
-      PETSC_DEVICE_DEFAULT_CASE(PETSC_COMM_SELF,device->type);
-      break;
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[device->type]);
     }
   }
   ierr = (*device->ops->configure)(device);CHKERRQ(ierr);
@@ -260,8 +285,10 @@ PetscBool PetscDeviceInitialized(PetscDeviceType type)
   return static_cast<PetscBool>(PetscDeviceConfiguredFor_Internal(type) && initializedDevice[type]);
 }
 
-/* Actual intialization function; any functions claiming to initialize PetscDevice or
- * PetscDeviceContext will have to run through this one */
+/*
+  Actual intialization function; any functions claiming to initialize PetscDevice or
+  PetscDeviceContext will have to run through this one
+*/
 PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type, PetscInt defaultDeviceId)
 {
   PetscErrorCode ierr;
@@ -272,13 +299,6 @@ PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type,
   if (PetscUnlikelyDebug(defaultDevices[type])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Trying to overwrite existing default device of type %s",PetscDeviceTypes[type]);
   ierr = PetscDeviceCreate(type,defaultDeviceId,&defaultDevices[type]);CHKERRQ(ierr);
   ierr = PetscDeviceConfigure(defaultDevices[type]);CHKERRQ(ierr);
-  /* the default devices are all automatically "referenced" at least once, otherwise the
-   * reference counting is off for them. We could alternatively increase the reference count
-   * when they are retrieved but that is a lot more brittle; what's to stop someone from doing
-   * the following?
-
-   for (int i = 0; i < 10000; ++i) auto device = PetscDeviceDefault_Internal();
-   */
   initializedDevice[type] = true;
   PetscFunctionReturn(0);
 }
@@ -300,13 +320,14 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(HIP,initialize,comm,&defaultDeviceId,defaultInitType);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(SYCL,initialize,comm,&defaultDeviceId,defaultInitType);
   default:
-    PETSC_DEVICE_DEFAULT_CASE(comm,type);
-    break;
+    SETERRQ1(comm,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[type]);
   }
-  /* defaultInitType and defaultDeviceId now represent what the individual TYPES have decided
-   * to initialize as */
+  /*
+    defaultInitType and defaultDeviceId now represent what the individual TYPES have decided to
+    initialize as
+  */
   if (*defaultInitType == PETSC_DEVICE_INIT_EAGER) {
-    ierr = PetscInfo1(PETSC_NULLPTR,"Greedily initializing %s PetscDevice\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
+    ierr = PetscInfo1(PETSC_NULLPTR,"Eagerly initializing %s PetscDevice\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
     ierr = PetscDeviceInitializeDefaultDevice_Internal(type,defaultDeviceId);CHKERRQ(ierr);
     if (defaultView) {
       PetscViewer vwr;
@@ -325,9 +346,9 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    PETSC_CONSTEXPR_17 auto PetscDeviceCheckAllDestroyedAfterFinalize = [](){
+    const auto PetscDeviceCheckAllDestroyedAfterFinalize = [](){
       PetscFunctionBegin;
-      for (const auto &device : defaultDevices) {
+      for (auto&& device : defaultDevices) {
         if (PetscUnlikely(device)) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_COR,"Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()",PetscDeviceTypes[device->type],device->refcnt);
       }
       PetscFunctionReturn(0);
@@ -337,15 +358,15 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
      * because it is.
      *
      * The crux of the problem is that the initializer (and therefore the ~finalizer~) of
-     * PetscDeviceContext is guaranteed to run after this finalizer. So if the global context
-     * had a default PetscDevice attached it will hold a reference this routine won't destroy
-     * it. So we need to check that all devices have been destroyed after the global context is
-     * destroyed. In summary:
+     * PetscDeviceContext is guaranteed to run after PetscDevice's. So if the global context
+     * had a default PetscDevice attached, that PetscDevice will have a reference count >0 and
+     * hence won't be destroyed yet. So we need to repeat the check that all devices have been
+     * destroyed again ~after~ the global context is destroyed. In summary:
      *
      * 1. This finalizer runs and destroys all devices, except it may not because the global
      *    context may still hold a reference!
-     * 2. The global context finalizer runs and in turn actually destroys the referenced
-     *    device.
+     * 2. The global context finalizer runs and does the final reference count decrement
+     *    required, which actually destroys the held device.
      * 3. Our newly added finalizer runs and checks that all is well.
      */
     ierr = PetscRegisterFinalize(PetscDeviceCheckAllDestroyedAfterFinalize);CHKERRQ(ierr);
@@ -355,21 +376,24 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
   PetscFunctionReturn(0);
 }
 
-/* begins the init proceeedings for the entire PetscDevice stack. there are 3 stages of
- * initialization types:
- 1. defaultInitType - how does PetscDevice as a whole expect to initialize?
- 2. subTypeDefaultInitType - how does each PetscDevice implementation expect to initialize?
-    e.g. you may want to blanket disable PetscDevice init (and disable say Kokkos init), but
-    have all CUDA devices still initialize.
+/*
+  Begins the init proceeedings for the entire PetscDevice stack. there are 3 stages of
+  initialization types:
 
- All told the following happens:
- 0. defaultInitType -> LAZY
- 1. Check for log_view/log_summary, if yes defaultInitType -> EAGER
- 2. PetscDevice initializes each sub type with deviceDefaultInitType.
- 2.1 Each enabled PetscDevice sub-type then does the above disable or view check in addition
-     to checking for specific device init. if view or specific device init
-     subTypeDefaultInitType -> EAGER. disabled once again overrides all.
- */
+  1. defaultInitType - how does PetscDevice as a whole expect to initialize?
+  2. subTypeDefaultInitType - how does each PetscDevice implementation expect to initialize?
+     e.g. you may want to blanket disable PetscDevice init (and disable say Kokkos init), but
+     have all CUDA devices still initialize.
+
+  All told the following happens:
+
+  0. defaultInitType -> LAZY
+  1. Check for log_view/log_summary, if yes defaultInitType -> EAGER
+  2. PetscDevice initializes each sub type with deviceDefaultInitType.
+  2.1 Each enabled PetscDevice sub-type then does the above disable or view check in addition
+      to checking for specific device init. if view or specific device init
+      subTypeDefaultInitType -> EAGER. disabled once again overrides all.
+*/
 PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
 {
   PetscBool           flg,defaultView = PETSC_FALSE,initializeDeviceContextEagerly = PETSC_FALSE;
@@ -404,7 +428,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
 
     ierr = PetscOptionsBegin(comm,PETSC_NULLPTR,"PetscDevice Options","Sys");CHKERRQ(ierr);
     ierr = PetscOptionsEList("-device_enable","How (or whether) to initialize PetscDevices","PetscDeviceInitializeFromOptions_Internal()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initIdx],&initIdx,PETSC_NULLPTR);CHKERRQ(ierr);
-    ierr = PetscOptionsRangeInt("-device_select","Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-NUM_DEVICE) for a specific device","PetscDeviceCreate",defaultDevice,&defaultDevice,PETSC_NULLPTR,PETSC_DECIDE,std::numeric_limits<int>::max());CHKERRQ(ierr);
+    ierr = PetscOptionsRangeInt("-device_select","Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-NUM_DEVICE) for a specific device","PetscDeviceCreate()",defaultDevice,&defaultDevice,PETSC_NULLPTR,PETSC_DECIDE,std::numeric_limits<int>::max());CHKERRQ(ierr);
     ierr = PetscOptionsBool("-device_view","Display device information and assignments (forces eager initialization)",PETSC_NULLPTR,defaultView,&defaultView,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (initIdx == PETSC_DEVICE_INIT_NONE) {
@@ -431,8 +455,10 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
   if (initializeDeviceContextEagerly) {
     PetscDeviceContext dctx;
 
-    /* somewhat inefficient here as the device context is potentially fully set up twice (once
-     * when retrieved then the second time if setfromoptions makes changes) */
+    /*
+      somewhat inefficient here as the device context is potentially fully set up twice (once
+      when retrieved then the second time if setfromoptions makes changes)
+    */
     ierr = PetscInfo1(PETSC_NULLPTR,"Eagerly initializing PetscDeviceContext with %s device\n",PetscDeviceTypes[deviceContextInitDevice]);CHKERRQ(ierr);
     ierr = PetscDeviceContextSetRootDeviceType_Internal(deviceContextInitDevice);CHKERRQ(ierr);
     ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);

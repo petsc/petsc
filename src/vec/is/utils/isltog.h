@@ -2,10 +2,8 @@
 /*
      This is a terrible way of doing "templates" in C.
 */
-#define PETSCMAP1_a(a,b)  a ## b
-#define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)
-#define PETSCMAPNAME(a)   PETSCMAP1_b(a,GTOLNAME)
-#define PETSCMAPTYPE(a)   PETSCMAP1_b(a,GTOLTYPE)
+#define PETSCMAPNAME(a) PetscConcat(a,GTOLNAME)
+#define PETSCMAPTYPE(a) PetscConcat(a,GTOLTYPE)
 
 static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type,
                                                       PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
@@ -59,8 +57,6 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
   PetscFunctionReturn(0);
 }
 
-#undef PETSCMAP1_a
-#undef PETSCMAP1_b
 #undef PETSCMAPTYPE
 #undef PETSCMAPNAME
 #undef GTOLTYPE

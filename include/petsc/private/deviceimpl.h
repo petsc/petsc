@@ -60,8 +60,8 @@ template <typename T> void PetscCheckCompatibleDeviceContexts(T,int,T,int);
     }                                                           \
   } while (0)
 
-/* for now just checks strict equality, but this can be changed as some devices
-   (i.e. kokkos and any cupm should be compatible once implemented) */
+/* for now just checks strict equality, but this can be changed as some devices (i.e. kokkos
+ * and any cupm should be compatible once implemented) */
 #define PetscCheckCompatibleDevices(_p_dev1__,_p_arg1__,_p_dev2__,_p_arg2__) \
   do {                                                                  \
     PetscValidDevice(_p_dev1__,_p_arg1__);                              \
@@ -135,8 +135,8 @@ template <typename T> void PetscCheckCompatibleDeviceContexts(T,int,T,int);
 
 typedef struct _DeviceOps *DeviceOps;
 struct _DeviceOps {
-  /* the creation routine for the corresponding PetscDeviceContext, this is NOT intended
-     to be called by the PetscDevice itself */
+  /* the creation routine for the corresponding PetscDeviceContext, this is NOT intended to be
+   * called by the PetscDevice itself */
   PetscErrorCode (*createcontext)(PetscDeviceContext);
   PetscErrorCode (*configure)(PetscDevice);
   PetscErrorCode (*view)(PetscDevice,PetscViewer);
@@ -147,7 +147,7 @@ struct _n_PetscDevice {
   PetscInt          refcnt;   /* reference count for the device */
   PetscInt          id;       /* unique id per created PetscDevice */
   PetscInt          deviceId; /* the id of the underlying device, i.e. the return of
-                                 cudaGetDevice() for example */
+                               * cudaGetDevice() for example */
   PetscDeviceType   type;     /* type of device */
   void             *data;     /* placeholder */
 };
@@ -158,10 +158,11 @@ struct _DeviceContextOps {
   PetscErrorCode (*changestreamtype)(PetscDeviceContext,PetscStreamType);
   PetscErrorCode (*setup)(PetscDeviceContext);
   PetscErrorCode (*query)(PetscDeviceContext,PetscBool*);
-  PetscErrorCode (*waitforctx)(PetscDeviceContext,PetscDeviceContext);
+  PetscErrorCode (*waitforcontext)(PetscDeviceContext,PetscDeviceContext);
   PetscErrorCode (*synchronize)(PetscDeviceContext);
   PetscErrorCode (*getblashandle)(PetscDeviceContext,void*);
   PetscErrorCode (*getsolverhandle)(PetscDeviceContext,void*);
+  PetscErrorCode (*getstreamhandle)(PetscDeviceContext,void*);
   PetscErrorCode (*begintimer)(PetscDeviceContext);
   PetscErrorCode (*endtimer)(PetscDeviceContext,PetscLogDouble*);
 };
@@ -187,9 +188,6 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscDeviceGetDefaultForType_Internal
 
 PETSC_STATIC_INLINE PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Internal(PetscDeviceType type)
 {
-#if defined(PetscUnreachable)
-#error "PetscUnreachable merged"
-#endif
   switch(type) {
   case PETSC_DEVICE_INVALID: return PETSC_FALSE;
     /* casts are needed in C++ */
@@ -199,15 +197,14 @@ PETSC_STATIC_INLINE PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Intern
   case PETSC_DEVICE_MAX:     return PETSC_FALSE;
     /* Do not add default case! Will make compiler warn on new additions to PetscDeviceType! */
   }
-#if !(PetscDefined(HAVE_WINDOWS_COMPILERS) || PetscDefined(HAVE_SUN_CXX))
-  __builtin_unreachable();
-#endif
+  PetscUnreachable();
   return PETSC_FALSE;
 }
 
-/* More general form of PetscDeviceDefaultType_Internal(), as it calls the former using
-   the automatically selected default PetscDeviceType */
-#define PetscDeviceGetDefault_Internal(device) PetscDeviceGetDefaultForType_Internal(PETSC_DEVICE_DEFAULT,device)
+/* More general form of PetscDeviceDefaultType_Internal(), as it calls the former using the
+ * automatically selected default PetscDeviceType */
+#define PetscDeviceGetDefault_Internal(device)                          \
+  PetscDeviceGetDefaultForType_Internal(PETSC_DEVICE_DEFAULT,device)
 
 PETSC_STATIC_INLINE PetscErrorCode PetscDeviceCheckDeviceCount_Internal(PetscInt count)
 {
@@ -233,6 +230,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceDereference_Internal(PetscDevice d
 #else /* PetscDefined(HAVE_CXX_DIALECT_CXX11) */
 #define PetscDeviceInitializeFromOptions_Internal(comm)      0
 #define PetscDeviceInitializeDefaultDevice_Internal(type,id) 0
+#define PetscDeviceConfiguredFor_Internal(type)              PETSC_FALSE
 #define PetscDeviceGetDefaultForType_Internal(Type,device)   0
 #define PetscDeviceGetDefault_Internal(device)               0
 #define PetscDeviceCheckDeviceCount_Internal(count)          0
@@ -244,8 +242,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceDereference_Internal(PetscDevice d
 #if PetscDefined(HAVE_CXX_DIALECT_CXX11)
 PETSC_INTERN PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDeviceType);
 
-/* Called in debug-mode when a context claims it is idle to check that it isn't lying. A
-   no-op when debugging is disabled */
+/* Called in debug-mode when a context claims it is idle to check that it isn't lying. A no-op
+ * in performance-mode */
 PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextValidateIdle_Internal(PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
@@ -272,7 +270,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Int
   PetscFunctionReturn(0);
 }
 
-#define PetscDeviceContextSetDefaultDevice_Internal(dctx) PetscDeviceContextSetDefaultDeviceForType_Internal(dctx,PETSC_DEVICE_DEFAULT)
+#define PetscDeviceContextSetDefaultDevice_Internal(dctx)               \
+  PetscDeviceContextSetDefaultDeviceForType_Internal(dctx,PETSC_DEVICE_DEFAULT)
 
 /* note, only does assertion checking in debug mode */
 PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Internal(PetscDeviceContext *dctx, PetscDeviceType type)
@@ -311,6 +310,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(Pe
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDeviceContext dctx, void *handle)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* we do error checking here as this routine is an entry-point */
+  PetscValidDeviceContext(dctx,1);
+  PetscValidPointer(handle,2);
+  ierr = (*dctx->ops->getstreamhandle)(dctx,handle);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextBeginTimer_Internal(PetscDeviceContext dctx)
 {
   PetscErrorCode ierr;
@@ -333,6 +344,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDevi
   ierr = (*dctx->ops->endtimer)(dctx,elapsed);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #else /* PetscDefined(HAVE_CXX_DIALECT_CXX11) */
 #define PetscDeviceContextSetRootDeviceType_Internal(type)                0
 #define PetscDeviceContextValidateIdle_Internal(dctx)                     0
@@ -341,6 +353,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDevi
 #define PetscDeviceContextGetCurrentContextAssertType_Internal(dctx,type) 0
 #define PetscDeviceContextGetBLASHandle_Internal(dctx,handle)             0
 #define PetscDeviceContextGetSOLVERHandle_Internal(dctx,handle)           0
+#define PetscDeviceContextGetStreamHandle_Internal(dctx,handle)           0
 #define PetscDeviceContextBeginTimer_Internal(dctx)                       0
 #define PetscDeviceContextEndTimer_Internal(dctx,elapsed)                 0
 #endif /* PetscDefined(HAVE_CXX_DIALECT_CXX11) */

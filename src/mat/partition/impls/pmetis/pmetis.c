@@ -19,12 +19,20 @@ typedef struct {
   PetscBool repartition;
 } MatPartitioning_Parmetis;
 
-#define CHKERRQPARMETIS(n,func)                                             \
-  if (n == METIS_ERROR_INPUT) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to wrong inputs and/or options for %s",func); \
-  else if (n == METIS_ERROR_MEMORY) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory in %s",func); \
-  else if (n == METIS_ERROR) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error in %s",func); \
+#define CHKERRQPARMETIS(n,func) do { \
+    if (PetscUnlikely(n == METIS_ERROR_INPUT)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to wrong inputs and/or options for %s",func); \
+    else if (PetscUnlikely(n == METIS_ERROR_MEMORY)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory in %s",func); \
+    else if (PetscUnlikely(n == METIS_ERROR)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error in %s",func); \
+  } while (0)
 
-#define PetscStackCallParmetis(func,args) do {PetscStackPush(#func);int status = func args;PetscStackPop;CHKERRQPARMETIS(status,#func);} while (0)
+#define PetscStackCallParmetis_(name,func,args) do {    \
+    PetscStackPush(name);                               \
+    int status = func args;                             \
+    PetscStackPop;                                      \
+    CHKERRQPARMETIS(status,name);                       \
+  } while (0)
+
+#define PetscStackCallParmetis(func,args) PetscStackCallParmetis_(PetscStringize(func),func,args)
 
 static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part, PetscBool useND, PetscBool isImprove, IS *partitioning)
 {
