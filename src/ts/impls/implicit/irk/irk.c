@@ -652,7 +652,7 @@ static PetscErrorCode TSSetUp_IRK(TS ts)
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
   ierr = VecDuplicate(irk->Z,&R);CHKERRQ(ierr);
   ierr = SNESSetFunction(ts->snes,R,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(ts->snes,&J,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetIJacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
   if (!irk->TJ) {
     /* Create the KAIJ matrix for solving the stages */
     ierr = MatCreateKAIJ(J,nstages,nstages,tab->A_inv,tab->I_s,&irk->TJ);CHKERRQ(ierr);
