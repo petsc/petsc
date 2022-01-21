@@ -5,6 +5,16 @@
 #include <../src/mat/impls/sell/seq/sell.h>  /*I   "petscmat.h"  I*/
 #include <petscblaslapack.h>
 #include <petsc/private/kernels/blocktranspose.h>
+
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@inproceedings{ZhangELLPACK2018,\n"
+  " author = {Hong Zhang and Richard T. Mills and Karl Rupp and Barry F. Smith},\n"
+  " title = {Vectorized Parallel Sparse Matrix-Vector Multiplication in {PETSc} Using {AVX-512}},\n"
+  " booktitle = {Proceedings of the 47th International Conference on Parallel Processing},\n"
+  " year = 2018\n"
+"}\n";
+
 #if defined(PETSC_HAVE_IMMINTRIN_H) && (defined(__AVX512F__) || (defined(__AVX2__) && defined(__FMA__)) || defined(__AVX__)) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
 
   #include <immintrin.h>
@@ -114,7 +124,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
 
   b = (Mat_SeqSELL*)B->data;
 
-  totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* ceil(n/8) */
+  totalslices = PetscCeilInt(B->rmap->n,8);
   b->totalslices = totalslices;
   if (!skipallocation) {
     if (B->rmap->n & 0x07) {ierr = PetscInfo1(B,"Padding rows to the SEQSELL matrix because the number of rows is not the multiple of 8 (value %" PetscInt_FMT ")\n",B->rmap->n);CHKERRQ(ierr);}
@@ -262,23 +272,30 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Ma
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
   } else {
-    /* Can we just use ilen? */
-    ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
-    for (i=0; i<m; i++) {
-      rowlengths[i] = ai[i+1] - ai[i];
+    if (PetscDefined(USE_DEBUG) || !a->ilen) {
+      ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
+      for (i=0; i<m; i++) {
+        rowlengths[i] = ai[i+1] - ai[i];
+      }
     }
-
+    if (PetscDefined(USE_DEBUG) && a->ilen) {
+      PetscBool eq;
+      ierr = PetscMemcmp(rowlengths,a->ilen,m*sizeof(PetscInt),&eq);CHKERRQ(ierr);
+      if (!eq) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SeqAIJ ilen array incorrect");
+      ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+      rowlengths = a->ilen;
+    } else if (a->ilen) rowlengths = a->ilen;
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQSELL);CHKERRQ(ierr);
     ierr = MatSeqSELLSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
-    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+    if (rowlengths != a->ilen) {ierr = PetscFree(rowlengths);CHKERRQ(ierr);}
   }
 
   for (row=0; row<m; row++) {
-    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    ierr = MatSetValues(B,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatGetRow_SeqAIJ(A,row,&ncols,(PetscInt**)&cols,(PetscScalar**)&vals);CHKERRQ(ierr);
+    ierr = MatSetValues_SeqSELL(B,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqAIJ(A,row,&ncols,(PetscInt**)&cols,(PetscScalar**)&vals);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -995,8 +1012,6 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatSetValues_SeqSELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-
 PetscErrorCode MatGetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
   Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
@@ -1494,7 +1509,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscIn
       }
       if ((value == 0.0 && a->ignorezeroentries) && (is == ADD_VALUES)) continue;
 
-      /* search in this row for the specified colmun, i indicates the column to be set */
+      /* search in this row for the specified column, i indicates the column to be set */
       if (col <= lastcol) low = 0;
       else high = nrow;
       lastcol = col;
@@ -1941,6 +1956,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)B),&size);CHKERRMPI(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Comm must be of size 1");
 
@@ -1984,20 +2000,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
  */
 PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C,Mat A,MatDuplicateOption cpvalues,PetscBool mallocmatspace)
 {
-  Mat_SeqSELL    *c,*a=(Mat_SeqSELL*)A->data;
+  Mat_SeqSELL    *c = (Mat_SeqSELL*)C->data,*a = (Mat_SeqSELL*)A->data;
   PetscInt       i,m=A->rmap->n;
   PetscInt       totalslices=a->totalslices;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  c = (Mat_SeqSELL*)C->data;
-
   C->factortype = A->factortype;
   c->row        = NULL;
   c->col        = NULL;
   c->icol       = NULL;
   c->reallocs   = 0;
-
   C->assembled = PETSC_TRUE;
 
   ierr = PetscLayoutReference(A->rmap,&C->rmap);CHKERRQ(ierr);
@@ -2075,10 +2088,77 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionReturn(0);
 }
 
-/*@C
- MatCreateSeqSELL - Creates a sparse matrix in SELL format.
+/*MC
+   MATSEQSELL - MATSEQSELL = "seqsell" - A matrix type to be used for sequential sparse matrices,
+   based on the sliced Ellpack format
 
- Collective
+   Options Database Keys:
+. -mat_type seqsell - sets the matrix type to "seqsell" during a call to MatSetFromOptions()
+
+   Level: beginner
+
+.seealso: MatCreateSeqSell(), MATSELL, MATMPISELL, MATSEQAIJ, MATAIJ, MATMPIAIJ
+M*/
+
+/*MC
+   MATSELL - MATSELL = "sell" - A matrix type to be used for sparse matrices.
+
+   This matrix type is identical to MATSEQSELL when constructed with a single process communicator,
+   and MATMPISELL otherwise.  As a result, for single process communicators,
+  MatSeqSELLSetPreallocation() is supported, and similarly MatMPISELLSetPreallocation() is supported
+  for communicators controlling multiple processes.  It is recommended that you call both of
+  the above preallocation routines for simplicity.
+
+   Options Database Keys:
+. -mat_type sell - sets the matrix type to "sell" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+  Notes:
+   This format is only supported for real scalars, double precision, and 32 bit indices (the defaults).
+
+   It can provide better performance on Intel and AMD processes with AVX2 or AVX512 support for matrices that have a similar number of
+   non-zeros in contiguous groups of rows. However if the computation is memory bandwidth limited it may not provide much improvement.
+
+  Developer Notes:
+   On Intel (and AMD) systems some of the matrix operations use SIMD (AVX) instructions to achieve higher performance.
+
+   The sparse matrix format is as follows. For simplicity we assume a slice size of 2, it is actually 8
+.vb
+                            (2 0  3 4)
+   Consider the matrix A =  (5 0  6 0)
+                            (0 0  7 8)
+                            (0 0  9 9)
+
+   symbolically the Ellpack format can be written as
+
+        (2 3 4 |)           (0 2 3 |)
+   v =  (5 6 0 |)  colidx = (0 2 2 |)
+        --------            ---------
+        (7 8 |)             (2 3 |)
+        (9 9 |)             (2 3 |)
+
+    The data for 2 contiguous rows of the matrix are stored together (in column-major format) (with any left-over rows handled as a special case).
+    Any of the rows in a slice fewer columns than the rest of the slice (row 1 above) are padded with a previous valid column in their "extra" colidx[] locations and
+    zeros in their "extra" v locations so that the matrix operations do not need special code to handle different length rows within the 2 rows in a slice.
+
+    The one-dimensional representation of v used in the code is (2 5 3 6 4 0 7 9 8 9)  and for colidx is (0 0 2 2 3 2 2 2 3 3)
+
+.ve
+
+      See MatMult_SeqSELL() for how this format is used with the SIMD operations to achieve high performance.
+
+ References:
+   Hong Zhang, Richard T. Mills, Karl Rupp, and Barry F. Smith, Vectorized Parallel Sparse Matrix-Vector Multiplication in {PETSc} Using {AVX-512},
+   Proceedings of the 47th International Conference on Parallel Processing, 2018.
+
+.seealso: MatCreateSeqSELL(), MatCreateSeqAIJ(), MatCreateSell(), MATSEQSELL, MATMPISELL, MATSEQAIJ, MATMPIAIJ, MATAIJ
+M*/
+
+/*@C
+       MatCreateSeqSELL - Creates a sparse matrix in SELL format.
+
+ Collective on comm
 
  Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
@@ -2105,7 +2185,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
  Level: intermediate
 
- .seealso: MatCreate(), MatCreateSELL(), MatSetValues()
+ .seealso: MatCreate(), MatCreateSELL(), MatSetValues(), MatSeqSELLSetPreallocation(), MATSELL, MATSEQSELL, MATMPISELL
 
  @*/
 PetscErrorCode MatCreateSeqSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt maxallocrow,const PetscInt rlen[],Mat *A)
@@ -2122,7 +2202,7 @@ PetscErrorCode MatCreateSeqSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt max
 
 PetscErrorCode MatEqual_SeqSELL(Mat A,Mat B,PetscBool * flg)
 {
-  Mat_SeqSELL     *a=(Mat_SeqSELL*)A->data,*b=(Mat_SeqSELL*)B->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data,*b=(Mat_SeqSELL*)B->data;
   PetscInt       totalslices=a->totalslices;
   PetscErrorCode ierr;
 

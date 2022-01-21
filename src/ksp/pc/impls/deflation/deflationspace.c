@@ -99,7 +99,7 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&defl);CHKERRQ(ierr);
-  ierr = MatSetSizes(defl,m,PETSC_DECIDE,M,(PetscInt)ceil(M/(float)len));CHKERRQ(ierr);
+  ierr = MatSetSizes(defl,m,PETSC_DECIDE,M,PetscCeilInt(M,len));CHKERRQ(ierr);
   ierr = MatSetUp(defl);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(defl,size,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(defl,size,NULL,size,NULL);CHKERRQ(ierr);
@@ -107,12 +107,12 @@ PetscErrorCode PCDeflationGetSpaceHaar(PC pc,Mat *W,PetscInt size)
 
   ierr = MatGetOwnershipRangeColumn(defl,&ilo,&ihi);CHKERRQ(ierr);
   for (i=0; i<len; i++) Iidx[i] = i+ilo*len;
-  if (M%len && ihi == (int)ceil(M/(float)len)) ihi -= 1;
+  if (M%len && ihi == PetscCeilInt(M,len)) ihi -= 1;
   for (i=ilo; i<ihi; i++) {
     ierr = MatSetValues(defl,len,Iidx,1,&i,col,INSERT_VALUES);CHKERRQ(ierr);
     for (j=0; j<len; j++) Iidx[j] += len;
   }
-  if (M%len && ihi+1 == ceil(M/(float)len)) {
+  if (M%len && ihi+1 == PetscCeilInt(M,len)) {
     len = M%len;
     val = 1./pow(pow(2,len),0.5);
     for (i=0; i<len; i++) col[i] = val;

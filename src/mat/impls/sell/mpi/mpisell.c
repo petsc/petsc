@@ -1405,6 +1405,18 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
   PetscFunctionReturn(0);
 }
 
+/*MC
+   MATMPISELL - MATMPISELL = "mpisell" - A matrix type to be used for MPI sparse matrices,
+   based on the sliced Ellpack format
+
+   Options Database Keys:
+. -mat_type sell - sets the matrix type to "seqsell" during a call to MatSetFromOptions()
+
+   Level: beginner
+
+.seealso: MatCreateSell(), MATSEQSELL, MATSELL, MATSEQAIJ, MATAIJ, MATMPIAIJ
+M*/
+
 /*@C
    MatCreateSELL - Creates a sparse parallel matrix in SELL format.
 
