@@ -47,6 +47,7 @@ run=$(grep MPIEXEC "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | 
 trun=$(echo ${run} | sed -e "s,\$MPI_BUILD_HOME,${MPI_BUILD_HOME},")
 nrun=$(echo ${trun} | sed -e "s,\$MPI_HOME,${MPI_HOME},")
 qrun=$(echo ${nrun} | sed -e "s,\$PETSC_DIR,${PETSC_DIR},")
+qrun=$(echo ${qrun} | sed -e "s,\${PETSC_DIR},${PETSC_DIR},")
 
 if [ ${valgrind} = "1" ]; then
   VALGRIND_CMD=$(which valgrind)

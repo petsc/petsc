@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 if  [ "$1" = "-hosts" ]; then
     shift 2
@@ -13,4 +13,6 @@ if [ "$1" = "-np" -o "$1" = "-n" ]; then
 fi
 
 # Execute the program with options
+os=`uname`
+if [ "$os" = "Darwin" ]; then export DYLD_LIBRARY_PATH=${LIBRARY_PATH}; fi
 exec "$@"
