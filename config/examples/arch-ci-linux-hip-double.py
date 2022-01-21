@@ -17,6 +17,7 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
+    'HIPOPTFLAGS=-g -O',
     '--with-cuda=0',
     '--with-hip=1',
     '--with-hipc=/opt/rocm/bin/hipcc',
@@ -25,12 +26,10 @@ if __name__ == '__main__':
     '--with-clanguage=c',
     '--download-kokkos',
     '--download-kokkos-kernels',
-    #'--download-hypre',
-    #'--download-hypre-configure-arguments=--enable-unified-memory',
-    #'--with-hypre-gpuarch=gfx908',
+    '--download-hypre',
+    '--download-hypre-configure-arguments=--enable-unified-memory',
     '--download-magma',
     '--with-magma-fortran-bindings=0',
-    '--with-magma-gputarget=gfx908',
   ]
 
   configure.petsc_configure(configure_options)
