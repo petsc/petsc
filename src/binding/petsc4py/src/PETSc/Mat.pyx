@@ -486,6 +486,18 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
+    def createNormalHermitian(self, Mat mat):
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateNormalHermitian(mat.mat, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
+
+    def createHermitianTranspose(self, Mat mat):
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateHermitianTranspose(mat.mat, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
+
     def createLRC(self, Mat A or None, Mat U, Vec c or None, Mat V or None):
         cdef PetscMat Amat = NULL
         cdef PetscMat Umat = U.mat
