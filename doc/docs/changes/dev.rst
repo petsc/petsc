@@ -21,6 +21,7 @@ Changes: Development
 - Remove deprecated PETSC_VERSION_PATCH so as to not have confusion with patch releases where the subminor version changes
 - Change PETSC_HAVE_MKL to PETSC_HAVE_MKL_LIBS
 - Add PETSC_HAVE_MKL_INCLUDES
+- Enable HYPRE GPU for 64bit indices build (using HYPRE's mixed-int configuration)
 
 .. rubric:: Sys:
 

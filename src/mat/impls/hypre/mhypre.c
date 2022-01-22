@@ -645,7 +645,7 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   PetscBool          sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
   PetscErrorCode     ierr;
   HYPRE_Int          *hdi = NULL,*hdj = NULL,*hoi = NULL,*hoj = NULL;
-  PetscInt           *pdi,*pdj,*poi,*poj;
+  PetscInt           *pdi = NULL,*pdj = NULL,*poi = NULL,*poj = NULL;
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   PetscBool          iscuda = PETSC_FALSE;
 #endif
