@@ -61,7 +61,6 @@ struct _p_PetscSF {
   struct { /* Fields needed to implement VecScatter behavior */
     PetscInt          from_n,to_n;   /* Recorded local sizes of the input from/to vectors in VecScatterCreate(). Used subsequently for error checking. */
     PetscBool         beginandendtogether;  /* Indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
-    PetscBool         packongpu;     /* For GPU vectors, pack needed entries on GPU instead of pulling the whole vector down to CPU and then packing on CPU */
     const PetscScalar *xdata;        /* Vector data to read from */
     PetscScalar       *ydata;        /* Vector data to write to. The two pointers are recorded in VecScatterBegin. Memory is not managed by SF. */
     PetscSF           lsf;           /* The local part of the scatter, used in SCATTER_LOCAL. Built on demand. */
