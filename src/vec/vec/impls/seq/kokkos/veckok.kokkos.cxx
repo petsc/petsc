@@ -30,6 +30,7 @@ PetscErrorCode VecGetKokkosView_Private(Vec v,PetscScalarKokkosViewType<MemorySp
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos*>(v->spptr);
   PetscFunctionBegin;
+  VecErrorIfNotKokkos(v);
   if (!overwrite) veckok->v_dual.sync<MemorySpace>(); /* If overwrite=true, no need to sync the space, since caller will overwrite the data */
   *kv = veckok->v_dual.view<MemorySpace>();
   PetscFunctionReturn(0);
@@ -42,6 +43,7 @@ PetscErrorCode VecRestoreKokkosView_Private(Vec v,PetscScalarKokkosViewType<Memo
 
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos*>(v->spptr);
   PetscFunctionBegin;
+  VecErrorIfNotKokkos(v);
   if (overwrite) veckok->v_dual.clear_sync_state(); /* If overwrite=true, clear the old sync state since user forced an overwrite */
   veckok->v_dual.modify<MemorySpace>();
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -53,6 +55,7 @@ PetscErrorCode VecGetKokkosView(Vec v,ConstPetscScalarKokkosViewType<MemorySpace
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos*>(v->spptr);
   PetscFunctionBegin;
+  VecErrorIfNotKokkos(v);
   veckok->v_dual.sync<MemorySpace>(); /* Sync the space for caller to read */
   *kv = veckok->v_dual.view<MemorySpace>();
   PetscFunctionReturn(0);
