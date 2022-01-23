@@ -98,9 +98,11 @@ struct _VecOps {
   PetscErrorCode (*getarraywrite)(Vec,PetscScalar**);
   PetscErrorCode (*restorearraywrite)(Vec,PetscScalar**);
   PetscErrorCode (*getarrayandmemtype)(Vec,PetscScalar**,PetscMemType*);
-  PetscErrorCode (*getarrayreadandmemtype)(Vec,const PetscScalar**,PetscMemType*);
   PetscErrorCode (*restorearrayandmemtype)(Vec,PetscScalar**);
+  PetscErrorCode (*getarrayreadandmemtype)(Vec,const PetscScalar**,PetscMemType*);
   PetscErrorCode (*restorearrayreadandmemtype)(Vec,const PetscScalar**);
+  PetscErrorCode (*getarraywriteandmemtype)(Vec,PetscScalar**,PetscMemType*);
+  PetscErrorCode (*restorearraywriteandmemtype)(Vec,PetscScalar**,PetscMemType*);
   PetscErrorCode (*concatenate)(PetscInt,const Vec[],Vec*,IS*[]);
   PetscErrorCode (*sum)(Vec,PetscScalar*);
 };

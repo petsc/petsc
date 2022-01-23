@@ -75,6 +75,10 @@ Changes: Development
 -  Add ``VecSetBindingPropagates()``
 -  Add ``VecGetBindingPropagates()``
 -  For CUDA and ViennaCL and HIP GPU vectors, ``VecCreate()`` no longer allocates the array on CPU eagerly, it is only allocated if it is needed
+-  ``VecGetArrayAndMemType()`` and ``VecGetArrayReadAndMemType()`` now always return a device pointer (copying the data to the device if needed) for the standard CUDA, HIP, and CUDA/HIP Kokkos vectors. Previously, they did so only when the device had the latest data
+-  Add ``VecGetArrayWriteAndMemType()`` and  ``VecRestoreArrayWriteAndMemType()``, which are similar to the ``VecGetArrayReadAndMemType()`` family, but only write to the vector on device
+
+.. rubric:: PetscSection:
 
 .. rubric:: PetscSection:
 

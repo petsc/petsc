@@ -384,6 +384,18 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqHIP(Vec v,PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecGetArrayWriteAndMemType_SeqHIP(Vec v,PetscScalar** a,PetscMemType *mtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Allocate memory (not zeroed) on device if not yet, but no need to sync data from host to device */
+  ierr = VecHIPAllocateCheck(v);CHKERRQ(ierr);
+  *a   = ((Vec_HIP*)v->spptr)->GPUarray;
+  if (mtype) *mtype = PETSC_MEMTYPE_HIP;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool bind)
 {
   PetscErrorCode ierr;
@@ -429,6 +441,7 @@ PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool bind)
     V->ops->getarraywrite          = NULL;
     V->ops->getarrayandmemtype     = NULL;
     V->ops->restorearrayandmemtype = NULL;
+    V->ops->getarraywriteandmemtype= NULL;
     V->ops->max                    = VecMax_Seq;
     V->ops->min                    = VecMin_Seq;
     V->ops->reciprocal             = VecReciprocal_Default;
@@ -472,6 +485,7 @@ PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool bind)
     V->ops->restorearray           = VecRestoreArray_SeqHIP;
     V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqHIP;
     V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqHIP;
+    V->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqHIP;
     V->ops->max                    = VecMax_SeqHIP;
     V->ops->min                    = VecMin_SeqHIP;
     V->ops->reciprocal             = VecReciprocal_SeqHIP;

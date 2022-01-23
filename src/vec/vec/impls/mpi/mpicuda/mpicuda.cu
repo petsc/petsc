@@ -450,6 +450,7 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool bind)
     V->ops->getarraywrite          = NULL;
     V->ops->getarrayandmemtype     = NULL;
     V->ops->restorearrayandmemtype = NULL;
+    V->ops->getarraywriteandmemtype= NULL;
     V->ops->max                    = VecMax_MPI;
     V->ops->min                    = VecMin_MPI;
     V->ops->reciprocal             = VecReciprocal_Default;
@@ -495,6 +496,7 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool bind)
     V->ops->restorearray           = VecRestoreArray_SeqCUDA;
     V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqCUDA;
     V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqCUDA;
+    V->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqCUDA;
     V->ops->max                    = VecMax_MPICUDA;
     V->ops->min                    = VecMin_MPICUDA;
     V->ops->reciprocal             = VecReciprocal_SeqCUDA;

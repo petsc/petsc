@@ -394,6 +394,18 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecGetArrayWriteAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMemType *mtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Allocate memory (not zeroed) on device if not yet, but no need to sync data from host to device */
+  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
+  if (mtype) *mtype = ((Vec_CUDA*)v->spptr)->nvshmem ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUDA;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
 {
   PetscErrorCode ierr;
@@ -438,6 +450,7 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
     V->ops->getarrayandmemtype     = NULL;
+    V->ops->getarraywriteandmemtype= NULL;
     V->ops->restorearrayandmemtype = NULL;
     V->ops->max                    = VecMax_Seq;
     V->ops->min                    = VecMin_Seq;
@@ -484,6 +497,7 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
     V->ops->getarray               = VecGetArray_SeqCUDA;
     V->ops->restorearray           = VecRestoreArray_SeqCUDA;
     V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqCUDA;
+    V->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqCUDA;
     V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqCUDA;
     V->ops->max                    = VecMax_SeqCUDA;
     V->ops->min                    = VecMin_SeqCUDA;
