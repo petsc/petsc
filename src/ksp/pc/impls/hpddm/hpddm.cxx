@@ -1153,7 +1153,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       if (algebraic) subdomains = PETSC_TRUE;
       ierr = PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_define_subdomains", &subdomains, NULL);CHKERRQ(ierr);
       ierr = PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_has_neumann", &data->Neumann, NULL);CHKERRQ(ierr);
-      if (algebraic && data->Neumann) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_has_neumann");
+      if (data->Neumann) {
+        if (block) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_block_splitting and -pc_hpddm_has_neumann");
+        if (algebraic) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_has_neumann");
+      }
       ierr = ISCreateStride(PetscObjectComm((PetscObject)data->is), P->rmap->n, P->rmap->rstart, 1, &loc);CHKERRQ(ierr);
     }
     if (data->N > 1 && (data->aux || ismatis || algebraic)) {
