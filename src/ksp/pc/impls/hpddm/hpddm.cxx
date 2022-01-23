@@ -916,6 +916,7 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
 
   PetscFunctionBegin;
   ierr = ISCreateStride(PETSC_COMM_SELF, P->cmap->N, 0, 1, icol + 2);CHKERRQ(ierr);
+  ierr = ISSetBlockSize(icol[2], P->cmap->bs);CHKERRQ(ierr);
   ierr = ISSetIdentity(icol[2]);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg);CHKERRQ(ierr);
   if (flg) {
@@ -930,6 +931,7 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
   }
   ierr = ISDestroy(icol + 2);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF, M[0]->rmap->N, 0, 1, irow);CHKERRQ(ierr);
+  ierr = ISSetBlockSize(irow[0], P->cmap->bs);CHKERRQ(ierr);
   ierr = ISSetIdentity(irow[0]);CHKERRQ(ierr);
   if (!block) {
     ierr = PetscMalloc2(P->cmap->N, &ptr, P->cmap->N, &idx);CHKERRQ(ierr);
@@ -956,22 +958,58 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
     ierr = PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Compact", (PetscObject)(*sub)[1]);CHKERRQ(ierr);
   } else {
     Mat aux;
-    Vec sum[2];
     ierr = MatSetOption(M[0], MAT_SUBMAT_SINGLEIS, PETSC_TRUE);CHKERRQ(ierr);
     /* diagonal block of the overlapping rows */
     ierr = MatCreateSubMatrices(M[0], 1, irow, is, MAT_INITIAL_MATRIX, sub);CHKERRQ(ierr);
     ierr = MatDuplicate((*sub)[0], MAT_COPY_VALUES, &aux);CHKERRQ(ierr);
-    ierr = MatCreateVecs(aux, sum, sum + 1);CHKERRQ(ierr);
-    ierr = MatGetRowSum(M[0], sum[0]);CHKERRQ(ierr);
-    ierr = MatGetRowSum(aux, sum[1]);CHKERRQ(ierr);
-    /* off-diagonal block row sum (full rows - diagonal block rows) */
-    ierr = VecAXPY(sum[0], -1.0, sum[1]);CHKERRQ(ierr);
     ierr = MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
-    /* subdomain matrix minus off-diagonal block row sum */
-    ierr = MatDiagonalSet(aux, sum[0], ADD_VALUES);CHKERRQ(ierr);
+    if (P->cmap->bs == 1) { /* scalar case */
+      Vec sum[2];
+      ierr = MatCreateVecs(aux, sum, sum + 1);CHKERRQ(ierr);
+      ierr = MatGetRowSum(M[0], sum[0]);CHKERRQ(ierr);
+      ierr = MatGetRowSum(aux, sum[1]);CHKERRQ(ierr);
+      /* off-diagonal block row sum (full rows - diagonal block rows) */
+      ierr = VecAXPY(sum[0], -1.0, sum[1]);CHKERRQ(ierr);
+      /* subdomain matrix plus off-diagonal block row sum */
+      ierr = MatDiagonalSet(aux, sum[0], ADD_VALUES);CHKERRQ(ierr);
+      ierr = VecDestroy(sum);CHKERRQ(ierr);
+      ierr = VecDestroy(sum + 1);CHKERRQ(ierr);
+    } else { /* vectorial case */
+      /* TODO: missing MatGetValuesBlocked(), so the code below is     */
+      /* an extension of the scalar case for when bs > 1, but it could */
+      /* be more efficient by avoiding all these MatMatMult()          */
+      Mat         sum[2], ones;
+      PetscScalar *ptr;
+      ierr = PetscCalloc1(M[0]->cmap->n * P->cmap->bs, &ptr);CHKERRQ(ierr);
+      ierr = MatCreateDense(PETSC_COMM_SELF, M[0]->cmap->n, P->cmap->bs, M[0]->cmap->n, P->cmap->bs, ptr, &ones);CHKERRQ(ierr);
+      for (n = 0; n < M[0]->cmap->n; n += P->cmap->bs) {
+        for (p = 0; p < P->cmap->bs; ++p) ptr[n + p * (M[0]->cmap->n + 1)] = 1.0;
+      }
+      ierr = MatMatMult(M[0], ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum);CHKERRQ(ierr);
+      ierr = MatDestroy(&ones);CHKERRQ(ierr);
+      ierr = MatCreateDense(PETSC_COMM_SELF, aux->cmap->n, P->cmap->bs, aux->cmap->n, P->cmap->bs, ptr, &ones);CHKERRQ(ierr);
+      ierr = MatDenseSetLDA(ones, M[0]->cmap->n);CHKERRQ(ierr);
+      ierr = MatMatMult(aux, ones, MAT_INITIAL_MATRIX, PETSC_DEFAULT, sum + 1);CHKERRQ(ierr);
+      ierr = MatDestroy(&ones);CHKERRQ(ierr);
+      ierr = PetscFree(ptr);CHKERRQ(ierr);
+      /* off-diagonal block row sum (full rows - diagonal block rows) */
+      ierr = MatAXPY(sum[0], -1.0, sum[1], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatDestroy(sum + 1);CHKERRQ(ierr);
+      /* re-order values to be consistent with MatSetValuesBlocked()           */
+      /* equivalent to MatTranspose() which does not truly handle              */
+      /* MAT_INPLACE_MATRIX in the rectangular case, as it calls PetscMalloc() */
+      ierr = MatDenseGetArrayWrite(sum[0], &ptr);CHKERRQ(ierr);
+      HPDDM::Wrapper<PetscScalar>::imatcopy<'T'>(P->cmap->bs, sum[0]->rmap->n, ptr, sum[0]->rmap->n, P->cmap->bs);
+      /* subdomain matrix plus off-diagonal block row sum */
+      for (n = 0; n < aux->cmap->n / P->cmap->bs; ++n) {
+        ierr = MatSetValuesBlocked(aux, 1, &n, 1, &n, ptr + n * P->cmap->bs * P->cmap->bs, ADD_VALUES);CHKERRQ(ierr);
+      }
+      ierr = MatAssemblyBegin(aux, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(aux, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArrayWrite(sum[0], &ptr);CHKERRQ(ierr);
+      ierr = MatDestroy(sum);CHKERRQ(ierr);
+    }
     ierr = MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = VecDestroy(sum);CHKERRQ(ierr);
-    ierr = VecDestroy(sum + 1);CHKERRQ(ierr);
     /* left-hand side of GenEO, with the same sparsity pattern as PCASM subdomain solvers  */
     ierr = PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Neumann_Mat", (PetscObject)aux);CHKERRQ(ierr);
   }
