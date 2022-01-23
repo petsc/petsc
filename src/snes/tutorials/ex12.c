@@ -1653,15 +1653,15 @@ int main(int argc, char **argv)
   test:
     suffix: tri_p1_adapt_uniform_pragmatic
     requires: pragmatic tetgen
-    nsize: 4
-    args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
+    nsize: 2
+    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
     timeoutfactor: 2
 
   test:
     suffix: tri_p2_adapt_uniform_pragmatic
     requires: pragmatic tetgen
-    nsize: 4
-    args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
+    nsize: 2
+    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
     timeoutfactor: 1
 
   test:
@@ -1679,15 +1679,15 @@ int main(int argc, char **argv)
   test:
     suffix: tri_p1_adapt_uniform_parmmg
     requires: parmmg tetgen
-    nsize: 4
-    args: -run_type full -dm_plex_box_faces 6,6,6 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
+    nsize: 2
+    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
     timeoutfactor: 2
 
   test:
     suffix: tri_p2_adapt_uniform_parmmg
     requires: parmmg tetgen
-    nsize: 4
-    args: -run_type full -dm_plex_box_faces 6,6,6 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
+    nsize: 2
+    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
     timeoutfactor: 1
 
   # Full solve tensor AMR
