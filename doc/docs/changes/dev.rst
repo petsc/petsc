@@ -107,6 +107,7 @@ Changes: Development
 - Change timestepper type ``TSDISCGRAD`` to include additional conservation terms based on formulation from [Gonzalez 1996] for Hamiltonian systems:
   - Add ``TSDiscGradIsGonzalez()`` to check flag for whether to use additional conservative terms in discrete gradient formulation
   - Add ``TSDiscGradUseGonzalez()`` to set discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
+- Add ``TSRemoveTrajectory`` to destroy and remove the internal TSTrajectory object from TS
 
 .. rubric:: TAO:
 

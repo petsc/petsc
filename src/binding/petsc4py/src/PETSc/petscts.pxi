@@ -221,6 +221,7 @@ cdef extern from * nogil:
     ctypedef int (*PetscTSRHSJacobianP)(PetscTS,PetscReal,PetscVec,PetscMat,void*) except PETSC_ERR_PYTHON
 
     int TSSetSaveTrajectory(PetscTS)
+    int TSRemoveTrajectory(PetscTS)
     int TSSetCostGradients(PetscTS,PetscInt,PetscVec*,PetscVec*)
     int TSGetCostGradients(PetscTS,PetscInt*,PetscVec**,PetscVec**)
     int TSCreateQuadratureTS(PetscTS,PetscBool,PetscTS*)
@@ -234,6 +235,7 @@ cdef extern from * nogil:
     int TSAdjointSetSteps(PetscTS,PetscInt)
     int TSAdjointStep(PetscTS)
     int TSAdjointSetUp(PetscTS)
+    int TSAdjointReset(PetscTS)
     int TSAdjointComputeDRDPFunction(PetscTS,PetscReal,PetscVec,PetscVec*)
     int TSAdjointComputeDRDYFunction(PetscTS,PetscReal,PetscVec,PetscVec*)
     int TSAdjointCostIntegral(PetscTS)
