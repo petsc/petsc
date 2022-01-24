@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
         args: -vec_type viennacl
       test:
         requires: !sycl kokkos_kernels
+        TODO: enabled it after adding Kokkos support for VecGetSubVector()
         suffix: kokkos
         args: -vec_type kokkos
       test:
