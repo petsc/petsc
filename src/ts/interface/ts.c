@@ -486,7 +486,7 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
 
    Level: intermediate
 
-.seealso: TSGetTrajectory(), TSAdjointSolve()
+.seealso: TSGetTrajectory(), TSAdjointSolve(), TSRemoveTrajectory()
 
 @*/
 PetscErrorCode  TSResetTrajectory(TS ts)
@@ -498,6 +498,31 @@ PetscErrorCode  TSResetTrajectory(TS ts)
   if (ts->trajectory) {
     ierr = TSTrajectoryDestroy(&ts->trajectory);CHKERRQ(ierr);
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSRemoveTrajectory - Destroys and removes the internal TSTrajectory object from TS
+
+   Collective on TS
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: intermediate
+
+.seealso: TSResetTrajectory(), TSAdjointSolve()
+
+@*/
+PetscErrorCode TSRemoveTrajectory(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->trajectory) {
+    ierr = TSTrajectoryDestroy(&ts->trajectory);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

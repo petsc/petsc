@@ -312,6 +312,7 @@ PETSC_EXTERN PetscBool         TSTrajectoryRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode TSSetSaveTrajectory(TS);
 PETSC_EXTERN PetscErrorCode TSResetTrajectory(TS);
+PETSC_EXTERN PetscErrorCode TSRemoveTrajectory(TS);
 
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryReset(TSTrajectory);
