@@ -448,6 +448,8 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool bind)
     V->ops->getlocalvectorread     = NULL;
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
+    V->ops->getarrayandmemtype     = NULL;
+    V->ops->restorearrayandmemtype = NULL;
     V->ops->max                    = VecMax_MPI;
     V->ops->min                    = VecMin_MPI;
     V->ops->reciprocal             = VecReciprocal_Default;

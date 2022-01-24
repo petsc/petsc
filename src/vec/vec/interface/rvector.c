@@ -2023,10 +2023,12 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 }
 
 /*@C
-   VecGetArrayAndMemType - Like VecGetArray(), but if this is a device vector (e.g., VECCUDA) and the device has up-to-date data,
-   the returned pointer will be a device pointer to the device memory that contains this processor's portion of the vector data.
-   Otherwise, when this is a host vector (e.g., VECMPI), or a device vector with the host having newer data than device,
-   it functions as VecGetArray() and returns a host pointer.
+   VecGetArrayAndMemType - Like VecGetArray(), but if this is a standard device vector (e.g., VECCUDA), the returned pointer will be a device
+   pointer to the device memory that contains this processor's portion of the vector data. Device data is guaranteed to have the latest value.
+   Otherwise, when this is a host vector (e.g., VECMPI), in that case their routine functions the same as VecGetArray() and returns a host pointer.
+
+   For VECKOKKOS, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like VECSEQ/VECMPI;
+   otherwise, it works like VECCUDA or VECHIP etc.
 
    Logically Collective on Vec
 
@@ -2091,8 +2093,8 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x,PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayReadAndMemType - Like VecGetArrayRead(), but if this is a CUDA vector and it is currently offloaded to GPU,
-   the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
+   VecGetArrayReadAndMemType - Like VecGetArrayRead(), but if this is a device vector and it is currently offloaded to device,
+   the returned pointer will be a device pointer to the device memory that contains this processor's portion of the
    vector data. Otherwise, it functions as VecGetArrayRead().
 
    Not Collective
