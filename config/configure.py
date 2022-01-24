@@ -100,6 +100,8 @@ def chkenable():
     if name.find(no_break_space) >= 0:
       sys.exit(ValueError('Unicode NO-BREAK SPACE char found in arguments! Please rerun configure using regular space chars: %s' % [name]))
     name = name.replace(en_dash,'-')
+    if not name.isprintable():
+      sys.exit(ValueError('Non-printable characters or control characters found in arguments! Please rerun configure using only printable character arguments: %s' % [name]))
     if name.lstrip('-').startswith('enable-cxx'):
       if name.find('=') == -1:
         name = name.replace('enable-cxx','with-clanguage=C++',1)
