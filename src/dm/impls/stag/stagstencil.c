@@ -260,7 +260,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt dim,PetscInt n,const DMS
   Accepts stencils which refer to global element numbers, but
   only allows access to entries in the local representation (including ghosts).
 
-  This approach is not as efficient as setting values directly with DMStagVecGetArray(), which is recommended for matrix free operators.
+  This approach is not as efficient as getting values directly with DMStagVecGetArray(), which is recommended for matrix free operators.
 
   Level: advanced
 
