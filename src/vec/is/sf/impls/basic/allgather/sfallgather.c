@@ -113,7 +113,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
 
   PetscFunctionBegin;
   sf->ops->BcastEnd        = PetscSFBcastEnd_Basic;
-  sf->ops->ReduceEnd       = PetscSFReduceEnd_Basic;
+  sf->ops->ReduceEnd       = PetscSFReduceEnd_Allgatherv;
 
   /* Inherit from Allgatherv */
   sf->ops->Reset           = PetscSFReset_Allgatherv;

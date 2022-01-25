@@ -103,7 +103,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
   representing coordinates on elements and vertices (element boundaries)
   for a 1-dimensional DMStag in each coordinate direction.
 
-  One should use DMStagGetProductCoordinateSlot() to determine appropriate
+  One should use DMStagGetProductCoordinateLocationSlot() to determine appropriate
   indices for the second dimension in these returned arrays. This function
   checks that the coordinate array is a suitable product of 1-dimensional
   DMStag objects.
@@ -169,8 +169,13 @@ PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm,void* arrX,void* arrY,
 . slot - the index to use in local arrays
 
   Notes:
-  Checks that the coordinates are actually set up so that using the
-  slots from the first 1d coordinate sub-DM is valid for all the 1D coordinate sub-DMs.
+  For loc, one should use DMSTAG_LEFT, DMSTAG_ELEMENT, or DMSTAG_RIGHT for "previous", "center" and "next"
+  locations, respectively, in each dimension.
+  One can equivalently use DMSTAG_DOWN or DMSTAG_BACK in place of DMSTAG_LEFT,
+  and DMSTAG_UP or DMSTACK_FRONT in place of DMSTAG_RIGHT;
+
+  This function checks that the coordinates are actually set up so that using the
+  slots from any of the 1D coordinate sub-DMs are valid for all the 1D coordinate sub-DMs.
 
   Level: intermediate
 
