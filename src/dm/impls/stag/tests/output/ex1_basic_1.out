@@ -3,7 +3,7 @@ DM Object: 8 MPI processes
 Dimension: 1
 Global size: 37
 Boundary ghosting: NONE
-Elementwise ghost stencil: NONE, width 2
+Elementwise ghost stencil: NONE
 Stratum dof: 0:1 1:1
 [0] Local elements : 5 (5 with ghosts)
 [0] Local native entries: 10
