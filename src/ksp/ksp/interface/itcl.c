@@ -383,6 +383,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_singular_value", "singular_value", ksp);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_error", "error", ksp);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_monitor_pause_final", "Pauses all draw monitors at the final iterate", "KSPMonitorPauseFinal_Internal", PETSC_FALSE, &ksp->pauseFinal, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",ksp->guess_zero ? PETSC_FALSE : PETSC_TRUE,&flag,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
+  }
 
   ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -435,10 +439,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flag) {ierr = KSPConvergedDefaultSetUMIRNorm(ksp);CHKERRQ(ierr);}
   ierr = PetscOptionsBool("-ksp_converged_maxits","Declare convergence if the maximum number of iterations is reached","KSPConvergedDefaultSetConvergedMaxits",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
   if (set) {ierr = KSPConvergedDefaultSetConvergedMaxits(ksp,flag);CHKERRQ(ierr);}
-  ierr = PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",ksp->guess_zero ? PETSC_FALSE : PETSC_TRUE,&flag,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
-  }
   ierr = KSPGetReusePreconditioner(ksp,&reuse);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
   ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
