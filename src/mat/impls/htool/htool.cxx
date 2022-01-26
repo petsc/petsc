@@ -619,7 +619,7 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A,IS* is)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  source = a->hmatrix->get_local_perm_source();
+  source = a->hmatrix->get_source_cluster()->get_local_perm();
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),source.size(),source.data(),PETSC_COPY_VALUES,is);CHKERRQ(ierr);
   ierr = ISSetPermutation(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -656,7 +656,7 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A,IS* is)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  target = a->hmatrix->get_local_perm_target();
+  target = a->hmatrix->get_target_cluster()->get_local_perm();
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),target.size(),target.data(),PETSC_COPY_VALUES,is);CHKERRQ(ierr);
   ierr = ISSetPermutation(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
