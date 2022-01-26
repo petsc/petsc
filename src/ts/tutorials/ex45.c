@@ -365,7 +365,7 @@ int main(int argc, char **argv)
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx);CHKERRQ(ierr);
   if (ctx.expTS) {
-    ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFEM, &ctx);CHKERRQ(ierr);
+    ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFEM, &ctx);CHKERRQ(ierr);
     if (ctx.lumped) {ierr = DMTSCreateRHSMassMatrixLumped(dm);CHKERRQ(ierr);}
     else            {ierr = DMTSCreateRHSMassMatrix(dm);CHKERRQ(ierr);}
   } else {

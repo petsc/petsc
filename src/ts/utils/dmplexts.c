@@ -133,7 +133,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
   Level: developer
 
-.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeRHSFEM()
+.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeRHSFunctionFEM()
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {
@@ -190,7 +190,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
   Level: developer
 
-.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeRHSFEM()
+.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeRHSFunctionFEM()
 @*/
 PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
@@ -239,7 +239,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 }
 
 /*@
-  DMPlexTSComputeRHSFEM - Form the local residual G from the local input X using pointwise functions specified by the user
+  DMPlexTSComputeRHSFunctionFEM - Form the local residual G from the local input X using pointwise functions specified by the user
 
   Input Parameters:
 + dm - The mesh
@@ -254,7 +254,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 .seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeIJacobianFEM()
 @*/
-PetscErrorCode DMPlexTSComputeRHSFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
+PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
 {
   DM             plex;
   IS             allcellIS;
