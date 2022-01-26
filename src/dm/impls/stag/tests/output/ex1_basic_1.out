@@ -4,7 +4,8 @@ Dimension: 1
 Global size: 37
 Boundary ghosting: NONE
 Elementwise ghost stencil: NONE
-Stratum dof: 0:1 1:1
+1 DOF per vertex  (0D)
+1 DOF per element (1D)
 [0] Local elements : 5 (5 with ghosts)
 [0] Local native entries: 10
 [0] Local entries total : 10

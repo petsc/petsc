@@ -4,7 +4,7 @@
 #include <petsc/private/dmstagimpl.h>
 
 /*@C
-  DMStagCreate1d - Create an object to manage data living on the faces, edges, and vertices of a parallelized regular 1D grid.
+  DMStagCreate1d - Create an object to manage data living on the elements and vertices of a parallelized regular 1D grid.
 
   Collective
 
@@ -12,8 +12,8 @@
 + comm - MPI communicator
 . bndx - boundary type: DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, or DM_BOUNDARY_GHOSTED
 . M - global number of grid points
-. dof0 - number of degrees of freedom per vertex/point/node/0-cell
-. dof1 - number of degrees of freedom per element/edge/1-cell
+. dof0 - number of degrees of freedom per vertex/0-cell
+. dof1 - number of degrees of freedom per element/1-cell
 . stencilType - ghost/halo region type: DMSTAG_STENCIL_BOX or DMSTAG_STENCIL_NONE
 . stencilWidth - width, in elements, of halo/ghost region
 - lx - array of local sizes, of length equal to the comm size, summing to M

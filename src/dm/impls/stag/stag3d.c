@@ -11,7 +11,7 @@
 . bndx,bndy,bndz - boundary type: DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, or DM_BOUNDARY_GHOSTED
 . M,N,P - global number of grid points in x,y directions
 . m,n,p - number of ranks in the x,y directions (may be PETSC_DECIDE)
-. dof0 - number of degrees of freedom per vertex/point/node/0-cell
+. dof0 - number of degrees of freedom per vertex/0-cell
 . dof1 - number of degrees of freedom per edge/1-cell
 . dof2 - number of degrees of freedom per face/2-cell
 . dof3 - number of degrees of freedom per element/3-cell

@@ -5,7 +5,9 @@ Global sizes: 3 x 3
 Parallel decomposition: 3 x 3 ranks
 Boundary ghosting: NONE NONE
 Elementwise ghost stencil: BOX, width 1
-Stratum dof: 0:3 1:4 2:5
+3 DOF per vertex  (0D)
+4 DOF per face  (1D)
+5 DOF per element (2D)
 [0] Rank coordinates (0,0)
 [0] Local elements : 1 x 1 (2 x 2 with ghosts)
 [0] Local native entries: 16
