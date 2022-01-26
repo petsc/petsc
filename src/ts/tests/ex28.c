@@ -519,13 +519,13 @@ int main(int argc,char **argv)
   else if (user.monitorsp) {
     ierr = PetscDrawCreate(comm, NULL, "monitor", 0,0,400,300, &user.draw);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(user.draw);CHKERRQ(ierr);
-    ierr = PetscDrawSPCreate(user.draw, 2, &user.drawsp);CHKERRQ(ierr);
+    ierr = PetscDrawSPCreate(user.draw, 1, &user.drawsp);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts, SPMonitor, &user, NULL);CHKERRQ(ierr);
   }
   else if (user.monitorks) {
     ierr = PetscDrawCreate(comm, NULL, "monitor", 0,0,400,300, &user.draw);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(user.draw);CHKERRQ(ierr);
-    ierr = PetscDrawSPCreate(user.draw, 2, &user.drawks);CHKERRQ(ierr);
+    ierr = PetscDrawSPCreate(user.draw, 1, &user.drawks);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts, KSConv, &user, NULL);CHKERRQ(ierr);
   }
   ierr = TSSetRHSFunction(ts, NULL, RHSFunctionParticles, &user);CHKERRQ(ierr);
