@@ -2,7 +2,7 @@
 #include <petsc/private/partitionerimpl.h>
 #include <petsc/private/hashseti.h>
 
-const char * const DMPlexCSRAlgorithms[] = {"mat", "graph", "overlap", "DMPlexCSRAlgorithm", "DM_PLEX_CSR_"};
+const char * const DMPlexCSRAlgorithms[] = {"mat", "graph", "overlap", "DMPlexCSRAlgorithm", "DM_PLEX_CSR_",NULL};
 
 PETSC_STATIC_INLINE PetscInt DMPlex_GlobalID(PetscInt point) { return point >= 0 ? point : -(point+1); }
 
