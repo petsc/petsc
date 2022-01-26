@@ -115,10 +115,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
 }
 
 /*
-    PetscTableFind - checks if a key is in the table
-
-    If data==0, then no table entry exists.
-
+    PetscTableFind - finds data in table from a given key, if the key is valid but not in the table returns 0
 */
 PETSC_STATIC_INLINE PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,PetscInt *data)
 {
