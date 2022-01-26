@@ -121,8 +121,8 @@ for meth in methods:
     tao.setHessian(user.formHessian, H)
     #app.getKSP().getPC().setFromOptions()
     x.set(0) # zero initial guess
-    #tao.setInitial(x)
-    tao.solve(x)
+    tao.setSolution(x)
+    tao.solve()
     tao.destroy()
 
 ## # this is just for testing

@@ -392,14 +392,14 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     ierr = MatSetUp(gn->H);CHKERRQ(ierr);
     /* Subsolver setup,include initial vector and dictionary D */
     ierr = TaoSetUpdate(gn->subsolver,GNHookFunction,gn);CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(gn->subsolver,tao->solution);CHKERRQ(ierr);
+    ierr = TaoSetSolution(gn->subsolver,tao->solution);CHKERRQ(ierr);
     if (tao->bounded) {
       ierr = TaoSetVariableBounds(gn->subsolver,tao->XL,tao->XU);CHKERRQ(ierr);
     }
     ierr = TaoSetResidualRoutine(gn->subsolver,tao->ls_res,tao->ops->computeresidual,tao->user_lsresP);CHKERRQ(ierr);
     ierr = TaoSetJacobianResidualRoutine(gn->subsolver,tao->ls_jac,tao->ls_jac,tao->ops->computeresidualjacobian,tao->user_lsjacP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(gn->subsolver,GNObjectiveGradientEval,gn);CHKERRQ(ierr);
-    ierr = TaoSetHessianRoutine(gn->subsolver,gn->H,gn->H,GNComputeHessian,gn);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(gn->subsolver,NULL,GNObjectiveGradientEval,gn);CHKERRQ(ierr);
+    ierr = TaoSetHessian(gn->subsolver,gn->H,gn->H,GNComputeHessian,gn);CHKERRQ(ierr);
     /* Propagate some options down */
     ierr = TaoSetTolerances(gn->subsolver,tao->gatol,tao->grtol,tao->gttol);CHKERRQ(ierr);
     ierr = TaoSetMaximumIterations(gn->subsolver,tao->max_it);CHKERRQ(ierr);

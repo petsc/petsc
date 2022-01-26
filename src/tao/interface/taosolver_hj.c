@@ -1,7 +1,7 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
 /*@C
-   TaoSetHessianRoutine - Sets the function to compute the Hessian as well as the location to store the matrix.
+   TaoSetHessian - Sets the function to compute the Hessian as well as the location to store the matrix.
 
    Logically collective on Tao
 
@@ -23,8 +23,10 @@ $    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 -  ctx  - [optional] user-defined Hessian context
 
    Level: beginner
+
+.seealso: TaoSetObjective(), TaoSetGradient(), TaoSetObjectiveAndGradient(), TaoGetHessian()
 @*/
-PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
+PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -38,12 +40,8 @@ PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*f
     PetscValidHeaderSpecific(Hpre,MAT_CLASSID,3);
     PetscCheckSameComm(tao,1,Hpre,3);
   }
-  if (ctx) {
-    tao->user_hessP = ctx;
-  }
-  if (func) {
-    tao->ops->computehessian = func;
-  }
+  if (ctx) tao->user_hessP = ctx;
+  if (func) tao->ops->computehessian = func;
   if (H) {
     ierr = PetscObjectReference((PetscObject)H);CHKERRQ(ierr);
     ierr = MatDestroy(&tao->hessian);CHKERRQ(ierr);
@@ -54,6 +52,44 @@ PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*f
     ierr = MatDestroy(&tao->hessian_pre);CHKERRQ(ierr);
     tao->hessian_pre = Hpre;
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TaoGetHessian - Gets the function to compute the Hessian as well as the location to store the matrix.
+
+   Not collective
+
+   Input Parameter:
+.  tao  - the Tao context
+
+   OutputParameters:
++  H    - Matrix used for the hessian
+.  Hpre - Matrix that will be used operated on by preconditioner, can be the same as H
+.  func - Hessian evaluation routine
+-  ctx  - user-defined context for private data for the Hessian evaluation routine
+
+   Calling sequence of func:
+$    func(Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
+
++  tao  - the Tao  context
+.  x    - input vector
+.  H    - Hessian matrix
+.  Hpre - preconditioner matrix, usually the same as H
+-  ctx  - [optional] user-defined Hessian context
+
+   Level: beginner
+
+.seealso: TaoGetObjective(), TaoGetGradient(), TaoGetObjectiveAndGradient(), TaoSetHessian()
+@*/
+PetscErrorCode TaoGetHessian(Tao tao, Mat *H, Mat *Hpre, PetscErrorCode (**func)(Tao, Vec, Mat, Mat, void*), void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  if (H) *H = tao->hessian;
+  if (Hpre) *Hpre = tao->hessian_pre;
+  if (ctx) *ctx = tao->user_hessP;
+  if (func) *func = tao->ops->computehessian;
   PetscFunctionReturn(0);
 }
 
@@ -190,7 +226,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
 
 /*@C
    TaoComputeHessian - Computes the Hessian matrix that has been
-   set with TaoSetHessianRoutine().
+   set with TaoSetHessian().
 
    Collective on Tao
 
@@ -220,7 +256,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
 
    Level: developer
 
-.seealso: TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetHessianRoutine()
+.seealso: TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetHessian()
 @*/
 PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 {
@@ -230,7 +266,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
   PetscCheckSameComm(tao,1,X,2);
-  PetscCheckFalse(!tao->ops->computehessian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetHessianRoutine() first");
+  PetscCheckFalse(!tao->ops->computehessian,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetHessian() first");
   ++tao->nhess;
   ierr = VecLockReadPush(X);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(TAO_HessianEval,tao,X,H,Hpre);CHKERRQ(ierr);

@@ -3,10 +3,10 @@
 #include <petsc/private/taoimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define taosetobjectiveroutine_             TAOSETOBJECTIVEROUTINE
-#define taosetgradientroutine_              TAOSETGRADIENTROUTINE
-#define taosetobjectiveandgradientroutine_  TAOSETOBJECTIVEANDGRADIENTROUTINE
-#define taosethessianroutine_               TAOSETHESSIANROUTINE
+#define taosetobjective_                    TAOSETOBJECTIVE
+#define taosetgradient_                     TAOSETGRADIENT
+#define taosetobjectiveandgradient_         TAOSETOBJECTIVEANDGRADIENT
+#define taosethessian_                      TAOSETHESSIAN
 #define taosetresidualroutine_              TAOSETRESIDUALROUTINE
 #define taosetjacobianresidualroutine_      TAOSETJACOBIANRESIDUALROUTINE
 #define taosetjacobianroutine_              TAOSETJACOBIANROUTINE
@@ -31,11 +31,10 @@
 #define taoviewfromoptions_                 TAOVIEWFROMOPTIONS
 #define taodestroy_                         TAODESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-
-#define taosetobjectiveroutine_             taosetobjectiveroutine
-#define taosetgradientroutine_              taosetgradientroutine
-#define taosetobjectiveandgradientroutine_  taosetobjectiveandgradientroutine
-#define taosethessianroutine_               taosethessianroutine
+#define taosetobjective_                    taosetobjective
+#define taosetgradient_                     taosetgradient
+#define taosetobjectiveandgradient_         taosetobjectiveandgradient
+#define taosethessian_                      taosethessian
 #define taosetresidualroutine_              taosetresidualroutine
 #define taosetjacobianresidualroutine_      taosetjacobianresidualroutine
 #define taosetjacobianroutine_              taosetjacobianroutine
@@ -183,25 +182,32 @@ static PetscErrorCode ourtaoupdateroutine(Tao tao, PetscInt iter, void *ctx)
 
 EXTERN_C_BEGIN
 
-PETSC_EXTERN void taosetobjectiveroutine_(Tao *tao, void (*func)(Tao*, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void taosetobjective_(Tao *tao, void (*func)(Tao*, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLFUNCTION(func);
     *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.obj,(PetscVoidFunction)func,ctx);
-    if (!*ierr) *ierr = TaoSetObjectiveRoutine(*tao,ourtaoobjectiveroutine,ctx);
+    if (!*ierr) *ierr = TaoSetObjective(*tao,ourtaoobjectiveroutine,ctx);
 }
 
-PETSC_EXTERN void taosetgradientroutine_(Tao *tao, void (*func)(Tao*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void taosetgradient_(Tao *tao, Vec *g, void (*func)(Tao*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLFUNCTION(func);
     *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.grad,(PetscVoidFunction)func,ctx);
-    if (!*ierr) *ierr = TaoSetGradientRoutine(*tao,ourtaogradientroutine,ctx);
+    if (!*ierr) *ierr = TaoSetGradient(*tao,*g,ourtaogradientroutine,ctx);
 }
 
-PETSC_EXTERN void taosetobjectiveandgradientroutine_(Tao *tao, void (*func)(Tao*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void taosetobjectiveandgradient_(Tao *tao, Vec *g, void (*func)(Tao*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLFUNCTION(func);
     *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.objgrad,(PetscVoidFunction)func,ctx);
-    if (!*ierr) *ierr = TaoSetObjectiveAndGradientRoutine(*tao,ourtaoobjectiveandgradientroutine,ctx);
+    if (!*ierr) *ierr = TaoSetObjectiveAndGradient(*tao,*g,ourtaoobjectiveandgradientroutine,ctx);
+}
+
+PETSC_EXTERN void taosethessian_(Tao *tao, Mat *J, Mat *Jp, void (*func)(Tao*, Vec *, Mat *, Mat *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLFUNCTION(func);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.hess,(PetscVoidFunction)func,ctx);
+    if (!*ierr) *ierr = TaoSetHessian(*tao,*J, *Jp, ourtaohessianroutine,ctx);
 }
 
 PETSC_EXTERN void taosetresidualroutine_(Tao *tao, Vec *F, void (*func)(Tao*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
@@ -237,13 +243,6 @@ PETSC_EXTERN void taosetjacobiandesignroutine_(Tao *tao, Mat *J, void (*func)(Ta
     CHKFORTRANNULLFUNCTION(func);
     *ierr = PetscObjectSetFortranCallback((PetscObject)tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.jacdesign,(PetscVoidFunction)func,ctx);
     if (!*ierr) *ierr = TaoSetJacobianDesignRoutine(*tao,*J,ourtaojacobiandesignroutine,ctx);
-}
-
-PETSC_EXTERN void taosethessianroutine_(Tao *tao, Mat *J, Mat *Jp, void (*func)(Tao*, Vec *, Mat *, Mat *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
-{
-    CHKFORTRANNULLFUNCTION(func);
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*tao,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.hess,(PetscVoidFunction)func,ctx);
-    if (!*ierr) *ierr = TaoSetHessianRoutine(*tao,*J, *Jp, ourtaohessianroutine,ctx);
 }
 
 PETSC_EXTERN void taosetvariableboundsroutine_(Tao *tao, void (*func)(Tao*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)

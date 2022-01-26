@@ -41,9 +41,9 @@ The command line options are:\n\
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetInitialVector();
-   Routines: TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
+   Routines: TaoSetSolution();
+   Routines: TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
    Routines: TaoDestroy();
    Processors: 1
@@ -122,10 +122,10 @@ PetscErrorCode main(int argc,char **argv)
 
   /* Set solution vector with an initial guess */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
 
   /* Set routine for function and gradient evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
 
   /* From command line options, determine if using matrix-free hessian */
   ierr = PetscOptionsHasName(NULL,NULL,"-my_tao_mf",&flg);CHKERRQ(ierr);
@@ -134,11 +134,11 @@ PetscErrorCode main(int argc,char **argv)
     ierr = MatShellSetOperation(H,MATOP_MULT,(void(*)(void))HessianProductMat);CHKERRQ(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
-    ierr = TaoSetHessianRoutine(tao,H,H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
+    ierr = TaoSetHessian(tao,H,H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
   } else {
     ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user.ndim,user.ndim,5,NULL,&H);CHKERRQ(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void *)&user);CHKERRQ(ierr);
+    ierr = TaoSetHessian(tao,H,H,FormHessian,(void *)&user);CHKERRQ(ierr);
   }
 
   /* Test the LMVM matrix */

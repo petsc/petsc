@@ -134,7 +134,17 @@ Changes: Development
   - Add ``TSDiscGradUseGonzalez()`` to set discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
 - Add ``TSRemoveTrajectory`` to destroy and remove the internal TSTrajectory object from TS
 
-.. rubric:: TAO:
+.. rubric:: Tao:
+
+- Add ``TaoGetGradient()``, ``TaoGetObjectiveAndGradient()`` and ``TaoGetHessian()``
+- Deprecate ``TaoSetInitialVector()`` in favor of ``TaoSetSolution()``
+- Deprecate ``TaoGetSolutionVector()`` in favor of ``TaoGetSolution()``
+- Deprecate ``TaoGetGradientVector()`` in favor of ``TaoGetGradient()``
+- Deprecate ``TaoSetObjectiveRoutine()`` in favor of ``TaoSetObjective()``
+- Deprecate ``TaoSetGradientRoutine()`` in favor of ``TaoSetGradient()``
+- Deprecate ``TaoSetObjectiveAndGradientRoutine()`` in favor of ``TaoSetObjectiveAndGradient()``
+- Deprecate ``TaoSetHessianRoutine()`` in favor of ``TaoSetHessian()``
+- Change ``TaoGetObjective()``. Use ``TaoGetSolutionStatus(tao,NULL,&fct,NULL,NULL,NULL,NULL)`` instead
 
 .. rubric:: DM/DA:
 

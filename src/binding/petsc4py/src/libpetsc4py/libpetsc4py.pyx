@@ -255,6 +255,11 @@ cdef inline TS TS_(PetscTS p):
     ob.obj[0] = newRef(p)
     return ob
 
+cdef inline TAO TAO_(PetscTAO p):
+    cdef TAO ob = TAO.__new__(TAO)
+    ob.obj[0] = newRef(p)
+    return ob
+
 # --------------------------------------------------------------------
 
 cdef inline object bytes2str(const char p[]):
@@ -2471,7 +2476,7 @@ cdef PetscErrorCode TSPythonSetType_PYTHON(PetscTS ts, char name[]) \
     cdef object ctx = createcontext(name)
     TSPythonSetContext(ts, <void*>ctx)
     PyTS(ts).setname(name)
-    return  0
+    return FunctionEnd()
 
 cdef PetscErrorCode TSCreate_Python(
     PetscTS ts,
@@ -2810,6 +2815,301 @@ cdef PetscErrorCode TSStep_Python_default(
 
 # --------------------------------------------------------------------
 
+
+cdef extern from * nogil:
+    struct _TaoOps:
+      PetscErrorCode (*destroy)(PetscTAO) except IERR
+      PetscErrorCode (*setup)(PetscTAO) except IERR
+      PetscErrorCode (*solve)(PetscTAO) except IERR
+      PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscTAO) except IERR
+      PetscErrorCode (*view)(PetscTAO,PetscViewer) except IERR
+    ctypedef _TaoOps *TaoOps
+    ctypedef enum TaoConvergedReason:
+      TAO_CONTINUE_ITERATING
+      TAO_DIVERGED_MAXITS
+    struct _p_TAO:
+        void *data
+        TaoOps ops
+        PetscInt niter, max_it
+        TaoConvergedReason reason
+        PetscInt ksp_its, ksp_tot_its
+        PetscKSP ksp
+        PetscVec gradient
+        PetscVec stepdirection
+        PetscTAOLineSearch linesearch
+
+cdef extern from * nogil:
+    PetscErrorCode TaoGetSolution(PetscTAO,PetscVec*)
+    PetscErrorCode TaoComputeObjective(PetscTAO,PetscVec,PetscReal*)
+    PetscErrorCode TaoComputeGradient(PetscTAO,PetscVec,PetscVec)
+    PetscErrorCode TaoComputeObjectiveAndGradient(PetscTAO,PetscVec,PetscReal*,PetscVec)
+    PetscErrorCode TaoMonitor(PetscTAO,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal)
+    PetscErrorCode TaoLogConvergenceHistory(PetscTAO,PetscReal,PetscReal,PetscReal,PetscInt)
+    PetscErrorCode VecNorm(PetscVec,NormType,PetscReal*)
+    PetscErrorCode VecCopy(PetscVec,PetscVec)
+    PetscErrorCode VecScale(PetscVec,PetscReal)
+    PetscErrorCode KSPSetFromOptions(PetscKSP)
+
+    # custom.h
+    PetscErrorCode TaoGetVecs(PetscTAO,PetscVec*,PetscVec*,PetscVec*)
+    PetscErrorCode TaoCheckReals(PetscTAO,PetscReal,PetscReal)
+    PetscErrorCode TaoConverged(PetscTAO)
+    PetscErrorCode TaoComputeUpdate(PetscTAO)
+    PetscErrorCode TaoCreateDefaultLineSearch(PetscTAO)
+    PetscErrorCode TaoCreateDefaultKSP(PetscTAO)
+    PetscErrorCode TaoApplyLineSearch(PetscTAO,PetscReal*,PetscReal*)
+
+@cython.internal
+cdef class _PyTao(_PyObj): pass
+cdef inline _PyTao PyTao(PetscTAO tao):
+    if tao != NULL and tao.data != NULL:
+        return <_PyTao>tao.data
+    else:
+        return _PyTao.__new__(_PyTao)
+
+cdef public PetscErrorCode TaoPythonGetContext(PetscTAO tao, void **ctx) \
+    except IERR:
+    FunctionBegin(b"TaoPythonGetContext")
+    PyTao(tao).getcontext(ctx)
+    return FunctionEnd()
+
+cdef public PetscErrorCode TaoPythonSetContext(PetscTAO tao, void *ctx) \
+    except IERR:
+    FunctionBegin(b"TaoPythonSetContext")
+    PyTao(tao).setcontext(ctx, TAO_(tao))
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoPythonSetType_PYTHON(PetscTAO tao, char name[]) \
+    except IERR with gil:
+    FunctionBegin(b"TaoPythonSetType_PYTHON")
+    if name == NULL: return FunctionEnd() # XXX
+    cdef object ctx = createcontext(name)
+    TaoPythonSetContext(tao, <void*>ctx)
+    PyTao(tao).setname(name)
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoCreate_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoCreate_Python")
+    #
+    cdef TaoOps ops    = tao.ops
+    ops.destroy        = TaoDestroy_Python
+    ops.view           = TaoView_Python
+    ops.solve          = TaoSolve_Python
+    ops.setup          = TaoSetUp_Python
+    ops.setfromoptions = TaoSetFromOptions_Python
+    #
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>tao, b"TaoPythonSetType_C",
+            <PetscVoidFunction>TaoPythonSetType_PYTHON) )
+    #
+    tao.max_it = 10000
+    #
+    CHKERR( TaoCreateDefaultLineSearch(tao) )
+    CHKERR( TaoCreateDefaultKSP(tao) )
+    #
+    cdef ctx = PyTao(NULL)
+    tao.data = <void*> ctx
+    Py_INCREF(<PyObject*>tao.data)
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoDestroy_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoDestroy_Python")
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>tao, b"TaoPythonSetType_C",
+            <PetscVoidFunction>NULL) )
+    #
+    if not Py_IsInitialized(): return FunctionEnd()
+    try:
+        addRef(tao)
+        TaoPythonSetContext(tao, NULL)
+    finally:
+        delRef(tao)
+        Py_DECREF(<PyObject*>tao.data)
+        tao.data = NULL
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoSetUp_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoSetUp_Python")
+    cdef char name[2048]
+    cdef PetscBool found = PETSC_FALSE
+    if PyTao(tao).self is None:
+        CHKERR( PetscOptionsGetString(NULL,
+                getPrefix(tao), b"-tao_python_type",
+                name, sizeof(name), &found) )
+        if found and name[0]:
+            CHKERR( TaoPythonSetType_PYTHON(tao, name) )
+    if PyTao(tao).self is None:
+        return PetscSETERR(PETSC_ERR_USER,
+            "Python context not set, call one of \n"
+            " * TaoPythonSetType(tao, \"[package.]module.class\")\n"
+            " * TaoSetFromOptions(tao) and pass option "
+            "-tao_python_type [package.]module.class")
+    #
+    cdef setUp = PyTao(tao).setUp
+    if setUp is not None:
+        setUp(TAO_(tao))
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoSetFromOptions_Python(
+    PetscOptionItems *PetscOptionsObject,
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoSetFromOptions_Python")
+    #
+    cdef char name[2048], *defval = PyTao(tao).getname()
+    cdef PetscBool found = PETSC_FALSE
+    cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
+    CHKERR( PetscOptionsString(
+            b"-tao_python_type", b"Python [package.]module[.{class|function}]",
+            b"TaoPythonSetType", defval, name, sizeof(name), &found) ); <void>opts;
+    if found and name[0]:
+        CHKERR( TaoPythonSetType_PYTHON(tao, name) )
+    #
+    cdef setFromOptions = PyTao(tao).setFromOptions
+    if setFromOptions is not None:
+        setFromOptions(TAO_(tao))
+    CHKERR( KSPSetFromOptions(tao.ksp) )
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoView_Python(
+    PetscTAO tao,
+    PetscViewer vwr,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoView_Python")
+    viewcontext(PyTao(tao), vwr)
+    cdef view = PyTao(tao).view
+    if view is not None:
+        view(TAO_(tao), Viewer_(vwr))
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoSolve_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoSolve_Python")
+    #
+    tao.niter = 0
+    tao.ksp_its = 0
+    tao.reason = TAO_CONTINUE_ITERATING
+    #
+    cdef solve = PyTao(tao).solve
+    if solve is not None:
+        solve(TAO_(tao))
+    else:
+        TaoSolve_Python_default(tao)
+    #
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoSolve_Python_default(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoSolve_Python_default")
+    #
+    cdef PetscVec X = NULL, G = NULL, S = NULL
+    CHKERR( TaoGetVecs(tao, &X, &G, &S) )
+    #
+    cdef PetscReal f = 0.0
+    cdef PetscReal gnorm = 0.0
+    cdef PetscReal step = 1.0
+    #
+    if G != NULL:
+        CHKERR( TaoComputeObjectiveAndGradient(tao, X, &f, G) )
+        CHKERR( VecNorm(G, NORM_2, &gnorm) )
+    else:
+        CHKERR( TaoComputeObjective(tao, X, &f) )
+    CHKERR( TaoCheckReals(tao, f, gnorm) )
+
+    CHKERR( TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao.ksp_its) )
+    CHKERR( TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step) )
+    CHKERR( TaoConverged(tao) )
+
+    if tao.reason != TAO_CONTINUE_ITERATING:
+        return FunctionEnd()
+
+    cdef PetscInt its = 0
+    for its from 0 <= its < tao.max_it:
+        if tao.reason: break
+        CHKERR( TaoComputeUpdate(tao) )
+
+        TaoPreStep_Python(tao)
+        #
+        tao.ksp_its = 0
+        TaoStep_Python(tao, X, G, S)
+        CHKERR( KSPGetIterationNumber(tao.ksp, &tao.ksp_its) )
+        tao.ksp_tot_its += tao.ksp_its
+        #
+        if G != NULL:
+          CHKERR( TaoApplyLineSearch(tao, &f, &step) )
+          CHKERR( VecNorm(G, NORM_2, &gnorm) )
+        else:
+          CHKERR( TaoComputeObjective(tao, X, &f) )
+        CHKERR( TaoCheckReals(tao, f, gnorm) )
+
+        tao.niter += 1
+        #
+        TaoPostStep_Python(tao)
+        CHKERR( TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao.ksp_its) )
+        CHKERR( TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step) )
+        CHKERR( TaoConverged(tao) )
+
+    if tao.niter == tao.max_it:
+        if tao.reason <= 0:
+            tao.reason = TAO_DIVERGED_MAXITS
+    #
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoStep_Python(
+    PetscTAO tao,
+    PetscVec X,
+    PetscVec G,
+    PetscVec S,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoStep_Python")
+    cdef step = PyTao(tao).step
+    if step is not None:
+        step(TAO_(tao), Vec_(X), Vec_(G) if G != NULL else None, Vec_(S) if S != NULL else None)
+    else:
+        # TaoStep_Python_default(tao,X,G,S)
+        CHKERR( TaoComputeGradient(tao, X, S) )
+        CHKERR( VecCopy(G, S) )
+        CHKERR( VecScale(S, -1.0) )
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoPreStep_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoPreStep_Python")
+    cdef preStep = PyTao(tao).preStep
+    if preStep is not None:
+        preStep(TAO_(tao))
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoPostStep_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoPostStep_Python")
+    cdef postStep = PyTao(tao).postStep
+    if postStep is not None:
+        postStep(TAO_(tao))
+    return FunctionEnd()
+
+# --------------------------------------------------------------------
+
 cdef PetscErrorCode PetscPythonMonitorSet_Python(
     PetscObject obj_p,
     const char *url_p,
@@ -2849,18 +3149,23 @@ cdef extern from * nogil:
   const char* PCPYTHON   '"python"'
   const char* SNESPYTHON '"python"'
   const char* TSPYTHON   '"python"'
+  const char* TAOPYTHON  '"python"'
 
   ctypedef PetscErrorCode MatCreateFunction  (PetscMat)  except IERR
   ctypedef PetscErrorCode PCCreateFunction   (PetscPC)   except IERR
   ctypedef PetscErrorCode KSPCreateFunction  (PetscKSP)  except IERR
   ctypedef PetscErrorCode SNESCreateFunction (PetscSNES) except IERR
   ctypedef PetscErrorCode TSCreateFunction   (PetscTS)   except IERR
+  ctypedef PetscErrorCode TaoCreateFunction  (PetscTAO)  except IERR
 
   PetscErrorCode MatRegister  (const char[],MatCreateFunction* )
   PetscErrorCode PCRegister   (const char[],PCCreateFunction*  )
   PetscErrorCode KSPRegister  (const char[],KSPCreateFunction* )
   PetscErrorCode SNESRegister (const char[],SNESCreateFunction*)
   PetscErrorCode TSRegister   (const char[],TSCreateFunction*  )
+
+  # Tao registration not available with complex numbers
+  PetscErrorCode TaoRegisterCustom (const char[],TaoCreateFunction* )
 
   PetscErrorCode (*PetscPythonMonitorSet_C) \
       (PetscObject, const char[]) except IERR
@@ -2875,6 +3180,9 @@ cdef public PetscErrorCode PetscPythonRegisterAll() except IERR:
     CHKERR( KSPRegister ( KSPPYTHON,  KSPCreate_Python  ) )
     CHKERR( SNESRegister( SNESPYTHON, SNESCreate_Python ) )
     CHKERR( TSRegister  ( TSPYTHON,   TSCreate_Python   ) )
+
+    # No preprocessor in cython
+    CHKERR( TaoRegisterCustom ( TAOPYTHON, TaoCreate_Python ) )
 
     # Python monitors
     global PetscPythonMonitorSet_C

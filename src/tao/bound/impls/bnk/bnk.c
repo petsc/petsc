@@ -1091,15 +1091,15 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
     ierr = PetscObjectReference((PetscObject)(tao->stepdirection));CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->bncg->stepdirection);CHKERRQ(ierr);
     bnk->bncg->stepdirection = tao->stepdirection;
-    ierr = TaoSetInitialVector(bnk->bncg, tao->solution);CHKERRQ(ierr);
+    ierr = TaoSetSolution(bnk->bncg, tao->solution);CHKERRQ(ierr);
     /* Copy over some settings from BNK into BNCG */
     ierr = TaoSetMaximumIterations(bnk->bncg, bnk->max_cg_its);CHKERRQ(ierr);
     ierr = TaoSetTolerances(bnk->bncg, tao->gatol, tao->grtol, tao->gttol);CHKERRQ(ierr);
     ierr = TaoSetFunctionLowerBound(bnk->bncg, tao->fmin);CHKERRQ(ierr);
     ierr = TaoSetConvergenceTest(bnk->bncg, tao->ops->convergencetest, tao->cnvP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveRoutine(bnk->bncg, tao->ops->computeobjective, tao->user_objP);CHKERRQ(ierr);
-    ierr = TaoSetGradientRoutine(bnk->bncg, tao->ops->computegradient, tao->user_gradP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(bnk->bncg, tao->ops->computeobjectiveandgradient, tao->user_objgradP);CHKERRQ(ierr);
+    ierr = TaoSetObjective(bnk->bncg, tao->ops->computeobjective, tao->user_objP);CHKERRQ(ierr);
+    ierr = TaoSetGradient(bnk->bncg, NULL, tao->ops->computegradient, tao->user_gradP);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(bnk->bncg, NULL, tao->ops->computeobjectiveandgradient, tao->user_objgradP);CHKERRQ(ierr);
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)(bnk->bncg));CHKERRQ(ierr);
     for (i=0; i<tao->numbermonitors; ++i) {
       ierr = TaoSetMonitor(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]);CHKERRQ(ierr);
@@ -1215,7 +1215,7 @@ PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao ta
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   ierr = TaoSetOptionsPrefix(bnk->bncg,((PetscObject)(tao))->prefix);CHKERRQ(ierr);
-  ierr = TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_");CHKERRQ(ierr);
+  ierr = TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_cg_");CHKERRQ(ierr);
   ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
 
   ierr = KSPSetOptionsPrefix(tao->ksp,((PetscObject)(tao))->prefix);CHKERRQ(ierr);

@@ -935,7 +935,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   }
 
   /* (2) Get sizes */
-  /* Size of vector x - This is set by TaoSetInitialVector */
+  /* Size of vector x - This is set by TaoSetSolution */
   ierr = VecGetSize(tao->solution,&pdipm->Nx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(tao->solution,&pdipm->nx);CHKERRQ(ierr);
 

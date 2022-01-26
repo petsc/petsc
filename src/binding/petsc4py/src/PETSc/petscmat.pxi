@@ -268,7 +268,7 @@ cdef extern from * nogil:
     int MatIsHermitian(PetscMat,PetscReal,PetscBool*)
     int MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
     int MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
-    int MatIsTranspose(PetscMat A,PetscMat B,PetscReal tol,PetscBool *flg)
+    int MatIsTranspose(PetscMat,PetscMat,PetscReal,PetscBool*)
 
     int MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
 
@@ -304,7 +304,7 @@ cdef extern from * nogil:
     int MatAssembled(PetscMat,PetscBool*)
 
     int MatDiagonalSet(PetscMat,PetscVec,PetscInsertMode)
-    int MatDiagonalScale(PetscMat, PetscVec OPTIONAL, PetscVec OPTIONAL)
+    int MatDiagonalScale(PetscMat,PetscVec,PetscVec)
     int MatScale(PetscMat,PetscScalar)
     int MatShift(PetscMat,PetscScalar)
     int MatChop(PetscMat,PetscReal)
@@ -350,7 +350,7 @@ cdef extern from * nogil:
     int MatZeroRowsColumnsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsColumnsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsColumnsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsColumnsStencil(PetscMat,PetscInt,const PetscMatStencil[], PetscScalar,PetscVec,PetscVec)
+    int MatZeroRowsColumnsStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscScalar,PetscVec,PetscVec)
 
     int MatGetDiagonal(PetscMat,PetscVec)
     int MatGetRowSum(PetscMat,PetscVec)

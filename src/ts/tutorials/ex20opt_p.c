@@ -493,11 +493,11 @@ int main(int argc,char **argv)
   ierr = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = PetscRealConstant(1.2);
   ierr = VecRestoreArray(P,&x_ptr);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,P);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,P);CHKERRQ(ierr);
 
   /* Set routine for function and gradient evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
@@ -543,7 +543,7 @@ int main(int argc,char **argv)
    Input Parameters:
    tao - the Tao context
    X   - the input vector
-   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function
