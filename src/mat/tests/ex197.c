@@ -4,11 +4,12 @@ static char help[] = "Test MatMultHermitianTranspose() and MatMultHermitianTrans
 
 int main(int argc,char **args)
 {
-  Mat            A;
+  Mat            A,B,C;
   Vec            x,y,ys;
   PetscErrorCode ierr;
   PetscInt       i,j;
   PetscScalar    v;
+  PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -46,6 +47,15 @@ int main(int argc,char **args)
   ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatMultHermitianTransposeAdd(A,x,y,ys);CHKERRQ(ierr);
   ierr = VecView(ys,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatCreateHermitianTranspose(A,&C);CHKERRQ(ierr);
+  ierr = MatMultHermitianTransposeEqual(B,C,4,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"B^Hx != C^Hx");
+  ierr = MatMultHermitianTransposeAddEqual(B,C,4,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"y+B^Hx != y+C^Hx");
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
