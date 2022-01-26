@@ -6,7 +6,7 @@ static char help[]= "Tests ISView() and ISLoad() \n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode         ierr;
-  PetscInt               n = 3, izero[3] = {0,0,0}, j, i;
+  PetscInt               n = 3, *izero, j, i;
   PetscInt               ix[3][3][3] = {{{3,5,4},{1,7,9},{0,2,8}},
                                         {{0,2,8},{3,5,4},{1,7,9}},
                                         {{1,7,9},{0,2,8},{3,5,4}}};
@@ -20,6 +20,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   if (size > 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Example only works with up to three processes");
 
+  ierr = PetscCalloc1(size*n,&izero);CHKERRQ(ierr);
   for (i = 0; i < 3; i++) {
     ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,ix[i][rank],PETSC_COPY_VALUES,&isx[i]);CHKERRQ(ierr);
   }
@@ -114,6 +115,7 @@ int main(int argc,char **argv)
       ierr = ISDestroy(&isx[i]);CHKERRQ(ierr);
     }
   }
+  ierr = PetscFree(izero);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;
