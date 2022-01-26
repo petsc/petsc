@@ -71,10 +71,6 @@ class Configure(config.package.CMakePackage):
     if self.cuda.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
-      # as of version 3.2.00 Cuda 11 is not supported, e.g., identifier "cusparseXcsrgemmNnz" is undefined
-      if not self.argDB['with-kokkos-kernels-tpl'] or self.cuda.version_tuple >= (11,0):
-        args.append('-DKokkosKernels_ENABLE_TPL_CUBLAS=OFF')
-        args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')
     elif self.hip.found:
       self.system = 'HIP'
       with self.Language('HIP'):
