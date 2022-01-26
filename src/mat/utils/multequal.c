@@ -9,7 +9,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg
   PetscReal      r1,r2,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       am,an,bm,bn,k;
   PetscScalar    none = -1.0;
-  const char*    sops[] = {"MatMult","MatMultAdd","MatMultTranspose","MatMultTranposeAdd"};
+  const char*    sops[] = {"MatMult","MatMultAdd","MatMultTranspose","MatMultTransposeAdd"};
   const char*    sop;
 
   PetscFunctionBegin;
