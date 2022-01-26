@@ -302,8 +302,11 @@ class Package(config.base.Configure):
     '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
     outflags = self.removeWarningFlags(flags.split())
     with self.Language('C'):
-      if config.setCompilers.Configure.isDarwinCatalina(self.log) and config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
-        outflags.append('-Wno-implicit-function-declaration')
+      if config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
+        if config.setCompilers.Configure.isDarwin(self.log):
+          outflags.append('-fno-common')
+        if config.setCompilers.Configure.isDarwinCatalina(self.log):
+          outflags.append('-Wno-implicit-function-declaration')
     return ' '.join(outflags)
 
   def updatePackageFFlags(self,flags):
