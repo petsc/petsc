@@ -1135,16 +1135,92 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         if (data->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED) data->correction = PC_HPDDM_COARSE_CORRECTION_BALANCED;
         PetscCall(MatDestroy(&B));
       } else {
-        PetscCall(PetscOptionsGetString(NULL, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), NULL));
-        PetscCall(PetscStrcmp(type, PCMAT, &algebraic));
-        PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_block_splitting", &block, NULL));
-        PetscCheck(!algebraic || !block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_block_splitting");
-        if (block) algebraic = PETSC_TRUE;
-        if (algebraic) {
-          PetscCall(ISCreateStride(PETSC_COMM_SELF, P->rmap->n, P->rmap->rstart, 1, &data->is));
-          PetscCall(MatIncreaseOverlap(P, 1, &data->is, 1));
-          PetscCall(ISSort(data->is));
-        } else PetscCall(PetscInfo(pc, "Cannot assemble a fully-algebraic coarse operator with an assembled Pmat and -%spc_hpddm_levels_1_st_pc_type != mat and -%spc_hpddm_block_splitting != true\n", pcpre ? pcpre : "", pcpre ? pcpre : ""));
+        PetscCall(PetscObjectTypeCompare((PetscObject)P, MATSCHURCOMPLEMENT, &flg));
+        if (flg) {
+          Mat                        A00, P00, A01, A10, A11, B, N;
+          const PetscScalar          *array;
+          PetscReal                  norm;
+          MatSchurComplementAinvType type;
+
+          PetscCall(MatSchurComplementGetSubMatrices(P, &A00, &P00, &A01, &A10, &A11));
+          if (A11) {
+            PetscCall(MatNorm(A11, NORM_INFINITY, &norm));
+            PetscCheck(norm < PETSC_SMALL, PetscObjectComm((PetscObject)P), PETSC_ERR_SUP, "Nonzero A11 block");
+          }
+          if (PetscDefined(USE_DEBUG)) {
+            Mat T, U = NULL;
+            IS  z;
+            PetscCall(PetscObjectTypeCompare((PetscObject)A10, MATTRANSPOSEMAT, &flg));
+            if (flg) {
+              PetscTryMethod(A10, "MatTransposeGetMat_C", (Mat, Mat*), (A10, &U));
+              PetscTryMethod(A10, "MatHermitianTransposeGetMat_C", (Mat, Mat*), (A10, &U));
+            }
+            if (U) PetscCall(MatDuplicate(U, MAT_COPY_VALUES, &T));
+            else PetscCall(MatHermitianTranspose(A10, MAT_INITIAL_MATRIX, &T));
+            PetscCall(PetscLayoutCompare(T->rmap, A01->rmap, &flg));
+            if (flg) {
+              PetscCall(PetscLayoutCompare(T->cmap, A01->cmap, &flg));
+              if (flg) {
+                PetscCall(MatFindZeroRows(A01, &z)); /* for essential boundary conditions, some implementations will */
+                if (z) {                             /*  zero rows in [P00 A01] except for the diagonal of P00       */
+                  PetscCall(MatSetOption(T, MAT_NO_OFF_PROC_ZERO_ROWS, PETSC_TRUE));
+                  PetscCall(MatZeroRowsIS(T, z, 0.0, NULL, NULL)); /* corresponding zero rows from A01 */
+                  PetscCall(ISDestroy(&z));
+                }
+                PetscCall(MatMultEqual(A01, T, 10, &flg));
+                PetscCheck(flg, PetscObjectComm((PetscObject)P), PETSC_ERR_SUP, "A01 != A10^T");
+              } else PetscCall(PetscInfo(pc, "A01 and A10^T have non-congruent column layouts, cannot test for equality\n"));
+            }
+            PetscCall(MatDestroy(&T));
+          }
+          PetscCall(MatCreateVecs(P00, &v, NULL));
+          PetscCall(MatSchurComplementGetAinvType(P, &type));
+          PetscCheck(type == MAT_SCHUR_COMPLEMENT_AINV_DIAG || type == MAT_SCHUR_COMPLEMENT_AINV_LUMP, PetscObjectComm((PetscObject)P), PETSC_ERR_SUP, "-%smat_schur_complement_ainv_type %s", ((PetscObject)P)->prefix ? ((PetscObject)P)->prefix : "", MatSchurComplementAinvTypes[type]);
+          if (type == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
+            PetscCall(MatGetRowSum(P00, v));
+            if (A00 == P00) PetscCall(PetscObjectReference((PetscObject)A00));
+            PetscCall(MatDestroy(&P00));
+            PetscCall(VecGetArrayRead(v, &array));
+            PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)A00), A00->rmap->n, A00->cmap->n, A00->rmap->N, A00->cmap->N, 1, NULL, 0, NULL, &P00));
+            PetscCall(MatSetOption(P00, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+            for (n = A00->rmap->rstart; n < A00->rmap->rend; ++n) PetscCall(MatSetValue(P00, n, n, array[n - A00->rmap->rstart], INSERT_VALUES));
+            PetscCall(MatAssemblyBegin(P00, MAT_FINAL_ASSEMBLY));
+            PetscCall(MatAssemblyEnd(P00, MAT_FINAL_ASSEMBLY));
+            PetscCall(VecRestoreArrayRead(v, &array));
+            PetscCall(MatSchurComplementUpdateSubMatrices(P, A00, P00, A01, A10, A11)); /* replace P00 by diag(sum of each row of P00) */
+            PetscCall(MatDestroy(&P00));
+          } else PetscCall(MatGetDiagonal(P00, v));
+          PetscCall(VecReciprocal(v));       /* inv(diag(P00))       */
+          PetscCall(VecSqrtAbs(v));          /* sqrt(inv(diag(P00))) */
+          PetscCall(MatDuplicate(A01, MAT_COPY_VALUES, &B));
+          PetscCall(MatDiagonalScale(B, v, NULL));
+          PetscCall(VecDestroy(&v));
+          PetscCall(MatCreateNormalHermitian(B, &N));
+          PetscCall(PCHPDDMSetAuxiliaryMatNormal_Private(pc, B, N, &P, pcpre));
+          PetscCall(PetscObjectTypeCompare((PetscObject)data->aux, MATSEQAIJ, &flg));
+          if (!flg) {
+            PetscCall(MatDestroy(&P));
+            P = N;
+            PetscCall(PetscObjectReference((PetscObject)P));
+          } else PetscCall(MatScale(P, -1.0));
+          PetscCall(MatScale(N, -1.0));
+          PetscCall(PCSetOperators(pc, N, P)); /* replace P by -A01' inv(diag(P00)) A01 */
+          PetscCall(MatDestroy(&N));
+          PetscCall(MatDestroy(&P));
+          PetscCall(MatDestroy(&B));
+          PetscFunctionReturn(0);
+        } else {
+          PetscCall(PetscOptionsGetString(NULL, pcpre, "-pc_hpddm_levels_1_st_pc_type", type, sizeof(type), NULL));
+          PetscCall(PetscStrcmp(type, PCMAT, &algebraic));
+          PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_block_splitting", &block, NULL));
+          PetscCheck(!algebraic || !block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_block_splitting");
+          if (block) algebraic = PETSC_TRUE;
+          if (algebraic) {
+            PetscCall(ISCreateStride(PETSC_COMM_SELF, P->rmap->n, P->rmap->rstart, 1, &data->is));
+            PetscCall(MatIncreaseOverlap(P, 1, &data->is, 1));
+            PetscCall(ISSort(data->is));
+          } else PetscCall(PetscInfo(pc, "Cannot assemble a fully-algebraic coarse operator with an assembled Pmat and -%spc_hpddm_levels_1_st_pc_type != mat and -%spc_hpddm_block_splitting != true\n", pcpre ? pcpre : "", pcpre ? pcpre : ""));
+        }
       }
     }
   }

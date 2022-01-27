@@ -39,7 +39,7 @@ int main(int argc,char **args)
 {
   KSP            ksp;             /* linear solver context */
   Mat            A,N;                /* matrix */
-  Vec            x,b,r,Ab;          /* approx solution, RHS, residual */
+  Vec            x,b,r,Ab,v[2];     /* approx solution, RHS, residual */
   PetscViewer    fd;               /* viewer */
   char           file[PETSC_MAX_PATH_LEN]="";     /* input file name */
   char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
@@ -50,7 +50,9 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscBool      nonzero_guess=PETSC_TRUE;
   PetscBool      solve_normal=PETSC_FALSE;
+  PetscBool      solve_augmented=PETSC_FALSE;
   PetscBool      truncate=PETSC_FALSE;
+  PetscBool      explicit_transpose=PETSC_FALSE;
   PetscBool      hdf5=PETSC_FALSE;
   PetscBool      test_custom_layout=PETSC_FALSE;
   PetscMPIInt    rank,size;
@@ -74,6 +76,8 @@ int main(int argc,char **args)
      or the normal equation (-solve_normal 1).
   */
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-solve_normal",&solve_normal,NULL));
+  if (!solve_normal) PetscCall(PetscOptionsGetBool(NULL,NULL,"-solve_augmented",&solve_augmented,NULL));
+  if (solve_augmented) PetscCall(PetscOptionsGetBool(NULL,NULL,"-explicit_transpose",&explicit_transpose,NULL));
   /*
      Decide whether to use the HDF5 reader.
   */
@@ -219,6 +223,31 @@ int main(int argc,char **args)
 
   if (solve_normal) {
     PetscCall(KSPSetOperators(ksp,N,N));
+  } else if (solve_augmented) {
+    Mat      array[4],C;
+    Vec      view;
+    PetscInt M;
+
+    PetscCall(MatDestroy(&N));
+    PetscCall(MatGetSize(A,&M,NULL));
+    PetscCall(MatCreateConstantDiagonal(PETSC_COMM_WORLD,m,m,M,M,-1.0,array));
+    array[1] = A;
+    if (!explicit_transpose) PetscCall(MatCreateHermitianTranspose(A,array+2));
+    else PetscCall(MatHermitianTranspose(A,MAT_INITIAL_MATRIX,array+2));
+    array[3] = NULL;
+    PetscCall(MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,array,&C));
+    PetscCall(MatNestSetVecType(C,VECNEST));
+    PetscCall(MatCreateVecs(C,v+1,v));
+    PetscCall(VecSet(v[0],0.0));
+    PetscCall(VecSet(v[1],0.0));
+    PetscCall(VecNestGetSubVec(v[0],0,&view));
+    PetscCall(VecCopy(b,view));
+    PetscCall(VecNestGetSubVec(v[1],1,&view));
+    PetscCall(VecCopy(x,view));
+    PetscCall(KSPSetOperators(ksp,C,C));
+    PetscCall(MatDestroy(&C));
+    PetscCall(MatDestroy(array));
+    PetscCall(MatDestroy(array+2));
   } else {
     PC pc;
     PetscCall(KSPSetType(ksp,KSPLSQR));
@@ -252,6 +281,12 @@ int main(int argc,char **args)
   */
   if (solve_normal) {
     PetscCall(KSPSolve(ksp,Ab,x));
+  } else if (solve_augmented) {
+    Vec view;
+
+    PetscCall(KSPSolve(ksp,v[0],v[1]));
+    PetscCall(VecNestGetSubVec(v[1],1,&view));
+    PetscCall(VecCopy(view,x));
   } else {
     PetscCall(KSPSolve(ksp,b,x));
   }
@@ -286,6 +321,10 @@ int main(int argc,char **args)
   PetscCall(MatDestroy(&A)); PetscCall(VecDestroy(&b));
   PetscCall(MatDestroy(&N)); PetscCall(VecDestroy(&Ab));
   PetscCall(VecDestroy(&r)); PetscCall(VecDestroy(&x));
+  if (solve_augmented) {
+    PetscCall(VecDestroy(v));
+    PetscCall(VecDestroy(v+1));
+  }
   PetscCall(KSPDestroy(&ksp));
   PetscPreLoadEnd();
   /* -----------------------------------------------------------
@@ -370,6 +409,21 @@ int main(int argc,char **args)
         args: -ksp_converged_reason -ksp_rtol 1e-5 -ksp_max_it 100 -ksp_view
         args: -ksp_type lsqr -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp {{false true}shared output} -pc_hpddm_levels_1_st_pc_type qr
         args: -pc_hpddm_levels_1_pc_asm_sub_mat_type normalh -pc_hpddm_levels_1_pc_asm_type basic -pc_hpddm_levels_1_sub_pc_type qr
+     test:
+        suffix: 4e
+        nsize: 4
+        requires: hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+        args: -solve_augmented -ksp_type gmres
+        args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
+        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type cholesky -prefix_pop -fieldsplit_1_mat_schur_complement_ainv_type {{diag lump}shared output}
+     test:
+        suffix: 4f
+        nsize: 4
+        requires: hpddm slepc suitesparse defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+        filter: sed "s/(1,0) : type=mpiaij/(1,0) : type=transpose/g"
+        args: -solve_augmented -ksp_type gmres -ksp_view -explicit_transpose {{false true}shared output}
+        args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
+        args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop
 
    test:
       # Load rectangular matrix from HDF5 (Version 7.3 MAT-File)
