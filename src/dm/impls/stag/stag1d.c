@@ -471,33 +471,37 @@ static PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM,Mat);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ(DM dm,Mat *mat)
 {
   PetscErrorCode         ierr;
-  PetscInt               entries,dof[DMSTAG_MAX_STRATA],epe,stencil_width,max_nz_per_row,N,start,n,n_extra;
-  DMStagStencilType      stencil_type;
+  PetscInt               entries;
   ISLocalToGlobalMapping ltogmap;
-  DMBoundaryType         boundary_type_x;
 
   /* This implementation gives a very dense stencil, which is likely unsuitable for
      (typical) applications which have fewer couplings */
   PetscFunctionBegin;
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetStencilType(dm,&stencil_type);CHKERRQ(ierr);
-  ierr = DMStagGetStencilWidth(dm,&stencil_width);CHKERRQ(ierr);
   ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
-  ierr = DMStagGetEntriesPerElement(dm,&epe);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dm,&start,NULL,NULL,&n,NULL,NULL,&n_extra,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(dm,&N,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetBoundaryTypes(dm,&boundary_type_x,NULL,NULL);CHKERRQ(ierr);
-
-  if (stencil_type == DMSTAG_STENCIL_NONE) {
-    max_nz_per_row = PetscMax(dof[0],dof[1]);CHKERRQ(ierr);
-  } else if (stencil_type == DMSTAG_STENCIL_STAR || stencil_type == DMSTAG_STENCIL_BOX) {
-    max_nz_per_row = (1 + 2 * stencil_width) * epe;
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported stencil type %s",DMStagStencilTypes[stencil_type]);
-  ierr = MatCreateAIJ(PetscObjectComm((PetscObject)dm),entries,entries,PETSC_DETERMINE,PETSC_DETERMINE,max_nz_per_row,NULL,max_nz_per_row,NULL,mat);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
+
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm),mat);CHKERRQ(ierr);
+  ierr = MatSetType(*mat,dm->mattype);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,entries,entries,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*mat,ltogmap,ltogmap);CHKERRQ(ierr);
   ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*mat);CHKERRQ(ierr);
+
+  {
+    Mat             preallocator;
+    PetscInt        m,n;
+    const PetscBool fill_with_zeros = PETSC_FALSE;
+
+    ierr = MatCreate(PetscObjectComm((PetscObject)dm),&preallocator);CHKERRQ(ierr);
+    ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(*mat,&m,&n);CHKERRQ(ierr);
+    ierr = MatSetSizes(preallocator,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(preallocator,ltogmap,ltogmap);CHKERRQ(ierr);
+    ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_Stag_1D_AIJ_Assemble(dm,preallocator);CHKERRQ(ierr);
+    ierr = MatPreallocatorPreallocate(preallocator,fill_with_zeros,*mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+  }
 
   if (!dm->prealloc_only) {
     ierr = DMCreateMatrix_Stag_1D_AIJ_Assemble(dm,*mat);CHKERRQ(ierr);
