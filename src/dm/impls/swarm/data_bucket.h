@@ -33,60 +33,60 @@ struct _p_DMSwarmDataBucket {
 #define DMSWARM_DATAFIELD_point_access(data,index,atomic_size) (void*)((char*)(data) + (index)*(atomic_size))
 #define DMSWARM_DATAFIELD_point_access_offset(data,index,atomic_size,offset) (void*)((char*)(data) + (index)*(atomic_size) + (offset))
 
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldStringInList(const char name[],const PetscInt N,const DMSwarmDataField gfield[],PetscBool *val);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldStringFindInList(const char name[],const PetscInt N,const DMSwarmDataField gfield[],PetscInt *index);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldStringInList(const char [],const PetscInt ,const DMSwarmDataField [],PetscBool *);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldStringFindInList(const char [],const PetscInt,const DMSwarmDataField [],PetscInt *);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldCreate(const char registration_function[],const char name[],const size_t size,const PetscInt L,DMSwarmDataField *DF);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldDestroy(DMSwarmDataField *DF);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketCreate(DMSwarmDataBucket *DB);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketDestroy(DMSwarmDataBucket *DB);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketQueryForActiveFields(DMSwarmDataBucket db,PetscBool *any_active_fields);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketRegisterField(DMSwarmDataBucket db,const char registration_function[],const char field_name[],size_t atomic_size,DMSwarmDataField *_gfield);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldCreate(const char [],const char [],const size_t,const PetscInt,DMSwarmDataField *);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldDestroy(DMSwarmDataField *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketCreate(DMSwarmDataBucket *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketDestroy(DMSwarmDataBucket *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketQueryForActiveFields(DMSwarmDataBucket,PetscBool *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketRegisterField(DMSwarmDataBucket,const char [],const char [],size_t,DMSwarmDataField *);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetNumEntries(DMSwarmDataField df,PetscInt *sum);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldSetBlockSize(DMSwarmDataField df,PetscInt blocksize);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldSetSize(DMSwarmDataField df,const PetscInt new_L);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldZeroBlock(DMSwarmDataField df,const PetscInt start,const PetscInt end);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetAccess(const DMSwarmDataField gfield);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldAccessPoint(const DMSwarmDataField gfield,const PetscInt pid,void **ctx_p);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldAccessPointOffset(const DMSwarmDataField gfield,const size_t offset,const PetscInt pid,void **ctx_p);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldRestoreAccess(DMSwarmDataField gfield);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldVerifyAccess(const DMSwarmDataField gfield,const size_t size);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetAtomicSize(const DMSwarmDataField gfield,size_t *size);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetNumEntries(DMSwarmDataField,PetscInt *);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldSetBlockSize(DMSwarmDataField,PetscInt);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldSetSize(DMSwarmDataField,const PetscInt);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldZeroBlock(DMSwarmDataField,const PetscInt,const PetscInt);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetAccess(const DMSwarmDataField);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldAccessPoint(const DMSwarmDataField,const PetscInt,void **);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldAccessPointOffset(const DMSwarmDataField,const size_t,const PetscInt,void **);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldRestoreAccess(DMSwarmDataField);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldVerifyAccess(const DMSwarmDataField,const size_t);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetAtomicSize(const DMSwarmDataField,size_t *);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetEntries(const DMSwarmDataField gfield,void **data);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldRestoreEntries(const DMSwarmDataField gfield,void **data);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldGetEntries(const DMSwarmDataField,void **);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldRestoreEntries(const DMSwarmDataField,void **);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldInsertPoint(const DMSwarmDataField field,const PetscInt index,const void *ctx);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt pid_x,const DMSwarmDataField field_x,const PetscInt pid_y,const DMSwarmDataField field_y);
-PETSC_INTERN PetscErrorCode DMSwarmDataFieldZeroPoint(const DMSwarmDataField field,const PetscInt index);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldInsertPoint(const DMSwarmDataField,const PetscInt,const void *);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldCopyPoint(const PetscInt,const DMSwarmDataField,const PetscInt,const DMSwarmDataField);
+PETSC_INTERN PetscErrorCode DMSwarmDataFieldZeroPoint(const DMSwarmDataField,const PetscInt);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket db,const char name[],DMSwarmDataField *gfield);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketQueryDMSwarmDataFieldByName(DMSwarmDataBucket db,const char name[],PetscBool *found);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketFinalize(DMSwarmDataBucket db);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketSetInitialSizes(DMSwarmDataBucket db,const PetscInt L,const PetscInt buffer);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket db,const PetscInt L,const PetscInt buffer);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetSizes(DMSwarmDataBucket db,PetscInt *L,PetscInt *buffer,PetscInt *allocated);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetGlobalSizes(MPI_Comm comm,DMSwarmDataBucket db,PetscInt *L,PetscInt *buffer,PetscInt *allocated);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFields(DMSwarmDataBucket db,PetscInt *L,DMSwarmDataField *fields[]);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket,const char [],DMSwarmDataField *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketQueryDMSwarmDataFieldByName(DMSwarmDataBucket,const char [],PetscBool *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketFinalize(DMSwarmDataBucket);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketSetInitialSizes(DMSwarmDataBucket,const PetscInt,const PetscInt);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket,const PetscInt,const PetscInt);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetSizes(DMSwarmDataBucket,PetscInt *,PetscInt *,PetscInt *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetGlobalSizes(MPI_Comm,DMSwarmDataBucket,PetscInt *,PetscInt *,PetscInt *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFields(DMSwarmDataBucket,PetscInt *,DMSwarmDataField *[]);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketCopyPoint(const DMSwarmDataBucket xb,const PetscInt pid_x,const DMSwarmDataBucket yb,const PetscInt pid_y);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketCreateFromSubset(DMSwarmDataBucket DBIn,const PetscInt N,const PetscInt list[],DMSwarmDataBucket *DB);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketZeroPoint(const DMSwarmDataBucket db,const PetscInt index);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketCopyPoint(const DMSwarmDataBucket,const PetscInt,const DMSwarmDataBucket,const PetscInt);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketCreateFromSubset(DMSwarmDataBucket,const PetscInt,const PetscInt [],DMSwarmDataBucket *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketZeroPoint(const DMSwarmDataBucket,const PetscInt);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketView(MPI_Comm comm,DMSwarmDataBucket db,const char filename[],DMSwarmDataBucketViewType type);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketView(MPI_Comm,DMSwarmDataBucket,const char [],DMSwarmDataBucketViewType);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketAddPoint(DMSwarmDataBucket db);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketRemovePoint(DMSwarmDataBucket db);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketRemovePointAtIndex(const DMSwarmDataBucket db,const PetscInt index);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketAddPoint(DMSwarmDataBucket);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketRemovePoint(DMSwarmDataBucket);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketRemovePointAtIndex(const DMSwarmDataBucket,const PetscInt);
 
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketDuplicateFields(DMSwarmDataBucket dbA,DMSwarmDataBucket *dbB);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketInsertValues(DMSwarmDataBucket db1,DMSwarmDataBucket db2);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketDuplicateFields(DMSwarmDataBucket,DMSwarmDataBucket *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketInsertValues(DMSwarmDataBucket,DMSwarmDataBucket);
 
 /* helpers for parallel send/recv */
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketCreatePackedArray(DMSwarmDataBucket db,size_t *bytes,void **buf);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketDestroyPackedArray(DMSwarmDataBucket db,void **buf);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketFillPackedArray(DMSwarmDataBucket db,const PetscInt index,void *buf);
-PETSC_INTERN PetscErrorCode DMSwarmDataBucketInsertPackedArray(DMSwarmDataBucket db,const PetscInt idx,void *data);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketCreatePackedArray(DMSwarmDataBucket,size_t *,void **);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketDestroyPackedArray(DMSwarmDataBucket,void **);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketFillPackedArray(DMSwarmDataBucket,const PetscInt,void *);
+PETSC_INTERN PetscErrorCode DMSwarmDataBucketInsertPackedArray(DMSwarmDataBucket,const PetscInt,void *);
 
 #endif

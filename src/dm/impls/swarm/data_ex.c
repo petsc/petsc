@@ -87,8 +87,7 @@ PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm,const PetscInt count, DMSwarmDa
   DMSwarmDataEx  d;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(struct _p_DMSwarmDataEx), &d);CHKERRQ(ierr);
-  ierr = PetscMemzero(d, sizeof(struct _p_DMSwarmDataEx));CHKERRQ(ierr);
+  ierr = PetscNew(&d);CHKERRQ(ierr);
   ierr = MPI_Comm_dup(comm,&d->comm);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(d->comm,&d->rank);CHKERRMPI(ierr);
 
@@ -354,10 +353,7 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt 
 
 PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
 {
-  PetscMPIInt    symm_nn;
-  PetscMPIInt   *symm_procs;
-  PetscMPIInt    r0,n,st,rt;
-  PetscMPIInt    size;
+  PetscMPIInt    symm_nn, *symm_procs, r0,n,st,rt, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -459,11 +455,11 @@ PetscErrorCode DMSwarmDataExFinalizeSendCount(DMSwarmDataEx de)
 
 /* === Phase C === */
 /*
- * zero out all send counts
- * free send and recv buffers
- * zeros out message length
- * zeros out all counters
- * zero out packed data counters
+  zero out all send counts
+  free send and recv buffers
+  zeros out message length
+  zeros out all counters
+  zero out packed data counters
 */
 PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
 {
@@ -471,11 +467,6 @@ PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /*if (de->n_neighbour_procs < 0) SETERRQ( PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of neighbour procs < 0");
-  */
-  /*
-  if (!de->neighbour_procs) SETERRQ( PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Neighbour proc list is NULL");
-  */
   np = de->n_neighbour_procs;
   for (i = 0; i < np; ++i) {
     /*  de->messages_to_be_sent[i] = -1; */
@@ -487,10 +478,10 @@ PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
 }
 
 /*
- *) Zeros out pack data counters
- *) Ensures mesaage length is set
- *) Checks send counts properly initialized
- *) allocates space for pack data
+   Zeros out pack data counters
+   Ensures mesaage length is set
+   Checks send counts properly initialized
+   allocates space for pack data
 */
 PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de,size_t unit_message_size)
 {
@@ -535,7 +526,7 @@ PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de,size_t unit_message_
 }
 
 /*
-*) Ensures data gets been packed appropriately and no overlaps occur
+    Ensures data gets been packed appropriately and no overlaps occur
 */
 PetscErrorCode DMSwarmDataExPackData(DMSwarmDataEx de,PetscMPIInt proc_id,PetscInt n,void *data)
 {
@@ -568,8 +559,8 @@ PetscErrorCode DMSwarmDataExPackData(DMSwarmDataEx de,PetscMPIInt proc_id,PetscI
 */
 PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
 {
-  PetscMPIInt i,np;
-  PetscInt    total;
+  PetscMPIInt    i,np;
+  PetscInt       total;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -607,12 +598,12 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
   PetscFunctionReturn(0);
 }
 
-/* do the actual message passing now */
+/* do the actual message passing */
 PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
 {
-  PetscMPIInt i,np;
-  void       *dest;
-  PetscInt    length;
+  PetscMPIInt    i,np;
+  void           *dest;
+  PetscInt       length;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -636,11 +627,11 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
 /* do the actual message passing now */
 PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
 {
-  PetscMPIInt  i,np;
-  PetscInt     total;
-  PetscInt    *message_recv_offsets;
-  void        *dest;
-  PetscInt     length;
+  PetscMPIInt    i,np;
+  PetscInt       total;
+  PetscInt       *message_recv_offsets;
+  void           *dest;
+  PetscInt       length;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
