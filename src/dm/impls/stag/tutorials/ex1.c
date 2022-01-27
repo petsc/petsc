@@ -276,7 +276,7 @@ int main(int argc,char **argv)
     }
 
     /* Additional velocity point (BC) on the right */
-    if (isLastRank && e == start+n-1) {
+    if (boundary != DM_BOUNDARY_PERIODIC && isLastRank && e == start+n-1) {
       DMStagStencil row;
       PetscScalar   val;
 
