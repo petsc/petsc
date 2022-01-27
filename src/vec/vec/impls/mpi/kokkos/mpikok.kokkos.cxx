@@ -193,6 +193,15 @@ PetscErrorCode VecDotNorm2_MPIKokkos(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecGetSubVector_MPIKokkos(Vec x,IS is,Vec *y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetSubVector_Kokkos_Private(x,PETSC_TRUE,is,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
 {
   PetscFunctionBegin;
@@ -241,10 +250,11 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->getarraywrite          = VecGetArrayWrite_SeqKokkos;
   v->ops->getarray               = VecGetArray_SeqKokkos;
   v->ops->restorearray           = VecRestoreArray_SeqKokkos;
-
   v->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqKokkos;
   v->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqKokkos;
   v->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqKokkos;
+  v->ops->getsubvector           = VecGetSubVector_MPIKokkos;
+  v->ops->restoresubvector       = VecRestoreSubVector_SeqKokkos;
   PetscFunctionReturn(0);
 }
 
@@ -333,6 +343,51 @@ PetscErrorCode  VecCreateMPIKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
   veckok = new Vec_Kokkos(n,harray,const_cast<PetscScalar*>(darray));
   veckok->v_dual.modify_device(); /* Mark the device is modified */
   w->spptr = static_cast<void*>(veckok);
+  w->offloadmask = PETSC_OFFLOAD_KOKKOS;
+  *v = w;
+  PetscFunctionReturn(0);
+}
+
+/*
+   VecCreateMPIKokkosWithArrays_Private - Creates a Kokkos parallel, array-style vector
+   with user-provided arrays on host and device.
+
+   Collective
+
+   Input Parameter:
++  comm - the communicator
+.  bs - the block size
+.  n - the local vector length
+.  N - the global vector length
+-  harray - host memory where the vector elements are to be stored.
+-  darray - device memory where the vector elements are to be stored.
+
+   Output Parameter:
+.  v - the vector
+
+   Notes:
+   If there is no device, then harray and darray must be the same.
+   If n is not zero, then harray and darray must be allocated.
+   After the call, the created vector is supposed to be in a synchronized state, i.e.,
+   we suppose harray and darray have the same data.
+
+   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+   The user should not free the array until the vector is destroyed.
+*/
+PetscErrorCode  VecCreateMPIKokkosWithArrays_Private(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar harray[],const PetscScalar darray[],Vec *v)
+{
+  PetscErrorCode ierr;
+  Vec            w;
+
+  PetscFunctionBegin;
+  ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
+  if (n && !harray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"harray cannot be NULL");
+  if (n && !darray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"darray cannot be NULL");
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value && harray != darray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"harray and darray must be the same");
+  ierr = VecCreateMPIWithArray(comm,bs,n,N,harray,&w);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)w,VECMPIKOKKOS);CHKERRQ(ierr); /* Change it to Kokkos */
+  ierr = VecSetOps_MPIKokkos(w);CHKERRQ(ierr);
+  CHKERRCXX(w->spptr = new Vec_Kokkos(n,const_cast<PetscScalar*>(harray),const_cast<PetscScalar*>(darray)));
   w->offloadmask = PETSC_OFFLOAD_KOKKOS;
   *v = w;
   PetscFunctionReturn(0);

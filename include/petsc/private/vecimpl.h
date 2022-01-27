@@ -355,4 +355,13 @@ PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
 PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger,Vec,IS*,PetscBool*);
 PETSC_EXTERN PetscMPIInt Petsc_Reduction_keyval;
 
+PETSC_INTERN PetscInt       VecGetSubVectorSavedStateId;
+PETSC_INTERN PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec,IS,PetscBool*,PetscInt*,PetscInt*);
+PETSC_INTERN PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec,IS,PetscInt,Vec*);
+
+#if defined(PETSC_HAVE_KOKKOS)
+PETSC_INTERN PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
+PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,Vec*);
+#endif
+
 #endif /* __VECIMPL_H */

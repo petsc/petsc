@@ -13,7 +13,7 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/hipvecimpl.h>
 #endif
-static PetscInt VecGetSubVectorSavedStateId = -1;
+PetscInt VecGetSubVectorSavedStateId = -1;
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
 {
@@ -1282,6 +1282,82 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
   PetscFunctionReturn(0);
 }
 
+/* A helper function for VecGetSubVector to check if we can implement it with no-copy (i.e. the subvector shares
+   memory with the original vector), and the block size of the subvector.
+
+    Input Parameters:
++   X - the original vector
+-   is - the index set of the subvector
+
+    Output Parameters:
++   contig - PETSC_TRUE if the index set refers to contiguous entries on this process, else PETSC_FALSE
+.   start  - start of contiguous block, as an offset from the start of the ownership range of the original vector
+-   blocksize - the block size of the subvector
+
+*/
+PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X,IS is,PetscBool *contig,PetscInt *start,PetscInt *blocksize)
+{
+  PetscErrorCode   ierr;
+  PetscInt         gstart,gend,lstart;
+  PetscBool        red[2] = {PETSC_TRUE/*contiguous*/,PETSC_TRUE/*validVBS*/};
+  PetscInt         n,N,ibs,vbs,bs = -1;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = ISGetBlockSize(is,&ibs);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(X,&vbs);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
+  ierr = ISContiguousLocal(is,gstart,gend,&lstart,&red[0]);CHKERRQ(ierr);
+  /* block size is given by IS if ibs > 1; otherwise, check the vector */
+  if (ibs > 1) {
+    ierr = MPIU_Allreduce(MPI_IN_PLACE,red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRMPI(ierr);
+    bs   = ibs;
+  } else {
+    if (n%vbs || vbs == 1) red[1] = PETSC_FALSE; /* this process invalidate the collectiveness of block size */
+    ierr = MPIU_Allreduce(MPI_IN_PLACE,red,2,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRMPI(ierr);
+    if (red[0] && red[1]) bs = vbs; /* all processes have a valid block size and the access will be contiguous */
+  }
+
+  *contig     = red[0];
+  *start      = lstart;
+  *blocksize  = bs;
+  PetscFunctionReturn(0);
+}
+
+/* A helper function for VecGetSubVector, to be used when we have to build a standalone subvector through VecScatter
+
+    Input Parameters:
++   X - the original vector
+.   is - the index set of the subvector
+-   bs - the block size of the subvector, gotten from VecGetSubVectorContiguityAndBS_Private()
+
+    Output Parameters:
+.   Z  - the subvector, which will compose the VecScatter context on output
+*/
+PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X,IS is,PetscInt bs,Vec *Z)
+{
+  PetscErrorCode ierr;
+  PetscInt       n,N;
+  VecScatter     vscat;
+  Vec            Y;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)is),&Y);CHKERRQ(ierr);
+  ierr = VecSetSizes(Y,n,N);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(Y,bs);CHKERRQ(ierr);
+  ierr = VecSetType(Y,((PetscObject)X)->type_name);CHKERRQ(ierr);
+  ierr = VecScatterCreate(X,is,Y,NULL,&vscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(vscat,X,Y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(vscat,X,Y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)Y,"VecGetSubVector_Scatter",(PetscObject)vscat);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
+  *Z   = Y;
+  PetscFunctionReturn(0);
+}
+
 /*@
    VecGetSubVector - Gets a vector representing part of another vector
 
@@ -1319,26 +1395,13 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   if (X->ops->getsubvector) {
     ierr = (*X->ops->getsubvector)(X,is,&Z);CHKERRQ(ierr);
   } else { /* Default implementation currently does no caching */
-    PetscInt  gstart,gend,start;
-    PetscBool red[2] = { PETSC_TRUE, PETSC_TRUE };
-    PetscInt  n,N,ibs,vbs,bs = -1;
+    PetscBool   contig;
+    PetscInt    n,N,start,bs;
 
     ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
     ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-    ierr = ISGetBlockSize(is,&ibs);CHKERRQ(ierr);
-    ierr = VecGetBlockSize(X,&vbs);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
-    ierr = ISContiguousLocal(is,gstart,gend,&start,&red[0]);CHKERRQ(ierr);
-    /* block size is given by IS if ibs > 1; otherwise, check the vector */
-    if (ibs > 1) {
-      ierr = MPIU_Allreduce(MPI_IN_PLACE,red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRMPI(ierr);
-      bs   = ibs;
-    } else {
-      if (n%vbs || vbs == 1) red[1] = PETSC_FALSE; /* this process invalidate the collectiveness of block size */
-      ierr = MPIU_Allreduce(MPI_IN_PLACE,red,2,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRMPI(ierr);
-      if (red[0] && red[1]) bs = vbs; /* all processes have a valid block size and the access will be contiguous */
-    }
-    if (red[0]) { /* We can do a no-copy implementation */
+    ierr = VecGetSubVectorContiguityAndBS_Private(X,is,&contig,&start,&bs);CHKERRQ(ierr);
+    if (contig) { /* We can do a no-copy implementation */
       const PetscScalar *x;
       PetscInt          state = 0;
       PetscBool         isstd,iscuda,iship;
@@ -1414,17 +1477,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       Z->ops->placearray = NULL;
       Z->ops->replacearray = NULL;
     } else { /* Have to create a scatter and do a copy */
-      VecScatter scatter;
-
-      ierr = VecCreate(PetscObjectComm((PetscObject)is),&Z);CHKERRQ(ierr);
-      ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
-      ierr = VecSetBlockSize(Z,bs);CHKERRQ(ierr);
-      ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
-      ierr = VecScatterCreate(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
-      ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)Z,"VecGetSubVector_Scatter",(PetscObject)scatter);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+      ierr = VecGetSubVectorThroughVecScatter_Private(X,is,bs,&Z);CHKERRQ(ierr);
     }
   }
   /* Record the state when the subvector was gotten so we know whether its values need to be put back */
@@ -1450,7 +1503,9 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 @*/
 PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode                ierr;
+  PETSC_UNUSED PetscObjectState dummystate = 0;
+  PetscBool                     unchanged;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
@@ -1458,14 +1513,12 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   PetscCheckSameComm(X,1,is,2);
   PetscValidPointer(Y,3);
   PetscValidHeaderSpecific(*Y,VEC_CLASSID,3);
+
   if (X->ops->restoresubvector) {
     ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
   } else {
-    PETSC_UNUSED PetscObjectState dummystate = 0;
-    PetscBool valid;
-
-    ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,dummystate,valid);CHKERRQ(ierr);
-    if (!valid) {
+    ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,dummystate,unchanged);CHKERRQ(ierr);
+    if (!unchanged) { /* If Y's state has not changed since VecGetSubVector(), we only need to destroy Y */
       VecScatter scatter;
       PetscInt   state;
 
@@ -1486,8 +1539,8 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
           PetscOffloadMask ymask = (*Y)->offloadmask;
 
           /* The offloadmask of X dictates where to move memory
-             If X GPU data is valid, then move Y data on GPU if needed
-             Otherwise, move back to the CPU */
+              If X GPU data is valid, then move Y data on GPU if needed
+              Otherwise, move back to the CPU */
           switch (X->offloadmask) {
           case PETSC_OFFLOAD_BOTH:
             if (ymask == PETSC_OFFLOAD_CPU) {
@@ -1516,8 +1569,8 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
           PetscOffloadMask ymask = (*Y)->offloadmask;
 
           /* The offloadmask of X dictates where to move memory
-             If X GPU data is valid, then move Y data on GPU if needed
-             Otherwise, move back to the CPU */
+              If X GPU data is valid, then move Y data on GPU if needed
+              Otherwise, move back to the CPU */
           switch (X->offloadmask) {
           case PETSC_OFFLOAD_BOTH:
             if (ymask == PETSC_OFFLOAD_CPU) {
@@ -1548,8 +1601,8 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
         ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
       }
     }
-    ierr = VecDestroy(Y);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
