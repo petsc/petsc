@@ -252,7 +252,7 @@ PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,Petsc
 #define PETSC_FLOPS_PER_OP 1.0
 #endif
 
-/*@
+/*@C
        PetscLogFlops - Log how many flops are performed in a calculation
 
    Input Parameter:
@@ -325,7 +325,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
        PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
 
    Input Parameter:
