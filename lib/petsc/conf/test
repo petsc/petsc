@@ -9,14 +9,23 @@ LINK.c = $(CLINKER) $(PCC_FLAGS) $($(CLANGUAGE)FLAGS) $(CCPPFLAGS) $(LDFLAGS)
 LINK.o = $(CLINKER) $(LDFLAGS)
 LINK.F = $(FLINKER) $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(LDFLAGS)
 LINK.cc = $(CXXLINKER) $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
+
+# make macros KOKKOS_USE_CUDA_COMPILER etc are defined in `${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables`
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
+  # We prefer to use the Kokkos nvcc_wrapper compiler wrapper for compiling Kokkos files. The command is adapted from PETSC_COMPILE.kokkos.cxx
+  # in gmakefile.test, with additional "-o $*.o" to generate intended foo.o intead of foo.kokkos.o
+  PETSC_KOKKOSCOMPILE_SINGLE = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES) -o $*.o
+
   LINK.kokkos.cxx = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER=$(CUDA_CXX) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDACPPFLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
+  PETSC_KOKKOSCOMPILE_SINGLE = ${PETSC_HIPCOMPILE_SINGLE}
   LINK.kokkos.cxx = $(HIPC)  $(HIPC_FLAGS)  $(HIPPP_FLAGS)  $(HIPOPTFLAGS)  $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 else ifneq ($(KOKKOS_USE_SYCL_COMPILER),)
+  PETSC_KOKKOSCOMPILE_SINGLE = ${PETSC_SYCLCOMPILE_SINGLE}
   LINK.kokkos.cxx = $(SYCLC) $(SYCLC_FLAGS) $(SYCLPP_FLAGS) $(SYCLOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 else
+  PETSC_KOKKOSCOMPILE_SINGLE = ${PETSC_CXXCOMPILE_SINGLE}
   LINK.kokkos.cxx = $(CXXLINKER) $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
 endif
 
