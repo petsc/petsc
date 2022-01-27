@@ -119,11 +119,13 @@ static PetscErrorCode MatIncreaseOverlap_Htool(Mat A,PetscInt is_max,IS is[],Pet
 {
   std::set<PetscInt> set;
   const PetscInt     *idx;
-  PetscInt           *oidx,size;
+  PetscInt           *oidx,size,bs[2];
   PetscMPIInt        csize;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSizes(A,bs,bs+1);CHKERRQ(ierr);
+  if (bs[0] != bs[1]) bs[0] = 1;
   for (PetscInt i=0; i<is_max; ++i) {
     /* basic implementation that adds indices by shifting an IS by -ov, -ov+1..., -1, 1..., ov-1, ov */
     /* needed to avoid subdomain matrices to replicate A since it is dense                           */
@@ -140,6 +142,13 @@ static PetscErrorCode MatIncreaseOverlap_Htool(Mat A,PetscInt is_max,IS is[],Pet
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISDestroy(is+i);CHKERRQ(ierr);
+    if (bs[0] > 1) {
+      for (std::set<PetscInt>::iterator it=set.cbegin(); it!=set.cend(); it++) {
+        std::vector<PetscInt> block(bs[0]);
+        std::iota(block.begin(),block.end(),(*it/bs[0])*bs[0]);
+        set.insert(block.cbegin(),block.cend());
+      }
+    }
     size = set.size(); /* size with overlap */
     ierr = PetscMalloc1(size,&oidx);CHKERRQ(ierr);
     for (const PetscInt j : set) *oidx++ = j;
