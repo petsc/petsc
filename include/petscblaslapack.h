@@ -160,6 +160,7 @@ BLAS_EXTERN PetscScalar BLASdot_(const PetscBLASInt*,const PetscScalar*,const Pe
 BLAS_EXTERN void LAPACKhetrf_(const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKhetrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKhetri_(const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+BLAS_EXTERN void LAPACKheev_(const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 #endif
 /* Some functions prototypes differ between real and complex */
 #if defined(PETSC_USE_COMPLEX)
