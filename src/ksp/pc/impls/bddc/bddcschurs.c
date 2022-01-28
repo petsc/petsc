@@ -542,7 +542,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     n_local_dofs = n_B;
     n_prev_added = n_B;
     for (layer=0;layer<nlayers;layer++) {
-      PetscInt n_added;
+      PetscInt n_added = 0;
       if (n_local_dofs == n_I+n_B) break;
       if (n_local_dofs > n_I+n_B) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %D. Out of bound access (%D > %D)",layer,n_local_dofs,n_I+n_B);
       ierr = PCBDDCAdjGetNextLayer_Private(local_numbering+n_local_dofs,n_prev_added,touched,xadj,adjncy,&n_added);CHKERRQ(ierr);

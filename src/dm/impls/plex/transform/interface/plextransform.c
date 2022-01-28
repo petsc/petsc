@@ -804,7 +804,7 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
   DMPolytopeType *rct;
   PetscInt       *rsize, *cone, *ornt;
   PetscInt        rt, Nct, n, rp = 0, rO = 0, pO;
-  PetscInt        offset = -1, ctS, ctE, ctO, ctN, ctTmp;
+  PetscInt        offset = -1, ctS, ctE, ctO = 0, ctN, ctTmp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
