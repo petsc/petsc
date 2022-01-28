@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '6c786cd6900b977e7b3b19a1f88c0c433a49cbcc' # develop of 2021-12-20
+    self.gitcommit        = 'bcc505d321da561889285184a085220da8920515' # develop of 2022-01-25
     self.versionname      = 'KOKKOS_KERNELS_VERSION'  # It looks kokkos-kernels does not yet have a macro for version number
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
@@ -68,6 +68,7 @@ class Configure(config.package.CMakePackage):
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
       args.append('-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON')
+
     if self.cuda.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
@@ -80,6 +81,19 @@ class Configure(config.package.CMakePackage):
         raise RuntimeError('HIP error: could not find path of hipc')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.systemHipc)
+      # TPL
+      rocBlasDir   = os.path.join(self.hip.hipDir,'rocblas')
+      rocSparseDir = os.path.join(self.hip.hipDir,'rocsparse')
+      if self.argDB['with-kokkos-kernels-tpl'] and os.path.isdir(rocBlasDir) and os.path.isdir(rocSparseDir): # TPL is required either by default or by users
+        args.append('-DKokkosKernels_ENABLE_TPL_ROCBLAS=ON')
+        args.append('-DKokkosKernels_ENABLE_TPL_ROCSPARSE=ON')
+        args.append('-DKokkosKernels_ROCBLAS_ROOT='+rocBlasDir)
+        args.append('-DKokkosKernels_ROCSPARSE_ROOT='+rocSparseDir)
+      elif 'with-kokkos-kernels-tpl' in self.framework.clArgDB and self.argDB['with-kokkos-kernels-tpl']: # TPL is explicitly required by users
+        raise RuntimeError('Kokkos-Kernels TPL is required but {x} and {y} do not exist! If not needed, use --with-kokkos-kernels-tpl=0'.format(x=rocBlasDir,y=rocSparseDir))
+      else: # Users turned it off or because rocBlas/rocSparse dirs not found
+        args.append('-DKokkosKernels_ENABLE_TPL_ROCBLAS=OFF')
+        args.append('-DKokkosKernels_ENABLE_TPL_ROCSPARSE=OFF')
     elif self.sycl.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.kokkos.systemSyclc)

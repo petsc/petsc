@@ -41,15 +41,8 @@ class Configure(config.package.Package):
     return output
 
   def getSearchDirectories(self):
-    import os
-    self.pushLanguage('HIP')
-    petscHip = self.getCompiler()
-    self.popLanguage()
-    self.getExecutable(petscHip,getFullPath=1,resultName='systemHipc')
-    if hasattr(self,'systemHipc'):
-      hipcDir = os.path.dirname(self.systemHipc)
-      hipDir = os.path.split(hipcDir)[0]
-      yield hipDir
+    yield self.hipDir
+    for i in config.package.Package.getSearchDirectories(self): yield i
     return
 
   def checkSizeofVoidP(self):
@@ -79,7 +72,20 @@ class Configure(config.package.Package):
         raise RuntimeError('HIP compiler error: memory alignment doesn\'t match C compiler (try adding -malign-double to compiler options)')
     return
 
+  def setHipDir(self):
+    import os
+    self.pushLanguage('HIP')
+    petscHip = self.getCompiler()
+    self.popLanguage()
+    self.getExecutable(petscHip,getFullPath=1,resultName='systemHipc')
+    if hasattr(self,'systemHipc'): # /opt/rocm/bin/hipcc
+      hipcDir = os.path.dirname(self.systemHipc) # /opt/rocm/bin
+      self.hipDir = os.path.dirname(hipcDir) # /opt/rocm
+    else:
+      raise RuntimeError('HIP compiler not found!')
+
   def configureLibrary(self):
+    self.setHipDir()
     self.getExecutable('hipconfig',getFullPath=1,resultName='hip_config')
     if hasattr(self,'hip_config'):
       try:
