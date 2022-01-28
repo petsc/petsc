@@ -130,7 +130,7 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
   PetscFunctionBegin;
   ierr = DMGetDimension(plex, &dim);CHKERRQ(ierr);
   ierr = DMGetDS(plex, &prob);CHKERRQ(ierr);
-  if (LANDAU_DIM != dim) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
+  PetscAssertFalse(LANDAU_DIM != dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
   ierr = PetscDSGetTabulation(prob, &Tf);CHKERRQ(ierr);
   BB   = Tf[0]->T[0]; DD = Tf[0]->T[1];
   ip_offset[0] = ipf_offset[0] = elem_offset[0] = 0;
@@ -401,9 +401,9 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(events[3],0,0,0,0);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(plex[0], &ctx);CHKERRQ(ierr);
-  if (!ctx) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
+  PetscAssertFalse(!ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   ierr = DMGetDimension(plex[0], &dim);CHKERRQ(ierr);
-  if (LANDAU_DIM != dim) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
+  PetscAssertFalse(LANDAU_DIM != dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
   if (ctx->gpu_assembly) {
     ierr = PetscObjectQuery((PetscObject) JacP, "assembly_maps", (PetscObject *) &container);CHKERRQ(ierr);
     if (container) { // not here first call
@@ -729,7 +729,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   if (elem_mat_num_cells_max_grid) { // CPU assembly
     Kokkos::View<PetscScalar****, Kokkos::LayoutRight>::HostMirror h_elem_mats = Kokkos::create_mirror_view(d_elem_mats);
     Kokkos::deep_copy (h_elem_mats, d_elem_mats);
-    if (container) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "?????");
+    PetscAssertFalse(container,PETSC_COMM_SELF, PETSC_ERR_PLIB, "?????");
     for (PetscInt b_id = 0 ; b_id < batch_sz ; b_id++) { // OpenMP (once)
       for (PetscInt grid=0 ; grid<num_grids ; grid++) {
         PetscSection      section, globalSection;
@@ -764,7 +764,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
         ierr = MatGetSize(B, &nloc, NULL);CHKERRQ(ierr);
         for (int i=0 ; i<nloc ; i++) {
           ierr = MatGetRow(B,i,&nzl,&cols,&vals);CHKERRQ(ierr);
-          if (nzl>1024) SETERRQ(PetscObjectComm((PetscObject) B), PETSC_ERR_PLIB, "Row too big: %D",nzl);
+          PetscAssertFalse(nzl>1024,PetscObjectComm((PetscObject) B), PETSC_ERR_PLIB, "Row too big: %D",nzl);
           for (int j=0; j<nzl; j++) colbuf[j] = cols[j] + moffset;
           row = i + moffset;
           ierr = MatSetValues(JacP,1,&row,nzl,colbuf,vals,ADD_VALUES);CHKERRQ(ierr);

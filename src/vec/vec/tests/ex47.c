@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&dnorm);CHKERRQ(ierr);
-  if (norm/dnorm > 1.e-6) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'noBsDim' does not match vector written out %g",(double)(norm/dnorm));
+  PetscAssertFalse(norm/dnorm > 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'noBsDim' does not match vector written out %g",(double)(norm/dnorm));
 
   /* Load the Vec with one extra, 1-sized, BS dim and compare */
   ierr = PetscObjectSetName((PetscObject) y, "bsDim");CHKERRQ(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&dnorm);CHKERRQ(ierr);
-  if (norm/dnorm > 1.e-6) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'bsDim' does not match vector written out %g",(double)(norm/dnorm));
+  PetscAssertFalse(norm/dnorm > 1.e-6,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Vec read in 'bsDim' does not match vector written out %g",(double)(norm/dnorm));
 
   ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);

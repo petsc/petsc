@@ -41,7 +41,7 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]You have not waited on all non-blocking sends and receives",rank);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]Number non-blocking sends %g receives %g number of waits %g\n",rank,petsc_isend_ct,petsc_irecv_ct,petsc_sum_of_waits_ct);CHKERRQ(ierr);
     err  = fflush(fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscAssertFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
   ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   /* Did we receive all the messages that we sent? */
@@ -52,7 +52,7 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
   if (rank == 0 && tsends != trecvs) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Total number sends %g not equal receives %g\n",tsends,trecvs);CHKERRQ(ierr);
     err  = fflush(fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscAssertFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
   PetscFunctionReturn(0);
 }
@@ -91,7 +91,7 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win,PetscMPIInt rank,M
 
   PetscFunctionBegin;
   ierr = MPI_Win_shared_query(win,rank,sz,szind,&tmp);CHKERRMPI(ierr);
-  if (*szind <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"szkind %d must be positive",*szind);
+  PetscAssertFalse(*szind <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"szkind %d must be positive",*szind);
   tmp += ((size_t)tmp) % *szind ? *szind/4 - ((((size_t)tmp) % *szind)/4) : 0;
   *(void**)ptr = (void*)tmp;
   PetscFunctionReturn(0);

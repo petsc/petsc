@@ -49,7 +49,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
-    if (rip[i] != riip[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, use symmetric permutation for symmetric matrices");
+    PetscAssertFalse(rip[i] != riip[i],PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, use symmetric permutation for symmetric matrices");
   }
   ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);

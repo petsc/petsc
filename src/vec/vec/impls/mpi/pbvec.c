@@ -37,7 +37,7 @@ static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   Vec_MPI        *v = (Vec_MPI*)vin->data;
 
   PetscFunctionBegin;
-  if (v->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
+  PetscAssertFalse(v->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array         = (PetscScalar*)a;
   if (v->localrep) {
@@ -200,7 +200,7 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   if (PetscDefined(USE_DEBUG)) {
     InsertMode addv;
     ierr = MPIU_Allreduce((PetscEnum*)&X->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRMPI(ierr);
-    if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
+    PetscAssertFalse(addv == (ADD_VALUES|INSERT_VALUES),comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   }
   X->bstash.insertmode = X->stash.insertmode; /* Block stash implicitly tracks InsertMode of scalar stash */
 
@@ -289,7 +289,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
     PetscFunctionReturn(0);
   }
 
-  if (!x->segrecvframe) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first");
+  PetscAssertFalse(!x->segrecvframe,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first");
   ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
   ierr = PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses);CHKERRQ(ierr);
@@ -317,7 +317,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         } else count = x->recvhdr[i].count;
         for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<count; j++,recvint++) {
           PetscInt loc = *recvint - X->map->rstart;
-          if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %" PetscInt_FMT " out of local range [%" PetscInt_FMT ",%" PetscInt_FMT ")]",*recvint,X->map->rstart,X->map->rend);
+          PetscAssertFalse(*recvint < X->map->rstart || X->map->rend <= *recvint,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %" PetscInt_FMT " out of local range [%" PetscInt_FMT ",%" PetscInt_FMT ")]",*recvint,X->map->rstart,X->map->rend);
           switch (imode) {
           case ADD_VALUES:
             xarray[loc] += *recvscalar++;
@@ -618,7 +618,7 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
+  PetscAssertFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
@@ -669,9 +669,9 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   PetscFunctionBegin;
   *vv = NULL;
 
-  if (n == PETSC_DECIDE)      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
-  if (nghost == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
-  if (nghost < 0)             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
+  PetscAssertFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
+  PetscAssertFalse(nghost == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
+  PetscAssertFalse(nghost < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
@@ -823,8 +823,8 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     ierr = ISLocalToGlobalMappingCreate(comm,1,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(vv,ltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
-  } else if (vv->ops->create == VecCreate_MPI) SETERRQ(PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
-  else if (!((PetscObject)vv)->type_name) SETERRQ(PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
+  } else PetscAssertFalse(vv->ops->create == VecCreate_MPI,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
+  else PetscAssertFalse(!((PetscObject)vv)->type_name,PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
   PetscFunctionReturn(0);
 }
 
@@ -874,10 +874,10 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   PetscFunctionBegin;
   *vv = NULL;
 
-  if (n == PETSC_DECIDE)      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
-  if (nghost == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
-  if (nghost < 0)             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
-  if (n % bs)                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size must be a multiple of block size");
+  PetscAssertFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
+  PetscAssertFalse(nghost == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
+  PetscAssertFalse(nghost < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
+  PetscAssertFalse(n % bs,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size must be a multiple of block size");
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);

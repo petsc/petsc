@@ -285,13 +285,13 @@ PetscErrorCode  MatSubMatrixVirtualUpdate(Mat N,Mat A,IS isrow,IS iscol)
   PetscValidHeaderSpecific(isrow,IS_CLASSID,3);
   PetscValidHeaderSpecific(iscol,IS_CLASSID,4);
   ierr = PetscObjectTypeCompare((PetscObject)N,MATSUBMATRIX,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
+  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
 
   Na   = (Mat_SubVirtual*)N->data;
   ierr = ISEqual(isrow,Na->isrow,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different row indices");
+  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different row indices");
   ierr = ISEqual(iscol,Na->iscol,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different column indices");
+  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different column indices");
 
   ierr = PetscFree(N->defaultvectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(A->defaultvectype,&N->defaultvectype);CHKERRQ(ierr);

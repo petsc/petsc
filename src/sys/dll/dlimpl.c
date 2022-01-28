@@ -276,7 +276,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
       dlhandle = dlopen(NULL, dlflags1|dlflags2);
 #if defined(PETSC_HAVE_DLERROR)
       { const char *e = (const char*) dlerror();
-        if (e) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
+        PetscAssertFalse(e,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
       }
 #endif
 #endif
@@ -339,7 +339,7 @@ PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
     Dl_info        info;
     PetscErrorCode ierr;
 
-    ierr = dladdr(*(void **) &func, &info);if (!ierr) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Failed to lookup symbol: %s", dlerror());
+    ierr = dladdr(*(void **) &func, &info);PetscAssertFalse(!ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Failed to lookup symbol: %s", dlerror());
 #ifdef PETSC_HAVE_CXX
     ierr = PetscDemangleSymbol(info.dli_sname, name);CHKERRQ(ierr);
 #else

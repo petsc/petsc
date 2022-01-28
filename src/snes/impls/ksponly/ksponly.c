@@ -12,7 +12,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   Vec            Y,X,F;
 
   PetscFunctionBegin;
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscAssertFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;

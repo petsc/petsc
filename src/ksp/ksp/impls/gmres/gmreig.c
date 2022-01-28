@@ -33,7 +33,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
 #else
   PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&bn,&bn,R,&bN,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&lierr));
 #endif
-  if (lierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SVD Lapack routine %d",(int)lierr);
+  PetscAssertFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SVD Lapack routine %d",(int)lierr);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
 
   *emin = realpart[n-1];
@@ -56,7 +56,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(N,&idummy);CHKERRQ(ierr);
-  if (nmax < n) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
+  PetscAssertFalse(nmax < n,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   if (!n) PetscFunctionReturn(0);
@@ -67,7 +67,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   /* compute eigenvalues */
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&bn,R,&bN,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
-  if (lierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
+  PetscAssertFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) perm[i] = i;
@@ -89,7 +89,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   ierr = PetscBLASIntCast(N,&bN);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(5*N,&lwork);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(N,&idummy);CHKERRQ(ierr);
-  if (nmax < n) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
+  PetscAssertFalse(nmax < n,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   if (!n) PetscFunctionReturn(0);
@@ -100,7 +100,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   /* compute eigenvalues */
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&bn,R,&bN,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&lierr));
-  if (lierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine");
+  PetscAssertFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine");
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) perm[i] = i;
@@ -177,7 +177,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
       PetscBLASInt *ipiv;
       ierr = PetscMalloc1(bn,&ipiv);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&bn,&nrhs,Ht,&bn,ipiv,t,&bn,&info));
-      if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Error while calling the Lapack routine DGESV");
+      PetscAssertFalse(info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Error while calling the Lapack routine DGESV");
       ierr = PetscFree(ipiv);CHKERRQ(ierr);
       ierr = PetscFree(Ht);CHKERRQ(ierr);
     }
@@ -191,7 +191,7 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,Petsc
     PetscBLASInt info;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","V",&bn,H,&bN,wr,wi,&sdummy,&idummy,Q,&bn,work,&lwork,&info));
-    if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine");
+    PetscAssertFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine");
   }
   /* sort the (harmonic) Ritz values */
   ierr = PetscMalloc1(n,&modul);CHKERRQ(ierr);

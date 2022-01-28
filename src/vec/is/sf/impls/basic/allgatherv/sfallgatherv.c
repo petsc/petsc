@@ -68,7 +68,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF sf)
   ierr = PetscFree(dat->irootloc);CHKERRQ(ierr);
   ierr = PetscFree(dat->recvcounts);CHKERRQ(ierr);
   ierr = PetscFree(dat->displs);CHKERRQ(ierr);
-  if (dat->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
+  PetscAssertFalse(dat->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   for (; link; link=next) {next = link->next; ierr = PetscSFLinkDestroy(sf,link);CHKERRQ(ierr);}
   dat->avail = NULL;
   PetscFunctionReturn(0);
@@ -232,7 +232,7 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Allgatherv(PetscSF sf,MPI_Dat
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  if (PetscMemTypeDevice(rootmtype) || PetscMemTypeDevice(leafmtype)) SETERRQ(comm,PETSC_ERR_SUP,"Do FetchAndOp on device");
+  PetscAssertFalse(PetscMemTypeDevice(rootmtype) || PetscMemTypeDevice(leafmtype),comm,PETSC_ERR_SUP,"Do FetchAndOp on device");
   /* Copy leafdata to leafupdate */
   ierr = PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_FETCH,&link);CHKERRQ(ierr);
   ierr = PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata);CHKERRQ(ierr); /* Sync the device */

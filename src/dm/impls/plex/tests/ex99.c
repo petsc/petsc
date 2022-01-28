@@ -134,7 +134,7 @@ int main(int argc, char **argv)
   ierr = PetscStrreplace(PETSC_COMM_SELF, out, path, sizeof(path));CHKERRQ(ierr);
   ierr = PetscFixFilename(path, out);CHKERRQ(ierr);
   ierr = PetscTestFile(geo, 'r', &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "File not found: %s", geo);
+  PetscAssertFalse(!flg,PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "File not found: %s", geo);
 
   ierr = PetscSNPrintf(cmd, sizeof(cmd), cmdtemplate, gmsh, fmtlist[fmt], bin?"-bin":"", (int)dim, (int)order, geo, out);CHKERRQ(ierr);
   ierr = PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp);CHKERRQ(ierr);

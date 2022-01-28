@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   ierr = VecMean(testvec, &mean);CHKERRQ(ierr);
 
   /* to verify that the loaded data has been transferred */
-  if (sum != 150) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB,"Data has not been transferred from subvector to parent vector");
+  PetscAssertFalse(sum != 150,PETSC_COMM_WORLD, PETSC_ERR_PLIB,"Data has not been transferred from subvector to parent vector");
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSum on parent vec is : %e\n",(double)PetscAbsScalar(sum));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMean on parent vec is : %e\n",(double)PetscAbsScalar(mean));CHKERRQ(ierr);
 

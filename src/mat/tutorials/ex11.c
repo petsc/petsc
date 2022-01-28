@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
+  PetscAssertFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr  = PetscMalloc1(3,&ii);CHKERRQ(ierr);

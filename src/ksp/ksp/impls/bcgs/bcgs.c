@@ -88,7 +88,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     KSPCheckDot(ksp,d1);
     if (d1 == 0.0) {
-      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
+      PetscAssertFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
       ierr  = PetscInfo(ksp,"Breakdown due to zero inner product\n");CHKERRQ(ierr);
       break;
@@ -102,7 +102,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
          may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
       if (d1 != 0.0) {
-        if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
+        PetscAssertFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
         else ksp->reason = KSP_DIVERGED_BREAKDOWN;
         ierr  = PetscInfo(ksp,"Failed due to singular preconditioned operator\n");CHKERRQ(ierr);
         break;
@@ -137,7 +137,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
     if (rho == 0.0) {
-      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
+      PetscAssertFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
       ierr  = PetscInfo(ksp,"Breakdown due to zero rho inner product\n");CHKERRQ(ierr);
       break;

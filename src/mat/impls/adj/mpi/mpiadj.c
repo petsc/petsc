@@ -159,9 +159,9 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
       ierr = PetscObjectGetComm((PetscObject)irow[i],&scomm_row);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)icol[i],&scomm_col);CHKERRQ(ierr);
       ierr = MPI_Comm_compare(scomm_row,scomm_col,&issame);CHKERRMPI(ierr);
-      if (issame != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row index set must have the same comm as the col index set");
+      PetscAssertFalse(issame != MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row index set must have the same comm as the col index set");
       ierr = MPI_Comm_compare(scomm_row,PETSC_COMM_SELF,&issame);CHKERRMPI(ierr);
-      if (issame == MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," can not use PETSC_COMM_SELF as comm when extracting a parallel submatrix");
+      PetscAssertFalse(issame == MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," can not use PETSC_COMM_SELF as comm when extracting a parallel submatrix");
     } else {
       scomm_row = PETSC_COMM_SELF;
     }
@@ -182,7 +182,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
     for (j=0; j<irow_n; j++) {
       for (k=sxadj[j]; k<sxadj[j+1]; k++) {
         ierr = PetscFindInt(sadjncy[k],nindx,indices,&loc);CHKERRQ(ierr);
-        if (loc<0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %" PetscInt_FMT,sadjncy[k]);
+        PetscAssertFalse(loc<0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"can not find col %" PetscInt_FMT,sadjncy[k]);
         sadjncy[k] = loc;
       }
     }
@@ -193,7 +193,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,con
        Mat_MPIAdj         *sa  = (Mat_MPIAdj*)((sadj)->data);
        ierr = PetscObjectGetComm((PetscObject)sadj,&scomm_mat);CHKERRQ(ierr);
        ierr = MPI_Comm_compare(scomm_row,scomm_mat,&issame);CHKERRMPI(ierr);
-       if (issame != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"submatrix  must have the same comm as the col index set");
+       PetscAssertFalse(issame != MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"submatrix  must have the same comm as the col index set");
        ierr = PetscArraycpy(sa->i,sxadj,irow_n+1);CHKERRQ(ierr);
        ierr = PetscArraycpy(sa->j,sadjncy,sxadj[irow_n]);CHKERRQ(ierr);
        if (svalues) {ierr = PetscArraycpy(sa->values,svalues,sxadj[irow_n]);CHKERRQ(ierr);}
@@ -238,7 +238,7 @@ static PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO) {
     PetscFunctionReturn(0);
-  } else if (format == PETSC_VIEWER_ASCII_MATLAB) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATLAB format not supported");
+  } else PetscAssertFalse(format == PETSC_VIEWER_ASCII_MATLAB,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATLAB format not supported");
   else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
@@ -329,7 +329,7 @@ static PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt 
 
   PetscFunctionBegin;
   row -= A->rmap->rstart;
-  if (row < 0 || row >= A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
+  PetscAssertFalse(row < 0 || row >= A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
   *nz = a->i[row+1] - a->i[row];
   if (v) {
     PetscInt j;
@@ -402,11 +402,11 @@ static PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool sym
   PetscInt   **ia = (PetscInt**)inia,**ja = (PetscInt**)inja;
 
   PetscFunctionBegin;
-  if (ia && a->i != *ia) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");
-  if (ja && a->j != *ja) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"ja passed back is not one obtained with MatGetRowIJ()");
+  PetscAssertFalse(ia && a->i != *ia,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");
+  PetscAssertFalse(ja && a->j != *ja,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"ja passed back is not one obtained with MatGetRowIJ()");
   if (oshift) {
-    if (!ia) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"If oshift then you must passed in inia[] argument");
-    if (!ja) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"If oshift then you must passed in inja[] argument");
+    PetscAssertFalse(!ia,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"If oshift then you must passed in inia[] argument");
+    PetscAssertFalse(!ja,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"If oshift then you must passed in inja[] argument");
     for (i=0; i<=(*m); i++) (*ia)[i]--;
     for (i=0; i<(*ia)[*m]; i++) {
       (*ja)[i]--;
@@ -635,12 +635,12 @@ static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscI
   if (PetscDefined(USE_DEBUG)) {
     PetscInt ii;
 
-    if (i[0] != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %" PetscInt_FMT,i[0]);
+    PetscAssertFalse(i[0] != 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %" PetscInt_FMT,i[0]);
     for (ii=1; ii<B->rmap->n; ii++) {
-      if (i[ii] < 0 || i[ii] < i[ii-1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i[%" PetscInt_FMT "]=%" PetscInt_FMT " index is out of range: i[%" PetscInt_FMT "]=%" PetscInt_FMT,ii,i[ii],ii-1,i[ii-1]);
+      PetscAssertFalse(i[ii] < 0 || i[ii] < i[ii-1],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i[%" PetscInt_FMT "]=%" PetscInt_FMT " index is out of range: i[%" PetscInt_FMT "]=%" PetscInt_FMT,ii,i[ii],ii-1,i[ii-1]);
     }
     for (ii=0; ii<i[B->rmap->n]; ii++) {
-      if (j[ii] < 0 || j[ii] >= B->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %" PetscInt_FMT " out of range %" PetscInt_FMT,ii,j[ii]);
+      PetscAssertFalse(j[ii] < 0 || j[ii] >= B->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %" PetscInt_FMT " out of range %" PetscInt_FMT,ii,j[ii]);
     }
   }
   B->preallocated = PETSC_TRUE;
@@ -719,7 +719,7 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   nz   = adj->nz;
-  if (PetscUnlikely(adj->i[m] != nz)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nz %" PetscInt_FMT " not correct i[m] %" PetscInt_FMT,nz,adj->i[m]);
+  PetscAssertFalse(adj->i[m] != nz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nz %" PetscInt_FMT " not correct i[m] %" PetscInt_FMT,nz,adj->i[m]);
   ierr = MPI_Allreduce(&nz,&NZ,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
 
   ierr = PetscMPIIntCast(nz,&mnz);CHKERRQ(ierr);

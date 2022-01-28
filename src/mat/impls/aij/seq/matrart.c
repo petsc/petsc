@@ -39,7 +39,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscAssertFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   /* create symbolic P=Rt */
   ierr = MatGetSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,NULL,&P);CHKERRQ(ierr);
@@ -123,10 +123,10 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
 
   PetscFunctionBegin;
   if (!dm || !dn) PetscFunctionReturn(0);
-  if (bm != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %" PetscInt_FMT " not equal rows in B %" PetscInt_FMT,A->cmap->n,bm);
-  if (am != R->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in R %" PetscInt_FMT " not equal rows in A %" PetscInt_FMT,R->cmap->n,am);
-  if (R->rmap->n != RAB->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in RAB %" PetscInt_FMT " not equal rows in R %" PetscInt_FMT,RAB->rmap->n,R->rmap->n);
-  if (B->cmap->n != RAB->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in RAB %" PetscInt_FMT " not equal columns in B %" PetscInt_FMT,RAB->cmap->n,B->cmap->n);
+  PetscAssertFalse(bm != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %" PetscInt_FMT " not equal rows in B %" PetscInt_FMT,A->cmap->n,bm);
+  PetscAssertFalse(am != R->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in R %" PetscInt_FMT " not equal rows in A %" PetscInt_FMT,R->cmap->n,am);
+  PetscAssertFalse(R->rmap->n != RAB->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in RAB %" PetscInt_FMT " not equal rows in R %" PetscInt_FMT,RAB->rmap->n,R->rmap->n);
+  PetscAssertFalse(B->cmap->n != RAB->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in RAB %" PetscInt_FMT " not equal columns in B %" PetscInt_FMT,RAB->cmap->n,B->cmap->n);
 
   { /*
      This approach is not as good as original ones (will be removed later), but it reveals that
@@ -232,7 +232,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
-  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscAssertFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   rart = (Mat_RARt*)C->product->data;
 
   /* Get dense Rt by Apply MatTransposeColoring to R */
@@ -258,7 +258,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Pet
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscAssertFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   /* create symbolic ARt = A*R^T  */
   ierr = MatProductCreate(A,R,NULL,&ARt);CHKERRQ(ierr);
   ierr = MatProductSetType(ARt,MATPRODUCT_ABt);CHKERRQ(ierr);
@@ -293,7 +293,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Mat 
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
-  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscAssertFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   rart = (Mat_RARt*)C->product->data;
   ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,R,rart->ARt);CHKERRQ(ierr); /* dominate! */
   ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(R,rart->ARt,C);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscAssertFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   ierr = MatTranspose_SeqAIJ(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
   ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
 
@@ -330,7 +330,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
-  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscAssertFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   rart = (Mat_RARt*)C->product->data;
   ierr = MatTranspose_SeqAIJ(R,MAT_REUSE_MATRIX,&rart->Rt);CHKERRQ(ierr);
   /* MatMatMatMultSymbolic used a different data */

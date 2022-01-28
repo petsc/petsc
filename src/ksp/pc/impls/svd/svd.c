@@ -77,7 +77,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     PetscBLASInt lierr;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr));
-    if (lierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
+    PetscAssertFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }
 #else
@@ -88,7 +88,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     ierr = PetscMalloc1(nb,&dd);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,dd,u,&nb,v,&nb,work,&lwork,rwork,&lierr));
-    if (lierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
+    PetscAssertFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
     for (i=0; i<n; i++) d[i] = dd[i];
     ierr = PetscFree(dd);CHKERRQ(ierr);

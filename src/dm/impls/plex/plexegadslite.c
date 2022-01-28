@@ -22,7 +22,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinatesLocal);CHKERRQ(ierr);
   ierr = EGlite_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses);CHKERRQ(ierr);
-  if (bodyID >= Nb) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
+  PetscAssertFalse(bodyID >= Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
   body = bodies[bodyID];
 
   if (edgeID >= 0)      {ierr = EGlite_objectBodyTopo(body, EDGE, edgeID, &obj);CHKERRQ(ierr); Np = 1;}
@@ -40,7 +40,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
     PetscFunctionReturn(0);
   }
-  if (Nv > 16) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
+  PetscAssertFalse(Nv > 16,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
 
   /* Correct EGADSlite 2pi bug when calculating nearest point on Periodic Surfaces */
   ierr = EGlite_getRange(obj, range, &peri);CHKERRQ(ierr);
@@ -64,8 +64,8 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
     for (v = 0; v < Nv; ++v) params[pm] += paramsV[v*3+pm];
     params[pm] /= Nv;
   }
-  if ((params[0] < range[0]) || (params[0] > range[1])) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
-  if (Np > 1 && ((params[1] < range[2]) || (params[1] > range[3]))) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
+  PetscAssertFalse((params[0] < range[0]) || (params[0] > range[1]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
+  PetscAssertFalse(Np > 1 && ((params[1] < range[2]) || (params[1] > range[3])),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
   /* Put coordinates for new vertex in result[] */
   ierr = EGlite_evaluate(obj, params, result);CHKERRQ(ierr);
   for (d = 0; d < dE; ++d) gcoords[d] = result[d];
@@ -230,7 +230,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
           ierr = EGlite_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
           face = fobjs[0];
           fid  = EGlite_indexBodyTopo(body, face);CHKERRQ(ierr);
-          if (Nf != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1 (%d)", lid-1, Nf, fid);
+          PetscAssertFalse(Nf != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1 (%d)", lid-1, Nf, fid);
           ierr = EGlite_getRange(face, range, periodic);CHKERRQ(ierr);
           params[0] = 0.5*(range[0] + range[1]);
           params[1] = 0.5*(range[2] + range[3]);
@@ -241,7 +241,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
         }
       }
     }
-    if (numEdges + numQuads != newVertices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of new vertices %D != %D previous count", numEdges + numQuads, newVertices);
+    PetscAssertFalse(numEdges + numQuads != newVertices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of new vertices %D != %D previous count", numEdges + numQuads, newVertices);
 
     /* Get cell vertices by traversing loops */
     numQuads = 0;
@@ -267,7 +267,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
           ierr = EGlite_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);
           if (mtype == DEGENERATE) continue;
           else                     ++Ner;
-          if (Nv != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Edge %d has %d vertices != 2", eid, Nv);
+          PetscAssertFalse(Nv != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Edge %d has %d vertices != 2", eid, Nv);
 
           for (v = 0; v < Nv; ++v) {
             ego vertex = nobjs[v];
@@ -292,9 +292,9 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
             else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %d does not match its predecessor", eid);
           }
         }
-        if (nc != 2*Ner)     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D != %D", nc, 2*Ner);
+        PetscAssertFalse(nc != 2*Ner,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D != %D", nc, 2*Ner);
         if (Ner == 4) {cone[nc++] = numVertices - newVertices + numEdges + numQuads++;}
-        if (nc > maxCorners) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D > %D max", nc, maxCorners);
+        PetscAssertFalse(nc > maxCorners,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D > %D max", nc, maxCorners);
         /* Triangulate the loop */
         switch (Ner) {
           case 2: /* Bi-Segment -> 2 triangles */
@@ -378,7 +378,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
       EGlite_free(lobjs);
     }
   }
-  if (cOff != numCells) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
+  PetscAssertFalse(cOff != numCells,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
   ierr = DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numVertices, numCorners, PETSC_TRUE, cells, cdim, coords, &dm);CHKERRQ(ierr);
   ierr = PetscFree3(coords, cells, cone);CHKERRQ(ierr);
   ierr = PetscInfo(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells);CHKERRQ(ierr);
@@ -420,7 +420,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
 
       lid  = EGlite_indexBodyTopo(body, loop);CHKERRQ(ierr);
       ierr = EGlite_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
-      if (Nf > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
+      PetscAssertFalse(Nf > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
       fid  = EGlite_indexBodyTopo(body, fobjs[0]);CHKERRQ(ierr);
       EGlite_free(fobjs);
       ierr = EGlite_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
@@ -448,13 +448,13 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
         support[0] = points[0];
         support[1] = points[1];
         ierr = DMPlexGetJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
-        if (numEdges != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
+        PetscAssertFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
         ierr = DMLabelSetValue(edgeLabel, edges[0], eid);CHKERRQ(ierr);
         ierr = DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
         support[0] = points[1];
         support[1] = points[2];
         ierr = DMPlexGetJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
-        if (numEdges != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
+        PetscAssertFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
         ierr = DMLabelSetValue(edgeLabel, edges[0], eid);CHKERRQ(ierr);
         ierr = DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
       }

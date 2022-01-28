@@ -28,7 +28,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   PetscBool        flg;
 
   PetscFunctionBegin;
-  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must call PetscSubcommCreate firt");
+  PetscAssertFalse(!psubcomm,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must call PetscSubcommCreate firt");
 
   ierr = PetscOptionsBegin(psubcomm->parent,psubcomm->subcommprefix,"Options for PetscSubcomm",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-psubcomm_type",NULL,NULL,PetscSubcommTypes,(PetscEnum)psubcomm->type,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm,const char pre
    if (!pre) {
     ierr = PetscFree(psubcomm->subcommprefix);CHKERRQ(ierr);
   } else {
-    if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hyphen");
+    PetscAssertFalse(pre[0] == '-',PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hyphen");
     ierr = PetscFree(psubcomm->subcommprefix);CHKERRQ(ierr);
     ierr = PetscStrallocpy(pre,&(psubcomm->subcommprefix));CHKERRQ(ierr);
   }
@@ -147,10 +147,10 @@ PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
   PetscMPIInt    msub,size;
 
   PetscFunctionBegin;
-  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate() first");
+  PetscAssertFalse(!psubcomm,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate() first");
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscMPIIntCast(nsubcomm,&msub);CHKERRQ(ierr);
-  if (msub < 1 || msub > size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Num of subcommunicators %d cannot be < 1 or > input comm size %d",msub,size);
+  PetscAssertFalse(msub < 1 || msub > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Num of subcommunicators %d cannot be < 1 or > input comm size %d",msub,size);
 
   psubcomm->n = msub;
   PetscFunctionReturn(0);
@@ -174,8 +174,8 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate()");
-  if (psubcomm->n < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subcommunicators %d is incorrect. Call PetscSubcommSetNumber()",psubcomm->n);
+  PetscAssertFalse(!psubcomm,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate()");
+  PetscAssertFalse(psubcomm->n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subcommunicators %d is incorrect. Call PetscSubcommSetNumber()",psubcomm->n);
 
   if (subcommtype == PETSC_SUBCOMM_CONTIGUOUS) {
     ierr = PetscSubcommCreate_contiguous(psubcomm);CHKERRQ(ierr);
@@ -207,8 +207,8 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
   PetscMPIInt    i,nsubcomm=psubcomm->n;
 
   PetscFunctionBegin;
-  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate()");
-  if (nsubcomm < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subcommunicators %d is incorrect. Call PetscSubcommSetNumber()",nsubcomm);
+  PetscAssertFalse(!psubcomm,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate()");
+  PetscAssertFalse(nsubcomm < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subcommunicators %d is incorrect. Call PetscSubcommSetNumber()",nsubcomm);
 
   ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRMPI(ierr);
 

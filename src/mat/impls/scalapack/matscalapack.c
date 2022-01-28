@@ -131,7 +131,7 @@ static PetscErrorCode MatSetValues_ScaLAPACK(Mat A,PetscInt nr,const PetscInt *r
           default: SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
         }
       } else {
-        if (A->nooffprocentries) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process entry even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set");
+        PetscAssertFalse(A->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process entry even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set");
         A->assembled = PETSC_FALSE;
         ierr = MatStashValuesRow_Private(&A->stash,rows[i],1,cols+j,vals+i*nc+j,(PetscBool)(imode==ADD_VALUES));CHKERRQ(ierr);
       }
@@ -743,7 +743,7 @@ static PetscErrorCode MatMatSolve_ScaLAPACK(Mat A,Mat B,Mat X)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)B,MATSCALAPACK,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)X,MATSCALAPACK,&flg2);CHKERRQ(ierr);
-  if (!(flg1 && flg2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Both B and X must be of type MATSCALAPACK");
+  PetscAssertFalse(!(flg1 && flg2),PETSC_COMM_SELF,PETSC_ERR_SUP,"Both B and X must be of type MATSCALAPACK");
   MatScaLAPACKCheckDistribution(B,1,X,2);
   b = (Mat_ScaLAPACK*)B->data;
   x = (Mat_ScaLAPACK*)X->data;
@@ -1225,7 +1225,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatScaLAPACKCheckLayout(PetscLayout map)
     ierr = PetscLayoutGetRanges(map,&ranges);CHKERRQ(ierr);
     n = ranges[1]-ranges[0];
     for (i=1;i<size-1;i++) if (ranges[i+1]-ranges[i]!=n) break;
-    if (i<size-1 && ranges[i+1]-ranges[i]!=0 && ranges[i+2]-ranges[i+1]!=0) SETERRQ(map->comm,PETSC_ERR_SUP,"MATSCALAPACK must have equal local sizes in all processes (except possibly the last one), consider using MatCreateScaLAPACK");
+    PetscAssertFalse(i<size-1 && ranges[i+1]-ranges[i]!=0 && ranges[i+2]-ranges[i+1]!=0,map->comm,PETSC_ERR_SUP,"MATSCALAPACK must have equal local sizes in all processes (except possibly the last one), consider using MatCreateScaLAPACK");
   }
   PetscFunctionReturn(0);
 }
@@ -1291,7 +1291,7 @@ PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A,MatAssemblyType type)
       ierr = PetscBLASIntCast(row[i]+1,&gridx);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(col[i]+1,&gcidx);CHKERRQ(ierr);
       PetscStackCallBLAS("SCALAPACKinfog2l",SCALAPACKinfog2l_(&gridx,&gcidx,a->desc,&a->grid->nprow,&a->grid->npcol,&a->grid->myrow,&a->grid->mycol,&lridx,&lcidx,&rsrc,&csrc));
-      if (rsrc!=a->grid->myrow || csrc!=a->grid->mycol) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_LIB,"Something went wrong, received value does not belong to this process");
+      PetscAssertFalse(rsrc!=a->grid->myrow || csrc!=a->grid->mycol,PetscObjectComm((PetscObject)A),PETSC_ERR_LIB,"Something went wrong, received value does not belong to this process");
       switch (A->insertmode) {
         case INSERT_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] = val[i]; break;
         case ADD_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] += val[i]; break;
@@ -1492,7 +1492,7 @@ static PetscErrorCode MatStashScatterBegin_ScaLAPACK(Mat mat,MatStash *stash,Pet
   {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
     ierr = MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
-    if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
+    PetscAssertFalse(addv == (ADD_VALUES|INSERT_VALUES),PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
     mat->insertmode = addv; /* in case this processor had no cache */
   }
 
@@ -1629,9 +1629,9 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A,PetscInt mb,Pets
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
 
   PetscFunctionBegin;
-  if (A->preallocated) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot change block sizes after MatSetUp");
-  if (mb<1 && mb!=PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"mb %" PetscInt_FMT " must be at least 1",mb);
-  if (nb<1 && nb!=PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nb %" PetscInt_FMT " must be at least 1",nb);
+  PetscAssertFalse(A->preallocated,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot change block sizes after MatSetUp");
+  PetscAssertFalse(mb<1 && mb!=PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"mb %" PetscInt_FMT " must be at least 1",mb);
+  PetscAssertFalse(nb<1 && nb!=PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nb %" PetscInt_FMT " must be at least 1",nb);
   ierr = PetscBLASIntCast((mb==PETSC_DECIDE)?DEFAULT_BLOCKSIZE:mb,&a->mb);CHKERRQ(ierr);
   ierr = PetscBLASIntCast((nb==PETSC_DECIDE)?a->mb:nb,&a->nb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1762,7 +1762,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"ScaLAPACK Grid Options","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_scalapack_grid_height","Grid Height","None",grid->nprow,&optv1,&flg1);CHKERRQ(ierr);
     if (flg1) {
-      if (PetscUnlikely(size % optv1)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %d",optv1,size);
+      PetscAssertFalse(size % optv1,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %d",optv1,size);
       grid->nprow = optv1;
     }
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1855,7 +1855,7 @@ PetscErrorCode MatCreateScaLAPACK(MPI_Comm comm,PetscInt mb,PetscInt nb,PetscInt
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSCALAPACK);CHKERRQ(ierr);
-  if (M==PETSC_DECIDE || N==PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_DECIDE for matrix dimensions");
+  PetscAssertFalse(M==PETSC_DECIDE || N==PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_DECIDE for matrix dimensions");
   /* rows and columns are NOT distributed according to PetscSplitOwnership */
   m = PETSC_DECIDE;
   ierr = PetscSplitOwnershipEqual(comm,&m,&M);CHKERRQ(ierr);

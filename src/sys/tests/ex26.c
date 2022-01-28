@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   for (i = 0; i < 32; ++i) { /* increasing the upper bound will generate an error in Elemental */
     ierr = PetscInitialize(&argc, &argv, (char*) 0, help); if (ierr) return ierr;
     ierr = PetscElementalInitialized(&initialized);CHKERRQ(ierr);
-    if (!initialized) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_LIB, "Uninitialized Elemental");
+    PetscAssertFalse(!initialized,PETSC_COMM_WORLD, PETSC_ERR_LIB, "Uninitialized Elemental");
     ierr = PetscFinalize(); if (ierr) return ierr;
     ierr = PetscElementalInitialized(&initialized); if (ierr) return ierr;
     if (initialized) return PETSC_ERR_LIB;

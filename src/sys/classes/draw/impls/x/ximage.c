@@ -82,7 +82,7 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[PETSC_DR
     /* get image out of the drawable */
     XGetGeometry(Xwin->disp,PetscDrawXiDrawable(Xwin),&root,&x,&y,&w,&h,&dummy,&dummy);
     ximage = XGetImage(Xwin->disp,PetscDrawXiDrawable(Xwin),0,0,w,h,AllPlanes,ZPixmap);
-    if (!ximage) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot XGetImage()");
+    PetscAssertFalse(!ximage,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot XGetImage()");
     /* build indirect sort permutation (a.k.a argsort) of the color -> pixel mapping */
     for (p=0; p<PETSC_DRAW_MAXCOLOR; p++) pmap[p] = p; /* identity permutation */
     ierr = PetscArgSortPixVal(Xwin->cmapping,pmap,255);CHKERRQ(ierr);

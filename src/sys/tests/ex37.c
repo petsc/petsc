@@ -19,9 +19,9 @@ int main(int argc,char **argv)
   /* test that PetscFormatConvertGetSize() correctly counts needed amount of space */
   ierr = PetscFormatConvertGetSize(formatstr,&sz);CHKERRQ(ierr);
   if (PetscDefined(USE_64BIT_INDICES)) {
-    if (sz != 29) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Format size %zu should be 29",sz);
+    PetscAssertFalse(sz != 29,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Format size %zu should be 29",sz);
   } else {
-    if (sz != 27) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Format size %zu should be 27",sz);
+    PetscAssertFalse(sz != 27,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Format size %zu should be 27",sz);
   }
   ierr = PetscMalloc1(sz,&newformatstr);CHKERRQ(ierr);
   ierr = PetscFormatConvert(formatstr,newformatstr);CHKERRQ(ierr);
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   /* Test correct count is returned with %g format */
   ierr = PetscSNPrintfCount(buffer,sizeof(buffer),"Test %g %g\n",&sz,3.33,2.7);CHKERRQ(ierr);
   ierr = PetscStrlen(buffer,&fullLength);CHKERRQ(ierr);
-  if (sz != fullLength+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSNPrintfCount() count should be %d it is %d",(int)fullLength+1,(int)sz);
+  PetscAssertFalse(sz != fullLength+1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSNPrintfCount() count should be %d it is %d",(int)fullLength+1,(int)sz);
 
   /* test that TestPetscVSNPrintf() fullLength argument returns required space for the string when buffer is long enough */
   ierr = TestPetscVSNPrintf(buffer,sizeof(buffer),&fullLength,"Greetings %s","This is my string");CHKERRQ(ierr);

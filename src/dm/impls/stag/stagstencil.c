@@ -39,7 +39,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt nStencil,DMStagStencil*
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (dim<1 || dim>3) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+  PetscAssertFalse(dim<1 || dim>3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
 
   /* Only use non-redundant stencils */
   ierr = PetscMalloc1(nStencil,&ss);CHKERRQ(ierr);
@@ -425,7 +425,7 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagS
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
-  if (nLocal != stag->entriesGhost) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector should be a local vector. Local size %d does not match expected %d",nLocal,stag->entriesGhost);
+  PetscAssertFalse(nLocal != stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector should be a local vector. Local size %d does not match expected %d",nLocal,stag->entriesGhost);
   ierr = PetscMalloc1(n,&ix);CHKERRQ(ierr);
   ierr = DMStagStencilToIndexLocal(dm,dm->dim,n,pos,ix);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vec,&arr);CHKERRQ(ierr);
@@ -469,7 +469,7 @@ PetscErrorCode DMStagVecSetValuesStencil(DM dm,Vec vec,PetscInt n,const DMStagSt
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
-  if (nLocal != stag->entries) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Provided vec has a different number of local entries (%D) than expected (%D). It should be a global vector",nLocal,stag->entries);
+  PetscAssertFalse(nLocal != stag->entries,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Provided vec has a different number of local entries (%D) than expected (%D). It should be a global vector",nLocal,stag->entries);
   ierr = PetscMalloc1(n,&ix);CHKERRQ(ierr);
   ierr = DMStagStencilToIndexLocal(dm,dm->dim,n,pos,ix);CHKERRQ(ierr);
   ierr = VecSetValuesLocal(vec,n,ix,val,insertMode);CHKERRQ(ierr);

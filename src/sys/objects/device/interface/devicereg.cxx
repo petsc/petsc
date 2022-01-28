@@ -36,7 +36,7 @@ PetscErrorCode PetscDeviceInitializePackage(void)
 
   PetscFunctionBegin;
   if (PetscLikely(PetscDevicePackageInitialized)) PetscFunctionReturn(0);
-  if (PetscUnlikely(!PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc is not configured with device support (PETSC_DEVICE_DEFAULT = '%s')",PetscDeviceTypes[PETSC_DEVICE_DEFAULT]);
+  PetscAssertFalse(PetscUnlikely(!PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT)),PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc is not configured with device support (PETSC_DEVICE_DEFAULT = '%s')",PetscDeviceTypes[PETSC_DEVICE_DEFAULT]);
   PetscDevicePackageInitialized = PETSC_TRUE;
   ierr = PetscRegisterFinalize(PetscDeviceFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

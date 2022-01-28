@@ -178,7 +178,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(PetscSFList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
+  PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
   /* Destroy the previous PetscSF implementation context */
   if (sf->ops->Destroy) {ierr = (*(sf)->ops->Destroy)(sf);CHKERRQ(ierr);}
   ierr = PetscMemzero(sf->ops,sizeof(*sf->ops));CHKERRQ(ierr);
@@ -255,9 +255,9 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
     const PetscInt rank = iremote[i].rank;
     const PetscInt remote = iremote[i].index;
     const PetscInt leaf = ilocal ? ilocal[i] : i;
-    if (rank < 0 || rank >= size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided rank (%" PetscInt_FMT ") for remote %" PetscInt_FMT " is invalid, should be in [0, %d)",rank,i,size);
-    if (remote < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided index (%" PetscInt_FMT ") for remote %" PetscInt_FMT " is invalid, should be >= 0",remote,i);
-    if (leaf < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided location (%" PetscInt_FMT ") for leaf %" PetscInt_FMT " is invalid, should be >= 0",leaf,i);
+    PetscAssertFalse(rank < 0 || rank >= size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided rank (%" PetscInt_FMT ") for remote %" PetscInt_FMT " is invalid, should be in [0, %d)",rank,i,size);
+    PetscAssertFalse(remote < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided index (%" PetscInt_FMT ") for remote %" PetscInt_FMT " is invalid, should be >= 0",remote,i);
+    PetscAssertFalse(leaf < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided location (%" PetscInt_FMT ") for leaf %" PetscInt_FMT " is invalid, should be >= 0",leaf,i);
   }
   PetscFunctionReturn(0);
 }
@@ -363,9 +363,9 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
     if (isCuda) sf->backend = PETSCSF_BACKEND_CUDA;
     else if (isKokkos) sf->backend = PETSCSF_BACKEND_KOKKOS;
     else if (isHip) sf->backend = PETSCSF_BACKEND_HIP;
-    else if (set) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-sf_backend %s is not supported. You may choose cuda, hip or kokkos (if installed)", backendstr);
+    else PetscAssertFalse(set,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-sf_backend %s is not supported. You may choose cuda, hip or kokkos (if installed)", backendstr);
   #elif defined(PETSC_HAVE_KOKKOS)
-    if (set && !isKokkos) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-sf_backend %s is not supported. You can only choose kokkos", backendstr);
+    PetscAssertFalse(set && !isKokkos,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-sf_backend %s is not supported. You can only choose kokkos", backendstr);
    #endif
   }
  #endif
@@ -392,7 +392,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidLogicalCollectiveBool(sf,flg,2);
-  if (sf->multi) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Rank ordering must be set before first call to PetscSFGatherBegin() or PetscSFScatterBegin()");
+  PetscAssertFalse(sf->multi,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Rank ordering must be set before first call to PetscSFGatherBegin() or PetscSFScatterBegin()");
   sf->rankorder = flg;
   PetscFunctionReturn(0);
 }
@@ -435,8 +435,8 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   if (nleaves > 0 && ilocal) PetscValidIntPointer(ilocal,4);
   if (nleaves > 0) PetscValidPointer(iremote,6);
-  if (nroots  < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nroots %" PetscInt_FMT ", cannot be negative",nroots);
-  if (nleaves < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nleaves %" PetscInt_FMT ", cannot be negative",nleaves);
+  PetscAssertFalse(nroots  < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nroots %" PetscInt_FMT ", cannot be negative",nroots);
+  PetscAssertFalse(nleaves < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nleaves %" PetscInt_FMT ", cannot be negative",nleaves);
 
   if (sf->nroots >= 0) { /* Reset only if graph already set */
     ierr = PetscSFReset(sf);CHKERRQ(ierr);
@@ -555,7 +555,7 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf,PetscLayout map,PetscSFPatt
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   if (pattern != PETSCSF_PATTERN_ALLTOALL) PetscValidPointer(map,2);
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
-  if (PetscUnlikely((pattern < PETSCSF_PATTERN_ALLGATHER) || (pattern > PETSCSF_PATTERN_ALLTOALL))) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unsupported PetscSFPattern %d",pattern);
+  PetscAssertFalse(PetscUnlikely((pattern < PETSCSF_PATTERN_ALLGATHER) || (pattern > PETSCSF_PATTERN_ALLTOALL)),comm,PETSC_ERR_ARG_OUTOFRANGE,"Unsupported PetscSFPattern %d",pattern);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
@@ -931,7 +931,7 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  if (!sf->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
+  PetscAssertFalse(!sf->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
   if (sf->ops->GetRootRanks) {
     ierr = (sf->ops->GetRootRanks)(sf,nranks,ranks,roffset,rmine,rremote);CHKERRQ(ierr);
   } else {
@@ -969,7 +969,7 @@ PetscErrorCode PetscSFGetLeafRanks(PetscSF sf,PetscInt *niranks,const PetscMPIIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  if (!sf->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
+  PetscAssertFalse(!sf->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
   if (sf->ops->GetLeafRanks) {
     ierr = (sf->ops->GetLeafRanks)(sf,niranks,iranks,ioffset,irootloc);CHKERRQ(ierr);
   } else {
@@ -1083,7 +1083,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
       }
       orank = sf->remote[i].rank;
     }
-    if (irank < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %" PetscInt_FMT " in array",sf->remote[i].rank);
+    PetscAssertFalse(irank < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %" PetscInt_FMT " in array",sf->remote[i].rank);
     sf->rmine[sf->roffset[irank] + rcount[irank]]   = sf->mine ? sf->mine[i] : i;
     sf->rremote[sf->roffset[irank] + rcount[irank]] = sf->remote[i].index;
     rcount[irank]++;
@@ -1114,7 +1114,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
   MPI_Group      group = MPI_GROUP_NULL;
 
   PetscFunctionBegin;
-  if (sf->nranks < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUpRanks() before obtaining groups");
+  PetscAssertFalse(sf->nranks < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUpRanks() before obtaining groups");
   if (sf->ingroup == MPI_GROUP_NULL) {
     PetscInt       i;
     const PetscInt *indegree;
@@ -1205,7 +1205,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     for (i=0; i<sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
     if (PetscDefined(USE_DEBUG)) { /* Check that the expected number of increments occurred */
       for (i=0; i<sf->nroots; i++) {
-        if (inoffset[i] + indegree[i] != inoffset[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscSFFetchAndOp");
+        PetscAssertFalse(inoffset[i] + indegree[i] != inoffset[i+1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect result after PetscSFFetchAndOp");
       }
     }
     ierr = PetscMalloc1(sf->nleaves,&remote);CHKERRQ(ierr);
@@ -1294,9 +1294,9 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf,PetscInt nselected,const P
   if (PetscDefined(USE_DEBUG)) {  /* Error out if selected[] has dups or  out of range indices */
     PetscBool dups;
     ierr = PetscCheckDupsInt(nselected,selected,&dups);CHKERRQ(ierr);
-    if (dups) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"selected[] has dups");
+    PetscAssertFalse(dups,comm,PETSC_ERR_ARG_WRONG,"selected[] has dups");
     for (i=0; i<nselected; i++)
-      if (selected[i] < 0 || selected[i] >= nroots) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"selected root indice %" PetscInt_FMT " is out of [0,%" PetscInt_FMT ")",selected[i],nroots);
+      PetscAssertFalse(selected[i] < 0 || selected[i] >= nroots,comm,PETSC_ERR_ARG_OUTOFRANGE,"selected root indice %" PetscInt_FMT " is out of [0,%" PetscInt_FMT ")",selected[i],nroots);
   }
 
   if (sf->ops->CreateEmbeddedRootSF) {
@@ -1378,7 +1378,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf,PetscInt nselected,const P
   ierr = PetscMalloc1(nselected,&leaves);CHKERRQ(ierr);
   ierr = PetscArraycpy(leaves,selected,nselected);CHKERRQ(ierr);
   ierr = PetscSortedRemoveDupsInt(&nselected,leaves);CHKERRQ(ierr);
-  if (nselected && (leaves[0] < 0 || leaves[nselected-1] >= sf->nleaves)) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max leaf indices %" PetscInt_FMT "/%" PetscInt_FMT " are not in [0,%" PetscInt_FMT ")",leaves[0],leaves[nselected-1],sf->nleaves);
+  PetscAssertFalse(nselected && (leaves[0] < 0 || leaves[nselected-1] >= sf->nleaves),comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max leaf indices %" PetscInt_FMT "/%" PetscInt_FMT " are not in [0,%" PetscInt_FMT ")",leaves[0],leaves[nselected-1],sf->nleaves);
 
   /* Optimize the routine only when sf is setup and hence we can reuse sf's communication pattern */
   if (sf->setupcalled && sf->ops->CreateEmbeddedLeafSF) {
@@ -1640,7 +1640,7 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdat
   ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
   ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
   ierr = PetscGetMemType(leafupdate,&leafupdatemtype);CHKERRQ(ierr);
-  if (leafmtype != leafupdatemtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
+  PetscAssertFalse(leafmtype != leafupdatemtype,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
   ierr = (*sf->ops->FetchAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1678,7 +1678,7 @@ PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,Pe
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
-  if (leafmtype != leafupdatemtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
+  PetscAssertFalse(leafmtype != leafupdatemtype,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
   ierr = (*sf->ops->FetchAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1743,7 +1743,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
   PetscValidPointer(degree,2);
   if (!sf->degreeknown) {
     PetscInt i, nroots = sf->nroots, maxlocal;
-    if (sf->degree) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
+    PetscAssertFalse(sf->degree,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
     maxlocal = sf->maxleaf-sf->minleaf+1;
     ierr = PetscMalloc1(nroots,&sf->degree);CHKERRQ(ierr);
     ierr = PetscMalloc1(PetscMax(maxlocal,1),&sf->degreetmp);CHKERRQ(ierr); /* allocate at least one entry, see check in PetscSFComputeDegreeEnd() */
@@ -1782,7 +1782,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   PetscSFCheckGraphSet(sf,1);
   PetscValidPointer(degree,2);
   if (!sf->degreeknown) {
-    if (!sf->degreetmp) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFComputeDegreeBegin() before PetscSFComputeDegreeEnd()");
+    PetscAssertFalse(!sf->degreetmp,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFComputeDegreeBegin() before PetscSFComputeDegreeEnd()");
     ierr = PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp-sf->minleaf,sf->degree,MPI_SUM);CHKERRQ(ierr);
     ierr = PetscFree(sf->degreetmp);CHKERRQ(ierr);
     sf->degreeknown = PETSC_TRUE;
@@ -1833,7 +1833,7 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
       (*multiRootsOrigNumbering)[k] = i;
     }
   }
-  if (PetscUnlikely(k != nmroots)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sanity check fail");
+  PetscAssertFalse(k != nmroots,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sanity check fail");
   if (nMultiRoots) *nMultiRoots = nmroots;
   PetscFunctionReturn(0);
 }
@@ -1972,7 +1972,7 @@ static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
       ierr = PetscHSetIAdd(seen,leaf);CHKERRQ(ierr);
     }
     ierr = PetscHSetIGetSize(seen,&n);CHKERRQ(ierr);
-    if (n != nleaves) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided leaves have repeated values: all leaves must be unique");
+    PetscAssertFalse(n != nleaves,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Provided leaves have repeated values: all leaves must be unique");
     ierr = PetscHSetIDestroy(&seen);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

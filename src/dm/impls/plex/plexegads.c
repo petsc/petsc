@@ -41,7 +41,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   ierr = DMGetCoordinateDim(dm, &dE);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinatesLocal);CHKERRQ(ierr);
   ierr = EG_getTopology(model, &geom, &oclass, &mtype, NULL, &Nb, &bodies, &senses);CHKERRQ(ierr);
-  if (bodyID >= Nb) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
+  PetscAssertFalse(bodyID >= Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
   body = bodies[bodyID];
 
   if (edgeID >= 0)      {ierr = EG_objectBodyTopo(body, EDGE, edgeID, &obj);CHKERRQ(ierr); Np = 1;}
@@ -59,7 +59,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
     PetscFunctionReturn(0);
   }
-  if (Nv > 16) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
+  PetscAssertFalse(Nv > 16,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %D coordinates associated to point %D", Nv, p);
 
   /* Correct EGADSlite 2pi bug when calculating nearest point on Periodic Surfaces */
   ierr = EG_getRange(obj, range, &peri);CHKERRQ(ierr);
@@ -83,8 +83,8 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
     for (v = 0; v < Nv; ++v) params[pm] += paramsV[v*3+pm];
     params[pm] /= Nv;
   }
-  if ((params[0] < range[0]) || (params[0] > range[1])) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
-  if (Np > 1 && ((params[1] < range[2]) || (params[1] > range[3]))) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
+  PetscAssertFalse((params[0] < range[0]) || (params[0] > range[1]),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
+  PetscAssertFalse(Np > 1 && ((params[1] < range[2]) || (params[1] > range[3])),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D had bad interpolation", p);
   /* Put coordinates for new vertex in result[] */
   ierr = EG_evaluate(obj, params, result);CHKERRQ(ierr);
   for (d = 0; d < dE; ++d) gcoords[d] = result[d];
@@ -413,7 +413,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
           ierr = EG_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
           face = fobjs[0];
           fid  = EG_indexBodyTopo(body, face);CHKERRQ(ierr);
-          if (Nf != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1 (%d)", lid-1, Nf, fid);
+          PetscAssertFalse(Nf != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Loop %d has %d faces, instead of 1 (%d)", lid-1, Nf, fid);
           ierr = EG_getRange(face, range, periodic);CHKERRQ(ierr);
           params[0] = 0.5*(range[0] + range[1]);
           params[1] = 0.5*(range[2] + range[3]);
@@ -424,7 +424,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
         }
       }
     }
-    if (numEdges + numQuads != newVertices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of new vertices %D != %D previous count", numEdges + numQuads, newVertices);
+    PetscAssertFalse(numEdges + numQuads != newVertices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of new vertices %D != %D previous count", numEdges + numQuads, newVertices);
 
     /* Get cell vertices by traversing loops */
     numQuads = 0;
@@ -450,7 +450,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
           ierr = EG_getTopology(edge, &geom, &oclass, &mtype, NULL, &Nv, &nobjs, &senses);
           if (mtype == DEGENERATE) continue;
           else                     ++Ner;
-          if (Nv != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Edge %d has %d vertices != 2", eid, Nv);
+          PetscAssertFalse(Nv != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Edge %d has %d vertices != 2", eid, Nv);
 
           for (v = 0; v < Nv; ++v) {
             ego vertex = nobjs[v];
@@ -475,9 +475,9 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
             else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %d does not match its predecessor", eid);
           }
         }
-        if (nc != 2*Ner)     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D != %D", nc, 2*Ner);
+        PetscAssertFalse(nc != 2*Ner,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D != %D", nc, 2*Ner);
         if (Ner == 4) {cone[nc++] = numVertices - newVertices + numEdges + numQuads++;}
-        if (nc > maxCorners) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D > %D max", nc, maxCorners);
+        PetscAssertFalse(nc > maxCorners,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of corners %D > %D max", nc, maxCorners);
         /* Triangulate the loop */
         switch (Ner) {
           case 2: /* Bi-Segment -> 2 triangles */
@@ -561,7 +561,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
       EG_free(lobjs);
     }
   }
-  if (cOff != numCells) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
+  PetscAssertFalse(cOff != numCells,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count of total cells %D != %D previous count", cOff, numCells);
   ierr = DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD, dim, numCells, numVertices, numCorners, PETSC_TRUE, cells, cdim, coords, &dm);CHKERRQ(ierr);
   ierr = PetscFree3(coords, cells, cone);CHKERRQ(ierr);
   ierr = PetscInfo(dm, " Total Number of Unique Cells    = %D (%D)\n", numCells, newCells);CHKERRQ(ierr);
@@ -603,7 +603,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
 
       lid  = EG_indexBodyTopo(body, loop);CHKERRQ(ierr);
       ierr = EG_getBodyTopos(body, loop, FACE, &Nf, &fobjs);CHKERRQ(ierr);
-      if (Nf > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
+      PetscAssertFalse(Nf > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
       fid  = EG_indexBodyTopo(body, fobjs[0]);CHKERRQ(ierr);
       EG_free(fobjs);
       ierr = EG_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &objs, &senses);CHKERRQ(ierr);
@@ -631,13 +631,13 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
         support[0] = points[0];
         support[1] = points[1];
         ierr = DMPlexGetJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
-        if (numEdges != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
+        PetscAssertFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
         ierr = DMLabelSetValue(edgeLabel, edges[0], eid);CHKERRQ(ierr);
         ierr = DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
         support[0] = points[1];
         support[1] = points[2];
         ierr = DMPlexGetJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
-        if (numEdges != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
+        PetscAssertFalse(numEdges != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Vertices (%D, %D) should only bound 1 edge, not %D", support[0], support[1], numEdges);
         ierr = DMLabelSetValue(edgeLabel, edges[0], eid);CHKERRQ(ierr);
         ierr = DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges);CHKERRQ(ierr);
       }
@@ -802,7 +802,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     ierr = EG_getBodyTopos(body, NULL, NODE, &Nv, &nobjs);CHKERRQ(ierr);
 
     ierr = PetscHMapIFind(bodyVertexMap, b, &BViter, &BVfound);CHKERRQ(ierr);
-    if (!BVfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyVertexMap", b);
+    PetscAssertFalse(!BVfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyVertexMap", b);
     ierr = PetscHMapIGet(bodyVertexMap, b, &bodyVertexIndexStart);CHKERRQ(ierr);
 
     for (int v = 0; v < Nv; ++v) {
@@ -823,11 +823,11 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     ierr = EG_getBodyTopos(body, NULL, EDGE, &Ne, &eobjs);CHKERRQ(ierr);
 
     ierr = PetscHMapIFind(bodyEdgeMap, b, &BEiter, &BEfound);CHKERRQ(ierr);
-    if (!BEfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyEdgeMap", b);
+    PetscAssertFalse(!BEfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyEdgeMap", b);
     ierr = PetscHMapIGet(bodyEdgeMap, b, &bodyEdgeIndexStart);CHKERRQ(ierr);
 
     ierr = PetscHMapIFind(bodyEdgeGlobalMap, b, &BEGiter, &BEGfound);CHKERRQ(ierr);
-    if (!BEGfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyEdgeGlobalMap", b);
+    PetscAssertFalse(!BEGfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyEdgeGlobalMap", b);
     ierr = PetscHMapIGet(bodyEdgeGlobalMap, b, &bodyEdgeGlobalIndexStart);CHKERRQ(ierr);
 
     for (int e = 0; e < Ne; ++e) {
@@ -843,7 +843,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
     // get relative offset from globalEdgeID Vector
     ierr = PetscHMapIFind(edgeMap, bodyEdgeGlobalIndexStart + eid - 1, &EMiter, &EMfound);CHKERRQ(ierr);
-      if (!EMfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Edge %d not found in edgeMap", bodyEdgeGlobalIndexStart + eid - 1);
+      PetscAssertFalse(!EMfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Edge %d not found in edgeMap", bodyEdgeGlobalIndexStart + eid - 1);
       ierr = PetscHMapIGet(edgeMap, bodyEdgeGlobalIndexStart + eid - 1, &eOffset);CHKERRQ(ierr);
 
     ierr = EG_getRange(edge, range, &periodic);CHKERRQ(ierr);
@@ -860,7 +860,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     ierr = EG_getBodyTopos(body, NULL, FACE, &Nf, &fobjs);CHKERRQ(ierr);
 
     ierr = PetscHMapIFind(bodyFaceMap, b, &BFiter, &BFfound);CHKERRQ(ierr);
-    if (!BFfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyFaceMap", b);
+    PetscAssertFalse(!BFfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyFaceMap", b);
     ierr = PetscHMapIGet(bodyFaceMap, b, &bodyFaceIndexStart);CHKERRQ(ierr);
 
     for (int f = 0; f < Nf; ++f) {
@@ -898,7 +898,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
     ierr = EG_getTopology(face, &geom, &oclass, &mtype, NULL, &Nl, &lobjs, &lSenses);CHKERRQ(ierr);
 
-      if (Nl > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face has %d Loops. Can only handle Faces with 1 Loop. Please use --dm_plex_egads_with_tess = 1 Option", Nl);
+      PetscAssertFalse(Nl > 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face has %d Loops. Can only handle Faces with 1 Loop. Please use --dm_plex_egads_with_tess = 1 Option", Nl);
     for (int l = 0; l < Nl; ++l) {
           ego      loop = lobjs[l];
 
@@ -913,7 +913,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
         // get relative offset from globalEdgeID Vector
         ierr = PetscHMapIFind(edgeMap, bodyEdgeGlobalIndexStart + eid - 1, &EMiter, &EMfound);CHKERRQ(ierr);
-          if (!EMfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Edge %d of Body %d not found in edgeMap. Global Edge ID :: %d", eid, b, bodyEdgeGlobalIndexStart + eid - 1);
+          PetscAssertFalse(!EMfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Edge %d of Body %d not found in edgeMap. Global Edge ID :: %d", eid, b, bodyEdgeGlobalIndexStart + eid - 1);
           ierr = PetscHMapIGet(edgeMap, bodyEdgeGlobalIndexStart + eid - 1, &eOffset);CHKERRQ(ierr);
 
       midPntID = numVertices + bodyEdgeIndexStart + eOffset - 1;
@@ -984,19 +984,19 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
   PetscBool       BVfound, BEfound, BEGfound, BFfound, EMfound;
 
   ierr = PetscHMapIFind(bodyVertexMap, b, &BViter, &BVfound);CHKERRQ(ierr);
-  if (!BVfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyVertexMap", b);
+  PetscAssertFalse(!BVfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyVertexMap", b);
   ierr = PetscHMapIGet(bodyVertexMap, b, &bodyVertexIndexStart);CHKERRQ(ierr);
 
   ierr = PetscHMapIFind(bodyEdgeMap, b, &BEiter, &BEfound);CHKERRQ(ierr);
-  if (!BEfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyEdgeMap", b);
+  PetscAssertFalse(!BEfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyEdgeMap", b);
   ierr = PetscHMapIGet(bodyEdgeMap, b, &bodyEdgeIndexStart);CHKERRQ(ierr);
 
     ierr = PetscHMapIFind(bodyFaceMap, b, &BFiter, &BFfound);CHKERRQ(ierr);
-  if (!BFfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyFaceMap", b);
+  PetscAssertFalse(!BFfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyFaceMap", b);
   ierr = PetscHMapIGet(bodyFaceMap, b, &bodyFaceIndexStart);CHKERRQ(ierr);
 
     ierr = PetscHMapIFind(bodyEdgeGlobalMap, b, &BEGiter, &BEGfound);CHKERRQ(ierr);
-    if (!BEGfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyEdgeGlobalMap", b);
+    PetscAssertFalse(!BEGfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in bodyEdgeGlobalMap", b);
     ierr = PetscHMapIGet(bodyEdgeGlobalMap, b, &bodyEdgeGlobalIndexStart);CHKERRQ(ierr);
 
   ierr = EG_getBodyTopos(body, NULL, FACE,  &Nf, &fobjs);CHKERRQ(ierr);
@@ -1012,7 +1012,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     int  lid;
 
     lid  = EG_indexBodyTopo(body, loop);CHKERRQ(ierr);
-      if (Nl > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
+      PetscAssertFalse(Nl > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d > 1 faces, which is not supported", lid, Nf);
 
     ierr = EG_getTopology(loop, &geom, &oclass, &mtype, NULL, &Ne, &eobjs, &eSenses);CHKERRQ(ierr);
     for (int e = 0; e < Ne; ++e) {
@@ -1026,7 +1026,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
 
       // get relative offset from globalEdgeID Vector
       ierr = PetscHMapIFind(edgeMap, bodyEdgeGlobalIndexStart + eid - 1, &EMiter, &EMfound);CHKERRQ(ierr);
-      if (!EMfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Edge %d of Body %d not found in edgeMap. Global Edge ID :: %d", eid, b, bodyEdgeGlobalIndexStart + eid - 1);
+      PetscAssertFalse(!EMfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Edge %d of Body %d not found in edgeMap. Global Edge ID :: %d", eid, b, bodyEdgeGlobalIndexStart + eid - 1);
       ierr = PetscHMapIGet(edgeMap, bodyEdgeGlobalIndexStart + eid - 1, &eOffset);CHKERRQ(ierr);
 
       ierr = EG_getBodyTopos(body, edge, NODE, &Nv, &nobjs);CHKERRQ(ierr);
@@ -1200,7 +1200,7 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
   PetscBool       PISfound;
 
   ierr = PetscHMapIFind(pointIndexStartMap, b, &PISiter, &PISfound);CHKERRQ(ierr);
-  if (!PISfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in pointIndexStartMap", b);
+  PetscAssertFalse(!PISfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "Body %d not found in pointIndexStartMap", b);
   ierr = PetscHMapIGet(pointIndexStartMap, b, &pointIndexStart);CHKERRQ(ierr);
 
   ierr = EG_getBodyTopos(body, NULL, FACE,  &Nf, &fobjs);CHKERRQ(ierr);
@@ -1315,15 +1315,15 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
 
     //Converted to Hash Tables
     ierr = PetscHMapIFind(pTypeLabelMap, n - nStart, &PTLiter, &PTLfound);CHKERRQ(ierr);
-    if (!PTLfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in pTypeLabelMap", n);
+    PetscAssertFalse(!PTLfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in pTypeLabelMap", n);
     ierr = PetscHMapIGet(pTypeLabelMap, n - nStart, &pTypeVal);CHKERRQ(ierr);
 
     ierr = PetscHMapIFind(pIndexLabelMap, n - nStart, &PILiter, &PILfound);CHKERRQ(ierr);
-    if (!PILfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in pIndexLabelMap", n);
+    PetscAssertFalse(!PILfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in pIndexLabelMap", n);
     ierr = PetscHMapIGet(pIndexLabelMap, n - nStart, &pIndexVal);CHKERRQ(ierr);
 
     ierr = PetscHMapIFind(pBodyIndexLabelMap, n - nStart, &PBLiter, &PBLfound);CHKERRQ(ierr);
-    if (!PBLfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in pBodyLabelMap", n);
+    PetscAssertFalse(!PBLfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in pBodyLabelMap", n);
     ierr = PetscHMapIGet(pBodyIndexLabelMap, n - nStart, &pBodyVal);CHKERRQ(ierr);
 
     ierr = DMLabelSetValue(bodyLabel, n, pBodyVal);CHKERRQ(ierr);
@@ -1362,11 +1362,11 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
 
     // Convert to Hash Table
   ierr = PetscHMapIFind(triFaceIDLabelMap, f - fStart, &TFLiter, &TFLfound);CHKERRQ(ierr);
-  if (!TFLfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in triFaceIDLabelMap", f);
+  PetscAssertFalse(!TFLfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in triFaceIDLabelMap", f);
   ierr = PetscHMapIGet(triFaceIDLabelMap, f - fStart, &triFaceVal);CHKERRQ(ierr);
 
   ierr = PetscHMapIFind(triBodyIDLabelMap, f - fStart, &TBLiter, &TBLfound);CHKERRQ(ierr);
-  if (!TBLfound) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in triBodyIDLabelMap", f);
+  PetscAssertFalse(!TBLfound,PETSC_COMM_SELF, PETSC_ERR_SUP, "DAG Point %d not found in triBodyIDLabelMap", f);
     ierr = PetscHMapIGet(triBodyIDLabelMap, f - fStart, &triBodyVal);CHKERRQ(ierr);
 
   ierr = DMLabelSetValue(bodyLabel, f, triBodyVal);CHKERRQ(ierr);
@@ -1449,7 +1449,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
     ierr = DMLabelGetValue(edgeLabel, v, &edgeID);CHKERRQ(ierr);
     ierr = DMLabelGetValue(vertexLabel, v, &vertexID);CHKERRQ(ierr);
 
-    if (bodyID >= Nb) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
+    PetscAssertFalse(bodyID >= Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Body %D is not in [0, %d)", bodyID, Nb);
     body = bodies[bodyID];
 
     ierr = DMPlexPointLocalRef(cdm, v, coords, (void *) &vcoords);CHKERRQ(ierr);

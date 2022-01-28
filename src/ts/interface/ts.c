@@ -261,7 +261,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscDrawAxis    axis;
 
     ierr = PetscOptionsRealArray("-ts_monitor_draw_solution_phase","Monitor solution graphically","TSMonitorDrawSolutionPhase",bounds,&n,NULL);CHKERRQ(ierr);
-    if (n != 4) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Must provide bounding box of phase field");
+    PetscAssertFalse(n != 4,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Must provide bounding box of phase field");
     ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,1,&ctx);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(ctx->viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDrawAxis(ctx->viewer,0,&axis);CHKERRQ(ierr);
@@ -295,13 +295,13 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   if (flg) {
     const char *ptr,*ptr2;
     char       *filetemplate;
-    if (!monfilename[0]) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+    PetscAssertFalse(!monfilename[0],PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
     /* Do some cursory validation of the input. */
     ierr = PetscStrstr(monfilename,"%",(char**)&ptr);CHKERRQ(ierr);
-    if (!ptr) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
+    PetscAssertFalse(!ptr,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03D.vts");
     for (ptr++; ptr && *ptr; ptr++) {
       ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
-      if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03D.vts");
+      PetscAssertFalse(!ptr2 && (*ptr < '0' || '9' < *ptr),PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03D.vts");
       if (ptr2) break;
     }
     ierr = PetscStrallocpy(monfilename,&filetemplate);CHKERRQ(ierr);
@@ -316,7 +316,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     DM                   da;
     PetscMPIInt          rank;
 
-    if (dir[1] != '=') SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
+    PetscAssertFalse(dir[1] != '=',PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
     if (dir[0] == 'x') ddir = DM_X;
     else if (dir[0] == 'y') ddir = DM_Y;
     else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
@@ -341,7 +341,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     DM                  da;
     PetscInt            howoften = 1;
 
-    if (dir[1] != '=') SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Malformed ray %s", dir);
+    PetscAssertFalse(dir[1] != '=',PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Malformed ray %s", dir);
     if      (dir[0] == 'x') ddir = DM_X;
     else if (dir[0] == 'y') ddir = DM_Y;
     else SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Unknown ray direction %s", dir);
@@ -574,7 +574,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
 
   if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) PetscFunctionReturn(0);
 
-  if (ts->rhsjacobian.shift && ts->rhsjacobian.reuse) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Should not call TSComputeRHSJacobian() on a shifted matrix (shift=%lf) when RHSJacobian is reusable.",ts->rhsjacobian.shift);
+  PetscAssertFalse(ts->rhsjacobian.shift && ts->rhsjacobian.reuse,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Should not call TSComputeRHSJacobian() on a shifted matrix (shift=%lf) when RHSJacobian is reusable.",ts->rhsjacobian.shift);
   if (rhsjacobianfunc) {
     ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
     PetscStackPush("TS user Jacobian function");
@@ -631,7 +631,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec U,Vec y)
   ierr = DMTSGetRHSFunction(dm,&rhsfunction,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
 
-  if (!rhsfunction && !ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
+  PetscAssertFalse(!rhsfunction && !ifunction,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
 
   if (rhsfunction) {
     ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
@@ -837,7 +837,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
   ierr = DMTSGetIFunction(dm,&ifunction,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetRHSFunction(dm,&rhsfunction,NULL);CHKERRQ(ierr);
 
-  if (!rhsfunction && !ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
+  PetscAssertFalse(!rhsfunction && !ifunction,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
 
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,Udot,Y);CHKERRQ(ierr);
   if (ifunction) {
@@ -878,8 +878,8 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts,Mat A,Mat B)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (A != ts->Arhs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Amat");
-  if (B != ts->Brhs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Bmat");
+  PetscAssertFalse(A != ts->Arhs,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Amat");
+  PetscAssertFalse(B != ts->Brhs,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Invalid Bmat");
 
   if (ts->rhsjacobian.shift) {
     ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
@@ -951,7 +951,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   ierr = DMTSGetIJacobian(dm,&ijacobian,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjacobian,NULL);CHKERRQ(ierr);
 
-  if (!rhsjacobian && !ijacobian) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
+  PetscAssertFalse(!rhsjacobian && !ijacobian,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
 
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
   if (ijacobian) {
@@ -967,7 +967,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
         Mat Arhs = NULL;
         ierr = TSGetRHSMats_Private(ts,&Arhs,NULL);CHKERRQ(ierr);
         if (A == Arhs) {
-          if (rhsjacobian == TSComputeRHSJacobianConstant) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Unsupported operation! cannot use TSComputeRHSJacobianConstant"); /* there is no way to reconstruct shift*M-J since J cannot be reevaluated */
+          PetscAssertFalse(rhsjacobian == TSComputeRHSJacobianConstant,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Unsupported operation! cannot use TSComputeRHSJacobianConstant"); /* there is no way to reconstruct shift*M-J since J cannot be reevaluated */
           ts->rhsjacobian.time = PETSC_MIN_REAL;
         }
       }
@@ -1974,10 +1974,10 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  PetscAssertFalse(!isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
-  if (classid != TS_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Not TS next in file");
+  PetscAssertFalse(classid != TS_FILE_CLASSID,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Not TS next in file");
   ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = TSSetType(ts, type);CHKERRQ(ierr);
   if (ts->ops->load) {
@@ -2307,7 +2307,7 @@ PetscErrorCode TSSetStepNumber(TS ts,PetscInt steps)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,steps,2);
-  if (steps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Step number must be non-negative");
+  PetscAssertFalse(steps < 0,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Step number must be non-negative");
   ts->steps = steps;
   PetscFunctionReturn(0);
 }
@@ -2568,7 +2568,7 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetUp() first");
+  PetscAssertFalse(!ts->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetUp() first");
   if (ts->ops->settimeerror) {
     ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr);
   }
@@ -2989,8 +2989,8 @@ PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(ksp,2);
-  if (!((PetscObject)ts)->type_name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"KSP is not created yet. Call TSSetType() first");
-  if (ts->problem_type != TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Linear only; use TSGetSNES()");
+  PetscAssertFalse(!((PetscObject)ts)->type_name,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"KSP is not created yet. Call TSSetType() first");
+  PetscAssertFalse(ts->problem_type != TS_LINEAR,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Linear only; use TSGetSNES()");
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3022,7 +3022,7 @@ PetscErrorCode TSSetMaxSteps(TS ts,PetscInt maxsteps)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,maxsteps,2);
-  if (maxsteps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of steps must be non-negative");
+  PetscAssertFalse(maxsteps < 0,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of steps must be non-negative");
   ts->max_steps = maxsteps;
   PetscFunctionReturn(0);
 }
@@ -3548,8 +3548,8 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
-  if (t < ts->ptime_prev || t > ts->ptime) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %g not in last time steps [%g,%g]",t,(double)ts->ptime_prev,(double)ts->ptime);
-  if (!ts->ops->interpolate) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
+  PetscAssertFalse(t < ts->ptime_prev || t > ts->ptime,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %g not in last time steps [%g,%g]",t,(double)ts->ptime_prev,(double)ts->ptime);
+  PetscAssertFalse(!ts->ops->interpolate,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->interpolate)(ts,t,U);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3594,10 +3594,10 @@ PetscErrorCode  TSStep(TS ts)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
-  if (!ts->ops->step) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
-  if (ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
-  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
-  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
+  PetscAssertFalse(!ts->ops->step,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
+  PetscAssertFalse(ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
+  PetscAssertFalse(ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
+  PetscAssertFalse(ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
   if (!ts->steps) ts->ptime_prev = ts->ptime;
   ptime = ts->ptime; ts->ptime_prev_rollback = ts->ptime_prev;
@@ -3619,8 +3619,8 @@ PetscErrorCode  TSStep(TS ts)
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
 
-  if (ts->reason < 0 && ts->errorifstepfailed && ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
-  if (ts->reason < 0 && ts->errorifstepfailed) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
+  PetscAssertFalse(ts->reason < 0 && ts->errorifstepfailed && ts->reason == TS_DIVERGED_NONLINEAR_SOLVE,PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+  PetscAssertFalse(ts->reason < 0 && ts->errorifstepfailed,PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
   PetscFunctionReturn(0);
 }
 
@@ -3661,8 +3661,8 @@ PetscErrorCode TSEvaluateWLTE(TS ts,NormType wnormtype,PetscInt *order,PetscReal
   if (order) PetscValidIntPointer(order,3);
   if (order) PetscValidLogicalCollectiveInt(ts,*order,3);
   PetscValidRealPointer(wlte,4);
-  if (wnormtype != NORM_2 && wnormtype != NORM_INFINITY) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
-  if (!ts->ops->evaluatewlte) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSEvaluateWLTE not implemented for type '%s'",((PetscObject)ts)->type_name);
+  PetscAssertFalse(wnormtype != NORM_2 && wnormtype != NORM_INFINITY,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"No support for norm type %s",NormTypes[wnormtype]);
+  PetscAssertFalse(!ts->ops->evaluatewlte,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSEvaluateWLTE not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->evaluatewlte)(ts,wnormtype,order,wlte);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3696,7 +3696,7 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidType(ts,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
-  if (!ts->ops->evaluatestep) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSEvaluateStep not implemented for type '%s'",((PetscObject)ts)->type_name);
+  PetscAssertFalse(!ts->ops->evaluatestep,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSEvaluateStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->evaluatestep)(ts,order,U,done);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3905,16 +3905,16 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = VecDestroy(&solution);CHKERRQ(ierr); /* grant ownership */
     }
     ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
-    if (ts->forward_solve) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Sensitivity analysis does not support the mode TS_EXACTFINALTIME_INTERPOLATE");
+    PetscAssertFalse(ts->forward_solve,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Sensitivity analysis does not support the mode TS_EXACTFINALTIME_INTERPOLATE");
   } else if (u) {
     ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   }
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
-  if (ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
-  if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
-  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
+  PetscAssertFalse(ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
+  PetscAssertFalse(ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
+  PetscAssertFalse(ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
   if (ts->forward_solve) {
     ierr = TSForwardSetUp(ts);CHKERRQ(ierr);
@@ -5063,7 +5063,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
   PetscValidPointer(norm,4);
   PetscValidPointer(norma,5);
   PetscValidPointer(normr,6);
-  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
+  PetscAssertFalse(U == Y,PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
@@ -5191,9 +5191,9 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec U,Vec Y,PetscReal *norm,PetscReal 
   *normr = 0.;
   if (nr_glb>0.) {*normr = PetscSqrtReal(gsumr / nr_glb);}
 
-  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
-  if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
-  if (PetscIsInfOrNanScalar(*normr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
+  PetscAssertFalse(PetscIsInfOrNanScalar(*norm),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  PetscAssertFalse(PetscIsInfOrNanScalar(*norma),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
+  PetscAssertFalse(PetscIsInfOrNanScalar(*normr),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
   PetscFunctionReturn(0);
 }
 
@@ -5235,7 +5235,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
   PetscValidPointer(norm,4);
   PetscValidPointer(norma,5);
   PetscValidPointer(normr,6);
-  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
+  PetscAssertFalse(U == Y,PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"U and Y cannot be the same vector");
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
@@ -5343,9 +5343,9 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
   *norm = gmax;
   *norma = gmaxa;
   *normr = gmaxr;
-  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
-    if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
-    if (PetscIsInfOrNanScalar(*normr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
+  PetscAssertFalse(PetscIsInfOrNanScalar(*norm),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    PetscAssertFalse(PetscIsInfOrNanScalar(*norma),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
+    PetscAssertFalse(PetscIsInfOrNanScalar(*normr),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
   PetscFunctionReturn(0);
 }
 
@@ -5558,9 +5558,9 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts,Vec E,Vec U,Vec Y,PetscReal *norm,Pet
   *normr = 0.;
   if (nr_glb>0.) {*normr = PetscSqrtReal(gsumr / nr_glb);}
 
-  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
-  if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
-  if (PetscIsInfOrNanScalar(*normr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
+  PetscAssertFalse(PetscIsInfOrNanScalar(*norm),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  PetscAssertFalse(PetscIsInfOrNanScalar(*norma),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
+  PetscAssertFalse(PetscIsInfOrNanScalar(*normr),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
   PetscFunctionReturn(0);
 }
 
@@ -5714,9 +5714,9 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts,Vec E,Vec U,Vec Y,PetscReal *n
   *norm = gmax;
   *norma = gmaxa;
   *normr = gmaxr;
-  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
-    if (PetscIsInfOrNanScalar(*norma)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
-    if (PetscIsInfOrNanScalar(*normr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
+  PetscAssertFalse(PetscIsInfOrNanScalar(*norm),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    PetscAssertFalse(PetscIsInfOrNanScalar(*norma),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norma");
+    PetscAssertFalse(PetscIsInfOrNanScalar(*normr),PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in normr");
   PetscFunctionReturn(0);
 }
 
@@ -5857,7 +5857,7 @@ PetscErrorCode TSComputeLinearStability(TS ts,PetscReal xr,PetscReal xi,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->ops->linearstability) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Linearized stability function not provided for this method");
+  PetscAssertFalse(!ts->ops->linearstability,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Linearized stability function not provided for this method");
   ierr = (*ts->ops->linearstability)(ts,xr,xi,yr,yi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5908,8 +5908,8 @@ PetscErrorCode  TSRollBack(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  if (ts->steprollback) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"TSRollBack already called");
-  if (!ts->ops->rollback) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRollBack not implemented for type '%s'",((PetscObject)ts)->type_name);
+  PetscAssertFalse(ts->steprollback,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"TSRollBack already called");
+  PetscAssertFalse(!ts->ops->rollback,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRollBack not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->rollback)(ts);CHKERRQ(ierr);
   ts->time_step = ts->ptime - ts->ptime_prev;
   ts->ptime = ts->ptime_prev;

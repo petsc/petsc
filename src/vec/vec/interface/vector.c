@@ -482,7 +482,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
   PetscFunctionBegin;
   PetscValidPointer(vv,2);
-  if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %" PetscInt_FMT,m);
+  PetscAssertFalse(m < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %" PetscInt_FMT,m);
   if (!m || !*vv) {*vv  = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,2);
   PetscValidType(**vv,2);
@@ -602,7 +602,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size);CHKERRMPI(ierr);
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
 
-  if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
+  PetscAssertFalse(vec->stash.n || vec->bstash.n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -864,7 +864,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_CLASSID,1);
   PetscValidPointer(V,3);
-  if (m <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %" PetscInt_FMT,m);
+  PetscAssertFalse(m <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %" PetscInt_FMT,m);
   ierr = PetscMalloc1(m,V);CHKERRQ(ierr);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -982,7 +982,7 @@ PetscErrorCode  VecLoad(Vec vec, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWEREXODUSII,&isexodusii);CHKERRQ(ierr);
-  if (!isbinary && !ishdf5 && !isadios && !isexodusii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  PetscAssertFalse(!isbinary && !ishdf5 && !isadios && !isexodusii,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = VecSetErrorIfLocked(vec,1);CHKERRQ(ierr);
   if (!((PetscObject)vec)->type_name && !vec->ops->create) {
@@ -1022,8 +1022,8 @@ PetscErrorCode  VecReciprocal(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
-  if (vec->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (!vec->ops->reciprocal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support reciprocal operation");
+  PetscAssertFalse(vec->stash.insertmode != NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  PetscAssertFalse(!vec->ops->reciprocal,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support reciprocal operation");
   ierr = VecSetErrorIfLocked(vec,1);CHKERRQ(ierr);
   ierr = (*vec->ops->reciprocal)(vec);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
@@ -1131,7 +1131,7 @@ PetscErrorCode  VecConjugate(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  PetscAssertFalse(x->stash.insertmode != NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
   ierr = (*x->ops->conjugate)(x);CHKERRQ(ierr);
   /* we need to copy norms here */
@@ -1216,7 +1216,7 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_CLASSID,2);
   PetscValidType(x,1);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  PetscAssertFalse(x->stash.insertmode != NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
 
   if (!rctx) {
@@ -1368,8 +1368,8 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID,1);
   if (N >= 0) PetscValidLogicalCollectiveInt(v,N,3);
-  if (N >= 0 && n > N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " cannot be larger than global size %" PetscInt_FMT,n,N);
-  if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,v->map->n,v->map->N);
+  PetscAssertFalse(N >= 0 && n > N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " cannot be larger than global size %" PetscInt_FMT,n,N);
+  PetscAssertFalse((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,v->map->n,v->map->N);
   v->map->n = n;
   v->map->N = N;
   if (v->ops->create) {
@@ -1549,7 +1549,7 @@ PetscErrorCode  VecSetUp(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  if (v->map->n < 0 && v->map->N < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Sizes not set");
+  PetscAssertFalse(v->map->n < 0 && v->map->N < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Sizes not set");
   if (!((PetscObject)v)->type_name) {
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v), &size);CHKERRMPI(ierr);
     if (size == 1) {
@@ -1605,7 +1605,7 @@ PetscErrorCode  VecCopy(Vec x,Vec y)
   PetscValidType(y,2);
   if (x == y) PetscFunctionReturn(0);
   VecCheckSameLocalSize(x,1,y,2);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  PetscAssertFalse(x->stash.insertmode != NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = VecSetErrorIfLocked(y,2);CHKERRQ(ierr);
 
 #if !defined(PETSC_USE_MIXED_PRECISION)
@@ -1689,8 +1689,8 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
   VecCheckSameSize(x,1,y,2);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (y->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  PetscAssertFalse(x->stash.insertmode != NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  PetscAssertFalse(y->stash.insertmode != NOT_SET_VALUES,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
   ierr = VecSetErrorIfLocked(y,2);CHKERRQ(ierr);
 
@@ -1778,7 +1778,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   PetscCheckSameComm(v,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s",((PetscObject)v)->type_name);
+  PetscAssertFalse(!match,PETSC_COMM_SELF,PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s",((PetscObject)v)->type_name);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank);CHKERRMPI(ierr);
   s    = &v->bstash;

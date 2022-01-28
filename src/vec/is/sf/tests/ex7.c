@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (nproc != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test can only run on two MPI ranks");
+  PetscAssertFalse(nproc != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test can only run on two MPI ranks");
 
   /* Create an MPI vector x of size 12 on two processes, and set x = {0, 1, 2, .., 11} */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,6,PETSC_DECIDE,&x);CHKERRQ(ierr);

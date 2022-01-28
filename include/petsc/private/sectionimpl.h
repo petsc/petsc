@@ -90,7 +90,7 @@ PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscVi
 #  define PetscSectionCheckValidFieldComponent(x,y)
 #else
 #  define PetscSectionCheckValid_(description,item,nitems) do {         \
-    if (PetscUnlikely(((item) < 0) || ((item) >= (nitems)))) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE,"Invalid " description " %" PetscInt_FMT "; not in [0, %" PetscInt_FMT ")", (item), (nitems)); \
+    PetscAssert(((item) >= 0) && ((item) < (nitems)),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE,"Invalid " description " %" PetscInt_FMT "; not in [0, %" PetscInt_FMT ")", (item), (nitems)); \
   } while (0)
 
 #  define PetscSectionCheckValidFieldComponent(comp,nfieldcomp) PetscSectionCheckValid_("section field component",comp,nfieldcomp)

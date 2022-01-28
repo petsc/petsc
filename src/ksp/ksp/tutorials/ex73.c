@@ -139,7 +139,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,Pe
         break;
       }
     }
-    if (pi == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pi cannot be determined : range %D, val %D",Mp,i);
+    PetscAssertFalse(pi == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pi cannot be determined : range %D, val %D",Mp,i);
     *_pi = (PetscMPIInt)pi;
   }
 
@@ -150,7 +150,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,Pe
         break;
       }
     }
-    if (pj == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pj cannot be determined : range %D, val %D",Np,j);
+    PetscAssertFalse(pj == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pj cannot be determined : range %D, val %D",Np,j);
     *_pj = (PetscMPIInt)pj;
   }
 
@@ -269,9 +269,9 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
       ierr = _DMDADetermineGlobalS0_2d(rank_ijk_re,Mp_re,Np_re,range_i_re,range_j_re,&s0_re);CHKERRQ(ierr);
 
       ii = i - start_i_re[ rank_reI[0] ];
-      if (ii < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error ii");
+      PetscAssertFalse(ii < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error ii");
       jj = j - start_j_re[ rank_reI[1] ];
-      if (jj < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error jj");
+      PetscAssertFalse(jj < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error jj");
 
       lenI_re[0] = range_i_re[ rank_reI[0] ];
       lenI_re[1] = range_j_re[ rank_reI[1] ];
@@ -468,10 +468,10 @@ PetscErrorCode DMShellDAFieldScatter_Forward(DM dmf,Vec x,DM dmc,Vec xc)
   ierr = PetscObjectQuery((PetscObject)dmf,"xp",(PetscObject*)&xp);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dmf,"scatter",(PetscObject*)&scatter);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dmf,"xtmp",(PetscObject*)&xtmp);CHKERRQ(ierr);
-  if (!P) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require a permutation matrix (\"P\")to be composed with the parent (fine) DM");
-  if (!xp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xp\" to be composed with the parent (fine) DM");
-  if (!scatter) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"scatter\" to be composed with the parent (fine) DM");
-  if (!xtmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xtmp\" to be composed with the parent (fine) DM");
+  PetscAssertFalse(!P,PETSC_COMM_SELF,PETSC_ERR_USER,"Require a permutation matrix (\"P\")to be composed with the parent (fine) DM");
+  PetscAssertFalse(!xp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xp\" to be composed with the parent (fine) DM");
+  PetscAssertFalse(!scatter,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"scatter\" to be composed with the parent (fine) DM");
+  PetscAssertFalse(!xtmp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xtmp\" to be composed with the parent (fine) DM");
 
   ierr = MatMultTranspose(P,x,xp);CHKERRQ(ierr);
 
@@ -510,10 +510,10 @@ PetscErrorCode DMShellDAFieldScatter_Reverse(DM dmf,Vec y,DM dmc,Vec yc)
   ierr = PetscObjectQuery((PetscObject)dmf,"scatter",(PetscObject*)&scatter);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dmf,"xtmp",(PetscObject*)&xtmp);CHKERRQ(ierr);
 
-  if (!P) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require a permutation matrix (\"P\")to be composed with the parent (fine) DM");
-  if (!xp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xp\" to be composed with the parent (fine) DM");
-  if (!scatter) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"scatter\" to be composed with the parent (fine) DM");
-  if (!xtmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xtmp\" to be composed with the parent (fine) DM");
+  PetscAssertFalse(!P,PETSC_COMM_SELF,PETSC_ERR_USER,"Require a permutation matrix (\"P\")to be composed with the parent (fine) DM");
+  PetscAssertFalse(!xp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xp\" to be composed with the parent (fine) DM");
+  PetscAssertFalse(!scatter,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"scatter\" to be composed with the parent (fine) DM");
+  PetscAssertFalse(!xtmp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xtmp\" to be composed with the parent (fine) DM");
 
   /* return vector */
   ierr = VecGetArray(xtmp,&array);CHKERRQ(ierr);
@@ -676,7 +676,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
   ndecomps = 1;
   ierr = PetscOptionsGetInt(NULL,NULL,"-ndecomps",&ndecomps,NULL);CHKERRQ(ierr);
   ncoarsen = ndecomps - 1;
-  if (ncoarsen < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-ndecomps must be >= 1");
+  PetscAssertFalse(ncoarsen < 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"-ndecomps must be >= 1");
 
   levelrefs = 2;
   ierr = PetscOptionsGetInt(NULL,NULL,"-level_nrefs",&levelrefs,NULL);CHKERRQ(ierr);
@@ -688,7 +688,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
   set = PETSC_FALSE;
   ierr = PetscOptionsGetIntArray(NULL,NULL,"-level_comm_red_factor",number,&found,&set);CHKERRQ(ierr);
   if (set) {
-    if (found != ncoarsen) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Expected %D values for -level_comm_red_factor. Found %D",ncoarsen,found);
+    PetscAssertFalse(found != ncoarsen,PETSC_COMM_WORLD,PETSC_ERR_USER,"Expected %D values for -level_comm_red_factor. Found %D",ncoarsen,found);
   }
 
   ierr = PetscMalloc1(ncoarsen+1,&pscommlist);CHKERRQ(ierr);
@@ -1026,7 +1026,7 @@ PetscErrorCode ComputeRHS_DMDA(DM da,Vec b,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"DM provided must be a DMDA");
+  PetscAssertFalse(!isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"DM provided must be a DMDA");
   ierr = DMDAGetInfo(da,NULL,&mx,&my,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx-1);
   Hy   = 1.0 / (PetscReal)(my-1);
@@ -1077,7 +1077,7 @@ PetscErrorCode ComputeMatrix_DMDA(DM da,Mat J,Mat jac,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"DM provided must be a DMDA");
+  PetscAssertFalse(!isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"DM provided must be a DMDA");
   ierr = MatZeroEntries(jac);CHKERRQ(ierr);
   centerRho = user->rho;
   ierr      = DMDAGetInfo(da,NULL,&mx,&my,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);

@@ -128,12 +128,12 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
   PetscValidHeaderSpecific(is2,IS_CLASSID,2);
   ierr = PetscObjectGetComm((PetscObject)(is1),&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for uni-processor IS");
+  PetscAssertFalse(size>1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for uni-processor IS");
 
   ierr = ISSorted(is1,&f);CHKERRQ(ierr);
-  if (!f) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Arg 1 is not sorted");
+  PetscAssertFalse(!f,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Arg 1 is not sorted");
   ierr = ISSorted(is2,&f);CHKERRQ(ierr);
-  if (!f) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Arg 2 is not sorted");
+  PetscAssertFalse(!f,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Arg 2 is not sorted");
 
   ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
@@ -254,7 +254,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
   if (is2) PetscValidHeaderSpecific(is2,IS_CLASSID,2);
   PetscValidPointer(isout,3);
 
-  if (!is1 && !is2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both arguments cannot be NULL");
+  PetscAssertFalse(!is1 && !is2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both arguments cannot be NULL");
   if (!is1) {ierr = ISDuplicate(is2, isout);CHKERRQ(ierr);PetscFunctionReturn(0);}
   if (!is2) {ierr = ISDuplicate(is1, isout);CHKERRQ(ierr);PetscFunctionReturn(0);}
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
@@ -460,7 +460,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     ierr = ISCreateStride(comm, 0,0,0, isout);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (len < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array length: %" PetscInt_FMT, len);
+  PetscAssertFalse(len < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array length: %" PetscInt_FMT, len);
   N = 0;
   for (i = 0; i < len; ++i) {
     if (islist[i]) {
@@ -595,7 +595,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   /* Extract, copy and sort the local indices and colors on the color. */
   ierr = ISGetLocalSize(coloris, &llen);CHKERRQ(ierr);
   ierr = ISGetLocalSize(indis,   &ilen);CHKERRQ(ierr);
-  if (llen != ilen) SETERRQ(comm, PETSC_ERR_ARG_SIZ, "Incompatible IS sizes: %" PetscInt_FMT " and %" PetscInt_FMT, ilen, llen);
+  PetscAssertFalse(llen != ilen,comm, PETSC_ERR_ARG_SIZ, "Incompatible IS sizes: %" PetscInt_FMT " and %" PetscInt_FMT, ilen, llen);
   ierr = ISGetIndices(coloris, &ccolors);CHKERRQ(ierr);
   ierr = ISGetIndices(indis, &cinds);CHKERRQ(ierr);
   ierr = PetscMalloc2(ilen,&inds,llen,&colors);CHKERRQ(ierr);
@@ -641,7 +641,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
           while (lend < llen && colors[lend] == colors[lstart]) ++lend;
         }
         /* Now check whether the identified color segment matches l. */
-        if (colors[lstart] < l) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Locally owned color %" PetscInt_FMT " at location %" PetscInt_FMT " is < than the next global color %" PetscInt_FMT, colors[lstart], lcount, l);
+        PetscAssertFalse(colors[lstart] < l,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Locally owned color %" PetscInt_FMT " at location %" PetscInt_FMT " is < than the next global color %" PetscInt_FMT, colors[lstart], lcount, l);
       }
       color = (PetscMPIInt)(colors[lstart] == l);
       /* Check whether a proper subcommunicator exists. */

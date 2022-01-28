@@ -14,8 +14,8 @@ do { \
   if (N == xm*ym*zm*dof) { \
     gxm = xm; gym = ym; gzm = zm; \
     gxs = xs; gys = ys; gzs = zs; \
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof); \
-  if (dim != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"KokkosOffsetView is 1D but DMDA is %DD",dim); \
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof); \
+  PetscAssertFalse(dim != 1,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"KokkosOffsetView is 1D but DMDA is %DD",dim); \
 } while (0)
 
 template<class MemorySpace>

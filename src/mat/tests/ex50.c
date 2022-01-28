@@ -28,7 +28,7 @@ static PetscErrorCode CheckValuesAIJ(Mat A)
     for (j=(sbaij?i:0); j<N; j++) {
       ierr = MatGetValue(A,i,j,&val);CHKERRQ(ierr);
       v = MakeValue(i,j,M); w = PetscRealPart(val);
-      if (PetscAbsReal(v-w) > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ") should be %g, got %g",i,j,(double)v,(double)w);
+      PetscAssertFalse(PetscAbsReal(v-w) > 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ") should be %g, got %g",i,j,(double)v,(double)w);
     }
   }
   PetscFunctionReturn(0);

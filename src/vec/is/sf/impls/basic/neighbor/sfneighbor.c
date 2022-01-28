@@ -135,7 +135,7 @@ static PetscErrorCode PetscSFReset_Neighbor(PetscSF sf)
   PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
 
   PetscFunctionBegin;
-  if (dat->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
+  PetscAssertFalse(dat->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   ierr = PetscFree6(dat->rootdispls,dat->rootcounts,dat->rootweights,dat->leafdispls,dat->leafcounts,dat->leafweights);CHKERRQ(ierr);
   for (i=0; i<2; i++) {
     if (dat->initialized[i]) {

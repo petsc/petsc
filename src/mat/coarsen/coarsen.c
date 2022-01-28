@@ -100,9 +100,9 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
   PetscValidPointer(coarser,1);
-  if (!coarser->graph->assembled) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (coarser->graph->factortype) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!coarser->ops->apply) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
+  PetscAssertFalse(!coarser->graph->assembled,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscAssertFalse(coarser->graph->factortype,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscAssertFalse(!coarser->ops->apply,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
   ierr = PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
   ierr = (*coarser->ops->apply)(coarser);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
@@ -324,7 +324,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   ierr = PetscMemzero(coarser->ops,sizeof(struct _MatCoarsenOps));CHKERRQ(ierr);
 
   ierr = PetscFunctionListFind(MatCoarsenList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
+  PetscAssertFalse(!r,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
   ierr = (*r)(coarser);CHKERRQ(ierr);
 
   ierr = PetscFree(((PetscObject)coarser)->type_name);CHKERRQ(ierr);
@@ -375,7 +375,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
-  if (!coarser->agg_lists) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
+  PetscAssertFalse(!coarser->agg_lists,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
   *llist             = coarser->agg_lists;
   coarser->agg_lists = NULL; /* giving up ownership */
   PetscFunctionReturn(0);

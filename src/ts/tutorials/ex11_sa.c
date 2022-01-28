@@ -383,7 +383,7 @@ static PetscErrorCode PhysicsRiemann_SW(const PetscReal *qp, const PetscReal *n,
   PetscInt     i;
 
   PetscFunctionBeginUser;
-  if (uL->h < 0 || uR->h < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
+  PetscAssertFalse(uL->h < 0 || uR->h < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2(nn);
@@ -401,7 +401,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   PetscReal dx[2],r,sigma;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  PetscAssertFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
   r     = Norm2(dx);
@@ -559,7 +559,7 @@ static PetscErrorCode PhysicsRiemann_Euler_Rusanov(const PetscReal *qp, const Pe
   PetscInt        i;
 
   PetscFunctionBeginUser;
-  if (uL->r < 0 || uR->r < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative");
+  PetscAssertFalse(uL->r < 0 || uR->r < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative");
   EulerFlux(phys,n,uL,&fL);
   EulerFlux(phys,n,uR,&fR);
   eu->sound(eu->pars,uL,&cL);
@@ -574,7 +574,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   PetscInt i;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  PetscAssertFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   u[0]     = 1.0;
   u[DIM+1] = 1.0+PetscAbsReal(x[0]);
   for (i=1; i<DIM+1; i++) u[i] = 0.0;
@@ -671,7 +671,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
     const PetscInt *faces;
     PetscInt       numFaces, f;
 
-    if ((cell < cStart) || (cell >= cEnd)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", cell);
+    PetscAssertFalse((cell < cStart) || (cell >= cEnd),PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", cell);
     ierr = DMPlexGetConeSize(dm, cell, &numFaces);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f) {
@@ -679,17 +679,17 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
       const PetscInt *neighbors;
       PetscInt       nC, regionA, regionB;
 
-      if ((face < fStart) || (face >= fEnd)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a face", face);
+      PetscAssertFalse((face < fStart) || (face >= fEnd),PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a face", face);
       ierr = DMPlexGetSupportSize(dm, face, &nC);CHKERRQ(ierr);
       if (nC != 2) continue;
       ierr = DMPlexGetSupport(dm, face, &neighbors);CHKERRQ(ierr);
       if ((neighbors[0] >= cEndInterior) || (neighbors[1] >= cEndInterior)) continue;
-      if ((neighbors[0] < cStart) || (neighbors[0] >= cEnd)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[0]);
-      if ((neighbors[1] < cStart) || (neighbors[1] >= cEnd)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[1]);
+      PetscAssertFalse((neighbors[0] < cStart) || (neighbors[0] >= cEnd),PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[0]);
+      PetscAssertFalse((neighbors[1] < cStart) || (neighbors[1] >= cEnd),PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[1]);
       ierr = DMGetLabelValue(dm, name, neighbors[0], &regionA);CHKERRQ(ierr);
       ierr = DMGetLabelValue(dm, name, neighbors[1], &regionB);CHKERRQ(ierr);
-      if (regionA < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
-      if (regionB < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
+      PetscAssertFalse(regionA < 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
+      PetscAssertFalse(regionB < 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
       if (regionA != regionB) {
         ierr = DMSetLabelValue(dm, bdname, faces[f], 1);CHKERRQ(ierr);
       }
@@ -1010,7 +1010,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
         sides[1] = faces[g];
         ierr = DMPlexPointLocalRead(dmFace, faces[g], fgeom, &fgB);CHKERRQ(ierr);
         ierr = DMPlexGetJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
-        if (numCells != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
+        PetscAssertFalse(numCells != 1,PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
         ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cg);CHKERRQ(ierr);
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgA->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgA->centroid[0] - cg->centroid[0]));
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgB->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgB->centroid[0] - cg->centroid[0]));
@@ -1154,7 +1154,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *Pets
       ierr = PetscStrcasecmp(names[i],link->name,&match);CHKERRQ(ierr);
       if (match) break;
     }
-    if (!link) SETERRQ(mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
+    PetscAssertFalse(!link,mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
     mod->functionalMonitored[i] = link;
     for (j=0; j<i; j++) {
       if (mod->functionalCall[j]->func == link->func && mod->functionalCall[j]->ctx == link->ctx) goto next_name;
@@ -1370,7 +1370,7 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   ierr = VecCreate(PETSC_COMM_WORLD,&odesolution);CHKERRQ(ierr);
   ierr = VecLoad(odesolution,viewer);CHKERRQ(ierr);
   VecEqual(X,odesolution,&equal);
-  if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the vec data from file");
+  PetscAssertFalse(!equal,PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the vec data from file");
   else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Vec\n");CHKERRQ(ierr);
   }
@@ -1378,7 +1378,7 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
    ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);*/
   ierr = PetscViewerBinaryRead(viewer,&timeread,1,NULL,PETSC_REAL);CHKERRQ(ierr);
 
-  if (timeread!=time) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
+  PetscAssertFalse(timeread!=time,PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
   else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for PetscReal\n");CHKERRQ(ierr);
   }
@@ -1479,8 +1479,8 @@ int main(int argc, char **argv)
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
 
-    if (mod->maxspeed <= 0) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
-    if (phys->dof <= 0) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
+    PetscAssertFalse(mod->maxspeed <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+    PetscAssertFalse(phys->dof <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
     ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

@@ -103,7 +103,8 @@
       SETERRQ() may be called from Fortran subroutines but SETERRA() must be called from the
       Fortran main program.
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRA(), CHKERRMPI()
+.seealso: PetscAssert(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ,
+CHKERRA(), CHKERRMPI()
 M*/
 #define SETERRQ(comm,ierr,...) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,__VA_ARGS__)
 
@@ -192,6 +193,107 @@ M*/
   } while (0)
 
 /*MC
+  PetscAssert - Assert that a particular condition is true
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscAssert(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
+
+  Collective
+
+  Input Parameters:
++ cond    - The boolean condition
+. comm    - The communicator on which the check can be collective on
+. ierr    - A nonzero error code, see include/petscerror.h for the complete list
+- message - Error message in printf format
+
+  Notes:
+  Calls SETERRQ() if the assertion fails, so can only be called from functions returning a
+  PetscErrorCode (or equivalent type after conversion).
+
+  Level: beginner
+
+.seealso: PetscAssertDebug(), SETERRQ(), PetscError(), CHKERRQ()
+MC*/
+#define PetscAssert(cond,comm,ierr,...) if (PetscUnlikely(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
+
+/*MC
+  PetscAssertFalse - Assert that a particular condition is false
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscAssertFalse(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
+
+  Collective
+
+  Input Parameters:
++ cond    - The boolean condition
+. comm    - The communicator on which the check can be collective on
+. ierr    - A nonzero error code, see include/petscerror.h for the complete list
+- message - Error message in printf format
+
+  Notes:
+  Invert your boolean condition and use PetscAssert() instead. This macro is a temporary
+  stopgap to converting to PetscAssert() and is subject to removal without deprecation in a
+  future release.
+
+  Level: deprecated
+
+.seealso: PetscAssert()
+MC*/
+#define PetscAssertFalse(cond,comm,ierr,...) if (PetscUnlikely(cond)) SETERRQ(comm,ierr,__VA_ARGS__)
+
+/*MC
+  PetscAssertDebug - Assert that a particular condition is true only when debugging is enabled
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscAssertDebug(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
+
+  Collective
+
+  Input Parameters:
++ cond    - The boolean condition
+. comm    - The communicator on which the check can be collective on
+. ierr    - A nonzero error code, see include/petscerror.h for the complete list
+- message - Error message in printf format
+
+  Notes:
+  See PetscAssert() for usage and behaviour.
+
+  Level: beginner
+
+.seealso: PetscAssert(), SETERRQ(), PetscError()
+MC*/
+#define PetscAssertDebug(cond,comm,ierr,...) if (PetscUnlikelyDebug(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
+
+/*MC
+  PetscAssertFalseDebug - Assert that a particular condition is false only when debugging is enabled
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscAssertFalseDebug(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
+
+  Collective
+
+  Input Parameters:
++ cond    - The boolean condition
+. comm    - The communicator on which the check can be collective on
+. ierr    - A nonzero error code, see include/petscerror.h for the complete list
+- message - Error message in printf format
+
+  Notes:
+  Invert your boolean condition and use PetscAssertDebug() instead. This macro is a temporary
+  stopgap to converting to PetscAssertDebug() and is subject to removal without deprecation in
+  a future release.
+
+  Level: deprecated
+
+.seealso: PetscAssertDebug()
+MC*/
+#define PetscAssertFalseDebug(cond,comm,ierr,...) if (PetscUnlikelyDebug(cond)) SETERRQ(comm,ierr,__VA_ARGS__)
+
+/*MC
    CHKERRQ - Checks error code returned from PETSc function, if non-zero it calls the error handler and then returns. Use CHKERRMPI() for checking errors from MPI calls
 
    Synopsis:
@@ -225,7 +327,7 @@ M*/
       CHKERRQ() may be called from Fortran subroutines but CHKERRA() must be called from the
       Fortran main program.
 
-.seealso: SETERRQ(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ, CHKERRA()
+.seealso: SETERRQ(), PetscAssert(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ, CHKERRA()
 M*/
 #if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #define CHKERRQ(ierr)          do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");} while (0)
@@ -826,7 +928,7 @@ M*/
     PetscStackPush(#func);                                                                                \
     __ierr = func args;                                                                                   \
     PetscStackPop;                                                                                        \
-    if (__ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",#func,(int)__ierr); \
+    PetscAssert(!__ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",#func,(int)__ierr); \
   } while (0)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 

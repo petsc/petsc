@@ -372,7 +372,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscIn
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  if (origField != 1) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
+  PetscAssertFalse(origField != 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
   funcs[field] = one;
   {
     PetscDS ds;

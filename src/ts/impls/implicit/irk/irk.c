@@ -392,7 +392,7 @@ static PetscErrorCode TSInterpolate_IRK(TS ts,PetscReal itime,Vec U)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!B) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not have an interpolation formula",irk->method_name);
+  PetscAssertFalse(!B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not have an interpolation formula",irk->method_name);
   switch (irk->status) {
   case TS_STEP_INCOMPLETE:
   case TS_STEP_PENDING:
@@ -844,7 +844,7 @@ static PetscErrorCode TSIRKSetType_IRK(TS ts,TSIRKType irktype)
     ierr = TSIRKTableauReset(ts);CHKERRQ(ierr);
   }
   ierr = PetscFunctionListFind(TSIRKList,irktype,&irkcreate);CHKERRQ(ierr);
-  if (!irkcreate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSIRK type \"%s\" given",irktype);
+  PetscAssertFalse(!irkcreate,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSIRK type \"%s\" given",irktype);
   ierr = (*irkcreate)(ts);CHKERRQ(ierr);
   ierr = PetscStrallocpy(irktype,&irk->method_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -855,7 +855,7 @@ static PetscErrorCode TSIRKSetNumStages_IRK(TS ts,PetscInt nstages)
   TS_IRK *irk = (TS_IRK*)ts->data;
 
   PetscFunctionBegin;
-  if (nstages<=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"input argument, %d, out of range",nstages);
+  PetscAssertFalse(nstages<=0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"input argument, %d, out of range",nstages);
   irk->nstages = nstages;
   PetscFunctionReturn(0);
 }

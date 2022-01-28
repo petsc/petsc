@@ -36,12 +36,12 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  PetscAssertFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   ierr = PetscOptionsGetString(NULL,NULL,"-fin",filein,sizeof(filein),&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fin <filename> to specify the input file name!");
+  PetscAssertFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fin <filename> to specify the input file name!");
   ierr = PetscOptionsGetString(NULL,NULL,"-fout",fileout,sizeof(fileout),&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fout <filename> to specify the output file name!");
+  PetscAssertFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"Please use -fout <filename> to specify the output file name!");
   ierr = PetscOptionsGetBool(NULL,NULL,"-aij_only",&aijonly,NULL);CHKERRQ(ierr);
 
   /* Read in matrix */
@@ -79,11 +79,11 @@ int main(int argc,char **argv)
   for (i=0; i<nz; i++) {
     if (pattern) {
       ninput = fscanf(file, "%d %d\n", &ia[i], &ja[i]);
-      if (ninput < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscAssertFalse(ninput < 2,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
       val[i] = 1.0;
     } else if (real) {
       ninput = fscanf(file, "%d %d %lg\n", &ia[i], &ja[i], &val[i]);
-      if (ninput < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscAssertFalse(ninput < 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
     }
     ia[i]--; ja[i]--;     /* adjust from 1-based to 0-based */
     if (ia[i] != ja[i]) { /* already counted the diagonals above */
@@ -106,14 +106,14 @@ int main(int argc,char **argv)
     ierr = MatSetUp(A);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(A,1,0,rownz);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&sametype);CHKERRQ(ierr);
-    if (!sametype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
+    PetscAssertFalse(!sametype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
   } else {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatSetUp(A);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(A,0,rownz);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&sametype);CHKERRQ(ierr);
-    if (!sametype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
+    PetscAssertFalse(!sametype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only AIJ and SBAIJ are supported. Your mattype is not supported");
   }
 
   /* Add zero to diagonals, in case the matrix missing diagonals */

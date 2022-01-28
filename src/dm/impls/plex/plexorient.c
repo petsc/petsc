@@ -40,7 +40,7 @@ PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o)
     nO   = DMPolytopeTypeGetNumArrangments(ft)/2;
     newcone[c] = cone[arr[c*2+0]];
     newornt[c] = DMPolytopeTypeComposeOrientation(ft, arr[c*2+1], ornt[arr[c*2+0]]);
-    if (newornt[c] && (newornt[c] >= nO || newornt[c] < -nO)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %D not in [%D,%D) for %s %D", newornt[c], -nO, nO, DMPolytopeTypes[ft], cone[c]);
+    PetscAssertFalse(newornt[c] && (newornt[c] >= nO || newornt[c] < -nO),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %D not in [%D,%D) for %s %D", newornt[c], -nO, nO, DMPolytopeTypes[ft], cone[c]);
   }
   ierr = DMPlexSetCone(dm, p, newcone);CHKERRQ(ierr);
   ierr = DMPlexSetConeOrientation(dm, p, newornt);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
   ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
   ierr = DMPlexGetSupport(dm, face, &support);CHKERRQ(ierr);
   if (supportSize < 2) PetscFunctionReturn(0);
-  if (supportSize != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
+  PetscAssertFalse(supportSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
   seenA    = PetscBTLookup(seenCells,    support[0]-cStart);
   flippedA = PetscBTLookup(flippedCells, support[0]-cStart) ? 1 : 0;
   seenB    = PetscBTLookup(seenCells,    support[1]-cStart);
@@ -101,18 +101,18 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
       ierr = PetscBTSet(seenFaces, coneA[c]-fStart);CHKERRQ(ierr);
     }
     if (coneA[c] == face) posA = c;
-    if (*fBottom > fEnd-fStart) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
+    PetscAssertFalse(*fBottom > fEnd-fStart,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
   }
-  if (posA < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[0]);
+  PetscAssertFalse(posA < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[0]);
   for (c = 0; c < coneSizeB; ++c) {
     if (!PetscBTLookup(seenFaces, coneB[c]-fStart)) {
       faceFIFO[(*fBottom)++] = coneB[c];
       ierr = PetscBTSet(seenFaces, coneB[c]-fStart);CHKERRQ(ierr);
     }
     if (coneB[c] == face) posB = c;
-    if (*fBottom > fEnd-fStart) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
+    PetscAssertFalse(*fBottom > fEnd-fStart,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
   }
-  if (posB < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[1]);
+  PetscAssertFalse(posB < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[1]);
 
   if (dim == 1) {
     mismatch = posA == posB;
@@ -121,13 +121,13 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
   }
 
   if (mismatch ^ (flippedA ^ flippedB)) {
-    if (seenA && seenB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %d and %d do not match: Fault mesh is non-orientable", support[0], support[1]);
+    PetscAssertFalse(seenA && seenB,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %d and %d do not match: Fault mesh is non-orientable", support[0], support[1]);
     if (!seenA && !flippedA) {
       ierr = PetscBTSet(flippedCells, support[0]-cStart);CHKERRQ(ierr);
     } else if (!seenB && !flippedB) {
       ierr = PetscBTSet(flippedCells, support[1]-cStart);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
-  } else if (mismatch && flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
+  } else PetscAssertFalse(mismatch && flippedA && flippedB,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
   ierr = PetscBTSet(seenCells, support[0]-cStart);CHKERRQ(ierr);
   ierr = PetscBTSet(seenCells, support[1]-cStart);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -312,7 +312,7 @@ PetscErrorCode DMPlexOrient(DM dm)
           PetscInt supportSize;
 
           ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
-          if (supportSize != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %d", supportSize);
+          PetscAssertFalse(supportSize != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %d", supportSize);
           if (flg) {ierr = PetscViewerASCIIPrintf(selfviewer, "[%d]: component %d, Found representative leaf %d (face %d) connecting to face %d on (%d, %d) with orientation %d\n", rank, comp, l, face, rpoints[l].index, rrank, rcomp, lorntComp[face].rank);CHKERRQ(ierr);}
           neighbors[comp][numNeighbors[comp]++] = l;
         }
@@ -431,11 +431,11 @@ PetscErrorCode DMPlexOrient(DM dm)
             flippedB = PetscBTLookup(flippedProcs, nproc) ? 1 : 0;
 
             if (mismatch ^ (flippedA ^ flippedB)) {
-              if (seen) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen procs %d and %d do not match: Fault mesh is non-orientable", proc, nproc);
+              PetscAssertFalse(seen,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen procs %d and %d do not match: Fault mesh is non-orientable", proc, nproc);
               if (!flippedB) {
                 ierr = PetscBTSet(flippedProcs, nproc);CHKERRQ(ierr);
               } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
-            } else if (mismatch && flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
+            } else PetscAssertFalse(mismatch && flippedA && flippedB,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
             if (!seen) {
               procFIFO[pBottom++] = nproc;
               ierr = PetscBTSet(seenProcs, nproc);CHKERRQ(ierr);

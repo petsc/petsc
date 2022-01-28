@@ -133,7 +133,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   /* For simplicity, this example only works on mx=my=mz */
-  if (mx != my || mx != mz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This example only works with mx %D = my %D = mz %D",mx,my,mz);
+  PetscAssertFalse(mx != my || mx != mz,PETSC_COMM_SELF,PETSC_ERR_SUP,"This example only works with mx %D = my %D = mz %D",mx,my,mz);
 
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;

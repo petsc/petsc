@@ -30,7 +30,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
+  PetscAssertFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
 #if !defined(PETSC_USE_MIXED_PRECISION)
   ierr = PetscMalloc1(n,&array);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)V, n*sizeof(PetscScalar));CHKERRQ(ierr);

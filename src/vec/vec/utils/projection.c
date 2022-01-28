@@ -477,19 +477,19 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
     ierr = ISGetIndices(is,&id);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vreduced,&m);CHKERRQ(ierr);
-    if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS local length not equal to Vec local length");
+    PetscAssertFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_SUP,"IS local length not equal to Vec local length");
     ierr = VecGetOwnershipRange(vfull,&rstart,&rend);CHKERRQ(ierr);
     y   -= rstart;
     if (alpha == 1.0) {
       for (i=0; i<n; ++i) {
         if (id[i] < 0) continue;
-        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscAssertFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] += x[i];
       }
     } else {
       for (i=0; i<n; ++i) {
         if (id[i] < 0) continue;
-        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscAssertFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] += alpha*x[i];
       }
     }
@@ -550,7 +550,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
     ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vreduced, &m);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(vfull, &rstart, &rend);CHKERRQ(ierr);
-    if (m != n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %" PetscInt_FMT " not equal to Vec local length %" PetscInt_FMT, n, m);
+    PetscAssertFalse(m != n,PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %" PetscInt_FMT " not equal to Vec local length %" PetscInt_FMT, n, m);
     if (mode == SCATTER_FORWARD) {
       PetscScalar       *y;
       const PetscScalar *x;
@@ -560,7 +560,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
       y   -= rstart;
       for (i = 0; i < n; ++i) {
         if (id[i] < 0) continue;
-        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscAssertFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] = x[i];
       }
       y   += rstart;
@@ -574,7 +574,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
       ierr = VecGetArray(vreduced, &x);CHKERRQ(ierr);
       for (i = 0; i < n; ++i) {
         if (id[i] < 0) continue;
-        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscAssertFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         x[i] = y[id[i]-rstart];
       }
       ierr = VecRestoreArray(vreduced, &x);CHKERRQ(ierr);
@@ -647,7 +647,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   ierr = VecGetArray(V,&v);CHKERRQ(ierr);
   for (i=0; i<nloc; ++i) {
     if (s[i] < 0) continue;
-    if (s[i] < low || s[i] >= high) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+    PetscAssertFalse(s[i] < low || s[i] >= high,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
     v[s[i]-low] = c;
   }
   ierr = ISRestoreIndices(S,&s);CHKERRQ(ierr);
@@ -881,7 +881,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(DX,&dx);CHKERRQ(ierr);
   for (i=0;i<nn;++i) {
-    if (PetscRealPart(xx[i]) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector must be positive");
+    PetscAssertFalse(PetscRealPart(xx[i]) < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector must be positive");
     else if (PetscRealPart(dx[i])<0) stepmax=PetscMin(stepmax,PetscRealPart(-xx[i]/dx[i]));
   }
   ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);

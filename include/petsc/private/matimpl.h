@@ -267,7 +267,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
 #if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #if defined(PETSC_USE_DEBUG)
 #  define MatCheckPreallocated(A,arg) do {                              \
-    if (PetscUnlikely(!(A)->preallocated)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatXXXSetPreallocation(), MatSetUp() or the matrix has not yet been factored on argument %d \"%s\" before %s()",(arg),#A,PETSC_FUNCTION_NAME); \
+    PetscAssert((A)->preallocated,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatXXXSetPreallocation(), MatSetUp() or the matrix has not yet been factored on argument %d \"%s\" before %s()",(arg),#A,PETSC_FUNCTION_NAME); \
   } while (0)
 #else
 #  define MatCheckPreallocated(A,arg) do {} while (0)
@@ -275,7 +275,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
 
 #if defined(PETSC_USE_DEBUG)
 #  define MatCheckProduct(A,arg) do {                              \
-    if (PetscUnlikely(!(A)->product)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Argument %d \"%s\" is not a matrix obtained from MatProductCreate()",(arg),#A); \
+    PetscAssert((A)->product,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Argument %d \"%s\" is not a matrix obtained from MatProductCreate()",(arg),#A); \
   } while (0)
 #else
 #  define MatCheckProduct(A,arg) do {} while (0)
@@ -1347,10 +1347,10 @@ do {\
 #if !defined(PETSC_CLANG_STATIC_ANALYZER)
 #define MatCheckSameLocalSize(A,ar1,B,ar2) do {                         \
     PetscCheckSameComm(A,ar1,B,ar2);                                    \
-    if (PetscUnlikely(((A)->rmap->n != (B)->rmap->n) || ((A)->cmap->n != (B)->cmap->n))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible matrix local sizes: parameter # %d (%" PetscInt_FMT " x %" PetscInt_FMT ") != parameter # %d (%" PetscInt_FMT " x %" PetscInt_FMT ")",ar1,(A)->rmap->n,(A)->cmap->n,ar2,(B)->rmap->n,(B)->cmap->n); \
+    PetscAssert(((A)->rmap->n == (B)->rmap->n) && ((A)->cmap->n == (B)->cmap->n),PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible matrix local sizes: parameter # %d (%" PetscInt_FMT " x %" PetscInt_FMT ") != parameter # %d (%" PetscInt_FMT " x %" PetscInt_FMT ")",ar1,(A)->rmap->n,(A)->cmap->n,ar2,(B)->rmap->n,(B)->cmap->n); \
   } while (0)
 #define MatCheckSameSize(A,ar1,B,ar2) do {                              \
-    if (PetscUnlikely(((A)->rmap->N != (B)->rmap->N) || ((A)->cmap->N != (B)->cmap->N))) SETERRQ(PetscObjectComm((PetscObject)(A)),PETSC_ERR_ARG_INCOMP,"Incompatible matrix global sizes: parameter # %d (%" PetscInt_FMT " x %" PetscInt_FMT ") != parameter # %d (%" PetscInt_FMT " x %" PetscInt_FMT ")",ar1,(A)->rmap->N,(A)->cmap->N,ar2,(B)->rmap->N,(B)->cmap->N); \
+    PetscAssert(((A)->rmap->N == (B)->rmap->N) && ((A)->cmap->N == (B)->cmap->N),PetscObjectComm((PetscObject)(A)),PETSC_ERR_ARG_INCOMP,"Incompatible matrix global sizes: parameter # %d (%" PetscInt_FMT " x %" PetscInt_FMT ") != parameter # %d (%" PetscInt_FMT " x %" PetscInt_FMT ")",ar1,(A)->rmap->N,(A)->cmap->N,ar2,(B)->rmap->N,(B)->cmap->N); \
     MatCheckSameLocalSize(A,ar1,B,ar2);                                 \
   } while (0)
 #else
@@ -1361,8 +1361,8 @@ void MatCheckSameSize(Tm,int,Tm,int);
 #endif
 
 #define VecCheckMatCompatible(M,x,ar1,b,ar2) do { \
-    if (PetscUnlikely((M)->cmap->N != (x)->map->N)) SETERRQ(PetscObjectComm((PetscObject)(M)),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %" PetscInt_FMT " != matrix column global size %" PetscInt_FMT,ar1,(x)->map->N,(M)->cmap->N); \
-    if (PetscUnlikely((M)->rmap->N != (b)->map->N)) SETERRQ(PetscObjectComm((PetscObject)(M)),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %" PetscInt_FMT " != matrix row global size %" PetscInt_FMT,ar2,(b)->map->N,(M)->rmap->N); \
+    PetscAssert((M)->cmap->N == (x)->map->N,PetscObjectComm((PetscObject)(M)),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %" PetscInt_FMT " != matrix column global size %" PetscInt_FMT,ar1,(x)->map->N,(M)->cmap->N); \
+    PetscAssert((M)->rmap->N == (b)->map->N,PetscObjectComm((PetscObject)(M)),PETSC_ERR_ARG_SIZ,"Vector global length incompatible with matrix: parameter # %d global size %" PetscInt_FMT " != matrix row global size %" PetscInt_FMT,ar2,(b)->map->N,(M)->rmap->N); \
   } while (0)
 
 /* -------------------------------------------------------------------------------------------------------*/

@@ -99,7 +99,7 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   IS             is_state, is_design;
 
   PetscFunctionBegin;
-  if (!tao->state_is) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"LCL Solver requires an initial state index set -- use TaoSetStateIS()");
+  PetscAssertFalse(!tao->state_is,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"LCL Solver requires an initial state index set -- use TaoSetStateIS()");
   ierr = VecDuplicate(tao->solution, &tao->gradient);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &lclP->W);CHKERRQ(ierr);

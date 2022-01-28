@@ -196,7 +196,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       ierr = DMPlexReorderCell(dm, c, localVertices+k-nC);CHKERRQ(ierr);
     }
-    if (k != numSend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %D should be %D", k, numSend);
+    PetscAssertFalse(k != numSend,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %D should be %D", k, numSend);
     ierr = MPI_Send(&numSend, 1, MPIU_INT, 0, tag, comm);CHKERRMPI(ierr);
     ierr = MPI_Send(localVertices, numSend, MPIU_INT, 0, tag, comm);CHKERRMPI(ierr);
     ierr = PetscFree(localVertices);CHKERRQ(ierr);
@@ -484,7 +484,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   writeComplex = PETSC_FALSE;
 #endif
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
-  if (localized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"VTK output with localized coordinates not yet supported");
+  PetscAssertFalse(localized,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"VTK output with localized coordinates not yet supported");
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscFOpen(comm, vtk->filename, "wb", &fp);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm, &dmname);CHKERRQ(ierr);
@@ -571,7 +571,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
           }
         }
       }
-      if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it and could not create one from VecGetDM()", name);
+      PetscAssertFalse(!section,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it and could not create one from VecGetDM()", name);
       if (link->field >= 0) {
         const char *fieldname;
 
@@ -617,7 +617,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
           ierr = DMGetLocalSection(dmX, &section);CHKERRQ(ierr);
         }
       }
-      if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it and could not create one from VecGetDM()", name);
+      PetscAssertFalse(!section,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it and could not create one from VecGetDM()", name);
       if (link->field >= 0) {
         const char *fieldname;
 
@@ -679,7 +679,7 @@ PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
-  if (!isvtk) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
+  PetscAssertFalse(!isvtk,PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_ASCII_VTK_DEPRECATED:
     ierr = DMPlexVTKWriteAll_ASCII(dm, viewer);CHKERRQ(ierr);

@@ -472,14 +472,14 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
 
   PetscFunctionBegin;
   ierr = SNESGetFunction(snes,&snes->vec_func,NULL,NULL);CHKERRQ(ierr);
-  if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
+  PetscAssertFalse(!snes->vec_func,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   {
     PetscInt xlN,xuN,N;
     ierr = VecGetSize(xl,&xlN);CHKERRQ(ierr);
     ierr = VecGetSize(xu,&xuN);CHKERRQ(ierr);
     ierr = VecGetSize(snes->vec_func,&N);CHKERRQ(ierr);
-    if (xlN != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xlN,N);
-    if (xuN != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xuN,N);
+    PetscAssertFalse(xlN != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xlN,N);
+    PetscAssertFalse(xuN != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xuN,N);
   }
   ierr     = PetscObjectReference((PetscObject)xl);CHKERRQ(ierr);
   ierr     = PetscObjectReference((PetscObject)xu);CHKERRQ(ierr);

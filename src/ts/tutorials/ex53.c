@@ -561,7 +561,7 @@ static PetscErrorCode terzaghi_2d_p(PetscInt dim, PetscReal time, const PetscRea
     PetscReal   tstar = PetscRealPart(c*time) / PetscSqr(2.0*L);   /* - */
     PetscScalar F1    = 0.0;
 
-    if (PetscAbsScalar((1/M + (alpha*eta)/G) - S) > 1.0e-10) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
+    PetscAssertFalse(PetscAbsScalar((1/M + (alpha*eta)/G) - S) > 1.0e-10,PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
 
     for (m = 1; m < 2*N+1; ++m) {
       if (m%2 == 1) {
@@ -696,7 +696,7 @@ static PetscErrorCode terzaghi_2d_p_t(PetscInt dim, PetscReal time, const PetscR
     PetscScalar F1_t  = 0.0;
     PetscScalar F1_zz = 0.0;
 
-    if (PetscAbsScalar((1/M + (alpha*eta)/G) - S) > 1.0e-10) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
+    PetscAssertFalse(PetscAbsScalar((1/M + (alpha*eta)/G) - S) > 1.0e-10,PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
 
     for (m = 1; m < 2*N+1; ++m) {
       if (m%2 == 1) {
@@ -1753,14 +1753,14 @@ static PetscErrorCode cryerZeros(MPI_Comm comm, AppCtx *ctx, Parameter *param)
     for (j = 0; j < 50000; ++j) {
       y1 = CryerFunction(nu_u, nu, a1);
       y2 = CryerFunction(nu_u, nu, a2);
-      if (y1*y2 > 0) SETERRQ(comm, PETSC_ERR_PLIB, "Invalid root finding initialization for root %D, (%g, %g)--(%g, %g)", n, a1, y1, a2, y2);
+      PetscAssertFalse(y1*y2 > 0,comm, PETSC_ERR_PLIB, "Invalid root finding initialization for root %D, (%g, %g)--(%g, %g)", n, a1, y1, a2, y2);
       am = (a1 + a2) / 2.0;
       ym = CryerFunction(nu_u, nu, am);
       if ((ym * y1) < 0) a2 = am;
       else               a1 = am;
       if (PetscAbsScalar(ym) < tol) break;
     }
-    if (PetscAbsScalar(ym) >= tol) SETERRQ(comm, PETSC_ERR_PLIB, "Root finding did not converge for root %D (%g)", n, PetscAbsScalar(ym));
+    PetscAssertFalse(PetscAbsScalar(ym) >= tol,comm, PETSC_ERR_PLIB, "Root finding did not converge for root %D (%g)", n, PetscAbsScalar(ym));
     ctx->zeroArray[n-1] = am;
   }
   PetscFunctionReturn(0);

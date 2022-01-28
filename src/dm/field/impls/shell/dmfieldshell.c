@@ -164,11 +164,11 @@ PetscErrorCode DMFieldShellEvaluateFVDefault(DMField field, IS pointIS, PetscDat
   PetscFunctionBegin;
   ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
   ierr = DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad);CHKERRQ(ierr);
-  if (!quad) SETERRQ(PetscObjectComm((PetscObject) pointIS), PETSC_ERR_ARG_WRONGSTATE, "coordinate field must have default quadrature for FV computation");
+  PetscAssertFalse(!quad,PetscObjectComm((PetscObject) pointIS), PETSC_ERR_ARG_WRONGSTATE, "coordinate field must have default quadrature for FV computation");
   ierr = DMFieldCreateFEGeom(coordField, pointIS, quad, PETSC_FALSE, &geom);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimC);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quad, &dim, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-  if (Nq != 1) SETERRQ(PetscObjectComm((PetscObject) quad), PETSC_ERR_ARG_WRONGSTATE, "quadrature must have only one point");
+  PetscAssertFalse(Nq != 1,PetscObjectComm((PetscObject) quad), PETSC_ERR_ARG_WRONGSTATE, "quadrature must have only one point");
   ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
   ierr = PetscMalloc1(dimC * numPoints, &pfArray);CHKERRQ(ierr);
   for (p = 0; p < numPoints * dimC; p++) pfArray[p] = (PetscScalar) geom->v[p];

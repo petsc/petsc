@@ -99,7 +99,7 @@ PetscErrorCode  PetscDrawPushCurrentPoint(PetscDraw draw,PetscReal x,PetscReal y
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->currentpoint > 19) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You have pushed too many current points");
+  PetscAssertFalse(draw->currentpoint > 19,PETSC_COMM_SELF,PETSC_ERR_SUP,"You have pushed too many current points");
   draw->currentpoint_x[++draw->currentpoint] = x;
   draw->currentpoint_y[draw->currentpoint]   = y;
   PetscFunctionReturn(0);
@@ -121,7 +121,7 @@ PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (draw->currentpoint-- == 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You have popped too many current points");
+  PetscAssertFalse(draw->currentpoint-- == 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"You have popped too many current points");
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +147,7 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (!draw->ops->line) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing lines",((PetscObject)draw)->type_name);
+  PetscAssertFalse(!draw->ops->line,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing lines",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->line)(draw,xl,yl,xr,yr,cl);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -174,7 +174,7 @@ PetscErrorCode  PetscDrawArrow(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (!draw->ops->arrow) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing arrows",((PetscObject)draw)->type_name);
+  PetscAssertFalse(!draw->ops->arrow,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing arrows",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->arrow)(draw,xl,yl,xr,yr,cl);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -233,7 +233,7 @@ PetscErrorCode  PetscDrawLineGetWidth(PetscDraw draw,PetscReal *width)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidRealPointer(width,2);
-  if (!draw->ops->linegetwidth) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support getting line width",((PetscObject)draw)->type_name);
+  PetscAssertFalse(!draw->ops->linegetwidth,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support getting line width",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->linegetwidth)(draw,width);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

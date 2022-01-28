@@ -85,7 +85,7 @@ private:
         auto ierr = PetscSleep(3);CHKERRQ(ierr);
         continue;
       }
-      if (PetscUnlikely(cberr != CUPMBLAS_STATUS_SUCCESS)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize %s",cupmBlasName());
+      PetscAssertFalse(cberr != CUPMBLAS_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize %s",cupmBlasName());
     }
     PetscFunctionReturn(0);
   }
@@ -295,7 +295,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::beginTimer(PetscDeviceCon
 
   PetscFunctionBegin;
 #if PetscDefined(USE_DEBUG)
-  if (PetscUnlikely(dci->timerInUse)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeEnd()?");
+  PetscAssertFalse(dci->timerInUse,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeEnd()?");
   dci->timerInUse = PETSC_TRUE;
 #endif
   if (!dci->begin) {
@@ -315,7 +315,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::endTimer(PetscDeviceConte
 
   PetscFunctionBegin;
 #if PetscDefined(USE_DEBUG)
-  if (PetscUnlikely(!dci->timerInUse)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeBegin()?");
+  PetscAssertFalse(!dci->timerInUse,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeBegin()?");
   dci->timerInUse = PETSC_FALSE;
 #endif
   cerr = cupmEventRecord(dci->end,dci->stream);CHKERRCUPM(cerr);

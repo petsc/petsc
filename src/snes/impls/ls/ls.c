@@ -142,7 +142,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   SNESConvergedReason  reason;
 
   PetscFunctionBegin;
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscAssertFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
@@ -255,7 +255,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         if (snes->errorifnotconverged && snes->reason) {
           PetscViewer monitor;
           ierr = SNESLineSearchGetDefaultMonitor(linesearch,&monitor);CHKERRQ(ierr);
-          if (!monitor) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to %s. Suggest running with -snes_linesearch_monitor",SNESConvergedReasons[snes->reason]);
+          PetscAssertFalse(!monitor,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to %s. Suggest running with -snes_linesearch_monitor",SNESConvergedReasons[snes->reason]);
           else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due %s.",SNESConvergedReasons[snes->reason]);
         }
         break;

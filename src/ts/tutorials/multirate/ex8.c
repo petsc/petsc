@@ -104,7 +104,7 @@ PetscErrorCode FVSample_3WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscReal       hs,hm,hf;
 
   PetscFunctionBeginUser;
-  if (!ctx->physics2.sample2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
+  PetscAssertFalse(!ctx->physics2.sample2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
@@ -1115,13 +1115,13 @@ int main(int argc,char *argv[])
 
   /* Choose the limiter from the list of registered limiters */
   ierr = PetscFunctionListFind(limiters,lname,&ctx.limit3);CHKERRQ(ierr);
-  if (!ctx.limit3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
+  PetscAssertFalse(!ctx.limit3,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
     ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
-    if (!r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
+    PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);
   }
@@ -1154,7 +1154,7 @@ int main(int argc,char *argv[])
      count_slow + count_fast = Mx, counts_slow*hs = 0.5, counts_fast*hf = 0.5 */
   count_slow = Mx/(1+ctx.hratio)/(1+ctx.hratio);
   count_medium = 2*ctx.hratio*count_slow;
-  if (count_slow%2 || count_medium%2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio)^2 and Mx*2*hratio/(1+hratio)^2 is even");
+  PetscAssertFalse(count_slow%2 || count_medium%2,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio)^2 and Mx*2*hratio/(1+hratio)^2 is even");
   count_fast = ctx.hratio*ctx.hratio*count_slow;
   ctx.sm = count_slow/2;
   ctx.mf = ctx.sm + count_medium/2;
@@ -1276,7 +1276,7 @@ int main(int argc,char *argv[])
       PetscBool    flg;
       const PetscScalar  *ptr_XR;
       ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+      PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
       ierr = VecDuplicate(X0,&XR);CHKERRQ(ierr);
       ierr = VecLoad(XR,fd);CHKERRQ(ierr);

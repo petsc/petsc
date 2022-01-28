@@ -360,7 +360,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
     /* If necessary, allocate arrays */
     if (r_nnz==0) {
       PetscBool success = spbas_cholesky_row_alloc(retval, i, 1, &n_alloc_used);
-      if (!success) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"spbas_cholesky_row_alloc() failed");
+      PetscAssertFalse(!success,PETSC_COMM_SELF,PETSC_ERR_MEM,"spbas_cholesky_row_alloc() failed");
       r_icol = retval.icols[i];
       r_val  = retval.values[i];
     }
@@ -391,7 +391,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
           if (!success) {
             ierr   = spbas_cholesky_garbage_collect(&retval,  i, &n_row_alloc_ok, &n_alloc_used, max_row_nnz);CHKERRQ(ierr);
             flag   = spbas_cholesky_row_alloc(retval, k, max_row_nnz[k], &n_alloc_used);
-            if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Allocation in spbas_cholesky_row_alloc() failed");
+            PetscAssertFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_MEM,"Allocation in spbas_cholesky_row_alloc() failed");
             r_icol = retval.icols[i];
           }
         }

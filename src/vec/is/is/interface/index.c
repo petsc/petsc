@@ -49,7 +49,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   ierr = ISGetLocalSize(subset,&n);CHKERRQ(ierr);
   if (subset_mult) {
     ierr = ISGetLocalSize(subset_mult,&i);CHKERRQ(ierr);
-    if (PetscUnlikely(i != n)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %" PetscInt_FMT " != %" PetscInt_FMT,n,i);
+    PetscAssertFalse(i != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %" PetscInt_FMT " != %" PetscInt_FMT,n,i);
   }
   /* create workspace layout for computing global indices of subset */
   ierr = ISGetIndices(subset,&idxs);CHKERRQ(ierr);
@@ -376,7 +376,7 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
     }
     break;
   default:
-    if (type == IS_LOCAL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
+    PetscAssertFalse(type == IS_LOCAL,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
     else SETERRQ(PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
   }
   PetscFunctionReturn(0);
@@ -432,7 +432,7 @@ PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanen
     errcomm = PETSC_COMM_SELF;
   }
 
-  if (((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX) SETERRQ(errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
+  PetscAssertFalse(((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX,errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
 
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   /* do not use global values if size == 1: it makes it easier to keep the implications straight */
@@ -760,7 +760,7 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
 
-  if (((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX) SETERRQ(errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
+  PetscAssertFalse(((int) info) <= IS_INFO_MIN || ((int) info) >= IS_INFO_MAX,errcomm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)info);
   if (size == 1) type = IS_LOCAL;
   itype = (type == IS_LOCAL) ? 0 : 1;
   hasprop = PETSC_FALSE;
@@ -976,7 +976,7 @@ PetscErrorCode  ISSetPermutation(IS is)
       ierr = PetscArraycpy(idx,iidx,n);CHKERRQ(ierr);
       ierr = PetscIntSortSemiOrdered(n,idx);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        if (idx[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
+        PetscAssertFalse(idx[i] != i,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
       }
       ierr = PetscFree(idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(is,&iidx);CHKERRQ(ierr);
@@ -1009,7 +1009,7 @@ PetscErrorCode  ISDestroy(IS *is)
   if ((*is)->complement) {
     PetscInt refcnt;
     ierr = PetscObjectGetReference((PetscObject)((*is)->complement), &refcnt);CHKERRQ(ierr);
-    if (refcnt > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
+    PetscAssertFalse(refcnt > 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
     ierr = ISDestroy(&(*is)->complement);CHKERRQ(ierr);
   }
   if ((*is)->ops->destroy) {
@@ -1053,7 +1053,7 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,&isperm);CHKERRQ(ierr);
-  if (!isperm) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation");
+  PetscAssertFalse(!isperm,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation");
   ierr = ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isidentity);CHKERRQ(ierr);
   issame = PETSC_FALSE;
   if (isidentity) {
@@ -1420,7 +1420,7 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   if (size == 1) {
     ierr = (*is->ops->restoreindices)(is,indices);CHKERRQ(ierr);
   } else {
-    if (is->total != *indices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
+    PetscAssertFalse(is->total != *indices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   }
   PetscFunctionReturn(0);
 }
@@ -1491,7 +1491,7 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  if (is->nonlocal != *indices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
+  PetscAssertFalse(is->nonlocal != *indices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   PetscFunctionReturn(0);
 }
 
@@ -1562,9 +1562,9 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
-  if (*complement != is->complement) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
+  PetscAssertFalse(*complement != is->complement,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
   ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt);CHKERRQ(ierr);
-  if (refcnt <= 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
+  PetscAssertFalse(refcnt <= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
   ierr = PetscObjectDereference((PetscObject)(is->complement));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1651,7 +1651,7 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
   PetscCheckSameComm(is,1,viewer,2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
-  if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  PetscAssertFalse(!isbinary && !ishdf5,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   if (!((PetscObject)is)->type_name) {ierr = ISSetType(is, ISGENERAL);CHKERRQ(ierr);}
   ierr = PetscLogEventBegin(IS_Load,is,viewer,0,0);CHKERRQ(ierr);
   ierr = (*is->ops->load)(is, viewer);CHKERRQ(ierr);
@@ -1888,17 +1888,17 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidLogicalCollectiveInt(is,bs,2);
-  if (bs < 1) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Block size %" PetscInt_FMT ", must be positive",bs);
+  PetscAssertFalse(bs < 1,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Block size %" PetscInt_FMT ", must be positive",bs);
   if (PetscDefined(USE_DEBUG)) {
     const PetscInt *indices;
     PetscInt       length,i,j;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
     if (indices) {
       ierr = ISGetLocalSize(is,&length);CHKERRQ(ierr);
-      if (length%bs != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",length,bs);
+      PetscAssertFalse(length%bs != 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",length,bs);
       for (i=0;i<length/bs;i+=bs) {
         for (j=0;j<bs-1;j++) {
-          if (indices[i*bs+j] != indices[i*bs+j+1]-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %" PetscInt_FMT " is incompatible with the indices: non consecutive indices %" PetscInt_FMT " %" PetscInt_FMT,bs,indices[i*bs+j],indices[i*bs+j+1]);
+          PetscAssertFalse(indices[i*bs+j] != indices[i*bs+j+1]-1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %" PetscInt_FMT " is incompatible with the indices: non consecutive indices %" PetscInt_FMT " %" PetscInt_FMT,bs,indices[i*bs+j],indices[i*bs+j+1]);
         }
       }
     }

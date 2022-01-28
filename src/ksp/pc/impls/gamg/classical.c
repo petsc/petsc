@@ -174,7 +174,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
   MPI_Comm         fcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
-  if (!G) SETERRQ(fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
+  PetscAssertFalse(!G,fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
 
   ierr = MatCoarsenCreate(fcomm,&crs);CHKERRQ(ierr);
   ierr = MatCoarsenSetFromOptions(crs);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
   fn = fe-fs;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSEQAIJ);CHKERRQ(ierr);
-  if (!isMPIAIJ && !isSEQAIJ) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Classical AMG requires MPIAIJ matrix");
+  PetscAssertFalse(!isMPIAIJ && !isSEQAIJ,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Classical AMG requires MPIAIJ matrix");
   if (isMPIAIJ) {
     mpiaij = (Mat_MPIAIJ*)A->data;
     lA = mpiaij->A;
@@ -886,7 +886,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
 
   PetscFunctionBegin;
   ierr = PetscFunctionListFind(PCGAMGClassicalProlongatorList,cls->prolongtype,&f);CHKERRQ(ierr);
-  if (!f)SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot find PCGAMG Classical prolongator type");
+  PetscAssertFalse(!f,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot find PCGAMG Classical prolongator type");
   ierr = (*f)(pc,A,G,agg_lists,P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

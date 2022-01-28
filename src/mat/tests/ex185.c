@@ -25,12 +25,12 @@ int main(int argc, char **args)
   ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);
   ierr = MatMult(A,X,Y);CHKERRQ(ierr);
   ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
-  if (PetscAbsReal(ynorm - 3*xnorm) > PETSC_SMALL) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g",(double)(3*xnorm),(double)ynorm);
+  PetscAssertFalse(PetscAbsReal(ynorm - 3*xnorm) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g",(double)(3*xnorm),(double)ynorm);
   ierr = MatShift(A,5.0);CHKERRQ(ierr);
   ierr = MatScale(A,.5);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNorm(A,NORM_FROBENIUS,&anorm);CHKERRQ(ierr);
-  if (PetscAbsReal(anorm - 4.0) > PETSC_SMALL) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm 4.0 actual norm %g",(double)anorm);
+  PetscAssertFalse(PetscAbsReal(anorm - 4.0) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm 4.0 actual norm %g",(double)anorm);
 
   /* Convert to AIJ (exercises MatGetRow/MatRestoreRow) */
   ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ int main(int argc, char **args)
   ierr = MatLUFactorNumeric(Af,A,NULL);CHKERRQ(ierr);
   ierr = MatSolve(Af,X,Y);CHKERRQ(ierr);
   ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
-  if (PetscAbsReal(ynorm - xnorm/4) > PETSC_SMALL) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g",(double)(.25*xnorm),(double)ynorm);
+  PetscAssertFalse(PetscAbsReal(ynorm - xnorm/4) > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expected norm %g actual norm %g",(double)(.25*xnorm),(double)ynorm);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

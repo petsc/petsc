@@ -10,7 +10,7 @@ static PetscErrorCode DMPlexTransformSetUp_1D(DMPlexTransform tr)
   PetscFunctionBegin;
   ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
   ierr = DMPlexTransformGetActive(tr, &active);CHKERRQ(ierr);
-  if (!active) SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use 1D algorithm");
+  PetscAssertFalse(!active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use 1D algorithm");
   /* Calculate refineType for each cell */
   ierr = DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPoly
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  if (p < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
+  PetscAssertFalse(p < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
   ierr = DMLabelGetValue(trType, p, &val);CHKERRQ(ierr);
   if (rt) *rt = val;
   switch (source) {

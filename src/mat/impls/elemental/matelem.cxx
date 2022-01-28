@@ -126,15 +126,15 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
       if (rows[i] < 0) continue;
       P2RO(A,0,rows[i],&rrank,&ridx);
       RO2E(A,0,rrank,ridx,&erow);
-      if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
+      PetscAssertFalse(rrank < 0 || ridx < 0 || erow < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
       for (j=0; j<nc; j++) {
         if (cols[j] < 0) continue;
         P2RO(A,1,cols[j],&crank,&cidx);
         RO2E(A,1,crank,cidx,&ecol);
-        if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
+        PetscAssertFalse(crank < 0 || cidx < 0 || ecol < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
         if (!a->emat->IsLocal(erow,ecol)) { /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
-          if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
+          PetscAssertFalse(imode != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
           continue;
         }
@@ -168,15 +168,15 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
       if (cols[j] < 0) continue;
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
-      if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
+      PetscAssertFalse(crank < 0 || cidx < 0 || ecol < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect col translation");
       for (i=0; i<nr; i++) {
         if (rows[i] < 0) continue;
         P2RO(A,0,rows[i],&rrank,&ridx);
         RO2E(A,0,rrank,ridx,&erow);
-        if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
+        PetscAssertFalse(rrank < 0 || ridx < 0 || erow < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Incorrect row translation");
         if (!a->emat->IsLocal(erow,ecol)) { /* off-proc entry */
           /* printf("Will later remotely update (%d,%d)\n",erow,ecol); */
-          if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
+          PetscAssertFalse(imode != ADD_VALUES,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
           ++numQueues;
           continue;
         }
@@ -452,10 +452,10 @@ static PetscErrorCode MatGetDiagonal_Elemental(Mat A,Vec D)
     PetscInt erow,ecol;
     P2RO(A,0,i,&rrank,&ridx);
     RO2E(A,0,rrank,ridx,&erow);
-    if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+    PetscAssertFalse(rrank < 0 || ridx < 0 || erow < 0,comm,PETSC_ERR_PLIB,"Incorrect row translation");
     P2RO(A,1,i,&crank,&cidx);
     RO2E(A,1,crank,cidx,&ecol);
-    if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+    PetscAssertFalse(crank < 0 || cidx < 0 || ecol < 0,comm,PETSC_ERR_PLIB,"Incorrect col translation");
     v = a->emat->Get(erow,ecol);
     ierr = VecSetValues(D,1,&i,(PetscScalar*)&v,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -563,7 +563,7 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* Only out-of-place supported */
-  if (reuse == MAT_INPLACE_MATRIX) SETERRQ(comm,PETSC_ERR_SUP,"Only out-of-place supported");
+  PetscAssertFalse(reuse == MAT_INPLACE_MATRIX,comm,PETSC_ERR_SUP,"Only out-of-place supported");
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(comm,&Be);CHKERRQ(ierr);
     ierr = MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -909,11 +909,11 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
     for (i=0; i<nrows; i++) {
       P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
       RO2E(A,0,rrank,ridx,&erow);
-      if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+      PetscAssertFalse(rrank < 0 || ridx < 0 || erow < 0,comm,PETSC_ERR_PLIB,"Incorrect row translation");
       for (j=0; j<ncols; j++) {
         P2RO(A,1,cols[j],&crank,&cidx);
         RO2E(A,1,crank,cidx,&ecol);
-        if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+        PetscAssertFalse(crank < 0 || cidx < 0 || ecol < 0,comm,PETSC_ERR_PLIB,"Incorrect col translation");
 
         elrow = erow / grid.MCSize(); /* Elemental local row index */
         elcol = ecol / grid.MRSize(); /* Elemental local column index */
@@ -925,11 +925,11 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
     for (j=0; j<ncols; j++) {
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
-      if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+      PetscAssertFalse(crank < 0 || cidx < 0 || ecol < 0,comm,PETSC_ERR_PLIB,"Incorrect col translation");
       for (i=0; i<nrows; i++) {
         P2RO(A,0,rows[i],&rrank,&ridx); /* convert indices between PETSc <-> (Rank,Offset) <-> Elemental */
         RO2E(A,0,rrank,ridx,&erow);
-        if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+        PetscAssertFalse(rrank < 0 || ridx < 0 || erow < 0,comm,PETSC_ERR_PLIB,"Incorrect row translation");
 
         elrow = erow / grid.MCSize(); /* Elemental local row index */
         elcol = ecol / grid.MRSize(); /* Elemental local column index */
@@ -1156,18 +1156,18 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   n = PETSC_DECIDE;
   ierr = PetscSplitOwnership(comm,&n,&A->rmap->N);CHKERRQ(ierr);
-  if (n != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %" PetscInt_FMT " of ELEMENTAL matrix must be equally distributed",A->rmap->n);
+  PetscAssertFalse(n != A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %" PetscInt_FMT " of ELEMENTAL matrix must be equally distributed",A->rmap->n);
 
   n = PETSC_DECIDE;
   ierr = PetscSplitOwnership(comm,&n,&A->cmap->N);CHKERRQ(ierr);
-  if (n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %" PetscInt_FMT " of ELEMENTAL matrix must be equally distributed",A->cmap->n);
+  PetscAssertFalse(n != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %" PetscInt_FMT " of ELEMENTAL matrix must be equally distributed",A->cmap->n);
 
   a->emat->Resize(A->rmap->N,A->cmap->N);
   El::Zero(*a->emat);
 
   ierr = MPI_Comm_size(A->rmap->comm,&rsize);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(A->cmap->comm,&csize);CHKERRMPI(ierr);
-  if (csize != rsize) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Cannot use row and column communicators of different sizes");
+  PetscAssertFalse(csize != rsize,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Cannot use row and column communicators of different sizes");
   a->commsize = rsize;
   a->mr[0] = A->rmap->N % rsize; if (!a->mr[0]) a->mr[0] = rsize;
   a->mr[1] = A->cmap->N % csize; if (!a->mr[1]) a->mr[1] = csize;
@@ -1412,7 +1412,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
     /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until El::Grid() is called */
     ierr = PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",El::mpi::Size(cxxcomm),&optv1,&flg1);CHKERRQ(ierr);
     if (flg1) {
-      if (El::mpi::Size(cxxcomm) % optv1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %" PetscInt_FMT,optv1,(PetscInt)El::mpi::Size(cxxcomm));
+      PetscAssertFalse(El::mpi::Size(cxxcomm) % optv1,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %" PetscInt_FMT,optv1,(PetscInt)El::mpi::Size(cxxcomm));
       commgrid->grid = new El::Grid(cxxcomm,optv1); /* use user-provided grid height */
     } else {
       commgrid->grid = new El::Grid(cxxcomm); /* use Elemental default grid sizes */

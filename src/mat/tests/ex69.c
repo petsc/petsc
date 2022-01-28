@@ -46,9 +46,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-l",&l,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-test",&test,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-use_shell",&use_shell,NULL);CHKERRQ(ierr);
-  if (k < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"k %" PetscInt_FMT " must be positive",k);
-  if (l < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be positive",l);
-  if (l > k) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be smaller or equal than k %" PetscInt_FMT,l,k);
+  PetscAssertFalse(k < 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"k %" PetscInt_FMT " must be positive",k);
+  PetscAssertFalse(l < 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be positive",l);
+  PetscAssertFalse(l > k,PETSC_COMM_WORLD,PETSC_ERR_USER,"l %" PetscInt_FMT " must be smaller or equal than k %" PetscInt_FMT,l,k);
 
   /* sparse matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ int main(int argc,char **argv)
 
   /* finished using B */
   ierr = MatDenseCUDAGetArray(B,&aa);CHKERRQ(ierr);
-  if (vv != aa-l*nloc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array");
+  PetscAssertFalse(vv != aa-l*nloc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array");
   ierr = MatDenseCUDARestoreArray(B,&aa);CHKERRQ(ierr);
   if (reset) {
     ierr = MatDenseCUDAResetArray(B);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ int main(int argc,char **argv)
 
   if (test == 1) {
     ierr = MatDenseCUDAGetArray(B,&aa);CHKERRQ(ierr);
-    if (aa) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a null pointer");
+    PetscAssertFalse(aa,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a null pointer");
     ierr = MatDenseCUDARestoreArray(B,&aa);CHKERRQ(ierr);
   }
 

@@ -112,8 +112,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
-  if (!ptap->AP_loc) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap->AP_loc,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatProductClear()");
 
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
 
@@ -152,7 +152,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
     AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa);
   }
   ierr = ISGlobalToLocalMappingApply(ptap->ltog,IS_GTOLM_DROP,api[AP_loc->rmap->n],apj,&nout,apj);CHKERRQ(ierr);
-  if (api[AP_loc->rmap->n] != nout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,api[AP_loc->rmap->n],nout);
+  PetscAssertFalse(api[AP_loc->rmap->n] != nout,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,api[AP_loc->rmap->n],nout);
 
   /* 3) C_loc = Rd*AP_loc, C_oth = Ro*AP_loc */
   /* Always use scalable version since we are in the MPI scalable version */
@@ -192,7 +192,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
     ierr = MatSetValues_MPIAIJ_CopyFromCSRFormat(C,c_seq->j,c_seq->i,c_seq->a);CHKERRQ(ierr);
   }
   ierr = ISGlobalToLocalMappingApply(ptap->ltog,IS_GTOLM_DROP,c_seq->i[C_loc->rmap->n],c_seq->j,&nout,c_seq->j);CHKERRQ(ierr);
-  if (c_seq->i[C_loc->rmap->n] != nout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,c_seq->i[C_loc->rmap->n],nout);
+  PetscAssertFalse(c_seq->i[C_loc->rmap->n] != nout,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,c_seq->i[C_loc->rmap->n],nout);
 
   /* Co -> C, off-processor part */
   cm = C_oth->rmap->N;
@@ -212,7 +212,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   ptap->reuse = MAT_REUSE_MATRIX;
 
   ierr = ISGlobalToLocalMappingApply(ptap->ltog,IS_GTOLM_DROP,c_seq->i[C_oth->rmap->n],c_seq->j,&nout,c_seq->j);CHKERRQ(ierr);
-  if (c_seq->i[C_oth->rmap->n] != nout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,c_seq->i[C_loc->rmap->n],nout);
+  PetscAssertFalse(c_seq->i[C_oth->rmap->n] != nout,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,c_seq->i[C_loc->rmap->n],nout);
   PetscFunctionReturn(0);
 }
 
@@ -250,7 +250,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   PetscFunctionBegin;
   MatCheckProduct(Cmpi,4);
-  if (Cmpi->product->data) SETERRQ(PetscObjectComm((PetscObject)Cmpi),PETSC_ERR_PLIB,"Product data not empty");
+  PetscAssertFalse(Cmpi->product->data,PetscObjectComm((PetscObject)Cmpi),PETSC_ERR_PLIB,"Product data not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
@@ -570,9 +570,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
 
   nout = 0;
   ierr = ISGlobalToLocalMappingApply(ptap->ltog,IS_GTOLM_DROP,c_oth->i[ptap->C_oth->rmap->n],c_oth->j,&nout,c_oth->j);CHKERRQ(ierr);
-  if (c_oth->i[ptap->C_oth->rmap->n] != nout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,c_oth->i[ptap->C_oth->rmap->n],nout);
+  PetscAssertFalse(c_oth->i[ptap->C_oth->rmap->n] != nout,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,c_oth->i[ptap->C_oth->rmap->n],nout);
   ierr = ISGlobalToLocalMappingApply(ptap->ltog,IS_GTOLM_DROP,c_loc->i[ptap->C_loc->rmap->n],c_loc->j,&nout,c_loc->j);CHKERRQ(ierr);
-  if (c_loc->i[ptap->C_loc->rmap->n] != nout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,c_loc->i[ptap->C_loc->rmap->n],nout);
+  PetscAssertFalse(c_loc->i[ptap->C_loc->rmap->n] != nout,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect mapping %" PetscInt_FMT " != %" PetscInt_FMT,c_loc->i[ptap->C_loc->rmap->n],nout);
 
   /* attach the supporting struct to Cmpi for reuse */
   Cmpi->product->data    = ptap;
@@ -736,8 +736,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof,
   PetscFunctionBegin;
   MatCheckProduct(C,4);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
-  if (!ptap->P_oth) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap->P_oth,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatProductClear()");
 
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
 
@@ -900,8 +900,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,PetscI
   PetscFunctionBegin;
   MatCheckProduct(C,4);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
-  if (!ptap->P_oth) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap->P_oth,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatProductClear()");
 
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
 
@@ -1055,7 +1055,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce(Mat A,Mat P,PetscInt dof
 
   PetscFunctionBegin;
   MatCheckProduct(Cmpi,5);
-  if (Cmpi->product->data) SETERRQ(PetscObjectComm((PetscObject)Cmpi),PETSC_ERR_PLIB,"Product data not empty");
+  PetscAssertFalse(Cmpi->product->data,PetscObjectComm((PetscObject)Cmpi),PETSC_ERR_PLIB,"Product data not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
 
   /* Create symbolic parallel matrix Cmpi */
@@ -1329,7 +1329,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A,Mat P,Petsc
 
   PetscFunctionBegin;
   MatCheckProduct(Cmpi,5);
-  if (Cmpi->product->data) SETERRQ(PetscObjectComm((PetscObject)Cmpi),PETSC_ERR_PLIB,"Product data not empty");
+  PetscAssertFalse(Cmpi->product->data,PetscObjectComm((PetscObject)Cmpi),PETSC_ERR_PLIB,"Product data not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
 
   /* Create symbolic parallel matrix Cmpi */
@@ -1600,7 +1600,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat Cmpi
 
   PetscFunctionBegin;
   MatCheckProduct(Cmpi,4);
-  if (Cmpi->product->data) SETERRQ(PetscObjectComm((PetscObject)Cmpi),PETSC_ERR_PLIB,"Product data not empty");
+  PetscAssertFalse(Cmpi->product->data,PetscObjectComm((PetscObject)Cmpi),PETSC_ERR_PLIB,"Product data not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
@@ -1949,8 +1949,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
-  if (!ptap->AP_loc) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap->AP_loc,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be reused. Do not call MatProductClear()");
 
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
   /* 1) get R = Pd^T,Ro = Po^T */

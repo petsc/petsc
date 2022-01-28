@@ -78,7 +78,7 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
   }
 #endif
   ierr = PetscFunctionListFind(VecList,method,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
+  PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
   if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
     vec->ops->destroy = NULL;

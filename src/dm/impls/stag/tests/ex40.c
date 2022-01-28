@@ -106,7 +106,7 @@ PetscErrorCode FormJacobian1DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
 
   ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (Amat != Pmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscAssertFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -123,9 +123,9 @@ PetscErrorCode FormFunction1D(SNES snes,Vec x,Vec f,void *ctx)
   (void) ctx;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (dim != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
+  PetscAssertFalse(dim != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
   ierr = DMStagGetStencilType(dm,&stencil_type);CHKERRQ(ierr);
-  if (stencil_type != DMSTAG_STENCIL_STAR && stencil_type != DMSTAG_STENCIL_BOX) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only star and box stencils supported");
+  PetscAssertFalse(stencil_type != DMSTAG_STENCIL_STAR && stencil_type != DMSTAG_STENCIL_BOX,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only star and box stencils supported");
   ierr = DMStagGetStencilWidth(dm,&stencil_width);CHKERRQ(ierr);
 
   ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
   (void) ctx;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (dim != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
+  PetscAssertFalse(dim != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DM dimension must be 1");
   ierr = DMStagGetStencilWidth(dm,&stencil_width);CHKERRQ(ierr);
 
   ierr = DMGetLocalVector(dm,&x_local);CHKERRQ(ierr);
@@ -342,7 +342,7 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
   ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (Amat != Pmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscAssertFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -502,7 +502,7 @@ PetscErrorCode FormJacobian2DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
 
   ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (Amat != Pmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscAssertFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -830,7 +830,7 @@ PetscErrorCode FormJacobian2D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
   ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (Amat != Pmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscAssertFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -1121,7 +1121,7 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes,Vec x,Mat Amat,Mat Pmat,void *
   ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (Amat != Pmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscAssertFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 
@@ -1664,7 +1664,7 @@ PetscErrorCode FormJacobian3D(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx)
   ierr = DMRestoreLocalVector(dm,&x_local);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (Amat != Pmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
+  PetscAssertFalse(Amat != Pmat,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented for distinct Amat and Pmat");
   PetscFunctionReturn(0);
 }
 

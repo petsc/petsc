@@ -163,12 +163,12 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       err = METIS_SetDefaultOptions(options); /* initialize all defaults */
       options[METIS_OPTION_DBGLVL] = pm->debugFlag;
       options[METIS_OPTION_SEED]   = pm->randomSeed;
-      if (err != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
+      PetscAssertFalse(err != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
       if (metis_ptype == 1) {
         PetscStackPush("METIS_PartGraphRecursive");
         err = METIS_PartGraphRecursive(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
         PetscStackPop;
-        if (err != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphRecursive()");
+        PetscAssertFalse(err != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphRecursive()");
       } else {
         /*
          It would be nice to activate the two options below, but they would need some actual testing.
@@ -180,7 +180,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
         PetscStackPush("METIS_PartGraphKway");
         err = METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
         PetscStackPop;
-        if (err != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
+        PetscAssertFalse(err != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
       }
     }
   } else {
@@ -206,7 +206,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       PetscStackPush("ParMETIS_V3_PartKway");
       err = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &pcomm);
       PetscStackPop;
-      if (err != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", err);
+      PetscAssertFalse(err != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", err);
     }
     if (hasempty) {
       ierr = MPI_Comm_free(&pcomm);CHKERRMPI(ierr);
@@ -221,7 +221,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       if (assignment[v] == p) points[i++] = v;
     }
   }
-  if (i != nvtxs) SETERRQ(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
+  PetscAssertFalse(i != nvtxs,comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
   ierr = PetscFree(vwgt);CHKERRQ(ierr);

@@ -132,7 +132,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
 
   /* look up the split */
   ierr = TSRHSSplitGetRHSSplit(ts,splitname,&isplit);CHKERRQ(ierr);
-  if (!isplit) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one",splitname);
+  PetscAssertFalse(!isplit,PETSC_COMM_SELF,PETSC_ERR_USER,"The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one",splitname);
 
   if (!r && ts->vec_sol) {
     ierr = VecGetSubVector(ts->vec_sol,isplit->is,&subvec);CHKERRQ(ierr);

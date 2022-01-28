@@ -37,9 +37,9 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-symmetric",&symmetric,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  if (size > 1 && m < 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 4 for parallel runs");
-  if (size == 1 && m < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 2 for uniprocessor runs");
-  if (n < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be larger or equal 2");
+  PetscAssertFalse(size > 1 && m < 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 4 for parallel runs");
+  PetscAssertFalse(size == 1 && m < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 2 for uniprocessor runs");
+  PetscAssertFalse(n < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be larger or equal 2");
   if (symmetric) m = n = PetscMax(m,n);
 
   /* create a MATIS matrix */
@@ -700,7 +700,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
 
     ierr = MatMultEqual(A,B,3,&ok);CHKERRQ(ierr);
     ierr = MatMultTransposeEqual(A,B,3,&okt);CHKERRQ(ierr);
-    if (!ok || !okt) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d",func,ok,okt);
+    PetscAssertFalse(!ok || !okt,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d",func,ok,okt);
   }
   PetscFunctionReturn(0);
 }
@@ -779,7 +779,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   if (squaretest && haszerorows) {
     ierr = VecAXPY(b2,-1.,b);CHKERRQ(ierr);
     ierr = VecNorm(b2,NORM_INFINITY,&error);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",(double)error,diagstr);
+    PetscAssertFalse(error > PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",(double)error,diagstr);
   }
 
   /* test MatMissingDiagonal */

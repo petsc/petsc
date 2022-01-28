@@ -11,9 +11,9 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,2);
 
-  if (dd->M < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
-  if (dd->N < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
-  if (dd->P < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
+  PetscAssertFalse(dd->M < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
+  PetscAssertFalse(dd->N < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
+  PetscAssertFalse(dd->P < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
 
   ierr = PetscOptionsHead(PetscOptionsObject,"DMDA Options");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL,1);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
         indices[cnt++] = dof*i + fields[j];
       }
     }
-    if (cnt != da->Nlocal*numFields/dof) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %D does not equal expected value %D", cnt, da->Nlocal*numFields/dof);
+    PetscAssertFalse(cnt != da->Nlocal*numFields/dof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %D does not equal expected value %D", cnt, da->Nlocal*numFields/dof);
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

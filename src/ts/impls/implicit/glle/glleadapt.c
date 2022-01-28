@@ -126,7 +126,7 @@ PetscErrorCode  TSGLLEAdaptSetType(TSGLLEAdapt adapt,TSGLLEAdaptType type)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListFind(TSGLLEAdaptList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLEAdapt type \"%s\" given",type);
+  PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLEAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)adapt,type);CHKERRQ(ierr);

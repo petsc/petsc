@@ -84,7 +84,7 @@ int main(int argc,char **args)
     ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
     ierr = VecAXPY(d_vcl,-1.0,r_vcl);CHKERRQ(ierr);
     ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
-    if (dnorm > tol) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Sequential CPU and MPI ViennaCL vector results incompatible with inf norm greater than tolerance of %g",tol);
+    PetscAssertFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Sequential CPU and MPI ViennaCL vector results incompatible with inf norm greater than tolerance of %g",tol);
 
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ int main(int argc,char **args)
     ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
     ierr = VecAXPY(d_vcl,-1.0,r_vcl);CHKERRQ(ierr);
     ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
-    if (dnorm > tol) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
+    PetscAssertFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -188,7 +188,7 @@ int main(int argc,char **args)
     ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
     ierr = VecAXPY(d_vcl,-1.0,r_vcl);CHKERRQ(ierr);
     ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
-    if (dnorm > tol) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
+    PetscAssertFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ int main(int argc,char **args)
     ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
     ierr = VecAXPY(d_vcl,-1.0,r_vcl);CHKERRQ(ierr);
     ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
-    if (dnorm > tol) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
+    PetscAssertFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = VecDestroy(&r);CHKERRQ(ierr);

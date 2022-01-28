@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   /* Determine files from which we read the linear systems. */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file. */

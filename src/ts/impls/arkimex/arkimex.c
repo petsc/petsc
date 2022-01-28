@@ -779,7 +779,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     if (PetscDefined(USE_DEBUG)) {
       PetscBool id = PETSC_FALSE;
       ierr = TSARKIMEXTestMassIdentity(ts,&id);CHKERRQ(ierr);
-      if (!id) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"This scheme requires an identity mass matrix, however the TSIFunction you provide does not utilize an identity mass matrix");
+      PetscAssertFalse(!id,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"This scheme requires an identity mass matrix, however the TSIFunction you provide does not utilize an identity mass matrix");
     }
     ierr = TSClone(ts,&ts_start);CHKERRQ(ierr);
     ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
@@ -820,7 +820,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ark->stage_time = t + h*ct[i];
       ierr = TSPreStage(ts,ark->stage_time);CHKERRQ(ierr);
       if (At[i*s+i] == 0) { /* This stage is explicit */
-        if (i!=0 && ts->equation_type >= TS_EQ_IMPLICIT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Explicit stages other than the first one are not supported for implicit problems");
+        PetscAssertFalse(i!=0 && ts->equation_type >= TS_EQ_IMPLICIT,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Explicit stages other than the first one are not supported for implicit problems");
         ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Y[i],i,w,YdotI);CHKERRQ(ierr);
@@ -857,7 +857,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       }
       if (ts->equation_type >= TS_EQ_IMPLICIT) {
         if (i==0 && tab->explicit_first_stage) {
-          if (!tab->stiffly_accurate) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s is not stiffly accurate and therefore explicit-first stage methods cannot be used if the equation is implicit because the slope cannot be evaluated",ark->tableau->name);
+          PetscAssertFalse(!tab->stiffly_accurate,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s is not stiffly accurate and therefore explicit-first stage methods cannot be used if the equation is implicit because the slope cannot be evaluated",ark->tableau->name);
           ierr = VecCopy(Ydot0,YdotI[0]);CHKERRQ(ierr);                                      /* YdotI = YdotI(tn-1) */
         } else {
           ierr = VecAXPBYPCZ(YdotI[i],-ark->scoeff/h,ark->scoeff/h,0,Z,Y[i]);CHKERRQ(ierr);  /* YdotI = shift*(X-Z) */
@@ -918,7 +918,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!Bt || !B) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
+  PetscAssertFalse(!Bt || !B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
   switch (ark->status) {
   case TS_STEP_INCOMPLETE:
   case TS_STEP_PENDING:
@@ -956,7 +956,7 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts,PetscReal c,Vec X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!Bt || !B) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
+  PetscAssertFalse(!Bt || !B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
   ierr = PetscCalloc2(s,&bt,s,&b);CHKERRQ(ierr);
   h = ts->time_step;
   h_prev = ts->ptime - ts->ptime_prev;
@@ -967,7 +967,7 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts,PetscReal c,Vec X)
       b[i]  += h * B[i*pinterp+j] * tt;
     }
   }
-  if (!ark->Y_prev) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Stages from previous step have not been stored");
+  PetscAssertFalse(!ark->Y_prev,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Stages from previous step have not been stored");
   ierr = VecCopy(ark->Y_prev[0],X);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,bt,ark->YdotI_prev);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,b,ark->YdotRHS_prev);CHKERRQ(ierr);

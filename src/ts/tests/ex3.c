@@ -56,7 +56,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
+  PetscAssertFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
   /* initializations */
   zInitial  = 0.0;
@@ -155,7 +155,7 @@ int main(int argc,char **argv)
     PetscBool sundialstype=PETSC_FALSE;
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundialstype);CHKERRQ(ierr);
-    if (sundialstype && appctx.useAlhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use Alhs formulation for TSSUNDIALS type");
+    PetscAssertFalse(sundialstype && appctx.useAlhs,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use Alhs formulation for TSSUNDIALS type");
   }
 #endif
   /* Sets the initial solution */

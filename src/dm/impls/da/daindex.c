@@ -78,13 +78,13 @@ PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
-  if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
+  PetscAssertFalse(!isdmda,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
   /* now we can safely dereference */
   dd = (DM_DA*)da->data;
   if (dd->ao) { /* check if the already computed AO has the same type as requested */
     PetscBool match;
     ierr = PetscObjectTypeCompare((PetscObject)dd->ao,aotype,&match);CHKERRQ(ierr);
-    if (!match) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot change AO type");
+    PetscAssertFalse(!match,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot change AO type");
     PetscFunctionReturn(0);
   }
   ierr = PetscFree(dd->aotype);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(ao,2);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
-  if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
+  PetscAssertFalse(!isdmda,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
   /* now we can safely dereference */
   dd = (DM_DA*)da->data;
 

@@ -93,7 +93,7 @@ static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
 
   PetscFunctionBegin;
   ierr = VecCopy(ctx->initialsolution,U);CHKERRQ(ierr);
-  if (t > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Solution not given");
+  PetscAssertFalse(t > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Solution not given");
   PetscFunctionReturn(0);
 }
 
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  PetscAssertFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors

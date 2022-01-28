@@ -641,8 +641,8 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
       RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
       RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
       ratio = PetscRealPart(D_R/D_R_bc);
-      if (ratio > 1.) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Limited diffusivity is greater than unlimited");
-      if (ratio < 1e-3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Heavily limited diffusivity");
+      PetscAssertFalse(ratio > 1.,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Limited diffusivity is greater than unlimited");
+      PetscAssertFalse(ratio < 1e-3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Heavily limited diffusivity");
       f[0].E += -ratio*0.5*(rd->Eapplied - n.E);
     } break;
     case BC_NEUMANN:

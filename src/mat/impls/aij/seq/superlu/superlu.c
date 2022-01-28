@@ -200,7 +200,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %" PetscInt_FMT "\n",info);
     }
-  } else if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %" PetscInt_FMT ", the %" PetscInt_FMT "-th argument in gssvx() had an illegal value", info,-info);
+  } else PetscAssertFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %" PetscInt_FMT ", the %" PetscInt_FMT "-th argument in gssvx() had an illegal value", info,-info);
 
   if (lu->options.PrintStat) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve__SuperLU():\n");
@@ -447,9 +447,9 @@ PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
   lu->options.Trans = TRANS;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_SuperLU() is not implemented yet");
   PetscFunctionReturn(0);

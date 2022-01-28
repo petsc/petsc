@@ -50,7 +50,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     ierr   = MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
-    if (!isAIJ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
+    PetscAssertFalse(!isAIJ,PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA = (Mat_SeqAIJ*)Gmat->data;
   }
   ierr = MatGetOwnershipRange(Gmat,&my0,&Iend);CHKERRQ(ierr);

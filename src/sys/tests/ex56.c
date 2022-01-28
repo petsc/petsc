@@ -15,21 +15,21 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "PETSc has %s? %s\n", pkg, PetscBools[has]);CHKERRQ(ierr);
   ierr = PetscStrcmp(pkg, "hdf5", &flg);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
-  if (flg && !has) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says HDF5 is not configured but PETSC_HAVE_HDF5 is defined");
+  PetscAssertFalse(flg && !has,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says HDF5 is not configured but PETSC_HAVE_HDF5 is defined");
 #else
-  if (flg && has)  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says HDF5 is configured but PETSC_HAVE_HDF5 is undefined");
+  PetscAssertFalse(flg && has,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says HDF5 is configured but PETSC_HAVE_HDF5 is undefined");
 #endif
   ierr = PetscStrcmp(pkg, "parmetis", &flg);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
-  if (flg && !has) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says PARMETIS is not configured but PETSC_HAVE_PARMETIS is defined");
+  PetscAssertFalse(flg && !has,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says PARMETIS is not configured but PETSC_HAVE_PARMETIS is defined");
 #else
-  if (flg && has)  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says PARMETIS is configured but PETSC_HAVE_PARMETIS is undefined");
+  PetscAssertFalse(flg && has,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says PARMETIS is configured but PETSC_HAVE_PARMETIS is undefined");
 #endif
   ierr = PetscStrcmp(pkg, "yaml", &flg);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_YAML)
-  if (flg && !has) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says YAML is not configured but PETSC_HAVE_YAML is defined");
+  PetscAssertFalse(flg && !has,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says YAML is not configured but PETSC_HAVE_YAML is defined");
 #else
-  if (flg && has)  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says YAML is configured but PETSC_HAVE_YAML is undefined");
+  PetscAssertFalse(flg && has,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says YAML is configured but PETSC_HAVE_YAML is undefined");
 #endif
   ierr = PetscFinalize();
   return ierr;

@@ -189,7 +189,7 @@ PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao,Vec X,Mat H,Mat B,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (B && B != H) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Preconditioning Hessian matrix");
+  PetscAssertFalse(B && B != H,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Preconditioning Hessian matrix");
   ierr = MatAssembled(H, &assembled);CHKERRQ(ierr);
   if (!assembled) {
     ierr = VecGetSize(X,&N);CHKERRQ(ierr);

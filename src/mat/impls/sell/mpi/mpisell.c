@@ -50,7 +50,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
   PetscInt       n=sell->B->cmap->n,i;
 
   PetscFunctionBegin;
-  if (!sell->garray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPISELL Matrix was assembled but is missing garray");
+  PetscAssertFalse(!sell->garray,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPISELL Matrix was assembled but is missing garray");
 #if defined(PETSC_USE_CTABLE)
   ierr = PetscTableCreate(n,mat->cmap->N+1,&sell->colmap);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -84,7 +84,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     }  \
     if (value == 0.0 && ignorezeroentries) {low1 = 0; high1 = nrow1;goto a_noinsert;} \
     if (nonew == 1) {low1 = 0; high1 = nrow1; goto a_noinsert;} \
-    if (nonew == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
+    PetscAssertFalse(nonew == -1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
     MatSeqXSELLReallocateSELL(A,am,1,nrow1,a->sliidx,row/8,row,col,a->colidx,a->val,cp1,vp1,nonew,MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii=nrow1-1; ii>=_i; ii--) { \
@@ -118,7 +118,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
     } \
     if (value == 0.0 && ignorezeroentries) {low2 = 0; high2 = nrow2; goto b_noinsert;} \
     if (nonew == 1) {low2 = 0; high2 = nrow2; goto b_noinsert;} \
-    if (nonew == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
+    PetscAssertFalse(nonew == -1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
     MatSeqXSELLReallocateSELL(B,bm,1,nrow2,b->sliidx,row/8,row,col,b->colidx,b->val,cp2,vp2,nonew,MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii=nrow2-1; ii>=_i; ii--) { \
@@ -153,7 +153,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat,PetscInt m,const PetscInt im[],Petsc
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-    if (PetscUnlikelyDebug(im[i] >= mat->rmap->N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,im[i],mat->rmap->N-1);
+    PetscAssertFalseDebug(im[i] >= mat->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,im[i],mat->rmap->N-1);
     if (im[i] >= rstart && im[i] < rend) {
       row      = im[i] - rstart;
       lastcol1 = -1;
@@ -179,7 +179,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat,PetscInt m,const PetscInt im[],Petsc
           col   = in[j] - cstart;
           MatSetValue_SeqSELL_Private(A,row,col,value,addv,im[i],in[j],cp1,vp1,lastcol1,low1,high1); /* set one value */
         } else if (in[j] < 0) continue;
-        else if (PetscUnlikelyDebug(in[j] >= mat->cmap->N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
+        else PetscAssertFalseDebug(in[j] >= mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[j],mat->cmap->N-1);
         else {
           if (mat->was_assembled) {
             if (!sell->colmap) {
@@ -203,13 +203,13 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat,PetscInt m,const PetscInt im[],Petsc
               nrow2  = b->rlen[row];
               low2   = 0;
               high2  = nrow2;
-            } else if (col < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+            } else PetscAssertFalse(col < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
           } else col = in[j];
           MatSetValue_SeqSELL_Private(B,row,col,value,addv,im[i],in[j],cp2,vp2,lastcol2,low2,high2); /* set one value */
         }
       }
     } else {
-      if (mat->nooffprocentries) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
+      PetscAssertFalse(mat->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!sell->donotstash) {
         mat->assembled = PETSC_FALSE;
         if (roworiented) {
@@ -233,12 +233,12 @@ PetscErrorCode MatGetValues_MPISELL(Mat mat,PetscInt m,const PetscInt idxm[],Pet
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (idxm[i] < 0) continue; /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %" PetscInt_FMT,idxm[i]);*/
-    if (idxm[i] >= mat->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,idxm[i],mat->rmap->N-1);
+    PetscAssertFalse(idxm[i] >= mat->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,idxm[i],mat->rmap->N-1);
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
         if (idxn[j] < 0) continue; /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %" PetscInt_FMT,idxn[j]); */
-        if (idxn[j] >= mat->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,idxn[j],mat->cmap->N-1);
+        PetscAssertFalse(idxn[j] >= mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,idxn[j],mat->cmap->N-1);
         if (idxn[j] >= cstart && idxn[j] < cend) {
           col  = idxn[j] - cstart;
           ierr = MatGetValues(sell->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
@@ -315,7 +315,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat,MatAssemblyType mode)
   */
   if (!((Mat_SeqSELL*)sell->B->data)->nonew) {
     ierr = MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
-    if (mat->was_assembled && !other_disassembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDisAssemble not implemented yet");
+    PetscAssertFalse(mat->was_assembled && !other_disassembled,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDisAssemble not implemented yet");
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPISELL(mat);CHKERRQ(ierr);
@@ -356,7 +356,7 @@ PetscErrorCode MatMult_MPISELL(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  if (nt != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",A->cmap->n,nt);
+  PetscAssertFalse(nt != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",A->cmap->n,nt);
   ierr = VecScatterBegin(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -469,8 +469,8 @@ PetscErrorCode MatGetDiagonal_MPISELL(Mat A,Vec v)
   Mat_MPISELL    *a=(Mat_MPISELL*)A->data;
 
   PetscFunctionBegin;
-  if (A->rmap->N != A->cmap->N) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block");
-  if (A->rmap->rstart != A->cmap->rstart || A->rmap->rend != A->cmap->rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"row partition must equal col partition");
+  PetscAssertFalse(A->rmap->N != A->cmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block");
+  PetscAssertFalse(A->rmap->rstart != A->cmap->rstart || A->rmap->rend != A->cmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"row partition must equal col partition");
   ierr = MatGetDiagonal(a->A,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -806,13 +806,13 @@ PetscErrorCode MatDiagonalScale_MPISELL(Mat mat,Vec ll,Vec rr)
   ierr = MatGetLocalSize(mat,&s2,&s3);CHKERRQ(ierr);
   if (rr) {
     ierr = VecGetLocalSize(rr,&s1);CHKERRQ(ierr);
-    if (s1!=s3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"right vector non-conforming local size");
+    PetscAssertFalse(s1!=s3,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"right vector non-conforming local size");
     /* Overlap communication with computation. */
     ierr = VecScatterBegin(sell->Mvctx,rr,sell->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
   if (ll) {
     ierr = VecGetLocalSize(ll,&s1);CHKERRQ(ierr);
-    if (s1!=s2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"left vector non-conforming local size");
+    PetscAssertFalse(s1!=s2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"left vector non-conforming local size");
     ierr = (*b->ops->diagonalscale)(b,ll,NULL);CHKERRQ(ierr);
   }
   /* scale  the diagonal block */
@@ -983,7 +983,7 @@ PetscErrorCode MatMissingDiagonal_MPISELL(Mat A,PetscBool  *missing,PetscInt *d)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only works for square matrices");
+  PetscAssertFalse(A->rmap->n != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only works for square matrices");
   ierr = MatMissingDiagonal(a->A,missing,d);CHKERRQ(ierr);
   if (d) {
     PetscInt rstart;
@@ -1603,7 +1603,7 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPISELL,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPISELL matrix as input");
+  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPISELL matrix as input");
   if (Ad)     *Ad     = a->A;
   if (Ao)     *Ao     = a->B;
   if (colmap) *colmap = a->garray;
@@ -1639,7 +1639,7 @@ PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPISELL,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPISELL matrix as input");
+  PetscAssertFalse(!match,PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPISELL matrix as input");
   ierr = PetscLogEventBegin(MAT_Getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
   if (!row) {
     start = A->rmap->rstart; end = A->rmap->rend;
@@ -1692,7 +1692,7 @@ PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Ma
   Mat_MPIAIJ     *b;
 
   PetscFunctionBegin;
-  if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
+  PetscAssertFalse(!A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
 
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
@@ -1737,7 +1737,7 @@ PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A,MatType newtype,MatReuse reuse,Ma
   Mat_MPISELL    *b;
 
   PetscFunctionBegin;
-  if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
+  PetscAssertFalse(!A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
 
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;

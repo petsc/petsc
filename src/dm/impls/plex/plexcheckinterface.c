@@ -140,7 +140,7 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
   PetscFunctionBegin;
   ierr = PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSFGetRootRanks(imsf, &niranks, NULL, &iroffset, &irmine, NULL);CHKERRQ(ierr);
-  if (PetscUnlikely(nileaves != iroffset[niranks])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nileaves != iroffset[niranks])");
+  PetscAssertFalse(nileaves != iroffset[niranks],PETSC_COMM_SELF,PETSC_ERR_PLIB,"nileaves != iroffset[niranks])");
   ierr = PetscSFComputeDegreeBegin(sf, &degree);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(sf, &degree);CHKERRQ(ierr);
   ierr = PetscSFComputeMultiRootOriginalNumbering(sf, degree, NULL, &mRootsOrigNumbering);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   if (!sf) PetscFunctionReturn(0);
   ierr = PetscSFGetGraph(sf, &nroots, &nleaves, &mine, &remote);CHKERRQ(ierr);
   if (nroots < 0) PetscFunctionReturn(0);
-  if (!dm->coordinates && !dm->coordinatesLocal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
+  PetscAssertFalse(!dm->coordinates && !dm->coordinatesLocal,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM coordinates must be set");
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote);CHKERRQ(ierr);
 
@@ -272,7 +272,7 @@ PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
   /* Compare recCoordinatesPerRank with refCoordinatesPerRank */
   for (r=0; r<niranks; r++) {
     ierr = VecEqual(refCoordinatesPerRank[r], recCoordinatesPerRank[r], &same);CHKERRQ(ierr);
-    if (!same) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "interface cones do not conform for remote rank %d", iranks[r]);
+    PetscAssertFalse(!same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interface cones do not conform for remote rank %d", iranks[r]);
   }
 
   /* destroy sent stuff */

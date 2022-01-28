@@ -65,14 +65,14 @@ int main(int argc,char **argv)
   ierr = MatCreateTranspose(A,&C);CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
   ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
+  PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   if (!Aiselemental) {
     ierr = MatTranspose(B,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatMultEqual(C,B,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"C*x != B*x");
+    PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"C*x != B*x");
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   if (size == 1 && !Aiselemental) {
     ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&B);CHKERRQ(ierr);
     ierr = MatMatMultEqual(C,A,B,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"B != C*A for matrix type transpose and seqdense");
+    PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B != C*A for matrix type transpose and seqdense");
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -88,13 +88,13 @@ int main(int argc,char **argv)
   /* Test MatMatMult() */
   if (Test_MatMatMult) {
 #if !defined(PETSC_HAVE_ELEMENTAL)
-    if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This test requires ELEMENTAL");
+    PetscAssertFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This test requires ELEMENTAL");
 #endif
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
     ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
     ierr = MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatMatMultEqual(B,A,C,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"B*A*x != C*x");
+    PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B*A*x != C*x");
 
     /* Test MatDuplicate for matrix product */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
     ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A^T*A */
     ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatTransposeMatMultEqual(A,A,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
+    PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
 
     /* Test MatDuplicate for matrix product */
     ierr = MatDuplicate(D,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
     ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
     ierr = MatTransposeMatMult(A,B,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatTransposeMatMultEqual(A,B,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*B*x");
+    PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*B*x");
 
     ierr = MatDestroy(&D);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -166,11 +166,11 @@ int main(int argc,char **argv)
 
     ierr = MatNorm(C, NORM_FROBENIUS, &diff);CHKERRQ(ierr);
     ierr = MatNorm(D, NORM_FROBENIUS, &scale);CHKERRQ(ierr);
-    if (diff > PETSC_SMALL * scale) SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatMatTransposeMult() differs between MAT_INITIAL_MATRIX and MAT_REUSE_MATRIX");
+    PetscAssertFalse(diff > PETSC_SMALL * scale,PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatMatTransposeMult() differs between MAT_INITIAL_MATRIX and MAT_REUSE_MATRIX");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     ierr = MatMatTransposeMultEqual(A,B,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
+    PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
 

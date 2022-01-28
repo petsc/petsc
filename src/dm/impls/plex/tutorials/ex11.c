@@ -87,10 +87,10 @@ static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o)
     if (vertex < vStart || vertex >= vEnd) continue;
     closure[Nv++] = vertex;
   }
-  if (Nv != DMPolytopeTypeGetNumVertices(ct)) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cell %D has %D vertices != %D vertices in a %s", cell, Nv, DMPolytopeTypeGetNumVertices(ct), DMPolytopeTypes[ct]);
+  PetscAssertFalse(Nv != DMPolytopeTypeGetNumVertices(ct),comm, PETSC_ERR_ARG_WRONG, "Cell %D has %D vertices != %D vertices in a %s", cell, Nv, DMPolytopeTypeGetNumVertices(ct), DMPolytopeTypes[ct]);
   arrVerts = DMPolytopeTypeGetVertexArrangment(ct, o);
   for (v = 0; v < Nv; ++v) {
-    if (closure[v] != arrVerts[v]+vStart) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cell %D vertex[%D]: %D should be %D for arrangement %D", cell, v, closure[v], arrVerts[v]+vStart, o);
+    PetscAssertFalse(closure[v] != arrVerts[v]+vStart,comm, PETSC_ERR_ARG_WRONG, "Cell %D vertex[%D]: %D should be %D for arrangement %D", cell, v, closure[v], arrVerts[v]+vStart, o);
   }
   ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -199,7 +199,7 @@ static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user)
       ierr = DMPlexGetCone(dm1, 0, &cone);CHKERRQ(ierr);
       ierr = DMPolytopeGetOrientation(ct, refcone, cone, &o4);CHKERRQ(ierr);
       if (user->printTable) {ierr = PetscPrintf(PETSC_COMM_SELF, "%D, ", o4);CHKERRQ(ierr);}
-      if (o3 != o4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cayley table error for %s: %D * %D = %D != %D", DMPolytopeTypes[ct], o1, o2, o3, o4);
+      PetscAssertFalse(o3 != o4,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cayley table error for %s: %D * %D = %D != %D", DMPolytopeTypes[ct], o1, o2, o3, o4);
       ierr = DMDestroy(&dm1);CHKERRQ(ierr);
       ierr = DMDestroy(&dm2);CHKERRQ(ierr);
     }
@@ -245,7 +245,7 @@ static PetscErrorCode VerifyInverse(DM dm, AppCtx *user)
     ierr = DMPlexGetCone(dm1, 0, &cone);CHKERRQ(ierr);
     ierr = DMPolytopeGetOrientation(ct, refcone, cone, &o2);CHKERRQ(ierr);
     if (user->printTable) {ierr = PetscPrintf(PETSC_COMM_SELF, "%D, ", oi);CHKERRQ(ierr);}
-    if (o2 != 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inverse error for %s: %D * %D = %D != 0", DMPolytopeTypes[ct], o, oi, o2);
+    PetscAssertFalse(o2 != 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inverse error for %s: %D * %D = %D != 0", DMPolytopeTypes[ct], o, oi, o2);
     ierr = DMDestroy(&dm1);CHKERRQ(ierr);
     ierr = DMDestroy(&dm2);CHKERRQ(ierr);
   }
@@ -330,13 +330,13 @@ static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCt
           /* The last four interior faces do not map into themselves under the group action */
           if (r > 3 && ctNew == DM_POLYTOPE_TETRAHEDRON) {restore = PETSC_FALSE; ro = r; oo = 0;}
         }
-        if (restore) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to find matching %s %D orientation for cell orientation %D", DMPolytopeTypes[ctNew], r, o);
+        PetscAssertFalse(restore,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to find matching %s %D orientation for cell orientation %D", DMPolytopeTypes[ctNew], r, o);
       }
       if (user->printTable) {ierr = PetscPrintf(PETSC_COMM_SELF, "%D, %D, ", ro, oo);CHKERRQ(ierr);}
       ierr = DMPlexTransformGetSubcellOrientation(tr, ct, p, oi, ctNew, r, 0, &pr, &fo);CHKERRQ(ierr);
       if (!user->printTable) {
-        if (pr != ro) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Choose wrong replica %D != %D", pr, ro);
-        if (fo != oo)  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Choose wrong orientation %D != %D", fo, oo);
+        PetscAssertFalse(pr != ro,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Choose wrong replica %D != %D", pr, ro);
+        PetscAssertFalse(fo != oo,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Choose wrong orientation %D != %D", fo, oo);
       }
       ierr = DMPlexTransformRestoreCone(tr, pNew, &qcone, &qornt);CHKERRQ(ierr);
       if (restore) {ierr = DMPlexTransformRestoreCone(otr, pNew, &oqcone, &oqornt);CHKERRQ(ierr);}

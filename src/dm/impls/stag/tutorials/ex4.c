@@ -115,7 +115,7 @@ int main(int argc,char **argv)
   {
     KSPConvergedReason reason;
     ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-    if (reason < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Linear solve failed");
+    PetscAssertFalse(reason < 0,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Linear solve failed");
   }
 
   /* Dump solution by converting to DMDAs and dumping */

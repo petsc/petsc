@@ -263,7 +263,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
-  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot log negative flops");
+  PetscAssertFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot log negative flops");
 #endif
   petsc_TotalFlops += PETSC_FLOPS_PER_OP*n;
   PetscFunctionReturn(0);
@@ -669,7 +669,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
 PETSC_STATIC_INLINE PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
 {
   PetscFunctionBegin;
-  if (PetscUnlikelyDebug(n < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot log negative flops");
+  PetscAssert(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot log negative flops");
   petsc_TotalFlops += PETSC_FLOPS_PER_OP*n;
   petsc_gflops += PETSC_FLOPS_PER_OP*n;
   PetscFunctionReturn(0);

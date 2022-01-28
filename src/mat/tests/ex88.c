@@ -90,7 +90,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
   ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,x,y) produces incorrect result");
+  PetscAssertFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,x,y) produces incorrect result");
 #endif
 
   ierr = VecSet(W2,-1.0);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
   ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,y,y) produces incorrect result");
+  PetscAssertFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultAdd(A,x,y,y) produces incorrect result");
 #endif
   ierr = VecDestroy(&diff);CHKERRQ(ierr);
 
@@ -112,7 +112,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
   ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,x,y) produces incorrect result");
+  PetscAssertFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,x,y) produces incorrect result");
 #endif
 
   ierr = VecSet(W2,-1.0);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecAXPY(W2,-1.0,diff);CHKERRQ(ierr);
   ierr = VecNorm(W2,NORM_2,&nrm);CHKERRQ(ierr);
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
-  if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,y,y) produces incorrect result");
+  PetscAssertFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatMultTransposeAdd(A,x,y,y) produces incorrect result");
 #endif
   ierr = VecDestroy(&diff);CHKERRQ(ierr);
 
@@ -131,7 +131,7 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,2,diag,&diff);CHKERRQ(ierr);
   ierr = VecAXPY(diff,-1.0,W2);CHKERRQ(ierr);
   ierr = VecNorm(diff,NORM_2,&nrm);CHKERRQ(ierr);
-  if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() produces incorrect result");
+  PetscAssertFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() produces incorrect result");
   ierr = VecDestroy(&diff);CHKERRQ(ierr);
 
   /* MATSHELL does not support MatDiagonalSet after MatScale */

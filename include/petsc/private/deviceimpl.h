@@ -208,7 +208,7 @@ PETSC_STATIC_INLINE PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Intern
 PETSC_STATIC_INLINE PetscErrorCode PetscDeviceCheckDeviceCount_Internal(PetscInt count)
 {
   PetscFunctionBegin;
-  if (PetscUnlikelyDebug(count >= PETSC_DEVICE_MAX_DEVICES)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Detected %" PetscInt_FMT " devices, which is larger than maximum supported number of devices %d",count,PETSC_DEVICE_MAX_DEVICES);
+  PetscAssertDebug(count < PETSC_DEVICE_MAX_DEVICES,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Detected %" PetscInt_FMT " devices, which is larger than maximum supported number of devices %d",count,PETSC_DEVICE_MAX_DEVICES);
   PetscFunctionReturn(0);
 }
 
@@ -223,7 +223,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceDereference_Internal(PetscDevice d
 {
   PetscFunctionBegin;
   --(device->refcnt);
-  if (PetscUnlikelyDebug(device->refcnt < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"PetscDevice has negative reference count %" PetscInt_FMT,device->refcnt);
+  PetscAssertDebug(device->refcnt >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"PetscDevice has negative reference count %" PetscInt_FMT,device->refcnt);
   PetscFunctionReturn(0);
 }
 #else  /* PETSC_HAVE_CXX_DIALECT_CXX11 for PetscDevice Internal Functions */
@@ -281,7 +281,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetCurrentContextAssertType
   PetscValidPointer(dctx,1);
   PetscValidDeviceType(type,2);
   ierr = PetscDeviceContextGetCurrentContext(dctx);CHKERRQ(ierr);
-  if (PetscUnlikelyDebug((*dctx)->device->type != type)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected current global PetscDeviceContext (id %" PetscInt_FMT ") to have PetscDeviceType '%s' but has '%s' instead",(*dctx)->id,PetscDeviceTypes[type],PetscDeviceTypes[(*dctx)->device->type]);
+  PetscAssertDebug((*dctx)->device->type == type,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected current global PetscDeviceContext (id %" PetscInt_FMT ") to have PetscDeviceType '%s' but has '%s' instead",(*dctx)->id,PetscDeviceTypes[type],PetscDeviceTypes[(*dctx)->device->type]);
   PetscFunctionReturn(0);
 }
 

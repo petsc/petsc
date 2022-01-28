@@ -108,10 +108,10 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
   if (A->offloadmask == PETSC_OFFLOAD_BOTH) PetscFunctionReturn(0);
   if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED && Agpu) {
     try {
-      if (a->compressedrow.use) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
+      PetscAssertFalse(a->compressedrow.use,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
       else {
 
-        if (PetscUnlikely((PetscInt)Agpu->size1() != m)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "GPU matrix has %lu rows, should be %" PetscInt_FMT, Agpu->size1(), m);
+        PetscAssertFalse(PetscUnlikely((PetscInt)Agpu->size1() != m),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "GPU matrix has %lu rows, should be %" PetscInt_FMT, Agpu->size1(), m);
         a->nz           = Agpu->nnz();
         a->maxnz        = a->nz; /* Since we allocate exactly the right amount */
         A->preallocated = PETSC_TRUE;
@@ -166,7 +166,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
   } else {
     if (!Agpu && A->offloadmask != PETSC_OFFLOAD_GPU) PetscFunctionReturn(0);
 
-    if (a->compressedrow.use) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
+    PetscAssertFalse(a->compressedrow.use,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
     if (!Agpu) {
       viennacl::backend::memory_read(viennaclstruct->mat->handle(), 0, sizeof(PetscScalar)*viennaclstruct->mat->nnz(), a->a);
     } else {
@@ -484,7 +484,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 
   PetscFunctionBegin;
 
-  if (reuse == MAT_REUSE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MAT_REUSE_MATRIX is not supported. Consider using MAT_INPLACE_MATRIX instead");
+  PetscAssertFalse(reuse == MAT_REUSE_MATRIX,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MAT_REUSE_MATRIX is not supported. Consider using MAT_INPLACE_MATRIX instead");
 
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,newmat);CHKERRQ(ierr);

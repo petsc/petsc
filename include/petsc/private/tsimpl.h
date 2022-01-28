@@ -502,7 +502,7 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
-  if (ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
+  PetscAssertFalse(ifunction,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
   PetscFunctionReturn(0);
 }
 

@@ -362,8 +362,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       PetscInt s;
       for (s = 0; s < indegree[p]; ++s, ++r) rootAdj[l+s] = remoteadj[r];
     }
-    if (r != radjsize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
-    if (l != adjSize)  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", l, adjSize);
+    PetscAssertFalse(r != radjsize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
+    PetscAssertFalse(l != adjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", l, adjSize);
     ierr = PetscFree(remoteadj);CHKERRQ(ierr);
   }
   ierr = PetscSFDestroy(&sfAdj);CHKERRQ(ierr);
@@ -558,7 +558,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       for (q = 0; q < anDof; q++, i++) {
         cols[aoff+i] = anchorAdj[anOff + q];
       }
-      if (i != adof) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %D != %D for dof %D (point %D)", i, adof, d, p);
+      PetscAssertFalse(i != adof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %D != %D for dof %D (point %D)", i, adof, d, p);
     }
   }
   ierr = PetscSectionDestroy(&anchorSectionAdj);CHKERRQ(ierr);
@@ -590,7 +590,7 @@ static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, 
   PetscFunctionBegin;
   /* This loop needs to change to a loop over points, then field dofs, which means we need to look both sections */
   ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
-  if (rStart%bs || rEnd%bs) SETERRQ(PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%d, %d) for matrix, must be divisible by block size %d", rStart, rEnd, bs);
+  PetscAssertFalse(rStart%bs || rEnd%bs,PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%d, %d) for matrix, must be divisible by block size %d", rStart, rEnd, bs);
   if (f >= 0 && bs == 1) {
     ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);

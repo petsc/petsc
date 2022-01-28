@@ -1194,7 +1194,7 @@ PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->converged != KSPConvergedDefault) PetscFunctionReturn(0);
-  if (ctx->mininitialrtol) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPConvergedDefaultSetUIRNorm() and KSPConvergedDefaultSetUMIRNorm() together");
+  PetscAssertFalse(ctx->mininitialrtol,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPConvergedDefaultSetUIRNorm() and KSPConvergedDefaultSetUMIRNorm() together");
   ctx->initialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1228,7 +1228,7 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->converged != KSPConvergedDefault) PetscFunctionReturn(0);
-  if (ctx->initialrtol) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPConvergedDefaultSetUIRNorm() and KSPConvergedDefaultSetUMIRNorm() together");
+  PetscAssertFalse(ctx->initialrtol,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPConvergedDefaultSetUIRNorm() and KSPConvergedDefaultSetUMIRNorm() together");
   ctx->mininitialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1321,7 +1321,7 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(ksp,n,2);
   PetscValidPointer(reason,4);
-  if (!cctx) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPConvergedDefaultCreate()");
+  PetscAssertFalse(!cctx,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPConvergedDefaultCreate()");
   *reason = KSP_CONVERGED_ITERATING;
 
   if (cctx->convmaxits && n >= ksp->max_it) {
@@ -1462,7 +1462,7 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp,Vec v,Vec *V)
     }
   } else if (ksp->pc_side == PC_SYMMETRIC) {
     if (ksp->pc) {
-      if (ksp->transpose_solve) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Not working with symmetric preconditioner and transpose solve");
+      PetscAssertFalse(ksp->transpose_solve,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Not working with symmetric preconditioner and transpose solve");
       if (v) {
         ierr = PCApplySymmetricRight(ksp->pc,ksp->vec_sol,v);CHKERRQ(ierr);
         *V = v;
@@ -1554,7 +1554,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     preferdm = isshell ? PETSC_FALSE : PETSC_TRUE;
   }
   if (rightn) {
-    if (!right) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"You asked for right vectors but did not pass a pointer to hold them");
+    PetscAssertFalse(!right,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"You asked for right vectors but did not pass a pointer to hold them");
     if (ksp->vec_sol) vecr = ksp->vec_sol;
     else {
       if (preferdm) {
@@ -1573,7 +1573,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
       if (!vecr && ksp->dm) {
         ierr = DMGetGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
       }
-      if (!vecr) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You requested a vector from a KSP that cannot provide one");
+      PetscAssertFalse(!vecr,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You requested a vector from a KSP that cannot provide one");
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
     if (!ksp->vec_sol) {
@@ -1587,7 +1587,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
     }
   }
   if (leftn) {
-    if (!left) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"You asked for left vectors but did not pass a pointer to hold them");
+    PetscAssertFalse(!left,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"You asked for left vectors but did not pass a pointer to hold them");
     if (ksp->vec_rhs) vecl = ksp->vec_rhs;
     else {
       if (preferdm) {
@@ -1606,7 +1606,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
       if (!vecl && ksp->dm) {
         ierr = DMGetGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
       }
-      if (!vecl) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You requested a vector from a KSP that cannot provide one");
+      PetscAssertFalse(!vecl,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You requested a vector from a KSP that cannot provide one");
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
     if (!ksp->vec_rhs) {
@@ -1931,7 +1931,7 @@ PetscErrorCode KSPCheckSolve(KSP ksp,PC pc,Vec vec)
   ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
   ierr = PCGetFailedReason(subpc,&pcreason);CHKERRQ(ierr);
   if (pcreason || (ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS)) {
-    if (pc->erroriffailure) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]);
+    PetscAssertFalse(pc->erroriffailure,PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]);
     else {
       ierr = PetscInfo(ksp,"Detected not converged in KSP inner solve: KSP reason %s PC reason %s\n",KSPConvergedReasons[ksp->reason],PCFailedReasons[pcreason]);CHKERRQ(ierr);
       pc->failedreason = PC_SUBPC_ERROR;

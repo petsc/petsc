@@ -38,7 +38,7 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[],const ch
   ierr = PetscStrlcat(command,attempt,sizeof(command));CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fp);CHKERRQ(ierr);
-  if (!fgets(pythonlib,pl,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s\nRunning: %s",pythonexe,command);
+  PetscAssertFalse(!fgets(pythonlib,pl,fp),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s\nRunning: %s",pythonexe,command);
   ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: Aborted due to missing popen()");
@@ -145,11 +145,11 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   ierr = PetscDLPyLibSym("PyErr_Display",            &PyErr_Display);CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("PyErr_Restore",            &PyErr_Restore);CHKERRQ(ierr);
   /* XXX TODO: check that ALL symbols were there !!! */
-  if (!Py_None)          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  if (!Py_GetVersion)    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  if (!Py_IsInitialized) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  if (!Py_InitializeEx)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  if (!Py_Finalize)      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscAssertFalse(!Py_None,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscAssertFalse(!Py_GetVersion,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscAssertFalse(!Py_IsInitialized,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscAssertFalse(!Py_InitializeEx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscAssertFalse(!Py_Finalize,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
   ierr = PetscInfo(NULL,"Python: all required symbols loaded from Python dynamic library %s\n",pythonlib);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -299,7 +299,7 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
   PetscValidCharPointer(url,2);
   if (!PetscPythonMonitorSet_C) {
     ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
-    if (!PetscPythonMonitorSet_C) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Couldn't initialize Python support for monitors");
+    PetscAssertFalse(!PetscPythonMonitorSet_C,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Couldn't initialize Python support for monitors");
   }
   ierr = PetscPythonMonitorSet_C(obj,url);CHKERRQ(ierr);
   PetscFunctionReturn(0);

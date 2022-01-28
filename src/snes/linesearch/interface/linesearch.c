@@ -112,7 +112,7 @@ PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(S
     ierr = PetscMonitorCompare((PetscErrorCode (*)(void))f,mctx,monitordestroy,(PetscErrorCode (*)(void))ls->monitorftns[i],ls->monitorcontext[i],ls->monitordestroy[i],&identical);CHKERRQ(ierr);
     if (identical) PetscFunctionReturn(0);
   }
-  if (ls->numbermonitors >= MAXSNESLSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
+  PetscAssertFalse(ls->numbermonitors >= MAXSNESLSMONITORS,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   ls->monitorftns[ls->numbermonitors]          = f;
   ls->monitordestroy[ls->numbermonitors]   = monitordestroy;
   ls->monitorcontext[ls->numbermonitors++] = (void*)mctx;
@@ -960,7 +960,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(SNESLineSearchList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Line Search type %s",type);
+  PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Line Search type %s",type);
   /* Destroy the previous private linesearch context */
   if (linesearch->ops->destroy) {
     ierr = (*(linesearch)->ops->destroy)(linesearch);CHKERRQ(ierr);
@@ -1173,32 +1173,32 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
   PetscValidLogicalCollectiveInt(linesearch,max_its,7);
 
   if (steptol!= PETSC_DEFAULT) {
-    if (steptol < 0.0) SETERRQ(PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Minimum step length %14.12e must be non-negative",(double)steptol);
+    PetscAssertFalse(steptol < 0.0,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Minimum step length %14.12e must be non-negative",(double)steptol);
     linesearch->steptol = steptol;
   }
 
   if (maxstep!= PETSC_DEFAULT) {
-    if (maxstep < 0.0) SETERRQ(PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Maximum step length %14.12e must be non-negative",(double)maxstep);
+    PetscAssertFalse(maxstep < 0.0,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Maximum step length %14.12e must be non-negative",(double)maxstep);
     linesearch->maxstep = maxstep;
   }
 
   if (rtol != PETSC_DEFAULT) {
-    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ(PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %14.12e must be non-negative and less than 1.0",(double)rtol);
+    PetscAssertFalse(rtol < 0.0 || 1.0 <= rtol,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %14.12e must be non-negative and less than 1.0",(double)rtol);
     linesearch->rtol = rtol;
   }
 
   if (atol != PETSC_DEFAULT) {
-    if (atol < 0.0) SETERRQ(PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %14.12e must be non-negative",(double)atol);
+    PetscAssertFalse(atol < 0.0,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %14.12e must be non-negative",(double)atol);
     linesearch->atol = atol;
   }
 
   if (ltol != PETSC_DEFAULT) {
-    if (ltol < 0.0) SETERRQ(PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Lambda tolerance %14.12e must be non-negative",(double)ltol);
+    PetscAssertFalse(ltol < 0.0,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Lambda tolerance %14.12e must be non-negative",(double)ltol);
     linesearch->ltol = ltol;
   }
 
   if (max_its != PETSC_DEFAULT) {
-    if (max_its < 0) SETERRQ(PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",max_its);
+    PetscAssertFalse(max_its < 0,PetscObjectComm((PetscObject)linesearch),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",max_its);
     linesearch->max_its = max_its;
   }
   PetscFunctionReturn(0);

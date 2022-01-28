@@ -76,8 +76,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   }
 
   /* If global sizes are set, check if they are consistent with that given in the file */
-  if (mat->rmap->N >= 0 && mat->rmap->N != M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows: Matrix in file has (%" PetscInt_FMT ") and input matrix has (%" PetscInt_FMT ")",mat->rmap->N,M);
-  if (mat->cmap->N >= 0 && mat->cmap->N != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols: Matrix in file has (%" PetscInt_FMT ") and input matrix has (%" PetscInt_FMT ")",mat->cmap->N,N);
+  PetscAssertFalse(mat->rmap->N >= 0 && mat->rmap->N != M,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows: Matrix in file has (%" PetscInt_FMT ") and input matrix has (%" PetscInt_FMT ")",mat->rmap->N,M);
+  PetscAssertFalse(mat->cmap->N >= 0 && mat->cmap->N != N,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols: Matrix in file has (%" PetscInt_FMT ") and input matrix has (%" PetscInt_FMT ")",mat->cmap->N,N);
 
   /* Determine ownership of all (block) rows and columns */
   mat->rmap->N = M;

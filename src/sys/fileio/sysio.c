@@ -270,7 +270,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
 
   PetscFunctionBegin;
   if (count) *count = 0;
-  if (num < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to read a negative amount of data %" PetscInt_FMT,num);
+  PetscAssertFalse(num < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to read a negative amount of data %" PetscInt_FMT,num);
   if (!num) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
@@ -279,7 +279,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
     fname = (char*)malloc(m*sizeof(char));
     p     = (char*)fname;
     ptmp  = (void*)fname;
-    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
+    PetscAssertFalse(!fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
   }
   if (type == PETSC_BIT_LOGICAL) m = PetscBTLength(m);
 
@@ -303,12 +303,12 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
     int    ret = (int)read(fd,p,len);
     if (ret < 0 && errno == EINTR) continue;
     if (!ret && len > 0) break; /* Proxy for EOF */
-    if (ret < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
+    PetscAssertFalse(ret < 0,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
     m -= ret;
     p += ret;
     n += ret;
   }
-  if (m && !count) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
+  PetscAssertFalse(m && !count,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
 
   num = (PetscInt)(n/typesize); /* Should we require `n % typesize == 0` ? */
   if (count) *count = num;      /* TODO: This is most likely wrong for PETSC_BIT_LOGICAL */
@@ -390,7 +390,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
   PetscDataType  wtype = type;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
+  PetscAssertFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_FUNCTION) {
@@ -399,9 +399,9 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
 #endif
     m     = 64;
     fname = (char*)malloc(m*sizeof(char));
-    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
+    PetscAssertFalse(!fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
-    if (n > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
+    PetscAssertFalse(n > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
     ierr = PetscFPTFind(*(void**)p,&fnametmp);CHKERRQ(ierr);
     ierr = PetscStrncpy(fname,fnametmp,m);CHKERRQ(ierr);
 #else
@@ -450,7 +450,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
     wsize = (m < maxblock) ? m : maxblock;
     err   = write(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    if (err != wsize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file total size %d err %d wsize %d",(int)n,(int)err,(int)wsize);
+    PetscAssertFalse(err != wsize,PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file total size %d err %d wsize %d",(int)n,(int)err,(int)wsize);
     m  -= wsize;
     pp += wsize;
   }
@@ -500,7 +500,7 @@ PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
   case FILE_MODE_APPEND: *fd = open(name,O_BINARY|O_WRONLY|O_APPEND,0); break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[mode]);
   }
-  if (*fd == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for %s",name,PetscFileModes[mode]);
+  PetscAssertFalse(*fd == -1,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for %s",name,PetscFileModes[mode]);
   PetscFunctionReturn(0);
 }
 
@@ -520,7 +520,7 @@ PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
 PetscErrorCode  PetscBinaryClose(int fd)
 {
   PetscFunctionBegin;
-  if (close(fd)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"close() failed on file descriptor");
+  PetscAssertFalse(close(fd),PETSC_COMM_SELF,PETSC_ERR_SYS,"close() failed on file descriptor");
   PetscFunctionReturn(0);
 }
 
@@ -617,7 +617,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
     fname = (char*)malloc(num*sizeof(char));
     fptr  = data;
     data  = (void*)fname;
-    if (!fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
+    PetscAssertFalse(!fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
   }
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);

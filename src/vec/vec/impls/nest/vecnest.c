@@ -10,7 +10,7 @@ static PetscErrorCode VecAssemblyBegin_Nest(Vec v)
 
   PetscFunctionBegin;
   for (i=0; i<vs->nb; i++) {
-    if (!vs->v[i]) SETERRQ(PetscObjectComm((PetscObject)v),PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
+    PetscAssertFalse(!vs->v[i],PetscObjectComm((PetscObject)v),PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
     ierr = VecAssemblyBegin(vs->v[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -623,7 +623,7 @@ static PetscErrorCode  VecGetSubVector_Nest(Vec X,IS is,Vec *x)
       break;
     }
   }
-  if (!*x) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Index set not found in nested Vec");
+  PetscAssertFalse(!*x,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Index set not found in nested Vec");
   PetscFunctionReturn(0);
 }
 
@@ -657,7 +657,7 @@ static PetscErrorCode VecGetArray_Nest(Vec X,PetscScalar **x)
     ierr = ISGetIndices(isy,&ixy);CHKERRQ(ierr);
     for (j=0; j<sm; j++) {
       PetscInt ix = ixy[j];
-      if (ix < rstart || rend <= ix) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
+      PetscAssertFalse(ix < rstart || rend <= ix,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
       (*x)[ix-rstart] = y[j];
     }
     ierr = ISRestoreIndices(isy,&ixy);CHKERRQ(ierr);
@@ -686,7 +686,7 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X,PetscScalar **x)
     ierr = ISGetIndices(isy,&ixy);CHKERRQ(ierr);
     for (j=0; j<sm; j++) {
       PetscInt ix = ixy[j];
-      if (ix < rstart || rend <= ix) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
+      PetscAssertFalse(ix < rstart || rend <= ix,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for getting array from nonlocal subvec");
       y[j] = (*x)[ix-rstart];
     }
     ierr = ISRestoreIndices(isy,&ixy);CHKERRQ(ierr);
@@ -708,7 +708,7 @@ static PetscErrorCode VecRestoreArrayRead_Nest(Vec X,const PetscScalar **x)
 static PetscErrorCode VecConcatenate_Nest(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
 {
   PetscFunctionBegin;
-  if (nx > 0) SETERRQ(PetscObjectComm((PetscObject)(*X)), PETSC_ERR_SUP, "VecConcatenate() is not supported for VecNest");
+  PetscAssertFalse(nx > 0,PetscObjectComm((PetscObject)(*X)), PETSC_ERR_SUP, "VecConcatenate() is not supported for VecNest");
   PetscFunctionReturn(0);
 }
 
@@ -795,7 +795,7 @@ static PetscErrorCode VecNestGetSubVecs_Private(Vec x,PetscInt m,const PetscInt 
   if (!m) PetscFunctionReturn(0);
   for (i=0; i<m; i++) {
     row = idxm[i];
-    if (row >= b->nb) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,b->nb-1);
+    PetscAssertFalse(row >= b->nb,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,b->nb-1);
     vec[i] = b->v[row];
   }
   PetscFunctionReturn(0);
@@ -888,7 +888,7 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   PetscInt       N=0;
 
   /* check if idxm < bx->nb */
-  if (idxm >= bx->nb) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT,idxm,bx->nb);
+  PetscAssertFalse(idxm >= bx->nb,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT,idxm,bx->nb);
 
   PetscFunctionBegin;
   ierr = VecDestroy(&bx->v[idxm]);CHKERRQ(ierr);       /* destroy the existing vector */
@@ -1069,7 +1069,7 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V,PetscInt nb,Vec x[])
   if (ctx->setup_called) PetscFunctionReturn(0);
 
   ctx->nb = nb;
-  if (ctx->nb < 0) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
+  PetscAssertFalse(ctx->nb < 0,PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
 
   /* Create space */
   ierr = PetscMalloc1(ctx->nb,&ctx->v);CHKERRQ(ierr);
@@ -1097,16 +1097,16 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
     for (i=0; i<ctx->nb; i++) {
       ierr = ISGetSize(is[i],&M);CHKERRQ(ierr);
       ierr = VecGetSize(ctx->v[i],&N);CHKERRQ(ierr);
-      if (M != N) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"In slot %" PetscInt_FMT ", IS of size %" PetscInt_FMT " is not compatible with Vec of size %" PetscInt_FMT,i,M,N);
+      PetscAssertFalse(M != N,PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"In slot %" PetscInt_FMT ", IS of size %" PetscInt_FMT " is not compatible with Vec of size %" PetscInt_FMT,i,M,N);
       ierr = ISGetLocalSize(is[i],&m);CHKERRQ(ierr);
       ierr = VecGetLocalSize(ctx->v[i],&n);CHKERRQ(ierr);
-      if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"In slot %" PetscInt_FMT ", IS of local size %" PetscInt_FMT " is not compatible with Vec of local size %" PetscInt_FMT,i,m,n);
+      PetscAssertFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"In slot %" PetscInt_FMT ", IS of local size %" PetscInt_FMT " is not compatible with Vec of local size %" PetscInt_FMT,i,m,n);
       if (PetscDefined(USE_DEBUG)) { /* This test can be expensive */
         PetscInt  start;
         PetscBool contiguous;
         ierr = ISContiguousLocal(is[i],offset,offset+n,&start,&contiguous);CHKERRQ(ierr);
-        if (!contiguous) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " is not contiguous with layout of matching vector",i);
-        if (start != 0) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " introduces overlap or a hole",i);
+        PetscAssertFalse(!contiguous,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " is not contiguous with layout of matching vector",i);
+        PetscAssertFalse(start != 0,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " introduces overlap or a hole",i);
       }
       ierr = PetscObjectReference((PetscObject)is[i]);CHKERRQ(ierr);
       ctx->is[i] = is[i];

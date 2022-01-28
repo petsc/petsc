@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   ierr = MatConvert(B,MATDENSE,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
   ierr = MatAXPY(R,-1.0,P,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(R,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (PetscAbsReal(norm/relative) > epsilon) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A(!symmetric)-A(symmetric)|| = %g (> %g)",(double)PetscAbsReal(norm/relative),(double)epsilon);
+  PetscAssertFalse(PetscAbsReal(norm/relative) > epsilon,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"||A(!symmetric)-A(symmetric)|| = %g (> %g)",(double)PetscAbsReal(norm/relative),(double)epsilon);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);

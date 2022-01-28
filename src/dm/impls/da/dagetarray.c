@@ -61,7 +61,7 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecGetArray1d(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecRestoreArray1d(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ PetscErrorCode  DMDAVecGetArrayWrite(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecGetArray1dWrite(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
@@ -249,7 +249,7 @@ PetscErrorCode  DMDAVecRestoreArrayWrite(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecRestoreArray1dWrite(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
@@ -307,7 +307,7 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecGetArray2d(vec,gxm,dof,gxs,0,(PetscScalar***)array);CHKERRQ(ierr);
@@ -426,7 +426,7 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecGetArray1dRead(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
@@ -480,7 +480,7 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecRestoreArray1dRead(vec,gxm*dof,gxs*dof,(PetscScalar**)array);CHKERRQ(ierr);
@@ -538,7 +538,7 @@ PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecGetArray2dRead(vec,gxm,dof,gxs,0,(PetscScalar***)array);CHKERRQ(ierr);
@@ -644,7 +644,7 @@ PetscErrorCode  DMDAVecGetArrayDOFWrite(DM da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
-  } else if (N != gxm*gym*gzm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+  } else PetscAssertFalse(N != gxm*gym*gzm*dof,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMDA local sizes %D %D",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
 
   if (dim == 1) {
     ierr = VecGetArray2dWrite(vec,gxm,dof,gxs,0,(PetscScalar***)array);CHKERRQ(ierr);

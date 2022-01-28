@@ -49,15 +49,15 @@ int main(int argc,char **argv)
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
     switch (dim) {
       case 1:
-        if (size != ranksx) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 1 -setSizes",ranksx);
+        PetscAssertFalse(size != ranksx,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 1 -setSizes",ranksx);
         ierr = DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,mx,1,1,DMSTAG_STENCIL_BOX,1,lx,&dm);CHKERRQ(ierr);
         break;
       case 2:
-        if (size != ranksx * ranksy) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 2 -setSizes",ranksx * ranksy);
+        PetscAssertFalse(size != ranksx * ranksy,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 2 -setSizes",ranksx * ranksy);
         ierr = DMStagCreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,ranksx,ranksy,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,&dm);CHKERRQ(ierr);
         break;
       case 3:
-        if (size != ranksx * ranksy * ranksz) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
+        PetscAssertFalse(size != ranksx * ranksy * ranksz,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Must run on %D ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
         ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,mx,my,mz,ranksx,ranksy,ranksz,1,1,1,1,DMSTAG_STENCIL_BOX,1,lx,ly,lz,&dm);CHKERRQ(ierr);
         break;
       default:
@@ -110,7 +110,7 @@ static PetscErrorCode Test1(DM dm)
   ierr = DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocal);CHKERRQ(ierr);
   ierr = DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobalCheck);CHKERRQ(ierr);
   ierr = VecEqual(vecGlobal,vecGlobalCheck,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Check failed - vectors should be bitwise identical");
+  PetscAssertFalse(!equal,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Check failed - vectors should be bitwise identical");
   ierr = VecDestroy(&vecLocal);CHKERRQ(ierr);
   ierr = VecDestroy(&vecGlobal);CHKERRQ(ierr);
   ierr = VecDestroy(&vecGlobalCheck);CHKERRQ(ierr);

@@ -222,7 +222,7 @@ int main(int argc,char **args)
        Flag an error if PCTYPE is changed from the runtime options
      */
     ierr = PetscObjectTypeCompare((PetscObject)pc,PCGASM,&isasm);CHKERRQ(ierr);
-    if (!isasm) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
+    PetscAssertFalse(!isasm,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
 
     /*
        Call KSPSetUp() to set the block Jacobi data structures (including

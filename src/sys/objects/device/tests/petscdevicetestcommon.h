@@ -150,7 +150,7 @@ PETSC_STATIC_INLINE PetscErrorCode AssertDeviceContextExists(PetscDeviceContext 
 PETSC_STATIC_INLINE PetscErrorCode AssertDeviceContextDoesNotExist(PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
-  if (dctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscDeviceContext was not destroyed");
+  PetscAssertFalse(dctx,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscDeviceContext was not destroyed");
   PetscFunctionReturn(0);
 }
 
@@ -159,7 +159,7 @@ PETSC_STATIC_INLINE PetscErrorCode AssertPetscStreamTypesValidAndEqual(PetscStre
   PetscFunctionBegin;
   PetscValidStreamType(left,1);
   PetscValidStreamType(right,2);
-  if (left != right) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,errStr,PetscStreamTypes[left],PetscStreamTypes[right]);
+  PetscAssertFalse(left != right,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,errStr,PetscStreamTypes[left],PetscStreamTypes[right]);
   PetscFunctionReturn(0);
 }
 
@@ -167,7 +167,7 @@ PETSC_STATIC_INLINE PetscErrorCode AssertPetscDevicesValidAndEqual(PetscDevice l
 {
   PetscFunctionBegin;
   PetscCheckCompatibleDevices(left,1,right,2);
-  if (left != right) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"%s",errStr);
+  PetscAssertFalse(left != right,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"%s",errStr);
   PetscFunctionReturn(0);
 }
 
@@ -175,7 +175,7 @@ PETSC_STATIC_INLINE PetscErrorCode AssertPetscDeviceContextsValidAndEqual(PetscD
 {
   PetscFunctionBegin;
   PetscCheckCompatibleDeviceContexts(left,1,right,2);
-  if (left != right) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"%s",errStr);
+  PetscAssertFalse(left != right,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"%s",errStr);
   PetscFunctionReturn(0);
 }
 #endif /* PETSCDEVICETESTCOMMON_H */

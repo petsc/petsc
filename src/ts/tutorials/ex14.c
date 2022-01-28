@@ -1014,7 +1014,7 @@ static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscRea
   *min = *max = *mean = 0;
   ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da3,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-  if (zs != 0 || zm != mz) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unexpected decomposition");
+  PetscAssertFalse(zs != 0 || zm != mz,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unexpected decomposition");
   ierr = DMDAVecGetArray(da3,X3,&x);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1260,7 +1260,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
   ym = info->ym;
   zm = info->xm;
 
-  if (zm > 1024) SETERRQ(((PetscObject)info->da)->comm,PETSC_ERR_SUP,"Need to allocate more space");
+  PetscAssertFalse(zm > 1024,((PetscObject)info->da)->comm,PETSC_ERR_SUP,"Need to allocate more space");
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
       {                         /* Self-coupling */
@@ -1432,15 +1432,15 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
         ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
       }
       zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
-      if (xm*ym*zm*dof > nmax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
+      PetscAssertFalse(xm*ym*zm*dof > nmax,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
       if (r) {
         ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-        if (nn != xm*ym*zm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da3 send");
+        PetscAssertFalse(nn != xm*ym*zm*dof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da3 send");
         y3   = (Node*)array;
         ierr = MPI_Recv(array2,nmax2,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn2);CHKERRMPI(ierr);
-        if (nn2 != xm*ym*dof2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da2 send");
+        PetscAssertFalse(nn2 != xm*ym*dof2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da2 send");
         y2 = (PetscScalar(*)[PRMNODE_SIZE])array2;
       } else {
         y3 = (Node*)x;

@@ -42,9 +42,9 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)ksp);
-  if (max_it < 1) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: max_it argument must be positive.",((PetscObject)ksp)->type_name);
-  if (l < 1) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be positive.",((PetscObject)ksp)->type_name);
-  if (l > max_it) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be less than max_it.",((PetscObject)ksp)->type_name);
+  PetscAssertFalse(max_it < 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: max_it argument must be positive.",((PetscObject)ksp)->type_name);
+  PetscAssertFalse(l < 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be positive.",((PetscObject)ksp)->type_name);
+  PetscAssertFalse(l > max_it,comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be less than max_it.",((PetscObject)ksp)->type_name);
 
   ierr = KSPSetWorkVecs(ksp,1);CHKERRQ(ierr); /* get work vectors needed by PIPELCG */
   plcg->p = ksp->work[0];

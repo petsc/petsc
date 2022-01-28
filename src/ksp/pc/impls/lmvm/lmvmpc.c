@@ -33,9 +33,9 @@ PetscErrorCode PCLMVMSetMatLMVM(PC pc, Mat B)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same);CHKERRQ(ierr);
-  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
+  PetscAssertFalse(!same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same);CHKERRQ(ierr);
-  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
+  PetscAssertFalse(!same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix must be an LMVM-type.");
   ierr = MatDestroy(&ctx->B);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
   ctx->B = B;
@@ -62,7 +62,7 @@ PetscErrorCode PCLMVMGetMatLMVM(PC pc, Mat *B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same);CHKERRQ(ierr);
-  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
+  PetscAssertFalse(!same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
   *B = ctx->B;
   PetscFunctionReturn(0);
 }
@@ -88,7 +88,7 @@ PetscErrorCode PCLMVMSetIS(PC pc, IS inactive)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(inactive, IS_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same);CHKERRQ(ierr);
-  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
+  PetscAssertFalse(!same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
   ierr = PCLMVMClearIS(pc);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)inactive);CHKERRQ(ierr);
   ctx->inactive = inactive;
@@ -114,7 +114,7 @@ PetscErrorCode PCLMVMClearIS(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   ierr = PetscObjectTypeCompare((PetscObject)pc, PCLMVM, &same);CHKERRQ(ierr);
-  if (!same) SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
+  PetscAssertFalse(!same,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC must be a PCLMVM type.");
   if (ctx->inactive) {
     ierr = ISDestroy(&ctx->inactive);CHKERRQ(ierr);
   }

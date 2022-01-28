@@ -82,14 +82,14 @@ int main(int argc,char **argv)
     ierr = MatProductNumeric(D);CHKERRQ(ierr);
   }
   ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
+  PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   /* Test D = AT*B (transpose(aij)*dense) */
   ierr = MatCreateTranspose(A,&AT);CHKERRQ(ierr);
   ierr = MatMatMult(AT,B,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMultEqual(AT,B,D,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != AT*B (transpose(aij)*dense)");
+  PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != AT*B (transpose(aij)*dense)");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
   ierr = MatDestroy(&AT);CHKERRQ(ierr);
 
@@ -97,14 +97,14 @@ int main(int argc,char **argv)
   ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMult(C,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMultEqual(C,A,D,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != C*A (dense*aij)");
+  PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != C*A (dense*aij)");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   /* Test D = A*C (aij*dense) */
   ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMultEqual(A,C,D,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != A*C (aij*dense)");
+  PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != A*C (aij*dense)");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   /* Test D = B*C (dense*dense) */
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
     ierr = MatMatMult(B,C,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatMatMult(B,C,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatMatMultEqual(B,C,D,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C (dense*dense)");
+    PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C (dense*dense)");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
   }
 
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
   ierr = MatMatTransposeMult(B,C,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatTransposeMult(B,C,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatTransposeMultEqual(B,C,D,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C^T (dense*dense)");
+  PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C^T (dense*dense)");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   /* Test MatProductCreateWithMat() and reuse C and B for B = A*C */

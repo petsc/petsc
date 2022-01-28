@@ -680,7 +680,7 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
         ierr = MatGetInertia(Factor,&nneg,&nzero,&npos);CHKERRQ(ierr);CHKERRQ(ierr);
       }
 
-      if (pdipm->deltaw >= 1./PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_CONV_FAILED,"Reached maximum delta w will not converge, try different initial x0");
+      PetscAssertFalse(pdipm->deltaw >= 1./PETSC_SMALL,PetscObjectComm((PetscObject)tao),PETSC_ERR_CONV_FAILED,"Reached maximum delta w will not converge, try different initial x0");
 
       ierr = PetscInfo(tao,"Updated deltaw %g\n",(double)pdipm->deltaw);CHKERRQ(ierr);
       pdipm->lastdeltaw = pdipm->deltaw;
@@ -833,7 +833,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
   Vec                dummy;
 
   PetscFunctionBegin;
-  if (!tao->constraints_equality && !tao->constraints_inequality) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_NULL,"Equality and inequality constraints are not set. Either set them or switch to a different algorithm");
+  PetscAssertFalse(!tao->constraints_equality && !tao->constraints_inequality,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_NULL,"Equality and inequality constraints are not set. Either set them or switch to a different algorithm");
 
   /* Initialize all variables */
   ierr = TaoPDIPMInitializeSolution(tao);CHKERRQ(ierr);
@@ -869,7 +869,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
     }
 
     /* Check TAO convergence */
-    if (PetscIsInfOrNanReal(pdipm->obj)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"User-provided compute function generated Inf or NaN");
+    PetscAssertFalse(PetscIsInfOrNanReal(pdipm->obj),PETSC_COMM_SELF,PETSC_ERR_SUP,"User-provided compute function generated Inf or NaN");
   }
   PetscFunctionReturn(0);
 }
@@ -1244,7 +1244,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
       row = rstart + pdipm->off_lambdae + pdipm->ng + i;
 
       ierr = MatGetRow(pdipm->Jce_xfixed,i+Jcrstart,&nc,&cols,NULL);CHKERRQ(ierr);
-      if (nc != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nc != 1");
+      PetscAssertFalse(nc != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"nc != 1");
 
       proc = 0;
       j    = 0;
@@ -1284,7 +1284,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
     row = rstart + pdipm->off_lambdai + pdipm->nh + i;
 
     ierr = MatGetRow(pdipm->Jci_xb,i+Jcrstart,&nc,&cols,NULL);CHKERRQ(ierr);
-    if (nc != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nc != 1");
+    PetscAssertFalse(nc != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"nc != 1");
     proc = 0;
     for (j=0; j < nc; j++) {
       while (cols[j] >= cranges[proc+1]) proc++;

@@ -83,7 +83,7 @@ PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat F)
     PetscErrorCode ierr;
 
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)S),&size);CHKERRMPI(ierr);
-    if (size > 1) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not yet implemented");
+    PetscAssertFalse(size > 1,PetscObjectComm((PetscObject)S),PETSC_ERR_SUP,"Not yet implemented");
     ierr = PetscObjectTypeCompare((PetscObject)S,MATSEQDENSE,&isdense);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)S,MATSEQDENSECUDA,&isdensecuda);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_FactorInvS,F,0,0,0);CHKERRQ(ierr);

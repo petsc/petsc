@@ -53,7 +53,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   if (pc->presolvedone < 2) {
-    if (pc->mat != pc->pmat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot have different mat and pmat");
+    PetscAssertFalse(pc->mat != pc->pmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot have different mat and pmat");
     /* swap shell matrix and true matrix */
     eis->A  = pc->mat;
     pc->mat = eis->shell;
@@ -188,7 +188,7 @@ static PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
 
   PetscFunctionBegin;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
+  PetscAssertFalse(omega >= 2.0 || omega <= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   eis->omega = omega;
   PetscFunctionReturn(0);
 }

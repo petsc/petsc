@@ -46,7 +46,7 @@ PetscErrorCode  DMGetLocalVector(DM dm,Vec *g)
       dm->localin[i] = NULL;
 
       ierr = VecGetDM(*g,&vdm);CHKERRQ(ierr);
-      if (vdm) SETERRQ(PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
+      PetscAssertFalse(vdm,PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
       ierr = VecSetDM(*g,dm);CHKERRQ(ierr);
       goto alldone;
     }
@@ -93,7 +93,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec *g)
       DM vdm;
 
       ierr = VecGetDM(*g,&vdm);CHKERRQ(ierr);
-      if (vdm != dm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
+      PetscAssertFalse(vdm != dm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
       ierr = VecSetDM(*g,NULL);CHKERRQ(ierr);
       dm->localout[j] = NULL;
       for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
@@ -157,7 +157,7 @@ PetscErrorCode  DMGetGlobalVector(DM dm,Vec *g)
       dm->globalin[i] = NULL;
 
       ierr = VecGetDM(*g,&vdm);CHKERRQ(ierr);
-      if (vdm) SETERRQ(PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
+      PetscAssertFalse(vdm,PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
       ierr = VecSetDM(*g,dm);CHKERRQ(ierr);
       goto alldone;
     }
@@ -199,14 +199,14 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     Vec g;
 
-    if (dm->globalout[i]) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of global vectors that has a global vector obtained with DMGetGlobalVector()");
+    PetscAssertFalse(dm->globalout[i],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of global vectors that has a global vector obtained with DMGetGlobalVector()");
     g = dm->globalin[i];
     dm->globalin[i] = NULL;
     if (g) {
       DM vdm;
 
       ierr = VecGetDM(g,&vdm);CHKERRQ(ierr);
-      if (vdm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing global vector that has a DM attached");
+      PetscAssertFalse(vdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing global vector that has a DM attached");
     }
     ierr = VecDestroy(&g);CHKERRQ(ierr);
   }
@@ -238,14 +238,14 @@ PetscErrorCode  DMClearLocalVectors(DM dm)
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     Vec g;
 
-    if (dm->localout[i]) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
+    PetscAssertFalse(dm->localout[i],PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of local vectors that has a local vector obtained with DMGetLocalVector()");
     g = dm->localin[i];
     dm->localin[i] = NULL;
     if (g) {
       DM vdm;
 
       ierr = VecGetDM(g,&vdm);CHKERRQ(ierr);
-      if (vdm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing local vector that has a DM attached");
+      PetscAssertFalse(vdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Clearing local vector that has a DM attached");
     }
     ierr = VecDestroy(&g);CHKERRQ(ierr);
   }
@@ -283,7 +283,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
       DM vdm;
 
       ierr = VecGetDM(*g,&vdm);CHKERRQ(ierr);
-      if (vdm != dm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
+      PetscAssertFalse(vdm != dm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
       ierr = VecSetDM(*g,NULL);CHKERRQ(ierr);
       dm->globalout[j] = NULL;
       for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
@@ -373,9 +373,9 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm,const char *name,Vec *X)
     if (match) {
       DM vdm;
 
-      if (link->status != DMVEC_STATUS_IN) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
+      PetscAssertFalse(link->status != DMVEC_STATUS_IN,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
       ierr = VecGetDM(link->X,&vdm);CHKERRQ(ierr);
-      if (vdm) SETERRQ(PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
+      PetscAssertFalse(vdm,PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
       ierr = VecSetDM(link->X,dm);CHKERRQ(ierr);
       goto found;
     }
@@ -426,9 +426,9 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
       DM vdm;
 
       ierr = VecGetDM(*X,&vdm);CHKERRQ(ierr);
-      if (link->status != DMVEC_STATUS_OUT) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
-      if (link->X != *X) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
-      if (vdm != dm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
+      PetscAssertFalse(link->status != DMVEC_STATUS_OUT,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
+      PetscAssertFalse(link->X != *X,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
+      PetscAssertFalse(vdm != dm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
 
       link->status = DMVEC_STATUS_IN;
       ierr         = VecSetDM(link->X,NULL);CHKERRQ(ierr);
@@ -512,9 +512,9 @@ PetscErrorCode DMGetNamedLocalVector(DM dm,const char *name,Vec *X)
     if (match) {
       DM vdm;
 
-      if (link->status != DMVEC_STATUS_IN) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
+      PetscAssertFalse(link->status != DMVEC_STATUS_IN,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
       ierr = VecGetDM(link->X,&vdm);CHKERRQ(ierr);
-      if (vdm) SETERRQ(PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
+      PetscAssertFalse(vdm,PetscObjectComm((PetscObject)vdm),PETSC_ERR_LIB,"Invalid vector");
       ierr = VecSetDM(link->X,dm);CHKERRQ(ierr);
       goto found;
     }
@@ -565,9 +565,9 @@ PetscErrorCode DMRestoreNamedLocalVector(DM dm,const char *name,Vec *X)
       DM vdm;
 
       ierr = VecGetDM(*X,&vdm);CHKERRQ(ierr);
-      if (link->status != DMVEC_STATUS_OUT) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
-      if (link->X != *X) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
-      if (vdm != dm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
+      PetscAssertFalse(link->status != DMVEC_STATUS_OUT,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
+      PetscAssertFalse(link->X != *X,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
+      PetscAssertFalse(vdm != dm,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Invalid vector");
 
       link->status = DMVEC_STATUS_IN;
       ierr         = VecSetDM(link->X,NULL);CHKERRQ(ierr);

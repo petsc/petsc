@@ -153,7 +153,7 @@ static PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
   PetscFunctionBegin;
   VecCheckSameSize(X, 2, Y, 3);
   VecCheckMatCompatible(B, X, 2, Y, 3);
-  if (!lmvm->allocated) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  PetscAssertFalse(!lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   ierr = (*lmvm->ops->mult)(B, X, Y);CHKERRQ(ierr);
   if (lmvm->shift != 0.0) {
     ierr = VecAXPY(Y, lmvm->shift, X);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
     ierr = MatLMVMAllocate(M, bctx->Xprev, bctx->Fprev);CHKERRQ(ierr);
   } else {
     ierr = MatLMVMIsAllocated(M, &allocatedM);CHKERRQ(ierr);
-    if (!allocatedM) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Target matrix must be allocated first");
+    PetscAssertFalse(!allocatedM,PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Target matrix must be allocated first");
     MatCheckSameSize(B, 1, M, 2);
   }
 
@@ -248,7 +248,7 @@ static PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
 
   PetscFunctionBegin;
-  if (!lmvm->allocated) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  PetscAssertFalse(!lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   lmvm->shift += PetscRealPart(a);
   PetscFunctionReturn(0);
 }
@@ -261,7 +261,7 @@ static PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (!lmvm->allocated) SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  PetscAssertFalse(!lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   ierr = VecDuplicate(lmvm->Xprev, L);CHKERRQ(ierr);
   ierr = VecDuplicate(lmvm->Fprev, R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -324,7 +324,7 @@ PetscErrorCode MatSetUp_LMVM(Mat B)
 
   PetscFunctionBegin;
   ierr = MatGetSize(B, &M, &N);CHKERRQ(ierr);
-  if (M == 0 && N == 0) SETERRQ(comm, PETSC_ERR_ORDER, "MatSetSizes() must be called before MatSetUp()");
+  PetscAssertFalse(M == 0 && N == 0,comm, PETSC_ERR_ORDER, "MatSetSizes() must be called before MatSetUp()");
   if (!lmvm->allocated) {
     ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
     if (size == 1) {

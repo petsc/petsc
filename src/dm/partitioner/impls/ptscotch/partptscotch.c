@@ -27,7 +27,7 @@ typedef struct {
 
 #if defined(PETSC_HAVE_PTSCOTCH)
 
-#define CHKERRPTSCOTCH(ierr) do { if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error calling PT-Scotch library"); } while (0)
+#define CHKERRPTSCOTCH(ierr) do { PetscAssertFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error calling PT-Scotch library"); } while (0)
 
 static int PTScotch_Strategy(PetscInt strategy)
 {
@@ -295,7 +295,7 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
       if (assignment[v] == p) points[i++] = v;
     }
   }
-  if (i != nvtxs) SETERRQ(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
+  PetscAssertFalse(i != nvtxs,comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
 
   ierr = PetscFree2(vtxdist,assignment);CHKERRQ(ierr);

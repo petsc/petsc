@@ -73,15 +73,15 @@ int main(int argc,char **argv)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must set -m option with -distribute option");
+    PetscAssertFalse(m == PETSC_DECIDE,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must set -m option with -distribute option");
     ierr = PetscMalloc1(m,&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) lx[i] = 4;
     lx[m-1] = M - 4*(m-1);
-    if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must set -n option with -distribute option");
+    PetscAssertFalse(n == PETSC_DECIDE,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must set -n option with -distribute option");
     ierr = PetscMalloc1(n,&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) ly[i] = 2;
     ly[n-1] = N - 2*(n-1);
-    if (p == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must set -p option with -distribute option");
+    PetscAssertFalse(p == PETSC_DECIDE,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must set -p option with -distribute option");
     ierr = PetscMalloc1(p,&lz);CHKERRQ(ierr);
     for (i=0; i<p-1; i++) lz[i] = 2;
     lz[p-1] = P - 2*(p-1);

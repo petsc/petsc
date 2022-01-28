@@ -329,7 +329,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     /* Create the local work vectors (from the local matrices) and scatter contexts */
     ierr = MatCreateVecs(pc->pmat,&vec,NULL);CHKERRQ(ierr);
 
-    if (osm->is_local && (osm->type == PC_ASM_INTERPOLATE || osm->type == PC_ASM_NONE)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()");
+    PetscAssertFalse(osm->is_local && (osm->type == PC_ASM_INTERPOLATE || osm->type == PC_ASM_NONE),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()");
     if (osm->is_local && osm->type == PC_ASM_RESTRICT && osm->loctype == PC_COMPOSITE_ADDITIVE) {
       ierr = PetscMalloc1(osm->n_local_true,&osm->lprolongation);CHKERRQ(ierr);
     }
@@ -363,7 +363,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = ISGetIndices(osm->is[i], &idx_is);CHKERRQ(ierr);
       ierr = PetscMalloc1(m,&idx_lis);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m,idx_is,&nout,idx_lis);CHKERRQ(ierr);
-      if (nout != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"is not a subset of lis");
+      PetscAssertFalse(nout != m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is not a subset of lis");
       ierr = ISRestoreIndices(osm->is[i], &idx_is);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,m,idx_lis,PETSC_OWN_POINTER,&isll);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
@@ -384,14 +384,14 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PetscMalloc1(m_local,&idx1);CHKERRQ(ierr);
         ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m_local,idx_local,&nout,idx1);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
-        if (nout != m_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of is");
+        PetscAssertFalse(nout != m_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of is");
         ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx1,PETSC_OWN_POINTER,&isll);CHKERRQ(ierr);
 
         ierr = ISLocalToGlobalMappingCreateIS(osm->lis,&ltog);CHKERRQ(ierr);
         ierr = PetscMalloc1(m_local,&idx2);CHKERRQ(ierr);
         ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m_local,idx_local,&nout,idx2);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
-        if (nout != m_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of lis");
+        PetscAssertFalse(nout != m_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of lis");
         ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx2,PETSC_OWN_POINTER,&isll_local);CHKERRQ(ierr);
 
         ierr = ISRestoreIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
@@ -530,7 +530,7 @@ static PetscErrorCode PCMatApply_ASM(PC pc,Mat X,Mat Y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (osm->n_local_true > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not yet implemented");
+  PetscAssertFalse(osm->n_local_true > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not yet implemented");
   /*
      support for limiting the restriction or interpolation to only local
      subdomain values (leaving the other values 0).
@@ -788,8 +788,8 @@ static PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS i
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (n < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more blocks, n = %D",n);
-  if (pc->setupcalled && (n != osm->n_local_true || is)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetUp().");
+  PetscAssertFalse(n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more blocks, n = %D",n);
+  PetscAssertFalse(pc->setupcalled && (n != osm->n_local_true || is),PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetUp().");
 
   if (!pc->setupcalled) {
     if (is) {
@@ -837,8 +837,8 @@ static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *i
   PetscInt       n;
 
   PetscFunctionBegin;
-  if (N < 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of total blocks must be > 0, N = %D",N);
-  if (is || is_local) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Use PCASMSetLocalSubdomains() to set specific index sets\n\they cannot be set globally yet.");
+  PetscAssertFalse(N < 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of total blocks must be > 0, N = %D",N);
+  PetscAssertFalse(is || is_local,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Use PCASMSetLocalSubdomains() to set specific index sets\n\they cannot be set globally yet.");
 
   /*
      Split the subdomains equally among all processors
@@ -846,8 +846,8 @@ static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *i
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
   n    = N/size + ((N % size) > rank);
-  if (!n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Process %d must have at least one block: total processors %d total blocks %D",(int)rank,(int)size,N);
-  if (pc->setupcalled && n != osm->n_local_true) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetUp().");
+  PetscAssertFalse(!n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Process %d must have at least one block: total processors %d total blocks %D",(int)rank,(int)size,N);
+  PetscAssertFalse(pc->setupcalled && n != osm->n_local_true,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetUp().");
   if (!pc->setupcalled) {
     ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
 
@@ -863,8 +863,8 @@ static PetscErrorCode  PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
   PC_ASM *osm = (PC_ASM*)pc->data;
 
   PetscFunctionBegin;
-  if (ovl < 0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap value requested");
-  if (pc->setupcalled && ovl != osm->overlap) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCASMSetOverlap() should be called before PCSetUp().");
+  PetscAssertFalse(ovl < 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap value requested");
+  PetscAssertFalse(pc->setupcalled && ovl != osm->overlap,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCASMSetOverlap() should be called before PCSetUp().");
   if (!pc->setupcalled) osm->overlap = ovl;
   PetscFunctionReturn(0);
 }
@@ -893,7 +893,7 @@ static PetscErrorCode  PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
   PC_ASM *osm = (PC_ASM *) pc->data;
 
   PetscFunctionBegin;
-  if (type != PC_COMPOSITE_ADDITIVE && type != PC_COMPOSITE_MULTIPLICATIVE) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Only supports additive or multiplicative as the local type");
+  PetscAssertFalse(type != PC_COMPOSITE_ADDITIVE && type != PC_COMPOSITE_MULTIPLICATIVE,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Only supports additive or multiplicative as the local type");
   osm->loctype = type;
   PetscFunctionReturn(0);
 }
@@ -922,7 +922,7 @@ static PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *firs
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (osm->n_local_true < 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
+  PetscAssertFalse(osm->n_local_true < 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
 
   if (n_local) *n_local = osm->n_local_true;
   if (first_local) {
@@ -1432,13 +1432,13 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(outis,3);
-  if (n < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of local blocks must be > 0, n = %D",n);
+  PetscAssertFalse(n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of local blocks must be > 0, n = %D",n);
 
   /* Get prefix, row distribution, and block size */
   ierr = MatGetOptionsPrefix(A,&prefix);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
-  if (rstart/bs*bs != rstart || rend/bs*bs != rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%D,%D) for matrix block size %D",rstart,rend,bs);
+  PetscAssertFalse(rstart/bs*bs != rstart || rend/bs*bs != rend,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%D,%D) for matrix block size %D",rstart,rend,bs);
 
   /* Get diagonal block from matrix if possible */
   ierr = MatHasOperation(A,MATOP_GET_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
@@ -1645,7 +1645,7 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
   PetscInt       nidx,*idx,loc,ii,jj,count;
 
   PetscFunctionBegin;
-  if (dof != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," ");
+  PetscAssertFalse(dof != 1,PETSC_COMM_SELF,PETSC_ERR_SUP," ");
 
   *Nsub     = N*M;
   ierr      = PetscMalloc1(*Nsub,is);CHKERRQ(ierr);
@@ -1654,13 +1654,13 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
   loc_outer = 0;
   for (i=0; i<N; i++) {
     height = n/N + ((n % N) > i); /* height of subdomain */
-    if (height < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many N subdomains for mesh dimension n");
+    PetscAssertFalse(height < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many N subdomains for mesh dimension n");
     yleft  = ystart - overlap; if (yleft < 0) yleft = 0;
     yright = ystart + height + overlap; if (yright > n) yright = n;
     xstart = 0;
     for (j=0; j<M; j++) {
       width = m/M + ((m % M) > j); /* width of subdomain */
-      if (width < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many M subdomains for mesh dimension m");
+      PetscAssertFalse(width < 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many M subdomains for mesh dimension m");
       xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
       xright = xstart + width + overlap; if (xright > m) xright = m;
       nidx   = (xright - xleft)*(yright - yleft);
@@ -1727,7 +1727,7 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
   if (is) PetscValidPointer(is,3);
   if (is_local) PetscValidPointer(is_local,4);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PC is not a PCASM");
+  PetscAssertFalse(!match,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PC is not a PCASM");
   if (n) *n = osm->n_local_true;
   if (is) *is = osm->is;
   if (is_local) *is_local = osm->is_local;
@@ -1767,7 +1767,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (n) PetscValidIntPointer(n,2);
   if (mat) PetscValidPointer(mat,3);
-  if (!pc->setupcalled) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
+  PetscAssertFalse(!pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
   if (!match) {
     if (n) *n = 0;
@@ -1810,7 +1810,7 @@ PetscErrorCode  PCASMSetDMSubdomains(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flg,2);
-  if (pc->setupcalled) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for a setup PC.");
+  PetscAssertFalse(pc->setupcalled,((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for a setup PC.");
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&match);CHKERRQ(ierr);
   if (match) {
     osm->dm_subdomains = flg;

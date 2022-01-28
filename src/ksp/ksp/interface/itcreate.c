@@ -61,10 +61,10 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
   PetscValidHeaderSpecific(newdm,KSP_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  PetscAssertFalse(!isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT);CHKERRQ(ierr);
-  if (classid != KSP_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not KSP next in file");
+  PetscAssertFalse(classid != KSP_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not KSP next in file");
   ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = KSPSetType(newdm, type);CHKERRQ(ierr);
   if (newdm->ops->load) {
@@ -421,9 +421,9 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,PetscBool errorifnotsupported,KSPNo
     }
   }
   if (best < 1 && errorifnotsupported) {
-    if (ksp->normtype == KSP_NORM_DEFAULT && ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"The %s KSP implementation did not call KSPSetSupportedNorm()",((PetscObject)ksp)->type_name);
-    if (ksp->normtype == KSP_NORM_DEFAULT) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,PCSides[ksp->pc_side]);
-    if (ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
+    PetscAssertFalse(ksp->normtype == KSP_NORM_DEFAULT && ksp->pc_side == PC_SIDE_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"The %s KSP implementation did not call KSPSetSupportedNorm()",((PetscObject)ksp)->type_name);
+    PetscAssertFalse(ksp->normtype == KSP_NORM_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,PCSides[ksp->pc_side]);
+    PetscAssertFalse(ksp->pc_side == PC_SIDE_DEFAULT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s with %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype],PCSides[ksp->pc_side]);
   }
   if (normtype) *normtype = (KSPNormType)ibest;
@@ -797,7 +797,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(KSPList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
+  PetscAssertFalse(!r,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {
     ierr              = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);

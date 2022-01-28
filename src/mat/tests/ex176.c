@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size != 3) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"You have to use three MPI processes to run this example ");
+  PetscAssertFalse(size != 3,comm,PETSC_ERR_ARG_INCOMP,"You have to use three MPI processes to run this example ");
   ierr = MatCreateMPIAIJWithArrays(comm,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank],&A);CHKERRQ(ierr);
   ierr = MatView(A,NULL);CHKERRQ(ierr);
   ierr = MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],anew[rank]);CHKERRQ(ierr);

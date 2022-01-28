@@ -6,8 +6,8 @@ static PetscErrorCode KSPSetUp_CR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPCR");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");
+  PetscAssertFalse(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPCR");
+  else PetscAssertFalse(ksp->pc_side == PC_SYMMETRIC,PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");
   ierr = KSPSetWorkVecs(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

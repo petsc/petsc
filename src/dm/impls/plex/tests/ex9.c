@@ -55,12 +55,12 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
     len  = options->numFields;
     ierr = PetscMalloc1(len, &options->numComponents);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-num_components", "The number of components per field", "ex9.c", options->numComponents, &len, &flg);CHKERRQ(ierr);
-    if (flg && (len != options->numFields)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->numFields);
+    PetscAssertFalse(flg && (len != options->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->numFields);
   }
   len  = (options->dim+1) * PetscMax(1, options->numFields);
   ierr = PetscMalloc1(len, &options->numDof);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex9.c", options->numDof, &len, &flg);CHKERRQ(ierr);
-  if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %d should be %d", len, (options->dim+1) * PetscMax(1, options->numFields));
+  PetscAssertFalse(flg && (len != (options->dim+1) * PetscMax(1, options->numFields)),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %d should be %d", len, (options->dim+1) * PetscMax(1, options->numFields));
 
   /* We are specifying the scalar dof, so augment it for multiple components */
   {
@@ -263,15 +263,15 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
 
   ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
   numRuns = (cEnd-cStart) * user->iterations;
-  if (eventInfo.count != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
-  if ((PetscInt) eventInfo.flops != 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
+  PetscAssertFalse(eventInfo.count != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
+  PetscAssertFalse((PetscInt) eventInfo.flops != 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (user->printTimes) {
     ierr = PetscSynchronizedPrintf(comm, "[%d] Cones: %d Total time: %.3es Average time per cone: %.3es\n", rank, numRuns, eventInfo.time, eventInfo.time/numRuns);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
   } else if (eventInfo.time > maxTimePerRun * numRuns) {
     ierr = PetscSynchronizedPrintf(comm, "[%d] Cones: %d Average time per cone: %gs standard: %gs\n", rank, numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
-    if (user->errors) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for cone %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
+    PetscAssertFalse(user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for cone %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
   }
   PetscFunctionReturn(0);
 }
@@ -309,15 +309,15 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 
   ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
   numRuns = (cEnd-cStart) * user->iterations;
-  if (eventInfo.count != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
-  if ((PetscInt) eventInfo.flops != 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
+  PetscAssertFalse(eventInfo.count != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
+  PetscAssertFalse((PetscInt) eventInfo.flops != 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (user->printTimes) {
     ierr = PetscSynchronizedPrintf(comm, "[%d] Closures: %d Total time: %.3es Average time per cone: %.3es\n", rank, numRuns, eventInfo.time, eventInfo.time/numRuns);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
   } else if (eventInfo.time > maxTimePerRun * numRuns) {
     ierr = PetscSynchronizedPrintf(comm, "[%d] Closures: %d Average time per cone: %gs standard: %gs\n", rank, numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
-    if (user->errors) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
+    PetscAssertFalse(user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
   }
   PetscFunctionReturn(0);
 }
@@ -382,8 +382,8 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
 
   ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
   numRuns = (cEnd-cStart) * user->iterations;
-  if (eventInfo.count != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
-  if ((PetscInt) eventInfo.flops != 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
+  PetscAssertFalse(eventInfo.count != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
+  PetscAssertFalse((PetscInt) eventInfo.flops != 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (user->printTimes || eventInfo.time > maxTimePerRun * numRuns) {
     const char *title = "VecClosures";
     const char *titleIndex = "VecClosures with Index";
@@ -396,7 +396,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
     } else {
       ierr = PetscSynchronizedPrintf(comm, "[%d] %s: %d Average time per vector closure: %gs standard: %gs\n", rank, useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, eventInfo.time/numRuns, maxTimePerRun);CHKERRQ(ierr);
       ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
-      if (user->errors) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
+      PetscAssertFalse(user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
     }
   }
   PetscFunctionReturn(0);

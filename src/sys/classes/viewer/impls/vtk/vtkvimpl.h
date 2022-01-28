@@ -31,7 +31,7 @@ typedef unsigned char PetscVTKType;
 #define PETSC_VTK_INT_MAX  2147483647
 #define PETSC_VTK_INT_MIN -2147483647
 #if defined(PETSC_USE_64BIT_INDICES)
-#  define PetscVTKIntCheck(a)  if ((a) > PETSC_VTK_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for 32-bit VTK binary format")
+#  define PetscVTKIntCheck(a)  PetscAssertFalse((a) > PETSC_VTK_INT_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for 32-bit VTK binary format")
 #  define PetscVTKIntCast(a) (PetscVTKInt)(a);PetscVTKIntCheck(a)
 #else
 #  define PetscVTKIntCheck(a)

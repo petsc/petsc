@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Load the matrix */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
   /* Load the matrix; then destroy the viewer.*/
@@ -63,7 +63,7 @@ int main(int argc,char **args)
     PetscMPIInt color,subrank,duprank,subsize;
     duprank = size-1 - rank;
     subsize = size/nsubcomm;
-    if (subsize*nsubcomm != size) SETERRQ(comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
+    PetscAssertFalse(subsize*nsubcomm != size,comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
     ierr    = PetscSubcommSetTypeGeneral(psubcomm,color,subrank);CHKERRQ(ierr);

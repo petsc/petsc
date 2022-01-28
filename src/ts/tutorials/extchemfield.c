@@ -80,7 +80,7 @@ static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 
-#define CHKERRTC(ierr) do {if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
+#define CHKERRTC(ierr) do {PetscAssertFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
 int main(int argc,char **argv)
 {
@@ -407,7 +407,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     x[i][0] = 1.0 + .05*PetscSinScalar(2.*PETSC_PI*xc[i]);  /* Non-dimensionalized by user->Tini */
     for (j=0; j<sizeof(initial)/sizeof(initial[0]); j++) {
       int ispec = TC_getSpos(initial[j].name, strlen(initial[j].name));
-      if (ispec < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[j].name);
+      PetscAssertFalse(ispec < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[j].name);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",j,initial[j].name,initial[j].massfrac);CHKERRQ(ierr);
       x[i][1+ispec] = initial[j].massfrac;
     }

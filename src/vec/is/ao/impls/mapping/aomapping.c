@@ -307,7 +307,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   if (PetscDefined(USE_DEBUG)) {
     /* Check that the permutations are complementary */
     for (i = 0; i < N; i++) {
-      if (i != aomap->appPerm[aomap->petscPerm[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
+      PetscAssertFalse(i != aomap->appPerm[aomap->petscPerm[i]],PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
     }
   }
   /* Cleanup */
@@ -356,7 +356,7 @@ PetscErrorCode  AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
   ierr = ISGetLocalSize(isapp, &napp);CHKERRQ(ierr);
   if (ispetsc) {
     ierr = ISGetLocalSize(ispetsc, &npetsc);CHKERRQ(ierr);
-    if (napp != npetsc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
+    PetscAssertFalse(napp != npetsc,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
     ierr = ISGetIndices(ispetsc, &mypetsc);CHKERRQ(ierr);
   } else {
     mypetsc = NULL;

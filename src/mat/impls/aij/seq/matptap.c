@@ -258,7 +258,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
       caj    = ca + ci[crow];
       /* Perform sparse axpy operation.  Note cjj includes apj. */
       for (k=0; nextap<apnzj; k++) {
-        if (PetscUnlikelyDebug(k >= ci[crow+1] - ci[crow])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"k too large k %" PetscInt_FMT ", crow %" PetscInt_FMT,k,crow);
+        PetscAssertFalseDebug(k >= ci[crow+1] - ci[crow],PETSC_COMM_SELF,PETSC_ERR_PLIB,"k too large k %" PetscInt_FMT ", crow %" PetscInt_FMT,k,crow);
         if (cjj[k]==apj[nextap]) {
           caj[k] += (*pA)*apa[apj[nextap++]];
         }
@@ -291,9 +291,9 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   atb  = (Mat_MatTransMatMult*)C->product->data;
-  if (!atb) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing data structure");
+  PetscAssertFalse(!atb,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing data structure");
   ierr = MatTranspose_SeqAIJ(P,MAT_REUSE_MATRIX,&atb->At);CHKERRQ(ierr);
-  if (!C->ops->matmultnumeric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing numeric operation");
+  PetscAssertFalse(!C->ops->matmultnumeric,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing numeric operation");
   /* when using rap, MatMatMatMultSymbolic used a different data */
   if (atb->data) C->product->data = atb->data;
   ierr = (*C->ops->matmatmultnumeric)(atb->At,A,P,C);CHKERRQ(ierr);

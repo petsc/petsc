@@ -102,11 +102,11 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
-  if (!ptap->P_oth && size>1) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap->P_oth && size>1,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatProductClear()");
 
   /* flag CPU mask for C */
 #if defined(PETSC_HAVE_DEVICE)
@@ -196,7 +196,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (C->product->data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
+  PetscAssertFalse(C->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
@@ -422,7 +422,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscAssertFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)C,MATMPIDENSE,&cisdense);CHKERRQ(ierr);
   if (!cisdense) {
@@ -551,7 +551,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,PetscInt Bbidx,Mat C,Mat *outworkB
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscAssertFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   contents = (MPIAIJ_MPIDense*)C->product->data;
   ierr = VecScatterGetRemote_Private(ctx,PETSC_TRUE/*send*/,&nsends,&sstarts,&sindices,&sprocs,NULL/*bs*/);CHKERRQ(ierr);
   ierr = VecScatterGetRemoteOrdered_Private(ctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,NULL,&rprocs,NULL/*bs*/);CHKERRQ(ierr);
@@ -562,13 +562,13 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,PetscInt Bbidx,Mat C,Mat *outworkB
   } else {
     workB = *outworkB = contents->workB1;
   }
-  if (PetscUnlikely(nrows != workB->rmap->n)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of rows of workB %" PetscInt_FMT " not equal to columns of aij->B %d",workB->cmap->n,nrows);
+  PetscAssertFalse(nrows != workB->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of rows of workB %" PetscInt_FMT " not equal to columns of aij->B %d",workB->cmap->n,nrows);
   swaits = contents->swaits;
   rwaits = contents->rwaits;
 
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(B,&blda);CHKERRQ(ierr);
-  if (PetscUnlikely(blda != contents->blda)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT,blda,contents->blda);
+  PetscAssertFalse(blda != contents->blda,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT,blda,contents->blda);
   ierr = MatDenseGetArray(workB,&rvalues);CHKERRQ(ierr);
 
   /* Post recv, use MPI derived data type to save memory */
@@ -604,7 +604,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
-  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscAssertFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   contents = (MPIAIJ_MPIDense*)C->product->data;
   /* diagonal block of A times all local rows of B */
   /* TODO: this calls a symbolic multiplication every time, which could be avoided */
@@ -618,7 +618,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   } else {
     Mat      Bb,Cb;
     PetscInt BN=B->cmap->N,n=contents->workB->cmap->n,i;
-    if (n <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %" PetscInt_FMT " must be positive",n);
+    PetscAssertFalse(n <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %" PetscInt_FMT " must be positive",n);
 
     for (i=0; i<BN; i+=n) {
       ierr = MatDenseGetSubMatrix(B,i,PetscMin(i+n,BN),&Bb);CHKERRQ(ierr);
@@ -662,10 +662,10 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (!ptap->P_oth && size>1) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap->P_oth && size>1,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"AP cannot be reused. Do not call MatProductClear()");
 
   /* flag CPU mask for C */
 #if defined(PETSC_HAVE_DEVICE)
@@ -797,7 +797,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat C
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (C->product->data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
+  PetscAssertFalse(C->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
@@ -1058,7 +1058,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (C->product->data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
+  PetscAssertFalse(C->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
@@ -1251,8 +1251,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P,Mat A,M
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
-  if (!ptap->Pt) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap->Pt,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
 
   Pt   = ptap->Pt;
   ierr = MatTranspose(P,MAT_REUSE_MATRIX,&Pt);CHKERRQ(ierr);
@@ -1548,8 +1548,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
-  if (!ptap->A_loc) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap->A_loc,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
 
   if (ptap->reuse == MAT_REUSE_MATRIX) {
@@ -1632,8 +1632,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   ptap = (Mat_APMPI*)C->product->data;
-  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
-  if (!ptap->A_loc) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
+  PetscAssertFalse(!ptap,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtAP cannot be computed. Missing data");
+  PetscAssertFalse(!ptap->A_loc,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"PtA cannot be reused. Do not call MatProductClear()");
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
@@ -1805,7 +1805,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* check if matrix local sizes are compatible */
-  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != P (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
+  PetscAssertFalse(A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend,comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != P (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
@@ -2193,7 +2193,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   PetscFunctionBegin;
   /* Check matrix local sizes */
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
-  if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
+  PetscAssertFalse(A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
 
   /* Set "nonscalable" as default algorithm */
   ierr = PetscStrcmp(C->product->alg,"default",&flg);CHKERRQ(ierr);
@@ -2254,7 +2254,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
   PetscFunctionBegin;
   /* Check matrix local sizes */
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
-  if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
+  PetscAssertFalse(A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
 
   /* Set default algorithm */
   ierr = PetscStrcmp(C->product->alg,"default",&flg);CHKERRQ(ierr);
@@ -2320,8 +2320,8 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
   PetscFunctionBegin;
   /* Check matrix local sizes */
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
-  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%" PetscInt_FMT ", %" PetscInt_FMT ") != Prow (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
-  if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%" PetscInt_FMT ", %" PetscInt_FMT ") != Prow (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
+  PetscAssertFalse(A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%" PetscInt_FMT ", %" PetscInt_FMT ") != Prow (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
+  PetscAssertFalse(A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%" PetscInt_FMT ", %" PetscInt_FMT ") != Prow (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
 
   /* Set "nonscalable" as default algorithm */
   ierr = PetscStrcmp(C->product->alg,"default",&flg);CHKERRQ(ierr);
@@ -2373,7 +2373,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_RARt(Mat C)
 
   PetscFunctionBegin;
   /* Check matrix local sizes */
-  if (A->cmap->n != R->cmap->n || A->rmap->n != R->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A local (%" PetscInt_FMT ", %" PetscInt_FMT "), R local (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->n,A->rmap->n,R->rmap->n,R->cmap->n);
+  PetscAssertFalse(A->cmap->n != R->cmap->n || A->rmap->n != R->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A local (%" PetscInt_FMT ", %" PetscInt_FMT "), R local (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->n,A->rmap->n,R->rmap->n,R->cmap->n);
 
   C->ops->productsymbolic = MatProductSymbolic_RARt_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(0);

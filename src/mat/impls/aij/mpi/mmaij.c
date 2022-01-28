@@ -25,7 +25,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (!aij->garray) {
-    if (!aij->B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
+    PetscAssertFalse(!aij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
 #if defined(PETSC_USE_CTABLE)
     /* use a table */
     ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   if (!aij->lvec) {
-    if (!aij->B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
+    PetscAssertFalse(!aij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
     ierr = MatCreateVecs(aij->B,&aij->lvec,NULL);CHKERRQ(ierr);
   }
   ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr);
@@ -232,7 +232,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       r_rmapd[i] = inA->rmap->mapping->indices[i] + 1;
     }
   }
-  if (nt != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %" PetscInt_FMT " n %" PetscInt_FMT,nt,n);
+  PetscAssertFalse(nt != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %" PetscInt_FMT " n %" PetscInt_FMT,nt,n);
   ierr = PetscMalloc1(n+1,&auglyrmapd);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapd[i]) {
@@ -255,7 +255,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       r_rmapo[i] = lindices[inA->rmap->mapping->indices[i]];
     }
   }
-  if (nt > no) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %" PetscInt_FMT " no %" PetscInt_FMT,nt,n);
+  PetscAssertFalse(nt > no,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %" PetscInt_FMT " no %" PetscInt_FMT,nt,n);
   ierr = PetscFree(lindices);CHKERRQ(ierr);
   ierr = PetscMalloc1(nt+1,&auglyrmapo);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {

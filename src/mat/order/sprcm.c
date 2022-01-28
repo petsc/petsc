@@ -14,7 +14,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RCM(Mat mat,MatOrderingType type,IS *
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
+  PetscAssertFalse(!done,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   ierr = PetscMalloc3(nrow,&mask,nrow,&perm,2*nrow,&xls);CHKERRQ(ierr);
   SPARSEPACKgenrcm(&nrow,ia,ja,perm,mask,xls);

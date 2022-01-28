@@ -56,17 +56,17 @@ int main(int argc,char **argv)
 
   ierr = PetscParallelSortInt(map, mapeven, keys, keyseven);CHKERRQ(ierr);
   ierr = PetscParallelSortedInt(mapeven->comm, mapeven->n, keyseven, &sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
-  for (i = 0; i < n; i++) if (keys[i] != keyscopy[i]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscParallelSortInt() modified input array");
+  PetscAssertFalse(!sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
+  for (i = 0; i < n; i++) PetscAssertFalse(keys[i] != keyscopy[i],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscParallelSortInt() modified input array");
 
   ierr = PetscParallelSortInt(map, map, keys, keyssorted);CHKERRQ(ierr);
   ierr = PetscParallelSortedInt(map->comm, map->n, keyssorted, &sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
-  for (i = 0; i < n; i++) if (keys[i] != keyscopy[i]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscParallelSortInt() modified input array");
+  PetscAssertFalse(!sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
+  for (i = 0; i < n; i++) PetscAssertFalse(keys[i] != keyscopy[i],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscParallelSortInt() modified input array");
 
   ierr = PetscParallelSortInt(map, map, keys, keys);CHKERRQ(ierr);
   ierr = PetscParallelSortedInt(map->comm, map->n, keys, &sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
+  PetscAssertFalse(!sorted,mapeven->comm, PETSC_ERR_PLIB, "PetscParallelSortInt() failed to sort");
   /* TODO */
 #if 0
   ierr = ISSortGlobal(is);CHKERRQ(ierr);

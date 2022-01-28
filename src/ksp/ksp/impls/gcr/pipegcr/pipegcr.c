@@ -80,7 +80,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
   PetscFunctionBegin;
   /* !!PS We have not checked these routines for use with complex numbers. The inner products
      are likely not defined correctly for that case */
-  if (PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
+  PetscAssertFalse(PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX),PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
 
   ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
   x = ksp->vec_sol;
@@ -387,7 +387,7 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscAssertFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
 

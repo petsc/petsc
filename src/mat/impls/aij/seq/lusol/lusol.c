@@ -226,7 +226,7 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
          lusol->indc, lusol->indr, lusol->ip, lusol->iq,
          lusol->lenc, lusol->lenr, lusol->locc, lusol->locr, &status);
 
-  if (status) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status);
+  PetscAssertFalse(status,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status);
 
   ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(b, &bb);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   a    = (Mat_SeqAIJ*)A->data;
 
-  if (m != lusol->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"factorization struct inconsistent");
+  PetscAssertFalse(m != lusol->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"factorization struct inconsistent");
 
   factorizations = 0;
   do {

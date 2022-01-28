@@ -153,8 +153,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   if (s > 0) {
     /* if not communicating data then should be ok to have nothing on some processes */
-    if (M < m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"More processes than data points! %D %D",m,M);
-    if ((M-1) < s && size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
+    PetscAssertFalse(M < m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"More processes than data points! %D %D",m,M);
+    PetscAssertFalse((M-1) < s && size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
   }
 
   /*
@@ -188,14 +188,14 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     /* verify that data user provided is consistent */
     left = xs;
     for (i=rank; i<size; i++) left += lx[i];
-    if (left != M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M %D %D",left,M);
+    PetscAssertFalse(left != M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M %D %D",left,M);
   }
 
   /*
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  if ((x < s) & ((M > 1) | (bx == DM_BOUNDARY_PERIODIC))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  PetscAssertFalse((x < s) & ((M > 1) | (bx == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
 
   xe  = xs + x;
 

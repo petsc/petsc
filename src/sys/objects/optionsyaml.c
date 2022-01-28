@@ -32,15 +32,15 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 
   PetscFunctionBegin;
   if (node->type == YAML_SCALAR_NODE && !STR(node)[0]) PetscFunctionReturn(0); /* empty */
-  if (node->type != YAML_MAPPING_NODE) SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
+  PetscAssertFalse(node->type != YAML_MAPPING_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
   for (yaml_node_pair_t *pair = MAP(node).start; pair < MAP(node).top; pair++) {
     yaml_node_t *keynode = yaml_document_get_node(doc, pair->key);
     yaml_node_t *valnode = yaml_document_get_node(doc, pair->value);
     PetscBool   isMergeKey,isDummyKey,isIncludeTag;
 
-    if (!keynode) SETERRQ(comm, PETSC_ERR_LIB, "Corrupt YAML document");
-    if (!valnode) SETERRQ(comm, PETSC_ERR_LIB, "Corrupt YAML document");
-    if (keynode->type != YAML_SCALAR_NODE) SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
+    PetscAssertFalse(!keynode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+    PetscAssertFalse(!valnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+    PetscAssertFalse(keynode->type != YAML_SCALAR_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
 
     /* "<<" is the merge key: don't increment the prefix */
     ierr = PetscStrcmp(STR(keynode), "<<", &isMergeKey);CHKERRQ(ierr);
@@ -48,8 +48,8 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
       if (valnode->type == YAML_SEQUENCE_NODE) {
         for (yaml_node_item_t *item = SEQ(valnode).start; item < SEQ(valnode).top; item++) {
           yaml_node_t *itemnode = yaml_document_get_node(doc, *item);
-          if (!itemnode) SETERRQ(comm, PETSC_ERR_LIB, "Corrupt YAML document");
-          if (itemnode->type != YAML_MAPPING_NODE) SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
+          PetscAssertFalse(!itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+          PetscAssertFalse(itemnode->type != YAML_MAPPING_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
           ierr = PetscParseLayerYAML(options, doc, itemnode);CHKERRQ(ierr);
         }
       } else if (valnode->type == YAML_MAPPING_NODE) {
@@ -83,7 +83,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
         const char  *itemstr = NULL;
         size_t       itemlen;
 
-        if (!itemnode) SETERRQ(comm, PETSC_ERR_LIB, "Corrupt YAML document");
+        PetscAssertFalse(!itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
 
         if (itemnode->type == YAML_SCALAR_NODE) {
           itemstr = STR(itemnode);
@@ -92,17 +92,17 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
           yaml_node_pair_t *kvn = itemnode->data.mapping.pairs.start;
           yaml_node_pair_t *top = itemnode->data.mapping.pairs.top;
 
-          if (top - kvn > 1) SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node value: expected a single key:value pair");
+          PetscAssertFalse(top - kvn > 1,comm, PETSC_ERR_SUP, "Unsupported YAML node value: expected a single key:value pair");
           if (top - kvn > 0) {
             yaml_node_t *kn = yaml_document_get_node(doc, kvn->key);
             yaml_node_t *vn = yaml_document_get_node(doc, kvn->value);
 
-            if (!kn) SETERRQ(comm, PETSC_ERR_LIB, "Corrupt YAML document");
-            if (!vn) SETERRQ(comm, PETSC_ERR_LIB, "Corrupt YAML document");
-            if (kn->type != YAML_SCALAR_NODE) SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
+            PetscAssertFalse(!kn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+            PetscAssertFalse(!vn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+            PetscAssertFalse(kn->type != YAML_SCALAR_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
 
             ierr = PetscStrcmp(STR(kn), "<<", &isMergeKey);CHKERRQ(ierr);
-            if (isMergeKey) SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node value: merge key '<<' not supported here");
+            PetscAssertFalse(isMergeKey,comm, PETSC_ERR_SUP, "Unsupported YAML node value: merge key '<<' not supported here");
 
             ierr = PetscStrbeginswith(STR(kn), "$$", &isDummyKey);CHKERRQ(ierr);
             if (isDummyKey) continue;
@@ -175,10 +175,10 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 
   PetscFunctionBegin;
   if (!in_str) in_str = "";
-  ierr = !yaml_parser_initialize(&parser); if (ierr) SETERRQ(comm, PETSC_ERR_LIB, "YAML parser initialization error");
+  ierr = !yaml_parser_initialize(&parser); PetscAssertFalse(ierr,comm, PETSC_ERR_LIB, "YAML parser initialization error");
   yaml_parser_set_input_string(&parser, (const unsigned char *)in_str, strlen(in_str));
   do {
-    ierr = !yaml_parser_load(&parser, &doc); if (ierr) SETERRQ(comm, PETSC_ERR_LIB, "YAML parser loading error");
+    ierr = !yaml_parser_load(&parser, &doc); PetscAssertFalse(ierr,comm, PETSC_ERR_LIB, "YAML parser loading error");
     root = yaml_document_get_root_node(&doc);
     if (root) {
       ierr = PetscParseLayerYAML(options, &doc, root);CHKERRQ(ierr);
@@ -239,17 +239,17 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,con
       fseek(fd, 0, SEEK_END);
       yamlLength = (int)ftell(fd);
       fseek(fd, 0, SEEK_SET);
-      if (yamlLength < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to query size of YAML file: %s", fname);
+      PetscAssertFalse(yamlLength < 0,PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to query size of YAML file: %s", fname);
       ierr = PetscMalloc1(yamlLength+1, &yamlString);CHKERRQ(ierr);
       rd = fread(yamlString, 1, (size_t)yamlLength, fd);
-      if (rd != (size_t)yamlLength) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read entire YAML file: %s", fname);
+      PetscAssertFalse(rd != (size_t)yamlLength,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read entire YAML file: %s", fname);
       yamlString[yamlLength] = 0;
       fclose(fd);
     }
   }
 
   ierr = MPI_Bcast(&yamlLength, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
-  if (require && yamlLength < 0) SETERRQ(comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
+  PetscAssertFalse(require && yamlLength < 0,comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
   if (yamlLength < 0) PetscFunctionReturn(0);
 
   if (rank) {ierr = PetscMalloc1(yamlLength+1, &yamlString);CHKERRQ(ierr);}

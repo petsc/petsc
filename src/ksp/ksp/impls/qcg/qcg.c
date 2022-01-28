@@ -24,7 +24,7 @@ PetscErrorCode  KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (delta < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
+  PetscAssertFalse(delta < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   ierr = PetscTryMethod(ksp,"KSPQCGSetTrustRegionRadius_C",(KSP,PetscReal),(ksp,delta));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -113,8 +113,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  if (ksp->transpose_solve) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Currently does not support transpose solve");
+  PetscAssertFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscAssertFalse(ksp->transpose_solve,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Currently does not support transpose solve");
 
   ksp->its = 0;
   maxit    = ksp->max_it;
@@ -128,9 +128,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   X        = ksp->vec_sol;
   B        = ksp->vec_rhs;
 
-  if (pcgP->delta <= dzero) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
+  PetscAssertFalse(pcgP->delta <= dzero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
   ierr = KSPGetPCSide(ksp,&side);CHKERRQ(ierr);
-  if (side != PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
+  PetscAssertFalse(side != PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
   ierr = VecSet(W,0.0);CHKERRQ(ierr);  /* W = 0 */

@@ -21,7 +21,7 @@ int main(int argc,char **args)
 
   /* Load AIJ matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
@@ -52,13 +52,13 @@ int main(int argc,char **args)
 
   /* Test MatKAIJGetScaledIdentity() */
   ierr = MatKAIJGetScaledIdentity(TA,&flg);CHKERRQ(ierr);
-  if (flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 1: MatKAIJGetScaledIdentity()");
+  PetscAssertFalse(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 1: MatKAIJGetScaledIdentity()");
   /* Test MatMult() */
   ierr = MatMultEqual(TA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 1: MatMult() for KAIJ matrix");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 1: MatMult() for KAIJ matrix");
   /* Test MatMultAdd() */
   ierr = MatMultAddEqual(TA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 1: MatMultAdd() for KAIJ matrix");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 1: MatMultAdd() for KAIJ matrix");
 
   ierr = MatDestroy(&TA);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -74,13 +74,13 @@ int main(int argc,char **args)
 
   /* Test MatKAIJGetScaledIdentity() */
   ierr = MatKAIJGetScaledIdentity(TA,&flg);CHKERRQ(ierr);
-  if (flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 2: MatKAIJGetScaledIdentity()");
+  PetscAssertFalse(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 2: MatKAIJGetScaledIdentity()");
   /* Test MatMult() */
   ierr = MatMultEqual(TA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 2: MatMult() for KAIJ matrix");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 2: MatMult() for KAIJ matrix");
   /* Test MatMultAdd() */
   ierr = MatMultAddEqual(TA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 2: MatMultAdd() for KAIJ matrix");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 2: MatMultAdd() for KAIJ matrix");
 
   ierr = MatDestroy(&TA);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -96,13 +96,13 @@ int main(int argc,char **args)
 
   /* Test MatKAIJGetScaledIdentity() */
   ierr = MatKAIJGetScaledIdentity(TA,&flg);CHKERRQ(ierr);
-  if (flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 3: MatKAIJGetScaledIdentity()");
+  PetscAssertFalse(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 3: MatKAIJGetScaledIdentity()");
   /* Test MatMult() */
   ierr = MatMultEqual(TA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 3: MatMult() for KAIJ matrix");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 3: MatMult() for KAIJ matrix");
   /* Test MatMultAdd() */
   ierr = MatMultAddEqual(TA,B,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 3: MatMultAdd() for KAIJ matrix");
+  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 3: MatMultAdd() for KAIJ matrix");
 
   ierr = MatDestroy(&TA);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -126,13 +126,13 @@ int main(int argc,char **args)
 
     /* Test MatKAIJGetScaledIdentity() */
     ierr = MatKAIJGetScaledIdentity(TA,&flg);CHKERRQ(ierr);
-    if (flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 4: MatKAIJGetScaledIdentity()");
+    PetscAssertFalse(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 4: MatKAIJGetScaledIdentity()");
     /* Test MatMult() */
     ierr = MatMultEqual(TA,B,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 4: MatMult() for KAIJ matrix");
+    PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 4: MatMult() for KAIJ matrix");
     /* Test MatMultAdd() */
     ierr = MatMultAddEqual(TA,B,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 4: MatMultAdd() for KAIJ matrix");
+    PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error in Test 4: MatMultAdd() for KAIJ matrix");
 
     ierr = MatDestroy(&TA);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -140,7 +140,7 @@ int main(int argc,char **args)
     ierr = MatCreateKAIJ(A,p,q,NULL,T,&TA);CHKERRQ(ierr);
     /* Test MatKAIJGetScaledIdentity() */
     ierr = MatKAIJGetScaledIdentity(TA,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 5: MatKAIJGetScaledIdentity()");
+    PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 5: MatKAIJGetScaledIdentity()");
     ierr = MatDestroy(&TA);CHKERRQ(ierr);
 
     for (i=0; i<p; i++) {
@@ -152,7 +152,7 @@ int main(int argc,char **args)
     ierr = MatCreateKAIJ(A,p,q,S,T,&TA);CHKERRQ(ierr);
     /* Test MatKAIJGetScaledIdentity() */
     ierr = MatKAIJGetScaledIdentity(TA,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 6: MatKAIJGetScaledIdentity()");
+    PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in Test 6: MatKAIJGetScaledIdentity()");
     ierr = MatDestroy(&TA);CHKERRQ(ierr);
   }
 

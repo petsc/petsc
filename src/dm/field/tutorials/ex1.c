@@ -253,7 +253,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBool("-test_shell", "Test the DMFIELDSHELL implementation of DMField", "ex1.c", testShell, &testShell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  if (dim > 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %D",dim);
+  PetscAssertFalse(dim > 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %D",dim);
   ierr = PetscStrncmp(type,DMPLEX,256,&isplex);CHKERRQ(ierr);
   ierr = PetscStrncmp(type,DMDA,256,&isda);CHKERRQ(ierr);
 

@@ -58,7 +58,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
-  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SL may only do distance 2 coloring");
+  PetscAssertFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"SL may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
 
   ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscAssertFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
@@ -92,7 +92,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
   ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
+  PetscAssertFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
@@ -169,7 +169,7 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
-  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
+  PetscAssertFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
 
   ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscAssertFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
@@ -205,7 +205,7 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
   ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
+  PetscAssertFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) s[i] = (ISColoringValue) (coloring[i]-1);
@@ -279,7 +279,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
-  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IDO may only do distance 2 coloring");
+  PetscAssertFalse(mc->dist != 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"IDO may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
@@ -296,7 +296,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 
   ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscAssertFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
@@ -314,7 +314,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
   ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
+  PetscAssertFalse(ncolors > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {

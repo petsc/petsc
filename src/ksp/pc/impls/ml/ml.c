@@ -168,7 +168,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
   PetscInt       *ci,*cj,ncols;
 
   PetscFunctionBegin;
-  if (am != an) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
+  PetscAssertFalse(am != an,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
   ierr = MatSeqAIJGetArrayRead(mpimat->A,(const PetscScalar**)&aa);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArrayRead(mpimat->B,(const PetscScalar**)&ba);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
@@ -193,7 +193,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
         ca[k++] = *ba++;
       }
     }
-    if (k != ci[am]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"k: %d != ci[am]: %d",k,ci[am]);
+    PetscAssertFalse(k != ci[am],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"k: %d != ci[am]: %d",k,ci[am]);
 
     /* put together the new matrix */
     an   = mpimat->A->cmap->n+mpimat->B->cmap->n;
@@ -243,7 +243,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   PetscScalar           *ml_vals=matdata->values,*aa;
 
   PetscFunctionBegin;
-  if (!mlmat->getrow) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
+  PetscAssertFalse(!mlmat->getrow,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
   if (m != n) { /* ML Pmat and Rmat are in CSR format. Pass array pointers into SeqAIJ matrix */
     if (reuse) {
       Mat_SeqAIJ *aij= (Mat_SeqAIJ*)(*newmat)->data;
@@ -335,9 +335,9 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   Mat            A;
 
   PetscFunctionBegin;
-  if (!mlmat->getrow) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
+  PetscAssertFalse(!mlmat->getrow,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
   n = mlmat->invec_leng;
-  if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
+  PetscAssertFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
   /* create global row numbering for a ML_Operator */
   PetscStackCall("ML_build_global_numbering",ML_build_global_numbering(mlmat,&gordering,"rows"));
@@ -411,7 +411,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   aloc = (Iend-my0);
   nloc = (Iend-my0)/bs;
 
-  if (nloc!=a_nloc && aloc != a_nloc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
+  PetscAssertFalse(nloc!=a_nloc && aloc != a_nloc,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
 
   oldarrsz    = pc_ml->dim * pc_ml->nloc;
   pc_ml->dim  = ndm;
@@ -688,7 +688,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       PetscInt          i,j,mlocal,nvec,M;
       const Vec         *vecs;
 
-      if (!mnull) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Must provide explicit null space using MatSetNearNullSpace() to use user-specified null space");
+      PetscAssertFalse(!mnull,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Must provide explicit null space using MatSetNearNullSpace() to use user-specified null space");
       ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
       ierr = MatGetLocalSize(Aloc,&mlocal,NULL);CHKERRQ(ierr);
       ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvec,&vecs);CHKERRQ(ierr);
@@ -733,7 +733,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   agg_object->cheap_minimizing_energy   = (int)pc_ml->EnergyMinimizationCheap;
 
   if (pc_ml->Aux) {
-    if (!pc_ml->dim) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Auxiliary matrix requires coordinates");
+    PetscAssertFalse(!pc_ml->dim,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Auxiliary matrix requires coordinates");
     ml_object->Amat[0].aux_data->threshold = pc_ml->AuxThreshold;
     ml_object->Amat[0].aux_data->enable    = 1;
     ml_object->Amat[0].aux_data->max_level = 10;
@@ -784,7 +784,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     if (!pc_ml->RepartitionType) {
       PetscInt i;
 
-      if (!pc_ml->dim) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"ML Zoltan repartitioning requires coordinates");
+      PetscAssertFalse(!pc_ml->dim,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"ML Zoltan repartitioning requires coordinates");
       PetscStackCall("ML_Repartition_Set_Partitioner",ML_Repartition_Set_Partitioner(ml_object,ML_USEZOLTAN));
       PetscStackCall("ML_Aggregate_Set_Dimensions",ML_Aggregate_Set_Dimensions(agg_object, pc_ml->dim));
 
@@ -806,7 +806,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else {
     PetscStackCall("ML_Gen_MultiLevelHierarchy_UsingAggregation",Nlevels = ML_Gen_MultiLevelHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object));
   }
-  if (Nlevels<=0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
+  PetscAssertFalse(Nlevels<=0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
   pc_ml->Nlevels = Nlevels;
   fine_level     = Nlevels - 1;
 
@@ -1003,8 +1003,8 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
     We also try to set some sane defaults when energy minimization is activated, otherwise it's hard to find a working
     combination of options and ML's exit(1) explanations don't help matters.
   */
-  if (pc_ml->EnergyMinimization < -1 || pc_ml->EnergyMinimization > 4) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"EnergyMinimization must be in range -1..4");
-  if (pc_ml->EnergyMinimization == 4 && size > 1) SETERRQ(comm,PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
+  PetscAssertFalse(pc_ml->EnergyMinimization < -1 || pc_ml->EnergyMinimization > 4,comm,PETSC_ERR_ARG_OUTOFRANGE,"EnergyMinimization must be in range -1..4");
+  PetscAssertFalse(pc_ml->EnergyMinimization == 4 && size > 1,comm,PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
   if (pc_ml->EnergyMinimization == 4) {ierr = PetscInfo(pc,"Mandel's energy minimization scheme is experimental and broken in ML-6.2\n");CHKERRQ(ierr);}
   if (pc_ml->EnergyMinimization) {
     ierr = PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol","Energy minimization drop tolerance","None",pc_ml->EnergyMinimizationDropTol,&pc_ml->EnergyMinimizationDropTol,NULL);CHKERRQ(ierr);
@@ -1048,7 +1048,7 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
     partindx = 1;
     ierr     = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[1],&partindx,NULL);CHKERRQ(ierr);
     pc_ml->RepartitionType = partindx;
-    if (!partindx) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
+    PetscAssertFalse(!partindx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
 #endif
     ierr = PetscOptionsBool("-pc_ml_Aux","Aggregate using auxiliary coordinate-based laplacian","None",pc_ml->Aux,&pc_ml->Aux,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_ml_AuxThreshold","Auxiliary smoother drop tol","None",pc_ml->AuxThreshold,&pc_ml->AuxThreshold,NULL);CHKERRQ(ierr);

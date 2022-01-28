@@ -221,7 +221,7 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
         /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
            and that those dofs are numbered n*Nc+c */
         if (Nf) {
-          if (numConst % Nc) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D has %D dof which is not divisible by %D field components", p, numConst, Nc);
+          PetscAssertFalse(numConst % Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D has %D dof which is not divisible by %D field components", p, numConst, Nc);
           numConst = (numConst/Nc) * cNc;
         } else {
           numConst = PetscMin(numConst, cNc);
@@ -468,7 +468,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 
     ierr = DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC);CHKERRQ(ierr);
     ierr = PetscDSGetNumBoundary(dsBC, &numBd);CHKERRQ(ierr);
-    if (!Nf && numBd) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
+    PetscAssertFalse(!Nf && numBd,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
     for (bd = 0; bd < numBd; ++bd) {
       PetscInt                field;
       DMBoundaryConditionType type;
@@ -591,7 +591,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   for (f = 0; f < Nf; ++f) {
     PetscInt d;
     for (d = 1; d < dim; ++d) {
-      if ((numDof[f*(dim+1)+d] > 0) && (depth < dim)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+      PetscAssertFalse((numDof[f*(dim+1)+d] > 0) && (depth < dim),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
   ierr = DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, NULL, &section);CHKERRQ(ierr);

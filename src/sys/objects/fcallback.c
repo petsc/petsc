@@ -62,7 +62,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
   PetscFunctionBegin;
   if (subtype) PetscValidCharPointer(subtype,2);
   PetscValidPointer(id,3);
-  if (PetscUnlikely(classid < PETSC_SMALLEST_CLASSID || PETSC_LARGEST_CLASSID < classid)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"ClassId %d corrupt",classid);
+  PetscAssertFalse(classid < PETSC_SMALLEST_CLASSID || PETSC_LARGEST_CLASSID < classid,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"ClassId %d corrupt",classid);
   *id = 0;
   if (classid >= _maxclassid) {
     PetscClassId        newmax = PETSC_SMALLEST_CLASSID + 2*(PETSC_LARGEST_CLASSID-PETSC_SMALLEST_CLASSID);

@@ -335,7 +335,7 @@ PetscErrorCode PCRedundantSetNumber(PC pc,PetscInt nredundant)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (nredundant <= 0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
+  PetscAssertFalse(nredundant <= 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
   ierr = PetscTryMethod(pc,"PCRedundantSetNumber_C",(PC,PetscInt),(pc,nredundant));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

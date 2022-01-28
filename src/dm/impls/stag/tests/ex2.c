@@ -43,11 +43,11 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
   {
     PetscInt nRanks[3],n[3],dim;
     ierr = DMGetDimension(dmstag,&dim);CHKERRQ(ierr);
-    if (dim != 3) SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This is a 3d test");
+    PetscAssertFalse(dim != 3,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This is a 3d test");
     ierr = DMStagGetNumRanks(dmstag,&nRanks[0],&nRanks[1],&nRanks[2]);CHKERRQ(ierr);
-    for (i=0; i<3; ++i) if (nRanks[i] != 3) SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 3x3x3 rank grid (run on 27 ranks)");
+    for (i=0; i<3; ++i) PetscAssertFalse(nRanks[i] != 3,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 3x3x3 rank grid (run on 27 ranks)");
     ierr = DMStagGetGlobalSizes(dmstag,&n[0],&n[1],&n[2]);CHKERRQ(ierr);
-    for (i=0; i<3; ++i) if (n[i] != 4) SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 4x4x4 element grid");
+    for (i=0; i<3; ++i) PetscAssertFalse(n[i] != 4,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 4x4x4 element grid");
   }
 
   /* Populate global vector by converting the global index number to a scalar value. */

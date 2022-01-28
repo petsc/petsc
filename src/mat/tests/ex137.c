@@ -14,7 +14,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for two processes");
+  PetscAssertFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for two processes");
 
   if (rank == 0) {
     ii[0] = 0; ii[1] = 2; ii[2] = 5; ii[3] = 7; ii[4] = 7;

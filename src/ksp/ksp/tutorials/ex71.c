@@ -258,7 +258,7 @@ int main(int argc,char **args)
     PetscInt ord[8] = {0,1,3,2,4,5,7,6};
     PetscInt j,idxs[8];
 
-    if (nen > 8) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not coded");
+    PetscAssertFalse(nen > 8,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not coded");
     if (!e_glo) {
       for (j=0;j<nen;j++) idxs[j] = e_loc[i*nen+ord[j]];
       ierr = MatSetValuesBlockedLocal(A,nen,idxs,nen,idxs,user.elemMat,ADD_VALUES);CHKERRQ(ierr);

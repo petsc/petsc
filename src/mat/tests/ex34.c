@@ -14,7 +14,7 @@ int main(int argc, char ** argv)
 
   ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use 2 processors");
+  PetscAssertFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use 2 processors");
 
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
   ierr = MatSetType(A, MATMPIAIJ);CHKERRQ(ierr);
@@ -34,13 +34,13 @@ int main(int argc, char ** argv)
   ierr = MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
 
   ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C");
+  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C");
 
   /* Test user-provided mpidense matrix product */
   ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
   ierr = MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C1);CHKERRQ(ierr);
   ierr = MatMatMultEqual(A,B,C1,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C1");
+  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C1");
 
   ierr = MatDestroy(&C1);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
   ierr = MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
 
   ierr = MatTransposeMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatTransposeMatMult()");
+  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatTransposeMatMult()");
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = MatDestroy(&B);CHKERRQ(ierr);

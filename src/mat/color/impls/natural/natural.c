@@ -33,7 +33,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscolo
   ierr = MatGetSize(mat_seq,&n,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
   n    = n/bs;
-  if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
+  PetscAssertFalse(n > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
 
   start = start/bs;
   end   = end/bs;

@@ -59,7 +59,7 @@ static PetscErrorCode ComputeMassConservation(Vec,PetscReal*,void*);
 static PetscErrorCode MonitorMassConservation(TS,PetscInt,PetscReal,Vec,void*);
 static PetscErrorCode MonitorTempature(TS,PetscInt,PetscReal,Vec,void*);
 
-#define CHKERRTC(ierr) do {if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
+#define CHKERRTC(ierr) do {PetscAssertFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
 int main(int argc,char **argv)
 {
@@ -83,10 +83,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
   ierr = PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL);CHKERRQ(ierr);
   ierr = PetscFileRetrieve(PETSC_COMM_WORLD,chemfile,lchemfile,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",chemfile,lchemfile);
+  PetscAssertFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",chemfile,lchemfile);
   ierr = PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL);CHKERRQ(ierr);
   ierr = PetscFileRetrieve(PETSC_COMM_WORLD,thermofile,lthermofile,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",thermofile,lthermofile);
+  PetscAssertFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",thermofile,lthermofile);
   user.pressure = 1.01325e5;    /* Pascal */
   ierr = PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL);CHKERRQ(ierr);
   user.Tini = 1000;             /* Kelvin */
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
 
   /* tchem requires periodic table in current directory */
   ierr = PetscFileRetrieve(PETSC_COMM_WORLD,periodic,lperiodic,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot located required periodic table %s or local version %s",periodic,lperiodic);
+  PetscAssertFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot located required periodic table %s or local version %s",periodic,lperiodic);
 
   ierr = TC_initChem(lchemfile, lthermofile, 0, 1.0);CHKERRTC(ierr);
   TC_setThermoPres(user.pressure);
@@ -295,15 +295,15 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   x[0] = 1.0;  /* Non-dimensionalized by user->Tini */
 
   ierr = PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&smax,&flg);CHKERRQ(ierr);
-  if (smax < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide at least two initial species");
+  PetscAssertFalse(smax < 2,PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide at least two initial species");
   ierr = PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&mmax,&flg);CHKERRQ(ierr);
-  if (smax != mmax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide same number of initial species %D as initial moles %D",smax,mmax);
+  PetscAssertFalse(smax != mmax,PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide same number of initial species %D as initial moles %D",smax,mmax);
   sum = 0;
   for (i=0; i<smax; i++) sum += molefracs[i];
   for (i=0; i<smax; i++) molefracs[i] = molefracs[i]/sum;
   for (i=0; i<smax; i++) {
     int ispec = TC_getSpos(names[i], strlen(names[i]));
-    if (ispec < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
+    PetscAssertFalse(ispec < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
     ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,names[i],molefracs[i]);CHKERRQ(ierr);
     x[1+ispec] = molefracs[i];
   }

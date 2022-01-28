@@ -93,7 +93,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-inflow_state", "The inflow state", "ex18.c", options->inflowState, &options->inflowState, NULL);CHKERRQ(ierr);
   d    = 2;
   ierr = PetscOptionsRealArray("-source_loc", "The source location", "ex18.c", options->source, &d, &flg);CHKERRQ(ierr);
-  if (flg && d != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
+  PetscAssertFalse(flg && d != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -118,7 +118,7 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
       ierr = PetscStrcasecmp(names[f], func->name, &match);CHKERRQ(ierr);
       if (match) break;
     }
-    if (!func) SETERRQ(comm, PETSC_ERR_USER, "No known functional '%s'", names[f]);
+    PetscAssertFalse(!func,comm, PETSC_ERR_USER, "No known functional '%s'", names[f]);
     options->monitorFuncs[f] = func;
     /* Jed inserts a de-duplication of functionals here */
     ierr = PetscFree(names[f]);CHKERRQ(ierr);

@@ -35,8 +35,8 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (start < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
-  else if (start >= bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n  Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
+  PetscAssertFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
+  else PetscAssertFalse(start >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n  Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=start; i<n; i+=bs) x[i] = s;
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -74,8 +74,8 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (start < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
-  else if (start >= bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n  Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
+  PetscAssertFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
+  else PetscAssertFalse(start >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n  Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=start; i<n; i+=bs) x[i] *= scale;
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -125,8 +125,8 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
   PetscValidRealPointer(nrm,4);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (PetscUnlikely(start < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
-  else if (PetscUnlikely(start >= bs)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
+  PetscAssertFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
+  else PetscAssertFalse(start >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   if (ntype == NORM_2) {
     PetscScalar sum = 0.0;
@@ -190,8 +190,8 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   PetscValidRealPointer(nrm,4);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (PetscUnlikely(start < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
-  else if (PetscUnlikely(start >= bs)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
+  PetscAssertFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
+  else PetscAssertFalse(start >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   for (i=start; i<n; i+=bs) {
     if (PetscRealPart(x[i]) > max) { max = PetscRealPart(x[i]); id = i;}
@@ -259,8 +259,8 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   PetscValidRealPointer(nrm,4);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (PetscUnlikely(start < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
-  else if (PetscUnlikely(start >= bs)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\nHave you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
+  PetscAssertFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
+  else PetscAssertFalse(start >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\nHave you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,bs);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   for (i=start; i<n; i+=bs) {
     if (PetscRealPart(x[i]) < min) { min = PetscRealPart(x[i]); id = i;}
@@ -372,7 +372,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (bs > 128) SETERRQ(comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  PetscAssertFalse(bs > 128,comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (ntype == NORM_2) {
     PetscScalar sum[128];
@@ -444,13 +444,13 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidRealPointer(nrm,3);
-  if (idex) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+  PetscAssertFalse(idex,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (bs > 128) SETERRQ(comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  PetscAssertFalse(bs > 128,comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
     for (j=0; j<bs; j++) max[j] = PETSC_MIN_REAL;
@@ -504,13 +504,13 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidRealPointer(nrm,3);
-  if (idex) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+  PetscAssertFalse(idex,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (bs > 128) SETERRQ(comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  PetscAssertFalse(bs > 128,comm,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
     for (j=0; j<bs; j++) min[j] = PETSC_MAX_REAL;
@@ -576,7 +576,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   ierr = VecGetLocalSize(s[0],&n2);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (bs <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
+  PetscAssertFalse(bs <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
   ierr = PetscMalloc2(bs,&y,bs,&bss);CHKERRQ(ierr);
   nv   = 0;
@@ -587,7 +587,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
     nvc += bss[i];
     nv++;
-    if (nvc > bs)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
+    PetscAssertFalse(nvc > bs,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
     if (nvc == bs) break;
   }
 
@@ -670,7 +670,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   ierr = VecGetLocalSize(s[0],&n2);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (bs <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
+  PetscAssertFalse(bs <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
   ierr = PetscMalloc2(bs,(PetscScalar***)&y,bs,&bss);CHKERRQ(ierr);
   nv   = 0;
@@ -681,7 +681,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
     ierr = VecGetArrayRead(s[i],&y[i]);CHKERRQ(ierr);
     nvc += bss[i];
     nv++;
-    if (nvc > bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
+    PetscAssertFalse(nvc > bs,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
     if (nvc == bs) break;
   }
 
@@ -759,9 +759,9 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(s,VEC_CLASSID,3);
-  if (start < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
-  if (start >= v->map->bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,v->map->bs);
-  if (!v->ops->stridegather) SETERRQ(PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  PetscAssertFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
+  PetscAssertFalse(start >= v->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,v->map->bs);
+  PetscAssertFalse(!v->ops->stridegather,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   ierr = (*v->ops->stridegather)(v,start,s,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -800,9 +800,9 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s,VEC_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,3);
-  if (start < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
-  if (start >= v->map->bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,v->map->bs);
-  if (!v->ops->stridescatter) SETERRQ(PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  PetscAssertFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
+  PetscAssertFalse(start >= v->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,v->map->bs);
+  PetscAssertFalse(!v->ops->stridescatter,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   ierr = (*v->ops->stridescatter)(s,start,v,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -844,7 +844,7 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(s,VEC_CLASSID,5);
   if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
-  if (!v->ops->stridesubsetgather) SETERRQ(PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  PetscAssertFalse(!v->ops->stridesubsetgather,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   ierr = (*v->ops->stridesubsetgather)(v,nidx,idxv,idxs,s,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -885,7 +885,7 @@ PetscErrorCode  VecStrideSubSetScatter(Vec s,PetscInt nidx,const PetscInt idxs[]
   PetscValidHeaderSpecific(s,VEC_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,5);
   if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
-  if (!v->ops->stridesubsetscatter) SETERRQ(PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  PetscAssertFalse(!v->ops->stridesubsetscatter,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   ierr = (*v->ops->stridesubsetscatter)(s,nidx,idxs,idxv,v,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -904,7 +904,7 @@ PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode ad
   ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
   bs = v->map->bs;
-  if (n != ns*bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %" PetscInt_FMT " not correct for gather from original vector %" PetscInt_FMT,ns*bs,n);
+  PetscAssertFalse(n != ns*bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %" PetscInt_FMT " not correct for gather from original vector %" PetscInt_FMT,ns*bs,n);
   x += start;
   n  =  n/bs;
 
@@ -937,7 +937,7 @@ PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode a
   ierr = VecGetArrayRead(s,&y);CHKERRQ(ierr);
 
   bs = v->map->bs;
-  if (n != ns*bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %" PetscInt_FMT " not correct for scatter to multicomponent vector %" PetscInt_FMT,ns*bs,n);
+  PetscAssertFalse(n != ns*bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %" PetscInt_FMT " not correct for scatter to multicomponent vector %" PetscInt_FMT,ns*bs,n);
   x += start;
   n  =  n/bs;
 
@@ -974,12 +974,12 @@ PetscErrorCode  VecStrideSubSetGather_Default(Vec v,PetscInt nidx,const PetscInt
   n  =  n/bs;
 
   if (PetscDefined(USE_DEBUG)) {
-    if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
+    PetscAssertFalse(n != ns/bss,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
     for (j=0; j<nidx; j++) {
-      if (idxv[j] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is negative",j,idxv[j]);
-      if (idxv[j] >= bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is greater than or equal to vector blocksize %" PetscInt_FMT,j,idxv[j],bs);
+      PetscAssertFalse(idxv[j] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is negative",j,idxv[j]);
+      PetscAssertFalse(idxv[j] >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is greater than or equal to vector blocksize %" PetscInt_FMT,j,idxv[j],bs);
     }
-    if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not gathering into all locations");
+    PetscAssertFalse(!idxs && bss != nidx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not gathering into all locations");
   }
 
   if (addv == INSERT_VALUES) {
@@ -1039,14 +1039,14 @@ PetscErrorCode  VecStrideSubSetScatter_Default(Vec s,PetscInt nidx,const PetscIn
   n  =  n/bs;
 
   if (PetscDefined(USE_DEBUG)) {
-    if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
+    PetscAssertFalse(n != ns/bss,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
     for (j=0; j<bss; j++) {
       if (idxs) {
-        if (idxs[j] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is negative",j,idxs[j]);
-        if (idxs[j] >= bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is greater than or equal to vector blocksize %" PetscInt_FMT,j,idxs[j],bs);
+        PetscAssertFalse(idxs[j] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is negative",j,idxs[j]);
+        PetscAssertFalse(idxs[j] >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%" PetscInt_FMT "] %" PetscInt_FMT " is greater than or equal to vector blocksize %" PetscInt_FMT,j,idxs[j],bs);
       }
     }
-    if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not scattering from all locations");
+    PetscAssertFalse(!idxs && bss != nidx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not scattering from all locations");
   }
 
   if (addv == INSERT_VALUES) {
@@ -1247,8 +1247,8 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
   PetscValidType(s,1);
   PetscValidType(t,2);
   PetscCheckSameTypeAndComm(s,1,t,2);
-  if (s->map->N != t->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (s->map->n != t->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  PetscAssertFalse(s->map->N != t->map->N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  PetscAssertFalse(s->map->n != t->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_DotNorm2,s,t,0,0);CHKERRQ(ierr);
   if (s->ops->dotnorm2) {
@@ -1498,7 +1498,7 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
   ierr = PetscMalloc1(x->map->n, &newArray);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < x->map->n; i++) {
-      if ((idx[i] < rstart) || (idx[i] >= rend)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %" PetscInt_FMT " is out of bounds: %" PetscInt_FMT, i, idx[i]);
+      PetscAssertFalse((idx[i] < rstart) || (idx[i] >= rend),PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %" PetscInt_FMT " is out of bounds: %" PetscInt_FMT, i, idx[i]);
     }
   }
   if (!inv) {

@@ -44,7 +44,7 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJVIENNACL,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
+  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
   if (pc->setupcalled != 0) {
     try {
       delete sa->SAVIENNACL;
@@ -98,7 +98,7 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc,Vec x,Vec y)
   /*how to apply a certain fixed number of iterations?*/
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQVIENNACL,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQVIENNACL,&flg2);CHKERRQ(ierr);
-  if (!(flg1 && flg2)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles ViennaCL vectors");
+  PetscAssertFalse(!(flg1 && flg2),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles ViennaCL vectors");
   if (!sac->SAVIENNACL) {
     ierr = PCSetUp_SAVIENNACL(pc);CHKERRQ(ierr);
   }

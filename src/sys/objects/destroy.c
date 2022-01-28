@@ -57,7 +57,7 @@ PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
   PetscValidHeader(*obj,1);
   if (*obj && (*obj)->bops->destroy) {
     ierr = (*(*obj)->bops->destroy)(obj);CHKERRQ(ierr);
-  } else if (*obj) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",(*obj)->class_name);
+  } else PetscAssertFalse(*obj,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",(*obj)->class_name);
   PetscFunctionReturn(0);
 }
 

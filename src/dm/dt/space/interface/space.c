@@ -77,7 +77,7 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
 
   ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscSpaceList, name, &r);CHKERRQ(ierr);
-  if (!r) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSpace type: %s", name);
+  PetscAssertFalse(!r,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSpace type: %s", name);
 
   if (sp->ops->destroy) {
     ierr             = (*sp->ops->destroy)(sp);CHKERRQ(ierr);

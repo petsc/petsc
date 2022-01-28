@@ -19,7 +19,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscAssertFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   nnz[0]=2;nnz[1]=1;nnz[2]=1;
   ierr   = MatCreateSeqSBAIJ(PETSC_COMM_SELF,2,6,6,0,nnz,&mat);CHKERRQ(ierr);

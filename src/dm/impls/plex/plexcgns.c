@@ -16,7 +16,7 @@
 #define CHKERRCGNS(ierr) \
 do { \
   int _cgns_ier = (ierr); \
-  if (PetscUnlikely(_cgns_ier)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS error %d %s",_cgns_ier,cg_get_error()); \
+  PetscAssertFalse(_cgns_ier,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS error %d %s",_cgns_ier,cg_get_error()); \
 } while (0)
 
 /*@C
@@ -52,7 +52,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 #if defined(PETSC_HAVE_CGNS)
   if (rank == 0) {
     ierr = cg_open(filename, CG_MODE_READ, &cgid);CHKERRCGNS(ierr);
-    if (cgid <= 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
+    PetscAssertFalse(cgid <= 0,PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
   }
   ierr = DMPlexCreateCGNS(comm, cgid, interpolate, dm);CHKERRQ(ierr);
   if (rank == 0) {ierr = cg_close(cgid);CHKERRCGNS(ierr);}
@@ -112,7 +112,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
     int nbases, z;
 
     ierr = cg_nbases(cgid, &nbases);CHKERRCGNS(ierr);
-    if (nbases > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single base, not %d",nbases);
+    PetscAssertFalse(nbases > 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single base, not %d",nbases);
     ierr = cg_base_read(cgid, 1, basename, &dim, &physDim);CHKERRCGNS(ierr);
     ierr = cg_nzones(cgid, 1, &nzones);CHKERRCGNS(ierr);
     ierr = PetscCalloc2(nzones+1, &cellStart, nzones+1, &vertStart);CHKERRQ(ierr);
@@ -157,9 +157,9 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       DMPolytopeType            ctype;
 
       ierr = cg_zone_type(cgid, 1, z, &zonetype);CHKERRCGNS(ierr);
-      if (zonetype == CGNS_ENUMV(Structured)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can only handle Unstructured zones for CGNS");
+      PetscAssertFalse(zonetype == CGNS_ENUMV(Structured),PETSC_COMM_SELF,PETSC_ERR_LIB,"Can only handle Unstructured zones for CGNS");
       ierr = cg_nsections(cgid, 1, z, &nsections);CHKERRCGNS(ierr);
-      if (nsections > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single section, not %d",nsections);
+      PetscAssertFalse(nsections > 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single section, not %d",nsections);
       ierr = cg_section_read(cgid, 1, z, 1, buffer, &cellType, &start, &end, &nbndry, &parentFlag);CHKERRCGNS(ierr);
       /* This alone is reason enough to bludgeon every single CGNDS developer, this must be what they describe as the "idiocy of crowds" */
       if (cellType == CGNS_ENUMV(MIXED)) {
@@ -309,9 +309,9 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       ierr = cg_zone_read(cgid, 1, z, buffer, sizes);CHKERRCGNS(ierr);
       range_max[0] = sizes[0];
       ierr = cg_ngrids(cgid, 1, z, &ngrids);CHKERRCGNS(ierr);
-      if (ngrids > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single grid, not %d",ngrids);
+      PetscAssertFalse(ngrids > 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single grid, not %d",ngrids);
       ierr = cg_ncoords(cgid, 1, z, &ncoords);CHKERRCGNS(ierr);
-      if (ncoords != coordDim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a coordinate array for each dimension, not %d",ncoords);
+      PetscAssertFalse(ncoords != coordDim,PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a coordinate array for each dimension, not %d",ncoords);
       for (d = 0; d < coordDim; ++d) {
         ierr = cg_coord_info(cgid, 1, z, 1+d, &datatype, buffer);CHKERRCGNS(ierr);
         ierr = cg_coord_read(cgid, 1, z, buffer, CGNS_ENUMV(RealSingle), range_min, range_max, x[d]);CHKERRCGNS(ierr);

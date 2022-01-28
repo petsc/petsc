@@ -78,7 +78,7 @@ PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscIn
   PetscFunctionBegin;
   ierr = DMGetDimension(plex, &dim);CHKERRQ(ierr);
   ierr = DMGetDS(plex, &prob);CHKERRQ(ierr);
-  if (LANDAU_DIM != dim) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
+  PetscAssertFalse(LANDAU_DIM != dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
   ierr = PetscDSGetTabulation(prob, &Tf);CHKERRQ(ierr);
   BB   = Tf[0]->T[0]; DD = Tf[0]->T[1];
   Nf = h_ip_offset[0] = h_ipf_offset[0] = h_elem_offset[0] = 0;
@@ -741,9 +741,9 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
   while (nnn & nnn - 1) nnn = nnn & nnn - 1;
   if (nnn>16) nnn = 16; // printf("DEBUG\n");
   ierr = DMGetApplicationContext(plex[0], &ctx);CHKERRQ(ierr);
-  if (!ctx) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
+  PetscAssertFalse(!ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   ierr = DMGetDimension(plex[0], &dim);CHKERRQ(ierr);
-  if (dim!=LANDAU_DIM) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "LANDAU_DIM %D != dim %d",LANDAU_DIM,dim);
+  PetscAssertFalse(dim!=LANDAU_DIM,PETSC_COMM_SELF, PETSC_ERR_PLIB, "LANDAU_DIM %D != dim %d",LANDAU_DIM,dim);
   if (ctx->gpu_assembly) {
     ierr = PetscObjectQuery((PetscObject) JacP, "assembly_maps", (PetscObject *) &container);CHKERRQ(ierr);
     if (container) { // not here first call
@@ -921,7 +921,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
         ierr = MatGetSize(B, &nloc, NULL);CHKERRQ(ierr);
         for (int i=0 ; i<nloc ; i++) {
           ierr = MatGetRow(B,i,&nzl,&cols,&vals);CHKERRQ(ierr);
-          if (nzl>1024) SETERRQ(PetscObjectComm((PetscObject) B), PETSC_ERR_PLIB, "Row too big: %D",nzl);
+          PetscAssertFalse(nzl>1024,PetscObjectComm((PetscObject) B), PETSC_ERR_PLIB, "Row too big: %D",nzl);
           for (int j=0; j<nzl; j++) colbuf[j] = cols[j] + moffset;
           row = i + moffset;
           ierr = MatSetValues(JacP,1,&row,nzl,colbuf,vals,ADD_VALUES);CHKERRQ(ierr);
@@ -932,7 +932,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
         elem_mats_idx += totDim*totDim*a_numCells[grid]; // this can be a stored offset?
       } // grids
     }
-    if (elem_mats_idx != batch_sz*elem_mat_size_tot) SETERRQ(PetscObjectComm((PetscObject) JacP), PETSC_ERR_PLIB, "elem_mats_idx != batch_sz*elem_mat_size_tot: %D %D",elem_mats_idx,batch_sz*elem_mat_size_tot);
+    PetscAssertFalse(elem_mats_idx != batch_sz*elem_mat_size_tot,PetscObjectComm((PetscObject) JacP), PETSC_ERR_PLIB, "elem_mats_idx != batch_sz*elem_mat_size_tot: %D %D",elem_mats_idx,batch_sz*elem_mat_size_tot);
     cerr = cudaFree(d_elem_mats);CHKERRCUDA(cerr);
   }
 

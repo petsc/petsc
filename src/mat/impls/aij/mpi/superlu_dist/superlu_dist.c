@@ -151,7 +151,7 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 
       ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
       ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRMPI(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Communicator does not have expected Petsc_Superlu_dist_keyval attribute");
+      PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Communicator does not have expected Petsc_Superlu_dist_keyval attribute");
       context->busy = PETSC_FALSE;
     }
   }
@@ -175,7 +175,7 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact must equal FACTORED");
+  PetscAssertFalse(lu->options.Fact != FACTORED,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact must equal FACTORED");
   ierr = PetscCitationsRegister("@article{lidemmel03,\n  author = {Xiaoye S. Li and James W. Demmel},\n  title = {{SuperLU_DIST}: A Scalable Distributed-Memory Sparse Direct\n           Solver for Unsymmetric Linear Systems},\n  journal = {ACM Trans. Mathematical Software},\n  volume = {29},\n  number = {2},\n  pages = {110-140},\n  year = 2003\n}\n",&cite);CHKERRQ(ierr);
 
   if (lu->options.SolveInitialized && !lu->matsolve_iscalled) {
@@ -196,7 +196,7 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 #else
   PetscStackCall("SuperLU_DIST:pdgssvx",pdgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,bptr,m,1,&lu->grid,&lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info));
 #endif
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d",info);
+  PetscAssertFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d",info);
 
   if (lu->options.PrintStat) PetscStackCall("SuperLU_DIST:PStatPrint",PStatPrint(&lu->options, &stat, &lu->grid));  /* Print the statistics. */
   PetscStackCall("SuperLU_DIST:PStatFree",PStatFree(&stat));
@@ -219,12 +219,12 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   PetscBool        flg;
 
   PetscFunctionBegin;
-  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact must equal FACTORED");
+  PetscAssertFalse(lu->options.Fact != FACTORED,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact must equal FACTORED");
   ierr = PetscObjectTypeCompareAny((PetscObject)B_mpi,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   if (X != B_mpi) {
     ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+    PetscAssertFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
   }
 
   if (lu->options.SolveInitialized && !lu->matmatsolve_iscalled) {
@@ -254,7 +254,7 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   PetscStackCall("SuperLU_DIST:pdgssvx",pdgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,bptr,m,nrhs,&lu->grid,&lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info));
 #endif
 
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d",info);
+  PetscAssertFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d",info);
   ierr = MatDenseRestoreArray(X,&bptr);CHKERRQ(ierr);
 
   if (lu->options.PrintStat) PetscStackCall("SuperLU_DIST:PStatPrint",PStatPrint(&lu->options, &stat, &lu->grid));  /* Print the statistics. */
@@ -281,15 +281,15 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F,PetscInt *nneg,PetscInt *
   PetscReal        r;
 
   PetscFunctionBegin;
-  if (PetscUnlikely(!F->assembled)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix factor F is not assembled");
-  if (PetscUnlikely(lu->options.RowPerm != NOROWPERM)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must set NOROWPERM");
+  PetscAssertFalse(!F->assembled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix factor F is not assembled");
+  PetscAssertFalse(lu->options.RowPerm != NOROWPERM,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must set NOROWPERM");
   ierr = MatGetSize(F,&M,NULL);CHKERRQ(ierr);
   ierr = PetscMalloc1(M,&diagU);CHKERRQ(ierr);
   ierr = MatSuperluDistGetDiagU(F,diagU);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
 #if defined(PETSC_USE_COMPLEX)
     r = PetscImaginaryPart(diagU[i])/10.0;
-    if (PetscUnlikely(r< -PETSC_MACHINE_EPSILON || r>PETSC_MACHINE_EPSILON)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"diagU[%" PetscInt_FMT "]=%g + i %g is non-real",i,(double)PetscRealPart(diagU[i]),(double)(r*10.0));
+    PetscAssertFalse(r< -PETSC_MACHINE_EPSILON || r>PETSC_MACHINE_EPSILON,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"diagU[%" PetscInt_FMT "]=%g + i %g is non-real",i,(double)PetscRealPart(diagU[i]),(double)(r*10.0));
     r = PetscRealPart(diagU[i]);
 #else
     r = diagU[i];
@@ -332,7 +332,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for type %s",((PetscObject)A)->type_name);
 
   ierr = MatGetRowIJ(Aloc,0,PETSC_FALSE,PETSC_FALSE,&dummy,&ai,&aj,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GetRowIJ failed");
+  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"GetRowIJ failed");
   ierr = MatSeqAIJGetArrayRead(Aloc,&av);CHKERRQ(ierr);
   nz   = ai[Aloc->rmap->n];
 
@@ -367,7 +367,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   ierr = PetscArraycpy(lu->col,aj,nz);CHKERRQ(ierr);
   ierr = PetscArraycpy(lu->val,av,nz);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(Aloc,0,PETSC_FALSE,PETSC_FALSE,&dummy,&ai,&aj,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"RestoreRowIJ failed");
+  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"RestoreRowIJ failed");
   ierr = MatSeqAIJRestoreArrayRead(Aloc,&av);CHKERRQ(ierr);
   ierr = MatDestroy(&Aloc);CHKERRQ(ierr);
 
@@ -389,7 +389,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 #endif
 
   if (sinfo > 0) {
-    if (PetscUnlikely(A->erroriffailure)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %d",sinfo);
+    PetscAssertFalse(A->erroriffailure,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %d",sinfo);
     else {
       if (sinfo <= lu->A_sup.ncol) {
         F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
@@ -403,7 +403,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
         ierr = PetscInfo(F,"Number of bytes allocated when memory allocation fails %d\n",sinfo);CHKERRQ(ierr);
       }
     }
-  } else if (PetscUnlikely(sinfo < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %d, argument in p*gssvx() had an illegal value", sinfo);
+  } else PetscAssertFalse(sinfo < 0,PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %d, argument in p*gssvx() had an illegal value", sinfo);
 
   if (lu->options.PrintStat) {
     PetscStackCall("SuperLU_DIST:PStatPrint",PStatPrint(&lu->options, &stat, &lu->grid));  /* Print the statistics. */
@@ -632,7 +632,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
       ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,(PetscInt*)&lu->nprow,NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,(PetscInt*)&lu->npcol,NULL);CHKERRQ(ierr);
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
-      if (PetscUnlikely(size != lu->nprow * lu->npcol)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld",size,(long long)lu->nprow,(long long)lu->npcol);
+      PetscAssertFalse(size != lu->nprow * lu->npcol,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %lld * npcol %lld",size,(long long)lu->nprow,(long long)lu->npcol);
       PetscStackCall("SuperLU_DIST:superlu_gridinit",superlu_gridinit(context ? context->comm : lu->comm_superlu, lu->nprow, lu->npcol, &lu->grid));
       if (context) context->grid = lu->grid;
       ierr = PetscInfo(NULL,"Duplicating a communicator for SuperLU_DIST and calling superlu_gridinit()\n");CHKERRQ(ierr);

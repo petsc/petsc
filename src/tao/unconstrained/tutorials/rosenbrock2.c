@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   /* Initialize TAO and PETSc */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size >1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
+  PetscAssertFalse(size >1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0; user.chained = PETSC_FALSE;
@@ -103,11 +103,11 @@ int main(int argc,char **argv)
   ierr = VecSet(x, zero);CHKERRQ(ierr);
   ierr = TaoSolve(tao);CHKERRQ(ierr);
   ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
-  if (reason != TAO_CONVERGED_GATOL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Solution failed to converge!");
+  PetscAssertFalse(reason != TAO_CONVERGED_GATOL,PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Solution failed to converge!");
   ierr = TaoGetIterationNumber(tao, &oneshot_its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "-----------------------\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "recycled its: %D | oneshot its: %D\n", recycled_its, oneshot_its);CHKERRQ(ierr);
-  if (recycled_its != oneshot_its) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "LMVM recycling does not work!");
+  PetscAssertFalse(recycled_its != oneshot_its,PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "LMVM recycling does not work!");
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
