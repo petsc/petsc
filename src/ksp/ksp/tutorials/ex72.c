@@ -855,7 +855,7 @@ int main(int argc,char **args)
       test:
          requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps !defined(PETSCTEST_VALGRIND)
          suffix: hpddm_gen_non_hermitian_baij
-         output_file: output/ex72_19_pc_factor_levels-0.out
+         output_file: output/ex72_5.out
          nsize: 4
          timeoutfactor: 2
          args: -f0 ${DATAFILESPATH}/matrices/arco6 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold 0.8 -pc_hpddm_coarse_pc_type lu -ksp_pc_side right -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_eps_tol 1.0e-2
