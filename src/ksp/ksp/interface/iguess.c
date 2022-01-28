@@ -84,6 +84,28 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 }
 
 /*@
+    KSPGuessSetTolerance - Sets the relative tolerance used in either eigenvalue (POD) or singular value (Fischer type 3) calculations. Ignored by the first and second Fischer types.
+
+    Collective on guess
+
+    Input Parameter:
+.    guess - KSPGuess object
+
+   Level: intermediate
+
+.seealso: KSPGuess, KSPGuessType, KSPGuessSetFromOptions()
+@*/
+PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
+  if (guess->ops->settolerance) { ierr = (*guess->ops->settolerance)(guess,tol);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+/*@
    KSPGuessDestroy - Destroys KSPGuess context.
 
    Collective on kspGuess

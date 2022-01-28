@@ -10,6 +10,7 @@ typedef struct {
   Vec         *btilde;  /* Saved b vectors, method 1 */
   Vec         Ax;       /* method 2 */
   Vec         guess;
+  PetscReal   tol;      /* tolerance for determining rank, method 3 */
 } KSPGuessFischer;
 
 static PetscErrorCode KSPGuessReset_Fischer(KSPGuess guess)
@@ -223,8 +224,18 @@ static PetscErrorCode KSPGuessSetFromOptions_Fischer(KSPGuess guess)
   if (flg) {
     ierr = KSPGuessFischerSetModel(guess,model[0],model[1]);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsReal("-ksp_guess_fischer_tol","Tolerance to determine rank via ratio of singular values","KSPGuessSetTolerance",ITG->tol,&ITG->tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_guess_fischer_monitor","Monitor the guess",NULL,ITG->monitor,&ITG->monitor,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPGuessSetTolerance_Fischer(KSPGuess guess,PetscReal tol)
+{
+  KSPGuessFischer *itg = (KSPGuessFischer *)guess->data;
+
+  PetscFunctionBegin;
+  itg->tol = tol;
   PetscFunctionReturn(0);
 }
 
@@ -336,10 +347,12 @@ PetscErrorCode KSPGuessCreate_Fischer(KSPGuess guess)
   ierr = PetscNewLog(guess,&fischer);CHKERRQ(ierr);
   fischer->method = 1;  /* defaults to method 1 */
   fischer->maxl   = 10;
+  fischer->tol    = PETSC_MACHINE_EPSILON;
   guess->data     = fischer;
 
   guess->ops->setfromoptions = KSPGuessSetFromOptions_Fischer;
   guess->ops->destroy        = KSPGuessDestroy_Fischer;
+  guess->ops->settolerance   = KSPGuessSetTolerance_Fischer;
   guess->ops->setup          = KSPGuessSetUp_Fischer;
   guess->ops->view           = KSPGuessView_Fischer;
   guess->ops->reset          = KSPGuessReset_Fischer;
