@@ -1,0 +1,31 @@
+KSPFischerGuess correlation rank = 1
+KSPFischerGuess singular values = 2.
+KSPFischerGuess alphas = 0.5
+Vec Object: 1 MPI processes
+  type: seq
+0.5
+0.5
+0.5
+KSPFischerGuess correlation rank = 1
+KSPFischerGuess singular values = 5.28862e-16 5.02331e-31 0. 0. 0. 0. 0. 0. 1.41704e-15 20.
+KSPFischerGuess alphas = 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05
+Vec Object: 1 MPI processes
+  type: seq
+0.5
+0.5
+0.5
+KSPFischerGuess correlation rank = 3
+KSPFischerGuess singular values = 0. 0. 0.759791 2.89962 16.3406
+KSPFischerGuess alphas = 0. 0. 0.5 0.166667 1.33333
+Vec Object: 1 MPI processes
+  type: seq
+0.
+2.
+3.
+4.
+0.
+0.
+0.
+0.
+0.
+0.
