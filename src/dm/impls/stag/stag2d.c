@@ -1279,54 +1279,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_2d(DM dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateMatrix_Stag_2D_AIJ_Assemble(DM,Mat);
-
-// TODO only the "guts" function actual differs between dimensions!
-
-PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_2D_AIJ(DM dm,Mat *mat)
-{
-  PetscErrorCode         ierr;
-  PetscInt               entries;
-  ISLocalToGlobalMapping ltogmap;
-
-  /* This implementation gives a very dense stencil, which is likely unsuitable for
-     (typical) applications which have fewer couplings */
-  PetscFunctionBegin;
-  ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
-
-  ierr = MatCreate(PetscObjectComm((PetscObject)dm),mat);CHKERRQ(ierr);
-  ierr = MatSetType(*mat,dm->mattype);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat,entries,entries,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*mat,ltogmap,ltogmap);CHKERRQ(ierr);
-  ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(*mat);CHKERRQ(ierr);
-
-  {
-    Mat             preallocator;
-    PetscInt        m,n;
-    const PetscBool fill_with_zeros = PETSC_FALSE;
-
-    ierr = MatCreate(PetscObjectComm((PetscObject)dm),&preallocator);CHKERRQ(ierr);
-    ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(*mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatSetSizes(preallocator,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetLocalToGlobalMapping(preallocator,ltogmap,ltogmap);CHKERRQ(ierr);
-    ierr = MatSetUp(preallocator);CHKERRQ(ierr);
-    ierr = DMCreateMatrix_Stag_2D_AIJ_Assemble(dm,preallocator);CHKERRQ(ierr);
-    ierr = MatPreallocatorPreallocate(preallocator,fill_with_zeros,*mat);CHKERRQ(ierr);
-    ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
-  }
-
-  if (!dm->prealloc_only) {
-    ierr = DMCreateMatrix_Stag_2D_AIJ_Assemble(dm,*mat);
-  }
-  /* Note: GPU-related logic, e.g. at the end of DMCreateMatrix_DA_2d_MPIAIJ, is not included here
-     but might be desirable */
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode DMCreateMatrix_Stag_2D_AIJ_Assemble(DM dm,Mat A)
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_2D_AIJ_Assemble(DM dm,Mat A)
 {
   PetscErrorCode    ierr;
   PetscInt          entries,dof[DMSTAG_MAX_STRATA],epe,stencil_width,N[2],start[2],n[2],n_extra[2];
