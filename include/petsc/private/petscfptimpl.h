@@ -56,7 +56,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTCreate(PetscInt n)
   PetscInt       i;
   PetscFPT       _PetscFPTData;
 
-  PetscAssertFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
+  PetscAssert(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
   /* Cannot use PetscNew() here because it is not yet defined in the include file chain */
   ierr          = PetscMalloc(sizeof(struct _n_PetscFPT),&_PetscFPTData);CHKERRQ(ierr);
   _PetscFPTData->tablesize = (3*n)/2 + 17;
@@ -81,7 +81,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFPTAdd(void* key,const char* data)
 {
   PetscInt       i,hash;
 
-  PetscAssertFalse(!data,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null function name");
+  PetscAssert(data,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null function name");
   if (!PetscFPTData) return(0);
   hash = (PetscInt)PetscFPTHashPointer(key);
   for (i=0; i<PetscFPTData->tablesize; i++) {

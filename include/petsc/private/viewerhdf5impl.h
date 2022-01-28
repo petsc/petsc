@@ -18,11 +18,11 @@
 */
 #define PetscStackCallHDF5(func,args) do {                        \
     herr_t _status;                                               \
-    PetscStackPush(#func);_status = func args;PetscStackPop; PetscAssertFalse(_status < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
+    PetscStackPush(#func);_status = func args;PetscStackPop; PetscAssert(_status >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)_status); \
   } while (0)
 
 #define PetscStackCallHDF5Return(ret,func,args) do {              \
-    PetscStackPush(#func);ret = func args;PetscStackPop; PetscAssertFalse(ret < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)ret); \
+    PetscStackPush(#func);ret = func args;PetscStackPop; PetscAssert(ret >= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HDF5 call %s() Status %d",#func,(int)ret); \
   } while (0)
 
 typedef struct PetscViewerHDF5GroupList {

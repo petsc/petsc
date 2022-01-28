@@ -284,7 +284,7 @@ PETSC_INTERN const char SNESCitation[];
 */
 #define SNESCheckFunctionNorm(snes,beta) do { \
   if (PetscIsInfOrNanReal(beta)) {\
-    PetscAssertFalse(snes->errorifnotconverged,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
+    PetscAssert(!snes->errorifnotconverged,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
     else {\
       PetscBool domainerror;\
       PetscErrorCode ierr = MPIU_Allreduce(&snes->domainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);\
@@ -302,7 +302,7 @@ PETSC_INTERN const char SNESCitation[];
     PetscErrorCode ierr = MPIU_Allreduce(&snes->jacobiandomainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);\
     if (domainerror) {\
       snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN;\
-      PetscAssertFalse(snes->errorifnotconverged,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Jacobian domain error");\
+      PetscAssert(!snes->errorifnotconverged,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Jacobian domain error");\
       PetscFunctionReturn(0);\
     }\
   } } while (0)

@@ -38,9 +38,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscViewerHDF5PathIsRelative(const char path
 PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
 {
   PetscFunctionBegin;
-  PetscAssertFalse(a < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot convert negative size");
+  PetscAssert(a >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot convert negative size");
 #if defined(PETSC_USE_64BIT_INDICES) && (H5_SIZEOF_HSIZE_T == 4)
-  PetscAssertFalse(a > PETSC_HDF5_INT_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5");
+  PetscAssert(a >= PETSC_HDF5_INT_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5");
 #endif
   *b =  (hsize_t)(a);
   PetscFunctionReturn(0);

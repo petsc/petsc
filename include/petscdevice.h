@@ -73,7 +73,10 @@ do {\
   }\
 } while (0)
 #else  /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
-#define CHKERRCUSPARSE(stat) do {if (PetscUnlikely(stat)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d",(int)stat);} while (0)
+#define CHKERRCUSPARSE(stat) do { \
+  const cusparseStatus_t _p_cusparse_stat__ = stat; \
+  PetscAssert(_p_cusparse_stat__ == CUSPARSE_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d",(PetscErrorCode)_p_cusparse_stat__); \
+  } while (0)
 #endif /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
 
 #define CHKERRCUSOLVER(stat) do {                                       \
