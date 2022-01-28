@@ -174,29 +174,31 @@ int main(int argc, char **argv)
 #endif
     KSP       ksp;
     PC        pc;
-    Mat       A,P;
     Vec       b;
     PetscInt  i;
+    PetscLogDouble time;
     ierr = PetscOptionsClearValue(NULL,"-ksp_monitor");CHKERRQ(ierr);
+    ierr = PetscOptionsClearValue(NULL,"-ksp_view");CHKERRQ(ierr);
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
-    ierr = SNESGetJacobian(snes, &A, &P, NULL, NULL);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     ierr = VecSet(u, 0.0);CHKERRQ(ierr);
     ierr = SNESGetFunction(snes, &b, NULL, NULL);CHKERRQ(ierr);
-    ierr = SNESComputeFunction(snes, u, b);CHKERRQ(ierr);
-    ierr = SNESComputeJacobian(snes, u, A, P);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
     ierr = PetscLogStageRegister("PCSetUp", &pcstage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(pcstage);CHKERRQ(ierr);
     ierr = PCSetUp(pc);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     ierr = PetscLogStageRegister("KSP Solve only", &kspstage);CHKERRQ(ierr);
+    ierr = PetscTime(&time);CHKERRQ(ierr);
     ierr = PetscLogStagePush(kspstage);CHKERRQ(ierr);
     for (i=0;i<user.nit;i++) {
       ierr = VecZeroEntries(u);CHKERRQ(ierr);
       ierr = KSPSolve(ksp, b, u);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = PetscTimeSubtract(&time);CHKERRQ(ierr);
+    // ierr = PetscPrintf(PETSC_COMM_WORLD,"Solve time: %g\n",-time); // breaks CI
   }
   ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-potential_view");CHKERRQ(ierr);

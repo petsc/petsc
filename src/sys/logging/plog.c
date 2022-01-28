@@ -1481,10 +1481,10 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   /* Get the total elapsed time */
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
 
-  ierr = PetscFPrintf(comm, fd, "************************************************************************************************************************\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "************************************************************************************************************************\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "**************************************** ***********************************************************************************************************************\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "***                                WIDEN YOUR WINDOW TO 160 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document                                 ***\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "****************************************************************************************************************************************************************\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "\n------------------------------------------------------------------ PETSc Performance Summary: -------------------------------------------------------------------\n\n");CHKERRQ(ierr);
   ierr = PetscLogViewWarnSync(comm,fd);CHKERRQ(ierr);
   ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
   ierr = PetscLogViewWarnNoGpuAwareMpi(comm,fd);CHKERRQ(ierr);
