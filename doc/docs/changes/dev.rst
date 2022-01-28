@@ -120,6 +120,7 @@ Changes: Development
 - Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
 - Add ``KSPQMRCGS`` to support qmrcgstab with right preconditioning
 - Add ``KSPGuessSetTolerance()``
+- Add a new model option to ``KSPGuessFischerSetModel()``
 
 .. rubric:: SNES:
 
