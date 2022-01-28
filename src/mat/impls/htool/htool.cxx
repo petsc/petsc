@@ -98,6 +98,23 @@ static PetscErrorCode MatMultAdd_Htool(Mat A,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatMultTranspose_Htool(Mat A,Vec x,Vec y)
+{
+  Mat_Htool         *a = (Mat_Htool*)A->data;
+  const PetscScalar *in;
+  PetscScalar       *out;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(x,&in);CHKERRQ(ierr);
+  ierr = VecGetArrayWrite(y,&out);CHKERRQ(ierr);
+  a->hmatrix->mvprod_transp_local_to_local(in,out);
+  ierr = VecRestoreArrayRead(x,&in);CHKERRQ(ierr);
+  ierr = VecRestoreArrayWrite(y,&out);CHKERRQ(ierr);
+  ierr = VecScale(y,a->s);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatIncreaseOverlap_Htool(Mat A,PetscInt is_max,IS is[],PetscInt ov)
 {
   std::set<PetscInt> set;
@@ -479,27 +496,29 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
   Mat_Htool         *a = (Mat_Htool*)product->A->data;
   const PetscScalar *in;
   PetscScalar       *out;
-  PetscInt          lda;
+  PetscInt          N,lda;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
+  ierr = MatGetSize(C,NULL,&N);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(C,&lda);CHKERRQ(ierr);
+  if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
+  ierr = MatDenseGetArrayRead(product->B,&in);CHKERRQ(ierr);
+  ierr = MatDenseGetArrayWrite(C,&out);CHKERRQ(ierr);
   switch (product->type) {
   case MATPRODUCT_AB:
-    PetscInt N;
-    ierr = MatGetSize(C,NULL,&N);CHKERRQ(ierr);
-    ierr = MatDenseGetLDA(C,&lda);CHKERRQ(ierr);
-    if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
-    ierr = MatDenseGetArrayRead(product->B,&in);CHKERRQ(ierr);
-    ierr = MatDenseGetArrayWrite(C,&out);CHKERRQ(ierr);
     a->hmatrix->mvprod_local_to_local(in,out,N);
-    ierr = MatDenseRestoreArrayWrite(C,&out);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArrayRead(product->B,&in);CHKERRQ(ierr);
-    ierr = MatScale(C,a->s);CHKERRQ(ierr);
+    break;
+  case MATPRODUCT_AtB:
+    a->hmatrix->mvprod_transp_local_to_local(in,out,N);
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProductType %s is not supported",MatProductTypes[product->type]);
   }
+  ierr = MatDenseRestoreArrayWrite(C,&out);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArrayRead(product->B,&in);CHKERRQ(ierr);
+  ierr = MatScale(C,a->s);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -521,15 +540,20 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
     if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) {
       ierr = MatSetSizes(C,A->rmap->n,B->cmap->n,A->rmap->N,B->cmap->N);CHKERRQ(ierr);
     }
-    ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
-    ierr = MatSetUp(C);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    break;
+  case MATPRODUCT_AtB:
+    if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) {
+      ierr = MatSetSizes(C,A->cmap->n,B->cmap->n,A->cmap->N,B->cmap->N);CHKERRQ(ierr);
+    }
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[product->type]);
   }
+  ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
+  ierr = MatSetOption(C,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   C->ops->productsymbolic = NULL;
   C->ops->productnumeric = MatProductNumeric_Htool;
   PetscFunctionReturn(0);
@@ -539,7 +563,7 @@ static PetscErrorCode MatProductSetFromOptions_Htool(Mat C)
 {
   PetscFunctionBegin;
   MatCheckProduct(C,1);
-  if (C->product->type == MATPRODUCT_AB) C->ops->productsymbolic = MatProductSymbolic_Htool;
+  if (C->product->type == MATPRODUCT_AB || C->product->type == MATPRODUCT_AtB) C->ops->productsymbolic = MatProductSymbolic_Htool;
   PetscFunctionReturn(0);
 }
 
@@ -619,7 +643,7 @@ static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A,IS* is)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  source = a->hmatrix->get_local_perm_source();
+  source = a->hmatrix->get_source_cluster()->get_local_perm();
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),source.size(),source.data(),PETSC_COPY_VALUES,is);CHKERRQ(ierr);
   ierr = ISSetPermutation(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -656,7 +680,7 @@ static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A,IS* is)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  target = a->hmatrix->get_local_perm_target();
+  target = a->hmatrix->get_target_cluster()->get_local_perm();
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),target.size(),target.data(),PETSC_COPY_VALUES,is);CHKERRQ(ierr);
   ierr = ISSetPermutation(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -913,6 +937,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
   A->ops->getdiagonalblock  = MatGetDiagonalBlock_Htool;
   A->ops->mult              = MatMult_Htool;
   A->ops->multadd           = MatMultAdd_Htool;
+  A->ops->multtranspose     = MatMultTranspose_Htool;
+  if (!PetscDefined(USE_COMPLEX)) A->ops->multhermitiantranspose = MatMultTranspose_Htool;
   A->ops->increaseoverlap   = MatIncreaseOverlap_Htool;
   A->ops->createsubmatrices = MatCreateSubMatrices_Htool;
   A->ops->transpose         = MatTranspose_Htool;

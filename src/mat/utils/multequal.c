@@ -1,7 +1,7 @@
 
 #include <petsc/private/matimpl.h>  /*I   "petscmat.h"  I*/
 
-static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg,PetscBool t,PetscBool add)
+static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg,PetscInt t,PetscBool add)
 {
   PetscErrorCode ierr;
   Vec            Ax = NULL,Bx = NULL,s1 = NULL,s2 = NULL,Ay = NULL, By = NULL;
@@ -9,7 +9,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg
   PetscReal      r1,r2,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       am,an,bm,bn,k;
   PetscScalar    none = -1.0;
-  const char*    sops[] = {"MatMult","MatMultAdd","MatMultTranspose","MatMultTranposeAdd"};
+  const char*    sops[] = {"MatMult","MatMultAdd","MatMultTranspose","MatMultTransposeAdd","MatMultHermitianTranspose","MatMultHermitianTranposeAdd"};
   const char*    sop;
 
   PetscFunctionBegin;
@@ -18,12 +18,12 @@ static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg
   PetscCheckSameComm(A,1,B,2);
   PetscValidLogicalCollectiveInt(A,n,3);
   PetscValidPointer(flg,4);
-  PetscValidLogicalCollectiveBool(A,t,5);
+  PetscValidLogicalCollectiveInt(A,t,5);
   PetscValidLogicalCollectiveBool(A,add,6);
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (PetscUnlikely(am != bm || an != bn)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,bm,an,bn);
-  sop  = sops[(add ? 1 : 0) + 2 * (t ? 1 : 0)];
+  sop  = sops[(add ? 1 : 0) + 2 * t]; /* t = 0 => no transpose, t = 1 => transpose, t = 2 => Hermitian transpose */
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)A),&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   if (t) {
@@ -46,13 +46,21 @@ static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg
       ierr = VecSetRandom(Ay,rctx);CHKERRQ(ierr);
       ierr = VecCopy(Ay,By);CHKERRQ(ierr);
     }
-    if (t) {
+    if (t == 1) {
       if (add) {
         ierr = MatMultTransposeAdd(A,Ax,Ay,s1);CHKERRQ(ierr);
         ierr = MatMultTransposeAdd(B,Bx,By,s2);CHKERRQ(ierr);
       } else {
         ierr = MatMultTranspose(A,Ax,s1);CHKERRQ(ierr);
         ierr = MatMultTranspose(B,Bx,s2);CHKERRQ(ierr);
+      }
+    } else if (t == 2) {
+      if (add) {
+        ierr = MatMultHermitianTransposeAdd(A,Ax,Ay,s1);CHKERRQ(ierr);
+        ierr = MatMultHermitianTransposeAdd(B,Bx,By,s2);CHKERRQ(ierr);
+      } else {
+        ierr = MatMultHermitianTranspose(A,Ax,s1);CHKERRQ(ierr);
+        ierr = MatMultHermitianTranspose(B,Bx,s2);CHKERRQ(ierr);
       }
     } else {
       if (add) {
@@ -192,7 +200,7 @@ PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool *flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMultEqual_Private(A,B,n,flg,PETSC_FALSE,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatMultEqual_Private(A,B,n,flg,0,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -212,12 +220,12 @@ PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool *flg)
    Level: intermediate
 
 @*/
-PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
+PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool *flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMultEqual_Private(A,B,n,flg,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatMultEqual_Private(A,B,n,flg,0,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -237,12 +245,12 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
    Level: intermediate
 
 @*/
-PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
+PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool *flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMultEqual_Private(A,B,n,flg,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatMultEqual_Private(A,B,n,flg,1,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -262,12 +270,62 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
    Level: intermediate
 
 @*/
-PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
+PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool *flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMultEqual_Private(A,B,n,flg,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatMultEqual_Private(A,B,n,flg,1,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatMultHermitianTransposeEqual - Compares matrix-vector products of two matrices.
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the first matrix
+.  B - the second matrix
+-  n - number of random vectors to be tested
+
+   Output Parameter:
+.  flg - PETSC_TRUE if the products are equal; PETSC_FALSE otherwise.
+
+   Level: intermediate
+
+@*/
+PetscErrorCode  MatMultHermitianTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMultEqual_Private(A,B,n,flg,2,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatMultHermitianTransposeAddEqual - Compares matrix-vector products of two matrices.
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the first matrix
+.  B - the second matrix
+-  n - number of random vectors to be tested
+
+   Output Parameter:
+.  flg - PETSC_TRUE if the products are equal; PETSC_FALSE otherwise.
+
+   Level: intermediate
+
+@*/
+PetscErrorCode  MatMultHermitianTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMultEqual_Private(A,B,n,flg,2,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -487,7 +545,7 @@ PetscErrorCode MatRARtMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *flg)
 
    Level: intermediate
 @*/
-PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool  *flg)
+PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool *flg)
 {
   PetscErrorCode ierr;
   Vec            x,y,s1,s2;

@@ -267,7 +267,7 @@ PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 /*@
    PCSetUseAmat - Sets a flag to indicate that when the preconditioner needs to apply (part of) the
    operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(),
-   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperator() or PCSetOperator() not the Pmat.
+   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperators() or PCSetOperators() not the Pmat.
 
    Logically Collective on PC
 
@@ -326,7 +326,7 @@ PetscErrorCode  PCSetErrorIfFailure(PC pc,PetscBool flg)
 /*@
    PCGetUseAmat - Gets a flag to indicate that when the preconditioner needs to apply (part of) the
    operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(),
-   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperator() or PCSetOperator() not the Pmat.
+   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperators() or PCSetOperators() not the Pmat.
 
    Logically Collective on PC
 

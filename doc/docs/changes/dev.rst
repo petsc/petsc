@@ -63,7 +63,7 @@ Changes: Development
 
 .. rubric:: VecScatter / PetscSF:
 
-- Add MPI-4.0 large count support. With an MPI-4.0 compliant MPI implementation and 64-bit indices, one can now pass over 2 billion elements in a single message in either VecScatter or PetscSF.
+- Add MPI-4.0 large count support. With an MPI-4.0 compliant MPI implementation and 64-bit indices, one can now pass over 2 billion elements in a single message in either VecScatter or PetscSF
 
 .. rubric:: PF:
 
@@ -85,8 +85,9 @@ Changes: Development
 -  Add ``MatSetBindingPropagates()``
 -  Add ``MatGetBindingPropagates()``
 -  Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
--  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU.
+-  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU
 -  Change ``MatCreateIS()`` behavior when NULL is passed for the mappings. Now a NULL map implies matching local and global spaces
+-  Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
 
 .. rubric:: PC:
 
@@ -103,7 +104,7 @@ Changes: Development
 
 .. rubric:: TS:
 
-- Add ``TSSundialsSetUseDense()`` and options database option ``-ts_sundials_use_dense`` to use a dense linear solver (serial only) within CVODE, instead of the default iterative solve.
+- Add ``TSSundialsSetUseDense()`` and options database option ``-ts_sundials_use_dense`` to use a dense linear solver (serial only) within CVODE, instead of the default iterative solve
 - Change timestepper type ``TSDISCGRAD`` to include additional conservation terms based on formulation from [Gonzalez 1996] for Hamiltonian systems:
   - Add ``TSDiscGradIsGonzalez()`` to check flag for whether to use additional conservative terms in discrete gradient formulation
   - Add ``TSDiscGradUseGonzalez()`` to set discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
@@ -185,7 +186,7 @@ Changes: Development
 
 .. rubric:: DMNetwork:
 
--  ``DMNetworkAddComponent()`` now requires a valid component key for each call.
+-  ``DMNetworkAddComponent()`` now requires a valid component key for each call
 
 .. rubric:: DMStag:
 
