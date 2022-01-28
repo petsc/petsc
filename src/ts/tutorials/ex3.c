@@ -599,6 +599,11 @@ PetscErrorCode IJacobianHeat(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s,Mat A,
 
     test:
       requires: !single
+      suffix: fischer_guess_3
+      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 3,10 -pc_type none -ksp_converged_reason
+
+    test:
+      requires: !single
       suffix: stringview
       args: -nox -ts_type rosw -test_string_viewer
 
