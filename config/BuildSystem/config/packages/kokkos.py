@@ -133,7 +133,10 @@ class Configure(config.package.CMakePackage):
       path = os.getenv('PATH')
       nvccpath = os.path.dirname(petscNvcc)
       if nvccpath:
-         os.environ['PATH'] = path+':'+nvccpath
+        # Put nvccpath in the beginning of PATH, as there might be other nvcc in PATH and we got this one from --with-cuda-dir.
+        # Kokkos provids Kokkos_CUDA_DIR and CUDA_ROOT. But they do not actually work (as of Jan. 2022) in the aforementioned
+        # case, since these cmake options are not passed correctly to nvcc_wrapper.
+        os.environ['PATH'] = nvccpath+':'+path
     elif self.hip.found:
       lang = 'hip'
       self.system = 'HIP'
