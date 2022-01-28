@@ -97,9 +97,9 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_1(KSPGuess guess,Vec b,Vec x)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecMDot(b,itg->curl,itg->btilde,itg->alpha);CHKERRQ(ierr);
   if (itg->monitor) {
-    ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas =");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)guess)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)guess)->comm," %g",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(((PetscObject)guess)->comm,"\n");CHKERRQ(ierr);
   }
@@ -160,9 +160,9 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_2(KSPGuess guess, Vec b, Vec x)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecMDot(b,itg->curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
   if (itg->monitor) {
-    ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas =");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)guess)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)guess)->comm," %g",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(((PetscObject)guess)->comm,"\n");CHKERRQ(ierr);
   }
