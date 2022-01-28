@@ -1316,93 +1316,68 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_2D_AIJ(DM dm,Mat *mat)
   if (!dm->prealloc_only) {
     if (stencil_type == DMSTAG_STENCIL_NONE) {
       /* Couple all DOF at each location to each other */
-      DMStagStencil row_vertex,row_edge_down,row_edge_left,row_element;
-      DMStagStencil *col_vertex,*col_edge_down,*col_edge_left,*col_element;
+      DMStagStencil *row_vertex,*row_edge_down,*row_edge_left,*row_element;
 
-      row_vertex.loc = DMSTAG_DOWN_LEFT;
-      ierr = PetscMalloc1(dof[0],&col_vertex);CHKERRQ(ierr);
-      for (PetscInt c2=0; c2<dof[0]; ++c2) {
-        col_vertex[c2].loc = DMSTAG_DOWN_LEFT;
+      ierr = PetscMalloc1(dof[0],&row_vertex);CHKERRQ(ierr);
+      for (PetscInt c=0; c<dof[0]; ++c) {
+        row_vertex[c].loc = DMSTAG_DOWN_LEFT;
+        row_vertex[c].c = c;
       }
 
-      row_edge_down.loc=DMSTAG_DOWN;
-      ierr = PetscMalloc1(dof[1],&col_edge_down);CHKERRQ(ierr);
-      for (PetscInt c2=0; c2<dof[1]; ++c2) {
-        col_edge_down[c2].loc = DMSTAG_DOWN;
+      ierr = PetscMalloc1(dof[1],&row_edge_down);CHKERRQ(ierr);
+      for (PetscInt c=0; c<dof[1]; ++c) {
+        row_edge_down[c].loc = DMSTAG_DOWN;
+        row_edge_down[c].c = c;
       }
 
-      row_edge_left.loc=DMSTAG_LEFT;
-      ierr = PetscMalloc1(dof[1],&col_edge_left);CHKERRQ(ierr);
-      for (PetscInt c2=0; c2<dof[1]; ++c2) {
-        col_edge_left[c2].loc = DMSTAG_LEFT;
+      ierr = PetscMalloc1(dof[1],&row_edge_left);CHKERRQ(ierr);
+      for (PetscInt c=0; c<dof[1]; ++c) {
+        row_edge_left[c].loc = DMSTAG_LEFT;
+        row_edge_left[c].c = c;
       }
 
-      row_element.loc = DMSTAG_ELEMENT;
-      ierr = PetscMalloc1(dof[2],&col_element);CHKERRQ(ierr);
-      for (PetscInt c2=0; c2<dof[2]; ++c2) {
-        col_element[c2].loc = DMSTAG_ELEMENT;
+      ierr = PetscMalloc1(dof[2],&row_element);CHKERRQ(ierr);
+      for (PetscInt c=0; c<dof[2]; ++c) {
+        row_element[c].loc = DMSTAG_ELEMENT;
+        row_element[c].c = c;
       }
 
       for (PetscInt ey=start[1]; ey<start[1]+n[1]+n_extra[1]; ++ey) {
         for (PetscInt ex=start[0]; ex<start[0]+n[0]+n_extra[0]; ++ex) {
           {
-            row_vertex.i = ex;
-            row_vertex.j = ey;
-            for (PetscInt c=0; c<dof[0]; ++c) {
-              row_vertex.c = c;
-              for (PetscInt c2=0; c2<dof[0]; ++c2){
-                col_vertex[c2].i = ex;
-                col_vertex[c2].j = ey;
-                col_vertex[c2].c = c2;
-              }
-              ierr = DMStagMatSetValuesStencil(dm,*mat,1,&row_vertex,dof[0],col_vertex,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            for (PetscInt c=0; c<dof[0]; ++c){
+              row_vertex[c].i = ex;
+              row_vertex[c].j = ey;
             }
+            ierr = DMStagMatSetValuesStencil(dm,*mat,dof[0],row_vertex,dof[0],row_vertex,NULL,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (ex < N[0]) {
-            row_edge_down.i = ex;
-            row_edge_down.j = ey;
-            for (PetscInt c=0; c<dof[1]; ++c) {
-              row_edge_down.c = c;
-              for (PetscInt c2=0; c2<dof[1]; ++c2){
-                col_edge_down[c2].i = ex;
-                col_edge_down[c2].j = ey;
-                col_edge_down[c2].c = c2;
-              }
-              ierr = DMStagMatSetValuesStencil(dm,*mat,1,&row_edge_down,dof[1],col_edge_down,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            for (PetscInt c=0; c<dof[1]; ++c){
+              row_edge_down[c].i = ex;
+              row_edge_down[c].j = ey;
             }
+            ierr = DMStagMatSetValuesStencil(dm,*mat,dof[1],row_edge_down,dof[1],row_edge_down,NULL,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (ey < N[1]) {
-            row_edge_left.i = ex;
-            row_edge_left.j = ey;
-            for (PetscInt c=0; c<dof[1]; ++c) {
-              row_edge_left.c = c;
-              for (PetscInt c2=0; c2<dof[1]; ++c2){
-                col_edge_left[c2].i = ex;
-                col_edge_left[c2].j = ey;
-                col_edge_left[c2].c = c2;
-              }
-              ierr = DMStagMatSetValuesStencil(dm,*mat,1,&row_edge_left,dof[1],col_edge_left,NULL,INSERT_VALUES);CHKERRQ(ierr);
+            for (PetscInt c=0; c<dof[1]; ++c){
+              row_edge_left[c].i = ex;
+              row_edge_left[c].j = ey;
             }
+            ierr = DMStagMatSetValuesStencil(dm,*mat,dof[1],row_edge_left,dof[1],row_edge_left,NULL,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (ex < N[0] && ey < N[1]) {
-            row_element.i = ex;
-            row_element.j = ey;
             for (PetscInt c=0; c<dof[2]; ++c) {
-              row_element.c = c;
-              for (PetscInt c2=0; c2<dof[2]; ++c2) {
-                col_element[c2].i = ex;
-                col_element[c2].j = ey;
-                col_element[c2].c = c2;
-              }
-              ierr = DMStagMatSetValuesStencil(dm,*mat,1,&row_element,dof[2],col_element,NULL,INSERT_VALUES);CHKERRQ(ierr);
+              row_element[c].i = ex;
+              row_element[c].j = ey;
             }
+            ierr = DMStagMatSetValuesStencil(dm,*mat,dof[2],row_element,dof[2],row_element,NULL,INSERT_VALUES);CHKERRQ(ierr);
           }
         }
       }
-      ierr = PetscFree(col_vertex);CHKERRQ(ierr);
-      ierr = PetscFree(col_edge_left);CHKERRQ(ierr);
-      ierr = PetscFree(col_edge_down);CHKERRQ(ierr);
-      ierr = PetscFree(col_element);CHKERRQ(ierr);
+      ierr = PetscFree(row_vertex);CHKERRQ(ierr);
+      ierr = PetscFree(row_edge_left);CHKERRQ(ierr);
+      ierr = PetscFree(row_edge_down);CHKERRQ(ierr);
+      ierr = PetscFree(row_element);CHKERRQ(ierr);
     } else if (stencil_type == DMSTAG_STENCIL_STAR || stencil_type == DMSTAG_STENCIL_BOX) {
       DMStagStencil *col,*row;
 
