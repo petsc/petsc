@@ -5,15 +5,16 @@
 
 /*@
    ISCompressIndicesGeneral - convert the indices into block indices
+
    Input Parameters:
-+  n - maximum possible length of the index set
-.  nkeys - expected number of keys when PETSC_USE_CTABLE
-.  bs - the size of block
-.  imax - the number of index sets
--  is_in - the non-blocked array of index sets
++    n - maximum possible length of the index set
+.    nkeys - expected number of keys when PETSC_USE_CTABLE
+.    bs - the size of block
+.    imax - the number of index sets
+-    is_in - the non-blocked array of index sets
 
    Output Parameter:
-.  is_out - the blocked new index set
+.    is_out - the blocked new index set
 
    Level: intermediate
 
@@ -160,15 +161,16 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
 
 /*@C
    ISExpandIndicesGeneral - convert the indices into non-block indices
+
    Input Parameters:
-+  n - the length of the index set   (not being used)
-.  nkeys - expected number of keys when PETSC_USE_CTABLE (not being used)
-.  bs - the size of block
-.  imax - the number of index sets
--  is_in - the blocked array of index sets
++    n - the length of the index set (not being used)
+.    nkeys - expected number of keys when PETSC_USE_CTABLE (not being used)
+.    bs - the size of block
+.    imax - the number of index sets
+-    is_in - the blocked array of index sets
 
    Output Parameter:
-.  is_out - the non-blocked new index set
+.    is_out - the non-blocked new index set
 
    Level: intermediate
 
