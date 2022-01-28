@@ -266,14 +266,10 @@ PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao,PetscInt n,PetscInt *ia
 }
 
 static struct _AOOps AOOps_MemoryScalable = {
-  AOView_MemoryScalable,
-  AODestroy_MemoryScalable,
-  AOPetscToApplication_MemoryScalable,
-  AOApplicationToPetsc_MemoryScalable,
-  NULL,
-  NULL,
-  NULL,
-  NULL
+  PetscDesignatedInitializer(view,AOView_MemoryScalable),
+  PetscDesignatedInitializer(destroy,AODestroy_MemoryScalable),
+  PetscDesignatedInitializer(petsctoapplication,AOPetscToApplication_MemoryScalable),
+  PetscDesignatedInitializer(applicationtopetsc,AOApplicationToPetsc_MemoryScalable),
 };
 
 PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const PetscInt from_array[],const PetscInt to_array[],AO ao, PetscInt *aomap_loc)

@@ -36,13 +36,9 @@ PetscErrorCode  PetscRandomGetValueReal_Rand(PetscRandom r,PetscReal *val)
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
-  PetscRandomSeed_Rand,
-  PetscRandomGetValue_Rand,
-  PetscRandomGetValueReal_Rand,
-  NULL,
-  NULL,
-  NULL,
-  NULL
+  PetscDesignatedInitializer(seed,PetscRandomSeed_Rand),
+  PetscDesignatedInitializer(getvalue,PetscRandomGetValue_Rand),
+  PetscDesignatedInitializer(getvaluereal,PetscRandomGetValueReal_Rand),
 };
 
 /*MC

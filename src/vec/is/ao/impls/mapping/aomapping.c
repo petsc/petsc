@@ -118,14 +118,12 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(0);
 }
 
-static struct _AOOps AOps = {AOView_Mapping,
-                             AODestroy_Mapping,
-                             AOPetscToApplication_Mapping,
-                             AOApplicationToPetsc_Mapping,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL};
+static struct _AOOps AOps = {
+  PetscDesignatedInitializer(view,AOView_Mapping),
+  PetscDesignatedInitializer(destroy,AODestroy_Mapping),
+  PetscDesignatedInitializer(petsctoapplication,AOPetscToApplication_Mapping),
+  PetscDesignatedInitializer(applicationtopetsc,AOApplicationToPetsc_Mapping),
+};
 
 /*@C
   AOMappingHasApplicationIndex - Searches for the supplied application index.

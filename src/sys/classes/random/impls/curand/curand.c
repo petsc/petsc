@@ -63,13 +63,12 @@ PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
-  PetscRandomSeed_CURAND,
-  NULL,
-  NULL,
-  PetscRandomGetValues_CURAND,
-  PetscRandomGetValuesReal_CURAND,
-  PetscRandomDestroy_CURAND,
-  NULL
+  PetscDesignatedInitializer(seed,PetscRandomSeed_CURAND),
+  PetscDesignatedInitializer(getvalue,NULL),
+  PetscDesignatedInitializer(getvaluereal,NULL),
+  PetscDesignatedInitializer(getvalues,PetscRandomGetValues_CURAND),
+  PetscDesignatedInitializer(getvaluesreal,PetscRandomGetValuesReal_CURAND),
+  PetscDesignatedInitializer(destroy,PetscRandomDestroy_CURAND),
 };
 
 /*MC

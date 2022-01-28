@@ -306,30 +306,32 @@ static PetscErrorCode ISContiguousLocal_Stride(IS is,PetscInt gstart,PetscInt ge
   PetscFunctionReturn(0);
 }
 
-static struct _ISOps myops = { ISGetIndices_Stride,
-                               ISRestoreIndices_Stride,
-                               ISInvertPermutation_Stride,
-                               ISSort_Stride,
-                               ISSort_Stride,
-                               ISSorted_Stride,
-                               ISDuplicate_Stride,
-                               ISDestroy_Stride,
-                               ISView_Stride,
-                               ISLoad_Default,
-                               ISCopy_Stride,
-                               ISToGeneral_Stride,
-                               ISOnComm_Stride,
-                               ISSetBlockSize_Stride,
-                               ISContiguousLocal_Stride,
-                               ISLocate_Stride,
-                               ISSorted_Stride,
-                               NULL,
-                               ISUniqueLocal_Stride,
-                               NULL,
-                               ISPermutationLocal_Stride,
-                               NULL,
-                               ISIntervalLocal_Stride,
-                               NULL};
+static struct _ISOps myops = {
+  PetscDesignatedInitializer(getindices,ISGetIndices_Stride),
+  PetscDesignatedInitializer(restoreindices,ISRestoreIndices_Stride),
+  PetscDesignatedInitializer(invertpermutation,ISInvertPermutation_Stride),
+  PetscDesignatedInitializer(sort,ISSort_Stride),
+  PetscDesignatedInitializer(sortremovedups,ISSort_Stride),
+  PetscDesignatedInitializer(sorted,ISSorted_Stride),
+  PetscDesignatedInitializer(duplicate,ISDuplicate_Stride),
+  PetscDesignatedInitializer(destroy,ISDestroy_Stride),
+  PetscDesignatedInitializer(view,ISView_Stride),
+  PetscDesignatedInitializer(load,ISLoad_Default),
+  PetscDesignatedInitializer(copy,ISCopy_Stride),
+  PetscDesignatedInitializer(togeneral,ISToGeneral_Stride),
+  PetscDesignatedInitializer(oncomm,ISOnComm_Stride),
+  PetscDesignatedInitializer(setblocksize,ISSetBlockSize_Stride),
+  PetscDesignatedInitializer(contiguous,ISContiguousLocal_Stride),
+  PetscDesignatedInitializer(locate,ISLocate_Stride),
+  PetscDesignatedInitializer(sortedlocal,ISSorted_Stride),
+  NULL,
+  PetscDesignatedInitializer(uniquelocal,ISUniqueLocal_Stride),
+  NULL,
+  PetscDesignatedInitializer(permlocal,ISPermutationLocal_Stride),
+  NULL,
+  PetscDesignatedInitializer(intervallocal,ISIntervalLocal_Stride),
+  NULL
+};
 
 /*@
    ISStrideSetStride - Sets the stride information for a stride index set.

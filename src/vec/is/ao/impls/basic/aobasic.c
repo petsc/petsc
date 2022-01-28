@@ -160,14 +160,14 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
 }
 
 static struct _AOOps AOOps_Basic = {
-  AOView_Basic,
-  AODestroy_Basic,
-  AOPetscToApplication_Basic,
-  AOApplicationToPetsc_Basic,
-  AOPetscToApplicationPermuteInt_Basic,
-  AOApplicationToPetscPermuteInt_Basic,
-  AOPetscToApplicationPermuteReal_Basic,
-  AOApplicationToPetscPermuteReal_Basic
+  PetscDesignatedInitializer(view,AOView_Basic),
+  PetscDesignatedInitializer(destroy,AODestroy_Basic),
+  PetscDesignatedInitializer(petsctoapplication,AOPetscToApplication_Basic),
+  PetscDesignatedInitializer(applicationtopetsc,AOApplicationToPetsc_Basic),
+  PetscDesignatedInitializer(petsctoapplicationpermuteint,AOPetscToApplicationPermuteInt_Basic),
+  PetscDesignatedInitializer(applicationtopetscpermuteint,AOApplicationToPetscPermuteInt_Basic),
+  PetscDesignatedInitializer(petsctoapplicationpermutereal,AOPetscToApplicationPermuteReal_Basic),
+  PetscDesignatedInitializer(applicationtopetscpermutereal,AOApplicationToPetscPermuteReal_Basic),
 };
 
 PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
