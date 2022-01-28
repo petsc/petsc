@@ -1198,7 +1198,7 @@ PetscErrorCode  MatCreateSeqAIJKokkos(MPI_Comm comm,PetscInt m,PetscInt n,PetscI
 
 typedef Kokkos::TeamPolicy<>::member_type team_member;
 //
-// This factorization exploits block diagonal matrices with "Nf" attached to the matrix in a container.
+// This factorization exploits block diagonal matrices with "Nf" (not used).
 // Use -pc_factor_mat_ordering_type rcm to order decouple blocks of size N/Nf for this optimization
 //
 static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const MatFactorInfo *info)
@@ -1212,22 +1212,12 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
   const PetscScalar  *aa_d = aijkok->a_dual.view_device().data();
   PetscScalar        *ba_d = baijkok->a_dual.view_device().data();
   PetscBool          row_identity,col_identity;
-  PetscInt           nc, Nf, nVec=32; // should be a parameter
-  PetscContainer     container;
+  PetscInt           nc, Nf=1, nVec=32; // should be a parameter, Nf is batch size - not used
 
   PetscFunctionBegin;
   if (A->rmap->n != n) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"square matrices only supported %" PetscInt_FMT " %" PetscInt_FMT,A->rmap->n,n);
   ierr = MatGetOption(A,MAT_STRUCTURALLY_SYMMETRIC,&row_identity);CHKERRQ(ierr);
   if (!row_identity) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"structurally symmetric matrices only supported");
-  ierr = PetscObjectQuery((PetscObject) A, "Nf", (PetscObject *) &container);CHKERRQ(ierr);
-  if (container) {
-    PetscInt *pNf=NULL, nv;
-    ierr = PetscContainerGetPointer(container, (void **) &pNf);CHKERRQ(ierr);
-    Nf = (*pNf)%1000;
-    nv = (*pNf)/1000;
-    if (nv>0) nVec = nv;
-  } else Nf = 1;
-  if (n%Nf) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"n % Nf != 0 %" PetscInt_FMT " %" PetscInt_FMT,n,Nf);
   ierr = ISGetIndices(isrow,&r_h);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic_h);CHKERRQ(ierr);
   ierr = ISGetSize(isicol,&nc);CHKERRQ(ierr);
