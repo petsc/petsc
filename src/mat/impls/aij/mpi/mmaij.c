@@ -8,19 +8,19 @@
 
 PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 {
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ     *B   = (Mat_SeqAIJ*)(aij->B->data);
-  PetscErrorCode ierr;
-  PetscInt       i,j,*aj = B->j,*garray;
-  PetscInt       ec = 0; /* Number of nonzero external columns */
-  IS             from,to;
-  Vec            gvec;
+  Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ         *B   = (Mat_SeqAIJ*)(aij->B->data);
+  PetscErrorCode     ierr;
+  PetscInt           i,j,*aj = B->j,*garray;
+  PetscInt           ec = 0; /* Number of nonzero external columns */
+  IS                 from,to;
+  Vec                gvec;
 #if defined(PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
   PetscInt           gid,lid;
 #else
-  PetscInt N = mat->cmap->N,*indices;
+  PetscInt           N = mat->cmap->N,*indices;
 #endif
 
   PetscFunctionBegin;
@@ -142,12 +142,12 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 */
 PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
 {
-  Mat_MPIAIJ     *aij  = (Mat_MPIAIJ*)A->data;
-  Mat            B     = aij->B,Bnew;
-  Mat_SeqAIJ     *Baij = (Mat_SeqAIJ*)B->data;
-  PetscErrorCode ierr;
-  PetscInt       i,j,m = B->rmap->n,n = A->cmap->N,col,ct = 0,*garray = aij->garray,*nz,ec;
-  PetscScalar    v;
+  Mat_MPIAIJ        *aij  = (Mat_MPIAIJ*)A->data;
+  Mat               B     = aij->B,Bnew;
+  Mat_SeqAIJ        *Baij = (Mat_SeqAIJ*)B->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,m = B->rmap->n,n = A->cmap->N,col,ct = 0,*garray = aij->garray,*nz,ec;
+  PetscScalar       v;
   const PetscScalar *ba;
 
   PetscFunctionBegin;
