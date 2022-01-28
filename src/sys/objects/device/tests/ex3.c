@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
  testset:
    output_file: ./output/ExitSuccess.out
-   nsize: {{1 4 10}}
+   nsize: {{1 4}}
    args: -local_device_context_stream_type {{global_blocking default_blocking global_nonblocking}}
    test:
      requires: cuda
