@@ -1889,6 +1889,21 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidLogicalCollectiveInt(is,bs,2);
   if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Block size %" PetscInt_FMT ", must be positive",bs);
+  if (PetscDefined(USE_DEBUG)) {
+    const PetscInt *indices;
+    PetscInt       length,i,j;
+    ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
+    if (indices) {
+      ierr = ISGetLocalSize(is,&length);CHKERRQ(ierr);
+      if (length%bs != 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",length,bs);
+      for (i=0;i<length/bs;i+=bs) {
+        for (j=0;j<bs-1;j++) {
+          if (indices[i*bs+j] != indices[i*bs+j+1]-1) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %" PetscInt_FMT " is incompatible with the indices: non consecutive indices %" PetscInt_FMT " %" PetscInt_FMT,bs,indices[i*bs+j],indices[i*bs+j+1]);
+        }
+      }
+    }
+    ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
+  }
   ierr = (*is->ops->setblocksize)(is,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
