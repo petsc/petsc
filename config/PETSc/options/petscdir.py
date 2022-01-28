@@ -62,6 +62,7 @@ class Configure(config.base.Configure):
     else:
       self.version = '.'.join([line.split(' ')[-1] for line in versionInfo[1:3]])
       self.version += '.99'
+    self.logPrint('PETSC_VERSION_RELEASE of 1 indicates the code is from a release branch or a branch created from a release branch.')      
     self.logPrint('Version Information:')
     for line in versionInfo:
       self.logPrint(line)
