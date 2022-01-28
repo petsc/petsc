@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   /* full CUDA AXPY */
   ierr = MatAXPY(B,-1.0,AC,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(B,NORM_INFINITY,&r);CHKERRQ(ierr);
-  if (r != 0.0) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatDuplicate + MatCopy + MatAXPY %g",(double)r);
+  if (r != 0.0) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatDuplicate + MatCopy + MatAXPY %g",(double)r);
 
   /* test Copy */
   ierr = MatCopy(AC,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   /* call MatAXPY_Basic since B is CUDA, A is CPU,  */
   ierr = MatAXPY(B,-1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(B,NORM_INFINITY,&r);CHKERRQ(ierr);
-  if (r != 0.0) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatDuplicate + MatCopy + MatAXPY_Basic %g",(double)r);
+  if (r != 0.0) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatDuplicate + MatCopy + MatAXPY_Basic %g",(double)r);
 
   if (m == n) {
     Mat B1,B2;
@@ -65,14 +65,14 @@ int main(int argc,char **argv)
 
     ierr = MatAXPY(B2,-1.0,B1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B2,NORM_INFINITY,&r);CHKERRQ(ierr);
-    if (r > tol) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);
+    if (r > tol) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);
 
     /* test reuse */
     ierr = MatPtAP(B,AC,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B1);CHKERRQ(ierr);
     ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B2);CHKERRQ(ierr);
     ierr = MatAXPY(B2,-1.0,B1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B2,NORM_INFINITY,&r);CHKERRQ(ierr);
-    if (r > tol) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);
+    if (r > tol) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatPtAP %g",(double)r);
 
     ierr = MatDestroy(&B1);CHKERRQ(ierr);
     ierr = MatDestroy(&B2);CHKERRQ(ierr);

@@ -168,7 +168,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
   PetscInt       *ci,*cj,ncols;
 
   PetscFunctionBegin;
-  if (am != an) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
+  if (am != an) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
   ierr = MatSeqAIJGetArrayRead(mpimat->A,(const PetscScalar**)&aa);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArrayRead(mpimat->B,(const PetscScalar**)&ba);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
@@ -193,7 +193,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
         ca[k++] = *ba++;
       }
     }
-    if (k != ci[am]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"k: %d != ci[am]: %d",k,ci[am]);
+    if (k != ci[am]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"k: %d != ci[am]: %d",k,ci[am]);
 
     /* put together the new matrix */
     an   = mpimat->A->cmap->n+mpimat->B->cmap->n;
@@ -217,7 +217,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
       ncols = bi[i+1] - bi[i];
       for (j=0; j<ncols; j++) *ca++ = *ba++;
     }
-  } else SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   ierr = MatSeqAIJRestoreArrayRead(mpimat->A,(const PetscScalar**)&aa);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArrayRead(mpimat->B,(const PetscScalar**)&ba);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -337,7 +337,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   PetscFunctionBegin;
   if (!mlmat->getrow) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
   n = mlmat->invec_leng;
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
+  if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
   /* create global row numbering for a ML_Operator */
   PetscStackCall("ML_build_global_numbering",ML_build_global_numbering(mlmat,&gordering,"rows"));
@@ -411,7 +411,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   aloc = (Iend-my0);
   nloc = (Iend-my0)/bs;
 
-  if (nloc!=a_nloc && aloc != a_nloc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
+  if (nloc!=a_nloc && aloc != a_nloc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
 
   oldarrsz    = pc_ml->dim * pc_ml->nloc;
   pc_ml->dim  = ndm;
@@ -553,7 +553,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       } else if (isSeq) {
         Aloc = A;
         ierr = PetscObjectReference((PetscObject)Aloc);CHKERRQ(ierr);
-      } else SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
+      } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
 
       ierr              = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
       PetscMLdata       = pc_ml->PetscMLdata;
@@ -618,7 +618,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else if (isSeq) {
     Aloc = A;
     ierr = PetscObjectReference((PetscObject)Aloc);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
+  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
 
   /* create and initialize struct 'PetscMLdata' */
   ierr               = PetscNewLog(pc,&PetscMLdata);CHKERRQ(ierr);
@@ -806,7 +806,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else {
     PetscStackCall("ML_Gen_MultiLevelHierarchy_UsingAggregation",Nlevels = ML_Gen_MultiLevelHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object));
   }
-  if (Nlevels<=0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
+  if (Nlevels<=0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
   pc_ml->Nlevels = Nlevels;
   fine_level     = Nlevels - 1;
 

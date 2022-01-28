@@ -269,7 +269,7 @@ PetscErrorCode MatH2OpusGetNativeMult(Mat A, PetscBool *nm)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(nm,2);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATH2OPUS,&ish2opus);CHKERRQ(ierr);
-  if (!ish2opus) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for type %s",((PetscObject)A)->type_name);
+  if (!ish2opus) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for type %s",((PetscObject)A)->type_name);
   *nm = a->nativemult;
   PetscFunctionReturn(0);
 }
@@ -465,7 +465,7 @@ static PetscErrorCode MatProductNumeric_H2OPUS(Mat C)
     ierr = MatMultNKernel_H2OPUS(product->A,PETSC_TRUE,product->B,C);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProduct type %s is not supported",MatProductTypes[product->type]);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProduct type %s is not supported",MatProductTypes[product->type]);
   }
   PetscFunctionReturn(0);
 }
@@ -497,7 +497,7 @@ static PetscErrorCode MatProductSymbolic_H2OPUS(Mat C)
     ierr = MatSetUp(C);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProduct type %s is not supported",MatProductTypes[product->type]);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProduct type %s is not supported",MatProductTypes[product->type]);
   }
   C->ops->productsymbolic = NULL;
   C->ops->productnumeric = MatProductNumeric_H2OPUS;
@@ -1737,7 +1737,7 @@ PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
   PetscValidPointer(indexmap,2);
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = PetscObjectTypeCompare((PetscObject)A,MATH2OPUS,&ish2opus);CHKERRQ(ierr);
-  if (!ish2opus) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for type %s",((PetscObject)A)->type_name);
+  if (!ish2opus) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for type %s",((PetscObject)A)->type_name);
   *indexmap = a->h2opus_indexmap;
   PetscFunctionReturn(0);
 }
@@ -1773,7 +1773,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec* out)
   PetscValidPointer(out,4);
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = PetscObjectTypeCompare((PetscObject)A,MATH2OPUS,&ish2opus);CHKERRQ(ierr);
-  if (!ish2opus) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for type %s",((PetscObject)A)->type_name);
+  if (!ish2opus) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for type %s",((PetscObject)A)->type_name);
   nm   = a->nativemult;
   ierr = MatH2OpusSetNativeMult(A,(PetscBool)!nativetopetsc);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,out,NULL);CHKERRQ(ierr);

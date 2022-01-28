@@ -109,7 +109,7 @@ int main(int argc, char **argv)
       }
       err = PetscSqrtReal(err);
       if (err > PETSC_SMALL) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trace FE error %g",err);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trace FE error %g",err);
       }
       ierr = VecRestoreArray(vecFull,&arrayFull);CHKERRQ(ierr);
       ierr = PetscTabulationDestroy(&Tfull);CHKERRQ(ierr);

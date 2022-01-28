@@ -383,7 +383,7 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
       case BC_NEUMANN:
         f[0].E = x[1].E - x[0].E;
         break;
-      default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D",rd->initial);
+      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D",rd->initial);
       }
     } else if (i == info.mx-1) { /* Right boundary */
       f[i].E = x[i].E - x[i-1].E; /* Homogeneous Neumann */
@@ -471,7 +471,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
         K[0][1*2+0] = -1./Theta;
         K[0][2*2+0] = 1./Theta;
         break;
-      default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D",rd->initial);
+      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D",rd->initial);
       }
     } else if (i == info.mx-1) {
       K[0][0*2+0] = -1./Theta;
@@ -559,7 +559,7 @@ static PetscErrorCode RDGetQuadrature(RD rd,PetscReal hx,PetscInt *nq,PetscReal 
     static const PetscReal ii[3][2] = {{1,0},{0.5,0.5},{0,1}},dd[3][2] = {{-1,1},{-1,1},{-1,1}},ww[3] = {1./6,4./6,1./6};
     *nq = 3; refweight = ww; refinterp = ii; refderiv = dd;
   } break;
-  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown quadrature %d",(int)rd->quadrature);
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown quadrature %d",(int)rd->quadrature);
   }
 
   for (q=0; q<*nq; q++) {
@@ -648,7 +648,7 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
     case BC_NEUMANN:
       /* homogeneous Neumann is the natural condition */
       break;
-    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D",rd->initial);
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D",rd->initial);
     }
   }
 
@@ -727,7 +727,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     case BC_NEUMANN:
       /* homogeneous Neumann is the natural condition */
       break;
-    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D",rd->initial);
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Case %D",rd->initial);
     }
   }
 
@@ -769,7 +769,7 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
       x[i].E = 7.56e-2 * rd->unit.Joule / PetscPowScalarInt(rd->unit.meter,3);
       x[i].T = RDRadiationTemperature(rd,x[i].E);
       break;
-    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No initial state %D",rd->initial);
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No initial state %D",rd->initial);
     }
   }
   ierr = DMDAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
@@ -927,7 +927,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
       rd->unit.second   = 1.e9;
       rd->unit.Kelvin   = 1.;
       break;
-    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown initial condition %d",rd->initial);
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown initial condition %d",rd->initial);
     }
     /* Fundamental units */
     ierr = PetscOptionsReal("-rd_unit_meter","Length of 1 meter in nondimensional units","",rd->unit.meter,&rd->unit.meter,0);CHKERRQ(ierr);
@@ -977,7 +977,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
       rd->gamma      = 3.5;
       rd->final_time = 20e-9 * second;
       break;
-    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Initial %D",rd->initial);
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Initial %D",rd->initial);
     }
     ierr = PetscOptionsEnum("-rd_leftbc","Left boundary condition","",BCTypes,(PetscEnum)rd->leftbc,(PetscEnum*)&rd->leftbc,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-rd_E_applied","Radiation flux at left end of domain","",rd->Eapplied,&rd->Eapplied,NULL);CHKERRQ(ierr);

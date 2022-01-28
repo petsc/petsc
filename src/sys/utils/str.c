@@ -1172,7 +1172,7 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
     *epar = 0;
     epar += 1;
     ierr  = PetscOptionsGetenv(comm,par,env,sizeof(env),&flag);CHKERRQ(ierr);
-    if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
+    if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
     ierr = PetscStrlcat(work,env,len);CHKERRQ(ierr);
     ierr = PetscStrlcat(work,epar,len);CHKERRQ(ierr);
     ierr = PetscStrncpy(b,work,len);CHKERRQ(ierr);

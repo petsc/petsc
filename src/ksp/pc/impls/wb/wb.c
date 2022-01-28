@@ -125,7 +125,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
   for (i=0; i<Nsurf; i++) {
     tmp = 0.0;
     for (j=0; j<26; j++) tmp += xsurf[i+j*Nsurf];
-    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
 #endif
   ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
@@ -222,7 +222,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
     tmp = 0.0;
     for (j=0; j<26; j++) tmp += rxint[i+j*Nint];
 
-    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
   ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
   /* ierr = MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
@@ -262,7 +262,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
   }
   ierr = PetscTableGetCount(ht,&cnt);CHKERRQ(ierr);
-  if (cnt != Ntotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal);
+  if (cnt != Ntotal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal);
   ierr = PetscFree(globals);CHKERRQ(ierr);
   for (i=0; i<26; i++) {
     ierr = PetscTableFind(ht,gl[i]+1,&gl[i]);CHKERRQ(ierr);
@@ -299,7 +299,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat 
     ierr = MatMult(*P,x,y);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
     for (i=0; i<Ng; i++) {
-      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %g",i,(double)PetscAbsScalar(yy[i]));
+      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %g",i,(double)PetscAbsScalar(yy[i]));
     }
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -404,7 +404,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
     tmp = 0.0;
     for (j=0; j<6; j++) tmp += xsurf[i+j*Nsurf];
 
-    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
 #endif
   ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
@@ -503,7 +503,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
     tmp = 0.0;
     for (j=0; j<6; j++) tmp += rxint[i+j*Nint];
 
-    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
   ierr = MatDenseRestoreArrayRead(Xint,&rxint);CHKERRQ(ierr);
   /* ierr = MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
@@ -538,7 +538,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
   }
   ierr = PetscTableGetCount(ht,&cnt);CHKERRQ(ierr);
-  if (cnt != Ntotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal);
+  if (cnt != Ntotal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal);
   ierr = PetscFree(globals);CHKERRQ(ierr);
   for (i=0; i<6; i++) {
     ierr = PetscTableFind(ht,gl[i]+1,&gl[i]);CHKERRQ(ierr);
@@ -575,7 +575,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc,DM da,PC_Exotic *exotic,Mat Agloba
     ierr = MatMult(*P,x,y);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
     for (i=0; i<Ng; i++) {
-      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %g",i,(double)PetscAbsScalar(yy[i]));
+      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %g",i,(double)PetscAbsScalar(yy[i]));
     }
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -658,7 +658,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
     ierr = DMDAGetFaceInterpolation(pc,pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
     ierr = DMDAGetWireBasketInterpolation(pc,pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
+  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   /* if PC has attached DM we must remove it or the PCMG will use it to compute incorrect sized vectors and interpolations */
   ierr = PCSetDM(pc,NULL);CHKERRQ(ierr);

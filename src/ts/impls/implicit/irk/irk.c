@@ -392,7 +392,7 @@ static PetscErrorCode TSInterpolate_IRK(TS ts,PetscReal itime,Vec U)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!B) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not have an interpolation formula",irk->method_name);
+  if (!B) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not have an interpolation formula",irk->method_name);
   switch (irk->status) {
   case TS_STEP_INCOMPLETE:
   case TS_STEP_PENDING:
@@ -555,7 +555,7 @@ static PetscErrorCode SNESTSFormJacobian_IRK(SNES snes,Vec ZC,Mat JC,Mat JCpre,T
       for (j=0; j<nstages; j++)
         S[i+nstages*j] = tab->A_inv[i+nstages*j]/ts->time_step;
     ierr = MatKAIJRestoreS(JC,&S);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not support implicit formula",irk->method_name); /* TODO: need the mass matrix for DAE  */
+  } else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not support implicit formula",irk->method_name); /* TODO: need the mass matrix for DAE  */
   ts->dm = dmsave;
   PetscFunctionReturn(0);
 }
@@ -844,7 +844,7 @@ static PetscErrorCode TSIRKSetType_IRK(TS ts,TSIRKType irktype)
     ierr = TSIRKTableauReset(ts);CHKERRQ(ierr);
   }
   ierr = PetscFunctionListFind(TSIRKList,irktype,&irkcreate);CHKERRQ(ierr);
-  if (!irkcreate) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSIRK type \"%s\" given",irktype);
+  if (!irkcreate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSIRK type \"%s\" given",irktype);
   ierr = (*irkcreate)(ts);CHKERRQ(ierr);
   ierr = PetscStrallocpy(irktype,&irk->method_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -855,7 +855,7 @@ static PetscErrorCode TSIRKSetNumStages_IRK(TS ts,PetscInt nstages)
   TS_IRK *irk = (TS_IRK*)ts->data;
 
   PetscFunctionBegin;
-  if (nstages<=0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"input argument, %d, out of range",nstages);
+  if (nstages<=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"input argument, %d, out of range",nstages);
   irk->nstages = nstages;
   PetscFunctionReturn(0);
 }

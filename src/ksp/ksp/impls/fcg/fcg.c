@@ -131,7 +131,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
     case KSP_NORM_NONE:
       dp = 0.0;
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+    default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
 
   /* Initial Convergence Check */
@@ -233,7 +233,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
       case KSP_NORM_NONE:
         dp = 0.0;
         break;
-      default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+      default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
 
     /* Check for convergence */

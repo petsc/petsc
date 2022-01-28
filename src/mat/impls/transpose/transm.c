@@ -209,7 +209,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
     case MATPRODUCT_ABC:
       /* TODO custom implementation ? */
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[D->product->type]);
+    default: SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[D->product->type]);
     }
   }
   ierr = MatProductReplaceMats(Ain,Bin,Cin,D);CHKERRQ(ierr);

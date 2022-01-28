@@ -135,7 +135,7 @@ PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
     case PHYSICS_ADVECTION:
       uarr[i-is] = PetscSinScalar(2*pi*(x - a*t));
       break;
-    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for physics type %s",PhysicsTypes[ctxt->physics_type]);
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for physics type %s",PhysicsTypes[ctxt->physics_type]);
     }
   }
   ierr = VecRestoreArray(u,&uarr);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat J,Mat Jpre,void *c
       values[1] = 0.;
       values[2] = -user->a*.5/dx;
       break;
-    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for physics type %s",PhysicsTypes[user->physics_type]);
+    default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for physics type %s",PhysicsTypes[user->physics_type]);
     }
     /* periodic boundaries */
     if (i == 0) {

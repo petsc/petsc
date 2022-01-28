@@ -86,7 +86,7 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
 
   ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscLimiterList, name, &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
+  if (!r) SETERRQ(PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
 
   if (lim->ops->destroy) {
     ierr              = (*lim->ops->destroy)(lim);CHKERRQ(ierr);
@@ -1004,7 +1004,7 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
 
   ierr = PetscFVRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscFVList, name, &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
+  if (!r) SETERRQ(PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
 
   if (fvm->ops->destroy) {
     ierr              = (*fvm->ops->destroy)(fvm);CHKERRQ(ierr);
@@ -2173,7 +2173,7 @@ static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt 
   PetscFunctionBegin;
   if (numFaces > maxFaces) {
     if (maxFaces < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Reconstruction has not been initialized, call PetscFVLeastSquaresSetMaxFaces()");
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input faces %D > %D maxfaces", numFaces, maxFaces);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input faces %D > %D maxfaces", numFaces, maxFaces);
   }
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   for (f = 0; f < numFaces; ++f) {

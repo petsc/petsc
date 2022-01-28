@@ -260,7 +260,7 @@ PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog classLog, PetscClassId 
     /* Could do bisection here */
     if (classLog->classInfo[c].classid == classid) break;
   }
-  if (c >= classLog->numClasses) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid object classid %d\nThis could happen if you compile with PETSC_HAVE_DYNAMIC_LIBRARIES, but link with static libraries.", classid);
+  if (c >= classLog->numClasses) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid object classid %d\nThis could happen if you compile with PETSC_HAVE_DYNAMIC_LIBRARIES, but link with static libraries.", classid);
   *oclass = c;
   PetscFunctionReturn(0);
 }

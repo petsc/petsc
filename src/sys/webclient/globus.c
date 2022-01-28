@@ -122,13 +122,13 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
     if (!isatty(fileno(PETSC_STDOUT))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
     ierr = PetscPrintf(comm,"Enter globus username:");CHKERRQ(ierr);
     ptr  = fgets(buff, 1024, stdin);
-    if (!ptr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
+    if (!ptr) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
     ierr = PetscStrlen(buff,&len);CHKERRQ(ierr);
     buff[len-1] = ':'; /* remove carriage return at end of line */
 
     ierr = PetscPrintf(comm,"Enter globus password:");CHKERRQ(ierr);
     ptr  = fgets(buff+len, 1024-len, stdin);
-    if (!ptr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
+    if (!ptr) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
     ierr = PetscStrlen(buff,&len);CHKERRQ(ierr);
     buff[len-1] = '\0'; /* remove carriage return at end of line */
     ierr = PetscStrcpy(head,"Authorization: Basic ");CHKERRQ(ierr);
@@ -235,7 +235,7 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (rank == 0) {
     ierr = PetscTestFile(filename,'r',&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to find file: %s",filename);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to find file: %s",filename);
 
     ierr = PetscStrcpy(head,"Authorization : Globus-Goauthtoken ");CHKERRQ(ierr);
     if (access_token) {

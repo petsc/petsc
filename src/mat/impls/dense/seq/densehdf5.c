@@ -30,7 +30,7 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
     case PETSC_VIEWER_HDF5_MAT:
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"PetscViewerFormat %s not supported for HDF5 input.",PetscViewerFormats[format]);
+      SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"PetscViewerFormat %s not supported for HDF5 input.",PetscViewerFormats[format]);
   }
   hdf5 = (PetscViewer_HDF5*) viewer->data;
   /* we store dense matrix columns as blocks, like MATLAB save(filename,variables,'-v7.3') does */

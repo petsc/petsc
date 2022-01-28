@@ -249,7 +249,7 @@ static PetscErrorCode TSStep_Mimex(TS ts)
   case 1:
     ierr = TSStep_Mimex_Implicit(ts);CHKERRQ(ierr); break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_OUTOFRANGE, "Unknown MIMEX version %d", mimex->version);
+    SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_OUTOFRANGE, "Unknown MIMEX version %d", mimex->version);
   }
   PetscFunctionReturn(0);
 }

@@ -187,7 +187,7 @@ int main(int argc, char **argv)
               PetscInt nDof;
 
               ierr = PetscSectionGetDof(sec,p,&nDof);CHKERRQ(ierr);
-              if (nDof % dim) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
+              if (nDof % dim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
               ierr = PetscSectionSetDof(newSec,p,(nDof/dim)*dimC);CHKERRQ(ierr);
               ierr = PetscSectionSetFieldDof(newSec,p,0,(nDof/dim)*dimC);CHKERRQ(ierr);
             }

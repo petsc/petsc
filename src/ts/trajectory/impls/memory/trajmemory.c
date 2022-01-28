@@ -268,7 +268,7 @@ static PetscErrorCode StackResize(Stack *stack,PetscInt newsize)
 static PetscErrorCode StackPush(Stack *stack,StackElement e)
 {
   PetscFunctionBegin;
-  if (stack->top+1 >= stack->stacksize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",stack->stacksize);
+  if (stack->top+1 >= stack->stacksize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Maximum stack size (%D) exceeded",stack->stacksize);
   stack->container[++stack->top] = e;
   PetscFunctionReturn(0);
 }
@@ -310,7 +310,7 @@ static PetscErrorCode StackDestroy(Stack *stack)
 
   PetscFunctionBegin;
   if (!stack->container) PetscFunctionReturn(0);
-  if (stack->top+1 > stack->nallocated) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack size does not match element counter %D",stack->nallocated);
+  if (stack->top+1 > stack->nallocated) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack size does not match element counter %D",stack->nallocated);
   for (i=0; i<n; i++) {
     ierr = ElementDestroy(stack,stack->container[i]);CHKERRQ(ierr);
   }
@@ -322,7 +322,7 @@ static PetscErrorCode StackFind(Stack *stack,StackElement *e,PetscInt index)
 {
   PetscFunctionBegin;
   *e = NULL;
-  if (index < 0 || index > stack->top) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid index %D",index);
+  if (index < 0 || index > stack->top) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid index %D",index);
   *e = stack->container[index];
   PetscFunctionReturn(0);
 }
@@ -767,7 +767,7 @@ static PetscErrorCode TSTrajectoryMemoryGet_N_2(TS ts,TJScheduler *tjsch,PetscIn
 
   PetscFunctionBegin;
   ierr = StackFind(stack,&e,stepnum);CHKERRQ(ierr);
-  if (stepnum != e->stepnum) SETERRQ2(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Inconsistent steps! %D != %D",stepnum,e->stepnum);
+  if (stepnum != e->stepnum) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Inconsistent steps! %D != %D",stepnum,e->stepnum);
   ierr = UpdateTS(ts,stack,e,stepnum,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

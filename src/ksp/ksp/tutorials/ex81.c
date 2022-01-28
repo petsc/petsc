@@ -26,7 +26,7 @@ int main(int argc,char **args)
     if (found == 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must supply more than one field");
     j = 0;
     for (i=0; i<found; ++i) j += outer[i];
-    if (j != Q) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER,"Sum of outer fieldsplit sizes (%D) greater than number of blocks in MatNest (%D)",j,Q);
+    if (j != Q) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Sum of outer fieldsplit sizes (%D) greater than number of blocks in MatNest (%D)",j,Q);
   }
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   size = PetscMax(3,size);

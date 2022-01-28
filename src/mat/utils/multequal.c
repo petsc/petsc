@@ -22,7 +22,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg
   PetscValidLogicalCollectiveBool(A,add,6);
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
-  if (PetscUnlikely(am != bm || an != bn)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,bm,an,bn);
+  if (PetscUnlikely(am != bm || an != bn)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,bm,an,bn);
   sop  = sops[(add ? 1 : 0) + 2 * t]; /* t = 0 => no transpose, t = 1 => transpose, t = 2 => Hermitian transpose */
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)A),&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A,Mat B,Mat C,PetscInt n,Petsc
   ierr = MatGetLocalSize(C,&cm,&cn);CHKERRQ(ierr);
   if (At) { PetscInt tt = an; an = am; am = tt; };
   if (Bt) { PetscInt tt = bn; bn = bm; bm = tt; };
-  if (PetscUnlikely(an != bm || am != cm || bn != cn)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,an,bm,bn,cm,cn);
+  if (PetscUnlikely(an != bm || am != cm || bn != cn)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,an,bm,bn,cm,cn);
 
   sop  = sops[(At ? 1 : 0) + 2 * (Bt ? 1 : 0)];
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)C),&rctx);CHKERRQ(ierr);
@@ -421,7 +421,7 @@ static PetscErrorCode MatProjMultEqual_Private(Mat A,Mat B,Mat C,PetscInt n,Pets
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (rart) { PetscInt t = bm; bm = bn; bn = t; }
   ierr = MatGetLocalSize(C,&cm,&cn);CHKERRQ(ierr);
-  if (PetscUnlikely(an != bm || bn != cm || bn != cn)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,an,bm,bn,cm,cn);
+  if (PetscUnlikely(an != bm || bn != cm || bn != cn)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,an,bm,bn,cm,cn);
 
   /* Create left vector of A: v2 */
   ierr = MatCreateVecs(A,&Bx,&v2);CHKERRQ(ierr);

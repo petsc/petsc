@@ -85,11 +85,11 @@ int main(int argc,char **args)
   ierr = MatAXPY(Aij,-1.0,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(Aij,NORM_FROBENIUS,&Aijnorm);CHKERRQ(ierr);
   ierr = MatNorm(B,NORM_FROBENIUS,&Bnorm);CHKERRQ(ierr);
-  if (Aijnorm/Bnorm > 100.0*PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Altered matrices do not match, norm of difference %g",(double)(Aijnorm/Bnorm));
+  if (Aijnorm/Bnorm > 100.0*PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Altered matrices do not match, norm of difference %g",(double)(Aijnorm/Bnorm));
   ierr = VecAXPY(Aijdiag,-1.0,Adiag);CHKERRQ(ierr);
   ierr = VecNorm(Adiag,NORM_2,&dnorm);CHKERRQ(ierr);
   ierr = VecNorm(Aijdiag,NORM_2,&Aijdiagnorm);CHKERRQ(ierr);
-  if (Aijdiagnorm/dnorm > 100.0*PETSC_MACHINE_EPSILON) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Altered matrices diagonals do not match, norm of difference %g",(double)(Aijdiagnorm/dnorm));
+  if (Aijdiagnorm/dnorm > 100.0*PETSC_MACHINE_EPSILON) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Altered matrices diagonals do not match, norm of difference %g",(double)(Aijdiagnorm/dnorm));
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&Aij);CHKERRQ(ierr);
   ierr = VecDestroy(&Adiag);CHKERRQ(ierr);

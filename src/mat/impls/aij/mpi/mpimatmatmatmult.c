@@ -31,7 +31,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Transpose_AIJ_AIJ(Mat RAP)
   /* local sizes of matrices will be checked by the calling subroutines */
   ierr = MatTransposeGetMat(R,&Rt);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)Rt,&flg,MATSEQAIJ,MATSEQAIJMKL,MATMPIAIJ,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)Rt)->type_name);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)Rt)->type_name);
   ierr = MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,product->fill,RAP);CHKERRQ(ierr);
   RAP->ops->productnumeric = MatProductNumeric_ABC_Transpose_AIJ_AIJ;
   PetscFunctionReturn(0);
@@ -44,7 +44,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat C)
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_ABC) {
     C->ops->productsymbolic = MatProductSymbolic_ABC_Transpose_AIJ_AIJ;
-  } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Transpose, AIJ and AIJ matrices",MatProductTypes[product->type]);
+  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Transpose, AIJ and AIJ matrices",MatProductTypes[product->type]);
   PetscFunctionReturn(0);
 }
 #endif

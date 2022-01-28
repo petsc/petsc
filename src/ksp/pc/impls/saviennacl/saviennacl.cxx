@@ -49,7 +49,7 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
     try {
       delete sa->SAVIENNACL;
     } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
     }
   }
   try {
@@ -68,7 +68,7 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
     sa->SAVIENNACL->setup();
 #endif
   } catch(char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
   }
   PetscFunctionReturn(0);
 }
@@ -110,7 +110,7 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc,Vec x,Vec y)
     sac->SAVIENNACL->apply(*yarray);
 #endif
   } catch(char * ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
   }
   ierr = VecViennaCLRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecViennaCLRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ static PetscErrorCode PCDestroy_SAVIENNACL(PC pc)
     try {
       delete sac->SAVIENNACL;
     } catch(char * ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
     }
   }
 

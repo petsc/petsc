@@ -310,7 +310,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, DMPolytopeType ct, const PetscI
         *faces = facesTmp;
       }
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No face description for cell type %s", DMPolytopeTypes[ct]);
+    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No face description for cell type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -360,7 +360,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       PetscHashIter        iter;
       PetscBool            missing;
 
-      if (faceSize > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
+      if (faceSize > 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
       key.i = face[0];
       key.j = faceSize > 1 ? face[1] : PETSC_MAX_INT;
       key.k = faceSize > 2 ? face[2] : PETSC_MAX_INT;
@@ -400,7 +400,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
           PetscHashIter        iter;
           PetscBool            missing;
 
-          if (faceSize > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
+          if (faceSize > 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
           key.i = face[0];
           key.j = faceSize > 1 ? face[1] : PETSC_MAX_INT;
           key.k = faceSize > 2 ? face[2] : PETSC_MAX_INT;
@@ -412,7 +412,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         ierr = DMPlexRestoreRawFaces_Internal(dm, ct, cone, &numFaces, &faceTypes, &faceSizes, &faces);CHKERRQ(ierr);
       }
       for (ct = 1; ct < DM_NUM_POLYTOPES; ++ct) {
-        if (faceTypeStart[ct] != faceTypeStart[ct-1] + faceTypeNum[ct]) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent numbering for cell type %s, %D != %D + %D", DMPolytopeTypes[ct], faceTypeStart[ct], faceTypeStart[ct-1], faceTypeNum[ct]);
+        if (faceTypeStart[ct] != faceTypeStart[ct-1] + faceTypeNum[ct]) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent numbering for cell type %s, %D != %D + %D", DMPolytopeTypes[ct], faceTypeStart[ct], faceTypeStart[ct-1], faceTypeNum[ct]);
       }
     }
   }
@@ -456,14 +456,14 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       PetscBool            missing;
       PetscInt             f;
 
-      if (faceSize > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
+      if (faceSize > 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
       key.i = face[0];
       key.j = faceSize > 1 ? face[1] : PETSC_MAX_INT;
       key.k = faceSize > 2 ? face[2] : PETSC_MAX_INT;
       key.l = faceSize > 3 ? face[3] : PETSC_MAX_INT;
       ierr = PetscSortInt(faceSize, (PetscInt *) &key);CHKERRQ(ierr);
       ierr = PetscHashIJKLPut(faceTable, key, &iter, &missing);CHKERRQ(ierr);
-      if (missing) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing face (cell %D, lf %D)", c, cf);
+      if (missing) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing face (cell %D, lf %D)", c, cf);
       ierr = PetscHashIJKLIterGet(faceTable, iter, &f);CHKERRQ(ierr);
       ierr = DMPlexSetConeSize(idm, f, faceSize);CHKERRQ(ierr);
       ierr = DMPlexSetCellType(idm, f, faceType);CHKERRQ(ierr);
@@ -514,7 +514,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       PetscBool        missing;
       PetscInt         f;
 
-      if (faceSize > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
+      if (faceSize > 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not support faces of size %D > 4", faceSize);
       key.i = face[0];
       key.j = faceSize > 1 ? face[1] : PETSC_MAX_INT;
       key.k = faceSize > 2 ? face[2] : PETSC_MAX_INT;
@@ -531,7 +531,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
         ierr = DMPlexGetConeSize(idm, f, &coneSize);CHKERRQ(ierr);
         ierr = DMPlexGetCone(idm, f, &cone);CHKERRQ(ierr);
-        if (coneSize != faceSize) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %D for face %D should be %D", coneSize, f, faceSize);
+        if (coneSize != faceSize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %D for face %D should be %D", coneSize, f, faceSize);
         /* Notice that we have to use vertices here because the lower dimensional faces have not been created yet */
         ierr = DMPolytopeGetVertexOrientation(faceType, cone, face, &ornt);CHKERRQ(ierr);
         ierr = DMPlexInsertConeOrientation(idm, c, cf, ornt);CHKERRQ(ierr);
@@ -602,7 +602,7 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
     ierr = DMPlexGetConeSize(dm, locals[p], &coneSize);CHKERRQ(ierr);
     maxConeSize = PetscMax(maxConeSize, coneSize);
   }
-  if (maxConeSize > 4) SETERRQ1(comm, PETSC_ERR_SUP, "This method does not support cones of size %D", maxConeSize);
+  if (maxConeSize > 4) SETERRQ(comm, PETSC_ERR_SUP, "This method does not support cones of size %D", maxConeSize);
   ierr = PetscMalloc4(nroots, &roots, nroots, &leaves, nroots, &rootsRanks, nroots, &leavesRanks);CHKERRQ(ierr);
   for (p = 0; p < nroots; ++p) {
     const PetscInt *cone;
@@ -681,13 +681,13 @@ PetscErrorCode DMPlexOrientInterface_Internal(DM dm)
         /* Find index of rank leavesRanks[p][c] among remote ranks */
         /* No need for PetscMPIIntCast because these integers were originally cast from PetscMPIInt. */
         ierr = PetscFindMPIInt((PetscMPIInt) leavesRanks[p][c], nranks, ranks, &r);CHKERRQ(ierr);
-        if (PetscUnlikely(r < 0)) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leaf (%d,%D): leaf rank not found among remote ranks", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
-        if (PetscUnlikely(ranks[r] < 0 || ranks[r] >= size)) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "p=%D c=%D commsize=%d: ranks[%D] = %d makes no sense", p, c, size, r, ranks[r]);
+        if (PetscUnlikely(r < 0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leaf (%d,%D): leaf rank not found among remote ranks", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
+        if (PetscUnlikely(ranks[r] < 0 || ranks[r] >= size)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "p=%D c=%D commsize=%d: ranks[%D] = %d makes no sense", p, c, size, r, ranks[r]);
         /* Find point leaves[p][c] among remote points aimed at rank leavesRanks[p][c] */
         rS = roffset[r];
         rN = roffset[r+1] - rS;
         ierr = PetscFindInt(leaves[p][c], rN, &rremote1[rS], &ind0);CHKERRQ(ierr);
-        if (PetscUnlikely(ind0 < 0)) SETERRQ7(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leave (%d,%D): corresponding remote point not found - it seems there is missing connection in point SF!", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
+        if (PetscUnlikely(ind0 < 0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D cone[%D]=%D root (%d,%D) leave (%d,%D): corresponding remote point not found - it seems there is missing connection in point SF!", p, c, cone[c], rootsRanks[p][c], roots[p][c], leavesRanks[p][c], leaves[p][c]);
         /* Get the corresponding local point */
         mainCone[c] = rmine1[rS + ind0];CHKERRQ(ierr);
       }
@@ -1100,7 +1100,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           PetscInt               points[1024], p, joinSize;
 
           if (debug) {ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]  Checking face (%D, %D) at (%D, %D, %D) with cone size %D\n", rank, rface.rank, rface.index, r, idx, d, Np);CHKERRQ(ierr);}
-          if (Np > 4) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle face (%D, %D) at (%D, %D, %D) with %D cone points", rface.rank, rface.index, r, idx, d, Np);
+          if (Np > 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle face (%D, %D) at (%D, %D, %D) with %D cone points", rface.rank, rface.index, r, idx, d, Np);
           fcp0.rank  = rank;
           fcp0.index = r;
           d += Np;
@@ -1164,7 +1164,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           PetscBool              missing;
 
           if (debug) {ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]  Entering face at (%D, %D)\n", rank, r, idx);CHKERRQ(ierr);}
-          if (Np > 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle faces with %D cone points", Np);
+          if (Np > 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle faces with %D cone points", Np);
           fcp0.rank  = rank;
           fcp0.index = r;
           d += Np;
@@ -1176,7 +1176,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           ierr = PetscSortSFNode(Np, (PetscSFNode *) &key);CHKERRQ(ierr);
           if (debug) {ierr = PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]    key (%D, %D) (%D, %D) (%D, %D) (%D, %D)\n", rank, key.i.rank, key.i.index, key.j.rank, key.j.index, key.k.rank, key.k.index, key.l.rank, key.l.index);CHKERRQ(ierr);}
           ierr = PetscHashIJKLRemotePut(faceTable, key, &iter, &missing);CHKERRQ(ierr);
-          if (missing) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root %D Idx %D ought to have an associated face", r, idx2);
+          if (missing) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root %D Idx %D ought to have an associated face", r, idx2);
           else        {ierr = PetscHashIJKLRemoteIterGet(faceTable, iter, &candidatesRemote[hidx]);CHKERRQ(ierr);}
         }
       }
@@ -1265,7 +1265,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
     for (p = Nl; p < Nl + NlNew; ++p) {
       PetscInt off;
       ierr = PetscHMapIGet(claimshash, localPointsNew[p], &off);CHKERRQ(ierr);
-      if (claims[off].rank < 0 || claims[off].index < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid claim for local point %D, (%D, %D)", localPointsNew[p], claims[off].rank, claims[off].index);
+      if (claims[off].rank < 0 || claims[off].index < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid claim for local point %D, (%D, %D)", localPointsNew[p], claims[off].rank, claims[off].index);
       remotePointsNew[p] = claims[off];
     }
     ierr = PetscSFCreate(comm, &sfPointNew);CHKERRQ(ierr);
@@ -1410,7 +1410,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = DMSetCoordinateDim(dmB, cdim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
-  if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
+  if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
   /* Copy over discretization if it exists */
   {
     DM                 cdmA, cdmB;
@@ -1444,7 +1444,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   if (coordSectionA == coordSectionB) PetscFunctionReturn(0);
   ierr = PetscSectionGetNumFields(coordSectionA, &Nf);CHKERRQ(ierr);
   if (!Nf) PetscFunctionReturn(0);
-  if (Nf > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of coordinate fields must be 1, not %D", Nf);
+  if (Nf > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of coordinate fields must be 1, not %D", Nf);
   if (!coordSectionB) {
     PetscInt dim;
 
@@ -1458,7 +1458,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(coordSectionA, &cS, &cE);CHKERRQ(ierr);
   if (cStartA <= cS && cS < cEndA) { /* localized coordinates */
-    if ((cEndA-cStartA) != (cEndB-cStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cells in first DM %D != %D in the second DM", cEndA-cStartA, cEndB-cStartB);
+    if ((cEndA-cStartA) != (cEndB-cStartB)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cells in first DM %D != %D in the second DM", cEndA-cStartA, cEndB-cStartB);
     cS = cS - cStartA + cStartB;
     cE = vEndB;
     lc = PETSC_TRUE;
@@ -1628,7 +1628,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
           ++n;
         }
       }
-      if (n != numLeavesUn) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent number of leaves %d != %d", n, numLeavesUn);
+      if (n != numLeavesUn) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent number of leaves %d != %d", n, numLeavesUn);
       ierr = PetscSFSetGraph(sfPointUn, vEnd, numLeavesUn, localPointsUn, PETSC_OWN_POINTER, remotePointsUn, PETSC_OWN_POINTER);CHKERRQ(ierr);
     }
   }
@@ -1742,7 +1742,7 @@ PetscErrorCode DMPlexIsInterpolated(DM dm, DMPlexInterpolatedFlag *interpolated)
     DMPlexInterpolatedFlag flg;
 
     ierr = DMPlexIsInterpolated_Internal(dm, &flg);CHKERRQ(ierr);
-    if (flg != plex->interpolated) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Stashed DMPlexInterpolatedFlag %s is inconsistent with current %s", DMPlexInterpolatedFlags[plex->interpolated], DMPlexInterpolatedFlags[flg]);
+    if (flg != plex->interpolated) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Stashed DMPlexInterpolatedFlag %s is inconsistent with current %s", DMPlexInterpolatedFlags[plex->interpolated], DMPlexInterpolatedFlags[flg]);
   }
   *interpolated = plex->interpolated;
   PetscFunctionReturn(0);

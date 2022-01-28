@@ -78,7 +78,7 @@ PetscInt PCTFS_ct_bits(char *ptr, PetscInt n)
 /*********************************bit_mask.c***********************************/
 PetscInt PCTFS_div_ceil(PetscInt numer,  PetscInt denom)
 {
-  if ((numer<0)||(denom<=0)) SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_div_ceil() :: numer=%D ! >=0, denom=%D ! >0");
+  if ((numer<0)||(denom<=0)) SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_div_ceil() :: numer=%" PetscInt_FMT " ! >=0, denom=%" PetscInt_FMT " ! >0",numer,denom);
   return(PetscCeilInt(numer,denom));
 }
 

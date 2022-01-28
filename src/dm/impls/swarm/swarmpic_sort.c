@@ -142,8 +142,8 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *np
   ctx = swarm->sort_context;
   if (!ctx) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
   if (!ctx->isvalid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"SwarmPointSort container is not valid. Must call DMSwarmSortGetAccess() first");
-  if (e >= ctx->ncells) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%D) is greater than max number of local cells (%D)",e,ctx->ncells);
-  if (e < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%D) cannot be negative",e);
+  if (e >= ctx->ncells) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%D) is greater than max number of local cells (%D)",e,ctx->ncells);
+  if (e < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%D) cannot be negative",e);
   points_per_cell = ctx->pcell_offsets[e+1] - ctx->pcell_offsets[e];
   *npoints = points_per_cell;
   PetscFunctionReturn(0);

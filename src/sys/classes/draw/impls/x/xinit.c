@@ -23,7 +23,7 @@ static PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin,const char displ
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay(display);
   if (!XiWin->disp) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open display on %s\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open display on %s\n\
     Make sure your COMPUTE NODES are authorized to connect \n\
     to this X server and either your DISPLAY variable\n\
     is set or you use the -display name option\n",display);

@@ -207,7 +207,7 @@ static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,ISCo
   case IS_COLORING_LOCAL:
     nloc = red->N;
     break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   }
   ierr = PetscMalloc1(nloc,&colors);CHKERRQ(ierr);
   for (i=0; i<nloc; i++) colors[i] = i;

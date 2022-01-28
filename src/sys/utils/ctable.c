@@ -38,7 +38,7 @@ static PetscErrorCode PetscTableCreateHashSize(PetscInt sz, PetscInt *hsz)
   else if (sz < 13421772800l)*hsz = 18787024237l;
   else if (sz < 26843545600l)*hsz = 32416190071l;
 #endif
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"A really huge hash is being requested.. cannot process: %" PetscInt_FMT,sz);
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"A really huge hash is being requested.. cannot process: %" PetscInt_FMT,sz);
   PetscFunctionReturn(0);
 }
 

@@ -468,7 +468,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
 
     fd   = fopen(fname,"r");
     ierr = PetscTestDirectory(fname,'r',&isdir);CHKERRQ(ierr);
-    if (isdir && require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified options file %s is a directory",fname);
+    if (isdir && require) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified options file %s is a directory",fname);
     if (fd && !isdir) {
       PetscSegBuffer vseg,aseg;
       ierr = PetscSegBufferCreate(1,4000,&vseg);CHKERRQ(ierr);
@@ -502,14 +502,14 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
           goto destroy;
         } else if (tokens[0][0] == '-') {
           ierr = PetscOptionsValidKey(tokens[0],&valid);CHKERRQ(ierr);
-          if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid option %s",fname,line,tokens[0]);
+          if (!valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid option %s",fname,line,tokens[0]);
           ierr = PetscStrlen(tokens[0],&len);CHKERRQ(ierr);
           ierr = PetscSegBufferGet(vseg,len+1,&vstring);CHKERRQ(ierr);
           ierr = PetscArraycpy(vstring,tokens[0],len);CHKERRQ(ierr);
           vstring[len] = ' ';
           if (tokens[1]) {
             ierr = PetscOptionsValidKey(tokens[1],&valid);CHKERRQ(ierr);
-            if (valid) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": cannot specify two options per line (%s %s)",fname,line,tokens[0],tokens[1]);
+            if (valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": cannot specify two options per line (%s %s)",fname,line,tokens[0],tokens[1]);
             ierr = PetscStrlen(tokens[1],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(vseg,len+3,&vstring);CHKERRQ(ierr);
             vstring[0] = '"';
@@ -521,10 +521,10 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
           ierr = PetscStrcasecmp(tokens[0],"alias",&alias);CHKERRQ(ierr);
           if (alias) {
             ierr = PetscOptionsValidKey(tokens[1],&valid);CHKERRQ(ierr);
-            if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid aliased option %s",fname,line,tokens[1]);
-            if (!tokens[2]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": alias missing for %s",fname,line,tokens[1]);
+            if (!valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid aliased option %s",fname,line,tokens[1]);
+            if (!tokens[2]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": alias missing for %s",fname,line,tokens[1]);
             ierr = PetscOptionsValidKey(tokens[2],&valid);CHKERRQ(ierr);
-            if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid aliasee option %s",fname,line,tokens[2]);
+            if (!valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": invalid aliasee option %s",fname,line,tokens[2]);
             ierr = PetscStrlen(tokens[1],&len);CHKERRQ(ierr);
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
             ierr = PetscArraycpy(astring,tokens[1],len);CHKERRQ(ierr);
@@ -534,11 +534,11 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm,PetscOptions opt
             ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
             ierr = PetscArraycpy(astring,tokens[2],len);CHKERRQ(ierr);
             astring[len] = ' ';
-          } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown first token in options file %s line %" PetscInt_FMT ": %s",fname,line,tokens[0]);
+          } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown first token in options file %s line %" PetscInt_FMT ": %s",fname,line,tokens[0]);
         }
         {
           const char *extraToken = alias ? tokens[3] : tokens[2];
-          if (extraToken) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": extra token %s",fname,line,extraToken);
+          if (extraToken) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file %s line %" PetscInt_FMT ": extra token %s",fname,line,extraToken);
         }
 destroy:
         free(string);
@@ -547,7 +547,7 @@ destroy:
         line++;
       }
       err = fclose(fd);
-      if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file %s",fname);
+      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file %s",fname);
       ierr = PetscSegBufferGetSize(aseg,&bytes);CHKERRQ(ierr); /* size without null termination */
       ierr = PetscMPIIntCast(bytes,&acnt);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(aseg,1,&astring);CHKERRQ(ierr);
@@ -561,7 +561,7 @@ destroy:
       ierr = PetscSegBufferExtractTo(vseg,packed+acnt+1);CHKERRQ(ierr);
       ierr = PetscSegBufferDestroy(&aseg);CHKERRQ(ierr);
       ierr = PetscSegBufferDestroy(&vseg);CHKERRQ(ierr);
-    } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open options file %s",fname);
+    } else if (require) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open options file %s",fname);
   }
 
   counts[0] = acnt;
@@ -1022,15 +1022,15 @@ PetscErrorCode PetscOptionsPrefixPush(PetscOptions options,const char prefix[])
   PetscFunctionBegin;
   PetscValidCharPointer(prefix,2);
   options = options ? options : defaultoptions;
-  if (options->prefixind >= MAXPREFIXES) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES",MAXPREFIXES);
+  if (options->prefixind >= MAXPREFIXES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum depth of prefix stack %d exceeded, recompile \n src/sys/objects/options.c with larger value for MAXPREFIXES",MAXPREFIXES);
   key[0] = '-'; /* keys must start with '-' */
   ierr = PetscStrncpy(key+1,prefix,sizeof(key)-1);CHKERRQ(ierr);
   ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
   if (!valid && options->prefixind > 0 && isdigit((int)prefix[0])) valid = PETSC_TRUE; /* If the prefix stack is not empty, make numbers a valid prefix */
-  if (!valid) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter%s, do not include leading '-')",prefix,options->prefixind?" or digit":"");
+  if (!valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter%s, do not include leading '-')",prefix,options->prefixind?" or digit":"");
   start = options->prefixind ? options->prefixstack[options->prefixind-1] : 0;
   ierr = PetscStrlen(prefix,&n);CHKERRQ(ierr);
-  if (n+1 > sizeof(options->prefix)-start) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum prefix length %zu exceeded",sizeof(options->prefix));
+  if (n+1 > sizeof(options->prefix)-start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Maximum prefix length %zu exceeded",sizeof(options->prefix));
   ierr = PetscArraycpy(options->prefix+start,prefix,n+1);CHKERRQ(ierr);
   options->prefixstack[options->prefixind++] = start+n;
   PetscFunctionReturn(0);
@@ -1143,12 +1143,12 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
   PetscValidCharPointer(oldname,3);
   options = options ? options : defaultoptions;
   ierr = PetscOptionsValidKey(newname,&valid);CHKERRQ(ierr);
-  if (!valid) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid aliased option %s",newname);
+  if (!valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid aliased option %s",newname);
   ierr = PetscOptionsValidKey(oldname,&valid);CHKERRQ(ierr);
-  if (!valid) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid aliasee option %s",oldname);
+  if (!valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid aliasee option %s",oldname);
 
   n = options->Naliases;
-  if (n >= MAXALIASES) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/objects/options.c with larger value for MAXALIASES",MAXALIASES);
+  if (n >= MAXALIASES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/objects/options.c with larger value for MAXALIASES",MAXALIASES);
 
   newname++; oldname++;
   ierr = PetscStrlen(newname,&len);CHKERRQ(ierr);
@@ -1313,7 +1313,7 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options,const char name[])
 
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
-  if (name[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
+  if (name[0] != '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
   if (!PetscOptNameCmp(name,"-help")) options->help = options->help_intro = PETSC_FALSE;
 
   name++; /* skip starting dash */
@@ -1380,8 +1380,8 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const 
 
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
-  if (pre && PetscUnlikely(pre[0] == '-')) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix cannot begin with '-': Instead %s",pre);
-  if (PetscUnlikely(name[0] != '-')) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
+  if (pre && PetscUnlikely(pre[0] == '-')) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix cannot begin with '-': Instead %s",pre);
+  if (PetscUnlikely(name[0] != '-')) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
 
   name++; /* skip starting dash */
 
@@ -1399,7 +1399,7 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options,const char pre[],const 
     char      key[MAXOPTNAME+1] = "-";
     ierr = PetscStrncpy(key+1,name,sizeof(key)-1);CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
-    if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
+    if (!valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
   }
 
   if (!options->ht && usehashtable) {
@@ -1490,8 +1490,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
 
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
-  if (pre && pre[0] == '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix cannot begin with '-': Instead %s",pre);
-  if (name[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
+  if (pre && pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix cannot begin with '-': Instead %s",pre);
+  if (name[0] != '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with '-': Instead %s",name);
 
   name++; /* skip starting dash */
 
@@ -1509,7 +1509,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
     char      key[MAXOPTNAME+1] = "-";
     ierr = PetscStrncpy(key+1,name,sizeof(key)-1);CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
-    if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
+    if (!valid) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
   }
 
   /* determine the location and number of all _%d_ in the key */
@@ -1590,8 +1590,8 @@ PetscErrorCode PetscOptionsReject(PetscOptions options,const char pre[],const ch
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(options,pre,name,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (mess && mess[0]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s with %s",pre?pre:"",name+1,mess);
-    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s",pre?pre:"",name+1);
+    if (mess && mess[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s with %s",pre?pre:"",name+1,mess);
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: -%s%s",pre?pre:"",name+1);
   }
   PetscFunctionReturn(0);
 }
@@ -2054,7 +2054,7 @@ PetscErrorCode PetscOptionsStringToBool(const char value[],PetscBool *a)
   if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
   ierr = PetscStrcasecmp(value,"off",&isfalse);CHKERRQ(ierr);
   if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown logical value: %s",value);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown logical value: %s",value);
 }
 
 /*
@@ -2088,7 +2088,7 @@ PetscErrorCode PetscOptionsStringToInt(const char name[],PetscInt *a)
     long strtolval;
 
     strtolval = strtol(name,&endptr,10);
-    if ((size_t) (endptr - name) != len) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
+    if ((size_t) (endptr - name) != len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
 
 #if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
     (void) strtolval;
@@ -2146,7 +2146,7 @@ static PetscErrorCode PetscStrtoz(const char name[],PetscScalar *a,char **endptr
   *isImaginary = hasi;
   if (hasi) {
 #if !defined(PETSC_USE_COMPLEX)
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s contains imaginary but complex not supported ",name);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s contains imaginary but complex not supported ",name);
 #else
     *a = PetscCMPLX(0.,strtoval);
 #endif
@@ -2183,7 +2183,7 @@ PetscErrorCode PetscOptionsStringToReal(const char name[],PetscReal *a)
   if (match) {*a = PETSC_DECIDE; PetscFunctionReturn(0);}
 
   ierr = PetscStrtod(name,a,&endptr);CHKERRQ(ierr);
-  if ((size_t) (endptr - name) != len) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value",name);
+  if ((size_t) (endptr - name) != len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value",name);
   PetscFunctionReturn(0);
 }
 
@@ -2205,11 +2205,11 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[],PetscScalar *a)
     PetscScalar val2;
 
     ierr = PetscStrtoz(ptr,&val2,&ptr,&imag2);CHKERRQ(ierr);
-    if (imag1 || !imag2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s: must specify imaginary component second",name);
+    if (imag1 || !imag2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s: must specify imaginary component second",name);
     val = PetscCMPLX(PetscRealPart(val),PetscImaginaryPart(val2));
   }
 #endif
-  if ((size_t) (ptr - name) != len) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+  if ((size_t) (ptr - name) != len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
   *a = val;
   PetscFunctionReturn(0);
 }
@@ -2332,7 +2332,7 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options,const char pre[],const 
         pavl += 1;
       }
       ierr = PetscStrtolower(avail);CHKERRQ(ierr);
-      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown option %s for -%s%s. Available options: %s",svalue,pre ? pre : "",opt+1,avail);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown option %s for -%s%s. Available options: %s",svalue,pre ? pre : "",opt+1,avail);
     }
     if (set) *set = PETSC_TRUE;
   } else if (set) *set = PETSC_FALSE;
@@ -2749,7 +2749,7 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   while (value && n < *nmax) {
     ierr = PetscEnumFind(list,value,&evalue,&flag);CHKERRQ(ierr);
-    if (!flag) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown enum value '%s' for -%s%s",svalue,pre ? pre : "",name+1);
+    if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown enum value '%s' for -%s%s",svalue,pre ? pre : "",name+1);
     ivalue[n++] = evalue;
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   }
@@ -2822,7 +2822,7 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
     else i=1;
     for (;i<(int)len; i++) {
       if (value[i] == '-') {
-        if (i == (int)len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
+        if (i == (int)len-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
         value[i] = 0;
 
         ierr = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);
@@ -2833,14 +2833,14 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
             value[j] = 0;
 
             ierr = PetscOptionsStringToInt(value+j+1,&inc);CHKERRQ(ierr);
-            if (inc <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry,%s cannot have negative increment",n,value+j+1);
+            if (inc <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry,%s cannot have negative increment",n,value+j+1);
             break;
           }
         }
         ierr = PetscOptionsStringToInt(value+i+1,&end);CHKERRQ(ierr);
-        if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
+        if (end <= start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
         nvalues = (end-start)/inc + (end-start)%inc;
-        if (n + nvalues  > *nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, not enough space left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT,n,*nmax-n,start,end);
+        if (n + nvalues  > *nmax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry, not enough space left in array (%" PetscInt_FMT ") to contain entire range from %" PetscInt_FMT " to %" PetscInt_FMT,n,*nmax-n,start,end);
         for (;start<end; start+=inc) {
           *ivalue = start; ivalue++;n++;
         }

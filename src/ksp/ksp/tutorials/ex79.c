@@ -47,7 +47,7 @@ int main(int argc,char **args)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCApply",PC_CLASSID,&event);CHKERRQ(ierr);
   ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info);CHKERRQ(ierr);
-  if (PetscDefined(USE_LOG) && m > 1 && info.count) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCApply() called %d times",info.count);
+  if (PetscDefined(USE_LOG) && m > 1 && info.count) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCApply() called %d times",info.count);
   ierr = PetscLogEventRegister("PCMatApply",PC_CLASSID,&event);CHKERRQ(ierr);
   ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info);CHKERRQ(ierr);
   if (PetscDefined(USE_LOG) && m > 1 && !info.count) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCMatApply() never called");

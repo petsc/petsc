@@ -27,7 +27,7 @@ PetscErrorCode PetscNvshmemMalloc(size_t size, void** ptr)
   PetscFunctionBegin;
   ierr = PetscNvshmemInitializeCheck();CHKERRQ(ierr);
   *ptr = nvshmem_malloc(size);
-  if (!*ptr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_malloc() failed to allocate %zu bytes",size);
+  if (!*ptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_malloc() failed to allocate %zu bytes",size);
   PetscFunctionReturn(0);
 }
 
@@ -38,7 +38,7 @@ PetscErrorCode PetscNvshmemCalloc(size_t size, void**ptr)
   PetscFunctionBegin;
   ierr = PetscNvshmemInitializeCheck();CHKERRQ(ierr);
   *ptr = nvshmem_calloc(size,1);
-  if (!*ptr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_calloc() failed to allocate %zu bytes",size);
+  if (!*ptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_calloc() failed to allocate %zu bytes",size);
   PetscFunctionReturn(0);
 }
 

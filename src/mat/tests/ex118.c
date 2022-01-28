@@ -46,13 +46,13 @@ int main(int argc,char **args)
   /* Solve eigenvalue problem: A*evec = eval*evec */
   ierr = PetscPrintf(PETSC_COMM_SELF," LAPACKstebz_: compute %d eigenvalues...\n",nevs);CHKERRQ(ierr);
   LAPACKstebz_("I","E",&n,&vl,&vu,&il,&iu,&tol,(PetscReal*)D,(PetscReal*)E,&nevs,&nsplit,(PetscReal*)evals,iblock,isplit,work,iwork,&info);
-  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstebz_ fails. info %d",info);
+  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstebz_ fails. info %d",info);
 
   ierr = PetscPrintf(PETSC_COMM_SELF," LAPACKstein_: compute %d found eigenvectors...\n",nevs);CHKERRQ(ierr);
   ierr = PetscMalloc1(n*nevs,&evecs_array);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevs,&ifail);CHKERRQ(ierr);
   LAPACKstein_(&n,(PetscReal*)D,(PetscReal*)E,&nevs,(PetscReal*)evals,iblock,isplit,evecs_array,&n,work,iwork,ifail,&info);
-  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info);
+  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info);
   /* View evals */
   ierr = PetscOptionsHasName(NULL,NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {

@@ -663,7 +663,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         if (pcbddc->n_ISForDofsLocal) {
           PetscInt np;
 
-          if (fid < 0 || fid >= pcbddc->n_ISForDofsLocal) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofsLocal);
+          if (fid < 0 || fid >= pcbddc->n_ISForDofsLocal) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofsLocal);
           /* need a sequential IS */
           ierr = ISGetLocalSize(pcbddc->ISForDofsLocal[fid],&np);CHKERRQ(ierr);
           ierr = ISGetIndices(pcbddc->ISForDofsLocal[fid],&idxs);CHKERRQ(ierr);
@@ -671,7 +671,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[fid],&idxs);CHKERRQ(ierr);
           ploc = PETSC_TRUE;
         } else if (pcbddc->n_ISForDofs) {
-          if (fid < 0 || fid >= pcbddc->n_ISForDofs) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofs);
+          if (fid < 0 || fid >= pcbddc->n_ISForDofs) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofs);
           ierr = PetscObjectReference((PetscObject)pcbddc->ISForDofs[fid]);CHKERRQ(ierr);
           Pall = pcbddc->ISForDofs[fid];
         } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Cannot detect pressure field! Use KSPFETIDPGetInnerBDDC() + PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal");
@@ -800,7 +800,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISGlobalToLocalMappingApplyIS(l2g_t,IS_GTOLM_DROP,is2,&is1);CHKERRQ(ierr);
         ierr = ISGetLocalSize(is1,&i);CHKERRQ(ierr);
         ierr = ISGetLocalSize(is2,&j);CHKERRQ(ierr);
-        if (i != j) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
+        if (i != j) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iV",(PetscObject)is1);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingDestroy(&l2g_t);CHKERRQ(ierr);
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
@@ -1055,10 +1055,10 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
         ierr = ISGetLocalSize(Pall,&pIl);CHKERRQ(ierr);
         ierr = ISGetLocalSize(fetidp->pP,&pl);CHKERRQ(ierr);
-        if (PAM != PAN) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
-        if (pam != pan) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
-        if (pam != am && pam != pl && pam != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
-        if (pan != an && pan != pl && pan != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
+        if (PAM != PAN) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
+        if (pam != pan) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
+        if (pam != am && pam != pl && pam != pIl) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
+        if (pan != an && pan != pl && pan != pIl) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */
           if (schp) {
             ierr = MatCreateSubMatrix(PPmat,Pall,Pall,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);

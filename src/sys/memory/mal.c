@@ -400,7 +400,7 @@ PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *functio
   int            i;
 
   PetscFunctionBegin;
-  if (n > 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only 8 supported",n);
+  if (n > 8) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only 8 supported",n);
   bytes[0] = bytes0;
   ptr[0] = (void**)ptr0;
   sumbytes = (bytes0 + PETSC_MEMALIGN-1) & ~(PETSC_MEMALIGN-1);
@@ -455,7 +455,7 @@ PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *file
   int            i;
 
   PetscFunctionBegin;
-  if (n > 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only up to 8 supported",n);
+  if (n > 8) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only up to 8 supported",n);
   ptr[0] = (void**)ptr0;
   va_start(Argp,ptr0);
   for (i=1; i<n; i++) {

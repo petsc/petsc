@@ -275,7 +275,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     user->exactFuncs[1] = linear_p_3d;
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
   PetscFunctionReturn(0);
 }

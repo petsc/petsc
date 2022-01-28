@@ -56,7 +56,7 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
       }
       ierr = PetscInfo1(0,"Opening file %s\n",fname);CHKERRQ(ierr);
       fd   = fopen(fname,mode);
-      if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",fname);
+      if (!fd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",fname);
     }
   } else fd = NULL;
   *fp = fd;
@@ -199,7 +199,7 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (rank == 0) {
     ierr = PetscInfo1(NULL,"Running command :%s\n",commandt);CHKERRQ(ierr);
-    if (!(fd = popen(commandt,mode))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot run command %s",commandt);
+    if (!(fd = popen(commandt,mode))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot run command %s",commandt);
     if (fp) *fp = fd;
   }
   PetscFunctionReturn(0);

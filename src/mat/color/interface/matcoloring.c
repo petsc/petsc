@@ -148,7 +148,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
   ierr = PetscObjectTypeCompare((PetscObject)mc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
   ierr =  PetscFunctionListFind(MatColoringList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested MatColoring type %s",type);
+  if (!r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested MatColoring type %s",type);
   if (mc->ops->destroy) {
     ierr             = (*(mc)->ops->destroy)(mc);CHKERRQ(ierr);
     mc->ops->destroy = NULL;

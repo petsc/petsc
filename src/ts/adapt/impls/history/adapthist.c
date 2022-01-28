@@ -90,7 +90,7 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveInt(adapt,step,2);
   ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Not for type %s",((PetscObject)adapt)->type_name);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Not for type %s",((PetscObject)adapt)->type_name);
   thadapt = (TSAdapt_History*)adapt->data;
   ierr = TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step,dt);CHKERRQ(ierr);
   ierr = TSHistoryGetTime(thadapt->hist,thadapt->bw,step,t);CHKERRQ(ierr);

@@ -84,7 +84,7 @@ static PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  if ((f < 0) || (f >= s->dim)) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Basis index %d not in [0, %d)", f, s->dim);
+  if ((f < 0) || (f >= s->dim)) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Basis index %d not in [0, %d)", f, s->dim);
   ierr = PetscQuadratureDuplicate(q, &sp->functional[f]);CHKERRQ(ierr);
   /* Reweight so that it has unit volume: Do we want to do this for Nc > 1? */
   ierr = PetscQuadratureGetData(sp->functional[f], NULL, &Nc, &Nq, NULL, (const PetscReal **) &weights);CHKERRQ(ierr);

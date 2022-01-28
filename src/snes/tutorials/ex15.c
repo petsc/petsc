@@ -617,7 +617,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
           ierr     = MatSetValuesStencil(B,1,&row,9,col,v,INSERT_VALUES);CHKERRQ(ierr);
           break;
         default:
-          SETERRQ1(PetscObjectComm((PetscObject)info->da),PETSC_ERR_SUP,"Jacobian type %d not implemented",user->jtype);
+          SETERRQ(PetscObjectComm((PetscObject)info->da),PETSC_ERR_SUP,"Jacobian type %d not implemented",user->jtype);
         }
       }
     }

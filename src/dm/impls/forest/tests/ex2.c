@@ -322,7 +322,7 @@ int main(int argc, char **argv)
     if (!transfer_from_base[1]) {
       ierr = DMForestSetAdaptivityForest(postForest,NULL);CHKERRQ(ierr);
       ierr = PetscObjectGetReference((PetscObject)preForest,&postCount);CHKERRQ(ierr);
-      if (postCount != preCount) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %d to %d",preCount,postCount);
+      if (postCount != preCount) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %d to %d",preCount,postCount);
     }
 
     if (conv) {

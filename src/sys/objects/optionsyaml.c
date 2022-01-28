@@ -239,17 +239,17 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,con
       fseek(fd, 0, SEEK_END);
       yamlLength = (int)ftell(fd);
       fseek(fd, 0, SEEK_SET);
-      if (yamlLength < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to query size of YAML file: %s", fname);
+      if (yamlLength < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to query size of YAML file: %s", fname);
       ierr = PetscMalloc1(yamlLength+1, &yamlString);CHKERRQ(ierr);
       rd = fread(yamlString, 1, (size_t)yamlLength, fd);
-      if (rd != (size_t)yamlLength) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read entire YAML file: %s", fname);
+      if (rd != (size_t)yamlLength) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Unable to read entire YAML file: %s", fname);
       yamlString[yamlLength] = 0;
       fclose(fd);
     }
   }
 
   ierr = MPI_Bcast(&yamlLength, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
-  if (require && yamlLength < 0) SETERRQ1(comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
+  if (require && yamlLength < 0) SETERRQ(comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
   if (yamlLength < 0) PetscFunctionReturn(0);
 
   if (rank) {ierr = PetscMalloc1(yamlLength+1, &yamlString);CHKERRQ(ierr);}

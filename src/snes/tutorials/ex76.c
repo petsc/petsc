@@ -379,7 +379,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMGetCoordinates(*dm, &coordinates);CHKERRQ(ierr);
     ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
     ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
-    if (bs != cdim) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "Invalid coordinate blocksize %D != embedding dimension %D", bs, cdim);
+    if (bs != cdim) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid coordinate blocksize %D != embedding dimension %D", bs, cdim);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
     theta = param->theta;
@@ -426,7 +426,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     exactFuncs[1] = quadratic_p;
     exactFuncs[2] = quadratic_T;
     break;
-   default: SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user->solType, NUM_SOL_TYPES)], user->solType);
+   default: SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user->solType, NUM_SOL_TYPES)], user->solType);
   }
 
   ierr = PetscDSSetResidual(prob, 1, f0_q, NULL);CHKERRQ(ierr);
@@ -525,7 +525,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt ofield, PetscInt n
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  if (ofield != 1) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Nullspace must be for pressure field at index 1, not %D", ofield);
+  if (ofield != 1) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Nullspace must be for pressure field at index 1, not %D", ofield);
   funcs[nfield] = constant;
   ierr = DMCreateGlobalVector(dm, &vec);CHKERRQ(ierr);
   ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);

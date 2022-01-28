@@ -54,16 +54,16 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
 #if defined(PETSC_HAVE_MED)
   mederr = MEDfileCompatibility(filename, &hdfok, &medok);
-  if (mederr) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Cannot determine MED file compatibility: %s", filename);
-  if (!hdfok) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Not a compatible HDF format: %s", filename);
-  if (!medok) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Not a compatible MED format: %s", filename);
+  if (mederr) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot determine MED file compatibility: %s", filename);
+  if (!hdfok) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Not a compatible HDF format: %s", filename);
+  if (!medok) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Not a compatible MED format: %s", filename);
 
   fileID = MEDfileOpen(filename, MED_ACC_RDONLY);
-  if (fileID < 0) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unable to open .med mesh file: %s", filename);
+  if (fileID < 0) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unable to open .med mesh file: %s", filename);
   mederr = MEDfileNumVersionRd(fileID, &major, &minor, &release);
-  if (MEDnMesh (fileID) < 1) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "No meshes found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  if (MEDnMesh (fileID) < 1) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No meshes found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
   spaceDim = MEDmeshnAxis(fileID, 1);
-  if (spaceDim < 1) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Mesh of unknown space dimension found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  if (spaceDim < 1) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Mesh of unknown space dimension found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
   /* Read general mesh information */
   ierr = PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &axisname);CHKERRQ(ierr);
   ierr = PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &unitname);CHKERRQ(ierr);
@@ -90,14 +90,14 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = MEDfilterBlockOfEntityCr(fileID, numVertices, 1, spaceDim, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
                                   MED_NO_PROFILE, vrange[rank]+1, 1, numVerticesLocal, 1, 1, &vfilter);CHKERRQ(ierr);
   /* Read mesh coordinates */
-  if (numVertices < 0) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "No nodes found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  if (numVertices < 0) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No nodes found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
   ierr = PetscMalloc1(numVerticesLocal*spaceDim, &coordinates);CHKERRQ(ierr);
   ierr = MEDmeshNodeCoordinateAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, &vfilter, coordinates);CHKERRQ(ierr);
   /* Read the types of entity sets in the mesh */
   ngeo = MEDmeshnEntity(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,MED_GEO_ALL, MED_CONNECTIVITY,
                         MED_NODAL, &coordinatechangement, &geotransformation);
-  if (ngeo < 1) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
-  if (ngeo > 2) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Currently no support for hybrid meshes in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  if (ngeo < 1) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  if (ngeo > 2) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Currently no support for hybrid meshes in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
   ierr = MEDmeshEntityInfo(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, 1, geotypename, &(geotype[0]));CHKERRQ(ierr);
   if (ngeo > 1) {ierr = MEDmeshEntityInfo(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, 2, geotypename, &(geotype[1]));CHKERRQ(ierr);}
   else geotype[1] = 0;
@@ -118,11 +118,11 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = MEDfilterBlockOfEntityCr(fileID, numCells, 1, numCorners, MED_ALL_CONSTITUENT, MED_FULL_INTERLACE, MED_COMPACT_STMODE,
                                   MED_NO_PROFILE, crange[rank]+1, 1, numCellsLocal, 1, 1, &cfilter);CHKERRQ(ierr);
   /* Read cell connectivity */
-  if (numCells < 0) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
+  if (numCells < 0) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No cells found in .med v%d.%d.%d mesh file: %s", major, minor, release, filename);
   ierr = PetscMalloc1(numCellsLocal*numCorners, &medCellList);CHKERRQ(ierr);
   ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
                                               MED_NODAL, &cfilter, medCellList);CHKERRQ(ierr);
-  if (sizeof(med_int) > sizeof(PetscInt)) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Size of PetscInt %zd less than  size of med_int %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(PetscInt), sizeof(med_int));
+  if (sizeof(med_int) > sizeof(PetscInt)) SETERRQ(comm, PETSC_ERR_ARG_SIZ, "Size of PetscInt %zd less than  size of med_int %zd. Reconfigure PETSc --with-64-bit-indices=1", sizeof(PetscInt), sizeof(med_int));
   ierr = PetscMalloc1(numCellsLocal*numCorners, &cellList);CHKERRQ(ierr);
   for (i = 0; i < numCellsLocal*numCorners; i++) {
     cellList[i] = ((PetscInt) medCellList[i]) - 1; /* Correct entity counting */

@@ -439,6 +439,6 @@ PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, PetscInt Nc, Vec vc[], Vec vf
     ierr = PetscPrintf(PetscObjectComm((PetscObject) dmf), "Coarse vec %D ||vf - P vc||_\\infty %g, ||vf - P vc||_2 %g\n", k, norminf, norm2);CHKERRQ(ierr);
   }
   ierr = DMRestoreGlobalVector(dmf, &tmp);CHKERRQ(ierr);
-  if (maxnorm2 > tol) SETERRQ2(PetscObjectComm((PetscObject) dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", maxnorm2, tol);
+  if (maxnorm2 > tol) SETERRQ(PetscObjectComm((PetscObject) dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", maxnorm2, tol);
   PetscFunctionReturn(0);
 }

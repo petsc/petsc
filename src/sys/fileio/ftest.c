@@ -40,7 +40,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
     *flg = PETSC_FALSE;
   }
 #else
-  if (m == X_OK) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
+  if (m == X_OK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
   if (!_access(fname, m)) *flg = PETSC_TRUE;
 #endif
   PetscFunctionReturn(0);

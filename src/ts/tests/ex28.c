@@ -137,7 +137,7 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
   ierr = DMSwarmGetCellDM(dmSw, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  if (n != (cEnd-cStart)*Np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "TS solution local size %D != %D nm particles", n, (cEnd-cStart)*Np);
+  if (n != (cEnd-cStart)*Np) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "TS solution local size %D != %D nm particles", n, (cEnd-cStart)*Np);
   ierr = DMSwarmGetField(dmSw, "w_q", NULL, NULL, (void **) &vals);CHKERRQ(ierr);
   ierr = VecGetArray(u, &initialConditions);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
@@ -242,7 +242,7 @@ static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscRe
   ierr = DMGetBoundingBox(dm, &vmin, &vmax);CHKERRQ(ierr);
   /* Check analytic over entire line */
   neq  = ComputeCDF(m, n, T, vmin, vmax);
-  if (PetscAbsReal(neq - n) > PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int f %g != %g mass (%g)", neq, n, neq-n);
+  if (PetscAbsReal(neq - n) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int f %g != %g mass (%g)", neq, n, neq-n);
   /* Check analytic over cells */
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscRe
     neq += ComputeCDF(m, n, T, vcoords[0], vcoords[1]);
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, c, NULL, &vcoords);CHKERRQ(ierr);
   }
-  if (PetscAbsReal(neq - n) > PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell Int f %g != %g mass (%g)", neq, n, neq-n);
+  if (PetscAbsReal(neq - n) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell Int f %g != %g mass (%g)", neq, n, neq-n);
   /* Check quadrature over entire line */
   ierr = PetscMalloc2(Nq, &xq, Nq, &wq);CHKERRQ(ierr);
   ierr = PetscDTGaussQuadrature(100, vmin, vmax, xq, wq);CHKERRQ(ierr);
@@ -263,20 +263,20 @@ static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscRe
   for (q = 0; q < Nq; ++q) {
     neq += ComputePDF(m, n, T, &xq[q])*wq[q];
   }
-  if (PetscAbsReal(neq - n) > PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int f %g != %g mass (%g)", neq, n, neq-n);
+  if (PetscAbsReal(neq - n) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int f %g != %g mass (%g)", neq, n, neq-n);
   /* Check omemnts with quadrature */
   veq  = 0.0;
   for (q = 0; q < Nq; ++q) {
     veq += xq[q]*ComputePDF(m, n, T, &xq[q])*wq[q];
   }
   veq /= neq;
-  if (PetscAbsReal(veq - v[0]) > PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int v f %g != %g velocity (%g)", veq, v[0], veq-v[0]);
+  if (PetscAbsReal(veq - v[0]) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int v f %g != %g velocity (%g)", veq, v[0], veq-v[0]);
   Teq  = 0.0;
   for (q = 0; q < Nq; ++q) {
     Teq += PetscSqr(xq[q])*ComputePDF(m, n, T, &xq[q])*wq[q];
   }
   Teq = Teq * m/neq - PetscSqr(veq);
-  if (PetscAbsReal(Teq - T) > PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int v^2 f %g != %g temperature (%g)", Teq, T, Teq-T);
+  if (PetscAbsReal(Teq - T) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Int v^2 f %g != %g temperature (%g)", Teq, T, Teq-T);
   ierr = PetscFree2(xq, wq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

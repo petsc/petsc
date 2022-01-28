@@ -745,7 +745,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
   }
   case 6: ierr = PetscKernel_A_gets_inverse_A_6(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
   case 7: ierr = PetscKernel_A_gets_inverse_A_7(GammaInv,0,PETSC_FALSE,NULL);CHKERRQ(ierr); break;
-  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for %D stages",s);
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for %D stages",s);
   }
   for (i=0; i<s*s; i++) t->GammaInv[i] = PetscRealPart(GammaInv[i]);
   ierr = PetscFree(GammaInv);CHKERRQ(ierr);
@@ -935,7 +935,7 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *
   }
   unavailable:
   if (done) *done = PETSC_FALSE;
-  else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Rosenbrock-W '%s' of order %D cannot evaluate step at order %D. Consider using -ts_adapt_type none or a different method that has an embedded estimate.",tab->name,tab->order,order);
+  else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Rosenbrock-W '%s' of order %D cannot evaluate step at order %D. Consider using -ts_adapt_type none or a different method that has an embedded estimate.",tab->name,tab->order,order);
   PetscFunctionReturn(0);
 }
 
@@ -1081,7 +1081,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
   Vec             *Y        = ros->Y;
 
   PetscFunctionBegin;
-  if (!Bt) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRosW %s does not have an interpolation formula",ros->tableau->name);
+  if (!Bt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRosW %s does not have an interpolation formula",ros->tableau->name);
 
   switch (ros->status) {
   case TS_STEP_INCOMPLETE:
@@ -1554,7 +1554,7 @@ static PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",rostype);
+  SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",rostype);
 }
 
 static PetscErrorCode  TSRosWSetRecomputeJacobian_RosW(TS ts,PetscBool flg)

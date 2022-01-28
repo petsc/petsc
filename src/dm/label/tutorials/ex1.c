@@ -56,8 +56,8 @@ PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1)
   ierr = PetscObjectGetName((PetscObject)label0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)label1, &name1);CHKERRQ(ierr);
   ierr = DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg);CHKERRQ(ierr);
-  if (same != (PetscBool) !msg) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  if (!same) SETERRQ3(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  if (same != (PetscBool) !msg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
+  if (!same) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   ierr = DMLabelCompare(PETSC_COMM_WORLD, label0, label1, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscFree(msg);CHKERRQ(ierr);
@@ -75,8 +75,8 @@ PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1)
   ierr = PetscObjectGetName((PetscObject)label0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)label1, &name1);CHKERRQ(ierr);
   ierr = DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg);CHKERRQ(ierr);
-  if (same != (PetscBool) !msg) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  if (same) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
+  if (same != (PetscBool) !msg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
+  if (same) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Compare label \"%s\" with \"%s\": %s\n", name0, name1, msg);CHKERRQ(ierr);
   ierr = PetscFree(msg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -93,8 +93,8 @@ PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1)
   ierr = PetscObjectGetName((PetscObject)dm0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm1, &name1);CHKERRQ(ierr);
   ierr = DMCompareLabels(dm0, dm1, &same, &msg);CHKERRQ(ierr);
-  if (same != (PetscBool) !msg) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  if (!same) SETERRQ3(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  if (same != (PetscBool) !msg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
+  if (!same) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   ierr = DMCompareLabels(dm0, dm1, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscFree(msg);CHKERRQ(ierr);
@@ -112,8 +112,8 @@ PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1)
   ierr = PetscObjectGetName((PetscObject)dm0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm1, &name1);CHKERRQ(ierr);
   ierr = DMCompareLabels(dm0, dm1, &same, &msg);CHKERRQ(ierr);
-  if (same != (PetscBool) !msg) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  if (same) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
+  if (same != (PetscBool) !msg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
+  if (same) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Labels of DMs \"%s\" and \"%s\" differ: %s\n", name0, name1, msg);CHKERRQ(ierr);
   ierr = PetscFree(msg);CHKERRQ(ierr);
   PetscFunctionReturn(0);

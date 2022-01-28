@@ -89,7 +89,7 @@
 #if defined(PETSC_USE_DEBUG)
 #define PetscHashAssert(expr) do {                 \
   if (PetscUnlikely(!(expr)))                      \
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,        \
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,        \
              "[khash] Assertion: `%s' failed.",    \
              PetscStringize(expr));             \
 } while (0)

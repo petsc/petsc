@@ -1719,7 +1719,7 @@ int main(int argc, char **argv)
           NULL, NULL, NULL,
           &dm);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
@@ -1740,7 +1740,7 @@ int main(int argc, char **argv)
       ierr = SNESSetFunction(snes,NULL,FormFunction3DNoCoupling,NULL);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian3DNoCoupling,NULL);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
     }
   } else {
     switch (dim) {
@@ -1756,7 +1756,7 @@ int main(int argc, char **argv)
         ierr = SNESSetFunction(snes,NULL,FormFunction3D,NULL);CHKERRQ(ierr);
         ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian3D,NULL);CHKERRQ(ierr);
         break;
-      default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+      default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
     }
   }
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);

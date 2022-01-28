@@ -677,7 +677,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
+    } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
   } else if (isvtk) {           /* Duplicate the Vec */
     Vec Y;
     ierr = VecDuplicate(xin,&Y);CHKERRQ(ierr);
@@ -842,10 +842,10 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
     if (dd->w == 1 && dims[dofInd] == 1) dim2 = PETSC_TRUE;
 
     /* Special error message for the case where dof does not match the input file */
-    else if (dd->w != (PetscInt) dims[dofInd]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Number of dofs in file is %D, not %D as expected",(PetscInt)dims[dofInd],dd->w);
+    else if (dd->w != (PetscInt) dims[dofInd]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Number of dofs in file is %D, not %D as expected",(PetscInt)dims[dofInd],dd->w);
 
   /* Other cases where rdim != dim cannot be handled currently */
-  } else if (rdim != dim) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with dof = %D",rdim,dim,dd->w);
+  } else if (rdim != dim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file is %d, not %d as expected with dof = %D",rdim,dim,dd->w);
 
   /* Set up the hyperslab size */
   dim = 0;
@@ -961,6 +961,6 @@ PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
   } else if (ishdf5) {
     ierr = VecLoad_HDF5_DA(xin,viewer);CHKERRQ(ierr);
 #endif
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }

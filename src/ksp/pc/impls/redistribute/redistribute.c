@@ -190,7 +190,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
         slen += n;
         count--;
       }
-      if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
+      if (slen != recvtotal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
       ierr = ISCreateGeneral(comm,slen,rvalues,PETSC_COPY_VALUES,&red->is);CHKERRQ(ierr);
 
       /* free all work space */

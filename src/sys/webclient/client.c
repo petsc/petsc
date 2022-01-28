@@ -116,7 +116,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   PetscFunctionBegin;
   ierr = PetscStrallocpy(url,&host);CHKERRQ(ierr);
   ierr = PetscStrchr(host,'/',&path);CHKERRQ(ierr);
-  if (!path) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
+  if (!path) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
   *path = 0;
   ierr  = PetscStrlen(host,&hostlen);CHKERRQ(ierr);
 

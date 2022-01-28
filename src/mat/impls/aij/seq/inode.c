@@ -2763,7 +2763,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             A->factorerror_zeropivot_value = PetscAbsScalar(ibdiag[cnt]);
             A->factorerror_zeropivot_row   = row;
             ierr = PetscInfo1(A,"Zero pivot, row %" PetscInt_FMT "\n",row);CHKERRQ(ierr);
-          } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %" PetscInt_FMT,row);
+          } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %" PetscInt_FMT,row);
         }
         ibdiag[cnt] = 1.0/ibdiag[cnt];
         break;
@@ -2784,7 +2784,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         break;
       default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
       }
       cnt += sizes[i]*sizes[i];
       row += sizes[i];
@@ -2964,7 +2964,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
           ibdiag  += 25;
           break;
         default:
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
         }
       }
 
@@ -3125,7 +3125,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
           x[row--] = sum5*ibdiag[0] + sum4*ibdiag[5] + sum3*ibdiag[10] + sum2*ibdiag[15] + sum1*ibdiag[20];
           break;
         default:
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
         }
       }
 
@@ -3410,7 +3410,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
           x[row+4] = sum1*ibdiag[4] + sum2*ibdiag[9] + sum3*ibdiag[14] + sum4*ibdiag[19] + sum5*ibdiag[24];
           break;
         default:
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
         }
       }
       xb   = t;
@@ -3441,7 +3441,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             v1      = a->a + ii[row];
             break;
           default:
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
           }
         } else {
           /* upper, no diag */
@@ -3737,7 +3737,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         row     -= 5;
         break;
       default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
       }
     }
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
@@ -3796,7 +3796,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         cnt     += 25;
         break;
       default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
       }
     }
     ierr = PetscLogFlops(m);CHKERRQ(ierr);
@@ -3951,7 +3951,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         ibdiag   += 25; row += 5;
         break;
       default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
       }
     }
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
@@ -4026,7 +4026,7 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
       cnt     += 25;
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %" PetscInt_FMT " not supported",sizes[i]);
     }
   }
   ierr = PetscLogFlops(2.0*cnt);CHKERRQ(ierr);

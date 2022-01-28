@@ -324,7 +324,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   ierr = PetscMemzero(coarser->ops,sizeof(struct _MatCoarsenOps));CHKERRQ(ierr);
 
   ierr = PetscFunctionListFind(MatCoarsenList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
+  if (!r) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
   ierr = (*r)(coarser);CHKERRQ(ierr);
 
   ierr = PetscFree(((PetscObject)coarser)->type_name);CHKERRQ(ierr);

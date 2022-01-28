@@ -180,8 +180,8 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   usfft->outda = outda;
   /* inda */
   ierr = DMDAGetInfo(usfft->inda, &ndim, dim+0, dim+1, dim+2, NULL, NULL, NULL, &dof, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (ndim <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
-  if (dof <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"dof %d must be > 0",dof);
+  if (ndim <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
+  if (dof <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"dof %d must be > 0",dof);
   usfft->ndim   = ndim;
   usfft->dof    = dof;
   usfft->freqDA = freqDA;
@@ -192,8 +192,8 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
 
   /* outda */
   ierr = DMDAGetInfo(usfft->outda, &ndim, dim+0, dim+1, dim+2, NULL, NULL, NULL, &dof, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (ndim != usfft->ndim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dimensions must match: %d != %d",usfft->ndim, ndim);
-  if (dof != usfft->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dof must match: %d != %d",usfft->dof, dof);
+  if (ndim != usfft->ndim) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dimensions must match: %d != %d",usfft->ndim, ndim);
+  if (dof != usfft->dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dof must match: %d != %d",usfft->dof, dof);
   /* Store output dimensions */
   /* NB: we reverse the DMDA dimensions, since the DMDA ordering (natural on x-y-z, with x varying the fastest)
      is the order opposite of that assumed by FFTW: z varying the fastest */
@@ -213,8 +213,8 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   /* mat sizes */
   m = 1; n = 1;
   for (i=0; i<usfft->ndim; i++) {
-    if (usfft->indim[i] <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"indim[%d]=%d must be > 0",i,usfft->indim[i]);
-    if (usfft->outdim[i] <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"outdim[%d]=%d must be > 0",i,usfft->outdim[i]);
+    if (usfft->indim[i] <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"indim[%d]=%d must be > 0",i,usfft->indim[i]);
+    if (usfft->outdim[i] <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"outdim[%d]=%d must be > 0",i,usfft->outdim[i]);
     n *= usfft->indim[i];
     m *= usfft->outdim[i];
   }

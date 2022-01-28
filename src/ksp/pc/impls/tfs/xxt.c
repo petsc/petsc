@@ -86,7 +86,7 @@ PetscErrorCode XXT_factor(xxt_ADT xxt_handle,     /* prev. allocated xxt  handle
   check_handle(xxt_handle);
 
   /* only 2^k for now and all nodes participating */
-  if ((1<<(xxt_handle->level=PCTFS_i_log2_num_nodes))!=PCTFS_num_nodes) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D",1<<PCTFS_i_log2_num_nodes,PCTFS_num_nodes);
+  if ((1<<(xxt_handle->level=PCTFS_i_log2_num_nodes))!=PCTFS_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D",1<<PCTFS_i_log2_num_nodes,PCTFS_num_nodes);
 
   /* space for X info */
   xxt_handle->info = (xxt_info*)malloc(sizeof(xxt_info));
@@ -384,7 +384,7 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
 
     /* check for small alpha                             */
     /* LATER use this to detect and determine null space */
-    if (PetscAbsScalar(alpha)<1.0e-14) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g",alpha);
+    if (PetscAbsScalar(alpha)<1.0e-14) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g",alpha);
 
     /* compute v_l = v_l/sqrt(alpha) */
     PCTFS_rvec_scale(v,1.0/alpha,n);
@@ -518,11 +518,11 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 
   PetscFunctionBegin;
-  if (!xxt_handle) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D",xxt_handle);
+  if (!xxt_handle) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D",xxt_handle);
 
   vals[0]=vals[1]=xxt_handle->id;
   PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
-  if ((vals[0]!=vals[1])||(xxt_handle->id<=0)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D",vals[0],vals[1], xxt_handle->id);
+  if ((vals[0]!=vals[1])||(xxt_handle->id<=0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D",vals[0],vals[1], xxt_handle->id);
   PetscFunctionReturn(0);
 }
 

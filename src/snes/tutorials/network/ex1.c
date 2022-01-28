@@ -191,7 +191,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       /* Verify the coupling vertex is a powernet load vertex or a water vertex */
       switch (k) {
       case 0:
-        if (key != appctx_power.compkey_bus || nvar != 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"key %D not a power bus vertex or nvar %D != 2",key,nvar);
+        if (key != appctx_power.compkey_bus || nvar != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"key %D not a power bus vertex or nvar %D != 2",key,nvar);
         break;
       case 1:
         if (key != appctx_power.compkey_load || nvar != 0 || goffset[1] != goffset[0]+2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
@@ -199,7 +199,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       case 2:
         if (key != appctx_water.compkey_vtx || nvar != 1 || goffset[2] != goffset[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
         break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %D is wrong",k);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %D is wrong",k);
       }
       /* printf("  [%d] coupling vertex[%D]: key %D; nvar %D, goffset %D\n",rank,v,key,nvar,goffset[k]); */
     }

@@ -253,7 +253,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBool("-test_shell", "Test the DMFIELDSHELL implementation of DMField", "ex1.c", testShell, &testShell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  if (dim > 3) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %D",dim);
+  if (dim > 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %D",dim);
   ierr = PetscStrncmp(type,DMPLEX,256,&isplex);CHKERRQ(ierr);
   ierr = PetscStrncmp(type,DMDA,256,&isda);CHKERRQ(ierr);
 
@@ -344,7 +344,7 @@ int main(int argc, char **argv)
     ierr = DMFieldCreateDA(dm,nc,cv,&field);CHKERRQ(ierr);
     ierr = PetscFree(cv);CHKERRQ(ierr);
     ierr = PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
-  } else SETERRQ1(comm,PETSC_ERR_SUP,"This test does not run for DM type %s",type);
+  } else SETERRQ(comm,PETSC_ERR_SUP,"This test does not run for DM type %s",type);
 
   ierr = PetscObjectSetName((PetscObject)dm,"mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);

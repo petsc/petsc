@@ -28,7 +28,7 @@ PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
       delete (Vec_ViennaCL*) v->spptr;
     }
   } catch(std::exception const & ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
   ierr = VecDestroy_MPI(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -151,7 +151,7 @@ static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscI
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (socket->nwindow && socket->nwindow != nfields) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot set number of fields %" PetscInt_FMT " with number of windows %" PetscInt_FMT,nfields,socket->nwindow);
+  if (socket->nwindow && socket->nwindow != nfields) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot set number of fields %" PetscInt_FMT " with number of windows %" PetscInt_FMT,nfields,socket->nwindow);
   if (!socket->nwindow) {
     socket->nwindow = nfields;
 
@@ -168,7 +168,7 @@ static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscI
     }
   }
   /* number of fields are not allowed to vary */
-  if (nfields != socket->nwindow) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot visualize %" PetscInt_FMT " fields using %" PetscInt_FMT " socket windows",nfields,socket->nwindow);
+  if (nfields != socket->nwindow) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot visualize %" PetscInt_FMT " fields using %" PetscInt_FMT " socket windows",nfields,socket->nwindow);
   socket->g2lfield = g2l;
   if (socket->destroyctx && socket->userctx) { ierr = (*socket->destroyctx)(socket->userctx);CHKERRQ(ierr); }
   socket->userctx = ctx;
@@ -264,7 +264,7 @@ PetscErrorCode PetscViewerGLVisSetDM_Private(PetscViewer viewer, PetscObject dm)
     ierr = PetscObjectQueryFunction(dm,"DMSetUpGLVisViewer_C",&setupwithdm);CHKERRQ(ierr);
     if (setupwithdm) {
       ierr = (*setupwithdm)(dm,viewer);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm(dm),PETSC_ERR_SUP,"No support for DM type %s",dm->type_name);
+    } else SETERRQ(PetscObjectComm(dm),PETSC_ERR_SUP,"No support for DM type %s",dm->type_name);
     ierr = PetscObjectReference(dm);CHKERRQ(ierr);
     socket->dm = dm;
   }
@@ -400,9 +400,9 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(viewer,wid,2);
   PetscValidPointer(view,3);
-  if (PetscUnlikely((wid < 0) || (wid > socket->nwindow-1))) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot get window id %" PetscInt_FMT ": allowed range [0,%" PetscInt_FMT ")",wid,socket->nwindow-1);
+  if (PetscUnlikely((wid < 0) || (wid > socket->nwindow-1))) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot get window id %" PetscInt_FMT ": allowed range [0,%" PetscInt_FMT ")",wid,socket->nwindow-1);
   status = socket->status;
-  if (PetscUnlikely((socket->type == PETSC_VIEWER_GLVIS_DUMP) && (socket->window[wid]))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Window %" PetscInt_FMT " is already in use",wid);
+  if (PetscUnlikely((socket->type == PETSC_VIEWER_GLVIS_DUMP) && (socket->window[wid]))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Window %" PetscInt_FMT " is already in use",wid);
   switch (status) {
     case PETSCVIEWERGLVIS_DISCONNECTED:
       if (PetscUnlikely(socket->window[wid])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"This should not happen");
@@ -437,7 +437,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
       *view = NULL;
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unhandled socket status %d",(int)status);
+      SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unhandled socket status %d",(int)status);
   }
   if (*view) {
     ierr = PetscViewerGLVisAttachInfo_Private(viewer,*view);CHKERRQ(ierr);
@@ -461,7 +461,7 @@ PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer viewer,PetscInt
   PetscValidHeaderSpecificType(viewer,PETSC_VIEWER_CLASSID,1,PETSCVIEWERGLVIS);
   PetscValidLogicalCollectiveInt(viewer,wid,2);
   PetscValidPointer(view,3);
-  if (wid < 0 || wid > socket->nwindow-1) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot restore window id %" PetscInt_FMT ": allowed range [0,%" PetscInt_FMT ")",wid,socket->nwindow);
+  if (wid < 0 || wid > socket->nwindow-1) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Cannot restore window id %" PetscInt_FMT ": allowed range [0,%" PetscInt_FMT ")",wid,socket->nwindow);
   if (*view && *view != socket->window[wid]) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_USER,"Viewer was not obtained from PetscViewerGLVisGetWindow()");
   if (*view) {
     ierr = PetscViewerFlush(*view);CHKERRQ(ierr);
@@ -824,7 +824,7 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
     ierr = PetscInfo1(NULL,"%s",msg);CHKERRQ(ierr);
   }
   stream = fdopen(fd,"w"); /* Not possible on Windows */
-  if (PetscUnlikely(!stream)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open stream from socket %s:%" PetscInt_FMT,hostname,port);
+  if (PetscUnlikely(!stream)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open stream from socket %s:%" PetscInt_FMT,hostname,port);
   ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_SELF,stream,viewer);CHKERRQ(ierr);
   PetscViewerDestroy_ASCII = (*viewer)->ops->destroy;
   (*viewer)->ops->destroy = PetscViewerDestroy_ASCII_Socket;
@@ -857,7 +857,7 @@ static void PetscGLVisSigHandler_SIGPIPE(PETSC_UNUSED int sig)
 PetscErrorCode PetscGLVisCollectiveBegin(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED PetscViewer *win)
 {
   PetscFunctionBegin;
-  if (PetscGLVisSigHandler_save) SETERRQ1(comm,PETSC_ERR_PLIB,"Nested call to %s()",PETSC_FUNCTION_NAME);
+  if (PetscGLVisSigHandler_save) SETERRQ(comm,PETSC_ERR_PLIB,"Nested call to %s()",PETSC_FUNCTION_NAME);
   PetscGLVisBrokenPipe = PETSC_FALSE;
   PetscGLVisSigHandler_save = signal(SIGPIPE,PetscGLVisSigHandler_SIGPIPE);
   PetscFunctionReturn(0);

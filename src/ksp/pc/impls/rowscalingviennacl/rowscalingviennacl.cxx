@@ -50,7 +50,7 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
     try {
       delete rowscaling->ROWSCALINGVIENNACL;
     } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
     }
   }
   try {
@@ -66,7 +66,7 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
     rowscaling->ROWSCALINGVIENNACL = new viennacl::linalg::row_scaling<viennacl::compressed_matrix<PetscScalar> >(*mat, pc_tag);
 #endif
   } catch(char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
   }
   PetscFunctionReturn(0);
 }
@@ -111,7 +111,7 @@ static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc,Vec x,Vec y)
     ilu->ROWSCALINGVIENNACL->apply(*yarray);
 #endif
   } catch(char * ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
   }
   ierr = VecViennaCLRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecViennaCLRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ static PetscErrorCode PCDestroy_ROWSCALINGVIENNACL(PC pc)
     try {
       delete rowscaling->ROWSCALINGVIENNACL;
     } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
     }
   }
 

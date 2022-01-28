@@ -121,7 +121,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_Memo
     }
     break;
   default:
-    SETERRQ1(comm,PETSC_ERR_SUP,"Unhandled case %d",rw);
+    SETERRQ(comm,PETSC_ERR_SUP,"Unhandled case %d",rw);
   }
   PetscFunctionReturn(0);
 }

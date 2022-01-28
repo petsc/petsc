@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   /*  This is how one can screen matrix types if their application */
   /*  only supports a subset of the Matrix Market data types.      */
   if (!mm_is_matrix(matcode) || !mm_is_sparse(matcode)) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input must be a sparse matrix. Market Market type: [%s]", mm_typecode_to_str(matcode));
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input must be a sparse matrix. Market Market type: [%s]", mm_typecode_to_str(matcode));
   }
 
   if (mm_is_symmetric(matcode)) symmetric = PETSC_TRUE;

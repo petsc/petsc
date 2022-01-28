@@ -104,7 +104,7 @@ PetscErrorCode MatSetOption_ScaLAPACK(Mat A,MatOption op,PetscBool flg)
     case MAT_HERMITIAN:
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported option %s",MatOptions[op]);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported option %s",MatOptions[op]);
   }
   PetscFunctionReturn(0);
 }
@@ -128,7 +128,7 @@ static PetscErrorCode MatSetValues_ScaLAPACK(Mat A,PetscInt nr,const PetscInt *r
         switch (imode) {
           case INSERT_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] = vals[i*nc+j]; break;
           case ADD_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] += vals[i*nc+j]; break;
-          default: SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
+          default: SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
         }
       } else {
         if (A->nooffprocentries) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process entry even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set");
@@ -373,7 +373,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_ScaLAPACK(Mat C)
     case MATPRODUCT_ABt:
       ierr = MatProductSetFromOptions_ScaLAPACK_ABt(C);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for ScaLAPACK and ScaLAPACK matrices",MatProductTypes[product->type]);
+    default: SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for ScaLAPACK and ScaLAPACK matrices",MatProductTypes[product->type]);
   }
   PetscFunctionReturn(0);
 }
@@ -1295,7 +1295,7 @@ PetscErrorCode MatAssemblyEnd_ScaLAPACK(Mat A,MatAssemblyType type)
       switch (A->insertmode) {
         case INSERT_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] = val[i]; break;
         case ADD_VALUES: a->loc[lridx-1+(lcidx-1)*a->lld] += val[i]; break;
-        default: SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)A->insertmode);
+        default: SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)A->insertmode);
       }
     }
   }
@@ -1630,8 +1630,8 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A,PetscInt mb,Pets
 
   PetscFunctionBegin;
   if (A->preallocated) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot change block sizes after MatSetUp");
-  if (mb<1 && mb!=PETSC_DECIDE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"mb %" PetscInt_FMT " must be at least 1",mb);
-  if (nb<1 && nb!=PETSC_DECIDE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nb %" PetscInt_FMT " must be at least 1",nb);
+  if (mb<1 && mb!=PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"mb %" PetscInt_FMT " must be at least 1",mb);
+  if (nb<1 && nb!=PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nb %" PetscInt_FMT " must be at least 1",nb);
   ierr = PetscBLASIntCast((mb==PETSC_DECIDE)?DEFAULT_BLOCKSIZE:mb,&a->mb);CHKERRQ(ierr);
   ierr = PetscBLASIntCast((nb==PETSC_DECIDE)?a->mb:nb,&a->nb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1762,7 +1762,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"ScaLAPACK Grid Options","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_scalapack_grid_height","Grid Height","None",grid->nprow,&optv1,&flg1);CHKERRQ(ierr);
     if (flg1) {
-      if (PetscUnlikely(size % optv1)) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %d",optv1,size);
+      if (PetscUnlikely(size % optv1)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %" PetscInt_FMT " must evenly divide CommSize %d",optv1,size);
       grid->nprow = optv1;
     }
     ierr = PetscOptionsEnd();CHKERRQ(ierr);

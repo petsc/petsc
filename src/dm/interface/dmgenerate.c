@@ -186,7 +186,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
     }
     fl = fl->next;
   }
-  if (!found) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
+  if (!found) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
   if (*dmAdapt) {
     (*dmAdapt)->prealloc_only = dm->prealloc_only;  /* maybe this should go .... */
     ierr = PetscFree((*dmAdapt)->vectype);CHKERRQ(ierr);
@@ -256,7 +256,7 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
     }
     fl = fl->next;
   }
-  if (!found) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
+  if (!found) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Grid adaptor %s not registered; you may need to add --download-%s to your ./configure options", name, name);
   if (*dmAdapt) {
     (*dmAdapt)->prealloc_only = dm->prealloc_only;  /* maybe this should go .... */
     ierr = PetscFree((*dmAdapt)->vectype);CHKERRQ(ierr);

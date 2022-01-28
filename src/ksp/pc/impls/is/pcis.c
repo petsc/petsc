@@ -56,7 +56,7 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
       ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
       ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
       ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
-    } else if (sn != pcis->n_B) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
+    } else if (sn != pcis->n_B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
   }
   PetscFunctionReturn(0);
 }
@@ -242,7 +242,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
       ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
       ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
       ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
-    } else if (sn != pcis->n_B) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
+    } else if (sn != pcis->n_B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
   }
 
   /*

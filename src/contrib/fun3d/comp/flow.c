@@ -809,7 +809,7 @@ int GetLocalOrdering(GRID *grid)
         ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
       }
       fptr = fopen(spart_file,"r");
-      if (!fptr) SETERRQ1(PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
+      if (!fptr) SETERRQ(PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
       for (inode = 0; inode < nnodes; inode++) {
         fscanf(fptr,"%d\n",&node1);
         v2p[inode] = node1;

@@ -605,7 +605,7 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
           PetscBool flg;
 
           ierr = VecEqual(shell->right,shell->left,&flg);CHKERRQ(ierr);
-          if (!flg) SETERRQ3(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+          if (!flg) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
         }
         if (shell->right) {
           ierr = MatDiagonalScale(mdata->B,NULL,shell->right);CHKERRQ(ierr);
@@ -616,13 +616,13 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
           PetscBool flg;
 
           ierr = VecEqual(shell->right,shell->left,&flg);CHKERRQ(ierr);
-          if (!flg) SETERRQ3(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+          if (!flg) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
         }
         if (shell->right) {
           ierr = MatDiagonalScale(mdata->B,shell->right,NULL);CHKERRQ(ierr);
         }
         break;
-      default: SETERRQ3(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+      default: SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
       }
     }
     /* allow the user to call MatMat operations on D */
@@ -691,9 +691,9 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
         break;
       case MATPRODUCT_PtAP: /* s B^t L A R B + v B^t L R B + B^t L D R B */
       case MATPRODUCT_RARt: /* s B L A R B^t + v B L R B^t + B L D R B^t */
-        if (shell->dshift || shell->vshift != zero) SETERRQ3(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices with diagonal shift",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+        if (shell->dshift || shell->vshift != zero) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices with diagonal shift",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
         break;
-      default: SETERRQ3(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+      default: SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
       }
       if (shell->axpy && shell->axpy_vscale != zero) {
         Mat              X;
@@ -754,7 +754,7 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
     if (flg) break;
     matmat = matmat->next;
   }
-  if (!flg) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Composedname \"%s\" for product type %s not found",composedname,MatProductTypes[product->type]);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Composedname \"%s\" for product type %s not found",composedname,MatProductTypes[product->type]);
   switch (product->type) {
   case MATPRODUCT_AB:
     ierr = MatSetSizes(D,A->rmap->n,B->cmap->n,A->rmap->N,B->cmap->N);CHKERRQ(ierr);
@@ -771,7 +771,7 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
   case MATPRODUCT_PtAP:
     ierr = MatSetSizes(D,B->cmap->n,B->cmap->n,B->cmap->N,B->cmap->N);CHKERRQ(ierr);
     break;
-  default: SETERRQ3(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+  default: SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
   }
   /* respect users who passed in a matrix for which resultname is the base type */
   if (matmat->resultname) {
@@ -924,7 +924,7 @@ PetscErrorCode MatShellSetMatProductOperation(Mat A,MatProductType ptype,PetscEr
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveEnum(A,ptype,2);
-  if (ptype == MATPRODUCT_ABC) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for product type %s",MatProductTypes[ptype]);
+  if (ptype == MATPRODUCT_ABC) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for product type %s",MatProductTypes[ptype]);
   if (!numeric) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Missing numeric routine, argument 4");
   PetscValidPointer(Btype,6);
   if (Ctype) PetscValidPointer(Ctype,7);
@@ -969,7 +969,7 @@ PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
 
   PetscFunctionBegin;
   ierr = MatIsShell(B,&matflg);CHKERRQ(ierr);
-  if (!matflg) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix %s not derived from MATSHELL",((PetscObject)B)->type_name);
+  if (!matflg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix %s not derived from MATSHELL",((PetscObject)B)->type_name);
 
   ierr = PetscMemcpy(B->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   ierr = PetscMemcpy(shellB->ops,shellA->ops,sizeof(struct _MatShellOps));CHKERRQ(ierr);

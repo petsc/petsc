@@ -102,7 +102,7 @@ int main(int argc,char **args)
     ierr = MatAXPY(B,-1.,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatConvert(B,MATMPIAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
     ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-    if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatSetValues %g",err);
+    if (err > PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatSetValues %g",err);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
   } else {
@@ -124,12 +124,12 @@ int main(int argc,char **args)
   ierr = MatConvert(B,MATAIJ,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-  if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error Mat AIJ %g",err);
+  if (err > PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error Mat AIJ %g",err);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatConvert(D,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-  if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error Mat IS %g",err);
+  if (err > PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error Mat IS %g",err);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
@@ -182,7 +182,7 @@ int main(int argc,char **args)
       ierr = MatConvert(hP,MATAIJ,MAT_INPLACE_MATRIX,&hP);CHKERRQ(ierr);
     }
     ierr = MatNorm(hP,NORM_INFINITY,&err);CHKERRQ(ierr);
-    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)hP),PETSC_ERR_PLIB,"Error MatPtAP %g %g",err,norm);
+    if (err/norm > PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)hP),PETSC_ERR_PLIB,"Error MatPtAP %g %g",err,norm);
     ierr = MatDestroy(&pP);CHKERRQ(ierr);
     ierr = MatDestroy(&hP);CHKERRQ(ierr);
 
@@ -224,7 +224,7 @@ int main(int argc,char **args)
       ierr = MatConvert(CD,MATAIJ,MAT_INPLACE_MATRIX,&CD);CHKERRQ(ierr);
     }
     ierr = MatNorm(CD,NORM_INFINITY,&err);CHKERRQ(ierr);
-    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)CD),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
+    if (err/norm > PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)CD),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
 
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ int main(int argc,char **args)
     ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
     ierr = MatAXPY(C,-1.,CAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-    if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMatMult %g %g",err,norm);
+    if (err/norm > PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMatMult %g %g",err,norm);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);
     ierr = MatDestroy(&CAB);CHKERRQ(ierr);
@@ -284,7 +284,7 @@ int main(int argc,char **args)
         ierr = MatViewFromOptions(A,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(B,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(C,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
-        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 1 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
+        SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 1 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
       }
       /* AXPY with HYPRE and HYPRE */
       ierr = MatAXPY(D,-1.0,B,str);CHKERRQ(ierr);
@@ -292,7 +292,7 @@ int main(int argc,char **args)
         ierr = MatViewFromOptions(A,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(B,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(D,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
-        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 2 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
+        SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 2 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
       }
       /* Copy from HYPRE to AIJ */
       ierr = MatCopy(B,C,str);CHKERRQ(ierr);
@@ -309,7 +309,7 @@ int main(int argc,char **args)
         ierr = MatViewFromOptions(A,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(C,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
         ierr = MatViewFromOptions(D,NULL,"-view_duplicate_diff");CHKERRQ(ierr);
-        SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 3 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
+        SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error test 3 MatDuplicate/MatCopy %g (%" PetscInt_FMT ",%" PetscInt_FMT ")",err,j,i);
       }
       ierr = MatDestroy(&C);CHKERRQ(ierr);
       ierr = MatDestroy(&D);CHKERRQ(ierr);
@@ -331,7 +331,7 @@ int main(int argc,char **args)
     if (err > PETSC_SMALL) {
       ierr = VecViewFromOptions(y,NULL,"-view_diagonal_diff");CHKERRQ(ierr);
       ierr = VecViewFromOptions(y2,NULL,"-view_diagonal_diff");CHKERRQ(ierr);
-      SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatGetDiagonal %g",err);
+      SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatGetDiagonal %g",err);
     }
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = VecDestroy(&y);CHKERRQ(ierr);

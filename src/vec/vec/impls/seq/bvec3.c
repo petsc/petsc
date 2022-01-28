@@ -62,7 +62,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
     s                  = (Vec_Seq*)V->data;
     s->array_allocated = (PetscScalar*)aarray;
   } break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"No support for mixed precision %d",(int)(((PetscObject)V)->precision));
+  default: SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"No support for mixed precision %d",(int)(((PetscObject)V)->precision));
   }
 #endif
   PetscFunctionReturn(0);

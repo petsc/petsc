@@ -561,7 +561,7 @@ static PetscErrorCode terzaghi_2d_p(PetscInt dim, PetscReal time, const PetscRea
     PetscReal   tstar = PetscRealPart(c*time) / PetscSqr(2.0*L);   /* - */
     PetscScalar F1    = 0.0;
 
-    if (PetscAbsScalar((1/M + (alpha*eta)/G) - S) > 1.0e-10) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
+    if (PetscAbsScalar((1/M + (alpha*eta)/G) - S) > 1.0e-10) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
 
     for (m = 1; m < 2*N+1; ++m) {
       if (m%2 == 1) {
@@ -696,7 +696,7 @@ static PetscErrorCode terzaghi_2d_p_t(PetscInt dim, PetscReal time, const PetscR
     PetscScalar F1_t  = 0.0;
     PetscScalar F1_zz = 0.0;
 
-    if (PetscAbsScalar((1/M + (alpha*eta)/G) - S) > 1.0e-10) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
+    if (PetscAbsScalar((1/M + (alpha*eta)/G) - S) > 1.0e-10) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
 
     for (m = 1; m < 2*N+1; ++m) {
       if (m%2 == 1) {
@@ -1753,14 +1753,14 @@ static PetscErrorCode cryerZeros(MPI_Comm comm, AppCtx *ctx, Parameter *param)
     for (j = 0; j < 50000; ++j) {
       y1 = CryerFunction(nu_u, nu, a1);
       y2 = CryerFunction(nu_u, nu, a2);
-      if (y1*y2 > 0) SETERRQ5(comm, PETSC_ERR_PLIB, "Invalid root finding initialization for root %D, (%g, %g)--(%g, %g)", n, a1, y1, a2, y2);
+      if (y1*y2 > 0) SETERRQ(comm, PETSC_ERR_PLIB, "Invalid root finding initialization for root %D, (%g, %g)--(%g, %g)", n, a1, y1, a2, y2);
       am = (a1 + a2) / 2.0;
       ym = CryerFunction(nu_u, nu, am);
       if ((ym * y1) < 0) a2 = am;
       else               a1 = am;
       if (PetscAbsScalar(ym) < tol) break;
     }
-    if (PetscAbsScalar(ym) >= tol) SETERRQ2(comm, PETSC_ERR_PLIB, "Root finding did not converge for root %D (%g)", n, PetscAbsScalar(ym));
+    if (PetscAbsScalar(ym) >= tol) SETERRQ(comm, PETSC_ERR_PLIB, "Root finding did not converge for root %D (%g)", n, PetscAbsScalar(ym));
     ctx->zeroArray[n-1] = am;
   }
   PetscFunctionReturn(0);
@@ -1833,7 +1833,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
       case SOL_TERZAGHI:    ctx->t_r = PetscSqr(2.0*(ctx->xmax[1] - ctx->xmin[1]))/c; break;
       case SOL_MANDEL:      ctx->t_r = PetscSqr(2.0*(ctx->xmax[1] - ctx->xmin[1]))/c; break;
       case SOL_CRYER:       ctx->t_r = PetscSqr(ctx->xmax[1])/c; break;
-      default: SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(ctx->solType, NUM_SOLUTION_TYPES)], ctx->solType);
+      default: SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(ctx->solType, NUM_SOLUTION_TYPES)], ctx->solType);
     }
     ierr = PetscOptionsGetViewer(comm, NULL, NULL, "-param_view", &viewer, &format, &flg);CHKERRQ(ierr);
     if (flg) {
@@ -2042,7 +2042,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 
     ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 1, &id, 2, 0, NULL, (void (*)(void)) cryer_drainage_pressure, NULL, user, NULL);CHKERRQ(ierr);
     break;
-  default: SETERRQ2(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
+  default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
   for (f = 0; f < 3; ++f) {
     ierr = PetscDSSetExactSolution(ds, f, exact[f], user);CHKERRQ(ierr);

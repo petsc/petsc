@@ -220,7 +220,7 @@ static void PhysicsRiemann_Advect(PetscInt dim, PetscInt Nf, const PetscReal *qp
     PetscInt i;
     for (i = 0; i < DIM; ++i) wind[i] = 0.0;
   }
-  /* default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]); */
+  /* default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]); */
   }
   wn      = Dot2Real(wind, n);
   flux[0] = (wn > 0 ? xL[0] : xR[0]) * wn;
@@ -486,7 +486,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   PetscReal dx[2],r,sigma;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  if (time != 0.0) SETERRQ(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
   r     = Norm2Real(dx);
@@ -602,7 +602,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   EulerNode       *uu  = (EulerNode*)u;
   PetscReal        p0,gamma,c;
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  if (time != 0.0) SETERRQ(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
 
   for (i=0; i<DIM; i++) uu->ru[i] = 0.0; /* zero out initial velocity */
   /* set E and rho */
@@ -651,7 +651,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   else if (eu->type==EULER_LINEAR_WAVE) {
     initLinearWave( uu, gamma, x, mod->bounds[1] - mod->bounds[0]);
   }
-  else SETERRQ1(mod->comm,PETSC_ERR_SUP,"Unknown type %d",eu->type);
+  else SETERRQ(mod->comm,PETSC_ERR_SUP,"Unknown type %d",eu->type);
 
   /* set phys->maxspeed: (mod->maxspeed = phys->maxspeed) in main; */
   eu->sound(&gamma,uu,&c);
@@ -677,7 +677,7 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *gamma, const EulerNode *x
 
   PetscFunctionBeginUser;
   Pressure_PG(*gamma,x,&p);
-  if (p<0.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",(double) p);
+  if (p<0.) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",(double) p);
   /* pars[EULER_PAR_GAMMA] = heat capacity ratio */
   (*c)=PetscSqrtReal(*gamma * p / x->r);
   PetscFunctionReturn(0);
@@ -830,7 +830,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     ierr = PetscOptionsReal("-eu_rho2","Density right of discontinuity","",eu->pars[EULER_PAR_RHOR],&eu->pars[EULER_PAR_RHOR],NULL);CHKERRQ(ierr);
     alpha = 60.;
     ierr = PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL);CHKERRQ(ierr);
-    if (alpha<=0. || alpha>90.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
+    if (alpha<=0. || alpha>90.) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
     eu->pars[EULER_PAR_ITANA] = 1./PetscTanReal( alpha * PETSC_PI / 180.0);
     ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,"linear_wave", &is);CHKERRQ(ierr);
@@ -840,7 +840,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"linear_wave");CHKERRQ(ierr);
     }
     else {
-      if (DIM != 2) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
+      if (DIM != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
       ierr = PetscStrcmp(type,"iv_shock", &is);CHKERRQ(ierr);
       if (is) {
         eu->type = EULER_IV_SHOCK;
@@ -855,7 +855,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
         else {
           ierr = PetscStrcmp(type,"shock_tube", &is);CHKERRQ(ierr);
           if (is) eu->type = EULER_SHOCK_TUBE;
-          else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown Euler type %s",type);
+          else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown Euler type %s",type);
           ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"shock_tube");CHKERRQ(ierr);
         }
       }
@@ -1057,7 +1057,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptionItems *
       ierr = PetscStrcasecmp(names[i],link->name,&match);CHKERRQ(ierr);
       if (match) break;
     }
-    if (!link) SETERRQ1(mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
+    if (!link) SETERRQ(mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
     mod->functionalMonitored[i] = link;
     for (j=0; j<i; j++) {
       if (mod->functionalCall[j]->func == link->func && mod->functionalCall[j]->ctx == link->ctx) goto next_name;
@@ -1463,7 +1463,7 @@ int main(int argc, char **argv)
     ierr = (*physcreate)(mod,phys,PetscOptionsObject);CHKERRQ(ierr);
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
-    if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
+    if (phys->dof <= 0) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
     ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1681,7 +1681,7 @@ int main(int argc, char **argv)
   ierr = DMPlexGetGeometryFVM(plex, NULL, NULL, &minRadius);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-  if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+  if (mod->maxspeed <= 0) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
   dt   = cfl * minRadius / mod->maxspeed;
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -1722,7 +1722,7 @@ int main(int argc, char **argv)
         ierr = DMPlexGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
         ierr = DMDestroy(&plex);CHKERRQ(ierr);
         ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-        if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+        if (mod->maxspeed <= 0) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
         dt   = cfl * minRadius / mod->maxspeed;
         ierr = TSSetStepNumber(ts,nsteps);CHKERRQ(ierr);
         ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);

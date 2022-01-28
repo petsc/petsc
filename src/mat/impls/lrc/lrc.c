@@ -177,17 +177,17 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
 
   ierr = MatGetSize(U,NULL,&k);CHKERRQ(ierr);
   ierr = MatGetSize(V,NULL,&k1);CHKERRQ(ierr);
-  if (k!=k1) SETERRQ2(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"U and V have different number of columns (%" PetscInt_FMT " vs %" PetscInt_FMT ")",k,k1);
+  if (k!=k1) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"U and V have different number of columns (%" PetscInt_FMT " vs %" PetscInt_FMT ")",k,k1);
   ierr = MatGetLocalSize(U,&m,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(V,&n,NULL);CHKERRQ(ierr);
   if (A) {
     ierr = MatGetLocalSize(A,&m1,&n1);CHKERRQ(ierr);
-    if (m!=m1) SETERRQ2(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"Local dimensions of U %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",m,m1);
-    if (n!=n1) SETERRQ2(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"Local dimensions of V %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",n,n1);
+    if (m!=m1) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"Local dimensions of U %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",m,m1);
+    if (n!=n1) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"Local dimensions of V %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",n,n1);
   }
   if (c) {
     ierr = VecGetSize(c,&k1);CHKERRQ(ierr);
-    if (k!=k1) SETERRQ2(PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"The length of c %" PetscInt_FMT " does not match the number of columns of U and V (%" PetscInt_FMT ")",k1,k);
+    if (k!=k1) SETERRQ(PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"The length of c %" PetscInt_FMT " does not match the number of columns of U and V (%" PetscInt_FMT ")",k1,k);
     ierr = VecGetLocalSize(c,&k1);CHKERRQ(ierr);
     if (k!=k1) SETERRQ(PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"c must be a sequential vector");
   }

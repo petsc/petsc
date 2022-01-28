@@ -113,31 +113,31 @@ int main(int argc,char **args)
     ierr = PetscObjectSetName((PetscObject)Cse,"symm_conv_init");CHKERRQ(ierr);
     ierr = MatViewFromOptions(Cse,NULL,"-view");CHKERRQ(ierr);
     ierr = MatMultEqual(Cs,Cse,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert MAT_INITIAL_MATRIX %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert MAT_INITIAL_MATRIX %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     ierr = MatConvert(Cs,Ctype,MAT_REUSE_MATRIX,&Cse);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)Cse,"symm_conv_reuse");CHKERRQ(ierr);
     ierr = MatViewFromOptions(Cse,NULL,"-view");CHKERRQ(ierr);
     ierr = MatMultEqual(Cs,Cse,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert MAT_REUSE_MATRIX %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert MAT_REUSE_MATRIX %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     ierr = MatCopy(Cs,Cse,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)Cse,"symm_conv_copy_samennz");CHKERRQ(ierr);
     ierr = MatViewFromOptions(Cse,NULL,"-view");CHKERRQ(ierr);
     ierr = MatMultEqual(Cs,Cse,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...SAME_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...SAME_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     ierr = MatCopy(Cs,Cse,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)Cse,"symm_conv_copy_subnnz");CHKERRQ(ierr);
     ierr = MatViewFromOptions(Cse,NULL,"-view");CHKERRQ(ierr);
     ierr = MatMultEqual(Cs,Cse,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...SUBSET_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...SUBSET_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     ierr = MatCopy(Cs,Cse,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)Cse,"symm_conv_copy_diffnnz");CHKERRQ(ierr);
     ierr = MatViewFromOptions(Cse,NULL,"-view");CHKERRQ(ierr);
     ierr = MatMultEqual(Cs,Cse,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...DIFFERENT_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...DIFFERENT_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     ierr = MatDestroy(&Cse);CHKERRQ(ierr);
     ierr = MatDestroy(&Cs);CHKERRQ(ierr);

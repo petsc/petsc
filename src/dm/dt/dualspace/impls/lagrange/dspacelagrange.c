@@ -1735,7 +1735,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
     const PetscReal *weights;
     PetscScalar     *array;
 
-    if (nDofs != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "We do not yet support moments beyond P0, nDofs == %D", nDofs);
+    if (nDofs != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "We do not yet support moments beyond P0, nDofs == %D", nDofs);
     ierr = PetscDualSpaceLagrangeGetMomentOrder(sp, &momentOrder);CHKERRQ(ierr);
     ierr = PetscDualSpaceLagrangeGetTensor(sp, &tensor);CHKERRQ(ierr);
     if (!tensor) {ierr = PetscDTStroudConicalQuadrature(dim, Nc, PetscMax(momentOrder + 1,1), -1.0, 1.0, &(sp->functional[0]));CHKERRQ(ierr);}
@@ -1802,12 +1802,12 @@ static PetscErrorCode PetscDualSpaceLagrangeMatrixCreateCopies(Mat A, PetscInt N
 
   PetscFunctionBegin;
   ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);
-  if (n % Nk) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of columns in A %D is not a multiple of Nk %D", n, Nk);
+  if (n % Nk) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of columns in A %D is not a multiple of Nk %D", n, Nk);
   ierr = PetscMalloc1(m * Ncopies, &nnz);CHKERRQ(ierr);
   for (i = 0, maxnnz = 0; i < m; i++) {
     PetscInt innz;
     ierr = MatGetRow(A, i, &innz, NULL, NULL);CHKERRQ(ierr);
-    if (innz % Nk) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "A row %D nnzs is not a multiple of Nk %D", innz, Nk);
+    if (innz % Nk) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "A row %D nnzs is not a multiple of Nk %D", innz, Nk);
     for (j = 0; j < Ncopies; j++) nnz[i * Ncopies + j] = innz;
     maxnnz = PetscMax(maxnnz, innz);
   }

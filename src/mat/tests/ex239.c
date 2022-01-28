@@ -23,7 +23,7 @@ int main(int argc, char** argv)
   ierr = VecSet(output,2.);CHKERRQ(ierr);
   ierr = MatMult(cuda_matrix,input,output);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_2,&nrm);CHKERRQ(ierr);
-  if (nrm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc generated wrong result. Should be 0, but is %g",(double)nrm);
+  if (nrm > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc generated wrong result. Should be 0, but is %g",(double)nrm);
   ierr = VecDestroy(&input);CHKERRQ(ierr);
   ierr = VecDestroy(&output);CHKERRQ(ierr);
   ierr = MatDestroy(&cuda_matrix);CHKERRQ(ierr);

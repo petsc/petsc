@@ -181,7 +181,7 @@ static PetscErrorCode PetscViewerMathematicaParseLinkMode(char *modename, LinkMo
   if (isCreate)       *mode = MATHEMATICA_LINK_CREATE;
   else if (isConnect) *mode = MATHEMATICA_LINK_CONNECT;
   else if (isLaunch)  *mode = MATHEMATICA_LINK_LAUNCH;
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid Mathematica link mode: %s", modename);
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid Mathematica link mode: %s", modename);
   PetscFunctionReturn(0);
 }
 
@@ -531,7 +531,7 @@ PetscErrorCode  PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
   MLEndPacket(link);
   ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);CHKERRQ(ierr);
   MLGetRealList(link, &mArray, &mSize);
-  if (n != mSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Incompatible vector sizes %d %d",n,mSize);
+  if (n != mSize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Incompatible vector sizes %d %d",n,mSize);
   ierr = PetscArraycpy(array, mArray, mSize);CHKERRQ(ierr);
   MLDisownRealList(link, mArray, mSize);
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);

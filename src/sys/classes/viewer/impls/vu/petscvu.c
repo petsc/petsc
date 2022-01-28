@@ -127,10 +127,10 @@ static PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char 
     }
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[vu->mode]);
+    SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[vu->mode]);
   }
 
-  if (!vu->fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s", fname);
+  if (!vu->fd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s", fname);
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject) viewer, "File: %s", name);
 #endif

@@ -27,7 +27,7 @@ static PetscErrorCode PointQueueCreate(PetscInt size, PointQueue *queue)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (size < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
+  if (size < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
   ierr = PetscCalloc1(1, &q);CHKERRQ(ierr);
   q->size = size;
   ierr = PetscMalloc1(q->size, &q->points);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, edge, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, edge, &coneSize);CHKERRQ(ierr);
-    if (coneSize != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
+    if (coneSize != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
     ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coordsLocal, &coords);CHKERRQ(ierr);
@@ -423,10 +423,10 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
           else if (vals[0])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_0);CHKERRQ(ierr);}
           else if (vals[1])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_1);CHKERRQ(ierr);}
           else if (vals[2])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_2);CHKERRQ(ierr);}
-          else SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D does not fit any refinement type (%D, %D, %D)", p, vals[0], vals[1], vals[2]);
+          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D does not fit any refinement type (%D, %D, %D)", p, vals[0], vals[1], vals[2]);
         } else {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE);CHKERRQ(ierr);}
         break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
     }
     ierr = DMLabelGetValue(sbr->splitPoints, p, &val);CHKERRQ(ierr);
   }
@@ -691,7 +691,7 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
         default: ierr = DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr);
       }
       break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
   PetscFunctionReturn(0);
 }
@@ -738,7 +738,7 @@ static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer vi
       ierr = DMLabelView(tr->trType, viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
+    SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

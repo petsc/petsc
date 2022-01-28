@@ -82,7 +82,7 @@ PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
   set = hwloc_bitmap_alloc();
 
   err = hwloc_get_proc_cpubind(topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
-  if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error %d from hwloc_get_proc_cpubind()",err);
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error %d from hwloc_get_proc_cpubind()",err);
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"MPI rank %d Process id: %d coreid %d\n",rank,getpid(),hwloc_bitmap_first(set));CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

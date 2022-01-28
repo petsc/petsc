@@ -107,7 +107,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
     ierr = PetscSpaceSetUp(sp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (sp->degree < 0) SETERRQ1(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %D invalid", sp->degree);
+  if (sp->degree < 0) SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %D invalid", sp->degree);
   sp->maxDegree = sp->degree;
   poly->setupCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -337,7 +337,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, Pets
   ierr = PetscSpaceGetNumVariables(sp, &dim);CHKERRQ(ierr);
   ierr = PetscSpaceGetDegree(sp, &order, NULL);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetTensor(sp, &tensor);CHKERRQ(ierr);
-  if (height > dim || height < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
+  if (height > dim || height < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
   if (!poly->subspaces) {ierr = PetscCalloc1(dim, &poly->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!poly->subspaces[height-1]) {

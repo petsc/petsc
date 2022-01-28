@@ -57,7 +57,7 @@ PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
   PetscValidHeader(*obj,1);
   if (*obj && (*obj)->bops->destroy) {
     ierr = (*(*obj)->bops->destroy)(obj);CHKERRQ(ierr);
-  } else if (*obj) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",(*obj)->class_name);
+  } else if (*obj) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",(*obj)->class_name);
   PetscFunctionReturn(0);
 }
 
@@ -309,7 +309,7 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS",MAXREGDESOBJS);
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS",MAXREGDESOBJS);
   PetscFunctionReturn(0);
 }
 
@@ -364,7 +364,7 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
     if (f == PetscRegisterFinalize_Functions[i]) PetscFunctionReturn(0);
   }
   if (PetscRegisterFinalize_Count < MAXREGFIN) PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN",MAXREGFIN);
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN",MAXREGFIN);
   PetscFunctionReturn(0);
 }
 

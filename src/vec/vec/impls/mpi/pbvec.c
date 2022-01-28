@@ -317,7 +317,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         } else count = x->recvhdr[i].count;
         for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<count; j++,recvint++) {
           PetscInt loc = *recvint - X->map->rstart;
-          if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %" PetscInt_FMT " out of local range [%" PetscInt_FMT ",%" PetscInt_FMT ")]",*recvint,X->map->rstart,X->map->rend);
+          if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %" PetscInt_FMT " out of local range [%" PetscInt_FMT ",%" PetscInt_FMT ")]",*recvint,X->map->rstart,X->map->rend);
           switch (imode) {
           case ADD_VALUES:
             xarray[loc] += *recvscalar++;
@@ -325,7 +325,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
           case INSERT_VALUES:
             xarray[loc] = *recvscalar++;
             break;
-          default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
+          default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
           }
         }
       } else {                  /* Block stash */
@@ -344,7 +344,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
           case INSERT_VALUES:
             for (k=loc; k<loc+bs; k++) xarray[k] = *recvscalar++;
             break;
-          default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
+          default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
           }
         }
       }

@@ -128,7 +128,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
                             "\n\n");CHKERRQ(ierr);
     ierr = PetscBoxStartWebServer_Private();CHKERRQ(ierr);
     ierr = PetscStrbeginswith((const char*)result,"state=PETScState&code=",&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not get expected string from Box got %s",result);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not get expected string from Box got %s",result);
     ierr = PetscStrncpy(buff,(const char*)result+22,sizeof(buff));CHKERRQ(ierr);
 
     ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
@@ -295,7 +295,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
     ierr = PetscStrcat(head,"uploadType: multipart\r\n");CHKERRQ(ierr);
 
     err = stat(filename,&sb);
-    if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to stat file: %s",filename);
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to stat file: %s",filename);
     len = 1024 + sb.st_size;
     ierr = PetscMalloc1(len,&body);CHKERRQ(ierr);
     ierr = PetscStrcpy(body,"--foo_bar_baz\r\n"
@@ -311,9 +311,9 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
                              "Content-Type: text/html\r\n\r\n");CHKERRQ(ierr);
     ierr = PetscStrlen(body,&blen);CHKERRQ(ierr);
     fd = fopen (filename, "r");
-    if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
+    if (!fd) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
     rd = fread (body+blen, sizeof (unsigned char), sb.st_size, fd);
-    if (rd != (size_t)sb.st_size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire file: %s %d %d",filename,(int)rd,(int)sb.st_size);
+    if (rd != (size_t)sb.st_size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire file: %s %d %d",filename,(int)rd,(int)sb.st_size);
     fclose(fd);
     body[blen + rd] = 0;
     ierr = PetscStrcat(body,"\r\n\r\n"
@@ -325,7 +325,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
     ierr   = PetscStrstr(buff,"\"title\"",&title);CHKERRQ(ierr);
-    if (!title) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Upload of file %s failed",filename);
+    if (!title) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Upload of file %s failed",filename);
   }
   PetscFunctionReturn(0);
 }

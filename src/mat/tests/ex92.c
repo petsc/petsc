@@ -168,7 +168,7 @@ int main(int argc,char **args)
           ierr = ISSort(is1[i]);CHKERRQ(ierr);
           ierr = ISSort(is2[i]);CHKERRQ(ierr);
         }
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%" PetscInt_FMT ", is1 != is2",i);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%" PetscInt_FMT ", is1 != is2",i);
       }
     }
   }

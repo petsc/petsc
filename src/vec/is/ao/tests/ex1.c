@@ -51,10 +51,10 @@ int main(int argc,char **argv)
 
   /* Check accuracy */;
   for (i=0; i<4; i++) {
-    if (getapp1[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp1 %" PetscInt_FMT " != getapp %" PetscInt_FMT,getapp1[i],getapp[i]);
+    if (getapp1[i] != getapp[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp1 %" PetscInt_FMT " != getapp %" PetscInt_FMT,getapp1[i],getapp[i]);
   }
   for (i=0; i<3; i++) {
-    if (getpetsc1[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc1 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc1[i],getpetsc[i]);
+    if (getpetsc1[i] != getpetsc[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc1 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc1[i],getpetsc[i]);
   }
 
   ierr = AODestroy(&ao);CHKERRQ(ierr);
@@ -71,10 +71,10 @@ int main(int argc,char **argv)
 
   /* Check accuracy */;
   for (i=0; i<4; i++) {
-    if (getapp2[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp2 %" PetscInt_FMT " != getapp %" PetscInt_FMT,getapp2[i],getapp[i]);
+    if (getapp2[i] != getapp[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp2 %" PetscInt_FMT " != getapp %" PetscInt_FMT,getapp2[i],getapp[i]);
   }
   for (i=0; i<3; i++) {
-    if (getpetsc2[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc2 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc2[i],getpetsc[i]);
+    if (getpetsc2[i] != getpetsc[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc2 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc2[i],getpetsc[i]);
   }
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
@@ -88,10 +88,10 @@ int main(int argc,char **argv)
 
   /* Check accuracy */;
   for (i=0; i<4; i++) {
-    if (getapp4[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp4 %" PetscInt_FMT " != getapp %" PetscInt_FMT,getapp4[i],getapp[i]);
+    if (getapp4[i] != getapp[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp4 %" PetscInt_FMT " != getapp %" PetscInt_FMT,getapp4[i],getapp[i]);
   }
   for (i=0; i<3; i++) {
-    if (getpetsc4[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc4 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc4[i],getpetsc[i]);
+    if (getpetsc4[i] != getpetsc[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc4 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc4[i],getpetsc[i]);
   }
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
@@ -116,10 +116,10 @@ int main(int argc,char **argv)
 
   /* Check accuracy */;
   for (i=0; i<4; i++) {
-    if (getapp3[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp3 %" PetscInt_FMT " != getapp %" PetscInt_FMT,getapp3[i],getapp[i]);
+    if (getapp3[i] != getapp[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp3 %" PetscInt_FMT " != getapp %" PetscInt_FMT,getapp3[i],getapp[i]);
   }
   for (i=0; i<3; i++) {
-    if (getpetsc3[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc3 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc3[i],getpetsc[i]);
+    if (getpetsc3[i] != getpetsc[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc3 %" PetscInt_FMT " != getpetsc %" PetscInt_FMT,getpetsc3[i],getpetsc[i]);
   }
 
   ierr = AODestroy(&ao);CHKERRQ(ierr);

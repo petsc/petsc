@@ -193,7 +193,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       }
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+      SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
     }
     ierr = DMSetApplicationContext(daview,dactx);CHKERRQ(ierr);
     ierr = DMSetApplicationContextDestroy(daview,DMDAGhostedDestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
@@ -218,7 +218,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       nc   = ien*(jen>0 ? jen : 1)*(ken>0 ? ken : 1);
 
       ierr = VecGetLocalSize(xcoor,&nl);CHKERRQ(ierr);
-      if (nc && nl % nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %D and number of cells %D",nl,nc);
+      if (nc && nl % nc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %D and number of cells %D",nl,nc);
       ierr = VecDuplicate(xcoor,&xcoorl);CHKERRQ(ierr);
       ierr = VecCopy(xcoor,xcoorl);CHKERRQ(ierr);
       ierr = VecSetDM(xcoorl,NULL);CHKERRQ(ierr);
@@ -232,7 +232,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
           while (1) {
             PetscInt degd = 1;
             for (i=0;i<dim;i++) degd *= (deg+1);
-            if (degd > cdof) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cell dofs %D",cdof);
+            if (degd > cdof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cell dofs %D",cdof);
             if (degd == cdof) break;
             deg++;
           }
@@ -281,7 +281,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     if (bsset) {
       PetscInt t;
       for (i=0,t=0;i<nf;i++) t += bss[i];
-      if (t != dof) SETERRQ2(PetscObjectComm(oda),PETSC_ERR_USER,"Sum of block sizes %D should equal %D",t,dof);
+      if (t != dof) SETERRQ(PetscObjectComm(oda),PETSC_ERR_USER,"Sum of block sizes %D should equal %D",t,dof);
     } else nf = dof;
 
     for (i=0,s=0;i<nf;i++) {
@@ -435,7 +435,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
     }
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
   }
   ierr = PetscViewerASCIIPrintf(viewer,"\nboundary\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);

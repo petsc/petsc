@@ -74,7 +74,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
         }
         ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
 
       // Create temporary vector for v += A*x:
@@ -111,7 +111,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
       if (a->compressedrow.use) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ViennaCL: Cannot handle row compression for GPU matrices");
       else {
 
-        if (PetscUnlikely((PetscInt)Agpu->size1() != m)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "GPU matrix has %lu rows, should be %" PetscInt_FMT, Agpu->size1(), m);
+        if (PetscUnlikely((PetscInt)Agpu->size1() != m)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "GPU matrix has %lu rows, should be %" PetscInt_FMT, Agpu->size1(), m);
         a->nz           = Agpu->nnz();
         a->maxnz        = a->nz; /* Since we allocate exactly the right amount */
         A->preallocated = PETSC_TRUE;
@@ -159,7 +159,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
         /* TODO: Once a->diag is moved out of MatAssemblyEnd(), invalidate it here. */
       }
     } catch(std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
     }
   } else if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
     PetscFunctionReturn(0);
@@ -203,7 +203,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
       }
       ViennaCLWaitForGPU();
     } catch (std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = VecViennaCLRestoreArrayWrite(zz,&zgpu);CHKERRQ(ierr);
 
     } catch(std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
     ierr = PetscLogGpuFlops(2.0*a->nz);CHKERRQ(ierr);
   } else {
@@ -336,7 +336,7 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
     }
     A->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   } catch(std::exception const & ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijviennacl_C",NULL);CHKERRQ(ierr);

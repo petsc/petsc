@@ -441,12 +441,12 @@ PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change, PetscBool interior)
     PetscInt rows_c,cols_c,rows,cols;
     ierr = MatGetSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
     ierr = MatGetSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
-    if (rows_c != rows) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %D != %D",rows_c,rows);
-    if (cols_c != cols) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %D != %D",cols_c,cols);
+    if (rows_c != rows) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %D != %D",rows_c,rows);
+    if (cols_c != cols) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %D != %D",cols_c,cols);
     ierr = MatGetLocalSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
     ierr = MatGetLocalSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
-    if (rows_c != rows) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %D != %D",rows_c,rows);
-    if (cols_c != cols) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %D != %D",cols_c,cols);
+    if (rows_c != rows) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %D != %D",rows_c,rows);
+    if (cols_c != cols) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %D != %D",cols_c,cols);
   }
   ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisMat_C",(PC,Mat,PetscBool),(pc,change,interior));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -702,7 +702,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  if (levels > PETSC_PCBDDC_MAXLEVELS-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d",PETSC_PCBDDC_MAXLEVELS-1);
+  if (levels > PETSC_PCBDDC_MAXLEVELS-1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d",PETSC_PCBDDC_MAXLEVELS-1);
   pcbddc->max_levels = levels;
   PetscFunctionReturn(0);
 }
@@ -1116,7 +1116,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
       mat_graph->xadj    = (PetscInt*)xadj;
       mat_graph->adjncy  = (PetscInt*)adjncy;
       mat_graph->freecsr = PETSC_FALSE;
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %D",copymode);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %D",copymode);
     mat_graph->nvtxs_csr = nvtxs;
     pcbddc->recompute_topography = PETSC_TRUE;
   }
@@ -2563,7 +2563,7 @@ static PetscErrorCode PCSetUp_BDDCIPC(PC pc)
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc,&bddcipc_ctx);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)bddcipc_ctx->bddc,PCBDDC,&isbddc);CHKERRQ(ierr);
-  if (!isbddc) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid type %s. Must be of type bddc",((PetscObject)bddcipc_ctx->bddc)->type_name);
+  if (!isbddc) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid type %s. Must be of type bddc",((PetscObject)bddcipc_ctx->bddc)->type_name);
   ierr = PCSetUp(bddcipc_ctx->bddc);CHKERRQ(ierr);
 
   /* create interface scatter */

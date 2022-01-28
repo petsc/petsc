@@ -100,7 +100,7 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   s = ssp->nstages;
   n = (PetscInt)(PetscSqrtReal((PetscReal)s)+0.001);
   r = s-n;
-  if (n*n != s) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
+  if (n*n != s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
   ierr = TSSSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
   F    = work[2];
   ierr = VecCopy(sol,work[0]);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ static PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListFind(TSSSPList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
+  if (!r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type,&ssp->type_name);CHKERRQ(ierr);

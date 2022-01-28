@@ -60,7 +60,7 @@ namespace Impl
 //
 // or wrap it around the function:
 //
-// CHKERRCUPM(foo());
+// CHKERRCUPOBM(foo());
 //
 // thanks to __VA_ARGS__ templated functions can also be wrapped inline:
 //
@@ -68,9 +68,9 @@ namespace Impl
 #define CHKERRCUPM(...) do {                                            \
     const cupmError_t cerr_p_ = __VA_ARGS__;                            \
     if (PetscUnlikely(cerr_p_ != cupmSuccess)) {                        \
-      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s) : %s",   \
-               cupmName(),static_cast<PetscErrorCode>(cerr_p_),         \
-               cupmGetErrorName(cerr_p_),cupmGetErrorString(cerr_p_));  \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s) : %s",    \
+              cupmName(),static_cast<PetscErrorCode>(cerr_p_),          \
+              cupmGetErrorName(cerr_p_),cupmGetErrorString(cerr_p_));   \
     }                                                                   \
   } while (0)
 

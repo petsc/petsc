@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatConvert(A,MATSEQDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
+  if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
@@ -129,7 +129,7 @@ int main(int argc,char **args)
     ierr = MatCholeskyFactor(F,NULL,NULL);CHKERRQ(ierr);
   } else if (ftyp == MAT_FACTOR_QR) {
     ierr = MatQRFactor(F,NULL,NULL);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example", MatFactorTypes[ftyp]);
+  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example", MatFactorTypes[ftyp]);
 
   for (nsolve = 0; nsolve < 2; nsolve++) {
     ierr = VecSetRandom(x,rand);CHKERRQ(ierr);

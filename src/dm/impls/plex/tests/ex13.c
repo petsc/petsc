@@ -64,7 +64,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           ierr = PetscArraycpy(points, triPoints_p2, 8);CHKERRQ(ierr);
           break;}
         default:
-          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
       } else if (dim == 2 && simplex && size == 3) {
         PetscInt triSizes_p3[3]  = {3, 3, 2};

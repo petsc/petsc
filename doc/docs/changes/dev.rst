@@ -51,9 +51,15 @@ Changes: Development
 - Add ``PetscHasAttribute()`` macro to query for existence of an ``__attribute__`` specifier
 - Add ``PetscCommGetComm()`` and ``PetscCommRestoreComm()`` to allow reuse of MPI communicator with external packages, as some MPI implementations have  broken ``MPI_Comm_free()``
 - Add ``PetscExpand()``, ``PetscConcat()``, ``PetscCompl()``, and ``PetscExpandToNothing()``
-- Add ``PETSC_CONSTEXPR``, ``PETSC_CONSTEXPR_14``, ``PETSC_NOEXCEPT``, ``PETSC_NULLPTR``, and ``PETSC_NODISCARD``
+- Add ``PETSC_CONSTEXPR_14``, ``PETSC_NULLPTR``, and ``PETSC_NODISCARD``
 - Add ``PetscSizeT`` as a language-agnostic equivalent of ``size_t`` from ``<stddef.h>``
 - Add ``PetscCount`` as a signed datatype for counts, equivalent to ``ptrdiff_t`` from ``<stddef.h>``.
+- Deprecate ``SETERRQ1()`` - ``SETERRQ9()`` in favor of ``SETERRQ()`` which is now variadic
+- Deprecate ``PetscInfo1()`` - ``PetscInfo9()`` in favor of ``PetscInfo()`` which is now variadic
+- Deprecate ``PETSC_INLINE``, ``inline`` is a standard keyword since C99 and C++11
+- Remove ``PETSC_C_RESTRICT``, ``restrict`` is a standard keyword since C99
+- Change ``SETERRMPI()`` to be variadic
+- Change ``SETERRABORT()`` to be variadic
 
 .. rubric:: PetscViewer:
 

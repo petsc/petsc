@@ -94,12 +94,12 @@ int main(int argc,char **args)
   ierr = MatMultTranspose(As,u,x);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (norm > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^T x||_\\infty: %1.6e",norm);
+  if (norm > PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^T x||_\\infty: %1.6e",norm);
   ierr = MatSetOption(As,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatMultHermitianTranspose(As,u,x);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (norm > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^H x||_\\infty: %1.6e",norm);
+  if (norm > PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^H x||_\\infty: %1.6e",norm);
 
   /* Create the linear solver and set various options */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

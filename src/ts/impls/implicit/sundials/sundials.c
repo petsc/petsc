@@ -144,7 +144,7 @@ PetscErrorCode TSStep_Sundials(TS ts)
         PetscReal tcur;
         ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
         ierr = CVodeGetCurrentTime(mem,&tcur);CHKERRQ(ierr);
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%g, nsteps %D exceeds maxstep %D. Increase '-ts_max_steps <>' or modify TSSetMaxSteps()",(double)tcur,nsteps,ts->max_steps);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%g, nsteps %D exceeds maxstep %D. Increase '-ts_max_steps <>' or modify TSSetMaxSteps()",(double)tcur,nsteps,ts->max_steps);
       } break;
       case CV_TOO_MUCH_ACC:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_ACC");
@@ -180,7 +180,7 @@ PetscErrorCode TSStep_Sundials(TS ts)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_RTFUNC_FAIL");
         break;
       default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
     }
   }
 
@@ -351,21 +351,21 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
    * user's right hand side function in u'=f(t,u), the initial time T0, and
    * the initial dependent variable vector cvode->y */
   flag = CVodeInit(mem,TSFunction_Sundials,ts->ptime,cvode->y);
-  if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
+  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
 
   /* specifies scalar relative and absolute tolerances */
   flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
-  if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
+  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
 
   /* Specify max order of BDF / ADAMS method */
   if (cvode->maxord != PETSC_DEFAULT) {
     flag = CVodeSetMaxOrd(mem,cvode->maxord);
-    if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxOrd() fails, flag %d",flag);
+    if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxOrd() fails, flag %d",flag);
   }
 
   /* Specify max num of steps to be taken by cvode in its attempt to reach the next output time */
   flag = CVodeSetMaxNumSteps(mem,ts->max_steps);
-  if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxNumSteps() fails, flag %d",flag);
+  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxNumSteps() fails, flag %d",flag);
 
   if (cvode->use_dense) {
     /* call CVDense to use a dense linear solver. */
@@ -374,7 +374,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
     if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"TSSUNDIALS only supports a dense solve in the serial case");
     flag = CVDense(mem,locsize);
-    if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVDense() fails, flag %d",flag);
+    if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVDense() fails, flag %d",flag);
   } else {
     /* call CVSpgmr to use GMRES as the linear solver.        */
     /* setup the ode integrator with the given preconditioner */
@@ -383,15 +383,15 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     ierr = PetscObjectTypeCompare((PetscObject)pc,PCNONE,&pcnone);CHKERRQ(ierr);
     if (pcnone) {
       flag = CVSpgmr(mem,PREC_NONE,0);
-      if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
+      if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
     } else {
       flag = CVSpgmr(mem,PREC_LEFT,cvode->maxl);
-      if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
+      if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
 
       /* Set preconditioner and solve routines Precond and PSolve,
          and the pointer to the user-defined block data */
       flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials);
-      if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpilsSetPreconditioner() fails, flag %d", flag);
+      if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpilsSetPreconditioner() fails, flag %d", flag);
     }
   }
   PetscFunctionReturn(0);

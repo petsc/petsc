@@ -445,7 +445,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
         ierr = ISGetIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
         ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_com,idxs,&nmap,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
-        if (nmap != n_com) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_vertices)! %D != %D",nmap,n_com);
+        if (nmap != n_com) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_vertices)! %D != %D",nmap,n_com);
         ierr = ISRestoreIndices(sub_schurs->is_vertices,&idxs);CHKERRQ(ierr);
       }
       if (sub_schurs->is_dir) {
@@ -454,12 +454,12 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 
         ierr = ISGetIndices(sub_schurs->is_dir,&idxs);CHKERRQ(ierr);
         ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_dir,idxs,&nmap,deluxe_ctx->idx_simple_B+n_com);CHKERRQ(ierr);
-        if (nmap != n_dir) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (sub_schurs->is_dir)! %D != %D",nmap,n_dir);
+        if (nmap != n_dir) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (sub_schurs->is_dir)! %D != %D",nmap,n_dir);
         ierr = ISRestoreIndices(sub_schurs->is_dir,&idxs);CHKERRQ(ierr);
       }
       ierr = PetscSortInt(deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
     } else {
-      if (deluxe_ctx->n_simple != n_dir + n_com) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of simply scaled dofs %D is different from the previous one computed %D",n_dir + n_com,deluxe_ctx->n_simple);
+      if (deluxe_ctx->n_simple != n_dir + n_com) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of simply scaled dofs %D is different from the previous one computed %D",n_dir + n_com,deluxe_ctx->n_simple);
     }
   } else {
     deluxe_ctx->n_simple = 0;
@@ -488,7 +488,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
     deluxe_ctx->seq_n = sub_schurs->n_subs;
     ierr = PetscCalloc5(deluxe_ctx->seq_n,&deluxe_ctx->seq_scctx,deluxe_ctx->seq_n,&deluxe_ctx->seq_work1,deluxe_ctx->seq_n,&deluxe_ctx->seq_work2,deluxe_ctx->seq_n,&deluxe_ctx->seq_mat,deluxe_ctx->seq_n,&deluxe_ctx->seq_mat_inv_sum);CHKERRQ(ierr);
     newsetup = PETSC_TRUE;
-  } else if (deluxe_ctx->seq_n != sub_schurs->n_subs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of deluxe subproblems %D is different from the sub_schurs %D",deluxe_ctx->seq_n,sub_schurs->n_subs);
+  } else if (deluxe_ctx->seq_n != sub_schurs->n_subs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of deluxe subproblems %D is different from the sub_schurs %D",deluxe_ctx->seq_n,sub_schurs->n_subs);
 
   /* the change of basis is just a reference to sub_schurs->change (if any) */
   deluxe_ctx->change         = sub_schurs->change;

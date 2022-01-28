@@ -277,7 +277,7 @@ int main(int argc, char **argv) {
     ierr = DMLabelHasStratum(bdLabel, 2, &hasTag);CHKERRQ(ierr);
     if (!hasTag) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 2");
     ierr = DMLabelGetNumValues(bdLabel, &size);CHKERRQ(ierr);
-    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of face tags (got %d, expected 2)", size);
+    if (size != 2) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of face tags (got %d, expected 2)", size);
 
     ierr = DMGetLabel(dmAdapt, "Cell Sets", &rgLabel);CHKERRQ(ierr);
     ierr = DMLabelHasStratum(rgLabel, 3, &hasTag);CHKERRQ(ierr);
@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
     ierr = DMLabelHasStratum(rgLabel, 4, &hasTag);CHKERRQ(ierr);
     if (!hasTag) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 4");
     ierr = DMLabelGetNumValues(rgLabel, &size);CHKERRQ(ierr);
-    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of cell tags (got %d, expected 2)", size);
+    if (size != 2) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of cell tags (got %d, expected 2)", size);
   }
 
   /* Clean up */

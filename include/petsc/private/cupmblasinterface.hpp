@@ -27,24 +27,23 @@ namespace CUPM
 namespace Impl
 {
 
-#define CHKERRCUPMBLAS(...) do {                                        \
-    const cupmBlasError_t cberr_p_ = __VA_ARGS__;                       \
-    if (PetscUnlikely(cberr_p_ != CUPMBLAS_STATUS_SUCCESS)) {           \
-      if (((cberr_p_ == CUPMBLAS_STATUS_NOT_INITIALIZED) ||             \
-           (cberr_p_ == CUPMBLAS_STATUS_ALLOC_FAILED))   &&             \
-          PetscDeviceInitialized(cupmDeviceTypeToPetscDeviceType())) {  \
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,                \
-                 "%s error %d (%s). "                                   \
-                 "Reports not initialized or alloc failed; "            \
-                 "this indicates the GPU may have run out resources",   \
-                 cupmBlasName(),static_cast<PetscErrorCode>(cberr_p_),  \
-                 cupmBlasGetErrorName(cberr_p_));                       \
-      } else {                                                          \
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s)",      \
-                 cupmBlasName(),static_cast<PetscErrorCode>(cberr_p_),  \
-                 cupmBlasGetErrorName(cberr_p_));                       \
-      }                                                                 \
-    }                                                                   \
+#define CHKERRCUPMBLAS(...) do {                                                \
+    const cupmBlasError_t cberr_p_ = __VA_ARGS__;                               \
+    if (PetscUnlikely(cberr_p_ != CUPMBLAS_STATUS_SUCCESS)) {                   \
+      if (((cberr_p_ == CUPMBLAS_STATUS_NOT_INITIALIZED) ||                     \
+           (cberr_p_ == CUPMBLAS_STATUS_ALLOC_FAILED))   &&                     \
+          PetscDeviceInitialized(cupmDeviceTypeToPetscDeviceType())) {          \
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,                         \
+                "%s error %d (%s). Reports not initialized or alloc failed; "   \
+                "this indicates the GPU may have run out resources",            \
+                cupmBlasName(),static_cast<PetscErrorCode>(cberr_p_),           \
+                cupmBlasGetErrorName(cberr_p_));                                \
+      } else {                                                                  \
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s)",               \
+                cupmBlasName(),static_cast<PetscErrorCode>(cberr_p_),           \
+                cupmBlasGetErrorName(cberr_p_));                                \
+      }                                                                         \
+    }                                                                           \
   } while (0)
 
 // given cupmBlas<T>axpy() then

@@ -28,7 +28,7 @@ static PetscErrorCode DMPlexTransformSetUp_1D(DMPlexTransform tr)
         if (val == 1) {ierr = DMLabelSetValue(trType, p, val);CHKERRQ(ierr);}
         else          {ierr = DMLabelSetValue(trType, p, 2);CHKERRQ(ierr);}
         break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
     }
   }
   PetscFunctionReturn(0);
@@ -70,7 +70,7 @@ static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPoly
       if (val == 1) {ierr = DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr);}
       else          {ierr = DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr);}
       break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
   PetscFunctionReturn(0);
 }
@@ -117,7 +117,7 @@ static PetscErrorCode DMPlexTransformView_1D(DMPlexTransform tr, PetscViewer vie
       ierr = DMLabelView(tr->trType, viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
+    SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

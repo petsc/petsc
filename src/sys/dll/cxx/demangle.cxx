@@ -16,12 +16,12 @@ PetscErrorCode PetscDemangleSymbol(const char mangledName[], char **name)
 
   newname = __cxxabiv1::__cxa_demangle(mangledName, NULL, NULL, &status);
   if (status) {
-    if (status == -1)      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_MEM, "Failed to allocate memory for symbol %s", mangledName);
+    if (status == -1)      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Failed to allocate memory for symbol %s", mangledName);
     else if (status == -2) {
       /* Mangled name is not a valid name under the C++ ABI mangling rules */
       ierr = PetscStrallocpy(mangledName, name);CHKERRQ(ierr);
       PetscFunctionReturn(0);
-    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Demangling failed for symbol %s", mangledName);
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Demangling failed for symbol %s", mangledName);
   }
   ierr = PetscStrallocpy(newname, name);CHKERRQ(ierr);
   free(newname);

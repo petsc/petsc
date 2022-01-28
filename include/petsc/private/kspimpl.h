@@ -232,7 +232,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogErrorHistory(KSP ksp)
     if (0) {
       ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
       ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
-      if (Nf > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle number of fields %D > 1 right now", Nf);
+      if (Nf > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle number of fields %D > 1 right now", Nf);
       ierr = PetscDSGetExactSolution(ds, 0, &exactSol, &exactCtx);CHKERRQ(ierr);
       ierr = DMComputeL2FieldDiff(dm, 0.0, &exactSol, &exactCtx, u, &error);CHKERRQ(ierr);
     } else {

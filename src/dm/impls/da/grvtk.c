@@ -220,7 +220,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           PetscMPIInt nn;
           ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
           ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-          if (nn != nnodes*bs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
+          if (nn != nnodes*bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
           ierr = PetscArraycpy(array,x,nnodes*bs);CHKERRQ(ierr);
         }
@@ -466,7 +466,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
           PetscMPIInt nn;
           ierr = MPI_Recv(array,nnodes*bs,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
           ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-          if (nn != nnodes*bs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
+          if (nn != nnodes*bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch receiving from rank %D",r);
         } else {
           ierr = PetscArraycpy(array,x,nnodes*bs);CHKERRQ(ierr);
         }
@@ -534,7 +534,7 @@ PetscErrorCode DMDAVTKWriteAll(PetscObject odm,PetscViewer viewer)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk);CHKERRQ(ierr);
-  if (!isvtk) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use viewer type %s",((PetscObject)viewer)->type_name);
+  if (!isvtk) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use viewer type %s",((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_VTK_VTS:
     ierr = DMDAVTKWriteAll_VTS(dm,viewer);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ PetscErrorCode DMDAVTKWriteAll(PetscObject odm,PetscViewer viewer)
   case PETSC_VIEWER_VTK_VTR:
     ierr = DMDAVTKWriteAll_VTR(dm,viewer);CHKERRQ(ierr);
     break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for format '%s'",PetscViewerFormats[viewer->format]);
+  default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for format '%s'",PetscViewerFormats[viewer->format]);
   }
   PetscFunctionReturn(0);
 }

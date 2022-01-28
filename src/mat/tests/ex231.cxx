@@ -70,7 +70,7 @@ int main (int argc, char** argv)
         while (std::getline(sstream, token, ' ')) {dof_indices.push_back(std::atoi(token.c_str()));}
         elem_dof_indices[proc_id].push_back(dof_indices);
       }
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Could not open file %s",file[proc_id]);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Could not open file %s",file[proc_id]);
   }
 
   // Debugging: Verify we read in elem_dof_indices correctly

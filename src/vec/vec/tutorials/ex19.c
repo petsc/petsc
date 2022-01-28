@@ -115,7 +115,7 @@ int main(int argc,char **argv)
     if (!equal) {
       ierr = VecView(x3r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecView(x3ts[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      SETERRQ1(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x3ts[%" PetscInt_FMT "] != x3r", i);
+      SETERRQ(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x3ts[%" PetscInt_FMT "] != x3r", i);
     }
   }
 
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
     if (!equal) {
       ierr = VecView(x4r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecView(x4ts[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      SETERRQ1(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x4ts[%" PetscInt_FMT "] != x4r", i);
+      SETERRQ(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x4ts[%" PetscInt_FMT "] != x4r", i);
     }
     ierr = PetscViewerHDF5IncrementTimestep(viewer);CHKERRQ(ierr);
   }

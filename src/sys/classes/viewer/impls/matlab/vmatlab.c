@@ -87,7 +87,7 @@ PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscSca
   if (!ml->rank) {
     ierr = PetscInfo1(mfile,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);
     mat  = matGetVariable(ml->ep,name);
-    if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
+    if (!mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
     ierr = PetscArraycpy(array,mxGetPr(mat),m*n);CHKERRQ(ierr);
     ierr = PetscInfo1(mfile,"Got MATLAB array %s\n",name);CHKERRQ(ierr);
   }
@@ -120,7 +120,7 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
     if (type == FILE_MODE_READ) vmatlab->ep = matOpen(name,"r");
     else if (type == FILE_MODE_WRITE) vmatlab->ep = matOpen(name,"w");
     else if (type == FILE_MODE_UNDEFINED) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
-    else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[type]);
+    else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[type]);
   }
   PetscFunctionReturn(0);
 }

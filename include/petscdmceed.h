@@ -10,7 +10,7 @@
   do {                                                                         \
     PetscErrorCode ierr_ = (ierr);                                             \
     if (ierr_ != CEED_ERROR_SUCCESS)                                           \
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "libCEED error: %s",             \
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "libCEED error: %s",             \
               CeedErrorTypes[ierr_]);                                          \
   } while (0)
 

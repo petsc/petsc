@@ -73,7 +73,7 @@ static PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, 
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (npoints != pt->quad->numPoints) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
+  if (npoints != pt->quad->numPoints) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
   ierr = PetscArrayzero(B, npoints*pdim);CHKERRQ(ierr);
   for (p = 0; p < npoints; ++p) {
     for (i = 0; i < pdim; ++i) {

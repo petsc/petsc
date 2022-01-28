@@ -34,7 +34,7 @@ int main(int argc,char **argv)
     ierr = ISCreate(PETSC_COMM_WORLD,&il);CHKERRQ(ierr);
     ierr = ISLoad(il,vl);CHKERRQ(ierr);
     ierr = ISEqual(il,isx[0],&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set loaded from file does not match",j);
+    if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set loaded from file does not match",j);
     ierr = ISDestroy(&il);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&vl);CHKERRQ(ierr);
 
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
       ierr = ISCreate(PETSC_COMM_WORLD,&il);CHKERRQ(ierr);
       ierr = ISLoad(il,vl);CHKERRQ(ierr);
       ierr = ISEqual(il,isx[i],&equal);CHKERRQ(ierr);
-      if (!equal) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
+      if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
       ierr = ISDestroy(&il);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(&vl);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
       ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,izero,PETSC_COPY_VALUES,&il);CHKERRQ(ierr);
       ierr = ISLoad(il,vl);CHKERRQ(ierr);
       ierr = ISEqual(il,isx[i],&equal);CHKERRQ(ierr);
-      if (!equal) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
+      if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
       ierr = ISDestroy(&il);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(&vl);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ int main(int argc,char **argv)
       ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,izero,PETSC_COPY_VALUES,&il);CHKERRQ(ierr);
       ierr = ISLoad(il,vl);CHKERRQ(ierr);
       ierr = ISEqual(il,isx[i],&equal);CHKERRQ(ierr);
-      if (!equal) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
+      if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
       ierr = ISDestroy(&il);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(&vl);CHKERRQ(ierr);
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
       ierr = ISCreateGeneral(PETSC_COMM_WORLD,blocksize*n,izero,PETSC_COPY_VALUES,&il);CHKERRQ(ierr);
       ierr = ISLoad(il,vl);CHKERRQ(ierr);
       ierr = ISEqual(il,isx[i],&equal);CHKERRQ(ierr);
-      if (!equal) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
+      if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Iteration %" PetscInt_FMT " - Index set %" PetscInt_FMT " loaded from file does not match",j,i);
       ierr = ISDestroy(&il);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(&vl);CHKERRQ(ierr);

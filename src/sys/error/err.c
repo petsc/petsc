@@ -366,7 +366,7 @@ $    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
 
 .seealso: PetscErrorCode, PetscPushErrorHandler(), PetscPopErrorHandler(), PetscTraceBackErrorHandler(),  PetscAbortErrorHandler(), PetscMPIAbortErrorHandler(),
           PetscReturnErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscEmacsClientErrorHandler(),
-          SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), PetscErrorMessage(), PETSCABORT()
+          SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ(), SETERRQ(), PetscErrorMessage(), PETSCABORT()
 @*/
 PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,...)
 {
@@ -511,7 +511,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
   } else {
     const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }
@@ -616,7 +616,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
   } else {
     const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }
@@ -723,7 +723,7 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
   } else {
     const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }

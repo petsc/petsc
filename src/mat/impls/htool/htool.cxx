@@ -512,7 +512,7 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
   MatCheckProduct(C,1);
   ierr = MatGetSize(C,NULL,&N);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(C,&lda);CHKERRQ(ierr);
-  if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
+  if (lda != C->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
   ierr = MatDenseGetArrayRead(product->B,&in);CHKERRQ(ierr);
   ierr = MatDenseGetArrayWrite(C,&out);CHKERRQ(ierr);
   switch (product->type) {
@@ -523,7 +523,7 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
     a->hmatrix->mvprod_transp_local_to_local(in,out,N);
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProductType %s is not supported",MatProductTypes[product->type]);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProductType %s is not supported",MatProductTypes[product->type]);
   }
   ierr = MatDenseRestoreArrayWrite(C,&out);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(product->B,&in);CHKERRQ(ierr);
@@ -543,7 +543,7 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
   A = product->A;
   B = product->B;
   ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"MatProduct_AB not supported for %s",((PetscObject)product->B)->type_name);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"MatProduct_AB not supported for %s",((PetscObject)product->B)->type_name);
   switch (product->type) {
   case MATPRODUCT_AB:
     if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) {
@@ -556,7 +556,7 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
     }
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[product->type]);
+    SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[product->type]);
   }
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
@@ -763,7 +763,7 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A,MatType newtype,MatReuse reus
     C = *B;
     if (C->rmap->n != A->rmap->n || C->cmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible dimensions");
     ierr = MatDenseGetLDA(C,&lda);CHKERRQ(ierr);
-    if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
+    if (lda != C->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
   } else {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);

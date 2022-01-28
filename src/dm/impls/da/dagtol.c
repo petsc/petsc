@@ -102,7 +102,7 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
   ierr = VecGetOwnershipRange(dd->natural,&start,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
-  if (Nlocal != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
+  if (Nlocal != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,NULL,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,dd->natural,to,&dd->gton);CHKERRQ(ierr);

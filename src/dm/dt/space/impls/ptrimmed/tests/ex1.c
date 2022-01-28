@@ -30,12 +30,12 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   ierr = PetscDTPTrimmedSize(dim, formDegree == 0 ? degree : degree + 1, PetscAbsInt(formDegree), &Nbexp);CHKERRQ(ierr);
   Nbexp *= nCopies;
   ierr = PetscSpaceGetDimension(sp, &Nb);CHKERRQ(ierr);
-  if (Nb != Nbexp) SETERRQ2(comm, PETSC_ERR_PLIB, "Space dimension mismatch, %D != %D", Nbexp, Nb);
+  if (Nb != Nbexp) SETERRQ(comm, PETSC_ERR_PLIB, "Space dimension mismatch, %D != %D", Nbexp, Nb);
 
   maxDexp = (PetscAbsInt(formDegree) == dim || formDegree == 0) ? degree : degree + 1;
   ierr = PetscSpaceGetDegree(sp, &d, &maxD);CHKERRQ(ierr);
-  if (degree != d) SETERRQ2(comm, PETSC_ERR_PLIB, "Space degree mismatch, %D != %D", degree, d);
-  if (maxDexp != maxD) SETERRQ2(comm, PETSC_ERR_PLIB, "Space max degree mismatch, %D != %D", maxDexp, maxD);
+  if (degree != d) SETERRQ(comm, PETSC_ERR_PLIB, "Space degree mismatch, %D != %D", degree, d);
+  if (maxDexp != maxD) SETERRQ(comm, PETSC_ERR_PLIB, "Space max degree mismatch, %D != %D", maxDexp, maxD);
 
   ierr = PetscDTStroudConicalQuadrature(dim, 1, maxD + 1, -1., 1., &quad);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quad, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
@@ -46,13 +46,13 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   ierr = PetscMalloc3(Bsize, &B, Dsize, &D, Hsize, &H);CHKERRQ(ierr);
   ierr = PetscSpaceEvaluate(sp, npoints, points, B, D, H);CHKERRQ(ierr);
   for (PetscInt i = 0; i < Bsize; i++) {
-    if (PetscIsInfOrNanReal(B[i])) SETERRQ1(comm, PETSC_ERR_PLIB, "Bad value B[%D]", i);
+    if (PetscIsInfOrNanReal(B[i])) SETERRQ(comm, PETSC_ERR_PLIB, "Bad value B[%D]", i);
   }
   for (PetscInt i = 0; i < Dsize; i++) {
-    if (PetscIsInfOrNanReal(D[i])) SETERRQ1(comm, PETSC_ERR_PLIB, "Bad value D[%D]", i);
+    if (PetscIsInfOrNanReal(D[i])) SETERRQ(comm, PETSC_ERR_PLIB, "Bad value D[%D]", i);
   }
   for (PetscInt i = 0; i < Hsize; i++) {
-    if (PetscIsInfOrNanReal(H[i])) SETERRQ1(comm, PETSC_ERR_PLIB, "Bad value H[%H]", i);
+    if (PetscIsInfOrNanReal(H[i])) SETERRQ(comm, PETSC_ERR_PLIB, "Bad value H[%H]", i);
   }
   ierr = PetscFree3(B, D, H);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
