@@ -414,15 +414,6 @@ M*/
 #  define PetscLikely(cond)   (cond)
 #endif
 
-#if defined(__GNUC__)
-/* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
-#  define PetscUnreachable_() __builtin_unreachable()
-#elif defined(_MSC_VER) /* MSVC */
-#  define PetscUnreachable_() __assume(0)
-#else /* ??? */
-#  define PetscUnreachable_() SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Code path explicitly marked as unreachable executed")
-#endif
-
 /*MC
   PetscUnreachable() - Indicate to the compiler that a code-path is logically unreachable
 
@@ -461,7 +452,14 @@ M*/
 
 .seealso: SETERRABORT(), PETSCABORT()
 MC*/
-#define PetscUnreachable() PetscUnreachable_()
+#if defined(__GNUC__)
+/* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
+#  define PetscUnreachable() __builtin_unreachable()
+#elif defined(_MSC_VER) /* MSVC */
+#  define PetscUnreachable() __assume(0)
+#else /* ??? */
+#  define PetscUnreachable() SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Code path explicitly marked as unreachable executed")
+#endif
 
 /*MC
   PetscExpand - Expand macro argument
@@ -475,7 +473,8 @@ MC*/
 
 .seealso: PetscStringize(), PetscConcat()
 MC*/
-#define PetscExpand(x) x
+#define PetscExpand_(...) __VA_ARGS__
+#define PetscExpand(...)  PetscExpand_(__VA_ARGS__)
 
 /*MC
   PetscStringize - Stringize a token
