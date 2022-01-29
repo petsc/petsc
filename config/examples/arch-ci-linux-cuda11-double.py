@@ -11,10 +11,6 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-make-test-np=2',
-    '--download-cmake', # kokkos needs 3.16+
-    '--download-kokkos',
-    '--download-kokkos-kernels',
-    '--CUDAPPFLAGS=-std=c++14',
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
