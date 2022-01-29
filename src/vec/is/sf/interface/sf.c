@@ -26,41 +26,6 @@ void PetscSFCheckGraphSet(PetscSF,int);
 
 const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","PetscSFDuplicateOption","PETSCSF_DUPLICATE_",NULL};
 
-PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType *type)
-{
-  PetscFunctionBegin;
-  PetscValidPointer(type,2);
-  *type = PETSC_MEMTYPE_HOST;
-#if defined(PETSC_HAVE_CUDA)
-  if (PetscDeviceInitialized(PETSC_DEVICE_CUDA) && data) {
-    cudaError_t                  cerr;
-    struct cudaPointerAttributes attr;
-    enum cudaMemoryType          mtype;
-    cerr = cudaPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
-    cudaGetLastError(); /* Reset the last error */
-    #if (CUDART_VERSION < 10000)
-      mtype = attr.memoryType;
-    #else
-      mtype = attr.type;
-    #endif
-    if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
-  }
-#endif
-
-#if defined(PETSC_HAVE_HIP)
-  if (PetscDeviceInitialized(PETSC_DEVICE_HIP) && data) {
-    hipError_t                   cerr;
-    struct hipPointerAttribute_t attr;
-    enum hipMemoryType           mtype;
-    cerr = hipPointerGetAttributes(&attr,data);
-    hipGetLastError(); /* Reset the last error */
-    mtype = attr.memoryType;
-    if (cerr == hipSuccess && mtype == hipMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
 /*@
    PetscSFCreate - create a star forest communication context
 
@@ -1675,6 +1640,44 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdat
   ierr = PetscGetMemType(rootdata,&rootmtype);CHKERRQ(ierr);
   ierr = PetscGetMemType(leafdata,&leafmtype);CHKERRQ(ierr);
   ierr = PetscGetMemType(leafupdate,&leafupdatemtype);CHKERRQ(ierr);
+  if (leafmtype != leafupdatemtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
+  ierr = (*sf->ops->FetchAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscSFFetchAndOpWithMemTypeBegin - begin operation with explicit memory types that fetches values from root and updates atomically by applying operation using my leaf value, to be completed with PetscSFFetchAndOpEnd()
+
+   Collective
+
+   Input Parameters:
++  sf - star forest
+.  unit - data type
+.  rootmtype - memory type of rootdata
+.  leafmtype - memory type of leafdata
+.  leafdata - leaf values to use in reduction
+.  leafupdatemtype - memory type of leafupdate
+-  op - operation to use for reduction
+
+   Output Parameters:
++  rootdata - root values to be updated, input state is seen by first process to perform an update
+-  leafupdate - state at each leaf's respective root immediately prior to my atomic update
+
+   Level: advanced
+
+   Note: See PetscSFFetchAndOpBegin() for more details.
+
+.seealso: PetscSFFetchAndOpBegin(),PetscSFComputeDegreeBegin(), PetscSFReduceBegin(), PetscSFSetGraph()
+@*/
+PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,void *rootdata,PetscMemType leafmtype,const void *leafdata,PetscMemType leafupdatemtype,void *leafupdate,MPI_Op op)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);
   if (leafmtype != leafupdatemtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for leafdata and leafupdate in different memory types");
   ierr = (*sf->ops->FetchAndOpBegin)(sf,unit,rootmtype,rootdata,leafmtype,leafdata,leafupdate,op);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_FetchAndOpBegin,sf,0,0,0);CHKERRQ(ierr);

@@ -140,11 +140,16 @@ PETSC_EXTERN PetscErrorCode PetscSFReduceEnd(PetscSF,MPI_Datatype,const void*,vo
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 PETSC_EXTERN PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void *,MPI_Op)
   PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(6,2);
+
 /* Atomically modifies (using provided operation) rootdata using leafdata from each leaf, value at root at time of modification is returned in leafupdate. */
 PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpBegin(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
 PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpEnd(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
+
+PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF,MPI_Datatype,PetscMemType,void*,PetscMemType,const void*,PetscMemType,void*,MPI_Op)
+  PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(6,2) PetscAttrMPIPointerWithType(8,2);
+
 /* Compute the degree of every root vertex (number of leaves in its star) */
 PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeBegin(PetscSF,const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeEnd(PetscSF,const PetscInt**);

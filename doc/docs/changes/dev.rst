@@ -64,6 +64,7 @@ Changes: Development
 .. rubric:: VecScatter / PetscSF:
 
 - Add MPI-4.0 large count support. With an MPI-4.0 compliant MPI implementation and 64-bit indices, one can now pass over 2 billion elements in a single message in either VecScatter or PetscSF
+- Add ``PetscSFFetchAndOpWithMemTypeBegin()``, which is similar to ``PetscSFFetchAndOpBegin()``, but with explicit memory types
 
 .. rubric:: PF:
 
@@ -88,6 +89,8 @@ Changes: Development
 -  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU
 -  Change ``MatCreateIS()`` behavior when NULL is passed for the mappings. Now a NULL map implies matching local and global spaces
 -  Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
+-  Add support of ``MatSetValuesCOO()`` and ``MatSetPreallocationCOO()`` for matrix type AIJKOKKOS. Additionally, for AIJKOKKOS, they support negative indices and remote entries
+-  Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
 
 .. rubric:: PC:
 
