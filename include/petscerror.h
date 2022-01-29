@@ -894,7 +894,7 @@ M*/
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 #define PetscStackCall(name,routine)
-#define PetscStackCallStandard(name,routine)
+#define PetscStackCallStandard(name,...)
 #else
 /*
     PetscStackCall - Calls an external library routine or user function after pushing the name of the routine on the stack.
@@ -923,12 +923,11 @@ M*/
    Developer Note: this is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
 */
-#define PetscStackCallStandard(func,args) do {                                                            \
-    PetscErrorCode __ierr;                                                                                \
-    PetscStackPush(#func);                                                                                \
-    __ierr = func args;                                                                                   \
-    PetscStackPop;                                                                                        \
-    PetscAssert(!__ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",#func,(int)__ierr); \
+#define PetscStackCallStandard(func,...) do {                                                  \
+    PetscStackPush(PetscStringize(func));                                                      \
+    PetscErrorCode __ierr = func(__VA_ARGS__);                                                 \
+    PetscStackPop;                                                                             \
+    PetscAssert(!__ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",PetscStringize(func),__ierr); \
   } while (0)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
