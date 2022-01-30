@@ -4862,6 +4862,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 {
   PetscErrorCode ierr;
   Mat            B;
+  VecType        vtype;
   PetscInt       i;
   PetscObject    dm;
   void           (*viewf)(void);
@@ -4885,6 +4886,8 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   if (viewf) {
     ierr = MatSetOperation(B,MATOP_VIEW,viewf);CHKERRQ(ierr);
   }
+  ierr = MatGetVecType(mat,&vtype);CHKERRQ(ierr);
+  ierr = MatSetVecType(B,vtype);CHKERRQ(ierr);
 
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;
