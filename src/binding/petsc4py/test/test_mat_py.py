@@ -28,6 +28,15 @@ class ScaledIdentity(Matrix):
         x.copy(y)
         y.scale(self.s)
 
+    def duplicate(self, mat, op):
+        dmat = PETSc.Mat()
+        dctx = ScaledIdentity()
+        dmat.createPython(mat.getSizes(), dctx, comm=mat.getComm())
+        if op == PETSc.Mat.DuplicateOption.COPY_VALUES:
+          dctx.s = self.s
+          dmat.setUp()
+        return dmat
+
     def getDiagonal(self, mat, vd):
         vd.set(self.s)
 
@@ -233,6 +242,16 @@ class Diagonal(Matrix):
     def mult(self, mat, x, y):
         y.pointwiseMult(x, self.D)
 
+    def duplicate(self, mat, op):
+        dmat = PETSc.Mat()
+        dctx = Diagonal()
+        dmat.createPython(mat.getSizes(), dctx, comm=mat.getComm())
+        dctx.D = self.D.duplicate()
+        if op == PETSc.Mat.DuplicateOption.COPY_VALUES:
+          self.D.copy(dctx.D)
+          dmat.setUp()
+        return dmat
+
     def getDiagonal(self, mat, vd):
         self.D.copy(vd)
 
@@ -329,6 +348,12 @@ class TestMatrix(unittest.TestCase):
         f = lambda : self.A.diagonalScale(x, y)
         self.assertRaises(Exception, f)
 
+    def testDuplicate(self):
+        f1 = lambda : self.A.duplicate(x, True)
+        f2 = lambda : self.A.duplicate(x, False)
+        self.assertRaises(Exception, f1)
+        self.assertRaises(Exception, f2)
+
     def testSetVecType(self):
         self.A.setVecType('mpi')
         self.assertTrue('mpi' == self.A.getVecType())
@@ -372,6 +397,12 @@ class TestScaledIdentity(TestMatrix):
         o.set(s)
         self.A.getDiagonal(d)
         self.assertTrue(o.equal(d))
+
+    def testDuplicate(self):
+        B = self.A.duplicate(False)
+        self.assertTrue(B.getPythonContext().s == 2)
+        B = self.A.duplicate(True)
+        self.assertTrue(B.getPythonContext().s == self.A.getPythonContext().s)
 
     def testMatMat(self):
         s = self._getCtx().s
@@ -488,6 +519,11 @@ class TestDiagonal(TestMatrix):
         self.A.multTranspose(x,y)
         del AA.multTranspose
         self.assertTrue(y.equal(self._getCtx().D))
+
+    def testDuplicate(self):
+        B = self.A.duplicate(False)
+        B = self.A.duplicate(True)
+        self.assertTrue(B.getPythonContext().D.equal(self.A.getPythonContext().D))
 
     def testGetDiagonal(self):
         d = self.A.createVecLeft()
