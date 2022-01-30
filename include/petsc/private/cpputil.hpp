@@ -4,8 +4,6 @@
 #include <petsc/private/petscimpl.h>
 
 #if defined(__cplusplus)
-
-#if (__cplusplus >= 201103L) || PetscDefined(HAVE_CXX_DIALECT_CXX11) // C++11
 #include <type_traits>
 #include <tuple>
 
@@ -309,7 +307,7 @@ PETSC_STATIC_INLINE constexpr PetscObject& PetscObjectCast(const T& object) noex
 // {
 //   ...
 // }
-#define PETSC_CXX_COMPAT_DECL(...) PETSC_NODISCARD static __VA_ARGS__ PETSC_NOEXCEPT
+#define PETSC_CXX_COMPAT_DECL(...) PETSC_NODISCARD static __VA_ARGS__ noexcept
 
 // PETSC_CXX_COMPAT_DEFN() - Corresponding macro to define a C++ member function declared using
 // PETSC_CXX_COMPAT_DECL()
@@ -325,14 +323,7 @@ PETSC_STATIC_INLINE constexpr PetscObject& PetscObjectCast(const T& object) noex
 // {
 //   ...
 // }
-#define PETSC_CXX_COMPAT_DEFN(...) PETSC_INLINE __VA_ARGS__ PETSC_NOEXCEPT
-
-#else
-#define PETSC_ALIAS_FUNCTION(a,o)                        static_assert(0,"requires C++11")
-#define PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS(a,o,N) static_assert(0,"Requires C++11")
-#define PETSC_CXX_COMPAT_DECL(x)                         static_assert(0,"requires C++11")
-#define PETSC_CXX_COMPAT_DEFN(x)                         static_assert(0,"requires C++11")
-#endif // C++11
+#define PETSC_CXX_COMPAT_DEFN(...) inline __VA_ARGS__ noexcept
 
 } // namespace Petsc
 

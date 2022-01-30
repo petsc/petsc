@@ -12,6 +12,10 @@ Changes: Development
 
 .. rubric:: General:
 
+- PETSc now requires a C99 compliant C compiler in all cases. Previously C99 was only required when building PETSc, but this now extends to public interfaces and header-files
+- PETSc now requires a C++11 compliant C++ compiler. Note this requirement is only enforced if C++ is used; it is acceptable to have a compiler that does not support C++11 if you only ever build C source
+- PETSc now requires at least Microsoft Visual Studio 2015 when using the Microsoft Visual C/C++ Compiler
+
 .. rubric:: Configure/Build:
 
 - C++ dialect will now also be inferred from compiler flags, although users will be warned that they should let PETSc auto-detect the flag when setting the dialect this way

@@ -2,9 +2,6 @@
 #define PETSCOBJECTPOOL_HPP
 
 #include <petscsys.h>
-#if !PetscDefined(HAVE_CXX_DIALECT_CXX11)
-#  error "ObjectPool requires c++11"
-#endif
 
 #if defined(__cplusplus)
 

@@ -3,7 +3,7 @@
 
 #include <petsc/private/petscimpl.h>
 
-#define kh_inline   PETSC_INLINE
+#define kh_inline   inline
 #define klib_unused PETSC_UNUSED
 #include <petsc/private/khash/khash.h>
 

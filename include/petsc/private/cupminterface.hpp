@@ -23,15 +23,6 @@
 #define PETSC_HOSTDEVICE_DECL PETSC_HOST_DECL PETSC_DEVICE_DECL
 
 #if defined(__cplusplus)
-
-#if (__cplusplus < 201103L) || !PetscDefined(HAVE_CXX_DIALECT_CXX11)
-// icc (and for that matter any windows compiler) is only fully compliant to the letter of
-// the standard up to C++03, while supporting the vast majority of later standards
-#  if !PetscDefined(HAVE_WINDOWS_COMPILERS)
-#    error "CUPMInterface requires C++11"
-#  endif
-#endif
-
 #include <array>
 
 namespace Petsc

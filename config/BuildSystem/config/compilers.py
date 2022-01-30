@@ -53,7 +53,6 @@ class Configure(config.base.Configure):
     self.cxxlibs                 = []
     self.skipdefaultpaths        = []
     self.cxxCompileC             = False
-    self.cRestrict               = ' '
     self.cxxRestrict             = ' '
     self.c99flag                 = None
     self.cxxDialectRange         = CaseInsensitiveDefaultDict(default_cxx_dialect_ranges)
@@ -151,72 +150,15 @@ class Configure(config.base.Configure):
     config.base.Configure.__setattr__(self, name, value)
     return
 
-  # THIS SHOULD BE REWRITTEN AS checkDeclModifier()
-  # checkCInline & checkCxxInline are pretty much the same code right now.
-  # but they could be different (later) - and they also check/set different flags - hence
-  # code duplication.
-  def checkCInline(self):
-    '''Check for C inline keyword'''
-    self.cInlineKeyword = ' '
-    self.pushLanguage('C')
-    for kw in ['inline', '__inline', '__inline__']:
-      if self.checkCompile('static %s int foo(int a) {return a;}' % kw, 'foo(1);'):
-        self.cInlineKeyword = kw
-        self.logPrint('Set C Inline keyword to '+self.cInlineKeyword , 4, 'compilers')
-        break
-    self.popLanguage()
-    if self.cInlineKeyword == ' ':
-      self.logPrint('No C Inline keyword. Using static function', 4, 'compilers')
-    self.addDefine('C_INLINE', self.cInlineKeyword)
-    return
-
-  def checkCxxInline(self):
-    '''Check for C++ inline keyword'''
-    self.cxxInlineKeyword = ' '
-    self.pushLanguage('C++')
-    for kw in ['inline', '__inline', '__inline__']:
-      if self.checkCompile('static %s int foo(int a) {return a;}' % kw, 'foo(1);'):
-        self.cxxInlineKeyword = kw
-        self.logPrint('Set Cxx Inline keyword to '+self.cxxInlineKeyword , 4, 'compilers')
-        break
-    self.popLanguage()
-    if self.cxxInlineKeyword == ' ':
-      self.logPrint('No Cxx Inline keyword. Using static function', 4, 'compilers')
-    self.addDefine('CXX_INLINE', self.cxxInlineKeyword)
-    return
-
-  def checkRestrict(self,language):
-    '''Check for the C/CXX restrict keyword'''
-    # Try keywords equivalent to C99 restrict.  Note that many C
-    # compilers require special cflags, such as -std=c99 or -restrict to
-    # recognize the "restrict" keyword and it is not always practical to
-    # expect that every user provides matching options.  Meanwhile,
-    # compilers like Intel and MSVC (reportedly) support __restrict
-    # without special options.  Glibc uses __restrict, presumably for
-    # this reason.  Note that __restrict is not standardized while
-    # "restrict" is, but implementation realities favor __restrict.
-    if config.setCompilers.Configure.isPGI(self.setCompilers.CC, self.log):
-      self.addDefine(language.upper()+'_RESTRICT', ' ')
-      self.logPrint('PGI restrict word is broken cannot handle [restrict] '+str(language)+' restrict keyword', 4, 'compilers')
-      return
-    self.pushLanguage(language)
-    for kw in ['__restrict', ' __restrict__', 'restrict']:
-      if self.checkCompile('', 'float * '+kw+' x;'):
-        if language.lower() == 'c':
-          self.cRestrict = kw
-        elif language.lower() == 'cxx':
+  def checkCxxRestrict(self):
+    '''Check for the CXX restrict keyword equivalent to C99 restrict'''
+    with self.Language('Cxx'):
+      for kw in ['__restrict', ' __restrict__', 'restrict', ' ']:
+        if self.checkCompile('', 'float * '+kw+' x;'):
           self.cxxRestrict = kw
-        else:
-          raise RuntimeError('Unknown Language :' + str(language))
-        self.logPrint('Set '+str(language)+' restrict keyword to '+kw, 4, 'compilers')
-        # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.
-        self.addDefine(language.upper()+'_RESTRICT', kw)
-        self.popLanguage()
-        return
-    # did not find restrict
-    self.addDefine(language.upper()+'_RESTRICT', ' ')
-    self.logPrint('No '+str(language)+' restrict keyword', 4, 'compilers')
-    self.popLanguage()
+          break
+    self.logPrint('Set Cxx restrict keyword to : '+self.cxxRestrict, 4, 'compilers')
+    self.addDefine('CXX_RESTRICT', self.cxxRestrict)
     return
 
   def checkCrossLink(self, func1, func2, language1 = 'C', language2='FC',extraObjs = []):
@@ -1838,11 +1780,12 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     includes = "#include <float.h>"
     body = """
     float x[2],y;
+    float *restrict z = &y;
     y = FLT_ROUNDS;
     // c++ comment
     int j = 2;
     for (int i=0; i<2; i++){
-      x[i] = i*j*y;
+      x[i] = i*j*(*z);
     }
     """
     self.setCompilers.pushLanguage('C')
@@ -1869,9 +1812,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     if hasattr(self.setCompilers, 'CC'):
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
       self.executeTest(self.checkC99Flag)
-      self.executeTest(self.checkRestrict,['C'])
       self.executeTest(self.checkCFormatting)
-      self.executeTest(self.checkCInline)
       self.executeTest(self.checkDynamicLoadFlag)
       if self.argDB['with-clib-autodetect']:
         self.executeTest(self.checkCLibraries)
@@ -1888,11 +1829,10 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
 
     if hasattr(self.setCompilers, 'CXX'):
       self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX, self.log)
-      self.executeTest(self.checkRestrict,['Cxx'])
+      self.executeTest(self.checkCxxRestrict)
       isClang = config.setCompilers.Configure.isClang(self.setCompilers.CXX,self.log)
       self.executeTest(self.checkCxxDialect,['Cxx',self.isGCXX or isClang])
       self.executeTest(self.checkCxxOptionalExtensions)
-      self.executeTest(self.checkCxxInline)
       self.executeTest(self.checkCxxComplexFix)
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
