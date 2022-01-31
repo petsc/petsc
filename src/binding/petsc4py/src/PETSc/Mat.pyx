@@ -681,6 +681,11 @@ cdef class Mat(Object):
     def setOption(self, option, flag):
         CHKERR( MatSetOption(self.mat, option, flag) )
 
+    def getOption(self, option):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( MatGetOption(self.mat, option, &flag) )
+        return toBool(flag)
+
     def getType(self):
         cdef PetscMatType cval = NULL
         CHKERR( MatGetType(self.mat, &cval) )

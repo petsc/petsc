@@ -217,6 +217,7 @@ cdef extern from * nogil:
     int MatSetVecType(PetscMat,PetscVecType)
     int MatGetVecType(PetscMat,PetscVecType*)
     int MatSetOption(PetscMat,PetscMatOption,PetscBool)
+    int MatGetOption(PetscMat,PetscMatOption,PetscBool*)
 
     enum: MAT_SKIP_ALLOCATION
     int MatSeqAIJSetPreallocation  (PetscMat,PetscInt,PetscInt[])
