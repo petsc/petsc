@@ -843,6 +843,7 @@ static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, Pe
   if (sorted) { /* everything is already sorted */
     ierr = PCASMSetSortIndices(pc, PETSC_FALSE);CHKERRQ(ierr);
   }
+  ierr = PCSetFromOptions(pc);CHKERRQ(ierr); /* otherwise -pc_hpddm_levels_1_pc_asm_sub_mat_type is not used */
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   /* reset MatCreateSubMatrices() */
   ierr = MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, op);CHKERRQ(ierr);
