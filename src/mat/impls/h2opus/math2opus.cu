@@ -17,6 +17,7 @@
 
 /* math2opusutils */
 PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF,PetscInt,PetscInt,PetscInt,PetscSF*);
+PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat,PetscSF,PetscSF*);
 PETSC_INTERN PetscErrorCode VecSign(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecSetDelta(Vec,PetscInt);
 PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat,NormType,PetscInt,PetscReal*);
@@ -298,6 +299,31 @@ PETSC_EXTERN PetscErrorCode MatNorm_H2OPUS(Mat A, NormType normtype, PetscReal* 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatH2OpusResizeBuffers_Private(Mat A, PetscInt xN, PetscInt yN)
+{
+  Mat_H2OPUS     *h2opus = (Mat_H2OPUS*)A->data;
+  PetscInt       n;
+  PetscBool      boundtocpu = PETSC_TRUE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_H2OPUS_USE_GPU)
+  boundtocpu = A->boundtocpu;
+#endif
+  ierr = PetscSFGetGraph(h2opus->sf,NULL,&n,NULL,NULL);CHKERRQ(ierr);
+  if (boundtocpu) {
+    if (h2opus->xxs < xN) { h2opus->xx->resize(n*xN); h2opus->xxs = xN; }
+    if (h2opus->yys < yN) { h2opus->yy->resize(n*yN); h2opus->yys = yN; }
+  }
+#if defined(PETSC_H2OPUS_USE_GPU)
+  if (!boundtocpu) {
+    if (h2opus->xxs_gpu < xN) { h2opus->xx_gpu->resize(n*xN); h2opus->xxs_gpu = xN; }
+    if (h2opus->yys_gpu < yN) { h2opus->yy_gpu->resize(n*yN); h2opus->yys_gpu = yN; }
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat C)
 {
   Mat_H2OPUS     *h2opus = (Mat_H2OPUS*)A->data;
@@ -324,31 +350,16 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
   if (usesf) {
     PetscInt n;
 
+    ierr = MatDenseGetH2OpusVectorSF(B,h2opus->sf,&bsf);CHKERRQ(ierr);
+    ierr = MatDenseGetH2OpusVectorSF(C,h2opus->sf,&csf);CHKERRQ(ierr);
+
+    ierr = MatH2OpusResizeBuffers_Private(A,B->cmap->N,C->cmap->N);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(h2opus->sf,NULL,&n,NULL,NULL);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)B,"_math2opus_vectorsf",(PetscObject*)&bsf);CHKERRQ(ierr);
-    if (!bsf) {
-      ierr = PetscSFGetVectorSF(h2opus->sf,B->cmap->N,blda,PETSC_DECIDE,&bsf);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)B,"_math2opus_vectorsf",(PetscObject)bsf);CHKERRQ(ierr);
-      ierr = PetscObjectDereference((PetscObject)bsf);CHKERRQ(ierr);
-    }
-    ierr = PetscObjectQuery((PetscObject)C,"_math2opus_vectorsf",(PetscObject*)&csf);CHKERRQ(ierr);
-    if (!csf) {
-      ierr = PetscSFGetVectorSF(h2opus->sf,B->cmap->N,clda,PETSC_DECIDE,&csf);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)C,"_math2opus_vectorsf",(PetscObject)csf);CHKERRQ(ierr);
-      ierr = PetscObjectDereference((PetscObject)csf);CHKERRQ(ierr);
-    }
     blda = n;
     clda = n;
   }
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (boundtocpu) {
-    if (usesf) {
-      PetscInt n;
-
-      ierr = PetscSFGetGraph(h2opus->sf,NULL,&n,NULL,NULL);CHKERRQ(ierr);
-      if (h2opus->xxs < B->cmap->n) { h2opus->xx->resize(n*B->cmap->N); h2opus->xxs = B->cmap->N; }
-      if (h2opus->yys < B->cmap->n) { h2opus->yy->resize(n*B->cmap->N); h2opus->yys = B->cmap->N; }
-    }
     ierr = MatDenseGetArrayRead(B,(const PetscScalar**)&xx);CHKERRQ(ierr);
     ierr = MatDenseGetArrayWrite(C,&yy);CHKERRQ(ierr);
     if (usesf) {
@@ -380,13 +391,6 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
   } else {
     PetscBool ciscuda,biscuda;
 
-    if (usesf) {
-      PetscInt n;
-
-      ierr = PetscSFGetGraph(h2opus->sf,NULL,&n,NULL,NULL);CHKERRQ(ierr);
-      if (h2opus->xxs_gpu < B->cmap->n) { h2opus->xx_gpu->resize(n*B->cmap->N); h2opus->xxs_gpu = B->cmap->N; }
-      if (h2opus->yys_gpu < B->cmap->n) { h2opus->yy_gpu->resize(n*B->cmap->N); h2opus->yys_gpu = B->cmap->N; }
-    }
     /* If not of type seqdensecuda, convert on the fly (i.e. allocate GPU memory) */
     ierr = PetscObjectTypeCompareAny((PetscObject)B,&biscuda,MATSEQDENSECUDA,MATMPIDENSECUDA,"");CHKERRQ(ierr);
     if (!biscuda) {
@@ -862,6 +866,10 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   PetscCheckFalse(A->rmap->n != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Different row and column local sizes are not supported");
   PetscCheckFalse(A->rmap->N != A->cmap->N,comm,PETSC_ERR_SUP,"Rectangular matrices are not supported");
+
+  /* XXX */
+  a->leafsize = PetscMin(a->leafsize, PetscMin(A->rmap->N, A->cmap->N));
+
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   /* TODO REUSABILITY of geometric construction */
   delete a->hmatrix;
@@ -1007,6 +1015,7 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
       ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"MATH2OPUS construction errors: NORM_1 %g, NORM_INFINITY %g, NORM_2 %g (%g %g %g)\n",(double)n1,(double)ni,(double)n2,(double)(n1/n1A),(double)(ni/niA),(double)(n2/n2A));
       ierr = MatDestroy(&E);CHKERRQ(ierr);
     }
+    a->sampler->SetSamplingMat(NULL);
   }
   PetscFunctionReturn(0);
 }
@@ -1461,8 +1470,9 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  PetscValidLogicalCollectiveReal(A,tol,2);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATH2OPUS,&ish2opus);CHKERRQ(ierr);
-  if (!ish2opus) PetscFunctionReturn(0);
+  if (!ish2opus || tol <= 0.0) PetscFunctionReturn(0);
   ierr = MatH2OpusOrthogonalize(A);CHKERRQ(ierr);
   HLibProfile::clear();
   ierr = PetscLogEventBegin(MAT_H2Opus_Compress,A,0,0,0);CHKERRQ(ierr);
@@ -1547,6 +1557,8 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   if (B) PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidLogicalCollectiveInt(A,bs,3);
+  PetscValidLogicalCollectiveReal(A,tol,3);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATH2OPUS,&ish2opus);CHKERRQ(ierr);
   if (ish2opus) {
     Mat_H2OPUS *a = (Mat_H2OPUS*)A->data;
@@ -1793,6 +1805,134 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec* out)
   }
   ierr = VecRestoreArrayRead(in,(const PetscScalar**)&xin);CHKERRQ(ierr);
   ierr = VecRestoreArrayWrite(*out,&xout);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     MatH2OpusLowRankUpdate - Perform a low-rank update of the form A = A + s * U * V^T
+
+   Input Parameters:
++     A - the hierarchical matrix
+.     s - the scaling factor
+.     U - the dense low-rank update matrix
+-     V - (optional) the dense low-rank update matrix (if NULL, then V = U is assumed)
+
+   Notes: The U and V matrices must be in dense format
+
+   Level: intermediate
+
+.seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusCompress(), MatH2OpusOrthogonalize(), MATDENSE
+*/
+PetscErrorCode MatH2OpusLowRankUpdate(Mat A, Mat U, Mat V, PetscScalar s)
+{
+  PetscErrorCode ierr;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscCheckFalse(!A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscValidHeaderSpecific(U,MAT_CLASSID,2);
+  PetscCheckSameComm(A,1,U,2);
+  if (V) {
+    PetscValidHeaderSpecific(V,MAT_CLASSID,3);
+    PetscCheckSameComm(A,1,V,3);
+  }
+  PetscValidLogicalCollectiveScalar(A,s,4);
+
+  if (!V) V = U;
+  PetscCheckFalse(U->cmap->N != V->cmap->N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Non matching rank update %" PetscInt_FMT " != %" PetscInt_FMT,U->cmap->N,V->cmap->N);
+  if (!U->cmap->N) PetscFunctionReturn(0);
+  ierr = PetscLayoutCompare(U->rmap,A->rmap,&flg);CHKERRQ(ierr);
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"A and U must have the same row layout");
+  ierr = PetscLayoutCompare(V->rmap,A->cmap,&flg);CHKERRQ(ierr);
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"A column layout must match V row column layout");
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATH2OPUS,&flg);CHKERRQ(ierr);
+  if (flg) {
+    Mat_H2OPUS        *a = (Mat_H2OPUS*)A->data;
+    const PetscScalar *u,*v,*uu,*vv;
+    PetscInt          ldu,ldv;
+    PetscMPIInt       size;
+#if defined(H2OPUS_USE_MPI)
+    h2opusHandle_t    handle = a->handle->handle;
+#else
+    h2opusHandle_t    handle = a->handle;
+#endif
+    PetscBool         usesf = (PetscBool)(a->sf && !a->nativemult);
+    PetscSF           usf,vsf;
+
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
+    PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not yet implemented in parallel");
+    ierr = PetscLogEventBegin(MAT_H2Opus_LR,A,0,0,0);CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompareAny((PetscObject)U,&flg,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Not for U of type %s",((PetscObject)U)->type_name);
+    ierr = PetscObjectBaseTypeCompareAny((PetscObject)V,&flg,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Not for V of type %s",((PetscObject)V)->type_name);
+    ierr = MatDenseGetLDA(U,&ldu);CHKERRQ(ierr);
+    ierr = MatDenseGetLDA(V,&ldv);CHKERRQ(ierr);
+    ierr = MatBoundToCPU(A,&flg);CHKERRQ(ierr);
+    if (usesf) {
+      PetscInt n;
+
+      ierr = MatDenseGetH2OpusVectorSF(U,a->sf,&usf);CHKERRQ(ierr);
+      ierr = MatDenseGetH2OpusVectorSF(V,a->sf,&vsf);CHKERRQ(ierr);
+      ierr = MatH2OpusResizeBuffers_Private(A,U->cmap->N,V->cmap->N);CHKERRQ(ierr);
+      ierr = PetscSFGetGraph(a->sf,NULL,&n,NULL,NULL);CHKERRQ(ierr);
+      ldu = n;
+      ldv = n;
+    }
+    if (flg) {
+      PetscCheckFalse(!a->hmatrix,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing CPU matrix");
+      ierr = MatDenseGetArrayRead(U,&u);CHKERRQ(ierr);
+      ierr = MatDenseGetArrayRead(V,&v);CHKERRQ(ierr);
+      if (usesf) {
+        vv = MatH2OpusGetThrustPointer(*a->yy);
+        ierr = PetscSFBcastBegin(vsf,MPIU_SCALAR,v,(PetscScalar*)vv,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(vsf,MPIU_SCALAR,v,(PetscScalar*)vv,MPI_REPLACE);CHKERRQ(ierr);
+        if (U != V) {
+          uu = MatH2OpusGetThrustPointer(*a->xx);
+          ierr = PetscSFBcastBegin(usf,MPIU_SCALAR,u,(PetscScalar*)uu,MPI_REPLACE);CHKERRQ(ierr);
+          ierr = PetscSFBcastEnd(usf,MPIU_SCALAR,u,(PetscScalar*)uu,MPI_REPLACE);CHKERRQ(ierr);
+        } else uu = vv;
+      } else { uu = u; vv = v; }
+      hlru_global(*a->hmatrix,uu,ldu,vv,ldv,U->cmap->N,s,handle);
+      ierr = MatDenseRestoreArrayRead(U,&u);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArrayRead(V,&v);CHKERRQ(ierr);
+    } else {
+#if defined(PETSC_H2OPUS_USE_GPU)
+      PetscBool flgU, flgV;
+
+      PetscCheckFalse(!a->hmatrix_gpu,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing GPU matrix");
+      ierr = PetscObjectTypeCompareAny((PetscObject)U,&flgU,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+      if (flgU) { ierr = MatConvert(U,MATDENSECUDA,MAT_INPLACE_MATRIX,&U);CHKERRQ(ierr); }
+      ierr = PetscObjectTypeCompareAny((PetscObject)V,&flgV,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+      if (flgV) { ierr = MatConvert(V,MATDENSECUDA,MAT_INPLACE_MATRIX,&V);CHKERRQ(ierr); }
+      ierr = MatDenseCUDAGetArrayRead(U,&u);CHKERRQ(ierr);
+      ierr = MatDenseCUDAGetArrayRead(V,&v);CHKERRQ(ierr);
+      if (usesf) {
+        vv = MatH2OpusGetThrustPointer(*a->yy_gpu);
+        ierr = PetscSFBcastBegin(vsf,MPIU_SCALAR,v,(PetscScalar*)vv,MPI_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFBcastEnd(vsf,MPIU_SCALAR,v,(PetscScalar*)vv,MPI_REPLACE);CHKERRQ(ierr);
+        if (U != V) {
+          uu = MatH2OpusGetThrustPointer(*a->xx_gpu);
+          ierr = PetscSFBcastBegin(usf,MPIU_SCALAR,u,(PetscScalar*)uu,MPI_REPLACE);CHKERRQ(ierr);
+          ierr = PetscSFBcastEnd(usf,MPIU_SCALAR,u,(PetscScalar*)uu,MPI_REPLACE);CHKERRQ(ierr);
+        } else uu = vv;
+      } else { uu = u; vv = v; }
+#else
+      SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+#endif
+      hlru_global(*a->hmatrix_gpu,uu,ldu,vv,ldv,U->cmap->N,s,handle);
+#if defined(PETSC_H2OPUS_USE_GPU)
+      ierr = MatDenseCUDARestoreArrayRead(U,&u);CHKERRQ(ierr);
+      ierr = MatDenseCUDARestoreArrayRead(V,&v);CHKERRQ(ierr);
+      if (flgU) { ierr = MatConvert(U,MATDENSE,MAT_INPLACE_MATRIX,&U);CHKERRQ(ierr); }
+      if (flgV) { ierr = MatConvert(V,MATDENSE,MAT_INPLACE_MATRIX,&V);CHKERRQ(ierr); }
+#endif
+    }
+    ierr = PetscLogEventEnd(MAT_H2Opus_LR,A,0,0,0);CHKERRQ(ierr);
+    a->orthogonal = PETSC_FALSE;
+  }
   PetscFunctionReturn(0);
 }
 #endif

@@ -1603,6 +1603,25 @@ cdef class Mat(Object):
         PetscINCREF(V.obj)
         return (A, U, c, V)
 
+    # H2Opus
+
+    def H2OpusOrthogonalize(self):
+        CHKERR( MatH2OpusOrthogonalize(self.mat) )
+        return self
+
+    def H2OpusCompress(self, tol):
+        cdef PetscReal _tol = asReal(tol)
+        CHKERR( MatH2OpusCompress(self.mat, _tol) )
+        return self
+
+    def H2OpusLowRankUpdate(self, Mat U, Mat V=None, s = 1.0):
+        cdef PetscScalar _s = asScalar(s)
+        cdef PetscMat vmat = NULL
+        if V is not None:
+            vmat = V.mat
+        CHKERR( MatH2OpusLowRankUpdate(self.mat, U.mat, vmat, _s) )
+        return self
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl, ival):
@@ -1761,6 +1780,7 @@ cdef class Mat(Object):
         CHKERR( MatSetDM(self.mat, dm.dm) )
 
     # backward compatibility
+
     PtAP = ptap
 
     #

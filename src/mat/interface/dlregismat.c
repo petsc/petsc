@@ -294,6 +294,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatH2OpusBuild",MAT_CLASSID,&MAT_H2Opus_Build);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatH2OpusComp", MAT_CLASSID,&MAT_H2Opus_Compress);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatH2OpusOrth", MAT_CLASSID,&MAT_H2Opus_Orthog);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatH2OpusLR",   MAT_CLASSID,&MAT_H2Opus_LR);CHKERRQ(ierr);
 
   /* Mark non-collective events */
   ierr = PetscLogEventSetCollective(MAT_SetValues,      PETSC_FALSE);CHKERRQ(ierr);

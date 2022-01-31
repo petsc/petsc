@@ -285,7 +285,7 @@ class TestMatrix(unittest.TestCase):
         return self.A.getPythonContext()
 
     def setUp(self):
-        N = self.N = 10
+        N = self.N = 13
         self.A = PETSc.Mat()
         if 0: # command line way
             self.A.create(self.COMM)
@@ -357,6 +357,52 @@ class TestMatrix(unittest.TestCase):
     def testSetVecType(self):
         self.A.setVecType('mpi')
         self.assertTrue('mpi' == self.A.getVecType())
+
+    def testH2Opus(self):
+        if not PETSc.Sys.hasExternalPackage("h2opus"):
+            return
+        if self.A.getComm().Get_size() > 1:
+            return
+        h = PETSc.Mat()
+
+        # need matrix vector and its transpose for norm estimation
+        AA = self.A.getPythonContext()
+        if not hasattr(AA,'mult'):
+            return
+        AA.multTranspose = AA.mult
+
+        # without coordinates
+        h.createH2OpusFromMat(self.A,leafsize=2)
+        h.assemble()
+        h.destroy()
+
+        # with coordinates
+        coords = numpy.linspace((1,2,3),(10,20,30),self.A.getSize()[0],dtype=PETSc.RealType)
+        h.createH2OpusFromMat(self.A,coords,leafsize=2)
+        h.assemble()
+
+        # test API
+        h.H2OpusOrthogonalize()
+        h.H2OpusCompress(1.e-1)
+
+        # Low-rank update
+        U = PETSc.Mat()
+        U.createDense([h.getSizes()[0],3],comm=h.getComm())
+        U.setUp()
+        U.setRandom()
+
+        he = PETSc.Mat()
+        h.convert('dense',he)
+        he.axpy(1.0, U.matTransposeMult(U))
+
+        h.H2OpusLowRankUpdate(U)
+        self.assertTrue(he.equal(h))
+
+
+        h.destroy()
+
+        del AA.multTranspose
+
 
 class TestScaledIdentity(TestMatrix):
 
@@ -440,30 +486,6 @@ class TestScaledIdentity(TestMatrix):
         self.assertAlmostEqual((self.A.matMatMult(A,B)-I.matMatMult(A,B)).norm(), 0.0, places=5)
         self.assertAlmostEqual((A.matMatMult(self.A,B)-A.matMatMult(I,B)).norm(), 0.0, places=5)
         self.assertAlmostEqual((A.matMatMult(B,self.A)-A.matMatMult(B,I)).norm(), 0.0, places=5)
-
-    def testH2Opus(self):
-        if not PETSc.Sys.hasExternalPackage("h2opus"):
-            return
-        if self.A.getComm().Get_size() > 1:
-            return
-        h = PETSc.Mat()
-
-        # need transpose operation for norm estimation
-        AA = self.A.getPythonContext()
-        AA.multTranspose = AA.mult
-
-        # without coordinates
-        h.createH2OpusFromMat(self.A,leafsize=2)
-        h.assemble()
-        h.destroy()
-
-        # with coordinates
-        coords = numpy.linspace((1,2,3),(10,20,30),self.A.getSize()[0],dtype=PETSc.RealType)
-        h.createH2OpusFromMat(self.A,coords,leafsize=2)
-        h.assemble()
-        h.destroy()
-
-        del AA.multTranspose
 
     def testShift(self):
         sold = self._getCtx().s
