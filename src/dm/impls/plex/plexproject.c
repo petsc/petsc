@@ -466,38 +466,42 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
   PetscFunctionReturn(0);
 }
 
+/*
+ Find first labeled point p_o in odm such that the corresponding point p in dm has the specified height. Return p and the corresponding ds.
+*/
 PetscErrorCode DMGetFirstLabelEntry_Internal(DM dm, DM odm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt height, PetscInt *lStart, PetscDS *ds)
 {
   DM              plex;
   DMEnclosureType enc;
-  DMLabel         depthLabel;
-  PetscInt        dim, cdepth, ls = -1, i;
+  PetscInt        ls = -1;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (lStart) *lStart = -1;
   if (!label) PetscFunctionReturn(0);
   ierr = DMGetEnclosureRelation(dm, odm, &enc);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthLabel(plex, &depthLabel);CHKERRQ(ierr);
-  cdepth = dim - height;
-  for (i = 0; i < numIds; ++i) {
-    IS              pointIS;
-    const PetscInt *points;
-    PetscInt        pdepth, point;
-
-    ierr = DMLabelGetStratumIS(label, ids[i], &pointIS);CHKERRQ(ierr);
-    if (!pointIS) continue; /* No points with that id on this process */
-    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-    ierr = DMGetEnclosurePoint(dm, odm, enc, points[0], &point);CHKERRQ(ierr);
-    ierr = DMLabelGetValue(depthLabel, point, &pdepth);CHKERRQ(ierr);
-    if (pdepth == cdepth) {
-      ls = point;
-      if (ds) {ierr = DMGetCellDS(dm, ls, ds);CHKERRQ(ierr);}
+  for (PetscInt i = 0; i < numIds; ++i) {
+    IS       labelIS;
+    PetscInt num_points, pStart, pEnd;
+    ierr = DMLabelGetStratumIS(label, ids[i], &labelIS);CHKERRQ(ierr);
+    if (!labelIS) continue; /* No points with that id on this process */
+    ierr = DMPlexGetHeightStratum(plex, height, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = ISGetSize(labelIS, &num_points);CHKERRQ(ierr);
+    if (num_points) {
+      const PetscInt *points;
+      ierr = ISGetIndices(labelIS, &points);CHKERRQ(ierr);
+      for (PetscInt i=0; i<num_points; i++) {
+        PetscInt point;
+        ierr = DMGetEnclosurePoint(dm, odm, enc, points[i], &point);CHKERRQ(ierr);
+        if (pStart <= point && point < pEnd) {
+          ls = point;
+          if (ds) {ierr = DMGetCellDS(dm, ls, ds);CHKERRQ(ierr);}
+        }
+      }
+      ierr = ISRestoreIndices(labelIS, &points);CHKERRQ(ierr);
     }
-    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
-    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    ierr = ISDestroy(&labelIS);CHKERRQ(ierr);
     if (ls >= 0) break;
   }
   if (lStart) *lStart = ls;
