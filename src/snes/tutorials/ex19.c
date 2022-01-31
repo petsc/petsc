@@ -1020,6 +1020,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       output_file: output/ex19_superlu.out
 
    test:
+      suffix: superlu_dist_3d
+      nsize: 4
+      requires: superlu_dist !defined(PETSCTEST_VALGRIND)
+      filter: grep -v iam | grep -v openMP
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_3d -mat_superlu_dist_d 2 -snes_view -snes_monitor -ksp_monitor
+
+   test:
       suffix: superlu_equil
       requires: superlu
       args: -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_type superlu -mat_superlu_equil
