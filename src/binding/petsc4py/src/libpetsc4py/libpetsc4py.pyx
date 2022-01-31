@@ -878,7 +878,7 @@ cdef PetscErrorCode MatAssemblyEnd_Python(
     if assembly is None:
         assembly = PyMat(mat).assembly
     if assembly is not None:
-        assembly(Mat_(mat), <int>at)
+        assembly(Mat_(mat), <long>at)
     return FunctionEnd()
 
 cdef PetscErrorCode MatZeroEntries_Python(
@@ -1267,7 +1267,7 @@ cdef PetscErrorCode MatHasOperation_Python(
     except IERR with gil:
     FunctionBegin(b"MatHasOperation_Python")
     flag[0] = PETSC_FALSE
-    cdef int i  = <int> op
+    cdef long i  = <long> op
     global dMatOps
     name = dMatOps.get(i, None)
     cdef void** ops = NULL
