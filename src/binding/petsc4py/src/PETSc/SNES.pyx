@@ -112,6 +112,11 @@ cdef class SNES(Object):
         CHKERR( SNESGetOptionsPrefix(self.snes, &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( SNESAppendOptionsPrefix(self.snes, cval) )
+
     def setFromOptions(self):
         CHKERR( SNESSetFromOptions(self.snes) )
 

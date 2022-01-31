@@ -55,8 +55,9 @@ cdef extern from * nogil:
     int TaoView(PetscTAO,PetscViewer)
     int TaoDestroy(PetscTAO*)
     int TaoCreate(MPI_Comm,PetscTAO*)
-    int TaoSetOptionsPrefix(PetscTAO, char[])
-    int TaoGetOptionsPrefix(PetscTAO, char*[])
+    int TaoSetOptionsPrefix(PetscTAO,char[])
+    int TaoAppendOptionsPrefix(PetscTAO,char[])
+    int TaoGetOptionsPrefix(PetscTAO,char*[])
     int TaoSetFromOptions(PetscTAO)
     int TaoSetType(PetscTAO,PetscTAOType)
     int TaoGetType(PetscTAO,PetscTAOType*)
@@ -81,7 +82,7 @@ cdef extern from * nogil:
     int TaoSetTrustRegionRadius(PetscTAO,PetscReal)
 
     ctypedef int TaoConvergenceTest(PetscTAO,void*) except PETSC_ERR_PYTHON
-    int TaoDefaultConvergenceTest(PetscTAO tao,void *dummy) except PETSC_ERR_PYTHON
+    int TaoDefaultConvergenceTest(PetscTAO,void*) except PETSC_ERR_PYTHON
     int TaoSetConvergenceTest(PetscTAO, TaoConvergenceTest*, void*)
     int TaoSetConvergedReason(PetscTAO,PetscTAOConvergedReason)
     int TaoGetConvergedReason(PetscTAO,PetscTAOConvergedReason*)

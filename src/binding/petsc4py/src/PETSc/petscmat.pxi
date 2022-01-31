@@ -236,6 +236,7 @@ cdef extern from * nogil:
     int MatISSetPreallocation(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
 
     int MatSetOptionsPrefix(PetscMat,char[])
+    int MatAppendOptionsPrefix(PetscMat,char[])
     int MatGetOptionsPrefix(PetscMat,char*[])
     int MatSetFromOptions(PetscMat)
     int MatSetUp(PetscMat)

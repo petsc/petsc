@@ -46,6 +46,8 @@ cdef extern from * nogil:
     int DMGetDimension(PetscDM,PetscInt*)
     int DMSetDimension(PetscDM,PetscInt)
     int DMSetOptionsPrefix(PetscDM,char[])
+    int DMGetOptionsPrefix(PetscDM,char*[])
+    int DMAppendOptionsPrefix(PetscDM,char[])
     int DMSetFromOptions(PetscDM)
     int DMViewFromOptions(PetscDM,PetscObject,char[])
     int DMSetUp(PetscDM)

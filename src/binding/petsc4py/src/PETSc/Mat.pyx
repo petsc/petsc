@@ -666,6 +666,11 @@ cdef class Mat(Object):
         CHKERR( MatGetOptionsPrefix(self.mat, &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( MatAppendOptionsPrefix(self.mat, cval) )
+
     def setFromOptions(self):
         CHKERR( MatSetFromOptions(self.mat) )
 

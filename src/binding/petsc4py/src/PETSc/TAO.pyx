@@ -119,6 +119,13 @@ cdef class TAO(Object):
         prefix = str2bytes(prefix, &cprefix)
         CHKERR( TaoSetOptionsPrefix(self.tao, cprefix) )
 
+    def appendOptionsPrefix(self, prefix):
+        """
+        """
+        cdef const char *cprefix = NULL
+        prefix = str2bytes(prefix, &cprefix)
+        CHKERR( TaoAppendOptionsPrefix(self.tao, cprefix) )
+
     def getOptionsPrefix(self):
         """
         """

@@ -625,6 +625,11 @@ cdef class Vec(Object):
         CHKERR( VecGetOptionsPrefix(self.vec, &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( VecAppendOptionsPrefix(self.vec, cval) )
+
     def setFromOptions(self):
         CHKERR( VecSetFromOptions(self.vec) )
 
