@@ -92,6 +92,9 @@ cdef extern from * nogil:
     int PetscViewerPushFormat(PetscViewer,PetscViewerFormat)
     int PetscViewerPopFormat(PetscViewer)
 
+    int PetscViewerGetSubViewer(PetscViewer,MPI_Comm,PetscViewer*)
+    int PetscViewerRestoreSubViewer(PetscViewer,MPI_Comm,PetscViewer*)
+
     int PetscViewerASCIISetTab(PetscViewer,PetscInt)
     int PetscViewerASCIIGetTab(PetscViewer,PetscInt*)
     int PetscViewerASCIIAddTab(PetscViewer,PetscInt)

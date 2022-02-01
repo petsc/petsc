@@ -227,6 +227,16 @@ cdef class Viewer(Object):
     def popFormat(self):
         CHKERR( PetscViewerPopFormat(self.vwr) )
 
+    def getSubViewer(self, comm = None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_SELF)
+        cdef Viewer sub = Viewer()
+        CHKERR( PetscViewerGetSubViewer(self.vwr, ccomm, &sub.vwr) )
+        return sub
+
+    def restoreSubViewer(self, Viewer sub):
+        cdef MPI_Comm ccomm = def_Comm(sub.getComm(), PETSC_COMM_SELF)
+        CHKERR( PetscViewerRestoreSubViewer(self.vwr, ccomm, &sub.vwr) )
+
     @classmethod
     def STDOUT(cls, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
