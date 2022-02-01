@@ -3,6 +3,7 @@
 
 #include <petscconf.h>
 #include <petscfix.h>
+#include <stddef.h>
 
 /*MC
     PetscErrorCode - datatype used for return error code from almost all PETSc functions
@@ -47,6 +48,19 @@ typedef int PetscClassId;
 
 M*/
 typedef int PetscMPIInt;
+
+/*MC
+    PetscSizeT - datatype used to represent sizes in memory (like size_t)
+
+    Level: intermediate
+
+    Notes:
+    This is equivalent to size_t, but defined for consistency with Fortran, which lacks a native equivalent of size_t.
+
+.seealso: PetscInt, PetscInt64
+
+M*/
+typedef size_t PetscSizeT;
 
 /*MC
     PetscEnum - datatype used to pass enum types within PETSc functions.

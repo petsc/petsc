@@ -53,6 +53,9 @@
 #define PetscFortranInt integer8
 #endif
 !
+! Fortran does not support unsigned, though ISO_C_BINDING
+! supports INTEGER(KIND=C_SIZE_T). We don't use that here
+! only to avoid importing the module.
 #if (PETSC_SIZEOF_SIZE_T == 8)
 #define PetscSizeT integer8
 #else
