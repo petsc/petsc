@@ -411,7 +411,7 @@ linux-gcc-complex-opt-32bit:
 #do not run checkstack on MSWIN-UNI
 mswin-uni:
   extends:
-    - .stage-2
+    - .stage-3
     - .mswin_test
   tags:
     - win-stage2
@@ -421,7 +421,7 @@ mswin-uni:
 
 mswin-gnu:
   extends:
-    - .stage-2
+    - .stage-3
     - .mswin_test
   tags:
     - win-stage2
@@ -471,7 +471,7 @@ freebsd-pkgs-opt:
 
 linux-hip-double:
   extends:
-    - .stage-3
+    - .stage-2
     - .linux_test_noflags
   tags:
     - gpu:amd, os:linux, name:hip-txcorp
