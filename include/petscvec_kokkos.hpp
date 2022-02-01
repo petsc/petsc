@@ -16,15 +16,6 @@
 #if defined(PETSC_HAVE_KOKKOS)
   #include <Kokkos_Core.hpp>
 
-  /* REMOVE ME (?) */
-  #if defined(PETSC_HAVE_CUDA)
-    #define WaitForKokkos() (Kokkos::fence(),0)
-  #elif defined(PETSC_HAVE_HIP)
-    #define WaitForKokkos() (Kokkos::fence(),0)
-  #else
-    #define WaitForKokkos() 0
-  #endif
-
   /* Routines to get/restore Kokkos Views from PETSc vectors */
 
   /* Like VecGetArrayRead() */

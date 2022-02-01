@@ -882,11 +882,11 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal po
 }
 
 /*MC
-    PetscLTE - Performs a less than or equal to on a given constant with a fudge for floating point numbers
+    PetscApproximateLTE - Performs a less than or equal to on a given constant with a fudge for floating point numbers
 
    Synopsis:
    #include <petscmath.h>
-   bool PetscLTE(PetscReal x,constant float)
+   bool PetscApproximateLTE(PetscReal x,constant float)
 
    Not Collective
 
@@ -904,17 +904,17 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal po
 
    Level: advanced
 
-.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscGTE()
+.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscApproximateGTE()
 
 M*/
-#define PetscLTE(x,b)  ((x) <= (PetscRealConstant(b)+PETSC_SMALL))
+#define PetscApproximateLTE(x,b)  ((x) <= (PetscRealConstant(b)+PETSC_SMALL))
 
 /*MC
-    PetscGTE - Performs a greater than or equal to on a given constant with a fudge for floating point numbers
+    PetscApproximateGTE - Performs a greater than or equal to on a given constant with a fudge for floating point numbers
 
    Synopsis:
    #include <petscmath.h>
-   bool PetscGTE(PetscReal x,constant float)
+   bool PetscApproximateGTE(PetscReal x,constant float)
 
    Not Collective
 
@@ -932,10 +932,32 @@ M*/
 
    Level: advanced
 
-.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscLTE()
+.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscApproximateLTE()
 
 M*/
-#define PetscGTE(x,b)  ((x) >= (PetscRealConstant(b)-PETSC_SMALL))
+#define PetscApproximateGTE(x,b)  ((x) >= (PetscRealConstant(b)-PETSC_SMALL))
+
+/*MC
+    PetscCeilInt - Returns the ceiling of the quotation of two positive integers
+
+   Synopsis:
+   #include <petscmath.h>
+   PetscInt PetscCeilInt(PetscInt x,PetscInt y)
+
+   Not Collective
+
+   Input Parameters:
++   x - the numerator
+-   y - the denominator
+
+   Level: advanced
+
+.seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscApproximateLTE()
+
+M*/
+#define PetscCeilInt(x,y)  ((((PetscInt)(x))/((PetscInt)(y))) +  ((((PetscInt)(x)) % ((PetscInt)(y))) ? 1 : 0))
+
+#define PetscCeilInt64(x,y)  ((((PetscInt64)(x))/((PetscInt64)(y))) +  ((((PetscInt64)(x)) % ((PetscInt64)(y))) ? 1 : 0))
 
 PETSC_EXTERN PetscErrorCode PetscLinearRegression(PetscInt,const PetscReal[],const PetscReal[],PetscReal*,PetscReal*);
 #endif

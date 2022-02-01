@@ -10,8 +10,8 @@ class CompilerOptions(config.base.Configure):
     if language == 'C':
       if [s for s in ['mpicc','mpiicc'] if os.path.basename(compiler).find(s)>=0]:
         try:
-          output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
-          self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
+          output = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
+          self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n').replace('"','\\"'))
         except:
           self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
       else:
@@ -153,7 +153,11 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt in ['g']:
         # -g3 causes an as SEGV on OSX
-        flags.extend(['-g','-O0'])
+        if config.setCompilers.Configure.isHIP(compiler, self.log):
+          # HIP can cause buggy code with -O0
+          flags.extend(['-g'])
+        else:
+          flags.extend(['-g','-O0'])
       elif bopt == 'gcov':
         flags.extend(['--coverage','-Og'])
       elif bopt in ['O']:
@@ -220,7 +224,11 @@ class CompilerOptions(config.base.Configure):
     # Generic
     if not len(flags):
       if bopt in ['g']:
-        flags.extend(['-g','-O0'])
+        if config.setCompilers.Configure.isHIP(compiler, self.log):
+          # HIP can cause buggy code with -O0
+          flags.extend(['-g'])
+        else:
+          flags.extend(['-g','-O0'])
       elif bopt in ['O']:
         flags.append('-O')
     if bopt == 'O':

@@ -9,7 +9,7 @@ class Configure(config.package.GNUPackage):
     self.functions         = ['EG_open']
     self.includes          = ['egads.h']
     self.hastests          = 1
-    self.cxx               = 1
+    self.buildLanguages    = ['Cxx']
     self.requirescxx11     = 1
     self.hasegadslite      = 1
     self.hasegads          = 1

@@ -156,7 +156,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   close(fd_pipe[0]);
   close(fd_pipe[1]);
   if (chaco->verbose) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),mesg_log);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"%s",mesg_log);CHKERRQ(ierr);
   }
   ierr = PetscFree(mesg_log);CHKERRQ(ierr);
 #endif
@@ -190,10 +190,10 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Global method: %s\n",MPChacoGlobalTypes[chaco->global_method]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Local method: %s\n",MPChacoLocalTypes[chaco->local_method]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of vertices for the coarse graph: %d\n",chaco->nbvtxcoarsed);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of vertices for the coarse graph: %" PetscInt_FMT "\n",chaco->nbvtxcoarsed);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Eigensolver: %s\n",MPChacoEigenTypes[chaco->eigen_method]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Tolerance for eigensolver: %g\n",chaco->eigtol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of eigenvectors: %d\n",chaco->eignum);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of eigenvectors: %" PetscInt_FMT "\n",chaco->eignum);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

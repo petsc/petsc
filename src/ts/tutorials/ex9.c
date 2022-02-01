@@ -355,8 +355,8 @@ static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType
       else              u[0] = 1;
       break;
     case 2:
-      if      (x < 0)       u[0] = 0;
-      else if (x <= t)      u[0] = x/t;
+      if      (x <= 0)      u[0] = 0;
+      else if (x < t)       u[0] = x/t;
       else if (x < 1+0.5*t) u[0] = 1;
       else                  u[0] = 0;
       break;

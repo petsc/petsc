@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 
   /* Print info about original matrix */
   ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %D, allocated nonzeros = %D\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
                      (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_1,&norm1);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
 
   /* Print info about transpose matrix */
   ierr = MatGetInfo(tmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %D, allocated nonzeros = %D\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
                      (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_1,&norm1);CHKERRQ(ierr);

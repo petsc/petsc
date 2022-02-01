@@ -277,7 +277,7 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
     ierr = MatProductClear(Xmat);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
+    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %" PetscInt_FMT,F->schur_status);
     break;
   }
   ierr = MatFactorRestoreSchurComplement(F,&S,schurstatus);CHKERRQ(ierr);

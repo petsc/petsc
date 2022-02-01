@@ -254,6 +254,17 @@ int main(int argc,char **args)
       args: -pc_type bjacobi -pc_bjacobi_blocks 4 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres
 
    test:
+      suffix: qmrcgs
+      args: -ksp_type qmrcgs -pc_type ilu
+      output_file: output/ex2_fbcgs.out
+
+   test:
+      suffix: qmrcgs_2
+      nsize: 3
+      args: -ksp_type qmrcgs -pc_type bjacobi
+      output_file: output/ex2_fbcgs_2.out
+
+   test:
       suffix: fbcgs
       args: -ksp_type fbcgs -pc_type ilu
 

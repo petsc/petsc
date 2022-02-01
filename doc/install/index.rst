@@ -1,3 +1,5 @@
+.. _doc_install:
+
 =============================================
 Installation: Configuring, and Building PETSc
 =============================================

@@ -175,7 +175,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     ierr = VecGetSize(v, &N);CHKERRQ(ierr);
     if (N != 2) {
       ierr = DMView(dm, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "FAIL: Vector size %d != 2\n", N);
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "FAIL: Vector size %d != 2", N);
     }
     ierr = VecDestroy(&v);CHKERRQ(ierr);
   }

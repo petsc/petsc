@@ -24,12 +24,12 @@ do {\
   if (PetscUnlikely(stat)) {\
     const char *name  = cusparseGetErrorName(stat);\
     const char *descr = cusparseGetErrorString(stat);\
-    if ((stat == CUSPARSE_STATUS_NOT_INITIALIZED) || (stat == CUSPARSE_STATUS_ALLOC_FAILED)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuSPARSE error %d (%s) : %s. Reports not initialized or alloc failed; this indicates the GPU has run out resources",(int)stat,name,descr); \
-    else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE error %d (%s) : %s",(int)stat,name,descr);\
+    if ((stat == CUSPARSE_STATUS_NOT_INITIALIZED) || (stat == CUSPARSE_STATUS_ALLOC_FAILED)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuSPARSE errorcode %d (%s) : %s. Reports not initialized or alloc failed; this indicates the GPU has run out resources",(int)stat,name,descr); \
+    else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d (%s) : %s",(int)stat,name,descr);\
   }\
 } while (0)
 #else
-#define CHKERRCUSPARSE(stat) do {if (PetscUnlikely(stat)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU,"cusparse error %d",(int)stat);} while (0)
+#define CHKERRCUSPARSE(stat) do {if (PetscUnlikely(stat)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d",(int)stat);} while (0)
 #endif
 
 #define PetscStackCallThrust(body) do {                                     \

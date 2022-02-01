@@ -44,9 +44,9 @@ int main(int argc,char **args)
   ierr = ISLocalToGlobalMappingGetBlockSize(rmap,&l2grbs);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockSize(cmap,&l2gcbs);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Mat Block sizes: %D %D (l2g %D %D)\n",rbs,cbs,l2grbs,l2gcbs);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %D %D (l2g %D %D)\n",bs[0],bs[1],l2gbs[0],l2gbs[1]);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %D %D (l2g %D %D)\n",bs[2],bs[3],l2gbs[2],l2gbs[3]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Mat Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",rbs,cbs,l2grbs,l2gcbs);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",bs[0],bs[1],l2gbs[0],l2gbs[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",bs[2],bs[3],l2gbs[2],l2gbs[3]);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

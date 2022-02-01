@@ -482,7 +482,7 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
   PetscFunctionBegin;
   PetscValidPointer(vv,2);
-  if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
+  if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %" PetscInt_FMT,m);
   if (!m || !*vv) {*vv  = NULL; PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,2);
   PetscValidType(**vv,2);
@@ -614,9 +614,9 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
       ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
       ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
       if (bs != 1) {
-        ierr = PetscViewerASCIIPrintf(viewer,"length=%D, bs=%D\n",rows,bs);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"length=%" PetscInt_FMT ", bs=%" PetscInt_FMT "\n",rows,bs);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"length=%D\n",rows);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"length=%" PetscInt_FMT "\n",rows);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
@@ -645,12 +645,40 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
   TV_add_row("Global rows", "int", &v->map->N);
   TV_add_row("Typename", TV_ascii_string_type, ((PetscObject)v)->type_name);
   ierr = VecGetArrayRead((Vec)v,&values);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(type,32,"double[%d]",v->map->n);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(type,32,"double[%" PetscInt_FMT "]",v->map->n);CHKERRQ(ierr);
   TV_add_row("values",type, values);
   ierr = VecRestoreArrayRead((Vec)v,&values);CHKERRQ(ierr);
   return TV_format_OK;
 }
 #endif
+
+/*@C
+   VecViewNative - Views a vector object with the original type specific viewer
+
+   Collective on Vec
+
+   Input Parameters:
++  vec - the vector
+-  viewer - an optional visualization context
+
+   Level: developer
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscDrawLGCreate(), VecView()
+          PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
+          PetscRealView(), PetscScalarView(), PetscIntView(), PetscViewerHDF5SetTimestep()
+@*/
+PetscErrorCode  VecViewNative(Vec vec,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
+  PetscValidType(vec,1);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
    VecGetSize - Returns the global number of elements of the vector.
@@ -836,7 +864,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_CLASSID,1);
   PetscValidPointer(V,3);
-  if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
+  if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %" PetscInt_FMT,m);
   ierr = PetscMalloc1(m,V);CHKERRQ(ierr);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -1340,8 +1368,8 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID,1);
   if (N >= 0) PetscValidLogicalCollectiveInt(v,N,3);
-  if (N >= 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
-  if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->map->n,v->map->N);
+  if (N >= 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %" PetscInt_FMT " cannot be larger than global size %" PetscInt_FMT,n,N);
+  if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,v->map->n,v->map->N);
   v->map->n = n;
   v->map->N = N;
   if (v->ops->create) {
@@ -1750,22 +1778,22 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   PetscCheckSameComm(v,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
+  if (!match) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s",((PetscObject)v)->type_name);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank);CHKERRMPI(ierr);
   s    = &v->bstash;
 
   /* print block stash */
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %D block size %D\n",rank,s->n,s->bs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %" PetscInt_FMT " block size %" PetscInt_FMT "\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D ",rank,s->idx[i]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " ",rank,s->idx[i]);CHKERRQ(ierr);
     for (j=0; j<s->bs; j++) {
       val = s->array[i*s->bs+j];
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"(%18.16e %18.16e) ",PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"(%18.16e %18.16e) ",(double)PetscRealPart(val),(double)PetscImaginaryPart(val));CHKERRQ(ierr);
 #else
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%18.16e ",val);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%18.16e ",(double)val);CHKERRQ(ierr);
 #endif
     }
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -1775,13 +1803,13 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   s = &v->stash;
 
   /* print basic stash */
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %D\n",rank,s->n);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %" PetscInt_FMT "\n",rank,s->n);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
     val = s->array[i];
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " (%18.16e %18.16e) ",rank,s->idx[i],(double)PetscRealPart(val),(double)PetscImaginaryPart(val));CHKERRQ(ierr);
 #else
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D %18.16e\n",rank,s->idx[i],val);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %" PetscInt_FMT " %18.16e\n",rank,s->idx[i],(double)val);CHKERRQ(ierr);
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

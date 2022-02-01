@@ -1,10 +1,10 @@
 DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 1 MPI processes
   type: plex
 cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 in 3 dimensions:
-  0-cells: 34
-  1-cells: 146
-  2-cells: 202
-  3-cells: 89
+  Number of 0-cells per rank: 34
+  Number of 1-cells per rank: 146
+  Number of 2-cells per rank: 202
+  Number of 3-cells per rank: 89
 Labels:
   celltype: 4 strata with value/size (0 (34), 6 (89), 3 (202), 1 (146))
   depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))

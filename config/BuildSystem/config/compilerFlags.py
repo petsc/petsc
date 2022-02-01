@@ -97,7 +97,7 @@ class Configure(config.base.Configure):
     if not options:
       return
     options.saveLog()
-    for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC'), ('HIP', 'HIPC'), ('SYCL', 'SYCLCXX')]:
+    for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC'), ('HIP', 'HIPC'), ('SYCL', 'SYCLC')]:
       if not hasattr(self.setCompilers, compiler):
         continue
       self.setCompilers.pushLanguage(language)

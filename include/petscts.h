@@ -312,6 +312,7 @@ PETSC_EXTERN PetscBool         TSTrajectoryRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode TSSetSaveTrajectory(TS);
 PETSC_EXTERN PetscErrorCode TSResetTrajectory(TS);
+PETSC_EXTERN PetscErrorCode TSRemoveTrajectory(TS);
 
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
 PETSC_EXTERN PetscErrorCode TSTrajectoryReset(TSTrajectory);
@@ -648,7 +649,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPEig(TS,PetscInt,PetscReal,Vec,void *);
 
 typedef struct _n_TSMonitorSPCtx* TSMonitorSPCtx;
-PETSC_EXTERN PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorSPCtx*);
+PETSC_EXTERN PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,PetscInt,PetscBool,TSMonitorSPCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPSwarmSolution(TS,PetscInt,PetscReal,Vec,void*);
 
@@ -827,6 +828,7 @@ J*/
 typedef const char* TSRKType;
 #define TSRK1FE   "1fe"
 #define TSRK2A    "2a"
+#define TSRK2B    "2b"
 #define TSRK3     "3"
 #define TSRK3BS   "3bs"
 #define TSRK4     "4"
@@ -1007,7 +1009,16 @@ PETSC_EXTERN PetscErrorCode TSBasicSymplecticInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
 
+/*J
+  TSDiscreteGradient - The Discrete Gradient integrator is a timestepper for hamiltonian systems designed to conserve the first integral (energy), but also has the property for some systems of monotonicity in a functional.
+
+  Level: beginner
+
+  .seealso: TS, TSDISCGRAD, TSDiscGradSetFormulation(), TSDiscGradGetFormulation
+J*/
 PETSC_EXTERN PetscErrorCode TSDiscGradSetFormulation(TS, PetscErrorCode(*)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(*)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(*)(TS, PetscReal, Vec, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode TSDiscGradIsGonzalez(TS,PetscBool*);
+PETSC_EXTERN PetscErrorCode TSDiscGradUseGonzalez(TS,PetscBool);
 
 /*
        PETSc interface to Sundials

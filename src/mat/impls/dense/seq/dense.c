@@ -78,7 +78,7 @@ PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = MatSeqDenseSymmetrize_Private(A,PETSC_FALSE);CHKERRQ(ierr);
     }
-    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad Inversion: zero pivot in row %D",(PetscInt)info-1);
+    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad Inversion: zero pivot in row %" PetscInt_FMT,(PetscInt)info-1);
     ierr = PetscLogFlops((1.0*A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
 
@@ -105,8 +105,8 @@ PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A,PetscInt N,const PetscInt rows[
   if (PetscDefined(USE_DEBUG)) {
     for (i=0; i<N; i++) {
       if (rows[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row requested to be zeroed");
-      if (rows[i] >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D requested to be zeroed greater than or equal number of rows %D",rows[i],A->rmap->n);
-      if (rows[i] >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Col %D requested to be zeroed greater than or equal number of cols %D",rows[i],A->cmap->n);
+      if (rows[i] >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %" PetscInt_FMT " requested to be zeroed greater than or equal number of rows %" PetscInt_FMT,rows[i],A->rmap->n);
+      if (rows[i] >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Col %" PetscInt_FMT " requested to be zeroed greater than or equal number of cols %" PetscInt_FMT,rows[i],A->cmap->n);
     }
   }
   if (!N) PetscFunctionReturn(0);
@@ -939,7 +939,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *fac
     PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }
-  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
+  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %" PetscInt_FMT,(PetscInt)info-1);
 
   A->ops->solve             = MatSolve_SeqDense_Cholesky;
   A->ops->matsolve          = MatMatSolve_SeqDense_Cholesky;
@@ -1108,7 +1108,7 @@ static PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType fl
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   its  = its*lits;
-  if (its <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
+  if (its <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %" PetscInt_FMT " and local its %" PetscInt_FMT " both positive",its,lits);
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       for (i=0; i<m; i++) {
@@ -1277,20 +1277,20 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A,PetscInt m,const PetscInt inde
     if (addv == INSERT_VALUES) {
       for (j=0; j<n; j++) {
         if (indexn[j] < 0) {idx += m; continue;}
-        if (PetscUnlikelyDebug(indexn[j] >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",indexn[j],A->cmap->n-1);
+        if (PetscUnlikelyDebug(indexn[j] >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,indexn[j],A->cmap->n-1);
         for (i=0; i<m; i++) {
           if (indexm[i] < 0) {idx++; continue;}
-          if (PetscUnlikelyDebug(indexm[i] >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",indexm[i],A->rmap->n-1);
+          if (PetscUnlikelyDebug(indexm[i] >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,indexm[i],A->rmap->n-1);
           av[indexn[j]*mat->lda + indexm[i]] = v[idx++];
         }
       }
     } else {
       for (j=0; j<n; j++) {
         if (indexn[j] < 0) {idx += m; continue;}
-        if (PetscUnlikelyDebug(indexn[j] >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",indexn[j],A->cmap->n-1);
+        if (PetscUnlikelyDebug(indexn[j] >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,indexn[j],A->cmap->n-1);
         for (i=0; i<m; i++) {
           if (indexm[i] < 0) {idx++; continue;}
-          if (PetscUnlikelyDebug(indexm[i] >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",indexm[i],A->rmap->n-1);
+          if (PetscUnlikelyDebug(indexm[i] >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,indexm[i],A->rmap->n-1);
           av[indexn[j]*mat->lda + indexm[i]] += v[idx++];
         }
       }
@@ -1299,20 +1299,20 @@ static PetscErrorCode MatSetValues_SeqDense(Mat A,PetscInt m,const PetscInt inde
     if (addv == INSERT_VALUES) {
       for (i=0; i<m; i++) {
         if (indexm[i] < 0) { idx += n; continue;}
-        if (PetscUnlikelyDebug(indexm[i] >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",indexm[i],A->rmap->n-1);
+        if (PetscUnlikelyDebug(indexm[i] >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,indexm[i],A->rmap->n-1);
         for (j=0; j<n; j++) {
           if (indexn[j] < 0) { idx++; continue;}
-          if (PetscUnlikelyDebug(indexn[j] >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",indexn[j],A->cmap->n-1);
+          if (PetscUnlikelyDebug(indexn[j] >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,indexn[j],A->cmap->n-1);
           av[indexn[j]*mat->lda + indexm[i]] = v[idx++];
         }
       }
     } else {
       for (i=0; i<m; i++) {
         if (indexm[i] < 0) { idx += n; continue;}
-        if (PetscUnlikelyDebug(indexm[i] >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",indexm[i],A->rmap->n-1);
+        if (PetscUnlikelyDebug(indexm[i] >= A->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,indexm[i],A->rmap->n-1);
         for (j=0; j<n; j++) {
           if (indexn[j] < 0) { idx++; continue;}
-          if (PetscUnlikelyDebug(indexn[j] >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",indexn[j],A->cmap->n-1);
+          if (PetscUnlikelyDebug(indexn[j] >= A->cmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,indexn[j],A->cmap->n-1);
           av[indexn[j]*mat->lda + indexm[i]] += v[idx++];
         }
       }
@@ -1342,10 +1342,10 @@ static PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt inde
   /* row-oriented output */
   for (i=0; i<m; i++) {
     if (indexm[i] < 0) {v += n;continue;}
-    if (indexm[i] >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D requested larger than number rows %D",indexm[i],A->rmap->n);
+    if (indexm[i] >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %" PetscInt_FMT " requested larger than number rows %" PetscInt_FMT,indexm[i],A->rmap->n);
     for (j=0; j<n; j++) {
       if (indexn[j] < 0) {v++; continue;}
-      if (indexn[j] >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column %D requested larger than number columns %D",indexn[j],A->cmap->n);
+      if (indexn[j] >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column %" PetscInt_FMT " requested larger than number columns %" PetscInt_FMT,indexn[j],A->cmap->n);
       *v++ = vv[indexn[j]*mat->lda + indexm[i]];
     }
   }
@@ -1420,10 +1420,10 @@ PetscErrorCode MatLoad_Dense_Binary(Mat mat,PetscViewer viewer)
     ierr = PetscViewerBinaryRead(viewer,header,4,NULL,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not a matrix object in file");
     M = header[1]; N = header[2];
-    if (M < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Matrix row size (%D) in file is negative",M);
-    if (N < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Matrix column size (%D) in file is negative",N);
+    if (M < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Matrix row size (%" PetscInt_FMT ") in file is negative",M);
+    if (N < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Matrix column size (%" PetscInt_FMT ") in file is negative",N);
     nz = header[3];
-    if (nz != MATRIX_BINARY_FORMAT_DENSE && nz < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Unknown matrix format %D in file",nz);
+    if (nz != MATRIX_BINARY_FORMAT_DENSE && nz < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Unknown matrix format %" PetscInt_FMT " in file",nz);
   } else {
     ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
     if (M < 0 || N < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Matrix binary file header was skipped, thus the user must specify the global sizes of input matrix");
@@ -1436,7 +1436,7 @@ PetscErrorCode MatLoad_Dense_Binary(Mat mat,PetscViewer viewer)
   ierr = MatSetUp(mat);CHKERRQ(ierr);
   /* check if global sizes are correct */
   ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-  if (M != rows || N != cols) SETERRQ4(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different sizes (%d, %d) than the input matrix (%d, %d)",M,N,rows,cols);
+  if (PetscUnlikely(M != rows || N != cols)) SETERRQ4(PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different sizes (%" PetscInt_FMT ", %" PetscInt_FMT ") than the input matrix (%" PetscInt_FMT ", %" PetscInt_FMT ")",M,N,rows,cols);
 
   ierr = MatGetSize(mat,NULL,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&m,NULL);CHKERRQ(ierr);
@@ -1522,17 +1522,17 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (i=0; i<A->rmap->n; i++) {
       v    = av + i;
-      ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"row %" PetscInt_FMT ":",i);CHKERRQ(ierr);
       for (j=0; j<A->cmap->n; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(*v) != 0.0 && PetscImaginaryPart(*v) != 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",j,(double)PetscRealPart(*v),(double)PetscImaginaryPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g + %g i) ",j,(double)PetscRealPart(*v),(double)PetscImaginaryPart(*v));CHKERRQ(ierr);
         } else if (PetscRealPart(*v)) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",j,(double)PetscRealPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",j,(double)PetscRealPart(*v));CHKERRQ(ierr);
         }
 #else
         if (*v) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",j,(double)*v);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%" PetscInt_FMT ", %g) ",j,(double)*v);CHKERRQ(ierr);
         }
 #endif
         v += a->lda;
@@ -1551,8 +1551,8 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 #endif
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
       ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %D %D \n",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%D,%D);\n",name,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %" PetscInt_FMT " %" PetscInt_FMT " \n",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%" PetscInt_FMT ",%" PetscInt_FMT ");\n",name,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
     }
 
@@ -1746,7 +1746,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat,"Rows %D Cols %D",mat->rmap->n,mat->cmap->n);
+  PetscLogObjectState((PetscObject)mat,"Rows %" PetscInt_FMT " Cols %" PetscInt_FMT,mat->rmap->n,mat->cmap->n);
 #endif
   ierr = VecDestroy(&(l->qrrhs));CHKERRQ(ierr);
   ierr = PetscFree(l->tau);CHKERRQ(ierr);
@@ -2088,7 +2088,7 @@ static PetscErrorCode MatZeroRows_SeqDense(Mat A,PetscInt N,const PetscInt rows[
   if (PetscDefined(USE_DEBUG)) {
     for (i=0; i<N; i++) {
       if (rows[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row requested to be zeroed");
-      if (rows[i] >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D requested to be zeroed greater than or equal number of rows %D",rows[i],A->rmap->n);
+      if (rows[i] >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %" PetscInt_FMT " requested to be zeroed greater than or equal number of rows %" PetscInt_FMT,rows[i],A->rmap->n);
     }
   }
   if (!N) PetscFunctionReturn(0);
@@ -3201,7 +3201,7 @@ PetscErrorCode  MatDenseSetLDA_SeqDense(Mat B,PetscInt lda)
   PetscFunctionBegin;
   data = (PetscBool)((B->rmap->n > 0 && B->cmap->n > 0) ? (b->v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
   if (!b->user_alloc && data && b->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
-  if (lda < B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,B->rmap->n);
+  if (lda < B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %" PetscInt_FMT " must be at least matrix dimension %" PetscInt_FMT,lda,B->rmap->n);
   b->lda = lda;
   PetscFunctionReturn(0);
 }
@@ -3523,7 +3523,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A,PetscInt col,Vec *v)
   PetscValidLogicalCollectiveInt(A,col,2);
   PetscValidPointer(v,3);
   if (!A->preallocated) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Matrix not preallocated");
-  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %D, should be in [0,%D)",col,A->cmap->N);
+  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")",col,A->cmap->N);
   ierr = PetscUseMethod(A,"MatDenseGetColumnVec_C",(Mat,PetscInt,Vec*),(A,col,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3552,7 +3552,7 @@ PetscErrorCode MatDenseRestoreColumnVec(Mat A,PetscInt col,Vec *v)
   PetscValidLogicalCollectiveInt(A,col,2);
   PetscValidPointer(v,3);
   if (!A->preallocated) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Matrix not preallocated");
-  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %D, should be in [0,%D)",col,A->cmap->N);
+  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")",col,A->cmap->N);
   ierr = PetscUseMethod(A,"MatDenseRestoreColumnVec_C",(Mat,PetscInt,Vec*),(A,col,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3588,7 +3588,7 @@ PetscErrorCode MatDenseGetColumnVecRead(Mat A,PetscInt col,Vec *v)
   PetscValidLogicalCollectiveInt(A,col,2);
   PetscValidPointer(v,3);
   if (!A->preallocated) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Matrix not preallocated");
-  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %D, should be in [0,%D)",col,A->cmap->N);
+  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")",col,A->cmap->N);
   ierr = PetscUseMethod(A,"MatDenseGetColumnVecRead_C",(Mat,PetscInt,Vec*),(A,col,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3617,7 +3617,7 @@ PetscErrorCode MatDenseRestoreColumnVecRead(Mat A,PetscInt col,Vec *v)
   PetscValidLogicalCollectiveInt(A,col,2);
   PetscValidPointer(v,3);
   if (!A->preallocated) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Matrix not preallocated");
-  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %D, should be in [0,%D)",col,A->cmap->N);
+  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")",col,A->cmap->N);
   ierr = PetscUseMethod(A,"MatDenseRestoreColumnVecRead_C",(Mat,PetscInt,Vec*),(A,col,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3652,7 +3652,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A,PetscInt col,Vec *v)
   PetscValidLogicalCollectiveInt(A,col,2);
   PetscValidPointer(v,3);
   if (!A->preallocated) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Matrix not preallocated");
-  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %D, should be in [0,%D)",col,A->cmap->N);
+  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")",col,A->cmap->N);
   ierr = PetscUseMethod(A,"MatDenseGetColumnVecWrite_C",(Mat,PetscInt,Vec*),(A,col,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3681,7 +3681,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A,PetscInt col,Vec *v)
   PetscValidLogicalCollectiveInt(A,col,2);
   PetscValidPointer(v,3);
   if (!A->preallocated) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Matrix not preallocated");
-  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %D, should be in [0,%D)",col,A->cmap->N);
+  if (col < 0 || col > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid col %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")",col,A->cmap->N);
   ierr = PetscUseMethod(A,"MatDenseRestoreColumnVecWrite_C",(Mat,PetscInt,Vec*),(A,col,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3717,8 +3717,8 @@ PetscErrorCode MatDenseGetSubMatrix(Mat A,PetscInt cbegin,PetscInt cend,Mat *v)
   PetscValidLogicalCollectiveInt(A,cend,3);
   PetscValidPointer(v,4);
   if (!A->preallocated) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Matrix not preallocated");
-  if (cbegin < 0 || cbegin > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid cbegin %D, should be in [0,%D)",cbegin,A->cmap->N);
-  if (cend < cbegin || cend > A->cmap->N) SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid cend %D, should be in [%D,%D)",cend,cbegin,A->cmap->N);
+  if (cbegin < 0 || cbegin > A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid cbegin %" PetscInt_FMT ", should be in [0,%" PetscInt_FMT ")",cbegin,A->cmap->N);
+  if (cend < cbegin || cend > A->cmap->N) SETERRQ3(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid cend %" PetscInt_FMT ", should be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",cend,cbegin,A->cmap->N);
   ierr = PetscUseMethod(A,"MatDenseGetSubMatrix_C",(Mat,PetscInt,PetscInt,Mat*),(A,cbegin,cend,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

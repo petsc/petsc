@@ -134,6 +134,7 @@ class BaseTestPlex(object):
         if self.DIM == 1: return
         self.plex.distribute()
         if self.CELLS is None and not self.plex.isSimplex(): return
+        self.plex.orient()
 
         h_min = 1.0e-30
         h_max = 1.0e+30
@@ -176,17 +177,22 @@ class BaseTestPlex(object):
         assert np.allclose(metric.array, metric2.array)
         metric = self.plex.metricIntersection2(metric1, metric2)
         assert np.allclose(metric.array, metric1.array)
-        self.plex.metricEnforceSPD(metric)
+        metric = self.plex.metricEnforceSPD(metric)
         assert np.allclose(metric.array, metric1.array)
+        nMetric = self.plex.metricNormalize(metric, restrictSizes=False, restrictAnisotropy=False)
+        metric.scale(pow(target, 2.0/self.DIM))
+        assert np.allclose(metric.array, nMetric.array)
 
     def testAdapt(self):
         if self.DIM == 1: return
-        self.plex.distribute()
-        if self.CELLS is None and not self.plex.isSimplex(): return
+        self.plex.orient()
+        plex = self.plex.refine()
+        plex.distribute()
+        if self.CELLS is None and not plex.isSimplex(): return
         if sum(self.DOFS) > 1: return
-        metric = self.plex.metricCreateUniform(9.0)
+        metric = plex.metricCreateUniform(9.0)
         try:
-            newplex = self.plex.adaptMetric(metric,"")
+            newplex = plex.adaptMetric(metric,"")
         except PETSc.Error as exc:
             if exc.ierr != ERR_ARG_OUTOFRANGE: raise
 

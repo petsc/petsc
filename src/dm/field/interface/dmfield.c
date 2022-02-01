@@ -527,7 +527,7 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   ierr = DMFieldGetDegree(field,pointIS,NULL,&maxDegree);CHKERRQ(ierr);
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
   if (faceData) {
-    if (!field->ops->computeFaceData) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data\n");
+    if (!field->ops->computeFaceData) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data");
     ierr = (*field->ops->computeFaceData) (field, pointIS, quad, g);CHKERRQ(ierr);
   }
   *geom = g;

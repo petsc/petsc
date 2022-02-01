@@ -62,7 +62,7 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
       icols[j*m+i] = (j) ? icols[(j-1)*m+i] : 0;  /* handle case where row is EMPTY */
     }
   }
-  ierr = PetscInfo2(A,"Percentage of 0's introduced for vectorized multiply %g. Rmax= %D\n",1.0-((double)a->nz)/((double)(rmax*m)),rmax);CHKERRQ(ierr);
+  ierr = PetscInfo2(A,"Percentage of 0's introduced for vectorized multiply %g. Rmax= %" PetscInt_FMT "\n",1.0-((double)a->nz)/((double)(rmax*m)),rmax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

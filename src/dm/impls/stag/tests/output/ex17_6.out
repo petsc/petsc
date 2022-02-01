@@ -1,0 +1,36 @@
+DM Object: 1 MPI processes
+  type: stag
+Dimension: 1
+Global size: 8
+Boundary ghosting: NONE
+Elementwise ghost stencil: BOX, width 1
+1 DOF per vertex  (0D)
+1 DOF per element (1D)
+[0] Local elements : 8 (9 with ghosts)
+[0] Local native entries: 17
+[0] Local entries total : 18
+Test 1
+IS Object: 1 MPI processes
+  type: general
+Number of indices in set 8
+0 1
+1 3
+2 5
+3 7
+4 9
+5 11
+6 13
+7 15
+Test 2
+IS Object: 1 MPI processes
+  type: general
+Number of indices in set 9
+0 0
+1 2
+2 4
+3 6
+4 8
+5 10
+6 12
+7 14
+8 16

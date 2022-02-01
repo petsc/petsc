@@ -54,7 +54,7 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
   ierr = MatNullSpaceGetVecs(nullspace, NULL, &Nv, &nullvecs);CHKERRQ(ierr);
   if (Nv != 1) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Can only handle a single null vector for pressure, not %D", Nv);
   ierr = VecDot(nullvecs[0], u, &pintd);CHKERRQ(ierr);
-  if (PetscAbsScalar(pintd) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g\n", (double) PetscRealPart(pintd));
+  if (PetscAbsScalar(pintd) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g", (double) PetscRealPart(pintd));
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &intc, Nf, &intn);CHKERRQ(ierr);
   ierr = DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, ctx);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
   ierr = VecAXPY(u, -intc[pfield]/intn[pfield], nullvecs[0]);CHKERRQ(ierr);
 #if defined (PETSC_USE_DEBUG)
   ierr = DMPlexComputeIntegralFEM(dm, u, intc, ctx);CHKERRQ(ierr);
-  if (PetscAbsScalar(intc[pfield]) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g\n", (double) PetscRealPart(intc[pfield]));
+  if (PetscAbsScalar(intc[pfield]) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double) PetscRealPart(intc[pfield]));
 #endif
   ierr = PetscFree2(intc, intn);CHKERRQ(ierr);
   PetscFunctionReturn(0);

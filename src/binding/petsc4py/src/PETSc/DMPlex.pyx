@@ -669,6 +669,9 @@ cdef class DMPlex(DM):
 
     # Metric
 
+    def metricSetFromOptions(self):
+        CHKERR( DMPlexMetricSetFromOptions(self.dm) )
+
     def metricSetIsotropic(self, PetscBool isotropic):
         CHKERR( DMPlexMetricSetIsotropic(self.dm, isotropic) )
 
@@ -789,7 +792,13 @@ cdef class DMPlex(DM):
         return metric
 
     def metricEnforceSPD(self, Vec metric, restrictSizes=False, restrictAnisotropy=False):
-        CHKERR( DMPlexMetricEnforceSPD(self.dm, restrictSizes, restrictAnisotropy, metric.vec) )
+        cdef Vec ometric = Vec()
+        cdef Vec determinant = Vec()
+        cdef DM dmDet = DM()
+        CHKERR( DMPlexMetricEnforceSPD(self.dm, metric.vec, restrictSizes, restrictAnisotropy, &ometric.vec, &determinant.vec) )
+        CHKERR( VecGetDM(determinant.vec, &dmDet.dm) )
+        CHKERR( DMDestroy(&dmDet.dm) )
+        return ometric
 
     def metricNormalize(self, Vec metric, restrictSizes=True, restrictAnisotropy=True):
         cdef Vec ometric = Vec()
@@ -850,8 +859,8 @@ cdef class DMPlex(DM):
     def coordinatesLoad(self, Viewer viewer, SF sfxc):
         CHKERR( DMPlexCoordinatesLoad(self.dm, viewer.vwr, sfxc.sf))
 
-    def labelsLoad(self, Viewer viewer):
-        CHKERR( DMPlexLabelsLoad(self.dm, viewer.vwr))
+    def labelsLoad(self, Viewer viewer, SF sfxc):
+        CHKERR( DMPlexLabelsLoad(self.dm, viewer.vwr, sfxc.sf))
 
     def sectionLoad(self, Viewer viewer, DM sectiondm, SF sfxc):
         cdef SF gsf = SF()

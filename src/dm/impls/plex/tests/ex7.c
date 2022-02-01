@@ -387,7 +387,7 @@ int main(int argc, char **argv)
     # Two cell test meshes 0-7
     test:
       suffix: 0
-      args: -dim 2 -dm_plex_interpolate -dm_view ascii::ascii_info_detail
+      args: -dim 2 -dm_view ascii::ascii_info_detail
     test:
       suffix: 1
       nsize: 2

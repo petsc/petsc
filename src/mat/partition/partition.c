@@ -124,7 +124,7 @@ PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscI
 
   PetscFunctionBegin;
   l2p = PetscLog2Real(p);
-  if (l2p - (PetscInt)PetscLog2Real(p)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%D is not a power of 2",p);
+  if (l2p - (PetscInt)PetscLog2Real(p)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%" PetscInt_FMT " is not a power of 2",p);
   if (!p) PetscFunctionReturn(0);
   ierr = PetscArrayzero(seps,2*p-2);CHKERRQ(ierr);
   ierr = PetscArrayzero(level,p-1);CHKERRQ(ierr);
@@ -438,7 +438,7 @@ PetscErrorCode  MatPartitioningViewImbalance(MatPartitioning matp, IS partitioni
   ierr = PetscFree2(subdomainsizes,subdomainsizes_tmp);CHKERRQ(ierr);
   ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);
   ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Partitioning Imbalance Info: Max %D, Min %D, Avg %D, R %g\n",maxsub, minsub, avgsub, (double)(maxsub/(PetscReal)minsub));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Partitioning Imbalance Info: Max %" PetscInt_FMT ", Min %" PetscInt_FMT ", Avg %" PetscInt_FMT ", R %g\n",maxsub, minsub, avgsub, (double)(maxsub/(PetscReal)minsub));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,45 +1,45 @@
 DM Object: Mesh 1 MPI processes
   type: plex
 Mesh in 2 dimensions:
-  0-cells: 4225
-  1-cells: 12416
-  2-cells: 8192
+  Number of 0-cells per rank: 4225
+  Number of 1-cells per rank: 12416
+  Number of 2-cells per rank: 8192
 Labels:
   marker: 4 strata with value/size (4 (129), 1 (127), 2 (129), 3 (127))
   Face Sets: 4 strata with value/size (1 (126), 4 (126), 2 (126), 3 (126))
   depth: 3 strata with value/size (0 (4225), 1 (12416), 2 (8192))
   DM_0x84000000_1 in 2 dimensions:
-    0-cells:   1230  
-    1-cells:   3555  
-    2-cells:   2326  
+    Number of 0-cells per rank:   1230  
+    Number of 1-cells per rank:   3555  
+    Number of 2-cells per rank:   2326  
   Labels:
     marker: 4 strata with value/size (4 (33), 1 (33), 2 (33), 3 (33))
     depth: 3 strata with value/size (0 (1230), 1 (3555), 2 (2326))
     DM_0x84000000_2 in 2 dimensions:
-      0-cells:     414    
-      1-cells:     1171    
-      2-cells:     758    
+      Number of 0-cells per rank:     414    
+      Number of 1-cells per rank:     1171    
+      Number of 2-cells per rank:     758    
     Labels:
       marker: 4 strata with value/size (1 (17), 4 (17), 2 (17), 3 (17))
       depth: 3 strata with value/size (0 (414), 1 (1171), 2 (758))
       DM_0x84000000_3 in 2 dimensions:
-        0-cells:       144      
-        1-cells:       391      
-        2-cells:       248      
+        Number of 0-cells per rank:       144      
+        Number of 1-cells per rank:       391      
+        Number of 2-cells per rank:       248      
       Labels:
         marker: 4 strata with value/size (1 (9), 4 (10), 2 (10), 3 (9))
         depth: 3 strata with value/size (0 (144), 1 (391), 2 (248))
         DM_0x84000000_4 in 2 dimensions:
-          0-cells:         53        
-          1-cells:         132        
-          2-cells:         80        
+          Number of 0-cells per rank:         53        
+          Number of 1-cells per rank:         132        
+          Number of 2-cells per rank:         80        
         Labels:
           marker: 4 strata with value/size (1 (8), 4 (6), 2 (6), 3 (4))
           depth: 3 strata with value/size (0 (53), 1 (132), 2 (80))
           DM_0x84000000_5 in 2 dimensions:
-            0-cells:           26          
-            1-cells:           58          
-            2-cells:           33          
+            Number of 0-cells per rank:           26          
+            Number of 1-cells per rank:           58          
+            Number of 2-cells per rank:           33          
           Labels:
             marker: 4 strata with value/size (1 (5), 4 (5), 2 (5), 3 (2))
             depth: 3 strata with value/size (0 (26), 1 (58), 2 (33))

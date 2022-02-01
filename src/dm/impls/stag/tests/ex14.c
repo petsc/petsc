@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   /* Create a DMStag object */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Supply -dim option with value 1, 2, or 3\n");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Supply -dim option with value 1, 2, or 3");
   setSizes = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-setsizes",&setSizes,NULL);CHKERRQ(ierr);
   if (setSizes) {

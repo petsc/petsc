@@ -97,7 +97,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   }
 
   /* Motivate dimension choice */
-  ierr = PetscInfo1(NULL,"   Allocating %d nonzeros: ",n_alloc);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"   Allocating %" PetscInt_FMT " nonzeros: ",n_alloc);CHKERRQ(ierr);
   if (n_alloc_max == n_alloc_est) {
     ierr = PetscInfo(NULL,"this is the correct size\n");CHKERRQ(ierr);
   } else if (n_alloc_now >= n_alloc_est) {
@@ -105,7 +105,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   } else if (n_alloc_max < n_alloc_est * (1+xtra_perc/100.0)) {
     ierr = PetscInfo(NULL,"the maximum estimate\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo1(NULL,"%6.2f %% more than the estimate\n",xtra_perc);CHKERRQ(ierr);
+    ierr = PetscInfo1(NULL,"%6.2f %% more than the estimate\n",(double)xtra_perc);CHKERRQ(ierr);
   }
 
   /**********************************************************
@@ -349,7 +349,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
     diag[i] = val[i];
     if (PetscRealPart(diag[i])<droptol) {
       ierr = PetscInfo(NULL,"Error in spbas_incomplete_cholesky:\n");CHKERRQ(ierr);
-      ierr = PetscInfo1(NULL,"Negative diagonal in row %d\n",i+1);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"Negative diagonal in row %" PetscInt_FMT "\n",i+1);CHKERRQ(ierr);
 
       /* Delete the whole matrix at once. */
       ierr = spbas_delete(retval);CHKERRQ(ierr);

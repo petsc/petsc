@@ -101,6 +101,8 @@ def chkenable():
     if name.find(no_break_space) >= 0:
       sys.exit(ValueError('Unicode NO-BREAK SPACE char found in arguments! Please rerun configure using regular space chars: %s' % [name]))
     name = name.replace(en_dash,'-')
+    if hasattr(name,'isprintable') and not name.isprintable():
+      sys.exit(ValueError('Non-printable characters or control characters found in arguments! Please rerun configure using only printable character arguments: %s' % [name]))
     if name.lstrip('-').startswith('enable-cxx'):
       if name.find('=') == -1:
         name = name.replace('enable-cxx','with-clanguage=C++',1)
@@ -157,6 +159,7 @@ def chksynonyms():
     name = name.replace('with-mpich','with-mpi')
     name = name.replace('with-blas-lapack','with-blaslapack')
     name = name.replace('with-cuda-gencodearch','with-cuda-arch')
+    name = name.replace('download-hdf5-fortran-bindings','with-hdf5-fortran-bindings')
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
       if name.find('=') == -1:
@@ -380,21 +383,15 @@ def print_final_timestamp(framework):
   return
 
 def petsc_configure(configure_options):
-  if 'PETSC_DIR' in os.environ:
-    petscdir = os.environ['PETSC_DIR']
-    if petscdir.find(' ') > -1:
-      raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
-    if not os.path.isabs(petscdir):
-      raise RuntimeError('PETSC_DIR ("'+petscdir+'") is set as a relative path. It must be set as an absolute path.')
-
-    try:
-      sys.path.append(os.path.join(petscdir,'lib','petsc','bin'))
-      import petscnagupgrade
-      file     = os.path.join(petscdir,'.nagged')
-      if not petscnagupgrade.naggedtoday(file):
-        petscnagupgrade.currentversion(petscdir)
-    except:
-      pass
+  petscdir = os.getcwd()
+  try:
+    sys.path.append(os.path.join(petscdir,'lib','petsc','bin'))
+    import petscnagupgrade
+    file     = os.path.join(petscdir,'.nagged')
+    if not petscnagupgrade.naggedtoday(file):
+      petscnagupgrade.currentversion(petscdir)
+  except:
+    pass
   banner_line = banner_length*'='
   print(banner_line)
   print('Configuring PETSc to compile on your system'.center(banner_length))

@@ -28,7 +28,7 @@ class Configure(config.package.Package):
                               ['cuda.lib']]
     self.liblist           = 'dummy' # existence of self.liblist is used by package.py to determine if --with-cuda-lib must be provided
     self.precisions        = ['single','double']
-    self.cxx               = 1
+    self.buildLanguages    = ['CUDA']
     self.complex           = 1
     self.hastests          = 0
     self.hastestsdatafiles = 0
@@ -65,8 +65,8 @@ class Configure(config.package.Package):
     return
 
   def getSearchDirectories(self):
-    for i in config.package.Package.getSearchDirectories(self): yield i
     yield self.cudaDir
+    for i in config.package.Package.getSearchDirectories(self): yield i
     return
 
   def getIncludeDirs(self, prefix, includeDir):
@@ -123,22 +123,23 @@ class Configure(config.package.Package):
     # D) /path/nvhpc/Linux_x86_64/21.7/cuda/11.4/lib64, by --with-cuda-dir=/path/Linux_x86_64/21.7/cuda/11.4
 
     # directory is None (''). Test if the compiler by default supports all libraries including the stub
-    if not directory:
+    if not directory and not self.isnvhpc:
       self.liblist = [self.basicliblist[0]+self.mathliblist[0]+self.stubliblist[0]] + [self.basicliblist[1]+self.mathliblist[1]+self.stubliblist[1]]
       liblist      = config.package.Package.generateLibList(self, directory)
       return liblist
 
     # 'directory' is in format A, with basic and math libraries in one directory.
     liblist           = [] # initialize
-    toolkitCudaLibDir = directory
-    toolkitStubLibDir = os.path.join(toolkitCudaLibDir,'stubs')
-    if os.path.isdir(toolkitCudaLibDir) and os.path.isdir(toolkitStubLibDir):
-      self.libraries.addRpathSkipDir(toolkitStubLibDir)
-      self.liblist = [self.basicliblist[0]+self.mathliblist[0]] + [self.basicliblist[1]+self.mathliblist[1]]
-      liblist      = config.package.Package.generateLibList(self, toolkitCudaLibDir)
-      self.liblist = self.stubliblist
-      stubliblist  = config.package.Package.generateLibList(self,toolkitStubLibDir)
-      liblist      = [liblist[0]+stubliblist[0],liblist[1]+stubliblist[1]]
+    if not self.isnvhpc:
+      toolkitCudaLibDir = directory
+      toolkitStubLibDir = os.path.join(toolkitCudaLibDir,'stubs')
+      if os.path.isdir(toolkitCudaLibDir) and os.path.isdir(toolkitStubLibDir):
+        self.libraries.addRpathSkipDir(toolkitStubLibDir)
+        self.liblist = [self.basicliblist[0]+self.mathliblist[0]] + [self.basicliblist[1]+self.mathliblist[1]]
+        liblist      = config.package.Package.generateLibList(self, toolkitCudaLibDir)
+        self.liblist = self.stubliblist
+        stubliblist  = config.package.Package.generateLibList(self,toolkitStubLibDir)
+        liblist      = [liblist[0]+stubliblist[0],liblist[1]+stubliblist[1]]
 
     # 'directory' is in format B or C, and we peel 'directory' two times.
     nvhpcDir        = os.path.dirname(os.path.dirname(directory)) # /path/nvhpc/Linux_x86_64/21.7
@@ -341,6 +342,7 @@ to set the right generation for your hardware.')
         self.addDefine('CUDA_GENERATION',self.cudaArch)
 
     self.addDefine('HAVE_CUDA','1')
+    self.addDefine('HAVE_CUPM','1') # Have either CUDA or HIP
     if not self.version_tuple:
       self.checkVersion(); # set version_tuple
     if self.version_tuple[0] >= 11:

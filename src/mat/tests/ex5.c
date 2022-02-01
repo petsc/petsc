@@ -253,7 +253,7 @@ int main(int argc,char **args)
       args: -mat_type mpiaijkokkos -vec_type kokkos -test_diagonalscale
       filter: grep -v type
       output_file: output/ex5_33.out
-      requires: kokkos_kernels
+      requires: !sycl kokkos_kernels
 
    test:
       suffix: aijcusparse_1

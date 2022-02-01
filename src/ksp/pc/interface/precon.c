@@ -267,7 +267,7 @@ PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 /*@
    PCSetUseAmat - Sets a flag to indicate that when the preconditioner needs to apply (part of) the
    operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(),
-   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperator() or PCSetOperator() not the Pmat.
+   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperators() or PCSetOperators() not the Pmat.
 
    Logically Collective on PC
 
@@ -326,7 +326,7 @@ PetscErrorCode  PCSetErrorIfFailure(PC pc,PetscBool flg)
 /*@
    PCGetUseAmat - Gets a flag to indicate that when the preconditioner needs to apply (part of) the
    operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(),
-   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperator() or PCSetOperator() not the Pmat.
+   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperators() or PCSetOperators() not the Pmat.
 
    Logically Collective on PC
 
@@ -1011,6 +1011,7 @@ PetscErrorCode  PCSetUp(PC pc)
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
     /* do not log solves and applications of preconditioners while constructing preconditioners; perhaps they should be logged separately from the regular solves */
+    ierr = KSPInitializePackage();CHKERRQ(ierr);
     ierr = PetscLogEventDeactivatePush(KSP_Solve);CHKERRQ(ierr);
     ierr = PetscLogEventDeactivatePush(PC_Apply);CHKERRQ(ierr);
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);

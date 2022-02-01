@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-vsize",&vsize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-order",NULL,&order);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-array_view",&vwr,NULL,NULL);CHKERRQ(ierr);
-  if (n<1 || r<1 || d<1 || d>n) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Wrong input n=%" PetscInt_FMT ",r=%" PetscInt_FMT ",d=%" PetscInt_FMT ". They must be >=1 and n>=d\n",n,r,d);
+  if (n<1 || r<1 || d<1 || d>n) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Wrong input n=%" PetscInt_FMT ",r=%" PetscInt_FMT ",d=%" PetscInt_FMT ". They must be >=1 and n>=d",n,r,d);
 
   ierr = PetscCalloc6(n,&X,n,&X1,n,&XR,n,&XSO,n,&Y,n,&Z);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);

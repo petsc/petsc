@@ -53,10 +53,10 @@ Label 'depth':
 DM Object: First Mesh 1 MPI processes
   type: plex
 First Mesh in 3 dimensions:
-  0-cells: 18
-  1-cells: 64
-  2-cells: 78
-  3-cells: 31
+  Number of 0-cells per rank: 18
+  Number of 1-cells per rank: 64
+  Number of 2-cells per rank: 78
+  Number of 3-cells per rank: 31
 Labels:
   celltype: 4 strata with value/size (0 (18), 6 (31), 3 (78), 1 (64))
   depth: 4 strata with value/size (0 (18), 1 (64), 2 (78), 3 (31))
@@ -233,10 +233,10 @@ Label 'universal':
 DM Object: Second Mesh 1 MPI processes
   type: plex
 Second Mesh in 3 dimensions:
-  0-cells: 18
-  1-cells: 64
-  2-cells: 78
-  3-cells: 31
+  Number of 0-cells per rank: 18
+  Number of 1-cells per rank: 64
+  Number of 2-cells per rank: 78
+  Number of 3-cells per rank: 31
 Labels:
   celltype: 4 strata with value/size (0 (18), 6 (31), 3 (78), 1 (64))
   depth: 4 strata with value/size (0 (18), 1 (64), 2 (78), 3 (31))

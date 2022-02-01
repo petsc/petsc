@@ -1,10 +1,10 @@
 DM Object: Mesh 1 MPI processes
   type: plex
 Mesh in 3 dimensions:
-  0-cells: 162
-  1-cells: 497 (81)
-  2-cells: 464 (208)
-  3-cells: 128
+  Number of 0-cells per rank: 162
+  Number of 1-cells per rank: 497 (81)
+  Number of 2-cells per rank: 464 (208)
+  Number of 3-cells per rank: 128
 Labels:
   celltype: 6 strata with value/size (3 (256), 9 (128), 0 (162), 2 (81), 1 (416), 5 (208))
   depth: 4 strata with value/size (0 (162), 1 (497), 2 (464), 3 (128))

@@ -78,14 +78,8 @@ PetscInt PCTFS_ct_bits(char *ptr, PetscInt n)
 /*********************************bit_mask.c***********************************/
 PetscInt PCTFS_div_ceil(PetscInt numer,  PetscInt denom)
 {
-  PetscInt rt_val;
-
-  if ((numer<0)||(denom<=0)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);
-
-  /* if integer division remainder then increment */
-  rt_val = numer/denom;
-  if (numer%denom) rt_val++;
-  return(rt_val);
+  if ((numer<0)||(denom<=0)) SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_div_ceil() :: numer=%D ! >=0, denom=%D ! >0");
+  return(PetscCeilInt(numer,denom));
 }
 
 /*********************************bit_mask.c***********************************/
@@ -95,10 +89,8 @@ PetscInt PCTFS_len_bit_mask(PetscInt num_items)
 
   if (num_items<0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Value Sent To PCTFS_len_bit_mask() Must be >= 0!");
 
-  /* mod BYTE ceiling function */
-  rt_val = num_items/BYTE;
-  if (num_items%BYTE) rt_val++;
-  /* make mults of sizeof int */
+  rt_val = PetscCeilInt(num_items,BYTE);
+  /* make multiple of sizeof PetscInt */
   if ((tmp=rt_val%sizeof(PetscInt))) rt_val+=(sizeof(PetscInt)-tmp);
   return(rt_val);
 }

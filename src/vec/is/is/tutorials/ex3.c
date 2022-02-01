@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(set,&indices);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Printing indices directly\n");CHKERRQ(ierr);
   for (i=0; i<issize; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%D\n",indices[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "\n",indices[i]);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(set,&indices);CHKERRQ(ierr);
 
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = ISBlockGetIndices(set,&indices);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Printing block indices directly\n");CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%D\n",indices[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "\n",indices[i]);CHKERRQ(ierr);
   }
   ierr = ISBlockRestoreIndices(set,&indices);CHKERRQ(ierr);
 

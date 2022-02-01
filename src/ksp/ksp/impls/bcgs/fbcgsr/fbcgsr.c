@@ -154,8 +154,12 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     xi4  = outsums[3];
 
     /* test denominator */
-    if (xi3 == 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
-    if (sigma == 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
+    if ((xi3 == 0.0) || (sigma == 0.0)) {
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to zero inner product");
+      else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr  = PetscInfo(ksp,"KSPSolve has failed due to zero inner product\n");CHKERRQ(ierr);
+      break;
+    }
 
     /* scalar updates */
     omega = xi2 / xi3;

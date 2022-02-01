@@ -37,14 +37,14 @@ static PetscErrorCode GenEntriesRectangular(PetscInt sdim,PetscInt M,PetscInt N,
 int main(int argc,char **argv)
 {
   Mat            A,AT,D,B,P,R,RT;
-  PetscInt       m = 100,dim = 3,M,K = 10,begin,n = 0,N;
+  PetscInt       m = 100,dim = 3,M,K = 10,begin,n = 0,N,bs;
   PetscMPIInt    size;
   PetscScalar    *ptr;
   PetscReal      *coords,*gcoords,*scoords,*gscoords,*(ctx[2]),norm,epsilon;
   MatHtoolKernel kernel = GenEntries;
   PetscBool      flg,sym = PETSC_FALSE;
   PetscRandom    rdm;
-  IS             iss,ist;
+  IS             iss,ist,is[2];
   Vec            right,left,perm;
   PetscErrorCode ierr;
 
@@ -75,6 +75,18 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatViewFromOptions(A,NULL,"-A_view");CHKERRQ(ierr);
+  ierr = MatGetOwnershipIS(A,is,NULL);CHKERRQ(ierr);
+  ierr = ISDuplicate(is[0],is+1);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap(A,1,is,2);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(A,2);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap(A,1,is+1,1);CHKERRQ(ierr);
+  ierr = ISGetBlockSize(is[1],&bs);CHKERRQ(ierr);
+  if (bs != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Incorrect block size %" PetscInt_FMT " != 2",bs);
+  ierr = MatSetBlockSize(A,1);CHKERRQ(ierr);
+  ierr = ISEqual(is[0],is[1],&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unequal index sets");
+  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(is+1);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&right,&left);CHKERRQ(ierr);
   ierr = VecSetRandom(right,rdm);CHKERRQ(ierr);
   ierr = MatMult(A,right,left);CHKERRQ(ierr);
@@ -118,6 +130,8 @@ int main(int argc,char **argv)
     ierr = MatViewFromOptions(D,NULL,"-D_view");CHKERRQ(ierr);
     ierr = MatMultEqual(A,D,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Ax != Dx");
+    ierr = MatMultTransposeEqual(A,D,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"A^Tx != D^Tx");
     ierr = MatMultAddEqual(A,D,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"y+Ax != y+Dx");
     ierr = MatGetOwnershipRange(B,&begin,NULL);CHKERRQ(ierr);
@@ -144,6 +158,8 @@ int main(int argc,char **argv)
     ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatMatMultEqual(A,B,P,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ABx != Px");
+    ierr = MatTransposeMatMultEqual(A,B,P,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"A^TBx != P^Tx");
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = MatDestroy(&P);CHKERRQ(ierr);
     if (n) {

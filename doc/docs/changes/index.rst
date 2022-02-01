@@ -1,10 +1,12 @@
-=======
-Changes
-=======
+========================
+Changes for each release
+========================
 
 We will continually add new features and enhanced functionality in
 upcoming releases; **small changes in usage and calling sequences of
-PETSc routines will continue to occur**. Although keeping one's code
+PETSc routines will continue to occur**. We use the C/C++ deprecation
+feature (which prints deprecation warnings) to allow users to continue
+to use older interfaces until they update their codes. Although keeping one's code
 accordingly up-to-date can be annoying, all PETSc users will be
 rewarded in the long run with a cleaner, better designed, and
 easier-to-use interface.

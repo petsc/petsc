@@ -187,7 +187,7 @@ cdef extern from * nogil:
     int MatDestroy(PetscMat*)
     int MatCreate(MPI_Comm,PetscMat*)
 
-    int MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscMat*)
+    int MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscLGMap,PetscMat*)
     int MatISGetLocalMat(PetscMat,PetscMat*)
     int MatISGetMPIXAIJ(PetscMat,PetscMatReuse,PetscMat*)
 
@@ -197,6 +197,8 @@ cdef extern from * nogil:
 
     int MatCreateNormal(PetscMat,PetscMat*)
     int MatCreateTranspose(PetscMat,PetscMat*)
+    int MatCreateNormalHermitian(PetscMat,PetscMat*)
+    int MatCreateHermitianTranspose(PetscMat,PetscMat*)
     int MatCreateLRC(PetscMat,PetscMat,PetscVec,PetscMat,PetscMat*)
     int MatCreateSubMatrixVirtual(PetscMat,PetscIS,PetscIS,PetscMat*)
     int MatCreateRedundantMatrix(PetscMat,PetscInt,MPI_Comm,PetscMatReuse,PetscMat*)
@@ -211,6 +213,8 @@ cdef extern from * nogil:
     int MatSetBlockSize(PetscMat,PetscInt)
     int MatSetBlockSizes(PetscMat,PetscInt,PetscInt)
     int MatSetType(PetscMat,PetscMatType)
+    int MatSetVecType(PetscMat,PetscVecType)
+    int MatGetVecType(PetscMat,PetscVecType*)
     int MatSetOption(PetscMat,PetscMatOption,PetscBool)
 
     enum: MAT_SKIP_ALLOCATION
@@ -303,6 +307,7 @@ cdef extern from * nogil:
     int MatScale(PetscMat,PetscScalar)
     int MatShift(PetscMat,PetscScalar)
     int MatChop(PetscMat,PetscReal)
+    int MatSetRandom(PetscMat,PetscRandom)
     int MatAXPY(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatAYPX(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
@@ -310,6 +315,8 @@ cdef extern from * nogil:
     int MatTransposeMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
 
     int MatPtAP(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    int MatRARt(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    int MatMatMatMult(PetscMat,PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
     int MatSeqAIJKron(PetscMat,PetscMat,PetscMatReuse,PetscMat*)
 
     int MatInterpolate(PetscMat,PetscVec,PetscVec)
@@ -443,7 +450,7 @@ cdef extern from * nogil:
 
 cdef extern from "custom.h" nogil:
     int MatIsPreallocated(PetscMat,PetscBool*)
-    int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*)
+    int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*,PetscBool*)
 
 cdef extern from "libpetsc4py.h":
     PetscMatType MATPYTHON
@@ -679,8 +686,8 @@ cdef inline int Mat_Create(
 
 cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
     #
-    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE
-    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij))
+    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE, aijis=PETSC_FALSE
+    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij, &aijis))
     # local row size and block size
     cdef PetscInt m=0, bs=1
     CHKERR( MatGetLocalSize(A, &m, NULL) )
@@ -724,12 +731,14 @@ cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
     if sbaij == PETSC_TRUE:
         CHKERR( MatSeqSBAIJSetPreallocation(A, bs, d_nz, d_nnz) )
         CHKERR( MatMPISBAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
+    if aijis == PETSC_TRUE:
+        CHKERR( MatISSetPreallocation(A, d_nz, d_nnz, o_nz, o_nnz) )
     return 0
 
 cdef inline int Mat_AllocAIJ_CSR(PetscMat A, object CSR) except -1:
     #
-    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE
-    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij))
+    cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE, aijis=PETSC_FALSE
+    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij, &aijis))
     # local row size and block size
     cdef PetscInt m=0, bs = 1
     CHKERR( MatGetLocalSize(A, &m, NULL) )

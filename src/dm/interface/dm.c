@@ -782,8 +782,8 @@ PetscErrorCode  DMDestroy(DM *dm)
   }
   ierr = DMMonitorCancel(*dm);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_LIBCEED
-  ierr = CeedElemRestrictionDestroy(&(*dm)->ceedERestrict);CHKERRQ(ierr);
-  ierr = CeedDestroy(&(*dm)->ceed);CHKERRQ(ierr);
+  ierr = CeedElemRestrictionDestroy(&(*dm)->ceedERestrict);CHKERRQ_CEED(ierr);
+  ierr = CeedDestroy(&(*dm)->ceed);CHKERRQ_CEED(ierr);
 #endif
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
@@ -1029,7 +1029,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
     DM vdm;
 
     ierr = VecGetDM(*vec,&vdm);CHKERRQ(ierr);
-    if (!vdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"DM type '%s' did not attach the DM to the vector\n",((PetscObject)dm)->type_name);
+    if (!vdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"DM type '%s' did not attach the DM to the vector",((PetscObject)dm)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1063,7 +1063,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
     DM vdm;
 
     ierr = VecGetDM(*vec,&vdm);CHKERRQ(ierr);
-    if (!vdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"DM type '%s' did not attach the DM to the vector\n",((PetscObject)dm)->type_name);
+    if (!vdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"DM type '%s' did not attach the DM to the vector",((PetscObject)dm)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1109,7 +1109,7 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = PetscSectionGetStorageSize(section, &n);CHKERRQ(ierr);
       ierr = PetscMalloc1(n, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
       for (p = pStart, l = 0; p < pEnd; ++p) {
-        PetscInt bdof, cdof, dof, off, c, cind = 0;
+        PetscInt bdof, cdof, dof, off, c, cind;
 
         /* Should probably use constrained dofs */
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -1122,9 +1122,13 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
           if (bs < 0)          {bs = bdof;}
           else if (bs != bdof) {bs = 1;}
         }
-        for (c = 0; c < dof; ++c, ++l) {
-          if ((cind < cdof) && (c == cdofs[cind])) ltog[l] = off < 0 ? off-c : off+c;
-          else                                     ltog[l] = (off < 0 ? -(off+1) : off) + c;
+        for (c = 0, cind = 0; c < dof; ++c, ++l) {
+          if ((cind < cdof) && (c == cdofs[cind])) {
+            ltog[l] = off < 0 ? off-c : -(off+c+1);
+            cind++;
+          } else {
+            ltog[l] = (off < 0 ? -(off+1) : off) + c;
+          }
         }
       }
       /* Must have same blocksize on all procs (some might have no points) */
@@ -1447,7 +1451,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
     DM mdm;
 
     ierr = MatGetDM(*mat,&mdm);CHKERRQ(ierr);
-    if (!mdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"DM type '%s' did not attach the DM to the matrix\n",((PetscObject)dm)->type_name);
+    if (!mdm) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"DM type '%s' did not attach the DM to the matrix",((PetscObject)dm)->type_name);
   }
   /* Handle nullspace and near nullspace */
   if (dm->Nf) {
@@ -5695,19 +5699,18 @@ PetscErrorCode DMCreateDS(DM dm)
     PetscInt *fld, nf;
 
     for (f = 0, nf = 0; f < Nf; ++f) if (!dm->fields[f].label) ++nf;
-    if (nf) {
-      ierr = PetscMalloc1(nf, &fld);CHKERRQ(ierr);
-      for (f = 0, nf = 0; f < Nf; ++f) if (!dm->fields[f].label) fld[nf++] = f;
-      ierr = ISCreate(PETSC_COMM_SELF, &fields);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject) fields, "dm_fields_");CHKERRQ(ierr);
-      ierr = ISSetType(fields, ISGENERAL);CHKERRQ(ierr);
-      ierr = ISGeneralSetIndices(fields, nf, fld, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    if (!nf) SETERRQ(comm, PETSC_ERR_PLIB, "All fields have labels, but we are trying to create a default DS");
+    ierr = PetscMalloc1(nf, &fld);CHKERRQ(ierr);
+    for (f = 0, nf = 0; f < Nf; ++f) if (!dm->fields[f].label) fld[nf++] = f;
+    ierr = ISCreate(PETSC_COMM_SELF, &fields);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) fields, "dm_fields_");CHKERRQ(ierr);
+    ierr = ISSetType(fields, ISGENERAL);CHKERRQ(ierr);
+    ierr = ISGeneralSetIndices(fields, nf, fld, PETSC_OWN_POINTER);CHKERRQ(ierr);
 
-      ierr = PetscDSCreate(PETSC_COMM_SELF, &dsDef);CHKERRQ(ierr);
-      ierr = DMSetRegionDS(dm, NULL, fields, dsDef);CHKERRQ(ierr);
-      ierr = PetscDSDestroy(&dsDef);CHKERRQ(ierr);
-      ierr = ISDestroy(&fields);CHKERRQ(ierr);
-    }
+    ierr = PetscDSCreate(PETSC_COMM_SELF, &dsDef);CHKERRQ(ierr);
+    ierr = DMSetRegionDS(dm, NULL, fields, dsDef);CHKERRQ(ierr);
+    ierr = PetscDSDestroy(&dsDef);CHKERRQ(ierr);
+    ierr = ISDestroy(&fields);CHKERRQ(ierr);
   }
   ierr = DMGetRegionDS(dm, NULL, NULL, &dsDef);CHKERRQ(ierr);
   if (dsDef) {ierr = PetscDSSetCoordinateDimension(dsDef, dE);CHKERRQ(ierr);}
@@ -5724,6 +5727,7 @@ PetscErrorCode DMCreateDS(DM dm)
     ierr = DMPlexGetDepth(plex, &depth);CHKERRQ(ierr);
     ierr = DMGetStratumIS(plex, "dim", depth, &allcellIS);CHKERRQ(ierr);
     if (!allcellIS) {ierr = DMGetStratumIS(plex, "depth", depth, &allcellIS);CHKERRQ(ierr);}
+    /* TODO This looks like it only works for one label */
     for (l = 0; l < Nl; ++l) {
       DMLabel label = labelSet[l];
       IS      pointIS;
@@ -5752,8 +5756,8 @@ PetscErrorCode DMCreateDS(DM dm)
 
     ierr = PetscDSCreate(PETSC_COMM_SELF, &dsDef);CHKERRQ(ierr);
     ierr = DMSetRegionDS(dm, cellLabel, fieldIS, dsDef);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&cellLabel);CHKERRQ(ierr);
     ierr = PetscDSSetCoordinateDimension(dsDef, dE);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&cellLabel);CHKERRQ(ierr);
     ierr = PetscDSDestroy(&dsDef);CHKERRQ(ierr);
     ierr = ISDestroy(&fieldIS);CHKERRQ(ierr);
     ierr = DMDestroy(&plex);CHKERRQ(ierr);
@@ -5771,7 +5775,7 @@ PetscErrorCode DMCreateDS(DM dm)
     ierr = PetscDSCreate(PETSC_COMM_SELF, &ds);CHKERRQ(ierr);
     for (f = 0, nf = 0; f < Nf; ++f) if (label == dm->fields[f].label || !dm->fields[f].label) ++nf;
     ierr = PetscMalloc1(nf, &fld);CHKERRQ(ierr);
-    for (f = 0, nf = 0; f < Nf; ++f) if (label == dm->fields[f].label || !dm->fields[f].label) fld[nf++] = f;
+    for (f = 0, nf  = 0; f < Nf; ++f) if (label == dm->fields[f].label || !dm->fields[f].label) fld[nf++] = f;
     ierr = ISCreate(PETSC_COMM_SELF, &fields);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) fields, "dm_fields_");CHKERRQ(ierr);
     ierr = ISSetType(fields, ISGENERAL);CHKERRQ(ierr);
@@ -5782,7 +5786,7 @@ PetscErrorCode DMCreateDS(DM dm)
     {
       DMPolytopeType ct;
       PetscInt       lStart, lEnd;
-      PetscBool      isHybridLocal = PETSC_FALSE, isHybrid;
+      PetscBool      isCohesiveLocal = PETSC_FALSE, isCohesive;
 
       ierr = DMLabelGetBounds(label, &lStart, &lEnd);CHKERRQ(ierr);
       if (lStart >= 0) {
@@ -5792,12 +5796,20 @@ PetscErrorCode DMCreateDS(DM dm)
           case DM_POLYTOPE_SEG_PRISM_TENSOR:
           case DM_POLYTOPE_TRI_PRISM_TENSOR:
           case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-            isHybridLocal = PETSC_TRUE;break;
+            isCohesiveLocal = PETSC_TRUE;break;
           default: break;
         }
       }
-      ierr = MPI_Allreduce(&isHybridLocal, &isHybrid, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRMPI(ierr);
-      ierr = PetscDSSetHybrid(ds, isHybrid);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&isCohesiveLocal, &isCohesive, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRMPI(ierr);
+      for (f = 0, nf  = 0; f < Nf; ++f) {
+        if (label == dm->fields[f].label || !dm->fields[f].label) {
+          if (label == dm->fields[f].label) {
+            ierr = PetscDSSetDiscretization(ds, nf, NULL);CHKERRQ(ierr);
+            ierr = PetscDSSetCohesive(ds, nf, isCohesive);CHKERRQ(ierr);
+          }
+          ++nf;
+        }
+      }
     }
     ierr = PetscDSDestroy(&ds);CHKERRQ(ierr);
   }
@@ -5807,18 +5819,22 @@ PetscErrorCode DMCreateDS(DM dm)
     PetscDS         ds     = dm->probs[s].ds;
     IS              fields = dm->probs[s].fields;
     const PetscInt *fld;
-    PetscInt        nf;
+    PetscInt        nf, dsnf;
+    PetscBool       isCohesive;
 
+    ierr = PetscDSGetNumFields(ds, &dsnf);CHKERRQ(ierr);
+    ierr = PetscDSIsCohesive(ds, &isCohesive);CHKERRQ(ierr);
     ierr = ISGetLocalSize(fields, &nf);CHKERRQ(ierr);
     ierr = ISGetIndices(fields, &fld);CHKERRQ(ierr);
     for (f = 0; f < nf; ++f) {
       PetscObject  disc  = dm->fields[fld[f]].disc;
-      PetscBool    isHybrid;
+      PetscBool    isCohesiveField;
       PetscClassId id;
 
-      ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
-      /* If this is a cohesive cell, then it needs the lower dimensional discretization */
-      if (isHybrid && f < nf-1) {ierr = PetscFEGetHeightSubspace((PetscFE) disc, 1, (PetscFE *) &disc);CHKERRQ(ierr);}
+      /* Handle DS with no fields */
+      if (dsnf) {ierr = PetscDSGetCohesive(ds, f, &isCohesiveField);CHKERRQ(ierr);}
+      /* If this is a cohesive cell, then regular fields need the lower dimensional discretization */
+      if (isCohesive && !isCohesiveField) {ierr = PetscFEGetHeightSubspace((PetscFE) disc, 1, (PetscFE *) &disc);CHKERRQ(ierr);}
       ierr = PetscDSSetDiscretization(ds, f, disc);CHKERRQ(ierr);
       /* We allow people to have placeholder fields and construct the Section by hand */
       ierr = PetscObjectGetClassId(disc, &id);CHKERRQ(ierr);
@@ -5933,7 +5949,7 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
   PetscDS        dsNew;
   DSBoundary     b;
   PetscInt       cdim, Nf, f;
-  PetscBool      isHybrid;
+  PetscBool      isCohesive;
   void          *ctx;
   PetscErrorCode ierr;
 
@@ -5947,6 +5963,8 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
   for (f = 0; f < Nf; ++f) {
     ierr = PetscDSGetContext(ds, f, &ctx);CHKERRQ(ierr);
     ierr = PetscDSSetContext(dsNew, f, ctx);CHKERRQ(ierr);
+    ierr = PetscDSGetCohesive(ds, f, &isCohesive);CHKERRQ(ierr);
+    ierr = PetscDSSetCohesive(dsNew, f, isCohesive);CHKERRQ(ierr);
   }
   if (Nf) {
     ierr = PetscDSGetCoordinateDimension(ds, &cdim);CHKERRQ(ierr);
@@ -5958,8 +5976,6 @@ PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds
     /* Do not check if label exists here, since p4est calls this for the reference tree which does not have the labels */
     //if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s missing in new DM", name);
   }
-  ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
-  ierr = PetscDSSetHybrid(dsNew, isHybrid);CHKERRQ(ierr);
 
   ierr = DMSetRegionDS(dm, label, fields, dsNew);CHKERRQ(ierr);
   ierr = PetscDSDestroy(&dsNew);CHKERRQ(ierr);
@@ -6143,10 +6159,12 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   dm->dim = dim;
-  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
-  for (n = 0; n < Nds; ++n) {
-    ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
-    if (ds->dimEmbed < 0) {ierr = PetscDSSetCoordinateDimension(ds, dim);CHKERRQ(ierr);}
+  if (dm->dim >= 0) {
+    ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+    for (n = 0; n < Nds; ++n) {
+      ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
+      if (ds->dimEmbed < 0) {ierr = PetscDSSetCoordinateDimension(ds, dim);CHKERRQ(ierr);}
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -6611,10 +6629,12 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->dimEmbed = dim;
-  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
-  for (n = 0; n < Nds; ++n) {
-    ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
-    ierr = PetscDSSetCoordinateDimension(ds, dim);CHKERRQ(ierr);
+  if (dm->dim >= 0) {
+    ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+    for (n = 0; n < Nds; ++n) {
+      ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
+      ierr = PetscDSSetCoordinateDimension(ds, dim);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -8345,22 +8365,27 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
 /*@C
   DMCompareLabels - Compare labels of two DMPlex meshes
 
-  Collective on dmA
+  Collective
 
   Input Parameters:
 + dm0 - First DM object
 - dm1 - Second DM object
 
   Output Parameters
-+ same    - (Optional) Flag whether labels of dm0 and dm1 are the same
++ equal   - (Optional) Flag whether labels of dm0 and dm1 are the same
 - message - (Optional) Message describing the difference, or NULL if there is no difference
 
   Level: intermediate
 
   Notes:
-  If both same and message is passed as NULL, and difference is found, an error is thrown with a message describing the difference.
+  The output flag equal is the same on all processes.
+  If it is passed as NULL and difference is found, an error is thrown on all processes.
+  Make sure to pass NULL on all processes.
 
-  Message must be freed by user.
+  The output message is set independently on each rank.
+  It is set to NULL if no difference was found on the current rank. It must be freed by user.
+  If message is passed as NULL and difference is found, the difference description is printed to stderr in synchronized manner.
+  Make sure to pass NULL on all processes.
 
   Labels are matched by name. If the number of labels and their names are equal,
   DMLabelCompare() is used to compare each pair of labels with the same name.
@@ -8370,27 +8395,36 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
 
 .seealso: DMAddLabel(), DMCopyLabelsMode, DMLabelCompare()
 @*/
-PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *same, char **message)
+PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char **message)
 {
-  PetscInt        n0, n1, i;
+  PetscInt        n, i;
   char            msg[PETSC_MAX_PATH_LEN] = "";
+  PetscBool       eq;
   MPI_Comm        comm;
+  PetscMPIInt     rank;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm0,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm1,DM_CLASSID,2);
   PetscCheckSameComm(dm0,1,dm1,2);
-  if (same) PetscValidBoolPointer(same,3);
+  if (equal) PetscValidBoolPointer(equal,3);
   if (message) PetscValidPointer(message, 4);
   ierr = PetscObjectGetComm((PetscObject)dm0, &comm);CHKERRQ(ierr);
-  ierr = DMGetNumLabels(dm0, &n0);CHKERRQ(ierr);
-  ierr = DMGetNumLabels(dm1, &n1);CHKERRQ(ierr);
-  if (n0 != n1) {
-    ierr = PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %D != %D = Number of labels in dm1", n0, n1);CHKERRQ(ierr);
-    goto finish;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  {
+    PetscInt n1;
+
+    ierr = DMGetNumLabels(dm0, &n);CHKERRQ(ierr);
+    ierr = DMGetNumLabels(dm1, &n1);CHKERRQ(ierr);
+    eq = (PetscBool) (n == n1);
+    if (!eq) {
+      ierr = PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %D != %D = Number of labels in dm1", n, n1);CHKERRQ(ierr);
+    }
+    ierr = MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
+    if (!eq) goto finish;
   }
-  for (i=0; i<n0; i++) {
+  for (i=0; i<n; i++) {
     DMLabel     l0, l1;
     const char *name;
     char       *msgInner;
@@ -8401,22 +8435,31 @@ PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *same, char **message)
     ierr = DMGetLabel(dm1, name, &l1);CHKERRQ(ierr);
     if (!l1) {
       ierr = PetscSNPrintf(msg, sizeof(msg), "Label \"%s\" (#%D in dm0) not found in dm1", name, i);CHKERRQ(ierr);
-      goto finish;
+      eq = PETSC_FALSE;
+      break;
     }
-    ierr = DMLabelCompare(l0, l1, NULL, &msgInner);CHKERRQ(ierr);
+    ierr = DMLabelCompare(comm, l0, l1, &eq, &msgInner);CHKERRQ(ierr);
     ierr = PetscStrncpy(msg, msgInner, sizeof(msg));CHKERRQ(ierr);
     ierr = PetscFree(msgInner);CHKERRQ(ierr);
-    if (msg[0]) goto finish;
+    if (!eq) break;
   }
+  ierr = MPI_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
 finish:
-  if (msg[0] && !same && !message) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, msg);
-  if (same) *same = (PetscBool) !msg[0];
+  /* If message output arg not set, print to stderr */
   if (message) {
     *message = NULL;
     if (msg[0]) {
       ierr = PetscStrallocpy(msg, message);CHKERRQ(ierr);
     }
+  } else {
+    if (msg[0]) {
+      ierr = PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] %s\n", rank, msg);CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedFlush(comm, PETSC_STDERR);CHKERRQ(ierr);
   }
+  /* If same output arg not ser and labels are not equal, throw error */
+  if (equal) *equal = eq;
+  else if (!eq) SETERRQ(comm, PETSC_ERR_ARG_INCOMP, "DMLabels are not the same in dm0 and dm1");
   PetscFunctionReturn(0);
 }
 

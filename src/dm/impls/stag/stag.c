@@ -7,6 +7,239 @@
 #include <petsc/private/dmstagimpl.h>
 #include <petscsf.h>
 
+static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len,char ***namelist, IS **islist, DM **dmlist)
+{
+  PetscErrorCode ierr;
+  PetscInt       f0,f1,f2,f3,dof0,dof1,dof2,dof3,n_entries,k,d,cnt,n_fields,dim;
+  DMStagStencil  *stencil0,*stencil1,*stencil2,*stencil3;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMStagGetDOF(dm,&dof0,&dof1,&dof2,&dof3);CHKERRQ(ierr);
+  ierr = DMStagGetEntriesPerElement(dm,&n_entries);CHKERRQ(ierr);
+
+  f0 = 1;
+  f1 = f2 = f3 = 0;
+  if (dim == 1) {
+    f1 = 1;
+  } else if (dim == 2) {
+    f1 = 2;
+    f2 = 1;
+  } else if (dim == 3) {
+    f1 = 3;
+    f2 = 3;
+    f3 = 1;
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+
+  ierr = PetscCalloc1(f0*dof0,&stencil0);CHKERRQ(ierr);
+  ierr = PetscCalloc1(f1*dof1,&stencil1);CHKERRQ(ierr);
+  if (dim >= 2) {
+    ierr = PetscCalloc1(f2*dof2,&stencil2);CHKERRQ(ierr);
+  }
+  if (dim >= 3) {
+    ierr = PetscCalloc1(f3*dof3,&stencil3);CHKERRQ(ierr);
+  }
+  for (k=0; k<f0; ++k) {
+    for (d=0; d<dof0; ++d) {
+      stencil0[dof0*k + d].i = 0; stencil0[dof0*k + d].j = 0; stencil0[dof0*k + d].j = 0;
+    }
+  }
+  for (k=0; k<f1; ++k) {
+    for (d=0; d<dof1; ++d) {
+      stencil1[dof1*k + d].i = 0; stencil1[dof1*k + d].j = 0; stencil1[dof1*k + d].j = 0;
+    }
+  }
+  if (dim >= 2) {
+    for (k=0; k<f2; ++k) {
+      for (d=0; d<dof2; ++d) {
+        stencil2[dof2*k + d].i = 0; stencil2[dof2*k + d].j = 0; stencil2[dof2*k + d].j = 0;
+      }
+    }
+  }
+  if (dim >= 3) {
+    for (k=0; k<f3; ++k) {
+      for (d=0; d<dof3; ++d) {
+        stencil3[dof3*k + d].i = 0; stencil3[dof3*k + d].j = 0; stencil3[dof3*k + d].j = 0;
+      }
+    }
+  }
+
+  n_fields = 0;
+  if (dof0 != 0) ++n_fields;
+  if (dof1 != 0) ++n_fields;
+  if (dim >=2 && dof2 != 0) ++n_fields;
+  if (dim >=3 && dof3 != 0) ++n_fields;
+  if (len) *len = n_fields;
+
+  if (islist) {
+    ierr = PetscMalloc1(n_fields,islist);CHKERRQ(ierr);
+
+    if (dim == 1) {
+      /* face, element */
+      for (d=0; d<dof0; ++d) {
+        stencil0[d].loc = DMSTAG_LEFT;
+        stencil0[d].c = d;
+      }
+      for (d=0; d<dof1; ++d) {
+        stencil1[d].loc = DMSTAG_ELEMENT;
+        stencil1[d].c = d;
+      }
+    } else if (dim == 2) {
+      /* vertex, edge(down,left), element */
+      for (d=0; d<dof0; ++d) {
+        stencil0[d].loc = DMSTAG_DOWN_LEFT;
+        stencil0[d].c = d;
+      }
+      /* edge */
+      cnt = 0;
+      for (d=0; d<dof1; ++d) {
+        stencil1[cnt].loc = DMSTAG_DOWN;  stencil1[cnt].c = d;
+        ++cnt;
+      }
+      for (d=0; d<dof1; ++d) {
+        stencil1[cnt].loc = DMSTAG_LEFT;  stencil1[cnt].c = d;
+        ++cnt;
+      }
+      /* element */
+      for (d=0; d<dof2; ++d) {
+        stencil2[d].loc = DMSTAG_ELEMENT;
+        stencil2[d].c = d;
+      }
+    } else if (dim == 3) {
+      /* vertex, edge(down,left), face(down,left,back), element */
+      for (d=0; d<dof0; ++d) {
+        stencil0[d].loc = DMSTAG_BACK_DOWN_LEFT;
+        stencil0[d].c = d;
+      }
+      /* edges */
+      cnt = 0;
+      for (d=0; d<dof1; ++d) {
+        stencil1[cnt].loc = DMSTAG_BACK_DOWN;  stencil1[cnt].c = d;
+        ++cnt;
+      }
+      for (d=0; d<dof1; ++d) {
+        stencil1[cnt].loc = DMSTAG_BACK_LEFT;  stencil1[cnt].c = d;
+        ++cnt;
+      }
+      for (d=0; d<dof1; ++d) {
+        stencil1[cnt].loc = DMSTAG_DOWN_LEFT;  stencil1[cnt].c = d;
+        ++cnt;
+      }
+      /* faces */
+      cnt = 0;
+      for (d=0; d<dof2; ++d) {
+        stencil2[cnt].loc = DMSTAG_BACK;  stencil2[cnt].c = d;
+        ++cnt;
+      }
+      for (d=0; d<dof2; ++d) {
+        stencil2[cnt].loc = DMSTAG_DOWN;  stencil2[cnt].c = d;
+        ++cnt;
+      }
+      for (d=0; d<dof2; ++d) {
+        stencil2[cnt].loc = DMSTAG_LEFT;  stencil2[cnt].c = d;
+        ++cnt;
+      }
+      /* elements */
+      for (d=0; d<dof3; ++d) {
+        stencil3[d].loc = DMSTAG_ELEMENT;
+        stencil3[d].c = d;
+      }
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+
+    cnt = 0;
+    if (dof0 != 0) {
+      ierr = DMStagCreateISFromStencils(dm,f0*dof0,stencil0,&(*islist)[cnt]);CHKERRQ(ierr);CHKERRQ(ierr);
+      ++cnt;
+    }
+    if (dof1 != 0) {
+      ierr = DMStagCreateISFromStencils(dm,f1*dof1,stencil1,&(*islist)[cnt]);CHKERRQ(ierr);CHKERRQ(ierr);
+      ++cnt;
+    }
+    if (dim >= 2 && dof2 != 0) {
+      ierr = DMStagCreateISFromStencils(dm,f2*dof2,stencil2,&(*islist)[cnt]);CHKERRQ(ierr);CHKERRQ(ierr);
+      ++cnt;
+    }
+    if (dim >= 3 && dof3 != 0) {
+      ierr = DMStagCreateISFromStencils(dm,f3*dof3,stencil3,&(*islist)[cnt]);CHKERRQ(ierr);CHKERRQ(ierr);
+      ++cnt;
+    }
+  }
+
+  if (namelist) {
+    ierr = PetscMalloc1(n_fields,namelist);CHKERRQ(ierr);
+    cnt = 0;
+    if (dim == 1) {
+      if (dof0 != 0) {
+        PetscStrallocpy("vertex",&(*namelist)[cnt]);
+        ++cnt;
+      }
+      if (dof1 != 0) {
+        PetscStrallocpy("element",&(*namelist)[cnt]);
+        ++cnt;
+      }
+    } else if (dim == 2) {
+      if (dof0 != 0) {
+        PetscStrallocpy("vertex",&(*namelist)[cnt]);
+        ++cnt;
+      }
+      if (dof1 != 0) {
+        PetscStrallocpy("face",&(*namelist)[cnt]);
+        ++cnt;
+      }
+      if (dof2 != 0) {
+        PetscStrallocpy("element",&(*namelist)[cnt]);
+        ++cnt;
+      }
+    } else if (dim == 3) {
+      if (dof0 != 0) {
+        PetscStrallocpy("vertex",&(*namelist)[cnt]);
+        ++cnt;
+      }
+      if (dof1 != 0) {
+        PetscStrallocpy("edge",&(*namelist)[cnt]);
+        ++cnt;
+      }
+      if (dof2 != 0) {
+        PetscStrallocpy("face",&(*namelist)[cnt]);
+        ++cnt;
+      }
+      if (dof3 != 0) {
+        PetscStrallocpy("element",&(*namelist)[cnt]);
+        ++cnt;
+      }
+    }
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+  if (dmlist) {
+    ierr = PetscMalloc1(n_fields,dmlist);CHKERRQ(ierr);
+    cnt = 0;
+    if (dof0 != 0) {
+      ierr = DMStagCreateCompatibleDMStag(dm,dof0,0,0,0,&(*dmlist)[cnt]);CHKERRQ(ierr);
+      ++cnt;
+    }
+    if (dof1 != 0) {
+      ierr = DMStagCreateCompatibleDMStag(dm,0,dof1,0,0,&(*dmlist)[cnt]);CHKERRQ(ierr);
+      ++cnt;
+    }
+    if (dim >= 2 && dof2 != 0) {
+      ierr = DMStagCreateCompatibleDMStag(dm,0,0,dof2,0,&(*dmlist)[cnt]);CHKERRQ(ierr);
+      ++cnt;
+    }
+    if (dim >= 3 && dof3 != 0) {
+      ierr = DMStagCreateCompatibleDMStag(dm,0,0,0,dof3,&(*dmlist)[cnt]);CHKERRQ(ierr);
+      ++cnt;
+    }
+  }
+  ierr = PetscFree(stencil0);CHKERRQ(ierr);
+  ierr = PetscFree(stencil1);CHKERRQ(ierr);
+  if (dim >= 2) {
+    ierr = PetscFree(stencil2);CHKERRQ(ierr);
+  }
+  if (dim >= 3) {
+    ierr = PetscFree(stencil3);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMClone_Stag(DM dm,DM *newdm)
 {
   PetscErrorCode ierr;
@@ -47,6 +280,7 @@ static PetscErrorCode DMCreateGlobalVector_Stag(DM dm,Vec *vec)
   DM_Stag * const stag = (DM_Stag*)dm->data;
 
   PetscFunctionBegin;
+  if (PetscUnlikely(!dm->setupcalled)) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),stag->entries,PETSC_DECIDE,vec);CHKERRQ(ierr);
   ierr = VecSetDM(*vec,dm);CHKERRQ(ierr);
   /* Could set some ops, as DMDA does */
@@ -60,6 +294,7 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm,Vec *vec)
   DM_Stag * const stag = (DM_Stag*)dm->data;
 
   PetscFunctionBegin;
+  if (PetscUnlikely(!dm->setupcalled)) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = VecCreateSeq(PETSC_COMM_SELF,stag->entriesGhost,vec);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vec,stag->entriesPerElement);CHKERRQ(ierr);
   ierr = VecSetDM(*vec,dm);CHKERRQ(ierr);
@@ -68,72 +303,51 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm,Vec *vec)
 
 static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
 {
-  PetscErrorCode         ierr;
-  MatType                matType;
-  PetscBool              isaij,isshell;
-  PetscInt               entries,width,nNeighbors,dim,dof[DMSTAG_MAX_STRATA],stencilWidth;
-  DMStagStencilType      stencilType;
-  ISLocalToGlobalMapping ltogmap;
+  PetscErrorCode ierr;
+  MatType        mat_type;
+  PetscBool      is_shell,is_aij;
+  PetscInt       dim;
 
   PetscFunctionBegin;
+  if (PetscUnlikely(!dm->setupcalled)) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = DMGetMatType(dm,&matType);CHKERRQ(ierr);
-  ierr = PetscStrcmp(matType,MATAIJ,&isaij);CHKERRQ(ierr);
-  ierr = PetscStrcmp(matType,MATSHELL,&isshell);CHKERRQ(ierr);
-  ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
-  ierr = DMStagGetDOF(dm,&dof[0],&dof[1],&dof[2],&dof[3]);CHKERRQ(ierr);
-  ierr = DMStagGetStencilWidth(dm,&stencilWidth);CHKERRQ(ierr);
-  ierr = DMStagGetStencilType(dm,&stencilType);CHKERRQ(ierr);
+  ierr = DMGetMatType(dm,&mat_type);CHKERRQ(ierr);
 
-  if (isaij) {
-    /* This implementation gives a very dense stencil, which is likely unsuitable for
-       real applications. */
-    switch (stencilType) {
-      case DMSTAG_STENCIL_NONE:
-        nNeighbors = 1;
+  /* Compare to similar and perhaps superior logic in DMCreateMatrix_DA, which creates
+     the matrix first and then performs this logic by checking for preallocation functions */
+  ierr = PetscStrcmp(mat_type,MATAIJ,&is_aij);CHKERRQ(ierr);
+  if (!is_aij) {
+    ierr = PetscStrcmp(mat_type,MATSEQAIJ,&is_aij);CHKERRQ(ierr);
+  } else if (!is_aij) {
+    ierr = PetscStrcmp(mat_type,MATMPIAIJ,&is_aij);CHKERRQ(ierr);
+  }
+  ierr = PetscStrcmp(mat_type,MATSHELL,&is_shell);CHKERRQ(ierr);
+  if (is_aij) {
+    switch (dim) {
+      case 1:
+        ierr = DMCreateMatrix_Stag_1D_AIJ(dm,mat);CHKERRQ(ierr);
         break;
-      case DMSTAG_STENCIL_STAR:
-        switch (dim) {
-          case 1 :
-            nNeighbors = 2*stencilWidth + 1;
-            break;
-          case 2 :
-            nNeighbors = 4*stencilWidth + 3;
-            break;
-          case 3 :
-            nNeighbors = 6*stencilWidth + 5;
-            break;
-          default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
-        }
+      case 2:
+        ierr = DMCreateMatrix_Stag_2D_AIJ(dm,mat);CHKERRQ(ierr);
         break;
-      case DMSTAG_STENCIL_BOX:
-        switch (dim) {
-          case 1 :
-            nNeighbors = (2*stencilWidth + 1);
-            break;
-          case 2 :
-            nNeighbors = (2*stencilWidth + 1) * (2*stencilWidth + 1);
-            break;
-          case 3 :
-            nNeighbors = (2*stencilWidth + 1) * (2*stencilWidth + 1) * (2*stencilWidth + 1);
-            break;
-          default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
-        }
+      case 3:
+        ierr = DMCreateMatrix_Stag_3D_AIJ(dm,mat);CHKERRQ(ierr);
         break;
-      default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported stencil");
+      default: SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %D for Mattype %s",dim,mat_type);
     }
-    width = (dof[0] + dof[1] + dof[2] + dof[3]) * nNeighbors;
-    ierr = MatCreateAIJ(PetscObjectComm((PetscObject)dm),entries,entries,PETSC_DETERMINE,PETSC_DETERMINE,width,NULL,width,NULL,mat);CHKERRQ(ierr);
-  } else if (isshell) {
+  } else if (is_shell) {
+    PetscInt               entries;
+    ISLocalToGlobalMapping ltogmap;
+
+    ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)dm),mat);CHKERRQ(ierr);
     ierr = MatSetSizes(*mat,entries,entries,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(*mat,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(*mat);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for Mattype %s",matType);
-
-  ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*mat,ltogmap,ltogmap);CHKERRQ(ierr);
-  ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*mat,ltogmap,ltogmap);CHKERRQ(ierr);
+    ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for Mattype %s",mat_type);
   PetscFunctionReturn(0);
 }
 
@@ -363,12 +577,20 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer," %s",DMBoundaryTypes[stag->boundaryType[i]]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Elementwise ghost stencil: %s, width %D\n",DMStagStencilTypes[stag->stencilType],stag->stencilWidth);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Stratum dof:");CHKERRQ(ierr);
-    for (i=0; i<dim+1; ++i) {
-      ierr = PetscViewerASCIIPrintf(viewer," %D:%D",i,stag->dof[i]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Elementwise ghost stencil: %s",DMStagStencilTypes[stag->stencilType]);CHKERRQ(ierr);
+    if (stag->stencilType != DMSTAG_STENCIL_NONE) {
+      ierr = PetscViewerASCIIPrintf(viewer,", width %D\n",stag->stencilWidth);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%D DOF per vertex (0D)\n",stag->dof[0]);CHKERRQ(ierr);
+    if (dim == 3) {
+      ierr = PetscViewerASCIIPrintf(viewer,"%D DOF per edge (1D)\n",stag->dof[1]);CHKERRQ(ierr);
+    }
+    if (dim > 1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"%D DOF per face (%DD)\n",stag->dof[dim-1],dim-1);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"%D DOF per element (%DD)\n",stag->dof[dim],dim);CHKERRQ(ierr);
     if (dm->coordinateDM) {
       ierr = PetscViewerASCIIPrintf(viewer,"Has coordinate DM\n");CHKERRQ(ierr);
     }
@@ -421,10 +643,10 @@ static PetscErrorCode DMSetFromOptions_Stag(PetscOptionItems *PetscOptionsObject
   ierr = PetscOptionsEnum("-stag_boundary_type_x","Treatment of (physical) boundaries in x direction","DMStagSetBoundaryTypes",DMBoundaryTypes,(PetscEnum)stag->boundaryType[0],(PetscEnum*)&stag->boundaryType[0],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-stag_boundary_type_y","Treatment of (physical) boundaries in y direction","DMStagSetBoundaryTypes",DMBoundaryTypes,(PetscEnum)stag->boundaryType[1],(PetscEnum*)&stag->boundaryType[1],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-stag_boundary_type_z","Treatment of (physical) boundaries in z direction","DMStagSetBoundaryTypes",DMBoundaryTypes,(PetscEnum)stag->boundaryType[2],(PetscEnum*)&stag->boundaryType[2],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-stag_dof_0","Number of dof per 0-cell (vertex/corner)","DMStagSetDOF",stag->dof[0],&stag->dof[0],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-stag_dof_1","Number of dof per 1-cell (edge)",         "DMStagSetDOF",stag->dof[1],&stag->dof[1],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-stag_dof_2","Number of dof per 2-cell (face)",         "DMStagSetDOF",stag->dof[2],&stag->dof[2],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-stag_dof_3","Number of dof per 3-cell (hexahedron)",   "DMStagSetDOF",stag->dof[3],&stag->dof[3],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-stag_dof_0","Number of dof per 0-cell (vertex)","DMStagSetDOF",stag->dof[0],&stag->dof[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-stag_dof_1","Number of dof per 1-cell (element in 1D, face in 2D, edge in 3D)","DMStagSetDOF",stag->dof[1],&stag->dof[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-stag_dof_2","Number of dof per 2-cell (element in 2D, face in 3D)","DMStagSetDOF",stag->dof[2],&stag->dof[2],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-stag_dof_3","Number of dof per 3-cell (element in 3D)","DMStagSetDOF",stag->dof[3],&stag->dof[3],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -433,7 +655,23 @@ static PetscErrorCode DMSetFromOptions_Stag(PetscOptionItems *PetscOptionsObject
   DMSTAG = "stag" - A DM object representing a "staggered grid" or a structured cell complex.
 
   This implementation parallels the DMDA implementation in many ways, but allows degrees of freedom
-  to be associated with all "strata" in a logically-rectangular grid: vertices, edges, faces, and elements.
+  to be associated with all "strata" in a logically-rectangular grid.
+
+  Each stratum can be characterized by the dimension of the entities ("points", to borrow the DMPLEX
+  terminology), from 0- to 3-dimensional.
+
+  In some cases this numbering is used directly, for example with DMStagGetDOF().
+  To allow easier reading and to some extent more similar code between different-dimensional implementations
+  of the same problem, we associate canonical names for each type of point, for each dimension of DMStag.
+
+  1-dimensional DMStag objects have vertices (0D) and elements (1D).
+
+  2-dimensional DMStag objects have vertices (0D), faces (1D), and elements (2D).
+
+  3-dimensional DMStag objects have vertices (0D), edges (1D), faces (2D), and elements (3D).
+
+  This naming is reflected when viewing a DMStag object with DMView() , and in forming
+  convenient options prefixes when creating a decomposition with DMCreateFieldDecomposition().
 
   Level: beginner
 
@@ -464,26 +702,27 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   if (dim != 1 && dim != 2 && dim != 3) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
 
   ierr = PetscMemzero(dm->ops,sizeof(*(dm->ops)));CHKERRQ(ierr);
-  dm->ops->createcoordinatedm  = DMCreateCoordinateDM_Stag;
-  dm->ops->createglobalvector  = DMCreateGlobalVector_Stag;
-  dm->ops->createinterpolation = NULL;
-  dm->ops->createlocalvector   = DMCreateLocalVector_Stag;
-  dm->ops->creatematrix        = DMCreateMatrix_Stag;
-  dm->ops->destroy             = DMDestroy_Stag;
-  dm->ops->getneighbors        = DMGetNeighbors_Stag;
-  dm->ops->globaltolocalbegin  = DMGlobalToLocalBegin_Stag;
-  dm->ops->globaltolocalend    = DMGlobalToLocalEnd_Stag;
-  dm->ops->localtoglobalbegin  = DMLocalToGlobalBegin_Stag;
-  dm->ops->localtoglobalend    = DMLocalToGlobalEnd_Stag;
-  dm->ops->setfromoptions      = DMSetFromOptions_Stag;
+  dm->ops->createcoordinatedm       = DMCreateCoordinateDM_Stag;
+  dm->ops->createglobalvector       = DMCreateGlobalVector_Stag;
+  dm->ops->createinterpolation      = NULL;
+  dm->ops->createlocalvector        = DMCreateLocalVector_Stag;
+  dm->ops->creatematrix             = DMCreateMatrix_Stag;
+  dm->ops->destroy                  = DMDestroy_Stag;
+  dm->ops->getneighbors             = DMGetNeighbors_Stag;
+  dm->ops->globaltolocalbegin       = DMGlobalToLocalBegin_Stag;
+  dm->ops->globaltolocalend         = DMGlobalToLocalEnd_Stag;
+  dm->ops->localtoglobalbegin       = DMLocalToGlobalBegin_Stag;
+  dm->ops->localtoglobalend         = DMLocalToGlobalEnd_Stag;
+  dm->ops->setfromoptions           = DMSetFromOptions_Stag;
   switch (dim) {
-    case 1: dm->ops->setup     = DMSetUp_Stag_1d; break;
-    case 2: dm->ops->setup     = DMSetUp_Stag_2d; break;
-    case 3: dm->ops->setup     = DMSetUp_Stag_3d; break;
+    case 1: dm->ops->setup          = DMSetUp_Stag_1d; break;
+    case 2: dm->ops->setup          = DMSetUp_Stag_2d; break;
+    case 3: dm->ops->setup          = DMSetUp_Stag_3d; break;
     default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
   }
-  dm->ops->clone               = DMClone_Stag;
-  dm->ops->view                = DMView_Stag;
-  dm->ops->getcompatibility    = DMGetCompatibility_Stag;
+  dm->ops->clone                    = DMClone_Stag;
+  dm->ops->view                     = DMView_Stag;
+  dm->ops->getcompatibility         = DMGetCompatibility_Stag;
+  dm->ops->createfielddecomposition = DMCreateFieldDecomposition_Stag;
   PetscFunctionReturn(0);
 }

@@ -325,6 +325,17 @@ cdef class Mat(Object):
         cdef PetscInt rbs = asInt(row_bsize)
         cdef PetscInt cbs = asInt(col_bsize)
         CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
+
+    def setVecType(self, vec_type):
+        cdef PetscVecType cval = NULL
+        vec_type = str2bytes(vec_type, &cval)
+        CHKERR( MatSetVecType(self.mat, cval) )
+
+    def getVecType(self):
+        cdef PetscVecType cval = NULL
+        CHKERR( MatGetVecType(self.mat, &cval) )
+        return bytes2str(cval)
+
     #
 
     def createAIJ(self, size, bsize=None, nnz=None, csr=None, comm=None):
@@ -475,6 +486,18 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
+    def createNormalHermitian(self, Mat mat):
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateNormalHermitian(mat.mat, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
+
+    def createHermitianTranspose(self, Mat mat):
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateHermitianTranspose(mat.mat, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
+
     def createLRC(self, Mat A or None, Mat U, Vec c or None, Mat V or None):
         cdef PetscMat Amat = NULL
         cdef PetscMat Umat = U.mat
@@ -571,19 +594,28 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    ##def createIS(self, size, LGMap lgmap, comm=None):
-    ##    # communicator and sizes
-    ##    if comm is None: comm = lgmap.getComm()
-    ##    cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-    ##    cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
-    ##    Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
-    ##    Sys_Layout(ccomm, rbs, &m, &M)
-    ##    Sys_Layout(ccomm, cbs, &n, &N)
-    ##    # create matrix
-    ##    cdef PetscMat newmat = NULL
-    ##    CHKERR( MatCreateIS(ccomm, m, n, M, N, lgmap.lgm, &newmat) )
-    ##    PetscCLEAR(self.obj); self.mat = newmat
-    ##    return self
+    def createIS(self, size, LGMap lgmapr=None, LGMap lgmapc=None, comm=None):
+        # communicator and sizes
+        if comm is None and lgmapr is not None: comm = lgmapr.getComm()
+        if comm is None and lgmapc is not None: comm = lgmapc.getComm()
+        cdef PetscLGMap lgmr = NULL
+        cdef PetscLGMap lgmc = NULL
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
+        # create matrix
+        cdef PetscMat newmat = NULL
+        cdef PetscInt bs = 1
+        if rbs == cbs: bs = rbs
+        if lgmapr is not None:
+           lgmr = lgmapr.lgm
+        if lgmapc is not None:
+           lgmc = lgmapc.lgm
+        CHKERR( MatCreateIS(ccomm, bs, m, n, M, N, lgmr, lgmc, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
 
     def createPython(self, size, context=None, comm=None):
         # communicator and sizes
@@ -1364,6 +1396,11 @@ cdef class Mat(Object):
         cdef PetscReal rval = asReal(tol)
         CHKERR( MatChop(self.mat, rval) )
 
+    def setRandom(self, Random random=None):
+        cdef PetscRandom rnd = NULL
+        if random is not None: rnd = random.rnd
+        CHKERR( MatSetRandom(self.mat, rnd) )
+
     def axpy(self, alpha, Mat X, structure=None):
         cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)
@@ -1409,7 +1446,7 @@ cdef class Mat(Object):
         CHKERR( MatTransposeMatMult(self.mat, mat.mat, reuse, rval, &result.mat) )
         return result
 
-    def PtAP(self, Mat P, Mat result=None, fill=None):
+    def ptap(self, Mat P, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscReal cfill = PETSC_DEFAULT
         if result is None:
@@ -1418,6 +1455,28 @@ cdef class Mat(Object):
             reuse = MAT_REUSE_MATRIX
         if fill is not None: cfill = asReal(fill)
         CHKERR( MatPtAP(self.mat, P.mat, reuse, cfill, &result.mat) )
+        return result
+
+    def rart(self, Mat R, Mat result=None, fill=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        cdef PetscReal cfill = PETSC_DEFAULT
+        if result is None:
+            result = Mat()
+        elif result.mat != NULL:
+            reuse = MAT_REUSE_MATRIX
+        if fill is not None: cfill = asReal(fill)
+        CHKERR( MatRARt(self.mat, R.mat, reuse, cfill, &result.mat) )
+        return result
+
+    def matMatMult(self, Mat B, Mat C, Mat result=None, fill=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        cdef PetscReal cfill = PETSC_DEFAULT
+        if result is None:
+            result = Mat()
+        elif result.mat != NULL:
+            reuse = MAT_REUSE_MATRIX
+        if fill is not None: cfill = asReal(fill)
+        CHKERR( MatMatMatMult(self.mat, B.mat, C.mat, reuse, cfill, &result.mat) )
         return result
 
     def kron(self, Mat mat, Mat result=None):
@@ -1683,6 +1742,9 @@ cdef class Mat(Object):
 
     def setDM(self, DM dm):
         CHKERR( MatSetDM(self.mat, dm.dm) )
+
+    # backward compatibility
+    PtAP = ptap
 
     #
 

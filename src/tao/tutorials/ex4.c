@@ -690,11 +690,11 @@ int main(int argc, char ** argv)
 
   test:
     suffix: hessian_1
-    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 1 -tao_type nls -tao_nls_ksp_monitor
+    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 1 -tao_type nls
 
   test:
     suffix: hessian_2
-    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -tao_type nls -tao_nls_ksp_monitor
+    args: -matrix_format 1 -m 100 -n 100 -tao_monitor -p 2 -tao_type nls
 
   test:
     suffix: nm_1

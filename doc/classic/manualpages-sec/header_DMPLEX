@@ -6,7 +6,7 @@
 
 <H2> DMPLEX <A HREF="PETSC_DIRsrc/dm/impls/plex/tutorials/index.html">Examples</A></H2>
 
-The DMPLEX class encapsulates an unstructured mesh, with interfaces for both topology and geometry. It is capable of parallel refinement and coarsening (using Pragmatic) and parallel redistribution for load balancing. It is designed to interface with the PetscFE and PetscFV trial discretization objects.
+The DMPLEX class encapsulates an unstructured mesh, with interfaces for both topology and geometry. It is capable of parallel refinement and coarsening (using Pragmatic or ParMmg) and parallel redistribution for load balancing. It is designed to interface with the PetscFE and PetscFV trial discretization objects.
 
 <ul>
   <li><a href="http://arxiv.org/abs/0908.4427">Mesh Algorithms for PDE with Sieve I: Mesh Distribution</a>, Matthew G. Knepley and Dmitry A. Karpeev, Scientific Programming, <b>17</b>(3), 215-230, 2009.</li>

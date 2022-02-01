@@ -409,6 +409,17 @@ static PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const cha
   /* Create or open the file collectively */
   switch (hdf5->btype) {
   case FILE_MODE_READ:
+    if (PetscDefined(USE_DEBUG)) {
+      PetscMPIInt rank;
+      PetscBool   flg;
+
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
+      if (rank == 0) {
+        ierr = PetscTestFile(hdf5->filename, 'r', &flg);CHKERRQ(ierr);
+        if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File %s requested for reading does not exist",hdf5->filename);
+      }
+      ierr = MPI_Barrier(PetscObjectComm((PetscObject)viewer));CHKERRMPI(ierr);
+    }
     PetscStackCallHDF5Return(hdf5->file_id,H5Fopen,(name, H5F_ACC_RDONLY, plist_id));
     break;
   case FILE_MODE_APPEND:

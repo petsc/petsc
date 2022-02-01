@@ -1,0 +1,4 @@
+L_2 Error: 2.65619e-11
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+L_2 Error: < 1.0e-11
+Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 1

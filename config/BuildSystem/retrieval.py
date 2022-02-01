@@ -61,7 +61,7 @@ Unable to download package %s from: %s
       return url[len(prefix):]
     return url
 
-  def genericRetrieve(self, url, root, package):
+  def genericRetrieve(self, url, root, package, submodules):
     '''Fetch package from version control repository or tarfile indicated by URL and extract it into root'''
 
     parsed = urlparse_local.urlparse(url)
@@ -86,9 +86,9 @@ Unable to download package %s from: %s
         f = self.dirRetrieve
     else:
       f = self.tarballRetrieve
-    return f(url, root, package)
+    return f(url, root, package, submodules)
 
-  def dirRetrieve(self, url, root, package):
+  def dirRetrieve(self, url, root, package, submodules):
     self.logPrint('Retrieving %s as directory' % url, 3, 'install')
     d = self.removePrefix(url, 'dir://')
     if not os.path.isdir(d): raise RuntimeError('URL %s is not a directory' % url)
@@ -97,7 +97,7 @@ Unable to download package %s from: %s
     self.removeTarget(t)
     shutil.copytree(d,t)
 
-  def linkRetrieve(self, url, root, package):
+  def linkRetrieve(self, url, root, package, submodules):
     self.logPrint('Retrieving %s as link' % url, 3, 'install')
     d = self.removePrefix(url, 'link://')
     if not os.path.isdir(d): raise RuntimeError('URL %s is not pointing to a directory' % url)
@@ -106,7 +106,7 @@ Unable to download package %s from: %s
     self.removeTarget(t)
     os.symlink(os.path.abspath(d),t)
 
-  def gitRetrieve(self, url, root, package):
+  def gitRetrieve(self, url, root, package, submodules):
     self.logPrint('Retrieving %s as git repo' % url, 3, 'install')
     if not hasattr(self.sourceControl, 'git'):
       raise RuntimeError('self.sourceControl.git not set')
@@ -118,14 +118,17 @@ Unable to download package %s from: %s
     self.removeTarget(newgitrepo)
 
     try:
-      config.base.Configure.executeShellCommand('%s clone --recursive %s %s' % (self.sourceControl.git, d, newgitrepo), log = self.log)
+      submodopt =''
+      for itm in submodules:
+        submodopt += ' --recurse-submodules='+itm
+      config.base.Configure.executeShellCommand('%s clone %s %s %s' % (self.sourceControl.git, submodopt, d, newgitrepo), log = self.log, timeout = 120.0)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
       err = str(e)
       failureMessage = self.getDownloadFailureMessage(package, url)
       raise RuntimeError('Unable to clone '+package+'\n'+err+failureMessage)
 
-  def hgRetrieve(self, url, root, package):
+  def hgRetrieve(self, url, root, package, submodules):
     self.logPrint('Retrieving %s as hg repo' % url, 3, 'install')
     if not hasattr(self.sourceControl, 'hg'):
       raise RuntimeError('self.sourceControl.hg not set')
@@ -134,14 +137,14 @@ Unable to download package %s from: %s
     newgitrepo = os.path.join(root,'hg.'+package)
     self.removeTarget(newgitrepo)
     try:
-      config.base.Configure.executeShellCommand('%s clone %s %s' % (self.sourceControl.hg, d, newgitrepo), log = self.log)
+      config.base.Configure.executeShellCommand('%s clone %s %s' % (self.sourceControl.hg, d, newgitrepo), log = self.log, timeout = 120.0)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
       err = str(e)
       failureMessage = self.getDownloadFailureMessage(package, url)
       raise RuntimeError('Unable to clone '+package+'\n'+err+failureMessage)
 
-  def tarballRetrieve(self, url, root, package):
+  def tarballRetrieve(self, url, root, package, submodules):
     parsed = urlparse_local.urlparse(url)
     filename = os.path.basename(parsed[2])
     localFile = os.path.join(root,'_d_'+filename)

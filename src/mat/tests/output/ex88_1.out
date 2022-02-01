@@ -18,7 +18,7 @@ Vec Object: 1 MPI processes
   type: seq
 -6.89662e+08
 -2.03106e+09
-Testing MatMultTranposeAdd
+Testing MatMultTransposeAdd
 Vec Object: 1 MPI processes
   type: seq
 -9.10529e+08
@@ -53,7 +53,7 @@ Vec Object: 1 MPI processes
   type: seq
 -6.89662e+08
 -2.03106e+09
-Testing MatMultTranposeAdd
+Testing MatMultTransposeAdd
 Vec Object: 1 MPI processes
   type: seq
 -9.10529e+08
@@ -91,7 +91,7 @@ Vec Object: 1 MPI processes
   type: seq
 -6.89662e+08
 -2.03106e+09
-Testing MatMultTranposeAdd
+Testing MatMultTransposeAdd
 Vec Object: 1 MPI processes
   type: seq
 -9.10529e+08

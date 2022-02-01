@@ -53,6 +53,13 @@ Then,
    $ browse _build/html/index.html  # or otherwise open in browser
 
 
+to turn off the Python virtual environment once you have built the documentation use
+
+.. code-block:: console
+
+   $ deactivate
+
+
 .. _sphinx_guidelines:
 
 
@@ -63,7 +70,7 @@ Building the manual locally as a PDF via LaTeX
 
    Before following these instructions, you should have a working
    local LaTeX installation and the ability to install additional packages,
-   if needbe, to resolve LaTeX errors.
+   if need be, to resolve LaTeX errors.
 
 Set up your local Python environment (e.g. :ref:`as above <sec_local_html_docs>`), then
 

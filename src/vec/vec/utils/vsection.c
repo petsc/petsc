@@ -20,7 +20,7 @@ static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscView
     if ((s->bc) && (s->bc->atlasDof[p] > 0)) {
       PetscInt b;
 
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4D) dim %2D offset %3D", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT, p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for (i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
         PetscScalar v = array[i];
 #if defined(PETSC_USE_COMPLEX)
@@ -37,11 +37,11 @@ static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscView
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, " constrained");CHKERRQ(ierr);
       for (b = 0; b < s->bc->atlasDof[p]; ++b) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %D", s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, s->bcIndices[s->bc->atlasOff[p]+b]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4D) dim %2D offset %3D", p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT, p+s->pStart, s->atlasDof[p], s->atlasOff[p]);CHKERRQ(ierr);
       for (i = s->atlasOff[p]; i < s->atlasOff[p]+s->atlasDof[p]; ++i) {
         PetscScalar v = array[i];
 #if defined(PETSC_USE_COMPLEX)
@@ -96,9 +96,9 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 
     ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
     if (s->numFields) {
-      ierr = PetscViewerASCIIPrintf(viewer, "%s with %D fields\n", name, s->numFields);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%s with %" PetscInt_FMT " fields\n", name, s->numFields);CHKERRQ(ierr);
       for (f = 0; f < s->numFields; ++f) {
-        ierr = PetscViewerASCIIPrintf(viewer, "  field %D with %D components\n", f, s->numFieldComponents[f]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "  field %" PetscInt_FMT " with %" PetscInt_FMT " components\n", f, s->numFieldComponents[f]);CHKERRQ(ierr);
         ierr = PetscSectionVecView_ASCII(s->field[f], v, viewer);CHKERRQ(ierr);
       }
     } else {

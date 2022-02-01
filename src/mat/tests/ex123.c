@@ -239,4 +239,22 @@ int main(int argc,char **args)
      args: -mat_type mpiaijcusparse -loc -locdiag 0
      output_file: output/ex123_4.out
 
+   test:
+     requires: !sycl kokkos_kernels
+     suffix: 3_kokkos
+     nsize: 3
+     filter: grep -v type
+     diff_args: -j
+     args: -mat_type aijkokkos -loc
+     output_file: output/ex123_3.out
+
+   test:
+     requires: !sycl kokkos_kernels
+     suffix: 4_kokkos
+     nsize: 4
+     filter: grep -v type
+     diff_args: -j
+     args: -mat_type aijkokkos -loc -locdiag 0
+     output_file: output/ex123_4.out
+
 TEST*/

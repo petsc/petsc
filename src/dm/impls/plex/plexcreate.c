@@ -2492,7 +2492,9 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscBool      simplex = PETSC_TRUE, interpolate = PETSC_TRUE, adjCone = PETSC_FALSE, adjClosure = PETSC_TRUE, refDomain = PETSC_FALSE;
   PetscBool      flg, flg2, fflg, bdfflg, nameflg;
   MPI_Comm       comm;
-  char           filename[PETSC_MAX_PATH_LEN], bdFilename[PETSC_MAX_PATH_LEN], plexname[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN]   = "<unspecified>";
+  char           bdFilename[PETSC_MAX_PATH_LEN] = "<unspecified>";
+  char           plexname[PETSC_MAX_PATH_LEN]   = "";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2635,6 +2637,9 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     }
   }
   ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);
+  if (!((PetscObject)dm)->name && nameflg) {
+    ierr = PetscObjectSetName((PetscObject)dm, plexname);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2787,8 +2792,6 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     ierr = DMPlexReplace_Static(dm, &pdm);CHKERRQ(ierr);
     ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
   }
-  /* TODO Old-style extrusion which can be removed */
-  ierr = PetscOptionsBool("-dm_plex_interpolate", "Flag to create edges and faces automatically", "", interpolate, &interpolate, NULL);CHKERRQ(ierr);
   /* Handle DMPlex distribution */
   ierr = PetscOptionsBool("-dm_distribute", "Flag to redistribute a mesh among processes", "DMCreate", distribute, &distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_distribute_overlap", "The size of the overlap halo", "DMCreate", overlap, &overlap, NULL, 0);CHKERRQ(ierr);
@@ -4048,7 +4051,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 2);
-  PetscValidCharPointer(plexname, 3);
+  if (plexname) PetscValidCharPointer(plexname, 3);
   PetscValidPointer(dm, 5);
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_CreateFromFile,0,0,0,0);CHKERRQ(ierr);
@@ -4107,7 +4110,6 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = idm;
     }
-    ierr = PetscObjectSetName((PetscObject)(*dm), plexname);CHKERRQ(ierr);
   } else if (isMed) {
     ierr = DMPlexCreateMedFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isPLY) {
@@ -4125,6 +4127,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   } else if (isCV) {
     ierr = DMPlexCreateCellVertexFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
+  ierr = PetscStrlen(plexname, &len);CHKERRQ(ierr);
+  if (len) {ierr = PetscObjectSetName((PetscObject)(*dm), plexname);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(DMPLEX_CreateFromFile,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

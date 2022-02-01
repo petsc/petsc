@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   nGlobal = size-1+nLocal;
   if (viewer) {
     ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "nGlobal: %D\n", nGlobal);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "nGlobal: %" PetscInt_FMT "\n", nGlobal);CHKERRQ(ierr);
   }
 
   /* Create a local-to-global mapping using ISLocalToGlobalMappingCreate() */

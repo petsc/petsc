@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
-  if (nproc != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test must run with exactly two MPI ranks\n");
+  if (nproc != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test must run with exactly two MPI ranks");
 
   /* Create MPI vectors x and y, which are on the same comm (i.e., MPI_IDENT) */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
@@ -52,19 +52,19 @@ int main(int argc,char **argv)
     /* Print the part of x on rank 0, which is 0 1 2 3 4 */
     ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, x  = ");CHKERRQ(ierr);
     ierr = VecGetArrayRead(x,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0f",PetscRealPart(dat[i]));CHKERRQ(ierr);}
+    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i]));CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(x,&dat);CHKERRQ(ierr);
 
     /* Print the part of y1 on rank 0, which is 0 1 2 3 4 */
     ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, y1 = ");CHKERRQ(ierr);
     ierr = VecGetArrayRead(y1,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0f",PetscRealPart(dat[i]));CHKERRQ(ierr);}
+    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i]));CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(y1,&dat);CHKERRQ(ierr);
 
     /* Print the part of y2 on rank 0, which is 5 6 7 8 9 since y2 swapped the processes of PETSC_COMM_WORLD */
     ierr = PetscPrintf(PETSC_COMM_SELF,"\nOn rank 0 of PETSC_COMM_WORLD, y2 = ");CHKERRQ(ierr);
     ierr = VecGetArrayRead(y2,&dat);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0f",PetscRealPart(dat[i]));CHKERRQ(ierr);}
+    for (i=0; i<n; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %.0g",(double)PetscRealPart(dat[i]));CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(y2,&dat);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
   }

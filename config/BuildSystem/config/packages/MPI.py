@@ -78,7 +78,8 @@ class Configure(config.package.Package):
     self.openmpi = framework.require('config.packages.OpenMPI', self)
     self.cuda    = framework.require('config.packages.cuda',self)
     self.hip     = framework.require('config.packages.hip',self)
-    self.odeps   = [self.cuda,self.hip]
+    self.sycl    = framework.require('config.packages.sycl',self)
+    self.odeps   = [self.cuda,self.hip,self.sycl]
     return
 
   def __str__(self):
@@ -439,7 +440,7 @@ Unable to run hostname to check the network')
                        if (MPI_Win_shared_query(win,0,&size,&disp_unit,&baseptr));\n'):
         self.addDefine('HAVE_MPI_PROCESS_SHARED_MEMORY', 1)
         self.support_mpi3_shm = 1
-    if self.checkLink('#include <mpi.h>\n',
+    if not hasattr(self, 'isIntelMPI') and self.checkLink('#include <mpi.h>\n',
                       'MPI_Aint size=128; int disp_unit=8,*baseptr; MPI_Win win;\n\
                        if (MPI_Win_allocate(size,disp_unit,MPI_INFO_NULL,MPI_COMM_WORLD,&baseptr,&win));\n\
                        if (MPI_Win_attach(win,baseptr,size));\n\
@@ -475,6 +476,35 @@ Unable to run hostname to check the network')
       self.addDefine('HAVE_MPI_GET_ACCUMULATE', 1)
     if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; MPI_Request req; if (MPI_Rget(ptr,1,MPI_INT,0,1,1,MPI_INT,win,&req));\n'):
       self.addDefine('HAVE_MPI_RGET', 1)
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    self.logWrite(self.framework.restoreLog())
+    return
+
+
+  def configureMPI4(self):
+    '''Check for functions added to the interface in MPI-4'''
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.framework.saveLog()
+
+    if self.checkLink('#include <mpi.h>\n',
+    '''
+      int         buf[1]={0},dest=1,source=1,tag=0;
+      MPI_Count   count=1;
+      MPI_Request req;
+      MPI_Status  stat;
+      if (MPI_Send_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD)) return 1;
+      if (MPI_Send_init_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Isend_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Recv_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&stat)) return 1;
+      if (MPI_Recv_init_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Irecv_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&req)) return 1;
+    '''):
+      self.addDefine('HAVE_MPI_LARGE_COUNT', 1)
+
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
@@ -630,6 +660,7 @@ Unable to run hostname to check the network')
           self.addDefine('HAVE_'+MPICHPKG+'_NUMVERSION',mpich_numversion)
           MPI_VER += '  '+MPICHPKG+'_NUMVERSION: '+mpich_numversion
           if mpichpkg == 'mpich': self.mpich_numversion = mpich_numversion
+          if mpichpkg == 'i_mpi': self.isIntelMPI = 1
         except:
           self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
     if MPI_VER:
@@ -696,16 +727,25 @@ Unable to run hostname to check the network')
     needed=False
     if hasattr(self.compilers, 'CUDAC') and self.cuda.found: needed = True
     if hasattr(self.compilers, 'HIPC') and self.hip.found: needed = True
+    if hasattr(self.compilers, 'SYCLC') and self.sycl.found: needed = True
     if not needed: return
     import re
 
     cflagsOutput = ''
     libsOutput   = ''
     if config.setCompilers.Configure.isCrayPEWrapper(self.setCompilers.CC, self.log):
-      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' --cray-print-opts=cflags', log = self.log)[0]
-      libsOutput   = self.executeShellCommand(self.compilers.CC + ' --cray-print-opts=libs', log = self.log)[0]
+      # check these two env vars to only query MPICH headers and libs. Cray PE may include other libs.
+      var1 = os.environ.get('PE_PKGCONFIG_LIBS').split(':') # the env var is in a format like 'mpich:libsci_mpi:libsci:dsmml'
+      var2 = os.environ.get('PE_PKGCONFIG_PRODUCTS').split(':')
+      env  = None # None means to inherit the current process' environment
+      if ('mpich' in var1 and 'PE_MPICH' in var2): # assume the two env vars appear together if any one is set
+        env = dict(os.environ, PE_PKGCONFIG_LIBS='mpich', PE_PKGCONFIG_PRODUCTS='PE_MPICH') # modify the two env vars only
+
+      cflagsOutput = self.executeShellCommand([self.compilers.CC, '--cray-print-opts=cflags'], env=env, log = self.log)[0]
+      # --no-as-needed since we always need MPI
+      libsOutput   = self.executeShellCommand([self.compilers.CC, '--no-as-needed', '--cray-print-opts=libs'], env=env, log = self.log)[0]
     else:
-      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' -show', log = self.log)[0]
+      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' -show', log = self.log)[0] # not list since CC might be 'mpicc -cc=clang'
       libsOutput   = cflagsOutput # same output as -show
 
     # find include paths
@@ -803,6 +843,7 @@ Unable to run hostname to check the network')
 You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to prevent such hangs. warning message *****')
     self.executeTest(self.configureMPI2) #depends on checkMPIDistro
     self.executeTest(self.configureMPI3) #depends on checkMPIDistro
+    self.executeTest(self.configureMPI4)
     self.executeTest(self.configureMPIEXEC)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)

@@ -347,7 +347,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tagger,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Block size: %D\n",tagger->blocksize);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Block size: %" PetscInt_FMT "\n",tagger->blocksize);CHKERRQ(ierr);
     if (tagger->ops->view) {ierr = (*tagger->ops->view)(tagger,viewer);CHKERRQ(ierr);}
     if (tagger->invert) {ierr = PetscViewerASCIIPrintf(viewer,"Inverting ISs.\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -389,7 +389,7 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes
   PetscValidPointer(boxes,4);
   ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
-  if (vls % tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %D is not a multiple of tagger block size %D",vls,tbs);
+  if (PetscUnlikely(vls % tbs)) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
   if (tagger->ops->computeboxes) {
     *listed = PETSC_TRUE;
     ierr    = (*tagger->ops->computeboxes) (tagger,vec,numBoxes,boxes,listed);CHKERRQ(ierr);
@@ -425,11 +425,10 @@ PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is,PetscBool *lis
   PetscValidPointer(is,3);
   ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
-  if (vls % tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %D is not a multiple of tagger block size %D",vls,tbs);
-  if (tagger->ops->computeis) {ierr = (*tagger->ops->computeis) (tagger,vec,is,listed);CHKERRQ(ierr);}
-  else {
-    if (listed) *listed = PETSC_FALSE;
-  }
+  if (PetscUnlikely(vls % tbs)) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %" PetscInt_FMT " is not a multiple of tagger block size %" PetscInt_FMT,vls,tbs);
+  if (tagger->ops->computeis) {
+    ierr = (*tagger->ops->computeis) (tagger,vec,is,listed);CHKERRQ(ierr);
+  } else if (listed) *listed = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -458,7 +457,7 @@ PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is,Pe
   numTagged = 0;
   offset = 0;
   tagged = NULL;
-  if (n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"blocksize %D does not divide vector length %D", bs, n);
+  if (n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"blocksize %" PetscInt_FMT " does not divide vector length %" PetscInt_FMT, bs, n);
   n /= bs;
   for (i = 0; i < 2; i++) {
     if (i) {

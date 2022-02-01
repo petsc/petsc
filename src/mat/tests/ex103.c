@@ -54,7 +54,7 @@ int main(int argc, char** argv)
   ierr = MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D] local nrows %D, ncols %D\n",rank,nrows,ncols);CHKERRQ(ierr);
+  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%" PetscInt_FMT "] local nrows %" PetscInt_FMT ", ncols %" PetscInt_FMT "\n",rank,nrows,ncols);CHKERRQ(ierr);
   //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Test MatSetValues() by converting A to A_elemental */

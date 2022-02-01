@@ -18,7 +18,7 @@ struct _n_SplitCSRMat {
   PetscInt              cstart,cend,rstart,rend;
   PetscCSRDataStructure diag,offdiag;
   PetscInt              *colmap;
-  PetscInt              N;
+  PetscInt              M; // number of columns for out of bounds check
   PetscMPIInt           rank;
   PetscBool             allocated_indices;
 };
@@ -27,15 +27,17 @@ struct _n_SplitCSRMat {
    CUDA devices of compute capability 6.x and higher. See also sfcuda.cu
 */
 #if defined(PETSC_USE_REAL_DOUBLE) && defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 600)
-  #define atomicAdd(x,y) do { \
-    double *address = x, val = y; \
-    unsigned long long *address_as_ull = (unsigned long long*)address; \
-    unsigned long long old = *address_as_ull, assumed; \
-    do { \
-      assumed = old; \
-      old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed))); \
-    } while (assumed != old); \
-  } while (0)
+  __device__ double atomicAdd(double* x,double y) {
+    typedef unsigned long long int ullint;
+    double *address = x, val = y;
+    ullint *address_as_ull = (ullint*)address;
+    ullint old = *address_as_ull, assumed;
+    do {
+      assumed = old;
+      old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed)));
+    } while (assumed != old);
+    return __longlong_as_double(old);
+  }
 #endif
 
 #if defined(KOKKOS_INLINE_FUNCTION)
@@ -105,13 +107,9 @@ struct _n_SplitCSRMat {
 }
 
 #if defined(PETSC_USE_DEBUG)
-#define SETERR {                                                                                 \
-   printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found!\n",     \
-          d_mat->rank,__func__,__FILE__,__LINE__,(long int)im[i],(long int)in[j]); \
-   return PETSC_ERR_ARG_OUTOFRANGE;                                                              \
-}
+#define SETERR return(printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found!\n",d_mat->rank,__func__,__FILE__,__LINE__,(long int)im[i],(long int)in[j]),PETSC_ERR_ARG_OUTOFRANGE)
 #else
-#define SETERR { return PETSC_ERR_ARG_OUTOFRANGE; }
+#define SETERR return PETSC_ERR_ARG_OUTOFRANGE
 #endif
 
 #if defined(__CUDA_ARCH__)
@@ -150,7 +148,7 @@ PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,c
   MatScalar       *ap1,*ap2 = NULL;
   PetscBool       roworiented = PETSC_TRUE;
   PetscInt        i,j,row,col;
-  const PetscInt  rstart = d_mat->rstart,rend = d_mat->rend, cstart = d_mat->rstart,cend = d_mat->rend,N = d_mat->N;
+  const PetscInt  rstart = d_mat->rstart,rend = d_mat->rend, cstart = d_mat->cstart,cend = d_mat->cend,M = d_mat->M;
 
   for (i=0; i<m; i++) {
     if (im[i] >= rstart && im[i] < rend) { // silently ignore off processor rows
@@ -177,11 +175,10 @@ PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,c
           col = (in[j] - cstart);
           MatSetValues_SeqAIJ_A_Private(row,col,value,is);
           if (!inserted) SETERR;
-        } else if (in[j] < 0) {
+        } else if (in[j] < 0) { // silently ignore off processor rows
           continue;
-        } else if (in[j] >= N) {
-          continue;
-        } else {
+        } else if (in[j] >= M) SETERR;
+        else {
           col = d_mat->colmap[in[j]] - 1;
           if (col < 0) SETERR;
           MatSetValues_SeqAIJ_B_Private(row,col,value,is);

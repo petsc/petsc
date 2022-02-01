@@ -557,6 +557,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find(' stack subq instruction is too different from dwarf stack size') < 0]
       # Nvidia linker
       lines = [s for s in lines if s.find('nvhpc.ld contains output sections') < 0]
+      # Intel dpcpp linker
+      # Ex. clang-offload-bundler: error: '/home/jczhang/mpich/lib': Is a directory
+      lines = [s for s in lines if s.find('clang-offload-bundler: error:') < 0]
+      lines = [s for s in lines if s.find('Compilation from IR - skipping loading of FCL') < 0]
+      lines = [s for s in lines if s.find('Build succeeded') < 0]
+
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Linker output after filtering:\n"+output+":\n")
@@ -1336,8 +1342,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
             emsg = ''
           msg += 'Package '+child.package+' requested but dependency '+dep.package+' not requested. \n  Perhaps you want '+emsg+'--with-'+dep.package+'-dir=directory or --with-'+dep.package+'-lib=libraries and --with-'+dep.package+'-include=directory\n'
         if msg: raise RuntimeError(msg)
-        if child.cxx and ('with-cxx' in self.framework.clArgDB) and (self.argDB['with-cxx'] == '0'): raise RuntimeError('Package '+child.package+' requested requires C++ but compiler turned off.')
-        if child.fc and ('with-fc' in self.framework.clArgDB) and (self.argDB['with-fc'] == '0'): raise RuntimeError('Package '+child.package+' requested requires Fortran but compiler turned off.')
+        if 'Cxx' in child.buildLanguages and ('with-cxx' in self.framework.clArgDB) and (self.argDB['with-cxx'] == '0'): raise RuntimeError('Package '+child.package+' requested requires C++ but compiler turned off.')
+        if 'FC'  in child.buildLanguages and ('with-fc' in self.framework.clArgDB) and (self.argDB['with-fc'] == '0'): raise RuntimeError('Package '+child.package+' requested requires Fortran but compiler turned off.')
 
     if maxCxx < minCxx:
       # low water mark
@@ -1359,7 +1365,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       child._configured = 1
       ctime = time.time()-start
       totaltime = totaltime + ctime
-      self.logPrint('child %s %f' % (child.__class__.__module__,ctime))
+      self.logPrint('child %s took %f seconds' % (child.__class__.__module__,ctime))
     self.logPrint('child sum %f' % (totaltime))
     self.logPrint('child total %f' % (time.time()-starttime))
     # use grep child configure.log | sort -k3 -g

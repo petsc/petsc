@@ -249,7 +249,7 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,PetscOptions options,con
   }
 
   ierr = MPI_Bcast(&yamlLength, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
-  if (require && yamlLength < 0) SETERRQ1(comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s\n", file);
+  if (require && yamlLength < 0) SETERRQ1(comm, PETSC_ERR_FILE_OPEN, "Unable to open YAML option file: %s", file);
   if (yamlLength < 0) PetscFunctionReturn(0);
 
   if (rank) {ierr = PetscMalloc1(yamlLength+1, &yamlString);CHKERRQ(ierr);}

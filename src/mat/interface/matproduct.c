@@ -424,8 +424,8 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   Cn = C ? C->cmap->N : 0;
   if (product->type == MATPRODUCT_RARt || product->type == MATPRODUCT_ABt) { PetscInt t = Bn; Bn = Bm; Bm = t; }
   if (product->type == MATPRODUCT_AtB) { PetscInt t = An; An = Am; Am = t; }
-  if (An != Bm) SETERRQ7(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Matrix dimensions of A and %s are incompatible for MatProductType %s: A %Dx%D, %s %Dx%D",bname,MatProductTypes[product->type],A->rmap->N,A->cmap->N,bname,B->rmap->N,B->cmap->N);
-  if (Cm && Cm != Bn) SETERRQ5(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Matrix dimensions of B and C are incompatible for MatProductType %s: B %Dx%D, C %Dx%D",MatProductTypes[product->type],B->rmap->N,B->cmap->N,Cm,Cn);
+  if (An != Bm) SETERRQ7(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Matrix dimensions of A and %s are incompatible for MatProductType %s: A %" PetscInt_FMT "x%" PetscInt_FMT ", %s %" PetscInt_FMT "x%" PetscInt_FMT,bname,MatProductTypes[product->type],A->rmap->N,A->cmap->N,bname,B->rmap->N,B->cmap->N);
+  if (Cm && Cm != Bn) SETERRQ5(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Matrix dimensions of B and C are incompatible for MatProductType %s: B %" PetscInt_FMT "x%" PetscInt_FMT ", C %" PetscInt_FMT "x%" PetscInt_FMT,MatProductTypes[product->type],B->rmap->N,B->cmap->N,Cm,Cn);
 
   fA = A->ops->productsetfromoptions;
   fB = B->ops->productsetfromoptions;
@@ -1204,5 +1204,57 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   mat->ops->productsymbolic       = MatProductSymbolic_ABC_Basic;
   mat->ops->productnumeric        = MatProductNumeric_ABC_Basic;
   mat->product                    = product;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatProductGetType - Returns the type of the MatProduct.
+
+   Not collective
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  mtype - the MatProduct type
+
+   Level: intermediate
+
+.seealso: MatProductCreateWithMat(), MatProductSetType(), MatProductCreate()
+@*/
+PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(mtype,2);
+  *mtype = MATPRODUCT_UNSPECIFIED;
+  if (mat->product) *mtype = mat->product->type;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatProductGetMats - Returns the matrices associated with the MatProduct.
+
+   Not collective
+
+   Input Parameter:
+.  mat - the product matrix
+
+   Output Parameters:
++  A - the first matrix
+.  B - the second matrix
+-  C - the third matrix (optional)
+
+   Level: intermediate
+
+.seealso: MatProductCreateWithMat(), MatProductSetType(), MatProductSetAlgorithm()
+@*/
+PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (A) *A = mat->product ? mat->product->A : NULL;
+  if (B) *B = mat->product ? mat->product->B : NULL;
+  if (C) *C = mat->product ? mat->product->C : NULL;
   PetscFunctionReturn(0);
 }

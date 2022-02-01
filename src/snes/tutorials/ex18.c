@@ -596,7 +596,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat jac,Mat B,void *ptr)
 /*TEST
 
    test:
+      suffix: 1
       args: -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin pmat -snes_view
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin pmat -snes_view -snes_type newtontrdc
       requires: !single
 
 TEST*/

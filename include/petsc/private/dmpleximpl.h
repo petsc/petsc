@@ -229,7 +229,7 @@ PETSC_INTERN PetscErrorCode DMPlexGlobalVectorView_HDF5_Internal(DM, PetscViewer
 PETSC_INTERN PetscErrorCode DMPlexLocalVectorView_HDF5_Internal(DM, PetscViewer, DM, Vec);
 PETSC_INTERN PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM, PetscViewer, PetscSF*);
 PETSC_INTERN PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM, PetscViewer, PetscSF);
-PETSC_INTERN PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM, PetscViewer, PetscSF);
 PETSC_INTERN PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM, PetscViewer, DM, PetscSF, PetscSF*, PetscSF*);
 PETSC_INTERN PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM, PetscViewer, DM, PetscSF, Vec);
 PETSC_INTERN PetscErrorCode DMPlexView_HDF5_Internal(DM, PetscViewer);
@@ -687,6 +687,7 @@ PETSC_EXTERN PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
 PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS*, Mat*, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void*), void **);
+PETSC_INTERN PetscErrorCode DMGetFirstLabelEntry_Internal(DM dm, DM odm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt height, PetscInt *lStart, PetscDS *);
 
 /* Functions in the vtable */
 PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);

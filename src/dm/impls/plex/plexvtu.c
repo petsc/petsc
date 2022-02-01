@@ -279,7 +279,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
           vector = PETSC_FALSE;
           if (link->ft == PETSC_VTK_CELL_VECTOR_FIELD) {
             vector = PETSC_TRUE;
-            if (fbs > 3) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_SIZ,"Cell vector fields can have at most 3 components, %D given\n", fbs);
+            if (fbs > 3) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_SIZ,"Cell vector fields can have at most 3 components, %D given", fbs);
             for (j = 0; j < fbs; j++) {
               const char *compName = NULL;
               if (fv) {
@@ -370,7 +370,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
             fieldname = buf;
           }
           if (link->ft == PETSC_VTK_POINT_VECTOR_FIELD) {
-            if (fbs > 3) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_SIZ,"Point vector fields can have at most 3 components, %D given\n", fbs);
+            if (fbs > 3) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_SIZ,"Point vector fields can have at most 3 components, %D given", fbs);
 #if defined(PETSC_USE_COMPLEX)
             ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.Re\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
             boffset += gpiece[r].nvertices*3*sizeof(PetscVTUReal) + sizeof(int);

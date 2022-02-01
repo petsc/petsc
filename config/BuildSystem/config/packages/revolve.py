@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.functions = ['revolve_create_offline']
     self.includes  = ['revolve_c.h']
     self.liblist   = [['librevolve.a']]
-    self.cxx       = 1
+    self.buildLanguages= ['Cxx']
     self.hastests  = 1
     # revolve include files are in the lib directory
     return

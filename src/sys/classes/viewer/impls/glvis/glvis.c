@@ -437,7 +437,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
       *view = NULL;
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unhandled socket status %d\n",(int)status);
+      SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unhandled socket status %d",(int)status);
   }
   if (*view) {
     ierr = PetscViewerGLVisAttachInfo_Private(viewer,*view);CHKERRQ(ierr);

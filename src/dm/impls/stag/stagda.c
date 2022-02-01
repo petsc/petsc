@@ -387,63 +387,6 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
   PetscFunctionReturn(0);
 }
 
-/*
-Convert to a location value with only BACK, DOWN, LEFT, and ELEMENT involved (makes looping easier)
-*/
-static PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation loc,DMStagStencilLocation *locCanonical)
-{
-  PetscFunctionBegin;
-  switch (loc) {
-    case DMSTAG_ELEMENT:
-      *locCanonical = DMSTAG_ELEMENT;
-      break;
-    case DMSTAG_LEFT:
-    case DMSTAG_RIGHT:
-      *locCanonical = DMSTAG_LEFT;
-      break;
-    case DMSTAG_DOWN:
-    case DMSTAG_UP:
-      *locCanonical = DMSTAG_DOWN;
-      break;
-    case DMSTAG_BACK:
-    case DMSTAG_FRONT:
-      *locCanonical = DMSTAG_BACK;
-      break;
-    case DMSTAG_DOWN_LEFT :
-    case DMSTAG_DOWN_RIGHT :
-    case DMSTAG_UP_LEFT :
-    case DMSTAG_UP_RIGHT :
-      *locCanonical = DMSTAG_DOWN_LEFT;
-      break;
-    case DMSTAG_BACK_LEFT:
-    case DMSTAG_BACK_RIGHT:
-    case DMSTAG_FRONT_LEFT:
-    case DMSTAG_FRONT_RIGHT:
-      *locCanonical = DMSTAG_BACK_LEFT;
-      break;
-    case DMSTAG_BACK_DOWN:
-    case DMSTAG_BACK_UP:
-    case DMSTAG_FRONT_DOWN:
-    case DMSTAG_FRONT_UP:
-      *locCanonical = DMSTAG_BACK_DOWN;
-      break;
-    case DMSTAG_BACK_DOWN_LEFT:
-    case DMSTAG_BACK_DOWN_RIGHT:
-    case DMSTAG_BACK_UP_LEFT:
-    case DMSTAG_BACK_UP_RIGHT:
-    case DMSTAG_FRONT_DOWN_LEFT:
-    case DMSTAG_FRONT_DOWN_RIGHT:
-    case DMSTAG_FRONT_UP_LEFT:
-    case DMSTAG_FRONT_UP_RIGHT:
-      *locCanonical = DMSTAG_BACK_DOWN_LEFT;
-      break;
-    default :
-      *locCanonical = DMSTAG_NULL_LOCATION;
-      break;
-  }
-  PetscFunctionReturn(0);
-}
-
 /*@C
   DMStagVecSplitToDMDA - create a DMDA and Vec from a DMStag and Vec
 
@@ -486,7 +429,7 @@ PetscErrorCode DMStagVecSplitToDMDA(DM dm,Vec vec,DMStagStencilLocation loc,Pets
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMStagGetLocationDOF(dm,loc,&locdof);CHKERRQ(ierr);
-  if (c >= locdof) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Location %s has %D dof, but component %D requested\n",DMStagStencilLocations[loc],locdof,c);
+  if (c >= locdof) SETERRQ3(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Location %s has %D dof, but component %D requested",DMStagStencilLocations[loc],locdof,c);
   ierr = DMStagStencilLocationCanonicalize(loc,&locCanonical);CHKERRQ(ierr);
   ierr = DMStagCreateCompatibleDMDA(dm,locCanonical,c,pda);CHKERRQ(ierr);
   da = *pda;

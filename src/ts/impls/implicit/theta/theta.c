@@ -1457,8 +1457,8 @@ static PetscErrorCode TSSetUp_BEuler(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (th->Theta != 1.0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (1) of theta when using backward Euler\n");
-  if (th->endpoint) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the endpoint form of the Theta methods when using backward Euler\n");
+  if (th->Theta != 1.0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (1) of theta when using backward Euler");
+  if (th->endpoint) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the endpoint form of the Theta methods when using backward Euler");
   ierr = TSSetUp_Theta(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1501,8 +1501,8 @@ static PetscErrorCode TSSetUp_CN(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (th->Theta != 0.5) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (0.5) of theta when using Crank-Nicolson\n");
-  if (!th->endpoint) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the midpoint form of the Theta methods when using Crank-Nicolson\n");
+  if (th->Theta != 0.5) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (0.5) of theta when using Crank-Nicolson");
+  if (!th->endpoint) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the midpoint form of the Theta methods when using Crank-Nicolson");
   ierr = TSSetUp_Theta(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

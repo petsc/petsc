@@ -9,7 +9,7 @@ class Configure(config.package.GNUPackage):
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
-    self.fc                = 1    # 1 means requires fortran
+    self.buildLanguages    = ['FC']    # 1 means requires fortran
     self.linkedbypetsc     = 0
     self.useddirectly      = 0
     return

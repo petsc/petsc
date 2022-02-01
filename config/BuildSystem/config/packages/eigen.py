@@ -12,7 +12,7 @@ class Configure(config.package.CMakePackage):
     self.functions     = []
     self.includes      = ['Eigen/Core']
     self.liblist       = []
-    self.cxx           = 1
+    self.buildLanguages= ['Cxx']
     self.pkgname       = 'eigen3'
     self.includedir    = os.path.join('include', 'eigen3')
     self.useddirectly  = 0

@@ -217,6 +217,13 @@ class BaseTestSNES(object):
         reason = self.snes.callConvergenceTest(1, 0, 0, 0)
         self.assertTrue(reason > 0)
 
+        # test interface
+        x = self.snes.getSolution()
+        x.setArray([2,3])
+        self.snes.solve()
+        self.assertAlmostEqual(abs(x[0]), 1.0, places=5)
+        self.assertAlmostEqual(abs(x[1]), 2.0, places=5)
+
     def testResetAndSolve(self):
         self.snes.reset()
         self.testSolve()

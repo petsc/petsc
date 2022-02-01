@@ -27,10 +27,10 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   if (rank == 0) {
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
     if (iascii) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",ao->N);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %" PetscInt_FMT "\n",ao->N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
       for (i=0; i<ao->N; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aobasic->app[i],i,aobasic->petsc[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%3" PetscInt_FMT "  %3" PetscInt_FMT "    %3" PetscInt_FMT "  %3" PetscInt_FMT "\n",i,aobasic->app[i],i,aobasic->petsc[i]);CHKERRQ(ierr);
       }
     }
   }
@@ -231,13 +231,13 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
     ierr = PetscArraycpy(sorted,allpetsc,N);CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
-      if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
+      if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
     }
 
     ierr = PetscArraycpy(sorted,allapp,N);CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
-      if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
+      if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %" PetscInt_FMT " has %" PetscInt_FMT,i,sorted[i]);
     }
 
     ierr = PetscFree(sorted);CHKERRQ(ierr);
@@ -250,9 +250,9 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
     ip = allpetsc[i];
     ia = allapp[i];
     /* check there are no duplicates */
-    if (aobasic->app[ip]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %d. Already mapped to %d, not %d.", i, aobasic->app[ip]-1, ia);
+    if (PetscUnlikely(aobasic->app[ip])) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->app[ip]-1, ia);
     aobasic->app[ip] = ia + 1;
-    if (aobasic->petsc[ia]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %d. Already mapped to %d, not %d.", i, aobasic->petsc[ia]-1, ip);
+    if (PetscUnlikely(aobasic->petsc[ia])) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %" PetscInt_FMT ". Already mapped to %" PetscInt_FMT ", not %" PetscInt_FMT ".", i, aobasic->petsc[ia]-1, ip);
     aobasic->petsc[ia] = ip + 1;
   }
   if (napp && !mypetsc) {

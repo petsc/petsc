@@ -39,10 +39,10 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   if (rank) PetscFunctionReturn(0);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %D\n", aomap->N);
+    PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
     for (i = 0; i < aomap->N; i++) {
-      PetscViewerASCIIPrintf(viewer, "%D   %D    %D\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
+      PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
     }
   }
   PetscFunctionReturn(0);

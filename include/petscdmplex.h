@@ -274,7 +274,7 @@ PETSC_EXTERN PetscErrorCode PetscGridHashEnlarge(PetscGridHash, const PetscScala
 PETSC_EXTERN PetscErrorCode PetscGridHashSetGrid(PetscGridHash, const PetscInt [], const PetscReal []);
 PETSC_EXTERN PetscErrorCode PetscGridHashGetEnclosingBox(PetscGridHash, PetscInt, const PetscScalar [], PetscInt [], PetscInt []);
 PETSC_EXTERN PetscErrorCode PetscGridHashDestroy(PetscGridHash *);
-PETSC_EXTERN PetscErrorCode DMPlexFindVertices(DM, PetscInt, const PetscReal [], PetscReal, PetscInt []);
+PETSC_EXTERN PetscErrorCode DMPlexFindVertices(DM, Vec, PetscReal, IS *);
 
 /* FVM Support */
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFVM(DM, PetscInt, PetscReal *, PetscReal [], PetscReal []);
@@ -466,7 +466,7 @@ PETSC_EXTERN PetscErrorCode DMPlexMetricGetNumIterations(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricCreate(DM, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricCreateUniform(DM, PetscInt, PetscReal, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricCreateIsotropic(DM, PetscInt, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode DMPlexMetricEnforceSPD(DM, PetscBool, PetscBool, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexMetricEnforceSPD(DM, Vec, PetscBool, PetscBool, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricNormalize(DM, Vec, PetscBool, PetscBool, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricAverage(DM, PetscInt, PetscReal[], Vec[], Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricAverage2(DM, Vec, Vec, Vec *);
@@ -492,9 +492,11 @@ PETSC_EXTERN PetscErrorCode DMPlexLocalVectorView(DM,PetscViewer,DM,Vec);
 
 PETSC_EXTERN PetscErrorCode DMPlexTopologyLoad(DM, PetscViewer, PetscSF*);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesLoad(DM, PetscViewer, PetscSF);
-PETSC_EXTERN PetscErrorCode DMPlexLabelsLoad(DM, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMPlexLabelsLoad(DM, PetscViewer, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexSectionLoad(DM,PetscViewer,DM,PetscSF,PetscSF*,PetscSF*);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalVectorLoad(DM,PetscViewer,DM,PetscSF,Vec);
 PETSC_EXTERN PetscErrorCode DMPlexLocalVectorLoad(DM,PetscViewer,DM,PetscSF,Vec);
+
+PETSC_EXTERN PetscErrorCode DMPlexGetLocalOffsets(DM, DMLabel, PetscInt, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt **);
 
 #endif

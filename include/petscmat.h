@@ -208,6 +208,8 @@ PETSC_EXTERN PetscErrorCode MatProductNumeric(Mat);
 PETSC_EXTERN PetscErrorCode MatProductReplaceMats(Mat,Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatProductClear(Mat);
 PETSC_EXTERN PetscErrorCode MatProductView(Mat,PetscViewer);
+PETSC_EXTERN PetscErrorCode MatProductGetType(Mat,MatProductType*);
+PETSC_EXTERN PetscErrorCode MatProductGetMats(Mat,Mat*,Mat*,Mat*);
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
@@ -311,6 +313,7 @@ PETSC_EXTERN PetscErrorCode MatCreateBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,Pe
 PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat*);
 
 PETSC_EXTERN PetscErrorCode MatSetPreallocationCOO(Mat,PetscInt,const PetscInt[],const PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatSetPreallocationCOOLocal(Mat,PetscInt,PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatSetValuesCOO(Mat,const PetscScalar[],InsertMode);
 
 PETSC_EXTERN PetscErrorCode MatCreateMPIAdj(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscInt[],Mat*);
@@ -633,6 +636,8 @@ PETSC_EXTERN PetscErrorCode MatMultEqual(Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMultAddEqual(Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMultTransposeEqual(Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultHermitianTransposeEqual(Mat,Mat,PetscInt,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatMultHermitianTransposeAddEqual(Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatTransposeMatMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMatTransposeMultEqual(Mat,Mat,Mat,PetscInt,PetscBool*);
@@ -755,17 +760,60 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm,Mat,PetscI
 -  mode - either INSERT_VALUES or ADD_VALUES
 
    Notes:
-   For efficiency one should use MatSetValues() and set several or many
-   values simultaneously if possible.
+   For efficiency one should use MatSetValues() and set several values simultaneously.
 
    Level: beginner
 
-.seealso: MatSetValues(), MatSetValueLocal()
+.seealso: MatGetValue(), MatSetValues(), MatSetValueLocal(), MatSetValuesLocal()
 M*/
 PETSC_STATIC_INLINE PetscErrorCode MatSetValue(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValues(v,1,&i,1,&j,&va,mode);}
 
-PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat v,PetscInt i,PetscInt j,PetscScalar *va) {return MatGetValues(v,1,&i,1,&j,va);}
+/*@C
+   MatGetValue - Gets a single value from a matrix
 
+   Not Collective; can only return a value owned by the given process
+
+   Input Parameters:
++  mat - the matrix
+.  row - the row location of the entry
+-  col - the column location of the entry
+
+   Output Parameter:
+.  va - the value
+
+   Notes:
+   For efficiency one should use MatGetValues() and get several values simultaneously.
+
+   See notes for MatGetValues().
+
+   Level: advanced
+
+.seealso: MatSetValue(), MatGetValueLocal(), MatGetValues()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat mat,PetscInt row,PetscInt col,PetscScalar *va) {return MatGetValues(mat,1,&row,1,&col,va);}
+
+/*MC
+   MatSetValueLocal - Inserts or adds a single value into a matrix,
+   using a local numbering of the nodes.
+
+   Not Collective
+
+   Input Parameters:
++  m - the matrix
+.  row - the row location of the entry
+.  col - the column location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes:
+   For efficiency one should use MatSetValuesLocal() and set several values simultaneously.
+
+   See notes for MatSetValuesLocal() for additional information on when and how this function can be used.
+
+   Level: intermediate
+
+.seealso: MatSetValue(), MatSetValuesLocal()
+M*/
 PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
 
 /*MC
@@ -1001,8 +1049,8 @@ do {\
 M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 do { PetscInt __i; \
-  if (row < __rstart) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D less than first local row %D",row,__rstart);\
-  if (row >= __rstart+__nrows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D greater than last local row %D",row,__rstart+__nrows-1);\
+  if (PetscUnlikely(row < __rstart)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %" PetscInt_FMT " less than first local row %" PetscInt_FMT,row,__rstart); \
+  if (PetscUnlikely(row >= __rstart+__nrows)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %" PetscInt_FMT " greater than last local row %" PetscInt_FMT,row,__rstart+__nrows-1); \
   for (__i=0; __i<nc; __i++) {\
     if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
     else if (dnz[row - __rstart] < __ncols) dnz[row - __rstart]++;\
@@ -1319,7 +1367,7 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
        Once a coloring is available MatFDColoringCreate() creates an object that can be used to efficiently compute Jacobians using that coloring. This
        same object can also be used to efficiently convert data created by Automatic Differentation tools to PETSc sparse matrices.
 
-.seealso:  MatFDColoringCreate(), MatColoringWeightType, ISColoring, MatFDColoring, DMCreateColoring(), MatColoringCreate(), MatOrdering, MatPartitioning
+.seealso:  MatFDColoringCreate(), MatColoringWeightType, ISColoring, MatFDColoring, DMCreateColoring(), MatColoringCreate(), MatOrdering, MatPartitioning, MatColoringType
 S*/
 typedef struct _p_MatColoring* MatColoring;
 
@@ -1534,8 +1582,8 @@ PETSC_EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);
 
 /*
-    If you add entries here you must also add them to include/petscmat.h
-    and src/mat/f90-mod/petscmat.h
+    If you add entries here you must also add them to src/mat/f90-mod/petscmat.h
+    If any of the enum values are changed, also update dMatOps dict at src/binding/petsc4py/src/libpetsc4py/libpetsc4py.pyx
 */
 typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW=1,

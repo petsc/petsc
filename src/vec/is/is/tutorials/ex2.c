@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(set,&indices);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n");CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D\n",indices[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",indices[i]);CHKERRQ(ierr);
   }
 
   ierr = ISRestoreIndices(set,&indices);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
       Determine information on stride
   */
   ierr = ISStrideGetInfo(set,&first,&step);CHKERRQ(ierr);
-  if (first != 3 || step != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!\n");
+  if (first != 3 || step != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!");
   ierr = ISDestroy(&set);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

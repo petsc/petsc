@@ -4,7 +4,7 @@
 Guide to the Stokes Equations using Finite Elements in PETSc
 ============================================================
 
-This guide accompanies `SNES Example 62 <../../../src/snes/tutorials/ex62.c.html>`__.
+This guide accompanies `SNES Example 62 <../../../src/snes/tutorials/ex62.c.html>`__ and `SNES Example 69 <../../../src/snes/tutorials/ex69.c.html>`__.
 
 The Stokes equations for a fluid, a steady-state form of the Navier-Stokes equations, start with the balance of momentum, just as in elastostatics,
 
@@ -930,7 +930,6 @@ and is also stable under refinement
 .. code-block:: console
 
   $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1_gmg" EXTRA_OPTIONS="-dm_refine_hierarchy 4 -snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -fieldsplit_pressure_ksp_converged_reason -fieldsplit_velocity_ksp_converged_reason"
-  0 SNES Function norm 3.503062983054e-02
   0 SNES Function norm 3.503062983054e-02
     0 KSP unpreconditioned resid norm 3.503062983054e-02 true resid norm 3.503062983054e-02 ||r(i)||/||b|| 1.000000000000e+00
     Linear fieldsplit_velocity_ solve converged due to CONVERGED_RTOL iterations 4

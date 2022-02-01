@@ -2888,8 +2888,8 @@ PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
 
   /* PtAP */
   /* Check matrix local sizes */
-  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%D, %D) != Prow (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
-  if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%D, %D) != Prow (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
+  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%" PetscInt_FMT ", %" PetscInt_FMT ") != Prow (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
+  if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%" PetscInt_FMT ", %" PetscInt_FMT ") != Prow (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
 
   /* Set the default algorithm */
   ierr = PetscStrcmp(C->product->alg,"default",&flg);CHKERRQ(ierr);

@@ -151,11 +151,11 @@ class Script(logger.Logger):
     return module
 
   @staticmethod
-  def runShellCommand(command, log=None, cwd=None):
-    return Script.runShellCommandSeq([command], log=log, cwd=cwd)
+  def runShellCommand(command, log=None, cwd=None, env=None):
+    return Script.runShellCommandSeq([command], log=log, cwd=cwd, env=env)
 
   @staticmethod
-  def runShellCommandSeq(commandseq, log=None, cwd=None):
+  def runShellCommandSeq(commandseq, log=None, cwd=None, env=None):
     Popen = subprocess.Popen
     PIPE  = subprocess.PIPE
     output = ''
@@ -165,7 +165,7 @@ class Script(logger.Logger):
       useShell = isinstance(command, str) or isinstance(command, bytes)
       if log: log.write('Executing: %s\n' % (command,))
       try:
-        pipe = Popen(command, cwd=cwd, stdin=None, stdout=PIPE, stderr=PIPE,
+        pipe = Popen(command, cwd=cwd, env=env, stdin=None, stdout=PIPE, stderr=PIPE,
                      shell=useShell)
         (out, err) = pipe.communicate()
         if sys.version_info >= (3,0):
@@ -193,14 +193,14 @@ class Script(logger.Logger):
     '''Does not check the command results'''
 
   @staticmethod
-  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True, threads = 0):
+  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, env=None, logOutputflg = True, threads = 0):
     '''Execute a shell command returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
     '''The timeout is ignored unless the threads values is nonzero'''
-    return Script.executeShellCommandSeq([command], checkCommand=checkCommand, timeout=timeout, log=log, lineLimit=lineLimit, cwd=cwd,logOutputflg = logOutputflg, threads = threads)
+    return Script.executeShellCommandSeq([command], checkCommand=checkCommand, timeout=timeout, log=log, lineLimit=lineLimit, cwd=cwd, env=env, logOutputflg = logOutputflg, threads = threads)
 
   @staticmethod
-  def executeShellCommandSeq(commandseq, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, logOutputflg = True, threads = 0):
+  def executeShellCommandSeq(commandseq, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, env=None, logOutputflg = True, threads = 0):
     '''Execute a sequence of shell commands (an && chain) returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
     if not checkCommand:
@@ -220,7 +220,7 @@ class Script(logger.Logger):
         else:
           log.write('stdout: '+output+'\n')
       return output
-    def runInShell(commandseq, log, cwd):
+    def runInShell(commandseq, log, cwd, env):
       if useThreads and threads:
         import threading
         log.write('Running Executable with threads to time it out at '+str(timeout)+'\n')
@@ -231,7 +231,7 @@ class Script(logger.Logger):
             self.setDaemon(1)
           def run(self):
             (self.output, self.error, self.status) = ('', '', -1) # So these fields exist even if command fails with no output
-            (self.output, self.error, self.status) = Script.runShellCommandSeq(commandseq, log, cwd)
+            (self.output, self.error, self.status) = Script.runShellCommandSeq(commandseq, log, cwd, env)
         thread = InShell()
         thread.start()
         thread.join(timeout)
@@ -242,9 +242,9 @@ class Script(logger.Logger):
         else:
           return (thread.output, thread.error, thread.status)
       else:
-        return Script.runShellCommandSeq(commandseq, log, cwd)
+        return Script.runShellCommandSeq(commandseq, log, cwd, env)
 
-    (output, error, status) = runInShell(commandseq, log, cwd)
+    (output, error, status) = runInShell(commandseq, log, cwd, env)
     output = logOutput(log, output,logOutputflg)
     checkCommand(commandseq, status, output, error)
     return (output, error, status)

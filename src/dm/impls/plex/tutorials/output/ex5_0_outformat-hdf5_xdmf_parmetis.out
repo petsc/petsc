@@ -2,8 +2,8 @@ Begin cycle 0
 DM Object: DMPlex Object (loaded_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 45 45 45 45
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 45 45 45 45
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 2 strata with value/size (0 (45), 1 (14))
   celltype: 2 strata with value/size (7 (14), 0 (45))
@@ -11,20 +11,20 @@ Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 45 45 45 45
-  1-cells: 93 93 93 93
-  2-cells: 63 63 63 63
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 45 45 45 45
+  Number of 1-cells per rank: 93 93 93 93
+  Number of 2-cells per rank: 63 63 63 63
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   celltype: 4 strata with value/size (0 (45), 7 (14), 4 (63), 1 (93))
   depth: 4 strata with value/size (0 (45), 1 (93), 2 (63), 3 (14))
 DM Object: Parallel Mesh (redistributed_) 4 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 42 42 46 41
-  1-cells: 88 88 95 86
-  2-cells: 61 61 64 60
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 42 42 46 41
+  Number of 1-cells per rank: 88 88 95 86
+  Number of 2-cells per rank: 61 61 64 60
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 4 strata with value/size (0 (42), 1 (88), 2 (61), 3 (14))
   celltype: 4 strata with value/size (0 (42), 1 (88), 4 (61), 7 (14))
@@ -34,8 +34,8 @@ Begin cycle 1
 DM Object: DMPlex Object (loaded_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 42 42 46 41
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 42 42 46 41
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 2 strata with value/size (0 (42), 1 (14))
   celltype: 2 strata with value/size (7 (14), 0 (42))
@@ -43,20 +43,20 @@ Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 42 42 46 41
-  1-cells: 88 88 95 86
-  2-cells: 61 61 64 60
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 42 42 46 41
+  Number of 1-cells per rank: 88 88 95 86
+  Number of 2-cells per rank: 61 61 64 60
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   celltype: 4 strata with value/size (0 (42), 7 (14), 4 (61), 1 (88))
   depth: 4 strata with value/size (0 (42), 1 (88), 2 (61), 3 (14))
 DM Object: Parallel Mesh (redistributed_) 4 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 42 42 46 41
-  1-cells: 88 88 95 86
-  2-cells: 61 61 64 60
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 42 42 46 41
+  Number of 1-cells per rank: 88 88 95 86
+  Number of 2-cells per rank: 61 61 64 60
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 4 strata with value/size (0 (42), 1 (88), 2 (61), 3 (14))
   celltype: 4 strata with value/size (0 (42), 1 (88), 4 (61), 7 (14))
@@ -66,8 +66,8 @@ Begin cycle 2
 DM Object: DMPlex Object (loaded_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 42 42 46 41
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 42 42 46 41
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 2 strata with value/size (0 (42), 1 (14))
   celltype: 2 strata with value/size (7 (14), 0 (42))
@@ -75,20 +75,20 @@ Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 4 MPI processes
   type: plex
 DMPlex Object in 3 dimensions:
-  0-cells: 42 42 46 41
-  1-cells: 88 88 95 86
-  2-cells: 61 61 64 60
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 42 42 46 41
+  Number of 1-cells per rank: 88 88 95 86
+  Number of 2-cells per rank: 61 61 64 60
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   celltype: 4 strata with value/size (0 (42), 7 (14), 4 (61), 1 (88))
   depth: 4 strata with value/size (0 (42), 1 (88), 2 (61), 3 (14))
 DM Object: Parallel Mesh (redistributed_) 4 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
-  0-cells: 42 42 46 41
-  1-cells: 88 88 95 86
-  2-cells: 61 61 64 60
-  3-cells: 14 14 14 14
+  Number of 0-cells per rank: 42 42 46 41
+  Number of 1-cells per rank: 88 88 95 86
+  Number of 2-cells per rank: 61 61 64 60
+  Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 4 strata with value/size (0 (42), 1 (88), 2 (61), 3 (14))
   celltype: 4 strata with value/size (0 (42), 1 (88), 4 (61), 7 (14))

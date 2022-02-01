@@ -11,9 +11,23 @@
 
 #include <cuda_runtime.h>
 #include <thrust/device_ptr.h>
-#include <thrust/transform.h>
 #include <thrust/functional.h>
+#include <thrust/iterator/counting_iterator.h>
 #include <thrust/reduce.h>
+#include <thrust/transform.h>
+#if defined(PETSC_USE_COMPLEX)
+#include <thrust/transform_reduce.h>
+#endif
+
+#if THRUST_VERSION >= 101600 && !PetscDefined(USE_DEBUG)
+static thrust::cuda_cub::par_nosync_t::stream_attachment_type VecCUDAThrustPolicy(Vec x) {
+    return thrust::cuda::par_nosync.on(((Vec_CUDA*)x->spptr)->stream);
+}
+#else
+static thrust::cuda_cub::par_t::stream_attachment_type VecCUDAThrustPolicy(Vec x) {
+    return thrust::cuda::par.on(((Vec_CUDA*)x->spptr)->stream);
+}
+#endif
 
 /*
     Allocates space for the vector array on the GPU if it does not exist.
@@ -200,7 +214,7 @@ PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
     wptr = thrust::device_pointer_cast(warray);
     xptr = thrust::device_pointer_cast(xarray);
     yptr = thrust::device_pointer_cast(yarray);
-    thrust::transform(xptr,xptr+n,yptr,wptr,thrust::divides<PetscScalar>());
+    thrust::transform(VecCUDAThrustPolicy(win),xptr,xptr+n,yptr,wptr,thrust::divides<PetscScalar>());
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
@@ -708,7 +722,7 @@ PetscErrorCode VecReciprocal_SeqCUDA(Vec v)
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   try {
     auto xptr = thrust::device_pointer_cast(x);
-    thrust::transform(xptr,xptr+n,xptr,PetscScalarReciprocal());
+    thrust::transform(VecCUDAThrustPolicy(v),xptr,xptr+n,xptr,PetscScalarReciprocal());
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
@@ -947,7 +961,7 @@ PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
     wptr = thrust::device_pointer_cast(warray);
     xptr = thrust::device_pointer_cast(xarray);
     yptr = thrust::device_pointer_cast(yarray);
-    thrust::transform(xptr,xptr+n,yptr,wptr,thrust::multiplies<PetscScalar>());
+    thrust::transform(VecCUDAThrustPolicy(win),xptr,xptr+n,yptr,wptr,thrust::multiplies<PetscScalar>());
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
@@ -1070,7 +1084,7 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   try {
     xptr = thrust::device_pointer_cast(xarray);
-    thrust::transform(xptr,xptr+n,xptr,conjugate());
+    thrust::transform(VecCUDAThrustPolicy(xin),xptr,xptr+n,xptr,conjugate());
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
@@ -1286,9 +1300,9 @@ PetscErrorCode VecMax_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
     auto zibit = thrust::make_zip_iterator(thrust::make_tuple(avpt,thrust::counting_iterator<PetscInt>(0)));
     try {
 #if defined(PETSC_USE_COMPLEX)
-      res = thrust::transform_reduce(zibit,zibit+n,petscrealparti(),res,petscmaxi());
+      res = thrust::transform_reduce(VecCUDAThrustPolicy(v),zibit,zibit+n,petscrealparti(),res,petscmaxi());
 #else
-      res = thrust::reduce(zibit,zibit+n,res,petscmaxi());
+      res = thrust::reduce(VecCUDAThrustPolicy(v),zibit,zibit+n,res,petscmaxi());
 #endif
     } catch (char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
@@ -1298,9 +1312,9 @@ PetscErrorCode VecMax_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
   } else {
     try {
 #if defined(PETSC_USE_COMPLEX)
-      *m = thrust::transform_reduce(avpt,avpt+n,petscrealpart(),PETSC_MIN_REAL,petscmax());
+      *m = thrust::transform_reduce(VecCUDAThrustPolicy(v),avpt,avpt+n,petscrealpart(),PETSC_MIN_REAL,petscmax());
 #else
-      *m = thrust::reduce(avpt,avpt+n,PETSC_MIN_REAL,petscmax());
+      *m = thrust::reduce(VecCUDAThrustPolicy(v),avpt,avpt+n,PETSC_MIN_REAL,petscmax());
 #endif
     } catch (char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
@@ -1333,9 +1347,9 @@ PetscErrorCode VecMin_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
     auto zibit = thrust::make_zip_iterator(thrust::make_tuple(avpt,thrust::counting_iterator<PetscInt>(0)));
     try {
 #if defined(PETSC_USE_COMPLEX)
-      res = thrust::transform_reduce(zibit,zibit+n,petscrealparti(),res,petscmini());
+      res = thrust::transform_reduce(VecCUDAThrustPolicy(v),zibit,zibit+n,petscrealparti(),res,petscmini());
 #else
-      res = thrust::reduce(zibit,zibit+n,res,petscmini());
+      res = thrust::reduce(VecCUDAThrustPolicy(v),zibit,zibit+n,res,petscmini());
 #endif
     } catch (char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
@@ -1345,9 +1359,9 @@ PetscErrorCode VecMin_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
   } else {
     try {
 #if defined(PETSC_USE_COMPLEX)
-      *m = thrust::transform_reduce(avpt,avpt+n,petscrealpart(),PETSC_MAX_REAL,petscmin());
+      *m = thrust::transform_reduce(VecCUDAThrustPolicy(v),avpt,avpt+n,petscrealpart(),PETSC_MAX_REAL,petscmin());
 #else
-      *m = thrust::reduce(avpt,avpt+n,PETSC_MAX_REAL,petscmin());
+      *m = thrust::reduce(VecCUDAThrustPolicy(v),avpt,avpt+n,PETSC_MAX_REAL,petscmin());
 #endif
     } catch (char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
@@ -1371,7 +1385,7 @@ PetscErrorCode VecSum_SeqCUDA(Vec v,PetscScalar *sum)
   dptr = thrust::device_pointer_cast(a);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   try {
-    *sum = thrust::reduce(dptr,dptr+n,PetscScalar(0.0));
+    *sum = thrust::reduce(VecCUDAThrustPolicy(v),dptr,dptr+n,PetscScalar(0.0));
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
@@ -1401,7 +1415,7 @@ PetscErrorCode VecShift_SeqCUDA(Vec v,PetscScalar shift)
   dptr = thrust::device_pointer_cast(a);
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   try {
-    thrust::transform(dptr,dptr+n,dptr,petscshift(shift)); /* in-place transform */
+    thrust::transform(VecCUDAThrustPolicy(v),dptr,dptr+n,dptr,petscshift(shift)); /* in-place transform */
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }

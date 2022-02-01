@@ -216,6 +216,8 @@ int main(int argc,char **argv)
 
    test:
       # N=10 is divisible by nsize, to trigger Allgather/Gather in SF
+      #MPI_Sendrecv_replace is broken with 20210400300
+      requires: !defined(PETSC_HAVE_I_MPI_NUMVERSION)
       nsize: 2
       args: -op replace
 
@@ -226,6 +228,8 @@ int main(int argc,char **argv)
 
    # N=10 is not divisible by nsize, to trigger Allgatherv/Gatherv in SF
    test:
+      #MPI_Sendrecv_replace is broken with 20210400300
+      requires: !defined(PETSC_HAVE_I_MPI_NUMVERSION)
       suffix: 3
       nsize: 3
       args: -op replace

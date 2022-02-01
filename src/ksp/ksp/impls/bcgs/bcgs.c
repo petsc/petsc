@@ -79,7 +79,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   ierr     = VecSet(P,0.0);CHKERRQ(ierr);
   ierr     = VecSet(V,0.0);CHKERRQ(ierr);
 
-  i=0;
+  i = 0;
   do {
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
     beta = (rho/rhoold) * (alpha/omegaold);
@@ -88,11 +88,10 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     KSPCheckDot(ksp,d1);
     if (d1 == 0.0) {
-      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
-      else {
-        ksp->reason = KSP_DIVERGED_NANORINF;
-        break;
-      }
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
+      else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr  = PetscInfo(ksp,"Breakdown due to zero inner product\n");CHKERRQ(ierr);
+      break;
     }
     alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
     ierr  = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);     /*   s <- r - a v       */
@@ -103,7 +102,9 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
          may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
       if (d1 != 0.0) {
-        ksp->reason = KSP_DIVERGED_BREAKDOWN;
+        if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
+        else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+        ierr  = PetscInfo(ksp,"Failed due to singular preconditioned operator\n");CHKERRQ(ierr);
         break;
       }
       ierr = VecAXPY(X,alpha,P);CHKERRQ(ierr);   /*   x <- x + a p       */
@@ -136,7 +137,9 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
     if (rho == 0.0) {
-      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
+      else ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr  = PetscInfo(ksp,"Breakdown due to zero rho inner product\n");CHKERRQ(ierr);
       break;
     }
     i++;
@@ -208,7 +211,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
    References:
 .    1. -   van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPFBICG, KSPSetPCSide()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPFBICG, KSPQMRCGS, KSPSetPCSide()
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
 {

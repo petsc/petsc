@@ -81,6 +81,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources. Pass \'c++17\' to use \'-std=c++17\', \'gnu++17\' to use \'-std=gnu++17\' or pass just the numer (e.g. \'17\') to have PETSc auto-detect gnu extensions. Pass \'auto\' to let PETSc auto-detect everything or \'0\' to use the compiler\'s default. Available: (03, 11, 14, 17, auto, 0)'))
     help.addArgument('Compilers', '-with-hip-dialect=<dialect>',            nargs.Arg(None, 'auto', 'Dialect under which to compile HIP sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
     help.addArgument('Compilers', '-with-cuda-dialect=<dialect>',           nargs.Arg(None, 'auto', 'Dialect under which to compile CUDA sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
+    help.addArgument('Compilers', '-with-sycl-dialect=<dialect>',           nargs.Arg(None, 'auto', 'Dialect under which to compile SYCL sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
     return
 
   def getDispatchNames(self):
@@ -92,11 +93,12 @@ class Configure(config.base.Configure):
     names['CUDAPP'] = 'No CUDA preprocessor found.'
     names['HIPC'] = 'No HIP compiler found.'
     names['HIPPP'] = 'No HIP preprocessor found.'
-    names['SYCLCXX'] = 'No SYCL compiler found.'
+    names['SYCLC'] = 'No SYCL compiler found.'
     names['SYCLPP'] = 'No SYCL preprocessor found.'
     names['CXX'] = 'No C++ compiler found.'
     names['CXXPP'] = 'No C++ preprocessor found.'
     names['FC'] = 'No Fortran compiler found.'
+    names['FPP'] = 'No Fortran preprocessor found.'
     names['AR'] = 'No archiver found.'
     names['RANLIB'] = 'No ranlib found.'
     names['LD_SHARED'] = 'No shared linker found.'
@@ -136,7 +138,7 @@ class Configure(config.base.Configure):
         if not hasattr(self.setCompilers, name):
           raise MissingProcessor(self.dispatchNames[name])
         return getattr(self.setCompilers, name)
-      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'SYCLCXX_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
+      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'SYCLC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
         flags = getattr(self.setCompilers, name)
         if not isinstance(flags, list): flags = [flags]
         return ' '.join(flags)
@@ -866,7 +868,8 @@ class Configure(config.base.Configure):
       if dlct.num > flag[-2:]:
         break
       self.addDefine('HAVE_{lang}_DIALECT_CXX{ver}'.format(lang=LANG,ver=dlct.num),1)
-    if not useFlag:
+    maxDialect = maxDialect-1
+    if explicit:
       # if we don't use the flag we shouldn't set this attr because its existence implies
       # a particular dialect is *chosen*
       setattr(self,lang+'dialect','c++'+dialects[maxDialect].num)
@@ -1321,7 +1324,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     cbody = "extern void "+asub+"(void);\nint main(int argc,char **args)\n{\n  "+asub+"();\n  return 0;\n}\n";
     cxxbody = 'extern "C" void '+asub+'(void);\nint main(int argc,char **args)\n{\n  '+asub+'();\n  return 0;\n}\n';
     self.pushLanguage('FC')
-    if self.checkLink(includes='#include <mpif.h>',body='      call MPI_Allreduce()\n'):
+    if self.checkLink(body='      use mpi\n      call MPI_Allreduce()\n'):
+      fbody = "      subroutine asub()\n      use mpi\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
+    elif self.checkLink(includes='#include <mpif.h>',body='      call MPI_Allreduce()\n'):
       fbody = "      subroutine asub()\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
     else:
       fbody = "      subroutine asub()\n      print*,'testing'\n      return\n      end\n"
@@ -1794,7 +1799,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       languages.append('CUDA')
     if hasattr(self, 'HIPC'):
       languages.append('HIP')
-    if hasattr(self, 'SYCLCXX'):
+    if hasattr(self, 'SYCLC'):
       languages.append('SYCL')
     for language in languages:
       self.generateDependencies[language] = 0
@@ -1904,9 +1909,9 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
 
-    if hasattr(self.setCompilers, 'SYCL'):
-        #Placeholder in case further checks are needed
-        pass
+    if hasattr(self.setCompilers, 'SYCLC'):
+      self.executeTest(self.checkCxxDialect,['SYCL',False]) # Not GNU
+
     self.no_configure()
     return
 

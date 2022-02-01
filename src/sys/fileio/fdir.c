@@ -47,7 +47,10 @@ PetscErrorCode PetscMkdir(const char dir[])
 }
 
 #if defined(PETSC_USING_DARWIN)
-#include "apple_fdir.c"
+/*
+    Apple's mkdtemp() crashes under Valgrind so this replaces it with a version that does not crash under valgrind
+*/
+#include "apple_fdir.h"
 #endif
 
 /*@C

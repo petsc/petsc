@@ -1,9 +1,9 @@
 DM Object: box_surface 4 MPI processes
   type: plex
 box_surface in 2 dimensions:
-  0-cells: 40 40 40 40
-  1-cells: 62 62 62 62
-  2-cells: 24 24 24 24
+  Number of 0-cells per rank: 40 40 40 40
+  Number of 1-cells per rank: 62 62 62 62
+  Number of 2-cells per rank: 24 24 24 24
 Labels:
   celltype: 3 strata with value/size (0 (40), 1 (62), 4 (24))
   depth: 3 strata with value/size (0 (40), 1 (62), 2 (24))
@@ -29,6 +29,6 @@ Discrete System with 1 fields
         Continuous tensor Lagrange dual space
         Quadrature of order 9 on 25 points (dim 2)
   Weak Form System with 1 fields
-Exact mesh surface area    :  6
-Computed mesh surface area :  6
+Exact mesh surface area    :  6.0
+Computed mesh surface area :  6.0
 Area verifies!

@@ -1,10 +1,9 @@
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
-PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Shell(Mat oldmat,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat;
   Vec            in,out;
-  MPI_Comm       comm;
   PetscScalar    *array;
   PetscInt       *dnnz,*onnz,*dnnzu,*onnzu;
   PetscInt       cst,Nbs,mbs,nbs,rbs,cbs;
@@ -12,35 +11,37 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)oldmat,&comm);CHKERRQ(ierr);
-
   ierr = MatGetOwnershipRange(oldmat,&start,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(oldmat,&cst,NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(oldmat,&in,&out);CHKERRQ(ierr);
   ierr = MatGetLocalSize(oldmat,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(oldmat,&M,&N);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&rows);CHKERRQ(ierr);
-
-  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(mat,newtype);CHKERRQ(ierr);
-  ierr = MatSetBlockSizesFromMats(mat,oldmat,oldmat);CHKERRQ(ierr);
-  ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
-  mbs  = m/rbs;
-  nbs  = n/cbs;
-  Nbs  = N/cbs;
-  cst  = cst/cbs;
-  ierr = PetscMalloc4(mbs,&dnnz,mbs,&onnz,mbs,&dnnzu,mbs,&onnzu);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) {
-    dnnz[i]  = nbs;
-    onnz[i]  = Nbs - nbs;
-    dnnzu[i] = PetscMax(nbs - i,0);
-    onnzu[i] = PetscMax(Nbs - (cst + nbs),0);
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = MatCreate(PetscObjectComm((PetscObject)oldmat),&mat);CHKERRQ(ierr);
+    ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(mat,newtype);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(mat,oldmat,oldmat);CHKERRQ(ierr);
+    ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
+    mbs  = m/rbs;
+    nbs  = n/cbs;
+    Nbs  = N/cbs;
+    cst  = cst/cbs;
+    ierr = PetscMalloc4(mbs,&dnnz,mbs,&onnz,mbs,&dnnzu,mbs,&onnzu);CHKERRQ(ierr);
+    for (i=0; i<mbs; i++) {
+      dnnz[i]  = nbs;
+      onnz[i]  = Nbs - nbs;
+      dnnzu[i] = PetscMax(nbs - i,0);
+      onnzu[i] = PetscMax(Nbs - (cst + nbs),0);
+    }
+    ierr = MatXAIJSetPreallocation(mat,PETSC_DECIDE,dnnz,onnz,dnnzu,onnzu);CHKERRQ(ierr);
+    ierr = PetscFree4(dnnz,onnz,dnnzu,onnzu);CHKERRQ(ierr);
+    ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetUp(mat);CHKERRQ(ierr);
+  } else {
+    mat = *newmat;
+    ierr = MatZeroEntries(mat);CHKERRQ(ierr);
   }
-  ierr = MatXAIJSetPreallocation(mat,PETSC_DECIDE,dnnz,onnz,dnnzu,onnzu);CHKERRQ(ierr);
-  ierr = PetscFree4(dnnz,onnz,dnnzu,onnzu);CHKERRQ(ierr);
-  ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetUp(mat);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     PetscInt j;
 
@@ -219,7 +220,7 @@ static PetscErrorCode MatProductSetFromOptions_CF(Mat D)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatConvertFrom_Shell(Mat A, MatType newtype,MatReuse reuse,Mat *B)
+PetscErrorCode MatConvertFrom_Shell(Mat A,MatType newtype,MatReuse reuse,Mat *B)
 {
   Mat            M;
   PetscBool      flg;

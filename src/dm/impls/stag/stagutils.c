@@ -103,7 +103,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
   representing coordinates on elements and vertices (element boundaries)
   for a 1-dimensional DMStag in each coordinate direction.
 
-  One should use DMStagGetProductCoordinateSlot() to determine appropriate
+  One should use DMStagGetProductCoordinateLocationSlot() to determine appropriate
   indices for the second dimension in these returned arrays. This function
   checks that the coordinate array is a suitable product of 1-dimensional
   DMStag objects.
@@ -169,8 +169,13 @@ PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm,void* arrX,void* arrY,
 . slot - the index to use in local arrays
 
   Notes:
-  Checks that the coordinates are actually set up so that using the
-  slots from the first 1d coordinate sub-DM is valid for all the 1D coordinate sub-DMs.
+  For loc, one should use DMSTAG_LEFT, DMSTAG_ELEMENT, or DMSTAG_RIGHT for "previous", "center" and "next"
+  locations, respectively, in each dimension.
+  One can equivalently use DMSTAG_DOWN or DMSTAG_BACK in place of DMSTAG_LEFT,
+  and DMSTAG_UP or DMSTACK_FRONT in place of DMSTAG_RIGHT;
+
+  This function checks that the coordinates are actually set up so that using the
+  slots from any of the 1D coordinate sub-DMs are valid for all the 1D coordinate sub-DMs.
 
   Level: intermediate
 
@@ -285,7 +290,7 @@ PetscErrorCode DMStagGetCorners(DM dm,PetscInt *x,PetscInt *y,PetscInt *z,PetscI
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetCorners(), DMStagGetGhostCorners(), DMStagGetGlobalSizes(), DMStagGetStencilWidth(), DMStagGetBoundaryTypes(), DMStagGetLocationDof(), DMDAGetDof()
+.seealso: DMSTAG, DMStagGetCorners(), DMStagGetGhostCorners(), DMStagGetGlobalSizes(), DMStagGetStencilWidth(), DMStagGetBoundaryTypes(), DMStagGetLocationDOF(), DMDAGetDof()
 @*/
 PetscErrorCode DMStagGetDOF(DM dm,PetscInt *dof0,PetscInt *dof1,PetscInt *dof2,PetscInt *dof3)
 {
@@ -561,7 +566,7 @@ PetscErrorCode DMStagGetEntriesPerElement(DM dm,PetscInt *entriesPerElement)
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagSetStencilType(), DMStagStencilType, DMDAGetInfo()
+.seealso: DMSTAG, DMStagSetStencilType(), DMStagGetStencilWidth, DMStagStencilType
 @*/
 PetscErrorCode DMStagGetStencilType(DM dm,DMStagStencilType *stencilType)
 {
@@ -586,7 +591,7 @@ PetscErrorCode DMStagGetStencilType(DM dm,DMStagStencilType *stencilType)
 
   Level: beginner
 
-.seealso: DMSTAG, DMDAGetStencilWidth(), DMDAGetInfo()
+.seealso: DMSTAG, DMStagSetStencilWidth(), DMStagGetStencilType(), DMDAGetStencilType()
 @*/
 PetscErrorCode DMStagGetStencilWidth(DM dm,PetscInt *stencilWidth)
 {
@@ -1125,7 +1130,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
 
   Level: beginner
 
-.seealso: DMSTAG, DMStagGetStencilType(), DMStagStencilType, DMDASetStencilType()
+.seealso: DMSTAG, DMStagGetStencilType(), DMStagSetStencilWidth(), DMStagStencilType
 @*/
 PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 {
@@ -1148,9 +1153,12 @@ PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
 + dm - the DMStag object
 - stencilWidth - stencil/halo/ghost width in elements
 
+  Notes:
+  The width value is not used when DMSTAG_STENCIL_NONE is specified.
+
   Level: beginner
 
-.seealso: DMSTAG, DMDASetStencilWidth()
+.seealso: DMSTAG, DMStagGetStencilWidth(), DMStagGetStencilType(), DMStagStencilType
 @*/
 PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
 {
@@ -1464,7 +1472,7 @@ PetscErrorCode DMStagVecGetArray(DM dm,Vec vec,void *array)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
-  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D\n",nLocal,stag->entriesGhost);
+  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
   switch (dim) {
     case 1:
       ierr = VecGetArray2d(vec,stag->nGhost[0],stag->entriesPerElement,stag->startGhost[0],0,(PetscScalar***)array);CHKERRQ(ierr);
@@ -1513,7 +1521,7 @@ PetscErrorCode DMStagVecGetArrayRead(DM dm,Vec vec,void *array)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
-  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D\n",nLocal,stag->entriesGhost);
+  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
   switch (dim) {
     case 1:
       ierr = VecGetArray2dRead(vec,stag->nGhost[0],stag->entriesPerElement,stag->startGhost[0],0,(PetscScalar***)array);CHKERRQ(ierr);
@@ -1557,7 +1565,7 @@ PetscErrorCode DMStagVecRestoreArray(DM dm,Vec vec,void *array)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
-  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D\n",nLocal,stag->entriesGhost);
+  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
   switch (dim) {
     case 1:
       ierr = VecRestoreArray2d(vec,stag->nGhost[0],stag->entriesPerElement,stag->startGhost[0],0,(PetscScalar***)array);CHKERRQ(ierr);
@@ -1601,7 +1609,7 @@ PetscErrorCode DMStagVecRestoreArrayRead(DM dm,Vec vec,void *array)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
-  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D\n",nLocal,stag->entriesGhost);
+  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DMStag local size %D",nLocal,stag->entriesGhost);
   switch (dim) {
     case 1:
       ierr = VecRestoreArray2dRead(vec,stag->nGhost[0],stag->entriesPerElement,stag->startGhost[0],0,(PetscScalar***)array);CHKERRQ(ierr);

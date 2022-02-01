@@ -84,7 +84,6 @@ int main(int argc,char **argv)
          filter: sed -e 's/seqcuda/seq/'
          requires: cuda
        test:
-         TODO: broken
          suffix: 1_kokkos
          args: -vec_type kokkos
          filter: sed -e 's/seqkokkos/seq/'

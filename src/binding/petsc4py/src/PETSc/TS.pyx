@@ -34,6 +34,7 @@ class TSType(object):
 class TSRKType(object):
     RK1FE = S_(TSRK1FE)
     RK2A  = S_(TSRK2A)
+    RK2B  = S_(TSRK2B)
     RK4   = S_(TSRK4)
     RK3BS = S_(TSRK3BS)
     RK3   = S_(TSRK3)
@@ -758,6 +759,9 @@ cdef class TS(Object):
     def setSaveTrajectory(self):
         CHKERR(TSSetSaveTrajectory(self.ts))
 
+    def removeTrajectory(self):
+        CHKERR(TSRemoveTrajectory(self.ts))
+
     def getCostIntegral(self):
         cdef Vec cost = Vec()
         CHKERR( TSGetCostIntegral(self.ts, &cost.vec) )
@@ -855,6 +859,8 @@ cdef class TS(Object):
     def adjointStep(self):
         CHKERR(TSAdjointStep(self.ts))
 
+    def adjointReset(self):
+        CHKERR(TSAdjointReset(self.ts))
 
     # --- Python ---
 

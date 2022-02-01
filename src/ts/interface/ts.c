@@ -232,9 +232,13 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsName("-ts_monitor_sp_swarm","Display particle phase from the DMSwarm","TSMonitorSPSwarm",&opt);CHKERRQ(ierr);
   if (opt) {
     TSMonitorSPCtx  ctx;
-    PetscInt        howoften = 1;
-    ierr = PetscOptionsInt("-ts_monitor_sp_swarm","Display particles phase from the DMSwarm","TSMonitorSPSwarm",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorSPCtxCreate(PETSC_COMM_SELF, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx);CHKERRQ(ierr);
+    PetscInt        howoften = 1, retain = 0;
+    PetscBool       phase = PETSC_TRUE;
+
+    ierr = PetscOptionsInt("-ts_monitor_sp_swarm","Display particles phase from the DMSwarm", "TSMonitorSPSwarm", howoften, &howoften, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_monitor_sp_swarm_retain", "Retain n points plotted to show trajectory, -1 for all points", "TSMonitorSPSwarm", retain, &retain, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_monitor_sp_swarm_phase", "Plot in phase space rather than coordinate space", "TSMonitorSPSwarm", phase, &phase, NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSPCtxCreate(PetscObjectComm((PetscObject) ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, retain, phase, &ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts, TSMonitorSPSwarmSolution, ctx, (PetscErrorCode (*)(void**))TSMonitorSPCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -482,7 +486,7 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
 
    Level: intermediate
 
-.seealso: TSGetTrajectory(), TSAdjointSolve()
+.seealso: TSGetTrajectory(), TSAdjointSolve(), TSRemoveTrajectory()
 
 @*/
 PetscErrorCode  TSResetTrajectory(TS ts)
@@ -494,6 +498,31 @@ PetscErrorCode  TSResetTrajectory(TS ts)
   if (ts->trajectory) {
     ierr = TSTrajectoryDestroy(&ts->trajectory);CHKERRQ(ierr);
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSRemoveTrajectory - Destroys and removes the internal TSTrajectory object from TS
+
+   Collective on TS
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: intermediate
+
+.seealso: TSResetTrajectory(), TSAdjointSolve()
+
+@*/
+PetscErrorCode TSRemoveTrajectory(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->trajectory) {
+    ierr = TSTrajectoryDestroy(&ts->trajectory);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2796,6 +2825,7 @@ PetscErrorCode  TSReset(TS ts)
     ierr = PetscFree(ilink);CHKERRQ(ierr);
     ilink = next;
   }
+  ts->tsrhssplit = NULL;
   ts->num_rhs_splits = 0;
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);

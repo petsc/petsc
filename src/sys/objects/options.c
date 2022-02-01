@@ -2822,7 +2822,7 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options,const char pre[],con
     else i=1;
     for (;i<(int)len; i++) {
       if (value[i] == '-') {
-        if (i == (int)len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s\n",n,value);
+        if (i == (int)len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %" PetscInt_FMT "-th array entry %s",n,value);
         value[i] = 0;
 
         ierr = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);

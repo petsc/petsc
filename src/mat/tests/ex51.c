@@ -78,7 +78,7 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; ++i) {
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%D, flg =%d\n",i,(int)flg);
+    if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%" PetscInt_FMT ", flg =%d",i,(int)flg);
   }
 
   for (i=0; i<nd; ++i) {
@@ -103,7 +103,7 @@ int main(int argc,char **args)
       ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",(double)s1norm,(double)s2norm);CHKERRQ(ierr);
       }
     }
     ierr = VecDestroy(&xx);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ int main(int argc,char **args)
       ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",(double)s1norm,(double)s2norm);CHKERRQ(ierr);
       }
     }
     ierr = VecDestroy(&xx);CHKERRQ(ierr);

@@ -1,10 +1,10 @@
 DM Object: Sphere 1 MPI processes
   type: plex
 Sphere in 3 dimensions:
-  0-cells: 120
-  1-cells: 720
-  2-cells: 1200
-  3-cells: 600
+  Number of 0-cells per rank: 120
+  Number of 1-cells per rank: 720
+  Number of 2-cells per rank: 1200
+  Number of 3-cells per rank: 600
 Labels:
   celltype: 4 strata with value/size (0 (120), 6 (600), 3 (1200), 1 (720))
   depth: 4 strata with value/size (0 (120), 1 (720), 2 (1200), 3 (600))

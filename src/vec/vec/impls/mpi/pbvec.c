@@ -265,9 +265,9 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   {
     PetscInt nstash,reallocs;
     ierr = VecStashGetInfo_Private(&X->stash,&nstash,&reallocs);CHKERRQ(ierr);
-    ierr = PetscInfo2(X,"Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+    ierr = PetscInfo2(X,"Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
     ierr = VecStashGetInfo_Private(&X->bstash,&nstash,&reallocs);CHKERRQ(ierr);
-    ierr = PetscInfo2(X,"Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
+    ierr = PetscInfo2(X,"Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -317,7 +317,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
         } else count = x->recvhdr[i].count;
         for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<count; j++,recvint++) {
           PetscInt loc = *recvint - X->map->rstart;
-          if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %D out of local range [%D,%D)]",*recvint,X->map->rstart,X->map->rend);
+          if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %" PetscInt_FMT " out of local range [%" PetscInt_FMT ",%" PetscInt_FMT ")]",*recvint,X->map->rstart,X->map->rend);
           switch (imode) {
           case ADD_VALUES:
             xarray[loc] += *recvscalar++;
@@ -477,7 +477,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 NULL,
                                 VecStrideSubSetGather_Default,
                                 VecStrideSubSetScatter_Default,
-                                NULL,
+                                VecView_MPI,
                                 NULL,
                                 NULL
 };

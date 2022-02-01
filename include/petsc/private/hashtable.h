@@ -91,7 +91,7 @@
   if (PetscUnlikely(!(expr)))                      \
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,        \
              "[khash] Assertion: `%s' failed.",    \
-             PetscStringize(expr));                \
+             PetscStringize(expr));             \
 } while (0)
 #else
 #define PetscHashAssert(expr) ((void)(expr))

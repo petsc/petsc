@@ -5,9 +5,9 @@ DMField Object: field 1 MPI processes
   DM Object: mesh 1 MPI processes
     type: plex
   mesh in 2 dimensions:
-    0-cells:   16  
-    1-cells:   33  
-    2-cells:   18  
+    Number of 0-cells per rank:   16  
+    Number of 1-cells per rank:   33  
+    Number of 2-cells per rank:   18  
   Labels:
     celltype: 3 strata with value/size (0 (16), 3 (18), 1 (33))
     depth: 3 strata with value/size (0 (16), 1 (33), 2 (18))

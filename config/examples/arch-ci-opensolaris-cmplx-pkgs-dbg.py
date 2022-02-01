@@ -23,7 +23,6 @@ configure_options = [
   '--download-scalapack',
   '--download-mumps',
   '--download-hdf5',
-  '--download-hdf5-fortran-bindings=0', # as the compiler is not F2003 compilant
   '--download-suitesparse',
   '--download-chaco',
   # opensolaris throws warning

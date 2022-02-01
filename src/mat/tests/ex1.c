@@ -120,7 +120,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_WORLD,i,j,1,&perm);CHKERRQ(ierr);
 
   ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %D, allocated nonzeros = %D\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
                      (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
 

@@ -1519,7 +1519,7 @@ static PetscErrorCode  MatDenseSetLDA_SeqDenseCUDA(Mat A,PetscInt lda)
   PetscFunctionBegin;
   data = (PetscBool)((A->rmap->n > 0 && A->cmap->n > 0) ? (dA->d_v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
   if (!dA->user_alloc && data && cA->lda!=lda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"LDA cannot be changed after allocation of internal storage");
-  if (lda < A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,A->rmap->n);
+  if (lda < A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"LDA %" PetscInt_FMT " must be at least matrix dimension %" PetscInt_FMT,lda,A->rmap->n);
   cA->lda = lda;
   PetscFunctionReturn(0);
 }
@@ -1618,6 +1618,7 @@ static PetscErrorCode MatBindToCPU_SeqDenseCUDA(Mat A,PetscBool flg)
 PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat M,MatType type,MatReuse reuse,Mat *newmat)
 {
   Mat              B;
+  Mat_SeqDense     *a;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1644,7 +1645,8 @@ PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat M,MatType type,MatReuse reus
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAResetArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAReplaceArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqaij_seqdensecuda_C",NULL);CHKERRQ(ierr);
-
+  a    = (Mat_SeqDense*)B->data;
+  ierr = VecDestroy(&a->cvec);CHKERRQ(ierr); /* cvec might be VECSEQCUDA. Destroy it and rebuild a VECSEQ when needed */
   B->ops->bindtocpu = NULL;
   B->ops->destroy = MatDestroy_SeqDense;
   B->offloadmask = PETSC_OFFLOAD_CPU;
@@ -1655,6 +1657,7 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
 {
   Mat_SeqDenseCUDA *dB;
   Mat              B;
+  Mat_SeqDense     *a;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1680,7 +1683,8 @@ PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat M,MatType type,MatReuse reus
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAResetArray_C",                      MatDenseCUDAResetArray_SeqDenseCUDA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseCUDAReplaceArray_C",                    MatDenseCUDAReplaceArray_SeqDenseCUDA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqaij_seqdensecuda_C",MatProductSetFromOptions_SeqAIJ_SeqDense);CHKERRQ(ierr);
-
+  a    = (Mat_SeqDense*)B->data;
+  ierr = VecDestroy(&a->cvec);CHKERRQ(ierr); /* cvec might be VECSEQ. Destroy it and rebuild a VECSEQCUDA when needed */
   ierr     = PetscNewLog(B,&dB);CHKERRQ(ierr);
   B->spptr = dB;
 

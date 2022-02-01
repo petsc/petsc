@@ -3,12 +3,15 @@
 
 static PetscErrorCode TaoSetUp_BQNKTR(Tao tao)
 {
-  TAO_BNK         *bnk = (TAO_BNK*)tao->data;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
+  KSP               ksp;
+  PetscVoidFunction valid;
 
   PetscFunctionBegin;
   ierr = TaoSetUp_BQNK(tao);CHKERRQ(ierr);
-  if (!bnk->is_nash && !bnk->is_stcg && !bnk->is_gltr) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Must use a trust-region CG method for KSP (KSPNASH, KSPSTCG, KSPGLTR)");
+  ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetRadius_C",&valid);CHKERRQ(ierr);
+  if (!valid) SETERRQ1(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Not for KSP type %s. Must use a trust-region CG method for KSP (e.g. KSPNASH, KSPSTCG, KSPGLTR)",((PetscObject)ksp)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -17,15 +20,10 @@ static PetscErrorCode TaoSetUp_BQNKTR(Tao tao)
               bound constraints. This method approximates the Hessian-vector product using a
               limited-memory quasi-Newton formula, and iteratively inverts the Hessian with a
               Krylov solver. The quasi-Newton matrix and its settings can be accessed via the
-              prefix `-tao_bqnk_`
-
-  Options Database Keys:
-+ -tao_bqnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
-. -tao_bqnk_init_type - trust radius initialization method ("constant", "direction", "interpolation")
-. -tao_bqnk_update_type - trust radius update method ("step", "direction", "interpolation")
-- -tao_bqnk_as_type - active-set estimation method ("none", "bertsekas")
+              prefix `-tao_bqnk_`. For options database, see TAOBNK
 
   Level: beginner
+.seealso TAOBNK, TAOBQNKTR, TAOBQNKLS
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNKTR(Tao tao)
 {

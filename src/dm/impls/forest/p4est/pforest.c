@@ -9,10 +9,6 @@
 
 #if defined(PETSC_HAVE_P4EST)
 
-/* we need two levels of macros to stringify the results of macro expansion */
-#define _pforest_string(a) _pforest_string_internal(a)
-#define _pforest_string_internal(a) #a
-
 #if !defined(P4_TO_P8)
 #include <p4est.h>
 #include <p4est_extended.h>
@@ -393,8 +389,8 @@ static PetscErrorCode DMForestDestroy_pforest(DM dm)
   if (pforest->forest) PetscStackCallP4est(p4est_destroy,(pforest->forest));
   pforest->forest = NULL;
   ierr            = DMFTopologyDestroy_pforest(&pforest->topo);CHKERRQ(ierr);
-  ierr            = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",NULL);CHKERRQ(ierr);
-  ierr            = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",NULL);CHKERRQ(ierr);
+  ierr            = PetscObjectComposeFunction((PetscObject)dm,PetscStringize(DMConvert_plex_pforest) "_C",NULL);CHKERRQ(ierr);
+  ierr            = PetscObjectComposeFunction((PetscObject)dm,PetscStringize(DMConvert_pforest_plex) "_C",NULL);CHKERRQ(ierr);
   ierr            = PetscObjectComposeFunction((PetscObject)dm,"DMCreateNeumannOverlap_C",NULL);CHKERRQ(ierr);
   ierr            = PetscFree(pforest->ghostName);CHKERRQ(ierr);
   ierr            = DMDestroy(&pforest->plex);CHKERRQ(ierr);
@@ -5268,8 +5264,8 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->computel2fielddiff        = DMComputeL2FieldDiff_pforest;
   dm->ops->getdimpoints              = DMGetDimPoints_pforest;
 
-  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,_pforest_string(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,PetscStringize(DMConvert_plex_pforest) "_C",DMConvert_plex_pforest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,PetscStringize(DMConvert_pforest_plex) "_C",DMConvert_pforest_plex);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMCreateNeumannOverlap_C",DMCreateNeumannOverlap_pforest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexGetOverlap_C",DMForestGetPartitionOverlap);CHKERRQ(ierr);
   PetscFunctionReturn(0);

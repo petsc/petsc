@@ -17,28 +17,14 @@ PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool *isInitialized)
   PetscFunctionReturn(0);
 }
 
-#define PETSC_AND_KOKKOS_HAVE(CUPM) (defined(KOKKOS_ENABLE_##CUPM) && PetscDefined(HAVE_##CUPM))
-
 /* Initialize Kokkos if not yet */
 PetscErrorCode PetscKokkosInitializeCheck(void)
 {
-  Kokkos::InitArguments args;
-
   PetscFunctionBegin;
   if (!Kokkos::is_initialized()) {
-    args.num_threads = -1; /* Kokkos default value of each parameter is -1 */
-    args.num_numa    = -1;
-    args.device_id   = -1;
-    args.ndevices    = -1;
-    args.skip_device = -1;
+    auto args = Kokkos::InitArguments{}; /* use default constructor */
 
-#if defined(PETSC_HAVE_KOKKOS_INIT_WARNINGS)
-    args.disable_warnings = false;
-#else
-    args.disable_warnings = true;
-#endif
-
-#if PETSC_AND_KOKKOS_HAVE(CUDA) || PETSC_AND_KOKKOS_HAVE(HIP)
+#if (defined(KOKKOS_ENABLE_CUDA) && PetscDefined(HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && PetscDefined(HAVE_HIP)) || (defined(KOKKOS_ENABLE_SYCL) && PetscDefined(HAVE_SYCL))
     /* Kokkos does not support CUDA and HIP at the same time (but we do :)) */
     PetscDeviceContext dctx;
     PetscErrorCode     ierr;
@@ -47,12 +33,14 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     ierr = PetscMPIIntCast(dctx->device->deviceId,&args.device_id);CHKERRQ(ierr);
 #endif
 
+    args.disable_warnings = !PetscDefined(HAVE_KOKKOS_INIT_WARNINGS);
+
     /* To use PetscNumOMPThreads, one has to configure petsc --with-openmp.
        Otherwise, let's keep the default value (-1) of args.num_threads.
     */
-   #if defined(KOKKOS_ENABLE_OPENMP) && defined(PETSC_HAVE_OPENMP)
+#if defined(KOKKOS_ENABLE_OPENMP) && PetscDefined(HAVE_OPENMP)
     args.num_threads = PetscNumOMPThreads;
-   #endif
+#endif
 
     Kokkos::initialize(args);
     PetscBeganKokkos = PETSC_TRUE;

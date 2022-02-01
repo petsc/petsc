@@ -46,7 +46,7 @@ int main(int argc,char **args)
   PetscBool      table     =PETSC_FALSE,flg,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscBool      outputSoln=PETSC_FALSE,constantnullspace = PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its,num_numfac,m,n,M,nearnulldim = 0;
+  PetscInt       its,num_numfac,m,n,M,p,nearnulldim = 0;
   PetscReal      norm;
   PetscBool      preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
@@ -177,11 +177,13 @@ int main(int argc,char **args)
      to match the block size of the system), then create a new padded vector.
   */
 
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  /*  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);*/
+  ierr = MatGetLocalSize(A,NULL,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
   ierr = VecGetSize(b,&m);CHKERRQ(ierr);
-  if (M != m) {   /* Create a new vector b by padding the old one */
+  ierr = VecGetLocalSize(b,&p);CHKERRQ(ierr);
+  preload = (PetscBool)(M != m || p != n); /* Global or local dimension mismatch */
+  ierr = MPIU_Allreduce(&preload,&flg,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+  if (flg) { /* Create a new vector b by padding the old one */
     PetscInt    j,mvec,start,end,indx;
     Vec         tmp;
     PetscScalar *bold;
@@ -682,7 +684,7 @@ int main(int argc,char **args)
 
    testset:
       nsize: 4
-      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !defined(PETSC_HAVE_I_MPI_NUMVERSION)
       args: -ksp_monitor_short -ksp_view
       test:
          suffix: xxt
@@ -836,11 +838,25 @@ int main(int argc,char **args)
          nsize: 4
          args: -ksp_error_if_not_converged -pc_type bddc -mat_is_disassemble_l2g_type nd -mat_partitioning_type ptscotch
 
-   test:
-      suffix: hpddm
-      output_file: output/ex72_bddc_seq.out
-      filter: sed -e "s/Number of iterations =   2/Number of iterations =   1/g"
-      nsize: 2
-      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_pc_type mat
+   testset:
       requires: !__float128 hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+      test:
+         suffix: hpddm_mat
+         output_file: output/ex72_bddc_seq.out
+         filter: sed -e "s/Number of iterations =   2/Number of iterations =   1/g"
+         nsize: 2
+         args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_pc_type mat
+      test:
+         requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+         suffix: hpddm_gen_non_hermitian
+         output_file: output/ex72_2.out
+         nsize: 4
+         args: -f0 ${DATAFILESPATH}/matrices/arco1 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 10 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold 0.7 -pc_hpddm_coarse_pc_type lu -ksp_pc_side right
+      test:
+         requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) mumps !defined(PETSCTEST_VALGRIND)
+         suffix: hpddm_gen_non_hermitian_baij
+         output_file: output/ex72_5.out
+         nsize: 4
+         timeoutfactor: 2
+         args: -f0 ${DATAFILESPATH}/matrices/arco6 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold 0.8 -pc_hpddm_coarse_pc_type lu -ksp_pc_side right -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_eps_tol 1.0e-2
 TEST*/

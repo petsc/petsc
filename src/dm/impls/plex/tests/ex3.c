@@ -417,8 +417,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
           ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
           ierr = PetscSectionGetOffset(section,a,&aOff);CHKERRQ(ierr);
 
-          if (cDof != aDof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point and anchor have different number of dofs: %d, %d\n",cDof,aDof);
-          if (cDof % numComp) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point dofs not divisible by field components: %d, %d\n",cDof,numComp);
+          if (cDof != aDof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point and anchor have different number of dofs: %d, %d",cDof,aDof);
+          if (cDof % numComp) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point dofs not divisible by field components: %d, %d",cDof,numComp);
 
           /* put in a simple equality constraint */
           for (j = 0; j < cDof; j++) {
@@ -926,15 +926,15 @@ int main(int argc, char **argv)
     args: -petscspace_degree 1 -qorder 1 -porder 2
   test:
     suffix: p1_2d_3
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p1_2d_4
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1_2d_5
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 3D P_1 on a tetrahedron
@@ -952,15 +952,15 @@ int main(int argc, char **argv)
     args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -porder 2
   test:
     suffix: p1_3d_3
-    requires: ctetgen pragmatic
+    requires: ctetgen mmg
     args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p1_3d_4
-    requires: ctetgen pragmatic
+    requires: ctetgen mmg
     args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1_3d_5
-    requires: ctetgen pragmatic
+    requires: ctetgen mmg
     args: -dm_plex_dim 3 -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 2D P_2 on a triangle
@@ -978,15 +978,15 @@ int main(int argc, char **argv)
     args: -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: p2_2d_3
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p2_2d_4
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p2_2d_5
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 3D P_2 on a tetrahedron
@@ -1004,15 +1004,15 @@ int main(int argc, char **argv)
     args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: p2_3d_3
-    requires: ctetgen pragmatic
+    requires: ctetgen mmg
     args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p2_3d_4
-    requires: ctetgen pragmatic
+    requires: ctetgen mmg
     args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p2_3d_5
-    requires: ctetgen pragmatic
+    requires: ctetgen mmg
     args: -dm_plex_dim 3 -petscspace_degree 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 2D Q_1 on a quadrilaterial DA
@@ -1107,15 +1107,15 @@ int main(int argc, char **argv)
     args: -petscspace_degree 3 -qorder 3 -porder 3
   test:
     suffix: p3_2d_4
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 3 -qorder 3 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p3_2d_5
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 3 -qorder 3 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p3_2d_6
-    requires: triangle pragmatic
+    requires: triangle mmg
     args: -petscspace_degree 3 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
 
   # 2D Q_3 on a quadrilaterial
@@ -1326,14 +1326,14 @@ TEST*/
 
   test:
     suffix: p1d_2d_6
-    requires: pragmatic
+    requires: mmg
     args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p1d_2d_7
-    requires: pragmatic
+    requires: mmg
     args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1d_2d_8
-    requires: pragmatic
+    requires: mmg
     args: -petscspace_degree 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 */

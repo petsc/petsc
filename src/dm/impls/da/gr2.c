@@ -324,9 +324,9 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin), &comm_size);CHKERRMPI(ierr);
-  avg_local_vec_size = (hsize_t) ceil(vec_size*1.0/comm_size);      /* we will attempt to use this as the chunk size */
+  avg_local_vec_size = (hsize_t) PetscCeilInt(vec_size,comm_size);      /* we will attempt to use this as the chunk size */
 
-  target_size = (hsize_t) ceil(PetscMin(vec_size,PetscMin(max_chunk_size,PetscMax(avg_local_vec_size,PetscMax(ceil(vec_size*1.0/max_chunks),min_size)))));
+  target_size = (hsize_t) PetscMin((PetscInt64)vec_size,PetscMin((PetscInt64)max_chunk_size,PetscMax((PetscInt64)avg_local_vec_size,PetscMax(PetscCeilInt64(vec_size,max_chunks),(PetscInt64)min_size))));
   /* following line uses sizeof(PetscReal) instead of sizeof(PetscScalar) because the last dimension of chunkDims[] captures the 2* when complex numbers are being used */
   chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(PetscReal);
 
@@ -341,15 +341,15 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
    */
   if (avg_local_vec_size > max_chunk_size) {
     /* check if we can just split local z-axis: is that enough? */
-    zslices = (PetscInt)ceil(vec_size*1.0/(da->p*max_chunk_size))*zslices;
+    zslices = PetscCeilInt(vec_size,da->p*max_chunk_size)*zslices;
     if (zslices > da->P) {
       /* lattice is too large in xy-directions, splitting z only is not enough */
       zslices = da->P;
-      yslices= (PetscInt)ceil(vec_size*1.0/(zslices*da->n*max_chunk_size))*yslices;
+      yslices = PetscCeilInt(vec_size,zslices*da->n*max_chunk_size)*yslices;
       if (yslices > da->N) {
         /* lattice is too large in x-direction, splitting along z, y is not enough */
         yslices = da->N;
-        xslices= (PetscInt)ceil(vec_size*1.0/(zslices*yslices*da->m*max_chunk_size))*xslices;
+        xslices = PetscCeilInt(vec_size,zslices*yslices*da->m*max_chunk_size)*xslices;
       }
     }
     dim = 0;
@@ -379,24 +379,24 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
         /* try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction */
         if (target_size >= chunk_size/da->p) {
           /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
-          chunkDims[dim] = (hsize_t) ceil(da->P*1.0/da->p);
+          chunkDims[dim] = (hsize_t) PetscCeilInt(da->P,da->p);
         } else {
           /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
            radical and let everyone write all they've got */
-          chunkDims[dim++] = (hsize_t) ceil(da->P*1.0/da->p);
-          chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
-          chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
+          chunkDims[dim++] = (hsize_t) PetscCeilInt(da->P,da->p);
+          chunkDims[dim++] = (hsize_t) PetscCeilInt(da->N,da->n);
+          chunkDims[dim++] = (hsize_t) PetscCeilInt(da->M,da->m);
         }
       } else {
         /* This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself */
         if (target_size >= chunk_size/da->n) {
           /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
-          chunkDims[dim] = (hsize_t) ceil(da->N*1.0/da->n);
+          chunkDims[dim] = (hsize_t) PetscCeilInt(da->N,da->n);
         } else {
           /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
            radical and let everyone write all they've got */
-          chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
-          chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
+          chunkDims[dim++] = (hsize_t) PetscCeilInt(da->N,da->n);
+          chunkDims[dim++] = (hsize_t) PetscCeilInt(da->M,da->m);
         }
 
       }

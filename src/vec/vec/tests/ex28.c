@@ -4,16 +4,16 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 #include <petscvec.h>
 #define CheckError(a,b,tol) do {\
     if (!PetscIsCloseAtTol(a,b,0,tol)) {\
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,tol,#a,(double)(a),#b,(double)(b),(double)((a)-(b)));CHKERRQ(ierr); \
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)(a),#b,(double)(b),(double)((a)-(b)));CHKERRQ(ierr); \
     }\
   } while (0)
 
 #define CheckErrorScalar(a,b,tol) do {\
     if (!PetscIsCloseAtTol(PetscRealPart(a),PetscRealPart(b),0,tol)) {\
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,tol,#a,(double)PetscRealPart(a),#b,(double)PetscRealPart(b),(double)PetscRealPart((a)-(b)));CHKERRQ(ierr); \
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)PetscRealPart(a),#b,(double)PetscRealPart(b),(double)PetscRealPart((a)-(b)));CHKERRQ(ierr); \
     }\
     if (!PetscIsCloseAtTol(PetscImaginaryPart(a),PetscImaginaryPart(b),0,PETSC_SMALL)) {\
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Imag error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,tol,#a,(double)PetscImaginaryPart(a),#b,(double)PetscImaginaryPart(b),(double)PetscImaginaryPart((a)-(b)));CHKERRQ(ierr); \
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Imag error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)PetscImaginaryPart(a),#b,(double)PetscImaginaryPart(b),(double)PetscImaginaryPart((a)-(b)));CHKERRQ(ierr); \
     }\
   } while (0)
 

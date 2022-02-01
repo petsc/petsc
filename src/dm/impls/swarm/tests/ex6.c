@@ -93,17 +93,17 @@ static PetscReal energy(AppCtx *ctx, PetscInt c)
 
 static PetscErrorCode SetInitialCoordinates(DM dmSw)
 {
-  DM                 dm;
+  DM                dm;
   AppCtx            *ctx;
-  Vec                coordinates;
-  PetscSF            cellSF = NULL;
+  Vec               coordinates;
+  PetscSF           cellSF = NULL;
   PetscReal         *coords;
   PetscInt          *cellid;
   const PetscInt    *found;
   const PetscSFNode *cells;
-  PetscInt           dim, d, c, Np, p;
-  PetscMPIInt        rank;
-  PetscErrorCode     ierr;
+  PetscInt          dim, d, c, Np, p;
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetApplicationContext(dmSw, &ctx);CHKERRQ(ierr);

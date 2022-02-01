@@ -581,10 +581,10 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
     }
   }
 #if defined(PETSC_USE_INFO)
-  ierr = PetscInfo1(NULL,"No of messages: %d \n",nsends);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"No of messages: %" PetscInt_FMT " \n",nsends);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (sizes[i]) {
-      ierr = PetscInfo2(NULL,"Mesg_to: %d: size: %d bytes\n",i,nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
+      ierr = PetscInfo2(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt))));CHKERRQ(ierr);
     }
   }
 #endif
@@ -723,7 +723,7 @@ static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode in
       cnt++;
     }
   }
-  if (cnt != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatStash n %D, but counted %D entries",n,cnt);
+  if (cnt != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatStash n %" PetscInt_FMT ", but counted %" PetscInt_FMT " entries",n,cnt);
   ierr = PetscSortIntWithArrayPair(n,row,col,perm);CHKERRQ(ierr);
   /* Scan through the rows, sorting each one, combining duplicates, and packing send buffers */
   for (rowstart=0,cnt=0,i=1; i<=n; i++) {
@@ -868,7 +868,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       stash->sendhdr[i].count = 0; /* Might remain empty (in which case we send a zero-sized message) if no values are communicated to that process */
       for (; b<nblocks; b++) {
         MatStashBlock *sendblock_b = (MatStashBlock*)&sendblocks[b*stash->blocktype_size];
-        if (PetscUnlikely(sendblock_b->row < owners[stash->sendranks[i]])) SETERRQ2(stash->comm,PETSC_ERR_ARG_WRONG,"MAT_SUBSET_OFF_PROC_ENTRIES set, but row %D owned by %d not communicated in initial assembly",sendblock_b->row,stash->sendranks[i]);
+        if (PetscUnlikely(sendblock_b->row < owners[stash->sendranks[i]])) SETERRQ2(stash->comm,PETSC_ERR_ARG_WRONG,"MAT_SUBSET_OFF_PROC_ENTRIES set, but row %" PetscInt_FMT " owned by %d not communicated in initial assembly",sendblock_b->row,stash->sendranks[i]);
         if (sendblock_b->row >= owners[stash->sendranks[i]+1]) break;
         stash->sendhdr[i].count++;
       }
@@ -911,7 +911,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       sendno++;
       rowstart = i;
     }
-    if (sendno != stash->nsendranks) SETERRQ2(stash->comm,PETSC_ERR_PLIB,"BTS counted %D sendranks, but %D sends",stash->nsendranks,sendno);
+    if (PetscUnlikely(sendno != stash->nsendranks)) SETERRQ2(stash->comm,PETSC_ERR_PLIB,"BTS counted %d sendranks, but %" PetscInt_FMT " sends",stash->nsendranks,sendno);
   }
 
   /* Encode insertmode on the outgoing messages. If we want to support more than two options, we would need a new

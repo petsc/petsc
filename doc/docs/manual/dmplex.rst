@@ -29,7 +29,7 @@ particular specifying a “covering” relation among the points. For
 example, an edge is defined by being covered by two vertices, and a
 triangle can be defined by being covered by three edges (or even by
 three vertices). In fact, this structure has been known for a long time.
-It is a Hasse Diagram `Hasse Diagram <http://en.wikipedia.org/wiki/Hasse_diagram>`__, which is a
+It is a `Hasse Diagram <http://en.wikipedia.org/wiki/Hasse_diagram>`__, which is a
 Directed Acyclic Graph (DAG) representing a cell complex using the
 covering relation. The graph edges represent the relation, which also
 encodes a partially ordered set (poset).
@@ -109,8 +109,8 @@ is done using
 
    DMPlexStratify(dm);
 
-Data on Unstructured Grids
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Data on Unstructured Grids (PetscSection)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The strongest links between solvers and discretizations are
 
@@ -125,8 +125,8 @@ structures that can be understood by the linear algebra engine in PETSc
 without any reference to the mesh (topology) or discretization
 (analysis).
 
-Data Layout
-^^^^^^^^^^^
+Data Layout by Hand
+^^^^^^^^^^^^^^^^^^^
 
 Data is associated with a mesh using the ``PetscSection`` object. A
 ``PetscSection`` can be thought of as a generalization of
@@ -141,7 +141,7 @@ contiguous like ``PetscLayout``, they can be in any range
 
 The sequence for setting up any ``PetscSection`` is the following:
 
-#. Specify the chart,
+#. Specify the range of points, or chart,
 
 #. Specify the number of dofs per point, and
 
@@ -168,7 +168,7 @@ a continuous Galerkin :math:`P_3` finite element method,
        PetscSectionSetDof(s, e, 2);
    PetscSectionSetUp(s);
 
-DMPlexGetHeightStratum() returns all the points of the requested height
+``DMPlexGetHeightStratum()`` returns all the points of the requested height
 in the DAG. Since this problem is in two dimensions the edges are at
 height 1 and the vertices at height 2 (the cells are always at height
 0). One can also use ``DMPlexGetDepthStratum()`` to use the depth in the
@@ -176,7 +176,7 @@ DAG to select the points. ``DMPlexGetDepth(,&depth)`` routines the depth
 of the DAG, hence ``DMPlexGetDepthStratum(dm,depth-1-h,)`` returns the
 same values as ``DMPlexGetHeightStratum(dm,h,)``.
 
-For P3 elements there is one degree of freedom at each vertex, 2 along
+For :math:`P_3` elements there is one degree of freedom at each vertex, 2 along
 each edge (resulting in a total of 4 degrees of freedom alone each edge
 including the vertices, thus being able to reproduce a cubic function)
 and 1 degree of freedom within the cell (the bubble function which is
@@ -199,12 +199,30 @@ provides global vectors,
    DMGetLocalVector(dm, &localVec);
    DMGetGlobalVector(dm, &globalVec);
 
+A global vector is missing both the shared dofs which are not owned by this process, as well as *constrained* dofs. These constraints are meant to mimic essential boundary conditions, or Dirichlet constraints. They are dofs that have a given fixed value, so they are present in local vectors for assembly purposes, but absent from global vectors since they are never solved for.
+
+We can indicate constraints in a local section using ``PetscSectionSetConstraintDof()``, to set the number of constrained dofs for a given point, and ``PetscSectionSetConstraintIndices()`` which indicates which dofs on the given point are constrained. Once we have this information, a global section can be created using ``PetscSectionCreateGlobalSection()``, and this is done automatically by the ``DM``. A global section returns :math:`-(dof+1)` for the number of dofs on an unowned point, and :math:`-(off+1)` for its offset on the owning process. This can be used to create global vectors, just as the local section is used to create local vectors.
+
+Data Layout using PetscFE
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A ``DM`` can automatically create the local section if given a description of the discretization, for example using a ``PetscFE`` object. Below we create a ``PetscFE`` that can be configured from the command line. It is a single, scalar field, and is added to the ``DM`` using ``DMSetField()``. When a local or global vector is requested, the ``DM`` builds the local and global sections automatically.
+
+.. code-block::
+
+  DMPlexIsSimplex(dm, &simplex);
+  PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, simplex, NULL, -1, &fe);
+  DMSetField(dm, 0, NULL, (PetscObject) fe);
+  DMCreateDS(dm);
+
+To get the :math:`P_3` section above, we can either give the option ``-petscspace_degree 3``, or call ``PetscFECreateLagrange()`` and set the degree directly.
+
 Partitioning and Ordering
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In exactly the same way as in ``MatPartitioning`` or with
 ``MatGetOrdering()``, the results of a partition using
-``DMPlexPartition`` or reordering using ``DMPlexPermute`` are encoded in
+``PetscPartitionerDMPlexPartition`` or reordering using ``DMPlexPermute`` are encoded in
 an ``IS``. However, the graph is not the adjacency graph of the problem
 Jacobian, but the mesh itself. Once the mesh is partitioned and
 reordered, the data layout from a ``PetscSection`` can be used to
@@ -810,7 +828,7 @@ defined. This can be checked using
 
 .. code-block::
 
-   DMPlexMetricEnforceSPD(DM dm, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec metric);
+   DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut, Vec *determinant);
 
 This routine may also be used to enforce minimum and maximum tolerated metric
 magnitudes (i.e. cell sizes), as well as maximum anisotropy. These quantities

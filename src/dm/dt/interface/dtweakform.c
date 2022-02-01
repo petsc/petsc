@@ -1483,42 +1483,71 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
   ierr = PetscHMapFormGetSize(map, &Nk);CHKERRQ(ierr);
   if (Nk) {
     PetscFormKey *keys;
-    void           (**funcs)(void);
-    const char       *name;
-    PetscBool         showPart = PETSC_FALSE;
-    PetscInt          off = 0, n, i;
+    void       (**funcs)(void);
+    const char  **names;
+    PetscInt     *values, *idx1, *idx2, *idx;
+    PetscBool     showPart = PETSC_FALSE, showPointer = PETSC_FALSE;
+    PetscInt      off = 0;
 
-    ierr = PetscMalloc1(Nk, &keys);CHKERRQ(ierr);
+    ierr = PetscMalloc6(Nk, &keys, Nk, &names, Nk, &values, Nk, &idx1, Nk, &idx2, Nk, &idx);CHKERRQ(ierr);
     ierr = PetscHMapFormGetKeys(map, &off, keys);CHKERRQ(ierr);
+    /* Sort keys by label name and value */
+    {
+      /* First sort values */
+      for (k = 0; k < Nk; ++k) {values[k] = keys[k].value; idx1[k] = k;}
+      ierr = PetscSortIntWithPermutation(Nk, values, idx1);CHKERRQ(ierr);
+      /* If the string sort is stable, it will be sorted correctly overall */
+      for (k = 0; k < Nk; ++k) {
+        if (keys[idx1[k]].label) {ierr = PetscObjectGetName((PetscObject) keys[idx1[k]].label, &names[k]);CHKERRQ(ierr);}
+        else                     {names[k] = "";}
+        idx2[k] = k;
+      }
+      ierr = PetscSortStrWithPermutation(Nk, names, idx2);CHKERRQ(ierr);
+      for (k = 0; k < Nk; ++k) {
+        if (keys[k].label) {ierr = PetscObjectGetName((PetscObject) keys[k].label, &names[k]);CHKERRQ(ierr);}
+        else               {names[k] = "";}
+        idx[k] = idx1[idx2[k]];
+      }
+    }
     ierr = PetscViewerASCIIPrintf(viewer, "%s\n", tableName);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (k = 0; k < Nk; ++k) {
       if (keys[k].part != 0) showPart = PETSC_TRUE;
     }
     for (k = 0; k < Nk; ++k) {
-      if (keys[k].label) {
-        ierr = PetscObjectGetName((PetscObject) keys[k].label, &name);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer, "(%s:%p, %D) ", name, keys[k].label, keys[k].value);CHKERRQ(ierr);
+      const PetscInt i = idx[k];
+      PetscInt       n, f;
+
+      if (keys[i].label) {
+        if (showPointer) {ierr = PetscViewerASCIIPrintf(viewer, "(%s:%p, %D) ", names[i], keys[i].label, keys[i].value);CHKERRQ(ierr);}
+        else             {ierr = PetscViewerASCIIPrintf(viewer, "(%s, %D) ", names[i], keys[i].value);CHKERRQ(ierr);}
       } else {ierr = PetscViewerASCIIPrintf(viewer, "");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
-      if (splitField) {ierr = PetscViewerASCIIPrintf(viewer, "(%D, %D) ", keys[k].field/Nf, keys[k].field%Nf);CHKERRQ(ierr);}
-      else            {ierr = PetscViewerASCIIPrintf(viewer, "(%D) ", keys[k].field);CHKERRQ(ierr);}
-      if (showPart)   {ierr = PetscViewerASCIIPrintf(viewer, "(%D) ", keys[k].part);CHKERRQ(ierr);}
-      ierr = PetscWeakFormGetFunction_Private(wf, map, keys[k].label, keys[k].value, keys[k].field, keys[k].part, &n, &funcs);CHKERRQ(ierr);
-      for (i = 0; i < n; ++i) {
-        char *fname;
+      if (splitField) {ierr = PetscViewerASCIIPrintf(viewer, "(%D, %D) ", keys[i].field/Nf, keys[i].field%Nf);CHKERRQ(ierr);}
+      else            {ierr = PetscViewerASCIIPrintf(viewer, "(%D) ", keys[i].field);CHKERRQ(ierr);}
+      if (showPart)   {ierr = PetscViewerASCIIPrintf(viewer, "(%D) ", keys[i].part);CHKERRQ(ierr);}
+      ierr = PetscWeakFormGetFunction_Private(wf, map, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &n, &funcs);CHKERRQ(ierr);
+      for (f = 0; f < n; ++f) {
+        char  *fname;
+        size_t len, l;
 
-        if (i > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
-        ierr = PetscDLAddr(funcs[i], &fname);CHKERRQ(ierr);
-        if (fname) {ierr = PetscViewerASCIIPrintf(viewer, "%s", fname);CHKERRQ(ierr);}
-        else       {ierr = PetscViewerASCIIPrintf(viewer, "%p", funcs[i]);CHKERRQ(ierr);}
+        if (f > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+        ierr = PetscDLAddr(funcs[f], &fname);CHKERRQ(ierr);
+        if (fname) {
+          /* Eliminate argument types */
+          ierr = PetscStrlen(fname, &len);CHKERRQ(ierr);
+          for (l = 0; l < len; ++l) if (fname[l] == '(') {fname[l] = '\0'; break;}
+          ierr = PetscViewerASCIIPrintf(viewer, "%s", fname);CHKERRQ(ierr);
+        } else if (showPointer) {
+          ierr = PetscViewerASCIIPrintf(viewer, "%p", funcs[f]);CHKERRQ(ierr);
+        }
         ierr = PetscFree(fname);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = PetscFree(keys);CHKERRQ(ierr);
+    ierr = PetscFree6(keys, names, values, idx1, idx2, idx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

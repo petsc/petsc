@@ -91,7 +91,6 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (radius < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   PetscValidLogicalCollectiveReal(ksp,radius,2);
   ierr = PetscTryMethod(ksp,"KSPCGSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
   PetscFunctionReturn(0);

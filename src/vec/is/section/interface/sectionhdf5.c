@@ -103,7 +103,7 @@ PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer
     const char *fieldName;
     PetscInt    fieldComponents, c;
 
-    ierr = PetscSNPrintf(fname, sizeof(fname), "field%D", f);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(fname, sizeof(fname), "field%" PetscInt_FMT, f);CHKERRQ(ierr);
     ierr = PetscViewerHDF5PushGroup(viewer, fname);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldName(s, f, &fieldName);CHKERRQ(ierr);
     ierr = PetscViewerHDF5WriteAttribute(viewer, NULL, "fieldName", PETSC_STRING, fieldName);CHKERRQ(ierr);
@@ -113,7 +113,7 @@ PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection s, PetscViewer viewer
       char        cname[PETSC_MAX_PATH_LEN];
       const char *componentName;
 
-      ierr = PetscSNPrintf(cname, sizeof(cname), "component%D", c);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(cname, sizeof(cname), "component%" PetscInt_FMT, c);CHKERRQ(ierr);
       ierr = PetscViewerHDF5PushGroup(viewer, cname);CHKERRQ(ierr);
       ierr = PetscSectionGetComponentName(s, f, c, &componentName);CHKERRQ(ierr);
       ierr = PetscViewerHDF5WriteAttribute(viewer, NULL, "componentName", PETSC_STRING, componentName);CHKERRQ(ierr);
@@ -201,7 +201,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
   ierr = PetscObjectSetName((PetscObject)dofIS, "atlasDof");CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSizes(viewer, "atlasDof", NULL, &N);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-  if (N1 != N) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->atlasDof: sum of local sizes (%D) != global size (%D): local size on this process is %D", N1, N, n);
+  if (N1 != N) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->atlasDof: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, N1, N, n);
 #endif
   ierr = ISGetLayout(dofIS, &map);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(map, N);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
   ierr = PetscObjectSetName((PetscObject)offIS, "atlasOff");CHKERRQ(ierr);
   ierr = PetscViewerHDF5ReadSizes(viewer, "atlasOff", NULL, &N);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-  if (N1 != N) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->atlasOff: sum of local sizes (%D) != global size (%D): local size on this process is %D", N1, N, n);
+  if (N1 != N) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->atlasOff: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, N1, N, n);
 #endif
   ierr = ISGetLayout(offIS, &map);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(map, N);CHKERRQ(ierr);
@@ -234,7 +234,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
     ierr = PetscObjectSetName((PetscObject)cdofIS, "atlasDof");CHKERRQ(ierr);
     ierr = PetscViewerHDF5ReadSizes(viewer, "atlasDof", NULL, &N);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-    if (N1 != N) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bc->atlasDof: sum of local sizes (%D) != global size (%D): local size on this process is %D", N1, N, n);
+    if (N1 != N) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bc->atlasDof: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, N1, N, n);
 #endif
     ierr = ISGetLayout(cdofIS, &map);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(map, N);CHKERRQ(ierr);
@@ -250,7 +250,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
     ierr = PetscObjectSetName((PetscObject)coffIS, "atlasOff");CHKERRQ(ierr);
     ierr = PetscViewerHDF5ReadSizes(viewer, "atlasOff", NULL, &N);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-    if (N1 != N) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bc->atlasOff: sum of local sizes (%D) != global size (%D): local size on this process is %D", N1, N, n);
+    if (N1 != N) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bc->atlasOff: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, N1, N, n);
 #endif
     ierr = ISGetLayout(coffIS, &map);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(map, N);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ static PetscErrorCode PetscSectionLoad_HDF5_SingleField(PetscSection s, PetscVie
     else {ierr = PetscSectionGetStorageSize(s->bc, &m);CHKERRQ(ierr);}
 #if defined(PETSC_USE_DEBUG)
     ierr = MPIU_Allreduce(&m, &M1, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
-    if (M1 != M) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bcIndices: sum of local sizes (%D) != global size (%D): local size on this process is %D", M1, M, m);
+    if (M1 != M) SETERRQ3(comm, PETSC_ERR_ARG_SIZ, "Unable to load s->bcIndices: sum of local sizes (%" PetscInt_FMT ") != global size (%" PetscInt_FMT "): local size on this process is %" PetscInt_FMT, M1, M, m);
 #endif
     ierr = ISGetLayout(cindIS, &map);CHKERRQ(ierr);
     ierr = PetscLayoutSetSize(map, M);CHKERRQ(ierr);
@@ -289,8 +289,8 @@ PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer
   ierr = PetscViewerHDF5ReadAttribute(viewer, NULL, "numFields", PETSC_INT, NULL, (void *)&numFields);CHKERRQ(ierr);
   if (s->pStart < 0 && s->pEnd < 0) n = PETSC_DECIDE;
   else {
-    if (s->pStart != 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "s->pStart must be 0 (got %D)", s->pStart);
-    if (s->pEnd < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "s->pEnd must be >= 0, (got %D)", s->pEnd);
+    if (s->pStart != 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "s->pStart must be 0 (got %" PetscInt_FMT ")", s->pStart);
+    if (s->pEnd < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "s->pEnd must be >= 0, (got %" PetscInt_FMT ")", s->pEnd);
     n = s->pEnd;
   }
   if (numFields > 0) {ierr = PetscSectionSetNumFields(s, numFields);CHKERRQ(ierr);}
@@ -303,7 +303,7 @@ PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer
     char     *fieldName;
     PetscInt  fieldComponents, c;
 
-    ierr = PetscSNPrintf(fname, sizeof(fname), "field%D", f);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(fname, sizeof(fname), "field%" PetscInt_FMT, f);CHKERRQ(ierr);
     ierr = PetscViewerHDF5PushGroup(viewer, fname);CHKERRQ(ierr);
     ierr = PetscViewerHDF5ReadAttribute(viewer, NULL, "fieldName", PETSC_STRING, NULL, &fieldName);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldName(s, f, fieldName);CHKERRQ(ierr);
@@ -314,7 +314,7 @@ PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection s, PetscViewer viewer
       char  cname[PETSC_MAX_PATH_LEN];
       char *componentName;
 
-      ierr = PetscSNPrintf(cname, sizeof(cname), "component%D", c);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(cname, sizeof(cname), "component%" PetscInt_FMT, c);CHKERRQ(ierr);
       ierr = PetscViewerHDF5PushGroup(viewer, cname);CHKERRQ(ierr);
       ierr = PetscViewerHDF5ReadAttribute(viewer, NULL, "componentName", PETSC_STRING, NULL, &componentName);CHKERRQ(ierr);
       ierr = PetscSectionSetComponentName(s, f, c, componentName);CHKERRQ(ierr);

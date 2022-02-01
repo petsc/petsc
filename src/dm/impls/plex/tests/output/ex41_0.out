@@ -1,9 +1,9 @@
 DM Object: box 1 MPI processes
   type: plex
 box in 2 dimensions:
-  0-cells: 9
-  1-cells: 16
-  2-cells: 8
+  Number of 0-cells per rank: 9
+  Number of 1-cells per rank: 16
+  Number of 2-cells per rank: 8
 Labels:
   celltype: 3 strata with value/size (0 (9), 3 (8), 1 (16))
   depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
@@ -12,9 +12,9 @@ Labels:
 DM Object: Adapted Mesh 1 MPI processes
   type: plex
 Adapted Mesh in 2 dimensions:
-  0-cells: 12
-  1-cells: 23
-  2-cells: 12
+  Number of 0-cells per rank: 12
+  Number of 1-cells per rank: 23
+  Number of 2-cells per rank: 12
 Labels:
   celltype: 3 strata with value/size (1 (23), 3 (12), 0 (12))
   depth: 3 strata with value/size (0 (12), 1 (23), 2 (12))

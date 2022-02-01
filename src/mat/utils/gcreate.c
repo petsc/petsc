@@ -5,8 +5,8 @@ PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat,PetscInt rbs, Petsc
 {
   PetscFunctionBegin;
   if (!mat->preallocated) PetscFunctionReturn(0);
-  if (mat->rmap->bs > 0 && mat->rmap->bs != rbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size %D to %D\n",mat->rmap->bs,rbs);
-  if (mat->cmap->bs > 0 && mat->cmap->bs != cbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size %D to %D\n",mat->cmap->bs,cbs);
+  if (mat->rmap->bs > 0 && mat->rmap->bs != rbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->bs,rbs);
+  if (mat->cmap->bs > 0 && mat->cmap->bs != cbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->bs,cbs);
   PetscFunctionReturn(0);
 }
 
@@ -154,10 +154,10 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(A,M,4);
   PetscValidLogicalCollectiveInt(A,N,5);
-  if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",m,M);
-  if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",n,N);
-  if ((A->rmap->n >= 0 && A->rmap->N >= 0) && (A->rmap->n != m || (M > 0 && A->rmap->N != M))) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
-  if ((A->cmap->n >= 0 && A->cmap->N >= 0) && (A->cmap->n != n || (N > 0 && A->cmap->N != N))) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap->n,A->cmap->N);
+  if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %" PetscInt_FMT " cannot be larger than global row size %" PetscInt_FMT,m,M);
+  if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %" PetscInt_FMT " cannot be larger than global column size %" PetscInt_FMT,n,N);
+  if ((A->rmap->n >= 0 && A->rmap->N >= 0) && (A->rmap->n != m || (M > 0 && A->rmap->N != M))) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",m,M,A->rmap->n,A->rmap->N);
+  if ((A->cmap->n >= 0 && A->cmap->N >= 0) && (A->cmap->n != n || (N > 0 && A->cmap->N != N))) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,A->cmap->n,A->cmap->N);
   A->rmap->n = m;
   A->cmap->n = n;
   A->rmap->N = M > -1 ? M : A->rmap->N;
@@ -354,6 +354,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   struct _MatOps   Aops;
   char             *mtype,*mname,*mprefix;
   Mat_Product      *product;
+  Mat_Redundant    *redundant;
   PetscObjectState state;
 
   PetscFunctionBegin;
@@ -362,14 +363,15 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   if (A == *C) PetscFunctionReturn(0);
   PetscCheckSameComm(A,1,*C,2);
   /* save the parts of A we need */
-  Abops = ((PetscObject)A)->bops[0];
-  Aops  = A->ops[0];
-  refct = ((PetscObject)A)->refct;
-  mtype = ((PetscObject)A)->type_name;
-  mname = ((PetscObject)A)->name;
-  state = ((PetscObject)A)->state;
-  mprefix = ((PetscObject)A)->prefix;
-  product = A->product;
+  Abops     = ((PetscObject)A)->bops[0];
+  Aops      = A->ops[0];
+  refct     = ((PetscObject)A)->refct;
+  mtype     = ((PetscObject)A)->type_name;
+  mname     = ((PetscObject)A)->name;
+  state     = ((PetscObject)A)->state;
+  mprefix   = ((PetscObject)A)->prefix;
+  product   = A->product;
+  redundant = A->redundant;
 
   /* zero these so the destroy below does not free them */
   ((PetscObject)A)->type_name = NULL;
@@ -397,6 +399,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
   ((PetscObject)A)->prefix    = mprefix;
   ((PetscObject)A)->state     = state + 1;
   A->product                  = product;
+  A->redundant                = redundant;
 
   /* since these two are copied into A we do not want them destroyed in C */
   ((PetscObject)*C)->qlist = NULL;
@@ -427,7 +430,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   PetscValidHeaderSpecific(*C,MAT_CLASSID,2);
   if (A == *C) PetscFunctionReturn(0);
   PetscCheckSameComm(A,1,*C,2);
-  if (((PetscObject)*C)->refct != 1) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %D > 1, would leave hanging reference",((PetscObject)*C)->refct);
+  if (((PetscObject)*C)->refct != 1) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %" PetscInt_FMT " > 1, would leave hanging reference",((PetscObject)*C)->refct);
 
   /* swap C and A */
   refct   = ((PetscObject)A)->refct;
@@ -436,9 +439,9 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   ierr  = PetscMemcpy(&buffer,A,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ierr  = PetscMemcpy(A,*C,sizeof(struct _p_Mat));CHKERRQ(ierr);
   ierr  = PetscMemcpy(*C,&buffer,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  ((PetscObject)A)->refct   = refct;
-  ((PetscObject)A)->state   = state + 1;
-  A->stencil                = stencil;
+  ((PetscObject)A)->refct = refct;
+  ((PetscObject)A)->state = state + 1;
+  A->stencil              = stencil;
 
   ((PetscObject)*C)->refct = 1;
   ierr = MatShellSetOperation(*C,MATOP_DESTROY,(void(*)(void))NULL);CHKERRQ(ierr);
@@ -516,7 +519,7 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode 
   if (!is_coo_j) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_j IS");
   ierr = ISGetLocalSize(is_coo_i,&n_i);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is_coo_j,&n_j);CHKERRQ(ierr);
-  if (n_i != n_j)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong local size %D != %D",n_i,n_j);
+  if (n_i != n_j)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong local size %" PetscInt_FMT " != %" PetscInt_FMT,n_i,n_j);
   ierr = ISGetIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
   ierr = ISGetIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
   if (imode != ADD_VALUES) {
@@ -565,26 +568,35 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt c
 }
 
 /*@
-   MatSetPreallocationCOO - set preallocation for matrices using a coordinate format of the entries
+   MatSetPreallocationCOO - set preallocation for matrices using a coordinate format of the entries with global indices
 
    Collective on Mat
 
    Input Parameters:
 +  A - matrix being preallocated
-.  ncoo - number of entries in the locally owned part of the parallel matrix
+.  ncoo - number of entries
 .  coo_i - row indices
 -  coo_j - column indices
 
    Level: beginner
 
-   Notes: Entries can be repeated, see MatSetValuesCOO(). Currently optimized for cuSPARSE matrices only.
+   Notes: Entries can be repeated, see MatSetValuesCOO().
 
-.seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation()
+   If the matrix type is not AIJ or AIJKOKKOS, then the entries must be owned by the local part
+   of the matrix and no row or column indices are allowed to be negative.
+
+   If the matrix type is AIJ or AIJKOKKOS (sequential or parallel), the above constraints do not apply.
+   More specifically, entries with negative row or column indices are allowed but will be ignored.
+   The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries are allowed
+   and will be properly added or inserted to the matrix.
+
+.seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOOLocal()
 @*/
 PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
 {
   PetscErrorCode (*f)(Mat,PetscInt,const PetscInt[],const PetscInt[]) = NULL;
   PetscErrorCode ierr;
+  PetscBool      isAIJKokkos;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -593,11 +605,12 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
   if (ncoo) PetscValidIntPointer(coo_j,4);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG)) {
+  ierr = PetscObjectTypeCompareAny((PetscObject)A,&isAIJKokkos,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,NULL);CHKERRQ(ierr);
+  if (PetscDefined(USE_DEBUG) && !isAIJKokkos) {
     PetscInt i;
     for (i = 0; i < ncoo; i++) {
-      if (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %D! Must be in [%D,%D)",coo_i[i],A->rmap->rstart,A->rmap->rend);
-      if (coo_j[i] < 0 || coo_j[i] >= A->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %D! Must be in [0,%D)",coo_j[i],A->cmap->N);
+      if (coo_i[i] >= 0 && (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %" PetscInt_FMT "! Must be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",coo_i[i],A->rmap->rstart,A->rmap->rend);
+      if (coo_j[i] >= A->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %" PetscInt_FMT "! Must be in [0,%" PetscInt_FMT ")",coo_j[i],A->cmap->N);
     }
   }
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOO_C",&f);CHKERRQ(ierr);
@@ -608,6 +621,57 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
     ierr = MatSetPreallocationCOO_Basic(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_PreallCOO,A,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatSetPreallocationCOOLocal - set preallocation for matrices using a coordinate format of the entries with local indices
+
+   Collective on Mat
+
+   Input Parameters:
++  A - matrix being preallocated
+.  ncoo - number of entries
+.  coo_i - row indices (local numbering; may be modified)
+-  coo_j - column indices (local numbering; may be modified)
+
+   Level: beginner
+
+   Notes:
+   Entries can be repeated, see MatSetValuesCOO().
+
+   The local indices are translated using the local to global mapping, thus MatSetLocalToGlobalMapping() must have been
+   called prior to this function.
+
+   The indices coo_i and coo_j may be modified within this function. They might be translated to corresponding global
+   indices, but the caller should not rely on them having any specific value after this function returns.
+
+   If the matrix type is not AIJ or AIJKOKKOS, then the entries must be owned by the local part
+   of the matrix and no row or column indices are allowed to be negative.
+
+   If the matrix type is AIJ or AIJKOKKOS (sequential or parallel), the above constraints do not apply.
+   More specifically, entries with negative row or column indices are allowed but will be ignored.
+   The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries are allowed
+   and will be properly added or inserted to the matrix.
+
+.seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOO()
+@*/
+PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscInt ncoo,PetscInt coo_i[],PetscInt coo_j[])
+{
+  PetscErrorCode ierr;
+  ISLocalToGlobalMapping ltog_row,ltog_col;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (ncoo) PetscValidIntPointer(coo_i,3);
+  if (ncoo) PetscValidIntPointer(coo_j,4);
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  ierr = MatGetLocalToGlobalMapping(A, &ltog_row, &ltog_col);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(ltog_row, ncoo, coo_i, coo_i);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(ltog_col, ncoo, coo_j, coo_j);CHKERRQ(ierr);
+  ierr = MatSetPreallocationCOO(A, ncoo, coo_i, coo_j);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -623,13 +687,13 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
 
    Level: beginner
 
-   Notes: The values must follow the order of the indices prescribed with MatSetPreallocationCOO().
+   Notes: The values must follow the order of the indices prescribed with MatSetPreallocationCOO() or MatSetPreallocationCOOLocal().
           When repeated entries are specified in the COO indices the coo_v values are first properly summed.
           The imode flag indicates if coo_v must be added to the current values of the matrix (ADD_VALUES) or overwritten (INSERT_VALUES).
-          Currently optimized for cuSPARSE matrices only.
+          Currently optimized for AIJCUSPARSE and AIJKOKKOS matrices only.
           Passing coo_v == NULL is equivalent to passing an array of zeros.
 
-.seealso: MatSetPreallocationCOO(), InsertMode, INSERT_VALUES, ADD_VALUES
+.seealso: MatSetPreallocationCOO(), MatSetPreallocationCOOLocal(), InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
 PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)
 {

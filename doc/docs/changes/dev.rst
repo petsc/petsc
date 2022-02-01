@@ -8,6 +8,7 @@ Changes: Development
    * Use imperative, e.g., Add, Improve, Change, etc.
    * Don't use a period (.) at the end of entries
    * If multiple sentences are needed, use a period or semicolon to divide sentences, but not at the end of the final sentence
+   * Use full function names, for ease of searching and so that man pages links are generated
 
 .. rubric:: General:
 
@@ -18,6 +19,9 @@ Changes: Development
 - Fix for requesting no C++ dialect flag via ``--with-cxx-dialect=0``. Previously ``configure`` would bail out immediately without running the tests and therefore wouldn't set any of the capability defines. ``configure`` now runs all tests, just doesn't add the flag in the end
 - Fix a number of corner-cases when handling C++ dialect detection
 - Remove deprecated PETSC_VERSION_PATCH so as to not have confusion with patch releases where the subminor version changes
+- Change PETSC_HAVE_MKL to PETSC_HAVE_MKL_LIBS
+- Add PETSC_HAVE_MKL_INCLUDES
+- Enable HYPRE GPU for 64bit indices build (using HYPRE's mixed-int configuration)
 
 .. rubric:: Sys:
 
@@ -37,7 +41,12 @@ Changes: Development
 - Add ``PetscDeviceView()``
 - Move ``PetscInt64_FMT`` and ``MPIU_INT64`` definitions to ``petscsystypes.h``
 - Add ``PetscBLASInt_FMT``, ``PETSC_MPI_COMM_FMT``, and ``PETSC_MPI_WIN_FMT`` format specifiers
+- Add ``petscmacros.h`` header to house common PETSc preprocessor macros
+- Add ``PetscUnreachable()`` to indicate unreachable code section to compiler
 - Add ``PetscHasAttribute()`` macro to query for existence of an ``__attribute__`` specifier
+- Add ``PetscCommGetComm()`` and ``PetscCommRestoreComm()`` to allow reuse of MPI communicator with external packages, as some MPI implementations have  broken ``MPI_Comm_free()``
+- Add ``PetscExpand()``, ``PetscConcat()``, ``PetscCompl()``, and ``PetscExpandToNothing()``
+- Add ``PETSC_CONSTEXPR``, ``PETSC_CONSTEXPR_14``, ``PETSC_NOEXCEPT``, ``PETSC_NULLPTR``, and ``PETSC_NODISCARD``
 
 .. rubric:: PetscViewer:
 
@@ -50,8 +59,12 @@ Changes: Development
 .. rubric:: IS:
 
 -  ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
+-  Add ``ISGeneralSetIndicesFromMask()``
 
 .. rubric:: VecScatter / PetscSF:
+
+- Add MPI-4.0 large count support. With an MPI-4.0 compliant MPI implementation and 64-bit indices, one can now pass over 2 billion elements in a single message in either VecScatter or PetscSF
+- Add ``PetscSFFetchAndOpWithMemTypeBegin()``, which is similar to ``PetscSFFetchAndOpBegin()``, but with explicit memory types
 
 .. rubric:: PF:
 
@@ -73,21 +86,32 @@ Changes: Development
 -  Add ``MatSetBindingPropagates()``
 -  Add ``MatGetBindingPropagates()``
 -  Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
--  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU.
+-  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU
+-  Change ``MatCreateIS()`` behavior when NULL is passed for the mappings. Now a NULL map implies matching local and global spaces
+-  Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
+-  Add support of ``MatSetValuesCOO()`` and ``MatSetPreallocationCOO()`` for matrix type AIJKOKKOS. Additionally, for AIJKOKKOS, they support negative indices and remote entries
+-  Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
 
 .. rubric:: PC:
 
 .. rubric:: KSP:
 
 -  Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
+-  Add ``KSPQMRCGS`` to support qmrcgstab with right preconditioning
 
 .. rubric:: SNES:
+
+-  Add ``SNESNewtonTRDCGetRhoFlag()``, ``SNESNewtonTRDCSetPreCheck()``, ``SNESNewtonTRDCGetPreCheck()``, ``SNESNewtonTRDCSetPostCheck()``, ``SNESNewtonTRDCGetPostCheck()``
 
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
 
-- Add ``TSSundialsSetUseDense()`` and options database option ``-ts_sundials_use_dense`` to use a dense linear solver (serial only) within CVODE, instead of the default iterative solve.
+- Add ``TSSundialsSetUseDense()`` and options database option ``-ts_sundials_use_dense`` to use a dense linear solver (serial only) within CVODE, instead of the default iterative solve
+- Change timestepper type ``TSDISCGRAD`` to include additional conservation terms based on formulation from [Gonzalez 1996] for Hamiltonian systems:
+  - Add ``TSDiscGradIsGonzalez()`` to check flag for whether to use additional conservative terms in discrete gradient formulation
+  - Add ``TSDiscGradUseGonzalez()`` to set discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
+- Add ``TSRemoveTrajectory`` to destroy and remove the internal TSTrajectory object from TS
 
 .. rubric:: TAO:
 
@@ -125,7 +149,10 @@ Changes: Development
     - Add ``DMPlexMetricSetNormalizationOrder()`` for specifying the order of L-p normalization
     - Add ``DMPlexMetricGetNormalizationOrder()`` for retrieving the order of L-p normalization
     - Change ``DMPlexMetricCtx`` so that it is only instantiated when one of the above routines are called
-    - Change ``DMPlexMetricEnforceSPD()`` to have another argument, for controlling whether anisotropy is restricted
+    - Change ``DMPlexMetricEnforceSPD()`` to have more arguments:
+        - control whether anisotropy is restricted
+        - output the modified metric, rather than modifying the input
+        - output the determinant
     - Change ``DMPlexMetricNormalize()`` to have another argument, for controlling whether anisotropy is restricted
 - Change ``DMAdaptor`` so that its ``-adaptor_refinement_h_min/h_max/a_max/p`` command line arguments become ``-dm_plex_metric_h_min/h_max/a_max/p``
 - Add 2D and 3D mesh adaptation interface to Mmg and 3D mesh adaptation interface to ParMmg. Mmg/ParMmg specific changes:
@@ -144,18 +171,25 @@ Changes: Development
     - Add ``DMPlexMetricSetNumIterations()`` to set the number of ParMmg adaptation iterations
     - Add ``DMPlexMetricGetNumIterations()`` to get the number of ParMmg adaptation iterations
 - Change ``DMPlexCoordinatesLoad()`` to take a ``PetscSF`` as argument
+- Change ``DMPlexLabelsLoad()`` to take the ``PetscSF`` argument and load in parallel
 - Change ``DMPlexCreateFromFile()`` to take the mesh name as argument
 - Change ``DMAdaptMetric`` so that it takes an additional argument for cell tags
 - Change ``DMTransformAdaptLabel`` so that it takes an additional argument for cell tags
 - Change ``DMGenerateRegister`` so that it registers routines that take an additional argument for cell tags
+- Change ``DMPlexFindVertices()`` to take ``Vec`` and ``IS`` arguments instead of arrays
 
 .. rubric:: FE/FV:
 
 - Deprecate ``PetscSpacePolynomialGetSymmetric()`` and ``PetscSpacePolynomialSetSymmetric()``: symmetric polynomials were never supported and support is no longer planned
 - Remove ``PetscSpacePolynomialType`` enum and associated array of strings ``PetscSpacePolynomialTypes``: other polynomial spaces are now handled by other implementations of ``PetscSpace``
 - Add ``PETSCSPACEPTRIMMED`` that implements trimmed polynomial spaces (also known as the spaces in Nedelec face / edge elements of the first kind)
+- Replace ``PetscDSGet/SetHybrid()`` with ``PetscDSGet/SetCohesive()``
+- Add ``PetscDSIsCohesive()``, ``PetscDSGetNumCohesive()``, and ``PetscDSGetFieldOffsetCohesive()``
+- Add argument to ``PetscFEIntegrateHybridJacobian()`` to indicate the face for the integration
 
 .. rubric:: DMNetwork:
+
+-  ``DMNetworkAddComponent()`` now requires a valid component key for each call
 
 .. rubric:: DMStag:
 

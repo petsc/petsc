@@ -1,9 +1,10 @@
-#if !defined(PETSCSFIMPL_H)
-#define PETSCSFIMPL_H
+#if !defined(SFIMPL_H)
+#define SFIMPL_H
 
 #include <petscvec.h>
 #include <petscsf.h>
 #include <petsc/private/deviceimpl.h>
+#include <petsc/private/mpiutils.h>
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;
@@ -180,9 +181,53 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType,void*);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)
-PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
-PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
+  PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
+  PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
+ #if defined(PETSC_HAVE_CUDA)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_CUDA;
+ #elif defined(PETSC_HAVE_HIP)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_HIP;
+ #elif defined(PETSC_HAVE_SYCL)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_SYCL;
+ #else
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_HOST;
+ #endif
 #endif
+
+PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType *type)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(type,2);
+  *type = PETSC_MEMTYPE_HOST;
+#if defined(PETSC_HAVE_CUDA)
+  if (PetscDeviceInitialized(PETSC_DEVICE_CUDA) && data) {
+    cudaError_t                  cerr;
+    struct cudaPointerAttributes attr;
+    enum cudaMemoryType          mtype;
+    cerr = cudaPointerGetAttributes(&attr,data); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
+    if (cerr) cerr = cudaGetLastError(); /* If there was an error, return it and then reset it */
+    #if (CUDART_VERSION < 10000)
+      mtype = attr.memoryType;
+    #else
+      mtype = attr.type;
+    #endif
+    if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
+  }
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  if (PetscDeviceInitialized(PETSC_DEVICE_HIP) && data) {
+    hipError_t                   cerr;
+    struct hipPointerAttribute_t attr;
+    enum hipMemoryType           mtype;
+    cerr = hipPointerGetAttributes(&attr,data);
+    if (cerr) cerr = hipGetLastError();
+    mtype = attr.memoryType;
+    if (cerr == hipSuccess && mtype == hipMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
+  }
+#endif
+  PetscFunctionReturn(0);
+}
 
 /* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.
    Through VecGetArray(), we copy data of VECVIENNACL from device to host and pass host pointers to SF.

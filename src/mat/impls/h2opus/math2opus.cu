@@ -51,6 +51,7 @@ template <class T> class PetscPointCloud : public H2OpusDataSet<T>
   public:
     PetscPointCloud(int dim, size_t num_pts, const T coords[])
     {
+      dim = dim > 0 ? dim : 1;
       this->dimension = dim;
       this->num_points = num_pts;
 
@@ -741,11 +742,14 @@ static PetscErrorCode MatH2OpusInferCoordinates_Private(Mat A)
 
     ierr = PetscObjectQuery((PetscObject)S,"__math2opus_coords",(PetscObject*)&c);CHKERRQ(ierr);
   }
-  if (!c) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Missing coordinates");
-  ierr = VecGetArrayRead(c,&coords);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(c,&spacedim);CHKERRQ(ierr);
-  ierr = MatH2OpusSetCoords_H2OPUS(A,spacedim,coords,PETSC_FALSE,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(c,&coords);CHKERRQ(ierr);
+  if (!c) {
+    ierr = MatH2OpusSetCoords_H2OPUS(A,-1,NULL,PETSC_FALSE,NULL,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArrayRead(c,&coords);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(c,&spacedim);CHKERRQ(ierr);
+    ierr = MatH2OpusSetCoords_H2OPUS(A,spacedim,coords,PETSC_FALSE,NULL,NULL);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(c,&coords);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1121,14 +1125,14 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
       }
     } else {
       ierr = PetscViewerASCIIPrintf(view,"  H-Matrix constructed from %s\n",h2opus->kernel ? "Kernel" : "Mat");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(view,"  PointCloud dim %D\n",h2opus->ptcloud ? h2opus->ptcloud->getDimension() : 0);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(view,"  Admissibility parameters: leaf size %D, eta %g\n",h2opus->leafsize,(double)h2opus->eta);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(view,"  PointCloud dim %" PetscInt_FMT "\n",h2opus->ptcloud ? h2opus->ptcloud->getDimension() : 0);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(view,"  Admissibility parameters: leaf size %" PetscInt_FMT ", eta %g\n",h2opus->leafsize,(double)h2opus->eta);CHKERRQ(ierr);
       if (!h2opus->kernel) {
-        ierr = PetscViewerASCIIPrintf(view,"  Sampling parameters: max_rank %D, samples %D, tolerance %g\n",h2opus->max_rank,h2opus->bs,(double)h2opus->rtol);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"  Sampling parameters: max_rank %" PetscInt_FMT ", samples %" PetscInt_FMT ", tolerance %g\n",h2opus->max_rank,h2opus->bs,(double)h2opus->rtol);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(view,"  Offdiagonal blocks approximation order %D\n",h2opus->basisord);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"  Offdiagonal blocks approximation order %" PetscInt_FMT "\n",h2opus->basisord);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(view,"  Number of samples for norms %D\n",h2opus->norm_max_samples);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(view,"  Number of samples for norms %" PetscInt_FMT "\n",h2opus->norm_max_samples);CHKERRQ(ierr);
       if (size == 1) {
         double dense_mem_cpu = h2opus->hmatrix ? h2opus->hmatrix->getDenseMemoryUsage() : 0;
         double low_rank_cpu = h2opus->hmatrix ? h2opus->hmatrix->getLowRankMemoryUsage() : 0;
@@ -1195,7 +1199,7 @@ static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const 
   if (!cong) SETERRQ(comm,PETSC_ERR_SUP,"Only for square matrices with congruent layouts");
   N    = A->rmap->N;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size > 1 && cdist) {
+  if (spacedim > 0 && size > 1 && cdist) {
     PetscSF      sf;
     MPI_Datatype dtype;
 
@@ -1660,12 +1664,13 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(B,spacedim,2);
-  PetscValidLogicalCollectiveReal(B,eta,4);
-  PetscValidLogicalCollectiveInt(B,leafsize,5);
-  PetscValidLogicalCollectiveInt(B,maxrank,6);
-  PetscValidLogicalCollectiveInt(B,bs,7);
-  PetscValidLogicalCollectiveReal(B,rtol,8);
-  PetscValidPointer(nA,9);
+  PetscValidLogicalCollectiveBool(B,cdist,4);
+  PetscValidLogicalCollectiveReal(B,eta,5);
+  PetscValidLogicalCollectiveInt(B,leafsize,6);
+  PetscValidLogicalCollectiveInt(B,maxrank,7);
+  PetscValidLogicalCollectiveInt(B,bs,8);
+  PetscValidLogicalCollectiveReal(B,rtol,9);
+  PetscValidPointer(nA,10);
   ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
   if (B->rmap->n != B->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Different row and column local sizes are not supported");
   if (B->rmap->N != B->cmap->N) SETERRQ(comm,PETSC_ERR_SUP,"Rectangular matrices are not supported");

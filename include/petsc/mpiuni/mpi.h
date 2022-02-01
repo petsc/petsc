@@ -165,6 +165,7 @@ MPIUni_PETSC_EXTERN void *MPIUNI_TMP;
 #define MPI_UNDEFINED  (-32766)
 
 #define MPI_SUCCESS          0
+#define MPI_ERR_COUNT        2
 #define MPI_ERR_OTHER       17
 #define MPI_ERR_UNKNOWN     18
 #define MPI_ERR_INTERN      21

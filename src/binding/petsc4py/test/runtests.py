@@ -17,6 +17,9 @@ def getoptionparser():
     parser.add_option("-e", "--exclude", type="string",
                       action="append", dest="exclude", default=[],
                       help="exclude tests matching PATTERN", metavar="PATTERN")
+    parser.add_option("-k", "--pattern", type="string",
+                      action="append", dest="patterns", default=[],
+                      help="only run tests which match the given substring")
     parser.add_option("-f", "--failfast",
                       action="store_true", dest="failfast", default=False,
                       help="Stop on first failure")
@@ -37,6 +40,9 @@ def getoptionparser():
     parser.add_option("-s","--summary",
                       action="store_true", dest="summary", default=0,
                       help="print PETSc log summary")
+    parser.add_option("--no-memdebug",
+                      action="store_false", dest="memdebug", default=True,
+                      help="Do not use PETSc memory debugging")
     return parser
 
 def getbuilddir():
@@ -73,12 +79,11 @@ def setup_unittest(options):
     _WritelnDecorator.writeln = writeln
 
 def import_package(options, pkgname):
-    args = [
-        sys.argv[0],
-        '-malloc',
-        '-malloc_debug',
-        '-malloc_dump',
-    ]
+    args = [ sys.argv[0] ]
+    if options.memdebug:
+        args.append('-malloc')
+        args.append('-malloc_debug')
+        args.append('-malloc_dump')
     if options.summary:
         args.append('-log_view')
     package = __import__(pkgname)
@@ -137,6 +142,10 @@ def load_tests(options, args):
     testfiles.sort()
     testsuite = unittest.TestSuite()
     testloader = unittest.TestLoader()
+    if options.patterns:
+        testloader.testNamePatterns = [
+            ('*%s*' % p) if ('*' not in p) else p
+            for p in options.patterns]
     include = exclude = None
     if options.include:
         include = re.compile('|'.join(options.include)).search

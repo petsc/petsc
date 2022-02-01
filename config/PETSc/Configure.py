@@ -36,7 +36,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc','-with-single-library=<bool>',                  nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc','-with-fortran-bindings=<bool>',                nargs.ArgBool(None, 1,'Build PETSc fortran bindings in the library and corresponding module files'))
     help.addArgument('PETSc', '-with-ios=<bool>',                            nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
-    help.addArgument('PETSc', '-with-xsdk-defaults',                         nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-with-display=<x11display>',                  nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
     help.addArgument('PETSc', '-with-package-scripts=<pyscripts>',           nargs.ArgFileList(None,None,'Specify configure package scripts for user provided packages'))
     return
@@ -254,7 +253,7 @@ prepend-path PATH "%s"
       try:
         output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
         compiler = output.split(' ')[0]
-        self.addDefine('MPICC_SHOW','"'+output.strip().replace('\n','\\\\n')+'"')
+        self.addDefine('MPICC_SHOW','"'+output.strip().replace('\n','\\\\n').replace('"','')+'"')
       except:
         self.addDefine('MPICC_SHOW','"Unavailable"')
     else:
@@ -335,6 +334,7 @@ prepend-path PATH "%s"
     if hasattr(self.compilers, 'CUDAC'):
       self.setCompilers.pushLanguage('CUDA')
       self.addMakeMacro('CUDAC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('CUDAPP_FLAGS',self.setCompilers.CUDAPPFLAGS)
       self.setCompilers.popLanguage()
 
     if hasattr(self.compilers, 'HIPC'):
@@ -343,9 +343,10 @@ prepend-path PATH "%s"
       self.addMakeMacro('HIPPP_FLAGS',self.setCompilers.HIPPPFLAGS)
       self.setCompilers.popLanguage()
 
-    if hasattr(self.compilers, 'SYCLCXX'):
+    if hasattr(self.compilers, 'SYCLC'):
       self.setCompilers.pushLanguage('SYCL')
-      self.addMakeMacro('SYCLCXX_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('SYCLC_FLAGS',self.setCompilers.getCompilerFlags())
+      self.addMakeMacro('SYCLPP_FLAGS',self.setCompilers.SYCLPPFLAGS)
       self.setCompilers.popLanguage()
 
     # shared library linker values
@@ -722,6 +723,15 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
         self.compilers.LIBS += ' '+flag+'/usr/ucblib'
     return
 
+  def configureDarwin(self):
+    '''Log brew configuration for Apple systems'''
+    try:
+      self.executeShellCommand(['brew', 'config'], log = self.log)
+      self.executeShellCommand(['brew', 'info', 'gcc'], log = self.log)
+    except:
+      pass
+    return
+
   def configureLinux(self):
     '''Linux specific stuff'''
     # TODO: Test for this by mallocing an odd number of floats and checking the address
@@ -959,6 +969,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureIntptrt)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
+    self.executeTest(self.configureDarwin)    
     self.executeTest(self.configureWin32)
     self.executeTest(self.configureCygwinBrokenPipe)
     self.executeTest(self.configureDefaultArch)

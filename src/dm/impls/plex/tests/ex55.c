@@ -10,6 +10,7 @@ typedef struct {
   PetscBool distribute;                   /* Distribute the mesh */
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
+  char      meshname[PETSC_MAX_PATH_LEN]; /* Mesh name */
   PetscViewerFormat format;               /* Format to write and read */
   PetscBool second_write_read;            /* Write and read for the 2nd time */
   PetscBool use_low_level_functions;      /* Use low level functions for viewing and loading */
@@ -25,6 +26,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->distribute = PETSC_TRUE;
   options->interpolate = PETSC_FALSE;
   options->filename[0] = '\0';
+  options->meshname[0] = '\0';
   options->format = PETSC_VIEWER_DEFAULT;
   options->second_write_read = PETSC_FALSE;
   options->use_low_level_functions = PETSC_FALSE;
@@ -35,6 +37,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex55.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex55.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex55.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-meshname", "The mesh file", "ex55.c", options->meshname, options->meshname, sizeof(options->meshname), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-format", "Format to write and read", "ex55.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum*)&options->format, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-second_write_read", "Write and read for the 2nd time", "ex55.c", options->second_write_read, &options->second_write_read, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", "ex55.c", options->use_low_level_functions, &options->use_low_level_functions, NULL);CHKERRQ(ierr);
@@ -45,14 +48,15 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const char prefix[], AppCtx user, DM *dm_new)
 {
   DM             dmnew;
-  const char     exampleDMPlexName[] = "DMPlex Object";
+  const char     savedName[]  = "Mesh";
+  const char     loadedName[] = "Mesh_new";
   PetscViewer    v;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), filename, FILE_MODE_WRITE, &v);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(v, user.format);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, exampleDMPlexName);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) dm, savedName);CHKERRQ(ierr);
   if (user.use_low_level_functions) {
     ierr = DMPlexTopologyView(dm, v);CHKERRQ(ierr);
     ierr = DMPlexCoordinatesView(dm, v);CHKERRQ(ierr);
@@ -64,19 +68,19 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
   ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = DMCreate(PETSC_COMM_WORLD, &dmnew);CHKERRQ(ierr);
   ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dmnew, exampleDMPlexName);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) dmnew, savedName);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dmnew, prefix);CHKERRQ(ierr);
   if (user.use_low_level_functions) {
     PetscSF  sfXC;
 
     ierr = DMPlexTopologyLoad(dmnew, v, &sfXC);CHKERRQ(ierr);
     ierr = DMPlexCoordinatesLoad(dmnew, v, sfXC);CHKERRQ(ierr);
+    ierr = DMPlexLabelsLoad(dmnew, v, sfXC);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfXC);CHKERRQ(ierr);
-    ierr = DMPlexLabelsLoad(dmnew, v);CHKERRQ(ierr);
   } else {
     ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
   }
-  ierr = PetscObjectSetName((PetscObject)dmnew,"Mesh_new");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)dmnew,loadedName);CHKERRQ(ierr);
 
   ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
@@ -94,7 +98,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, "ex55_plex", user.interpolate, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.meshname, user.interpolate, &dm);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dm,"orig_");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
@@ -263,7 +267,7 @@ int main(int argc, char **argv)
   testset:
     suffix: 10-v3.16.0-v1.0.0
     requires: hdf5 !complex datafilespath
-    args: -dm_plex_check_all -compare
+    args: -dm_plex_check_all -compare -compare_labels
     args: -dm_plex_view_hdf5_storage_version {{1.0.0 2.0.0}} -use_low_level_functions {{0 1}}
     test:
       suffix: a

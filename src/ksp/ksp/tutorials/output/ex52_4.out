@@ -1,0 +1,6 @@
+
+ MUMPS INFOG(16) :: Max memory in MB = 2
+ MUMPS INFOG(17) :: Sum memory in MB = 6 
+  Mumps row pivot threshold = 1e-06
+  Mumps determinant = (0.760785, 0.) * 2^4245 
+Norm of error < 1.e-12 iterations 1

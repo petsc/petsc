@@ -46,6 +46,9 @@ typedef struct {
 
 } DM_Stag;
 
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ(DM,Mat*);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_2D_AIJ(DM,Mat*);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ(DM,Mat*);
 PETSC_INTERN PetscErrorCode DMStagDuplicateWithoutSetup(DM,MPI_Comm,DM*);
 PETSC_INTERN PetscErrorCode DMStagInitialize(DMBoundaryType,DMBoundaryType,DMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,DMStagStencilType,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM);
@@ -57,5 +60,6 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_3d(DM);
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM,PetscReal,PetscReal);
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation,DMStagStencilLocation*);
 
 #endif

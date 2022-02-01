@@ -45,9 +45,9 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %D: ",rank,i);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %" PetscInt_FMT ": ",rank,i);CHKERRQ(ierr);
     for (j=0; j<nz; j++) {
-      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%D %g  ",idx[j],(double)PetscRealPart(values[j]));CHKERRQ(ierr);
+      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%" PetscInt_FMT " %g  ",idx[j],(double)PetscRealPart(values[j]));CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"\n");CHKERRQ(ierr);
     ierr = MatRestoreRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);

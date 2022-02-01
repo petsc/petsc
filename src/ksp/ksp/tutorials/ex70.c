@@ -772,10 +772,10 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp,Vec vp,PetscReal dt,DM dm_mpoint
 
     xi_p[0] = 2.0 * (coor_p[0] - x0[0])/dx[0] - 1.0;
     xi_p[1] = 2.0 * (coor_p[1] - x0[1])/dx[1] - 1.0;
-    if (PetscRealPart(xi_p[0]) < -1.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (xi) too small %1.4e [e=%D]\n",(double)PetscRealPart(xi_p[0]),e);
-    if (PetscRealPart(xi_p[0]) >  1.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (xi) too large %1.4e [e=%D]\n",(double)PetscRealPart(xi_p[0]),e);
-    if (PetscRealPart(xi_p[1]) < -1.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (eta) too small %1.4e [e=%D]\n",(double)PetscRealPart(xi_p[1]),e);
-    if (PetscRealPart(xi_p[1]) >  1.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (eta) too large %1.4e [e=%D]\n",(double)PetscRealPart(xi_p[1]),e);
+    if (PetscRealPart(xi_p[0]) < -1.0-PETSC_SMALL) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (xi) too small %1.4e [e=%D]",(double)PetscRealPart(xi_p[0]),e);
+    if (PetscRealPart(xi_p[0]) >  1.0+PETSC_SMALL) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (xi) too large %1.4e [e=%D]",(double)PetscRealPart(xi_p[0]),e);
+    if (PetscRealPart(xi_p[1]) < -1.0-PETSC_SMALL) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (eta) too small %1.4e [e=%D]",(double)PetscRealPart(xi_p[1]),e);
+    if (PetscRealPart(xi_p[1]) >  1.0+PETSC_SMALL) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"value (eta) too large %1.4e [e=%D]",(double)PetscRealPart(xi_p[1]),e);
 
     /* evaluate basis functions */
     EvaluateBasis_Q1(xi_p,Ni);

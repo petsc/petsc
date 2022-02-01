@@ -158,6 +158,7 @@ int main(int argc,char **argv)
       ierr = TSTrajectoryRestoreUpdatedHistoryVecs(tj,use1 ? &hW : NULL,use2 ? &hWdot : NULL);CHKERRQ(ierr);
     }
   }
+  ierr = TSRemoveTrajectory(ts);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&W);CHKERRQ(ierr);
   ierr = VecDestroy(&W2);CHKERRQ(ierr);

@@ -4004,7 +4004,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   if (n_constraints) {
     Mat         M3,C_B;
     IS          is_aux;
-    PetscScalar *array,*array2;
 
     /* Extract constraints on R nodes: C_{CR}  */
     ierr = ISCreateStride(PETSC_COMM_SELF,n_constraints,n_vertices,1,&is_aux);CHKERRQ(ierr);
@@ -4098,18 +4097,15 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatDestroy(&Brhs);CHKERRQ(ierr);
     if (!pcbddc->switch_static) {
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_B,n_constraints,NULL,&pcbddc->local_auxmat2);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(pcbddc->local_auxmat2,&array);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(local_auxmat2_R,&array2);CHKERRQ(ierr);
       for (i=0;i<n_constraints;i++) {
-        ierr = VecPlaceArray(pcbddc->vec1_R,array2+i*lda_rhs);CHKERRQ(ierr);
-        ierr = VecPlaceArray(pcis->vec1_B,array+i*n_B);CHKERRQ(ierr);
-        ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecResetArray(pcis->vec1_B);CHKERRQ(ierr);
-        ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
+        Vec r, b;
+        ierr = MatDenseGetColumnVecRead(local_auxmat2_R,i,&r);CHKERRQ(ierr);
+        ierr = MatDenseGetColumnVec(pcbddc->local_auxmat2,i,&b);CHKERRQ(ierr);
+        ierr = VecScatterBegin(pcbddc->R_to_B,r,b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(pcbddc->R_to_B,r,b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = MatDenseRestoreColumnVec(pcbddc->local_auxmat2,i,&b);CHKERRQ(ierr);
+        ierr = MatDenseRestoreColumnVecRead(local_auxmat2_R,i,&r);CHKERRQ(ierr);
       }
-      ierr = MatDenseRestoreArray(local_auxmat2_R,&array2);CHKERRQ(ierr);
-      ierr = MatDenseRestoreArray(pcbddc->local_auxmat2,&array);CHKERRQ(ierr);
       ierr = MatMatMult(C_B,pcbddc->local_auxmat2,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&M3);CHKERRQ(ierr);
     } else {
       if (lda_rhs != n_R) {
@@ -4504,27 +4500,38 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
     /* coarse basis functions */
     for (i=0;i<n_vertices;i++) {
-      PetscScalar *y;
+      Vec         v;
+      PetscScalar one = 1.0,zero = 0.0;
 
       ierr = VecPlaceArray(pcbddc->vec1_R,work+lda_rhs*i);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(pcbddc->coarse_phi_B,&y);CHKERRQ(ierr);
-      ierr = VecPlaceArray(pcis->vec1_B,y+n_B*i);CHKERRQ(ierr);
-      ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      y[n_B*i+idx_V_B[i]] = 1.0;
-      ierr = MatDenseRestoreArray(pcbddc->coarse_phi_B,&y);CHKERRQ(ierr);
-      ierr = VecResetArray(pcis->vec1_B);CHKERRQ(ierr);
+      ierr = MatDenseGetColumnVec(pcbddc->coarse_phi_B,i,&v);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      if (PetscDefined(USE_DEBUG)) { /* The following VecSetValues() expects a sequential matrix */
+        PetscMPIInt rank;
+        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pcbddc->coarse_phi_B),&rank);CHKERRMPI(ierr);
+        if (rank > 1) SETERRQ(PetscObjectComm((PetscObject)pcbddc->coarse_phi_B),PETSC_ERR_PLIB,"Expected a sequential dense matrix");
+      }
+      ierr = VecSetValues(v,1,&idx_V_B[i],&one,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(v);CHKERRQ(ierr); /* If v is on device, hope VecSetValues() eventually implemented by a host to device memcopy */
+      ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
+      ierr = MatDenseRestoreColumnVec(pcbddc->coarse_phi_B,i,&v);CHKERRQ(ierr);
 
       if (pcbddc->switch_static || pcbddc->dbg_flag) {
         PetscInt j;
 
-        ierr = MatDenseGetArray(pcbddc->coarse_phi_D,&y);CHKERRQ(ierr);
-        ierr = VecPlaceArray(pcis->vec1_D,y+n_D*i);CHKERRQ(ierr);
-        ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecResetArray(pcis->vec1_D);CHKERRQ(ierr);
-        for (j=0;j<pcbddc->benign_n;j++) y[n_D*i+p0_lidx_I[j]] = 0.0;
-        ierr = MatDenseRestoreArray(pcbddc->coarse_phi_D,&y);CHKERRQ(ierr);
+        ierr = MatDenseGetColumnVec(pcbddc->coarse_phi_D,i,&v);CHKERRQ(ierr);
+        ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        if (PetscDefined(USE_DEBUG)) { /* The following VecSetValues() expects a sequential matrix */
+          PetscMPIInt rank;
+          ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pcbddc->coarse_phi_D),&rank);CHKERRMPI(ierr);
+          if (rank > 1) SETERRQ(PetscObjectComm((PetscObject)pcbddc->coarse_phi_D),PETSC_ERR_PLIB,"Expected a sequential dense matrix");
+        }
+        for (j=0;j<pcbddc->benign_n;j++) {ierr = VecSetValues(v,1,&p0_lidx_I[j],&zero,INSERT_VALUES);CHKERRQ(ierr);}
+        ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
+        ierr = MatDenseRestoreColumnVec(pcbddc->coarse_phi_D,i,&v);CHKERRQ(ierr);
       }
       ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
     }
@@ -4564,25 +4571,23 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     /* coarse basis functions */
     for (i=0;i<n_constraints;i++) {
-      PetscScalar *y;
+      Vec v;
 
       ierr = VecPlaceArray(pcbddc->vec1_R,work+lda_rhs*i);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(pcbddc->coarse_phi_B,&y);CHKERRQ(ierr);
-      ierr = VecPlaceArray(pcis->vec1_B,y+n_B*(i+n_vertices));CHKERRQ(ierr);
-      ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = MatDenseRestoreArray(pcbddc->coarse_phi_B,&y);CHKERRQ(ierr);
-      ierr = VecResetArray(pcis->vec1_B);CHKERRQ(ierr);
+      ierr = MatDenseGetColumnVec(pcbddc->coarse_phi_B,i+n_vertices,&v);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = MatDenseRestoreColumnVec(pcbddc->coarse_phi_B,i+n_vertices,&v);CHKERRQ(ierr);
       if (pcbddc->switch_static || pcbddc->dbg_flag) {
-        PetscInt j;
-
-        ierr = MatDenseGetArray(pcbddc->coarse_phi_D,&y);CHKERRQ(ierr);
-        ierr = VecPlaceArray(pcis->vec1_D,y+n_D*(i+n_vertices));CHKERRQ(ierr);
-        ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecResetArray(pcis->vec1_D);CHKERRQ(ierr);
-        for (j=0;j<pcbddc->benign_n;j++) y[n_D*i+p0_lidx_I[j]] = 0.0;
-        ierr = MatDenseRestoreArray(pcbddc->coarse_phi_D,&y);CHKERRQ(ierr);
+        PetscInt    j;
+        PetscScalar zero = 0.0;
+        ierr = MatDenseGetColumnVec(pcbddc->coarse_phi_D,i+n_vertices,&v);CHKERRQ(ierr);
+        ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        for (j=0;j<pcbddc->benign_n;j++) {ierr = VecSetValues(v,1,&p0_lidx_I[j],&zero,INSERT_VALUES);CHKERRQ(ierr);}
+        ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
+        ierr = MatDenseRestoreColumnVec(pcbddc->coarse_phi_D,i+n_vertices,&v);CHKERRQ(ierr);
       }
       ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
     }
@@ -4687,26 +4692,25 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     }
     /* coarse basis functions */
     for (i=0;i<pcbddc->local_primal_size;i++) {
-      PetscScalar *y;
+      Vec  v;
 
       ierr = VecPlaceArray(pcbddc->vec1_R,work+i*n_R);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(pcbddc->coarse_psi_B,&y);CHKERRQ(ierr);
-      ierr = VecPlaceArray(pcis->vec1_B,y+n_B*i);CHKERRQ(ierr);
-      ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = MatDenseGetColumnVec(pcbddc->coarse_psi_B,i,&v);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       if (i<n_vertices) {
-        y[n_B*i+idx_V_B[i]] = 1.0;
+        PetscScalar one = 1.0;
+        ierr = VecSetValues(v,1,&idx_V_B[i],&one,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
       }
-      ierr = MatDenseRestoreArray(pcbddc->coarse_psi_B,&y);CHKERRQ(ierr);
-      ierr = VecResetArray(pcis->vec1_B);CHKERRQ(ierr);
+      ierr = MatDenseRestoreColumnVec(pcbddc->coarse_psi_B,i,&v);CHKERRQ(ierr);
 
       if (pcbddc->switch_static || pcbddc->dbg_flag) {
-        ierr = MatDenseGetArray(pcbddc->coarse_psi_D,&y);CHKERRQ(ierr);
-        ierr = VecPlaceArray(pcis->vec1_D,y+n_D*i);CHKERRQ(ierr);
-        ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecResetArray(pcis->vec1_D);CHKERRQ(ierr);
-        ierr = MatDenseRestoreArray(pcbddc->coarse_psi_D,&y);CHKERRQ(ierr);
+        ierr = MatDenseGetColumnVec(pcbddc->coarse_psi_D,i,&v);CHKERRQ(ierr);
+        ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,v,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = MatDenseRestoreColumnVec(pcbddc->coarse_psi_D,i,&v);CHKERRQ(ierr);
       }
       ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
     }
@@ -6109,7 +6113,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     PetscBool    use_pod = PETSC_FALSE;
 
     /* MKL SVD with same input gives different results on different processes! */
-#if defined(PETSC_MISSING_LAPACK_GESVD) || defined(PETSC_HAVE_MKL)
+#if defined(PETSC_MISSING_LAPACK_GESVD) || defined(PETSC_HAVE_MKL_LIBS)
     use_pod = PETSC_TRUE;
 #endif
     /* Get index sets for faces, edges and vertices from graph */
@@ -7898,13 +7902,13 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   /* create MATIS object if needed */
   if (!reuse) {
     ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-    ierr = MatCreateIS(comm_n,bs,PETSC_DECIDE,PETSC_DECIDE,rows,cols,l2gmap,NULL,mat_n);CHKERRQ(ierr);
+    ierr = MatCreateIS(comm_n,bs,PETSC_DECIDE,PETSC_DECIDE,rows,cols,l2gmap,l2gmap,mat_n);CHKERRQ(ierr);
   } else {
     /* it also destroys the local matrices */
     if (*mat_n) {
       ierr = MatSetLocalToGlobalMapping(*mat_n,l2gmap,l2gmap);CHKERRQ(ierr);
     } else { /* this is a fake object */
-      ierr = MatCreateIS(comm_n,bs,PETSC_DECIDE,PETSC_DECIDE,rows,cols,l2gmap,NULL,mat_n);CHKERRQ(ierr);
+      ierr = MatCreateIS(comm_n,bs,PETSC_DECIDE,PETSC_DECIDE,rows,cols,l2gmap,l2gmap,mat_n);CHKERRQ(ierr);
     }
   }
   ierr = MatISGetLocalMat(*mat_n,&local_mat);CHKERRQ(ierr);
@@ -8191,7 +8195,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* creates temporary MATIS object for coarse matrix */
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,pcbddc->local_primal_size,pcbddc->local_primal_size,coarse_submat_vals,&coarse_submat_dense);CHKERRQ(ierr);
-  ierr = MatCreateIS(PetscObjectComm((PetscObject)pc),1,PETSC_DECIDE,PETSC_DECIDE,pcbddc->coarse_size,pcbddc->coarse_size,coarse_islg,NULL,&t_coarse_mat_is);CHKERRQ(ierr);
+  ierr = MatCreateIS(PetscObjectComm((PetscObject)pc),1,PETSC_DECIDE,PETSC_DECIDE,pcbddc->coarse_size,pcbddc->coarse_size,coarse_islg,coarse_islg,&t_coarse_mat_is);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(t_coarse_mat_is,coarse_submat_dense);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(t_coarse_mat_is,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(t_coarse_mat_is,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -8371,9 +8375,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = MatDestroy(&B);CHKERRQ(ierr);
         ierr = VecGetArray(vp[0],&array);CHKERRQ(ierr);
         ierr = VecPlaceArray(pcbddc->vec1_P,array);CHKERRQ(ierr);
-        ierr = VecRestoreArray(vp[0],&array);CHKERRQ(ierr);
         ierr = MatMultTranspose(pcbddc->coarse_phi_B,v,pcbddc->vec1_P);CHKERRQ(ierr);
         ierr = VecResetArray(pcbddc->vec1_P);CHKERRQ(ierr);
+        ierr = VecRestoreArray(vp[0],&array);CHKERRQ(ierr);
         ierr = ISDestroy(&dummy);CHKERRQ(ierr);
         ierr = VecDestroy(&v);CHKERRQ(ierr);
       }

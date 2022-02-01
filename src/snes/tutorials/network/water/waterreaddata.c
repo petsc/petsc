@@ -67,7 +67,7 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
 
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
   if (reason < 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Pump head curve did not converge\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Pump head curve did not converge");
   }
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);

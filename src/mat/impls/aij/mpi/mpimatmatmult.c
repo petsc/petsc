@@ -316,7 +316,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
 #if defined(PETSC_USE_INFO)
   if (api[am]) {
-    ierr = PetscInfo3(C,"Reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo3(C,"Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
     ierr = PetscInfo1(C,"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(C,"Empty matrix product\n");CHKERRQ(ierr);
@@ -336,7 +336,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense_AB(Mat C)
 
   PetscFunctionBegin;
   if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend)
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
 
   C->ops->matmultsymbolic = MatMatMultSymbolic_MPIAIJ_MPIDense;
   C->ops->productsymbolic = MatProductSymbolic_AB;
@@ -350,7 +350,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense_AtB(Mat C)
 
   PetscFunctionBegin;
   if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend)
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
 
   C->ops->transposematmultsymbolic = MatTransposeMatMultSymbolic_MPIAIJ_MPIDense;
   C->ops->productsymbolic          = MatProductSymbolic_AtB;
@@ -466,9 +466,9 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   } else numBb = 0;
 
   if (numBb) {
-    ierr = PetscInfo3(C,"use Bb, BN=%D, Bbn=%D; numBb=%D\n",BN,Bbn,numBb);CHKERRQ(ierr);
+    ierr = PetscInfo3(C,"use Bb, BN=%" PetscInt_FMT ", Bbn=%" PetscInt_FMT "; numBb=%" PetscInt_FMT "\n",BN,Bbn,numBb);CHKERRQ(ierr);
     if (Bbn1) { /* Create workB1 for the remaining columns */
-      ierr = PetscInfo2(C,"use Bb1, BN=%D, Bbn1=%D\n",BN,Bbn1);CHKERRQ(ierr);
+      ierr = PetscInfo2(C,"use Bb1, BN=%" PetscInt_FMT ", Bbn1=%" PetscInt_FMT "\n",BN,Bbn1);CHKERRQ(ierr);
       /* Create work matrix used to store off processor rows of B needed for local product */
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,Bbn1,NULL,&contents->workB1);CHKERRQ(ierr);
     } else contents->workB1 = NULL;
@@ -562,13 +562,13 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,PetscInt Bbidx,Mat C,Mat *outworkB
   } else {
     workB = *outworkB = contents->workB1;
   }
-  if (nrows != workB->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",workB->cmap->n,nrows);
+  if (PetscUnlikely(nrows != workB->rmap->n)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of rows of workB %" PetscInt_FMT " not equal to columns of aij->B %d",workB->cmap->n,nrows);
   swaits = contents->swaits;
   rwaits = contents->rwaits;
 
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(B,&blda);CHKERRQ(ierr);
-  if (blda != contents->blda) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot reuse an input matrix with lda %D != %D",blda,contents->blda);
+  if (PetscUnlikely(blda != contents->blda)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT,blda,contents->blda);
   ierr = MatDenseGetArray(workB,&rvalues);CHKERRQ(ierr);
 
   /* Post recv, use MPI derived data type to save memory */
@@ -618,7 +618,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   } else {
     Mat      Bb,Cb;
     PetscInt BN=B->cmap->N,n=contents->workB->cmap->n,i;
-    if (n <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %D must be positive",n);
+    if (n <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %" PetscInt_FMT " must be positive",n);
 
     for (i=0; i<BN; i+=n) {
       ierr = MatDenseGetSubMatrix(B,i,PetscMin(i+n,BN),&Bb);CHKERRQ(ierr);
@@ -933,7 +933,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat C
 
 #if defined(PETSC_USE_INFO)
   if (api[am]) {
-    ierr = PetscInfo3(C,"Reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo3(C,"Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
     ierr = PetscInfo1(C,"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(C,"Empty matrix product\n");CHKERRQ(ierr);
@@ -1225,7 +1225,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
 
 #if defined(PETSC_USE_INFO)
   if (api[am]) {
-    ierr = PetscInfo3(C,"Reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo3(C,"Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
     ierr = PetscInfo1(C,"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(C,"Empty matrix product\n");CHKERRQ(ierr);
@@ -1805,7 +1805,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* check if matrix local sizes are compatible */
-  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != P (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
+  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != P (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
@@ -2108,7 +2108,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
 #if defined(PETSC_USE_INFO)
   if (bi[pn] != 0) {
-    ierr = PetscInfo3(C,"Reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo3(C,"Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
     ierr = PetscInfo1(C,"Use MatTransposeMatMult(A,B,MatReuse,%g,&C) for best performance.\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(C,"Empty matrix product\n");CHKERRQ(ierr);
@@ -2193,7 +2193,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   PetscFunctionBegin;
   /* Check matrix local sizes */
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
-  if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
+  if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
 
   /* Set "nonscalable" as default algorithm */
   ierr = PetscStrcmp(C->product->alg,"default",&flg);CHKERRQ(ierr);
@@ -2216,7 +2216,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
       if (alg_scalable) {
         alg  = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
         ierr = MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]);CHKERRQ(ierr);
-        ierr = PetscInfo2(B,"Use scalable algorithm, BN %D, fill*nz_allocated %g\n",B->cmap->N,product->fill*nz_local);CHKERRQ(ierr);
+        ierr = PetscInfo2(B,"Use scalable algorithm, BN %" PetscInt_FMT ", fill*nz_allocated %g\n",B->cmap->N,(double)(product->fill*nz_local));CHKERRQ(ierr);
       }
     }
   }
@@ -2254,7 +2254,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
   PetscFunctionBegin;
   /* Check matrix local sizes */
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
-  if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != B (%D,%D)",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
+  if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,B->rmap->rstart,B->rmap->rend);
 
   /* Set default algorithm */
   ierr = PetscStrcmp(C->product->alg,"default",&flg);CHKERRQ(ierr);
@@ -2278,7 +2278,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
     if (alg_scalable) {
       alg  = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
       ierr = MatProductSetAlgorithm(C,(MatProductAlgorithm)algTypes[alg]);CHKERRQ(ierr);
-      ierr = PetscInfo2(B,"Use scalable algorithm, BN %D, fill*nz_allocated %g\n",B->cmap->N,product->fill*nz_local);CHKERRQ(ierr);
+      ierr = PetscInfo2(B,"Use scalable algorithm, BN %" PetscInt_FMT ", fill*nz_allocated %g\n",B->cmap->N,(double)(product->fill*nz_local));CHKERRQ(ierr);
     }
   }
 
@@ -2320,8 +2320,8 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
   PetscFunctionBegin;
   /* Check matrix local sizes */
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
-  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%D, %D) != Prow (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
-  if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%D, %D) != Prow (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
+  if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Arow (%" PetscInt_FMT ", %" PetscInt_FMT ") != Prow (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
+  if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, Acol (%" PetscInt_FMT ", %" PetscInt_FMT ") != Prow (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
 
   /* Set "nonscalable" as default algorithm */
   ierr = PetscStrcmp(C->product->alg,"default",&flg);CHKERRQ(ierr);
@@ -2373,7 +2373,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_RARt(Mat C)
 
   PetscFunctionBegin;
   /* Check matrix local sizes */
-  if (A->cmap->n != R->cmap->n || A->rmap->n != R->cmap->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A local (%D, %D), R local (%D,%D)",A->rmap->n,A->rmap->n,R->rmap->n,R->cmap->n);
+  if (A->cmap->n != R->cmap->n || A->rmap->n != R->cmap->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A local (%" PetscInt_FMT ", %" PetscInt_FMT "), R local (%" PetscInt_FMT ",%" PetscInt_FMT ")",A->rmap->n,A->rmap->n,R->rmap->n,R->cmap->n);
 
   C->ops->productsymbolic = MatProductSymbolic_RARt_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(0);

@@ -43,7 +43,7 @@ class Configure(config.base.Configure):
       self._setupCompiler('CUDA',desc)
     if hasattr(self, 'HIPC'):
       self._setupCompiler('HIP',desc)
-    if hasattr(self, 'SYCLCXX'):
+    if hasattr(self, 'SYCLC'):
       self._setupCompiler('SYCL',desc)
     if hasattr(self, 'CXX'):
       self._setupCompiler('Cxx',desc)
@@ -110,19 +110,19 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CUDAFLAGS=<string>',   nargs.Arg(None, None, 'Specify the CUDA compiler options'))
     help.addArgument('Compilers', '-CUDAC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the CUDA linker flags'))
 
-    help.addArgument('Compilers', '-HIPPP=<prog>', nargs.Arg(None, None, 'Specify the HIP preprocessor'))
+    help.addArgument('Compilers', '-HIPPP=<prog>',        nargs.Arg(None, None, 'Specify the HIP preprocessor'))
     help.addArgument('Compilers', '-HIPPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the HIP preprocessor options'))
-    help.addArgument('Compilers', '-with-hipc=<prog>', nargs.Arg(None, None, 'Specify the HIP compiler'))
+    help.addArgument('Compilers', '-with-hipc=<prog>',    nargs.Arg(None, None, 'Specify the HIP compiler'))
     help.addArgument('Compilers', '-HIPC=<prog>',         nargs.Arg(None, None, 'Specify the HIP compiler'))
     help.addArgument('Compilers', '-HIPFLAGS=<string>',   nargs.Arg(None, None, 'Specify the HIP compiler options'))
     help.addArgument('Compilers', '-HIPC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the HIP linker flags'))
 
-    help.addArgument('Compilers', '-SYCLPP=<prog>', nargs.Arg(None, None, 'Specify the SYCL preprocessor'))
+    help.addArgument('Compilers', '-SYCLPP=<prog>',        nargs.Arg(None, None, 'Specify the SYCL preprocessor'))
     help.addArgument('Compilers', '-SYCLPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the SYCL preprocessor options'))
-    help.addArgument('Compilers', '-with-syclcxx=<prog>', nargs.Arg(None, None, 'Specify the SYCLcompiler'))
-    help.addArgument('Compilers', '-SYCLCXX=<prog>',         nargs.Arg(None, None, 'Specify the SYCL compiler'))
-    help.addArgument('Compilers', '-SYCLCXXFLAGS=<string>',   nargs.Arg(None, None, 'Specify the SYCL compiler options'))
-    help.addArgument('Compilers', '-SYCLCXX_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the SYCL linker flags'))
+    help.addArgument('Compilers', '-with-syclc=<prog>',    nargs.Arg(None, None, 'Specify the SYCL compiler'))
+    help.addArgument('Compilers', '-SYCLC=<prog>',         nargs.Arg(None, None, 'Specify the SYCL compiler'))
+    help.addArgument('Compilers', '-SYCLFLAGS=<string>',   nargs.Arg(None, None, 'Specify the SYCL compiler options'))
+    help.addArgument('Compilers', '-SYCLC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the SYCL linker flags'))
 
 ##    help.addArgument('Compilers', '-LD=<prog>',              nargs.Arg(None, None, 'Specify the executable linker'))
 ##    help.addArgument('Compilers', '-CC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for C only'))
@@ -222,6 +222,20 @@ class Configure(config.base.Configure):
       output = output + error
       if 'HIP version:' in output:
         if log: log.write('Detected HIP compiler\n')
+        return 1
+    except RuntimeError:
+      pass
+
+  @staticmethod
+  def isSYCL(compiler, log):
+    '''Returns true if the compiler is a SYCL compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output + error
+      # Currently we only tested Intel oneAPI DPC++. Expand the list as more sycl compilers are available
+      found = any([s in output for s in ['oneAPI DPC++']])
+      if found:
+        if log: log.write('Detected SYCL compiler\n')
         return 1
     except RuntimeError:
       pass
@@ -614,7 +628,7 @@ class Configure(config.base.Configure):
       if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
       else: setattr(self, flagsArg, '')
       self.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
-    for flagsArg in ['CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'SYCLCXX_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
+    for flagsArg in ['CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'SYCLC_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
       if isinstance(self.argDB[flagsArg],str): val = [self.argDB[flagsArg]]
       else: val = self.argDB[flagsArg]
       setattr(self, flagsArg, val)
@@ -889,9 +903,9 @@ class Configure(config.base.Configure):
     return
 
   def generateCUDAPreprocessorGuesses(self):
-    '''Determines the CUDA preprocessor from --with-cudacpp, then CUDAPP, then the CUDA compiler'''
+    '''Determines the CUDA preprocessor from --with-cudapp, then CUDAPP, then the CUDA compiler'''
     if 'with-cudacpp' in self.argDB:
-      yield self.argDB['with-cudacpp']
+      yield self.argDB['with-cudapp']
     elif 'CUDAPP' in self.argDB:
       yield self.argDB['CUDAPP']
     else:
@@ -966,9 +980,9 @@ class Configure(config.base.Configure):
     return
 
   def generateHIPPreprocessorGuesses(self):
-    '''Determines the HIP preprocessor from --with-hipcpp, then HIPPP, then the HIP compiler'''
+    '''Determines the HIP preprocessor from --with-hippp, then HIPPP, then the HIP compiler'''
     if 'with-hipcpp' in self.argDB:
-      yield self.argDB['with-cudacpp']
+      yield self.argDB['with-hippp']
     elif 'HIPPP' in self.argDB:
       yield self.argDB['HIPPP']
     else:
@@ -991,17 +1005,17 @@ class Configure(config.base.Configure):
     return
 
   def generateSYCLCompilerGuesses(self):
-    '''Determine the SYCL compiler using SYCLCXX, then --with-syclcxx
+    '''Determine the SYCL compiler using SYCLC, then --with-syclc
        - Any given category can be excluded'''
-    if hasattr(self, 'SYCLCXX'):
-      yield self.SYCLCXX
+    if hasattr(self, 'SYCLC'):
+      yield self.SYCLC
       raise RuntimeError('Error: '+self.mesg)
-    elif 'with-syclcxx' in self.argDB:
-      yield self.argDB['with-syclcxx']
-      raise RuntimeError('SYCLCXX compiler you provided with -with-syclxx='+self.argDB['with-syclxx']+' cannot be found or does not work.'+'\n'+self.mesg)
-    elif 'SYCLCXX' in self.argDB:
-      yield self.argDB['SYCLCXX']
-      raise RuntimeError('SYCLCXX compiler you provided with -SYCLCXX='+self.argDB['SYCLCXX']+' cannot be found or does not work.'+'\n'+self.mesg)
+    elif 'with-syclc' in self.argDB:
+      yield self.argDB['with-syclc']
+      raise RuntimeError('SYCLC compiler you provided with -with-syclxx='+self.argDB['with-syclxx']+' cannot be found or does not work.'+'\n'+self.mesg)
+    elif 'SYCLC' in self.argDB:
+      yield self.argDB['SYCLC']
+      raise RuntimeError('SYCLC compiler you provided with -SYCLC='+self.argDB['SYCLC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'with-sycl-dir' in self.argDB:
       syclPath = os.path.join(self.argDB['with-sycl-dir'], 'bin','dpcpp')
       yield syclPath
@@ -1009,32 +1023,49 @@ class Configure(config.base.Configure):
 
   def checkSYCLCompiler(self):
     '''Locate a functional SYCL compiler'''
-    if ('with-syclcxx' in self.argDB and self.argDB['with-syclcxx'] == '0'):
-      if 'SYCLCXX' in self.argDB:
-        del self.argDB['SYCLCXX']
+    if ('with-syclc' in self.argDB and self.argDB['with-syclc'] == '0'):
+      if 'SYCLC' in self.argDB:
+        del self.argDB['SYCLC']
       return
     self.mesg = 'in generateSYCLCompilerGuesses'
     for compiler in self.generateSYCLCompilerGuesses():
       try:
-        if self.getExecutable(compiler, resultName = 'SYCLCXX'):
+        if self.getExecutable(compiler, resultName = 'SYCLC'):
           self.checkCompiler('SYCL')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.SYCLCXX+' --version', log = self.log)
+          compilerVersion = self.executeShellCommand(self.SYCLC+' --version', log = self.log)
           compilerVersion = compilerVersion[0]
           compilerVersoin = compilerVersion.partition('Compiler')[-1].strip()
           break
       except RuntimeError as e:
         self.mesg = str(e)
-        self.delMakeMacro('SYCLCXX')
-        del self.SYCLCXX
+        self.delMakeMacro('SYCLC')
+        del self.SYCLC
     return
 
   def generateSYCLPreprocessorGuesses(self):
-    ''' Placeholder for now '''
+    '''Determines the SYCL preprocessor from --with-syclpp, then SYCLPP, then the SYCL compiler'''
+    if 'with-syclpp' in self.argDB:
+      yield self.argDB['with-syclpp']
+    elif 'SYCLPP' in self.argDB:
+      yield self.argDB['SYCLPP']
+    else:
+      if hasattr(self, 'SYCLC'):
+        yield self.SYCLC +' -E'
     return
 
   def checkSYCLPreprocessor(self):
-    ''' Placeholder for now '''
+    '''Locate a functional SYCL preprocessor'''
+    for compiler in self.generateSYCLPreprocessorGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'SYCLPP'):
+          self.pushLanguage('SYCL')
+          if not self.checkPreprocess('#include <CL/sycl.hpp>\n void testFunction() {return;};'):
+            raise RuntimeError('Cannot preprocess SYCL with '+self.SYCLPP+'.')
+          self.popLanguage()
+          return
+      except RuntimeError as e:
+        self.popLanguage()
     return
 
   def generateCxxCompilerGuesses(self):
@@ -1409,7 +1440,7 @@ class Configure(config.base.Configure):
   def checkPragma(self):
     '''Check for all available applicable languages whether they complain (including warnings!) about potentially unknown pragmas'''
     usePragma = {}
-    langMap = {'C':'CC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
+    langMap = {'C':'CC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLC'}
     for lang in langMap:
       if hasattr(self,langMap[lang]):
         usePragma[lang] = False
@@ -1462,16 +1493,9 @@ class Configure(config.base.Configure):
       raise RuntimeError("Cannot determine compiler PIC flags if shared libraries is turned off\nEither run using --with-shared-libraries or --with-pic=0 and supply the compiler PIC flag via CFLAGS, CXXXFLAGS, and FCFLAGS\n")
     if self.sharedLibraries and self.mainLanguage == 'C': languages = []
     else: languages = ['C']
-    if hasattr(self, 'CXX'):
-      languages.append('Cxx')
-    if hasattr(self, 'FC'):
-      languages.append('FC')
-    if hasattr(self, 'CUDAC'):
-      languages.append('CUDA')
-    if hasattr(self, 'HIPC'):
-      languages.append('HIP')
-    if hasattr(self, 'SYCLCXX'):
-      languages.append('SYCL')
+    langMap = {'FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLC'}
+    for language in langMap:
+      if hasattr(self,langMap[language]): languages.append(language)
     for language in languages:
       self.pushLanguage(language)
       if language in ['C','Cxx','CUDA','HIP','SYCL']:
@@ -1827,7 +1851,7 @@ class Configure(config.base.Configure):
   def checkLinkerMac(self):
     '''Tests some Apple Mac specific linker flags'''
     self.addDefine('PETSC_USING_DARWIN', 1)
-    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
+    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLC'}
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
@@ -1847,7 +1871,7 @@ class Configure(config.base.Configure):
 
   def checkLinkerWindows(self):
     '''Turns off linker warning about unknown .o files extension'''
-    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLCXX'}
+    langMap = {'C':'CC','FC':'FC','Cxx':'CXX','CUDA':'CUDAC','HIP':'HIPC','SYCL':'SYCLC'}
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
@@ -1878,7 +1902,7 @@ class Configure(config.base.Configure):
       languages.append('CUDA')
     if hasattr(self, 'HIPC'):
       languages.append('HIP')
-    if hasattr(self, 'SYCLCXX'):
+    if hasattr(self, 'SYCLC'):
       languages.append('SYCL')
     for language in languages:
       flag = '-L'
@@ -2018,9 +2042,9 @@ if (dlclose(handle)) {
     if hasattr(self, 'HIPPP'):
       self.addSubstitution('HIPPP', self.HIPPP)
       self.addSubstitution('HIPPPFLAGS', self.HIPPPFLAGS)
-    if hasattr(self, 'SYCLCXX'):
-      self.addSubstitution('SYCLCXX', self.SYCLCXX)
-      self.addSubstitution('SYCLCXXFLAGS', self.SYCLCXXFLAGS)
+    if hasattr(self, 'SYCLC'):
+      self.addSubstitution('SYCLC', self.SYCLC)
+      self.addSubstitution('SYCLFLAGS', self.SYCLFLAGS)
     if hasattr(self, 'SYCLPP'):
       self.addSubstitution('SYCLPP', self.SYCLPP)
       self.addSubstitution('SYCLPPFLAGS', self.SYCLPPFLAGS)
@@ -2100,36 +2124,22 @@ if (dlclose(handle)) {
 
   def resetEnvCompilers(self):
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
-    for envVal in ignoreEnvCompilers:
-      if envVal in os.environ:
-        if envVal in self.framework.clArgDB or 'with-'+envVal.lower() in self.framework.clArgDB:
-          self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
-          del os.environ[envVal]
-        elif self.argDB['with-environment-variables']:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables ******')
-        elif self.framework.argDB['with-xsdk-defaults'] and 'with-environment-variables' not in self.framework.clArgDB:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n because --with-xsdk-defaults was selected. Add --disable-environment-variables \n to NOT use the environmental variables ******')
-
-        else:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
-          del os.environ[envVal]
-
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
-    for envVal in ignoreEnv:
+    for envVal in ignoreEnvCompilers + ignoreEnv:
       if envVal in os.environ:
-        if envVal in self.framework.clArgDB:
-          self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
+        msg = 'WARNING! Found environment variable: %s=%s\n' % (envVal, os.environ[envVal])
+        if envVal in self.framework.clArgDB or (envVal in ignoreEnvCompilers and 'with-'+envVal.lower() in self.framework.clArgDB):
+          self.logPrintBox(msg+'Ignoring it, since its also set on command line')
           del os.environ[envVal]
         elif self.argDB['with-environment-variables']:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables******')
+          self.logPrintBox(msg+'Using it! Use "./configure --disable-environment-variables" to NOT use the environmental variables')
         else:
-          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
+          self.logPrintBox (msg+'Ignoring it! Use "./configure %s=$%s" if you really want to use this value' % (envVal,envVal))
           del os.environ[envVal]
     return
 
-
   def checkEnvCompilers(self):
-    if 'with-environment-variables' in self.framework.clArgDB or 'with-xsdk-defaults' in self.framework.clArgDB:
+    if 'with-environment-variables' in self.framework.clArgDB:
       envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
       for ev in envVarChecklist:
         if ev in os.environ:

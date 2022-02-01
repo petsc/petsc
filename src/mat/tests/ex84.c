@@ -15,7 +15,7 @@ static PetscErrorCode MatLoadComputeNorms(Mat data_mat, PetscViewer inp_viewer, 
   ierr = MatViewFromOptions(data_mat, NULL, "-view_mat");CHKERRQ(ierr);
 
   ierr = MatGetSize(data_mat, &M, &N);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Data matrix size: %D %D\n", M,N);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Data matrix size: %" PetscInt_FMT " %" PetscInt_FMT "\n", M,N);CHKERRQ(ierr);
 
   /* compute matrix norms */
   ierr = MatNorm(data_mat, NORM_1, &norms[0]);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
   ierr = MatDestroy(&data_mat);CHKERRQ(ierr);
 
   for (i=0; i<NNORMS; i++) {
-    if (PetscAbs(norms0[i] - norms1[i]) > PETSC_SMALL) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%D] = %g != %g = norms1[%D]", i, (double)norms0[i], (double)norms1[i], i);
+    if (PetscAbs(norms0[i] - norms1[i]) > PETSC_SMALL) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
   }
 
   ierr = PetscFinalize();

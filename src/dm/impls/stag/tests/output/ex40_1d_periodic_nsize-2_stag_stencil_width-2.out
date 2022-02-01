@@ -1,0 +1,9 @@
+  ---------- Testing Jacobian -------------
+  Run with -snes_test_jacobian_view and optionally -snes_test_jacobian <threshold> to show difference
+    of hand-coded and finite difference Jacobian entries greater than <threshold>.
+  Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is
+    O(1.e-8), the hand-coded Jacobian is probably correct.
+  ||J - Jfd||_F/||J||_F = 1.66744e-08, ||J - Jfd||_F = 2.97405e-05
+  ---------- Testing Jacobian -------------
+  ||J - Jfd||_F/||J||_F = 2.62586e-08, ||J - Jfd||_F = 2.08144e-05
+Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 2

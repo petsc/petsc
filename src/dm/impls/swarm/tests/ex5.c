@@ -101,8 +101,8 @@ static PetscErrorCode SetInitialCoordinates(DM dmSw)
 static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
 {
   DM             dm;
-  AppCtx        *user;
-  PetscScalar   *initialConditions;
+  AppCtx         *user;
+  PetscScalar    *initialConditions;
   PetscInt       dim, cStart, cEnd, c, Np, p;
   PetscErrorCode ierr;
 
@@ -255,14 +255,14 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
 
 static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
 {
-  MPI_Comm           comm;
-  DM                 sdm;
+  MPI_Comm          comm;
+  DM                sdm;
   AppCtx            *user;
   const PetscScalar *u, *coords;
   PetscScalar       *e;
-  PetscReal          t;
-  PetscInt           dim, Np, p;
-  PetscErrorCode     ierr;
+  PetscReal         t;
+  PetscInt          dim, Np, p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
@@ -278,11 +278,11 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
   for (p = 0; p < Np; ++p) {
     const PetscScalar *x     = &u[(p*2+0)*dim];
     const PetscScalar *v     = &u[(p*2+1)*dim];
-    const PetscReal    x0    = p+1.;
-    const PetscReal    omega = PetscSqrtReal(1000./(p+1.))/x0;
-    const PetscReal    xe[3] = { x0*PetscCosReal(omega*t),       x0*PetscSinReal(omega*t),       0.0};
-    const PetscReal    ve[3] = {-x0*omega*PetscSinReal(omega*t), x0*omega*PetscCosReal(omega*t), 0.0};
-    PetscInt           d;
+    const PetscReal   x0    = p+1.;
+    const PetscReal   omega = PetscSqrtReal(1000./(p+1.))/x0;
+    const PetscReal   xe[3] = { x0*PetscCosReal(omega*t),       x0*PetscSinReal(omega*t),       0.0};
+    const PetscReal   ve[3] = {-x0*omega*PetscSinReal(omega*t), x0*omega*PetscCosReal(omega*t), 0.0};
+    PetscInt          d;
 
     for (d = 0; d < dim; ++d) {
       e[(p*2+0)*dim+d] = x[d] - xe[d];
@@ -381,12 +381,18 @@ int main(int argc, char **argv)
      requires: triangle !single !complex
    test:
      suffix: bsi1
-     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -ts_basicsymplectic_type 1 -ts_max_time 0.1 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
+           -ts_basicsymplectic_type 1 -ts_max_time 0.1 -ts_convergence_estimate -convest_num_refine 2 \
+           -dm_view -sw_view -ts_monitor_sp_swarm -ts_monitor_sp_swarm_retain -ts_monitor_sp_swarm_phase 0
    test:
      suffix: bsi2
-     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -ts_basicsymplectic_type 2 -ts_max_time 0.1 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
+           -ts_basicsymplectic_type 2 -ts_max_time 0.1 -ts_convergence_estimate -convest_num_refine 2 \
+           -dm_view -sw_view -ts_monitor_sp_swarm -ts_monitor_sp_swarm_retain -ts_monitor_sp_swarm_phase 0
    test:
      suffix: euler
-     args: -dm_plex_box_faces 1,1 -dm_view -sw_view -ts_type euler -ts_max_time 0.1 -ts_monitor_sp_swarm -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
+           -ts_type euler -ts_max_time 0.1 -ts_convergence_estimate -convest_num_refine 2 \
+           -dm_view -sw_view -ts_monitor_sp_swarm -ts_monitor_sp_swarm_retain -ts_monitor_sp_swarm_phase 0
 
 TEST*/

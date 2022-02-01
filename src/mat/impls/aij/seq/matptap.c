@@ -181,7 +181,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
 #if defined(PETSC_USE_INFO)
   if (ci[pn] != 0) {
-    ierr = PetscInfo3(C,"Reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo3(C,"Reallocs %" PetscInt_FMT "; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)afill);CHKERRQ(ierr);
     ierr = PetscInfo1(C,"Use MatPtAP(A,P,MatReuse,%g,&C) for best performance.\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(C,"Empty matrix product\n");CHKERRQ(ierr);
@@ -258,7 +258,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
       caj    = ca + ci[crow];
       /* Perform sparse axpy operation.  Note cjj includes apj. */
       for (k=0; nextap<apnzj; k++) {
-        if (PetscUnlikelyDebug(k >= ci[crow+1] - ci[crow])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"k too large k %d, crow %d",k,crow);
+        if (PetscUnlikelyDebug(k >= ci[crow+1] - ci[crow])) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"k too large k %" PetscInt_FMT ", crow %" PetscInt_FMT,k,crow);
         if (cjj[k]==apj[nextap]) {
           caj[k] += (*pA)*apa[apj[nextap++]];
         }

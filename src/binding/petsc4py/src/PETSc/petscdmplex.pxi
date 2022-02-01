@@ -131,6 +131,7 @@ cdef extern from * nogil:
     int DMPlexComputeCellGeometryFVM(PetscDM,PetscInt,PetscReal*,PetscReal[],PetscReal[])
     int DMPlexConstructGhostCells(PetscDM,const char[],PetscInt*,PetscDM*)
 
+    int DMPlexMetricSetFromOptions(PetscDM)
     int DMPlexMetricSetIsotropic(PetscDM,PetscBool)
     int DMPlexMetricIsIsotropic(PetscDM,PetscBool*)
     int DMPlexMetricSetRestrictAnisotropyFirst(PetscDM,PetscBool)
@@ -160,7 +161,7 @@ cdef extern from * nogil:
     int DMPlexMetricCreate(PetscDM,PetscInt,PetscVec*)
     int DMPlexMetricCreateUniform(PetscDM,PetscInt,PetscReal,PetscVec*)
     int DMPlexMetricCreateIsotropic(PetscDM,PetscInt,PetscVec,PetscVec*)
-    int DMPlexMetricEnforceSPD(PetscDM,PetscBool,PetscBool,PetscVec)
+    int DMPlexMetricEnforceSPD(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec*,PetscVec*)
     int DMPlexMetricNormalize(PetscDM,PetscVec,PetscBool,PetscBool,PetscVec*)
     int DMPlexMetricAverage2(PetscDM,PetscVec,PetscVec,PetscVec*)
     int DMPlexMetricAverage3(PetscDM,PetscVec,PetscVec,PetscVec,PetscVec*)
@@ -178,7 +179,7 @@ cdef extern from * nogil:
 
     int DMPlexTopologyLoad(PetscDM,PetscViewer,PetscSF*)
     int DMPlexCoordinatesLoad(PetscDM,PetscViewer,PetscSF)
-    int DMPlexLabelsLoad(PetscDM,PetscViewer)
+    int DMPlexLabelsLoad(PetscDM,PetscViewer,PetscSF)
     int DMPlexSectionLoad(PetscDM,PetscViewer,PetscDM,PetscSF,PetscSF*,PetscSF*)
     int DMPlexGlobalVectorLoad(PetscDM,PetscViewer,PetscDM,PetscSF,PetscVec)
     int DMPlexLocalVectorLoad(PetscDM,PetscViewer,PetscDM,PetscSF,PetscVec)

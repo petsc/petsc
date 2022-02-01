@@ -82,7 +82,7 @@ int main(int argc,char **argv)
 
   /* check if we found wrong values on any processors */
   ierr = MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %d\n",bs);CHKERRQ(ierr); }
+  if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n",bs);CHKERRQ(ierr); }
 
   /* print out event log of VecScatter(bs=1) */
 #if defined(PETSC_USE_LOG)
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   tot_len = (PetscInt)messageLength*0.5;
   avg_len = tot_msg? (PetscInt)(messageLength/numMessages) : 0;
   /* when nproc > 2, tot_msg = 2*nproc*niter, tot_len = tot_msg*sizeof(PetscScalar)*bs */
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%d) has sent out %d messages, total %d bytes, with average length %d bytes\n",bs,tot_msg,tot_len,avg_len);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%" PetscInt_FMT ") has sent out %" PetscInt_FMT " messages, total %" PetscInt_FMT " bytes, with average length %" PetscInt_FMT " bytes\n",bs,tot_msg,tot_len,avg_len);CHKERRQ(ierr);
 #endif
 
   ierr = ISDestroy(&isx);CHKERRQ(ierr);
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
 
   /* check if we found wrong values on any processors */
   ierr = MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %d\n",bs);CHKERRQ(ierr); }
+  if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n",bs);CHKERRQ(ierr); }
 
   /* print out event log of VecScatter(bs=4) */
 #if defined(PETSC_USE_LOG)
@@ -151,7 +151,7 @@ int main(int argc,char **argv)
   tot_len = (PetscInt)messageLength*0.5;
   avg_len = tot_msg? (PetscInt)(messageLength/numMessages) : 0;
   /* when nproc > 2, tot_msg = 2*nproc*niter, tot_len = tot_msg*sizeof(PetscScalar)*bs */
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%d) has sent out %d messages, total %d bytes, with average length %d bytes\n",bs,tot_msg,tot_len,avg_len);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%" PetscInt_FMT ") has sent out %" PetscInt_FMT " messages, total %" PetscInt_FMT " bytes, with average length %" PetscInt_FMT " bytes\n",bs,tot_msg,tot_len,avg_len);CHKERRQ(ierr);
 #endif
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Program finished\n");CHKERRQ(ierr);

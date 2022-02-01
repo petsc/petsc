@@ -555,8 +555,7 @@ static PetscErrorCode SNESTSFormJacobian_IRK(SNES snes,Vec ZC,Mat JC,Mat JCpre,T
       for (j=0; j<nstages; j++)
         S[i+nstages*j] = tab->A_inv[i+nstages*j]/ts->time_step;
     ierr = MatKAIJRestoreS(JC,&S);CHKERRQ(ierr);
-  } else
-    SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not support implicit formula",irk->method_name); /* ToDo: need the mass matrix for DAE  */
+  } else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSIRK %s does not support implicit formula",irk->method_name); /* TODO: need the mass matrix for DAE  */
   ts->dm = dmsave;
   PetscFunctionReturn(0);
 }
@@ -652,7 +651,7 @@ static PetscErrorCode TSSetUp_IRK(TS ts)
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
   ierr = VecDuplicate(irk->Z,&R);CHKERRQ(ierr);
   ierr = SNESSetFunction(ts->snes,R,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(ts->snes,&J,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetIJacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
   if (!irk->TJ) {
     /* Create the KAIJ matrix for solving the stages */
     ierr = MatCreateKAIJ(J,nstages,nstages,tab->A_inv,tab->I_s,&irk->TJ);CHKERRQ(ierr);
@@ -896,17 +895,11 @@ static PetscErrorCode TSDestroy_IRK(TS ts)
 
   TSIRK uses the sparse Kronecker product matrix implementation of MATKAIJ to achieve good arithmetic intensity.
 
-  The default is TSIRK3, it can be changed with TSIRKSetType() or -ts_irk_type
-
-  If the equation is implicit or a DAE, then TSSetEquationType() needs to be set accordingly. Refer to the manual for further information.
-
-  Consider trying TSROSW if the stiff part is linear or weakly nonlinear.
+  Gauss-Legrendre methods are currently supported. These are A-stable symplectic methods with an arbitrary number of stages. The order of accuracy is 2s when using s stages. The default method uses three stages and thus has an order of six. The number of stages (thus order) can be set with -ts_irk_nstages or TSIRKSetNumStages().
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSIRKSetType(), TSIRKGetType(),
-           TSIRK1BEE, TSIRK2C, TSIRK2D, TSIRK2E, TSIRK3, TSIRKL2, TSIRKA2, TSIRKARS122,
-           TSIRK4, TSIRK5, TSIRKPRSSP2, TSIRKARS443, TSIRKBPR3, TSIRKType, TSIRKRegister()
+.seealso:  TSCreate(), TS, TSSetType(), TSIRKSetType(), TSIRKGetType(), TSIRKGAUSS, TSIRKRegister(), TSIRKSetNumStages()
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS ts)

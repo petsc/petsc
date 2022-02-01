@@ -1,9 +1,9 @@
 DM Object: 1 MPI processes
   type: plex
 Mesh in 2 dimensions:
-  0-cells: 42
-  1-cells: 78
-  2-cells: 48 (12)
+  Number of 0-cells per rank: 42
+  Number of 1-cells per rank: 78
+  Number of 2-cells per rank: 48 (12)
 Labels:
   ghost: 0 strata of sizes ()
   vtk: 1 strata of sizes (36)

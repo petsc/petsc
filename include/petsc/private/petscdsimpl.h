@@ -100,10 +100,11 @@ struct _p_PetscDS {
   void        *data;              /* Implementation object */
   PetscDS     *subprobs;          /* The subspaces for each dimension */
   PetscBool    setup;             /* Flag for setup */
-  PetscBool    isHybrid;          /* Flag for hybrid cell (this is crappy, but the only thing I can see to do now) */
   PetscInt     dimEmbed;          /* The real space coordinate dimension */
   PetscInt     Nf;                /* The number of solution fields */
   PetscObject *disc;              /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
+  PetscBool   *cohesive;          /* Flag for cohesive discretization */
+  PetscBool    isCohesive;        /* We are on a cohesive cell, meaning lower dimensional FE used on a 0-volume cell. Normal fields appear on both endcaps, whereas cohesive field only appear once in the middle */
   /* Equations */
   DSBoundary            boundary;      /* Linked list of boundary conditions */
   PetscBool             useJacPre;     /* Flag for using the Jacobian preconditioner */
@@ -125,6 +126,8 @@ struct _p_PetscDS {
   PetscInt        *Nb;                 /* Number of basis functions for each field */
   PetscInt        *off;                /* Offsets for each field */
   PetscInt        *offDer;             /* Derivative offsets for each field */
+  PetscInt        *offCohesive[3];     /* Offsets for each field on side s of a cohesive cell */
+  PetscInt        *offDerCohesive[3];  /* Derivative offsets for each field on side s of a cohesive cell */
   PetscTabulation *T;                  /* Basis function and derivative tabulation for each field */
   PetscTabulation *Tf;                 /* Basis function and derivative tabulation for each local face and field */
   /* Work space */

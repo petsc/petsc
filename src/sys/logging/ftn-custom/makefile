@@ -1,9 +1,8 @@
-
 #requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zplogf.c
+SOURCEC  = zplogf.c zpetscloghf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

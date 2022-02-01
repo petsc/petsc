@@ -188,7 +188,7 @@ struct _PetscFEOps {
   PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
   PetscErrorCode (*integratejacobian)(PetscDS, PetscFEJacobianType, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
   PetscErrorCode (*integratebdjacobian)(PetscDS, PetscWeakForm, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
-  PetscErrorCode (*integratehybridjacobian)(PetscDS, PetscFEJacobianType, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
+  PetscErrorCode (*integratehybridjacobian)(PetscDS, PetscFEJacobianType, PetscFormKey, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
 };
 
 struct _p_PetscFE {
@@ -330,6 +330,38 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe,
   PetscFunctionReturn(0);
 }
 
+PETSC_STATIC_INLINE PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, const PetscReal basisDer[], const PetscScalar x[], PetscInt dim, const PetscReal invJ[], const PetscReal n[], PetscInt q, PetscScalar interpolant[])
+{
+ PetscReal      realSpaceDer[3];
+ PetscScalar    compGradient[3];
+ PetscInt       Nb, Nc, fc, f=0, d, g;
+ PetscErrorCode ierr;
+
+ PetscFunctionBeginHot;
+ ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+ ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+
+ for (fc = 0; fc < Nc; ++fc) {
+   interpolant[fc] = 0.0;
+   for (d = 0; d < dim; ++d) compGradient[d] = 0.0;
+   for (d = 0; d < dim; ++d) {
+      for (d = 0; d < dim; ++d) {
+        realSpaceDer[d] = 0.0;
+        for (g = 0; g < dim; ++g) {
+          realSpaceDer[d] += invJ[g*dim+d]*basisDer[((q*Nb + f)*Nc + fc)*dim + g];
+        }
+        compGradient[d] += x[f]*realSpaceDer[d];
+      }
+   }
+   if (n) {
+     for (d = 0; d < dim; ++d) interpolant[fc] += compGradient[d]*n[d];
+   } else {
+     for (d = 0; d < dim; ++d) interpolant[d] = compGradient[d];
+   }
+ }
+ PetscFunctionReturn(0);
+}
+
 PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE fe, PetscInt k, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[], PetscScalar interpolantGrad[])
 {
   PetscTabulation T;
@@ -386,7 +418,7 @@ PETSC_INTERN PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE, PetscFE, P
 
 PETSC_INTERN PetscErrorCode PetscFEEvaluateFieldJets_Hybrid_Internal(PetscDS, PetscInt, PetscInt, PetscInt, PetscTabulation[], PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);
 PETSC_INTERN PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE, PetscTabulation, PetscInt, PetscInt, PetscScalar[], PetscScalar[], PetscFEGeom *, PetscScalar[], PetscScalar[], PetscScalar[]);
-PETSC_INTERN PetscErrorCode PetscFEUpdateElementMat_Hybrid_Internal(PetscFE, PetscBool, PetscFE, PetscBool, PetscInt, PetscInt, PetscTabulation, PetscScalar[], PetscScalar[], PetscTabulation, PetscScalar[], PetscScalar[], PetscFEGeom *, const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[]);
+PETSC_INTERN PetscErrorCode PetscFEUpdateElementMat_Hybrid_Internal(PetscFE, PetscBool, PetscFE, PetscBool, PetscInt, PetscInt, PetscInt, PetscTabulation, PetscScalar[], PetscScalar[], PetscTabulation, PetscScalar[], PetscScalar[], PetscFEGeom *, const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension_Basic(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar [], const PetscScalar [], PetscDS, const PetscScalar [], PetscReal, PetscScalar []);

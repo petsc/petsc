@@ -390,7 +390,7 @@ int main(int argc,char **args)
    test:
      suffix: 9_mkl
      TODO: broken MatScale?
-     requires: mkl datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
+     requires: mkl_sparse datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -A_mat_type aijmkl -B_mat_type aijmkl
      output_file: output/ex62_1.out
 
@@ -478,7 +478,7 @@ int main(int argc,char **args)
    test:
      nsize: {{1 3}}
      suffix: 14_aijkokkos
-     requires: kokkos_kernels !complex double !defined(PETSC_USE_64BIT_INDICES)
+     requires: !sycl kokkos_kernels !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type aijkokkos -B_mat_type aijkokkos -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
      output_file: output/ex62_1.out
 

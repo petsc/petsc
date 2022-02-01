@@ -16,58 +16,7 @@
 #include <petscconf.h>
 #include <petscconf_poison.h>
 #include <petscfix.h>
-
-/*MC
-  PetscHasAttribute - determine whether a particular __attribute__ is supported by the compiler
-
-  Synopsis:
-  #include <petscsys.h>
-  boolean PetscHasAttribute(name)
-
-  Input Parameter:
-. name - the name of the attribute to test
-
-  Notes:
-  name should be identical to what you might pass to the __attribute__ declaration itself --
-  plain, unbroken text.
-
-  As PetscHasAttribute() is wrapper over the function-like macro __has_attribute(), the exact
-  type and value returned is implementation defined. In practice however, it usually returns
-  the integer literal 1 if the attribute is supported, and integer literal 0 if the attribute
-  is not supported.
-
-  Sample usage:
-  Typical usage is usually using the preprocessor
-
-.vb
-  #if PetscHasAttribute(always_inline)
-  #  define MY_ALWAYS_INLINE __attribute__((always_inline))
-  #else
-  #  define MY_ALWAYS_INLINE
-  #endif
-
-  void foo(void) MY_ALWAYS_INLINE;
-.ve
-
-  but can also be used in regular code
-
-.vb
-  if (PetscHasAttribute(some_attribute)) {
-    foo();
-  } else {
-    bar();
-  }
-.ve
-
-  Level: advanced
-
-.seealso: PetscDefined(), PetscLikely(), PetscUnlikely()
-M*/
-#if defined(__has_attribute)
-#  define PetscHasAttribute(x) __has_attribute(x)
-#else
-#  define PetscHasAttribute(x) 0
-#endif
+#include <petscmacros.h>
 
 /* placeholder defines */
 #if PetscHasAttribute(format)
@@ -98,118 +47,6 @@ M*/
 #include <petscsystypes.h>
 
 /* ========================================================================== */
-/*
-   This facilitates using the C version of PETSc from C++ and the C++ version from C.
-*/
-#if defined(__cplusplus)
-#  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_CXX
-#else
-#  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
-#endif
-
-/* ========================================================================== */
-/*
-   Since PETSc manages its own extern "C" handling users should never include PETSc include
-   files within extern "C". This will generate a compiler error if a user does put the include
-   file within an extern "C".
-*/
-#if defined(__cplusplus)
-void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_put_petsc_headers_inside_an_extern_c(double);
-#endif
-
-#if defined(__cplusplus)
-#  define PETSC_RESTRICT PETSC_CXX_RESTRICT
-#else
-#  define PETSC_RESTRICT PETSC_C_RESTRICT
-#endif
-
-#if defined(__cplusplus)
-#  define PETSC_INLINE PETSC_CXX_INLINE
-#else
-#  define PETSC_INLINE PETSC_C_INLINE
-#endif
-
-#define PETSC_STATIC_INLINE static PETSC_INLINE
-
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
-#  define PETSC_DLLEXPORT __declspec(dllexport)
-#  define PETSC_DLLIMPORT __declspec(dllimport)
-#  define PETSC_VISIBILITY_INTERNAL
-#elif defined(PETSC_USE_VISIBILITY_CXX) && defined(__cplusplus)
-#  define PETSC_DLLEXPORT __attribute__((visibility ("default")))
-#  define PETSC_DLLIMPORT __attribute__((visibility ("default")))
-#  define PETSC_VISIBILITY_INTERNAL __attribute__((visibility ("hidden")))
-#elif defined(PETSC_USE_VISIBILITY_C) && !defined(__cplusplus)
-#  define PETSC_DLLEXPORT __attribute__((visibility ("default")))
-#  define PETSC_DLLIMPORT __attribute__((visibility ("default")))
-#  define PETSC_VISIBILITY_INTERNAL __attribute__((visibility ("hidden")))
-#else
-#  define PETSC_DLLEXPORT
-#  define PETSC_DLLIMPORT
-#  define PETSC_VISIBILITY_INTERNAL
-#endif
-
-#if defined(petsc_EXPORTS)      /* CMake defines this when building the shared library */
-#  define PETSC_VISIBILITY_PUBLIC PETSC_DLLEXPORT
-#else  /* Win32 users need this to import symbols from petsc.dll */
-#  define PETSC_VISIBILITY_PUBLIC PETSC_DLLIMPORT
-#endif
-
-/*
-    Functions tagged with PETSC_EXTERN in the header files are
-  always defined as extern "C" when compiled with C++ so they may be
-  used from C and are always visible in the shared libraries
-*/
-#if defined(__cplusplus)
-#  define PETSC_EXTERN extern "C" PETSC_VISIBILITY_PUBLIC
-#  define PETSC_EXTERN_TYPEDEF extern "C"
-#  define PETSC_INTERN extern "C" PETSC_VISIBILITY_INTERNAL
-#else
-#  define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
-#  define PETSC_EXTERN_TYPEDEF
-#  define PETSC_INTERN extern PETSC_VISIBILITY_INTERNAL
-#endif
-
-#if defined(PETSC_USE_SINGLE_LIBRARY)
-#  define PETSC_SINGLE_LIBRARY_INTERN PETSC_INTERN
-#else
-#  define PETSC_SINGLE_LIBRARY_INTERN PETSC_EXTERN
-#endif
-
-/* C++11 features */
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX11)
-#  define PETSC_NULLPTR             nullptr
-#  define PETSC_CONSTEXPR           constexpr
-#  define PETSC_NOEXCEPT            noexcept
-#  define PETSC_NOEXCEPT_ARG(cond_) noexcept(cond_)
-#else
-#  define PETSC_NULLPTR             NULL
-#  define PETSC_CONSTEXPR
-#  define PETSC_NOEXCEPT
-#  define PETSC_NOEXCEPT_ARG(cond_)
-#endif /* __cplusplus && PETSC_HAVE_CXX_DIALECT_CXX11 */
-
-/* C++14 features */
-#if defined(PETSC_HAVE_CXX_DIALECT_CXX14)
-#  define PETSC_CONSTEXPR_14 PETSC_CONSTEXPR
-#else
-#  define PETSC_CONSTEXPR_14
-#endif
-
-/* C++17 features */
-/* We met cases that the host CXX compiler (say mpicxx) supports C++17, but nvcc does not agree, even with -ccbin mpicxx! */
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17) && (!defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_CUDA_DIALECT_CXX17))
-#  define PETSC_NODISCARD    [[nodiscard]]
-#  define PETSC_CONSTEXPR_17 PETSC_CONSTEXPR
-#else
-#  define PETSC_NODISCARD
-#  define PETSC_CONSTEXPR_17
-#endif
-
-#include <petscversion.h>
-#define PETSC_AUTHOR_INFO  "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n https://petsc.org/\n"
-
-/* ========================================================================== */
 
 /*
     Defines the interface to MPI allowing the use of all MPI functions.
@@ -230,54 +67,6 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  include <petsc/mpiuni/mpi.h>
 #else
 #  include <mpi.h>
-#endif
-
-/*MC
-  PetscDefined - determine whether a boolean macro is defined
-
-  Notes:
-  The prefix "PETSC_" is added to the argument.
-
-  Typical usage is within normal code,
-
-$   if (PetscDefined(USE_DEBUG)) { ... }
-
-  but can also be used in the preprocessor,
-
-$   #if PetscDefined(USE_DEBUG)
-$     ...
-$   #else
-
-  Either way, it evaluates true if PETSC_USE_DEBUG is defined (merely defined or defined to 1), and false if PETSC_USE_DEBUG is undefined.  This macro
-  should not be used if its argument may be defined to a non-empty value other than 1.
-
-  To avoid prepending "PETSC_", say to add custom checks in user code, one can use e.g.
-
-$  #define FooDefined(d) PetscDefined_(FOO_ ## d)
-
-  Developer Notes:
-  Getting something that works in C and CPP for an arg that may or may not be defined is tricky.  Here, if we have
-  "#define PETSC_HAVE_BOOGER 1" we match on the placeholder define, insert the "0," for arg1 and generate the triplet
-  (0, 1, 0).  Then the last step cherry picks the 2nd arg (a one).  When PETSC_HAVE_BOOGER is not defined, we generate
-  a (... 1, 0) pair, and when the last step cherry picks the 2nd arg, we get a zero.
-
-  Our extra expansion via PetscDefined__take_second_expand() is needed with MSVC, which has a nonconforming
-  implementation of variadic macros.
-
-  Level: developer
-.seealso: PetscHasAttribute(), PetscUnlikely(), PetscLikely()
-M*/
-#if !defined(PETSC_SKIP_VARIADIC_MACROS)
-#  define PetscDefined_arg_1    shift,
-#  define PetscDefined_arg_     shift,
-#  define PetscDefined__take_second_expanded(ignored, val, ...) val
-#  define PetscDefined__take_second_expand(args) PetscDefined__take_second_expanded args
-#  define PetscDefined__take_second(...) PetscDefined__take_second_expand((__VA_ARGS__))
-#  define PetscDefined____(arg1_or_junk) PetscDefined__take_second(arg1_or_junk 1, 0, at_)
-#  define PetscDefined___(value) PetscDefined____(PetscDefined_arg_ ## value)
-#  define PetscDefined__(d)      PetscDefined___(d)
-#  define PetscDefined_(d)       PetscDefined__(PETSC_ ## d)
-#  define PetscDefined(d)        PetscDefined_(d)
 #endif
 
 /*
@@ -405,77 +194,6 @@ PETSC_EXTERN FILE* PETSC_STDOUT;
 */
 PETSC_EXTERN FILE* PETSC_STDERR;
 
-/*MC
-    PetscUnlikely - hints the compiler that the given condition is usually FALSE
-
-    Synopsis:
-    #include <petscsys.h>
-    PetscBool  PetscUnlikely(PetscBool  cond)
-
-    Not Collective
-
-    Input Parameters:
-.   cond - condition or expression
-
-    Notes:
-    This returns the same truth value, it is only a hint to compilers that the resulting
-    branch is unlikely.
-
-    Level: advanced
-
-.seealso: PetscUnlikelyDebug(), PetscLikely(), CHKERRQ, PetscDefined(), PetscHasAttribute()
-M*/
-
-/*MC
-    PetscLikely - hints the compiler that the given condition is usually TRUE
-
-    Synopsis:
-    #include <petscsys.h>
-    PetscBool  PetscLikely(PetscBool  cond)
-
-    Not Collective
-
-    Input Parameters:
-.   cond - condition or expression
-
-    Notes:
-    This returns the same truth value, it is only a hint to compilers that the resulting
-    branch is likely.
-
-    Level: advanced
-
-.seealso: PetscUnlikely(), PetscDefined(), PetscHasAttribute()
-M*/
-#if defined(PETSC_HAVE_BUILTIN_EXPECT)
-#  define PetscUnlikely(cond)   __builtin_expect(!!(cond),0)
-#  define PetscLikely(cond)     __builtin_expect(!!(cond),1)
-#else
-#  define PetscUnlikely(cond)   (cond)
-#  define PetscLikely(cond)     (cond)
-#endif
-
-/*MC
-    PetscUnlikelyDebug - hints the compiler that the given condition is usually FALSE, eliding the check in optimized mode
-
-    Synopsis:
-    #include <petscsys.h>
-    PetscBool  PetscUnlikelyDebug(PetscBool  cond)
-
-    Not Collective
-
-    Input Parameters:
-.   cond - condition or expression
-
-    Notes:
-    This returns the same truth value, it is only a hint to compilers that the resulting
-    branch is unlikely.  When compiled in optimized mode, it always returns false.
-
-    Level: advanced
-
-.seealso: PetscUnlikely(), CHKERRQ, SETERRQ
-M*/
-#define PetscUnlikelyDebug(cond) (PetscDefined(USE_DEBUG) && PetscUnlikely(cond))
-
 /* PetscPragmaSIMD - from CeedPragmaSIMD */
 
 #if defined(__NEC__)
@@ -484,10 +202,12 @@ M*/
 #  define PetscPragmaSIMD _Pragma("vector")
 #elif defined(__GNUC__) && __GNUC__ >= 5 && !defined(__PGI)
 #  define PetscPragmaSIMD _Pragma("GCC ivdep")
-#elif defined(_OPENMP) && _OPENMP >= 201307 && !defined(_WIN32)
-#  define PetscPragmaSIMD _Pragma("omp simd")
-#elif defined(_OPENMP) && _OPENMP >= 201307 && defined(_WIN32)
-#  define PetscPragmaSIMD __pragma(omp simd)
+#elif defined(_OPENMP) && _OPENMP >= 201307
+#  if defined(_MSC_VER)
+#    define PetscPragmaSIMD __pragma(omp simd)
+#  else
+#    define PetscPragmaSIMD _Pragma("omp simd")
+#  endif
 #elif defined(PETSC_HAVE_CRAY_VECTOR)
 #  define PetscPragmaSIMD _Pragma("_CRI ivdep")
 #else
@@ -625,6 +345,8 @@ PETSC_EXTERN PetscBool PetscViennaCLSynchronize;
 PETSC_EXTERN PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 PETSC_EXTERN PetscErrorCode PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PetscCommGetComm(MPI_Comm,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PetscCommRestoreComm(MPI_Comm,MPI_Comm*);
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void);  /* Initialize Kokkos if not yet. */
@@ -2930,5 +2652,14 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win,PetscMPIInt,MPI_Aint*,
     List of external packages and queries on it
 */
 PETSC_EXTERN PetscErrorCode  PetscHasExternalPackage(const char[],PetscBool*);
+
+/*
+ OpenMP support
+*/
+#if defined(_OPENMP)
+#define PetscPragmaOMP(...) _Pragma(PetscStringize(omp __VA_ARGS__))
+#else // no OpenMP so no threads
+#define PetscPragmaOMP(...)
+#endif
 
 #endif

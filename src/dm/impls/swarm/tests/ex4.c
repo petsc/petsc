@@ -1,4 +1,4 @@
-static char help[] = "Example of simple hamiltonian system (harmonic oscillator) with particles and a basic symplectic integrator\n";
+static char help[] = "Comparing basic symplectic, theta and discrete gradients interators on a simple hamiltonian system (harmonic oscillator) with particles\n";
 
 #include <petscdmplex.h>
 #include <petsc/private/dmpleximpl.h>  /* For norm */
@@ -7,13 +7,16 @@ static char help[] = "Example of simple hamiltonian system (harmonic oscillator)
 #include <petscts.h>
 
 typedef struct {
-  PetscInt  dim;
-  PetscReal omega;            /* Oscillation frequency omega */
-  PetscInt  particlesPerCell; /* The number of partices per cell */
-  PetscReal momentTol;        /* Tolerance for checking moment conservation */
-  PetscBool monitor;          /* Flag for using the TS monitor */
-  PetscBool error;            /* Flag for printing the error */
-  PetscInt  ostep;            /* print the energy at each ostep time steps */
+  PetscInt  dim;                          /* The topological mesh dimension */
+  PetscBool simplex;                      /* Flag for simplices or tensor cells */
+  char      filename[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
+  PetscReal omega;                        /* Oscillation frequency omega */
+  PetscInt  particlesPerCell;             /* The number of partices per cell */
+  PetscInt  numberOfCells;                /* Number of cells in mesh */
+  PetscReal momentTol;                    /* Tolerance for checking moment conservation */
+  PetscBool monitor;                      /* Flag for using the TS monitor */
+  PetscBool error;                        /* Flag for printing the error */
+  PetscInt  ostep;                        /* print the energy at each ostep time steps */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -21,22 +24,31 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  options->dim              = 2;
+  options->simplex          = PETSC_TRUE;
   options->monitor          = PETSC_FALSE;
   options->error            = PETSC_FALSE;
   options->particlesPerCell = 1;
+  options->numberOfCells    = 2;
   options->momentTol        = 100.0*PETSC_MACHINE_EPSILON;
   options->omega            = 64.0;
   options->ostep            = 100;
 
+  ierr = PetscStrcpy(options->filename, "");CHKERRQ(ierr);
+
   ierr = PetscOptionsBegin(comm, "", "Harmonic Oscillator Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-output_step", "Number of time steps between output", "ex4.c", options->ostep, &options->ostep, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-monitor", "Flag to use the TS monitor", "ex4.c", options->monitor, &options->monitor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-error", "Flag to print the error", "ex4.c", options->error, &options->error, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex4.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex4.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-particles_per_cell", "Number of particles per cell", "ex4.c", options->particlesPerCell, &options->particlesPerCell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-omega", "Oscillator frequency", "ex4.c", options->omega, &options->omega, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
+
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
@@ -48,7 +60,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -73,6 +85,7 @@ static PetscErrorCode SetInitialCoordinates(DM dmSw)
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  user->numberOfCells = cEnd - cStart;
   ierr = PetscMalloc5(dim, &centroid, dim, &xi0, dim, &v0, dim*dim, &J, dim*dim, &invJ);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) xi0[d] = -1.0;
   ierr = DMSwarmGetField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
@@ -95,6 +108,7 @@ static PetscErrorCode SetInitialCoordinates(DM dmSw)
       }
     }
   }
+
   ierr = DMSwarmRestoreField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
   ierr = PetscFree5(centroid, xi0, v0, J, invJ);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
@@ -121,22 +135,19 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
   for (c = cStart; c < cEnd; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c*Np + p;
-
       initialConditions[n*2+0] = DMPlex_NormD_Internal(dim, &coords[n*dim]);
       initialConditions[n*2+1] = 0.0;
     }
   }
   ierr = VecRestoreArray(u, &initialConditions);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
-
-  ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 {
   PetscInt      *cellid;
-  PetscInt       dim, cStart, cEnd, c, Np = user->particlesPerCell, p;
+  PetscInt       dim, cStart, cEnd, c, Np, p;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -144,7 +155,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), sw);CHKERRQ(ierr);
   ierr = DMSetType(*sw, DMSWARM);CHKERRQ(ierr);
   ierr = DMSetDimension(*sw, dim);CHKERRQ(ierr);
-
+  Np = user->particlesPerCell;
   ierr = DMSwarmSetType(*sw, DMSWARM_PIC);CHKERRQ(ierr);
   ierr = DMSwarmSetCellDM(*sw, dm);CHKERRQ(ierr);
   ierr = DMSwarmRegisterPetscDatatypeField(*sw, "kinematics", 2, PETSC_REAL);CHKERRQ(ierr);
@@ -189,7 +200,6 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ct
       const PetscReal v  = PetscRealPart(u[p*2+1]);
       const PetscReal E  = 0.5*(v*v + PetscSqr(omega)*x*x);
       const PetscReal mE = 0.5*(v*v + PetscSqr(omega)*x*x - PetscSqr(omega)*dt*x*v);
-
       ierr = PetscPrintf(comm, "%.6lf %4D %4D %10.4lf %10.4lf\n", t, step, p, (double) E, (double) mE);CHKERRQ(ierr);
     }
     ierr = VecRestoreArrayRead(U, &u);CHKERRQ(ierr);
@@ -257,8 +267,8 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
 {
   const PetscScalar *v;
   PetscScalar       *xres;
-  PetscInt           Np, p;
-  PetscErrorCode     ierr;
+  PetscInt          Np, p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(Xres, &xres);CHKERRQ(ierr);
@@ -277,8 +287,8 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   AppCtx            *user = (AppCtx *)ctx;
   const PetscScalar *x;
   PetscScalar       *vres;
-  PetscInt           Np, p;
-  PetscErrorCode     ierr;
+  PetscInt          Np, p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(Vres, &vres);CHKERRQ(ierr);
@@ -292,40 +302,17 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscFunctionReturn(0);
 }
 
-// static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
-// {
-//   AppCtx            *user = (AppCtx *) ctx;
-//   DM                 dm;
-//   const PetscScalar *u;
-//   PetscScalar       *r;
-//   PetscInt           Np, p;
-//   PetscErrorCode     ierr;
-//
-//   PetscFunctionBeginUser;
-//   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-//   ierr = VecGetArray(R, &r);CHKERRQ(ierr);
-//   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
-//   ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
-//   Np  /= 2;
-//   for (p = 0; p < Np; ++p) {
-//     r[p*2+0] = u[p*2+1];
-//     r[p*2+1] = -PetscSqr(user->omega)*u[p*2+0];
-//   }
-//   ierr = VecRestoreArrayRead(U, &u);CHKERRQ(ierr);
-//   ierr = VecRestoreArray(R, &r);CHKERRQ(ierr);
-//   PetscFunctionReturn(0);
-// }
 /*----------------------------------------------------------------------------*/
 
 /*--------------------Define RHSFunction, RHSJacobian (Theta)-----------------*/
 static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
 {
   AppCtx            *user = (AppCtx *) ctx;
-  DM                 dm;
+  DM                dm;
   const PetscScalar *u;
   PetscScalar       *g;
-  PetscInt           Np, p;
-  PetscErrorCode     ierr;
+  PetscInt          Np, p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
@@ -348,8 +335,8 @@ J= (0    1)
 */
 static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U , Mat J, Mat P, void *ctx)
 {
-  AppCtx            *user = (AppCtx *) ctx;
-  PetscInt           Np = user->dim * user->particlesPerCell;
+  AppCtx             *user = (AppCtx *) ctx;
+  PetscInt           Np;
   PetscInt           i, m, n;
   const PetscScalar *u;
   PetscScalar        vals[4] = {0., 1., -PetscSqr(user->omega), 0.};
@@ -357,8 +344,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U , Mat J, Mat P, void
 
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
-  //ierr = PetscPrintf(PETSC_COMM_WORLD, "# Particles (Np) = %d \n" , Np);CHKERRQ(ierr);
-
+  ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
+  Np /= 2;
   ierr = MatGetOwnershipRange(J, &m, &n);CHKERRQ(ierr);
   for (i = 0; i < Np; ++i) {
     const PetscInt rows[2] = {2*i, 2*i+1};
@@ -366,11 +353,10 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U , Mat J, Mat P, void
   }
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 
 }
+
 /*----------------------------------------------------------------------------*/
 
 /*----------------Define S, F, G Functions (Discrete Gradients)---------------*/
@@ -386,8 +372,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U , Mat J, Mat P, void
 
 PetscErrorCode Sfunc(TS ts, PetscReal t, Vec U, Mat S, void *ctx)
 {
-  AppCtx            *user = (AppCtx *) ctx;
-  PetscInt           Np = user->dim * user->particlesPerCell;
+  PetscInt           Np;
   PetscInt           i, m, n;
   const PetscScalar *u;
   PetscScalar        vals[4] = {0., 1., -1, 0.};
@@ -395,6 +380,8 @@ PetscErrorCode Sfunc(TS ts, PetscReal t, Vec U, Mat S, void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
+  Np /= 2;
   ierr = MatGetOwnershipRange(S, &m, &n);CHKERRQ(ierr);
   for (i = 0; i < Np; ++i) {
     const PetscInt rows[2] = {2*i, 2*i+1};
@@ -402,8 +389,8 @@ PetscErrorCode Sfunc(TS ts, PetscReal t, Vec U, Mat S, void *ctx)
   }
   ierr = MatAssemblyBegin(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
+
 }
 
 PetscErrorCode Ffunc(TS ts, PetscReal t, Vec U, PetscScalar *F, void *ctx)
@@ -411,37 +398,40 @@ PetscErrorCode Ffunc(TS ts, PetscReal t, Vec U, PetscScalar *F, void *ctx)
   AppCtx            *user = (AppCtx *) ctx;
   DM                 dm;
   const PetscScalar *u;
-  PetscInt           Np = user->dim * user->particlesPerCell;
+  PetscInt           Np;
   PetscInt           p;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  //Define F
+
+  /* Define F */
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
+  Np /= 2;
   for (p = 0; p < Np; ++p) {
-    *F += (1/2)*PetscSqr(user->omega)*PetscSqr(u[p*2+0]) + (1/2)*PetscSqr(u[p*2+1]);
+    *F += 0.5*PetscSqr(user->omega)*PetscSqr(u[p*2+0]) + 0.5*PetscSqr(u[p*2+1]);
   }
   ierr = VecRestoreArrayRead(U, &u);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode gradFfunc(TS ts, PetscReal t, Vec U, Vec gradF, void *ctx)
 {
   AppCtx            *user = (AppCtx *) ctx;
-  DM                 dm;
+  DM                dm;
   const PetscScalar *u;
   PetscScalar       *g;
-  PetscInt           Np = user->dim * user->particlesPerCell;
-  PetscInt           p;
-  PetscErrorCode     ierr;
+  PetscInt          Np;
+  PetscInt          p;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
-
-  //Define gradF
+  ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
+  Np /= 2;
+  /*Define gradF*/
   ierr = VecGetArray(gradF, &g);CHKERRQ(ierr);
   for (p = 0; p < Np; ++p) {
     g[p*2+0] = PetscSqr(user->omega)*u[p*2+0]; /*dF/dx*/
@@ -449,9 +439,9 @@ PetscErrorCode gradFfunc(TS ts, PetscReal t, Vec U, Vec gradF, void *ctx)
   }
   ierr = VecRestoreArrayRead(U, &u);CHKERRQ(ierr);
   ierr = VecRestoreArray(gradF, &g);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
+
 /*----------------------------------------------------------------------------*/
 
 int main(int argc,char **argv)
@@ -517,6 +507,7 @@ int main(int argc,char **argv)
   ierr = TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunction2, &user);CHKERRQ(ierr);
 
   /* - - - - - - - Theta (Implicit Midpoint) - - - - - - - - - - - - - - - - -*/
+
   ierr = TSSetRHSFunction(ts, NULL, RHSFunction, &user);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
@@ -525,7 +516,6 @@ int main(int argc,char **argv)
   ierr = MatSetUp(J);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "n = %d\n",n);CHKERRQ(ierr);//Check number of particles
   ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&user);CHKERRQ(ierr);
 
   /* - - - - - - - Discrete Gradients - - - - - - - - - - - - - - - - - - - - */
@@ -534,7 +524,6 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
   ierr = TSComputeInitialCondition(ts, u);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
 
@@ -556,26 +545,30 @@ int main(int argc,char **argv)
      requires: triangle !single !complex
    test:
      suffix: 1
-     args: -dm_plex_box_faces 1,1 -ts_type basicsymplectic -ts_basicsymplectic_type 1 -ts_convergence_estimate -convest_num_refine 2 -dm_view -sw_view -monitor -output_step 50 -error
+     args: -dm_plex_box_faces 1,1 -ts_type basicsymplectic -ts_basicsymplectic_type 1 -ts_convergence_estimate -convest_num_refine 2 -dm_view  -monitor -output_step 50 -error
 
    test:
      suffix: 2
-     args: -dm_plex_box_faces 1,1 -ts_type basicsymplectic -ts_basicsymplectic_type 2 -ts_convergence_estimate -convest_num_refine 2 -dm_view -sw_view -monitor -output_step 50 -error
+     args: -dm_plex_box_faces 1,1 -ts_type basicsymplectic -ts_basicsymplectic_type 2 -ts_convergence_estimate -convest_num_refine 2 -dm_view  -monitor -output_step 50 -error
 
    test:
      suffix: 3
-     args: -dm_plex_box_faces 1,1 -ts_type basicsymplectic -ts_basicsymplectic_type 3 -ts_convergence_estimate -convest_num_refine 2 -ts_dt 0.0001 -dm_view -sw_view -monitor -output_step 50 -error
+     args: -dm_plex_box_faces 1,1 -ts_type basicsymplectic -ts_basicsymplectic_type 3 -ts_convergence_estimate -convest_num_refine 2 -ts_dt 0.0001 -dm_view -monitor -output_step 50 -error
 
    test:
      suffix: 4
-     args: -dm_plex_box_faces 1,1 -ts_type basicsymplectic -ts_basicsymplectic_type 4 -ts_convergence_estimate -convest_num_refine 2 -ts_dt 0.0001 -dm_view -sw_view -monitor -output_step 50 -error
+     args: -dm_plex_box_faces 1,1 -ts_type basicsymplectic -ts_basicsymplectic_type 4 -ts_convergence_estimate -convest_num_refine 2 -ts_dt 0.0001 -dm_view  -monitor -output_step 50 -error
 
    test:
      suffix: 5
-     args: -dm_plex_box_faces 1,1 -ts_type theta -ts_theta_theta 0.5 -ts_convergence_estimate -convest_num_refine 2 -dm_view -sw_view -monitor -output_step 50 -error
+     args: -dm_plex_box_faces 1,1 -ts_type theta -ts_theta_theta 0.5 -monitor -output_step 50 -error -ts_convergence_estimate -convest_num_refine 2 -dm_view
 
    test:
      suffix: 6
-     args: -dm_plex_box_faces 1,1 -ts_type discgrad -monitor -output_step 50 -error -ts_convergence_estimate -convest_num_refine 2
+     args: -dm_plex_box_faces 1,1 -ts_type discgrad -monitor -output_step 50 -error -ts_convergence_estimate -convest_num_refine 2 -dm_view
+
+   test:
+     suffix: 7
+     args: -dm_plex_box_faces 1,1 -ts_type discgrad -ts_discgrad_gonzalez -monitor -output_step 50 -error -ts_convergence_estimate -convest_num_refine 2 -dm_view
 
 TEST*/

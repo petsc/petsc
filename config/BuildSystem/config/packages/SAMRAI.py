@@ -8,7 +8,7 @@ class Configure(config.package.GNUPackage):
     self.includes  = ['Box.h']
     self.liblist   = [['libSAMRAI.a']]
     self.pkgname   = 'SAMRAI-2.4.4'
-    self.cxx       = 1
+    self.buildLanguages    = ['Cxx']
     return
 
   def setupDependencies(self, framework):

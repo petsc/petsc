@@ -1,9 +1,9 @@
 DM Object: sphere 4 MPI processes
   type: plex
 sphere in 2 dimensions:
-  0-cells: 113 113 113 113
-  1-cells: 208 208 208 208
-  2-cells: 96 96 96 96
+  Number of 0-cells per rank: 113 113 113 113
+  Number of 1-cells per rank: 208 208 208 208
+  Number of 2-cells per rank: 96 96 96 96
 Labels:
   celltype: 3 strata with value/size (0 (113), 1 (208), 4 (96))
   depth: 3 strata with value/size (0 (113), 1 (208), 2 (96))

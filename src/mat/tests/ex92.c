@@ -124,7 +124,7 @@ int main(int argc,char **args)
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
       if (rank == vid) {
-        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%D]: %D\n",rank,i,sz);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%" PetscInt_FMT "]: %" PetscInt_FMT "\n",rank,i,sz);CHKERRQ(ierr);
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     } else { /* Test all rows and columns */
@@ -135,7 +135,7 @@ int main(int argc,char **args)
       if (rank == vid) {
         PetscBool colflag;
         ierr = ISIdentity(is2[i],&colflag);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] is2[%D], colflag %D\n",rank,i,colflag);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] is2[%" PetscInt_FMT "], colflag %d\n",rank,i,colflag);CHKERRQ(ierr);
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     }
@@ -168,7 +168,7 @@ int main(int argc,char **args)
           ierr = ISSort(is1[i]);CHKERRQ(ierr);
           ierr = ISSort(is2[i]);CHKERRQ(ierr);
         }
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%D, is1 != is2",i);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%" PetscInt_FMT ", is1 != is2",i);
       }
     }
   }

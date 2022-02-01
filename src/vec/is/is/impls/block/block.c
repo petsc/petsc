@@ -168,11 +168,11 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
       ierr = ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_FALSE,&isperm);CHKERRQ(ierr);
       if (isperm) {ierr = PetscViewerASCIIPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block size %D\n",bs);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %D\n",n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block size %" PetscInt_FMT "\n",bs);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %" PetscInt_FMT "\n",n);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"The first indices of each block are\n");CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block %D Index %D\n",i,idx[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Block %" PetscInt_FMT " Index %" PetscInt_FMT "\n",i,idx[i]);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
@@ -364,7 +364,7 @@ static PetscErrorCode ISSetBlockSize_Block(IS is,PetscInt bs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (is->map->bs > 0 && bs != is->map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change blocksize %D (to %D) if ISType is ISBLOCK",is->map->bs,bs);
+  if (is->map->bs > 0 && bs != is->map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change blocksize %" PetscInt_FMT " (to %" PetscInt_FMT ") if ISType is ISBLOCK",is->map->bs,bs);
   ierr = PetscLayoutSetBlockSize(is->map, bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
