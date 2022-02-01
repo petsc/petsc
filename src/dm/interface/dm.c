@@ -5442,7 +5442,10 @@ PetscErrorCode DMGetCellDS(DM dm, PetscInt point, PetscDS *prob)
 + fields - The IS containing the DM field numbers for the fields in this DS, or NULL
 - prob - The PetscDS defined on the given region, or NULL
 
-  Note: If the label is missing, this function returns an error
+  Note:
+  If a non-NULL label is given, but there is no PetscDS on that specific label,
+  the PetscDS for the full domain (if present) is returned. Returns with
+  fields=NULL and prob=NULL if there is no PetscDS for the full domain.
 
   Level: advanced
 
@@ -5458,10 +5461,10 @@ PetscErrorCode DMGetRegionDS(DM dm, DMLabel label, IS *fields, PetscDS *ds)
   if (fields) {PetscValidPointer(fields, 3); *fields = NULL;}
   if (ds)     {PetscValidPointer(ds, 4);     *ds     = NULL;}
   for (s = 0; s < Nds; ++s) {
-    if (dm->probs[s].label == label) {
+    if (dm->probs[s].label == label || !dm->probs[s].label) {
       if (fields) *fields = dm->probs[s].fields;
       if (ds)     *ds     = dm->probs[s].ds;
-      PetscFunctionReturn(0);
+      if (dm->probs[s].label) PetscFunctionReturn(0);
     }
   }
   PetscFunctionReturn(0);
