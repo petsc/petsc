@@ -32,37 +32,28 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   PetscDS      ds = NULL;
   PetscFE      fe;
   PetscSection section;
-  PetscInt     dim;
+  PetscInt     dim, ds_field = -1;
   PetscInt    *restr_indices;
   const PetscInt *iter_indices;
   IS           iter_is;
 
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (domain_label) {
-    ierr = DMGetFirstLabelEntry_Internal(dm, dm, domain_label, 1, &label_value, dim, NULL, &ds);CHKERRQ(ierr);
-  }
-
-  // Translate dm_field to ds_field
-  PetscInt ds_field = -1;
-  for (PetscInt i=0; i<dm->Nds; i++) {
-    if (!domain_label || domain_label == dm->probs[i].label) {
-      ds = dm->probs[i].ds;
-    }
-    if (ds == dm->probs[i].ds) {
-      const PetscInt *arr;
-      PetscInt nf;
-      IS is = dm->probs[i].fields;
-      ierr = ISGetIndices(is, &arr);CHKERRQ(ierr);
-      ierr = ISGetSize(is, &nf);CHKERRQ(ierr);
-      for (PetscInt j=0; j<nf; j++) {
-        if (dm_field == arr[j]) {
-          ds_field = j;
-          break;
-        }
+  {
+    IS field_is;
+    const PetscInt *fields;
+    PetscInt num_fields;
+    ierr = DMGetRegionDS(dm, domain_label, &field_is, &ds);CHKERRQ(ierr);
+    // Translate dm_field to ds_field
+    ierr = ISGetIndices(field_is, &fields);CHKERRQ(ierr);
+    ierr = ISGetSize(field_is, &num_fields);CHKERRQ(ierr);
+    for (PetscInt i=0; i<num_fields; i++) {
+      if (dm_field == fields[i]) {
+        ds_field = i;
+        break;
       }
-      ierr = ISRestoreIndices(is, &arr);CHKERRQ(ierr);
     }
+    ierr = ISRestoreIndices(field_is, &fields);
   }
   if (ds_field == -1) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Could not find dm_field %D in DS", dm_field);
 
