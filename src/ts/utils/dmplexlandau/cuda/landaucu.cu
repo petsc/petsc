@@ -257,7 +257,7 @@ void landau_form_fdf(const PetscInt dim, const PetscInt Nb, const PetscInt num_g
 }
 
 __device__ void
-jac_kernel(const PetscInt num_grids, const PetscInt jpidx, PetscInt nip_global, const PetscInt grid,
+landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx, PetscInt nip_global, const PetscInt grid,
            const PetscReal xx[], const PetscReal yy[], const PetscReal ww[], const PetscReal invJj[],
            const PetscInt Nftot, const PetscReal nu_alpha[], const PetscReal nu_beta[], const PetscReal invMass[], const PetscReal Eq_m[],
            const PetscReal * const BB, const PetscReal * const DD, PetscScalar *elemMat, P4estVertexMaps *d_maps[], PetscSplitCSRDataStructure d_mat, // output
@@ -294,7 +294,6 @@ jac_kernel(const PetscInt num_grids, const PetscInt jpidx, PetscInt nip_global, 
   constexpr int dim = 3;
 #endif
   const PetscInt  f_off = d_species_offset[grid], Nb=Nq;
-  //if (threadIdx.x==0) printf("jac_kernel %d.%d.%d.%d IPf_sz_glb=%d. myQi=%d == threadIdx.y=%d/(%d==%d) nip_global=%d, %d threads\n",b_id,grid,loc_elem,myQi,IPf_sz_glb,myQi,threadIdx.y,Nq,blockDim.y,nip_global,blockDim.x);
   // create g2 & g3
   for (f=threadIdx.x; f<loc_Nf; f+=blockDim.x) {
     for (d=0;d<dim;d++) { // clear accumulation data D & K
@@ -601,7 +600,7 @@ void __launch_bounds__(256,2)
       s_fieldMats = NULL;
     }
     __syncthreads();
-    jac_kernel(num_grids, jpidx, nip_global, grid, xx, yy, ww,
+    landau_jac_kernel(num_grids, jpidx, nip_global, grid, xx, yy, ww,
                invJ, Nftot, nu_alpha, nu_beta, invMass, Eq_m, BB, DD,
                elemMat, d_maps, d_mat,
                *s_fieldMats, *s_scale, *s_idx,
