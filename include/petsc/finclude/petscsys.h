@@ -33,9 +33,11 @@
 #if (PETSC_SIZEOF_VOID_P == 8)
 #define PetscOffset integer8
 #define PetscFortranAddr integer8
+#define PetscCount integer8
 #else
 #define PetscOffset integer4
 #define PetscFortranAddr integer4
+#define PetscCount integer4
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)

@@ -51,6 +51,7 @@ native PetscViewerVTKFieldType
 native PetscScalar
 native PetscReal
 native PetscBool
+native PetscCount
 native PetscSizeT
 native MatStructure
 native PCFailedReason

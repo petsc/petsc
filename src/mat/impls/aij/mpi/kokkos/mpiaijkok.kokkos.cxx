@@ -1470,7 +1470,7 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat,PetscInt n,const PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscInt coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   PetscErrorCode            ierr;
   MPI_Comm                  comm;
@@ -1491,7 +1491,8 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscInt coo_
   /* Sort (i,j) by row along with a permuation array, so that the to-be-ignored */
   /* entries come first, then local rows, then remote rows.                     */
   /* ---------------------------------------------------------------------------*/
-  PetscInt  n1 = coo_n,*i1,*j1,*perm1; /* Copies of input COOs along with a permutation array */
+  PetscCount n1 = coo_n;
+  PetscInt *i1,*j1,*perm1; /* Copies of input COOs along with a permutation array */
   ierr = PetscMalloc3(n1,&i1,n1,&j1,n1,&perm1);CHKERRQ(ierr);
   ierr = PetscArraycpy(i1,coo_i,n1);CHKERRQ(ierr); /* Make a copy since we'll modify it */
   ierr = PetscArraycpy(j1,coo_j,n1);CHKERRQ(ierr);

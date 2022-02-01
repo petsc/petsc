@@ -48,6 +48,7 @@ Changes: Development
 - Add ``PetscExpand()``, ``PetscConcat()``, ``PetscCompl()``, and ``PetscExpandToNothing()``
 - Add ``PETSC_CONSTEXPR``, ``PETSC_CONSTEXPR_14``, ``PETSC_NOEXCEPT``, ``PETSC_NULLPTR``, and ``PETSC_NODISCARD``
 - Add ``PetscSizeT`` as a language-agnostic equivalent of ``size_t`` from ``<stddef.h>``
+- Add ``PetscCount`` as a signed datatype for counts, equivalent to ``ptrdiff_t`` from ``<stddef.h>``.
 
 .. rubric:: PetscViewer:
 
@@ -93,6 +94,7 @@ Changes: Development
 -  Add support of ``MatSetValuesCOO()`` and ``MatSetPreallocationCOO()`` for matrix type AIJKOKKOS. Additionally, for AIJKOKKOS, they support negative indices and remote entries
 -  Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
 - Change ``MatStructures`` enumeration to avoid spaces and match capitalization of other enumerations
+-  Change size argument of ``MatSetPreallocationCOO()`` to ``PetscCount``
 
 .. rubric:: PC:
 

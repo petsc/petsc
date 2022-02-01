@@ -6507,7 +6507,8 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   const char             *prefix;
   char                   pprefix[256];
   const PetscInt         *globidx,*P_oth_idx;
-  PetscInt               i,j,cp,m,n,M,N,ncoo,ncoo_d,ncoo_o,ncoo_oown,*coo_i,*coo_j;
+  PetscInt               i,j,cp,m,n,M,N,*coo_i,*coo_j;
+  PetscCount             ncoo,ncoo_d,ncoo_o,ncoo_oown;
   PetscInt               cmapt[MAX_NUMBER_INTERMEDIATE],rmapt[MAX_NUMBER_INTERMEDIATE]; /* col/row map type for each Mat in mp[]. */
                                                                                         /* type-0: consecutive, start from 0; type-1: consecutive with */
                                                                                         /* a base offset; type-2: sparse with a local to global map table */
