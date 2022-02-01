@@ -83,6 +83,7 @@ struct _PetscGridHash {
 
 typedef struct {
   PetscBool isotropic;                    /* Is the metric isotropic? */
+  PetscBool uniform;                      /* Is the metric uniform? */
   PetscBool restrictAnisotropyFirst;      /* Should anisotropy or normalization come first? */
   PetscBool noInsert;                     /* Should node insertion/deletion be turned off? */
   PetscBool noSwap;                       /* Should facet swapping be turned off? */

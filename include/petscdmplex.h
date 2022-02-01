@@ -439,6 +439,8 @@ PETSC_EXTERN PetscErrorCode DMPlexSnapToGeomModel(DM, PetscInt, PetscInt, const 
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetIsotropic(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexMetricIsIsotropic(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricSetUniform(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexMetricIsUniform(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetRestrictAnisotropyFirst(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexMetricRestrictAnisotropyFirst(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetNoInsertion(DM, PetscBool);

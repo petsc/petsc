@@ -136,6 +136,8 @@ Changes: Development
     - Add ``DMPlexMetricSetFromOptions()`` to assign values to ``DMPlexMetricCtx``
     - Add ``DMPlexMetricSetIsotropic()`` for declaring whether a metric is isotropic
     - Add ``DMPlexMetricIsIsotropic()`` for determining whether a metric is isotropic
+    - Add ``DMPlexMetricSetUniform()`` for declaring whether a metric is uniform
+    - Add ``DMPlexMetricIsUniform()`` for determining whether a metric is uniform
     - Add ``DMPlexMetricSetRestrictAnisotropyFirst()`` for declaring whether anisotropy should be restricted before normalization
     - Add ``DMPlexMetricRestrictAnisotropyFirst()`` for determining whether anisotropy should be restricted before normalization
     - Add ``DMPlexMetricSetMinimumMagnitude()`` for specifying the minimum tolerated metric magnitude
