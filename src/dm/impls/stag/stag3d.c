@@ -3374,7 +3374,6 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM dm,Mat A)
   ierr = DMStagGetGlobalSizes(dm,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
   ierr = DMStagGetBoundaryTypes(dm,&boundary_type[0],&boundary_type[1],&boundary_type[2]);CHKERRQ(ierr);
 
-
   if (stencil_type == DMSTAG_STENCIL_NONE) {
     /* Couple all DOF at each location to each other */
     DMStagStencil *row_vertex,*row_edge_down_left,*row_edge_back_down,*row_edge_back_left,*row_face_down,*row_face_left,*row_face_back,*row_element;
