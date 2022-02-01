@@ -46,9 +46,9 @@ typedef struct {
 
 } DM_Stag;
 
-PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ(DM,Mat*);
-PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_2D_AIJ(DM,Mat*);
-PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ(DM,Mat*);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM,Mat);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_2D_AIJ_Assemble(DM,Mat);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_3D_AIJ_Assemble(DM,Mat);
 PETSC_INTERN PetscErrorCode DMStagDuplicateWithoutSetup(DM,MPI_Comm,DM*);
 PETSC_INTERN PetscErrorCode DMStagInitialize(DMBoundaryType,DMBoundaryType,DMBoundaryType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,DMStagStencilType,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM);
 PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM);

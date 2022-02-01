@@ -303,15 +303,24 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm,Vec *vec)
 
 static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
 {
-  PetscErrorCode ierr;
-  MatType        mat_type;
-  PetscBool      is_shell,is_aij;
-  PetscInt       dim;
+  PetscErrorCode         ierr;
+  MatType                mat_type;
+  PetscBool              is_shell,is_aij;
+  PetscInt               dim,entries;
+  ISLocalToGlobalMapping ltogmap;
 
   PetscFunctionBegin;
   if (PetscUnlikely(!dm->setupcalled)) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMGetMatType(dm,&mat_type);CHKERRQ(ierr);
+  ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm),mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,entries,entries,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*mat,mat_type);CHKERRQ(ierr);
+  ierr = MatSetUp(*mat);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*mat,ltogmap,ltogmap);CHKERRQ(ierr);
+  ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
 
   /* Compare to similar and perhaps superior logic in DMCreateMatrix_DA, which creates
      the matrix first and then performs this logic by checking for preallocation functions */
@@ -323,30 +332,49 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
   }
   ierr = PetscStrcmp(mat_type,MATSHELL,&is_shell);CHKERRQ(ierr);
   if (is_aij) {
+    Mat             preallocator;
+    PetscInt        m,n;
+    const PetscBool fill_with_zeros = PETSC_FALSE;
+
+    ierr = MatCreate(PetscObjectComm((PetscObject)dm),&preallocator);CHKERRQ(ierr);
+    ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(*mat,&m,&n);CHKERRQ(ierr);
+    ierr = MatSetSizes(preallocator,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(preallocator,ltogmap,ltogmap);CHKERRQ(ierr);
+    ierr = MatSetUp(preallocator);CHKERRQ(ierr);
     switch (dim) {
       case 1:
-        ierr = DMCreateMatrix_Stag_1D_AIJ(dm,mat);CHKERRQ(ierr);
+        ierr = DMCreateMatrix_Stag_1D_AIJ_Assemble(dm,preallocator);CHKERRQ(ierr);
         break;
       case 2:
-        ierr = DMCreateMatrix_Stag_2D_AIJ(dm,mat);CHKERRQ(ierr);
+        ierr = DMCreateMatrix_Stag_2D_AIJ_Assemble(dm,preallocator);CHKERRQ(ierr);
         break;
       case 3:
-        ierr = DMCreateMatrix_Stag_3D_AIJ(dm,mat);CHKERRQ(ierr);
+        ierr = DMCreateMatrix_Stag_3D_AIJ_Assemble(dm,preallocator);CHKERRQ(ierr);
         break;
-      default: SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %D for Mattype %s",dim,mat_type);
+      default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
     }
-  } else if (is_shell) {
-    PetscInt               entries;
-    ISLocalToGlobalMapping ltogmap;
+    ierr = MatPreallocatorPreallocate(preallocator,fill_with_zeros,*mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
 
-    ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
-    ierr = MatCreate(PetscObjectComm((PetscObject)dm),mat);CHKERRQ(ierr);
-    ierr = MatSetSizes(*mat,entries,entries,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(*mat,MATSHELL);CHKERRQ(ierr);
-    ierr = MatSetUp(*mat);CHKERRQ(ierr);
-    ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
-    ierr = MatSetLocalToGlobalMapping(*mat,ltogmap,ltogmap);CHKERRQ(ierr);
-    ierr = MatSetDM(*mat,dm);CHKERRQ(ierr);
+    if (!dm->prealloc_only) {
+      switch (dim) {
+        case 1:
+          ierr = DMCreateMatrix_Stag_1D_AIJ_Assemble(dm,*mat);CHKERRQ(ierr);
+          break;
+        case 2:
+          ierr = DMCreateMatrix_Stag_2D_AIJ_Assemble(dm,*mat);CHKERRQ(ierr);
+          break;
+        case 3:
+          ierr = DMCreateMatrix_Stag_3D_AIJ_Assemble(dm,*mat);CHKERRQ(ierr);
+          break;
+        default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
+      }
+    }
+    /* Note: GPU-related logic, e.g. at the end of DMCreateMatrix_DA_1d_MPIAIJ, is not included here
+       but might be desirable */
+  } else if (is_shell) {
+    /* nothing more to do */
   } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for Mattype %s",mat_type);
   PetscFunctionReturn(0);
 }

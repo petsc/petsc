@@ -49,6 +49,8 @@ int main(int argc, char **argv)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -58,6 +60,6 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
-     args: -dm_preallocate_only -mat_view
+     args: -dm_preallocate_only
 
 TEST*/
