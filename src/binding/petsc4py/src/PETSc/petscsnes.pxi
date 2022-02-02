@@ -105,7 +105,6 @@ cdef extern from * nogil:
     int SNESGetDM(PetscSNES,PetscDM*)
     int SNESSetDM(PetscSNES,PetscDM)
 
-    # --- FAS ---
     int SNESFASSetInterpolation(PetscSNES,PetscInt,PetscMat)
     int SNESFASGetInterpolation(PetscSNES,PetscInt,PetscMat*)
     int SNESFASSetRestriction(PetscSNES,PetscInt,PetscMat)
@@ -287,7 +286,7 @@ cdef int SNES_PreCheck(
     void* ctx
     ) except PETSC_ERR_PYTHON with gil:
     cdef PetscSNES snes = NULL;
-    CHKERR(SNESLineSearchGetSNES(linesearch, &snes));
+    CHKERR( SNESLineSearchGetSNES(linesearch, &snes) );
     cdef object b = False
     cdef SNES Snes = ref_SNES(snes)
     cdef Vec  Xvec = ref_Vec(x)

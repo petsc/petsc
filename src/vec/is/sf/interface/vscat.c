@@ -1136,7 +1136,6 @@ $        VecDestroy(&vout);
 @*/
 PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 {
-
   PetscErrorCode ierr;
   PetscInt       N;
   IS             is;

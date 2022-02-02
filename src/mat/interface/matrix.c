@@ -1367,9 +1367,9 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
   PetscValidIntPointer(idxn,5);
   MatCheckPreallocated(mat,1);
 
-  if (mat->insertmode == NOT_SET_VALUES) {
-    mat->insertmode = addv;
-  } else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+  if (mat->insertmode == NOT_SET_VALUES) mat->insertmode = addv;
+  else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+
   if (PetscDefined(USE_DEBUG)) {
     PetscInt       i,j;
 
@@ -4610,8 +4610,8 @@ PetscErrorCode MatSolverTypeGet(MatSolverType type,MatType mtype,MatFactorType f
 
   PetscFunctionBegin;
   if (foundtype) *foundtype = PETSC_FALSE;
-  if (foundmtype)   *foundmtype   = PETSC_FALSE;
-  if (createfactor) *createfactor    = NULL;
+  if (foundmtype) *foundmtype = PETSC_FALSE;
+  if (createfactor) *createfactor = NULL;
 
   if (type) {
     while (next) {

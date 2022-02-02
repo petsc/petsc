@@ -496,13 +496,11 @@ void  PetscStrcmpNoError(const char a[],const char b[],PetscBool  *flg)
 @*/
 PetscErrorCode  PetscStrcmp(const char a[],const char b[],PetscBool  *flg)
 {
-  int c;
-
   PetscFunctionBegin;
   if (!a && !b)      *flg = PETSC_TRUE;
   else if (!a || !b) *flg = PETSC_FALSE;
   else {
-    c = strcmp(a,b);
+    int c = strcmp(a,b);
     if (c) *flg = PETSC_FALSE;
     else   *flg = PETSC_TRUE;
   }
