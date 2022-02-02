@@ -1433,7 +1433,9 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
                     break;
                   }
                 }
+               #if !defined(PETSC_HAVE_SYCL)
                 if (set!=1) printf("\t\t\t ERROR DID NOT SET ?????\n");
+               #endif
               }
             }
           });
@@ -1472,7 +1474,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
                     }
                 }, st_idx);
                 Kokkos::single(Kokkos::PerThread(team), [=]() { colkIdx() = st_idx; L_ki() = *(ba_d + bi_d[myk] + st_idx); });
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
                 if (colkIdx() == PETSC_MAX_INT) printf("\t\t\t\t\t\t\tERROR: failed to find L_ki(%d,%d)\n",(int)myk,ii); // uses a register
 #endif
                 // active row k, do  A_kj -= Lki * U_ij; j \in U(i,:) j != i
@@ -1511,7 +1513,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
                         for (pAkjv=start+low; pAkjv<start+high; pAkjv++) {
                           if (startj[pAkjv-start] == col) break;
                         }
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
                         if (pAkjv==start+high) printf("\t\t\t\t\t\t\t\t\t\t\tERROR: *** failed to find Akj(%d,%d)\n",(int)myk,(int)col); // uses a register
 #endif
                         *pAkjv = *pAkjv - L_ki() * Uij; // A_kj = A_kj - L_ki * U_ij
