@@ -40,11 +40,6 @@ class Configure(config.package.Package):
       output += '  HIP arch: '+ self.hipArch +'\n'
     return output
 
-  def getSearchDirectories(self):
-    yield self.hipDir
-    for i in config.package.Package.getSearchDirectories(self): yield i
-    return
-
   def checkSizeofVoidP(self):
     '''Checks if the HIPC compiler agrees with the C compiler on what size of void * should be'''
     self.log.write('Checking if sizeof(void*) in HIP is the same as with regular compiler\n')
@@ -72,20 +67,16 @@ class Configure(config.package.Package):
         raise RuntimeError('HIP compiler error: memory alignment doesn\'t match C compiler (try adding -malign-double to compiler options)')
     return
 
-  def setHipDir(self):
-    import os
+  def setFullPathHIPC(self):
     self.pushLanguage('HIP')
-    petscHip = self.getCompiler()
+    HIPC = self.getCompiler()
     self.popLanguage()
-    self.getExecutable(petscHip,getFullPath=1,resultName='systemHipc')
-    if hasattr(self,'systemHipc'): # /opt/rocm/bin/hipcc
-      hipcDir = os.path.dirname(self.systemHipc) # /opt/rocm/bin
-      self.hipDir = os.path.dirname(hipcDir) # /opt/rocm
-    else:
-      raise RuntimeError('HIP compiler not found!')
+    self.getExecutable(HIPC,getFullPath=1,resultName='fullPathHIPC')
+    if not hasattr(self,'fullPathHIPC'):
+      raise RuntimeError('Unable to locate the HIPC compiler')
 
   def configureLibrary(self):
-    self.setHipDir()
+    config.package.Package.configureLibrary(self)
     self.getExecutable('hipconfig',getFullPath=1,resultName='hip_config')
     if hasattr(self,'hip_config'):
       try:
@@ -149,7 +140,18 @@ class Configure(config.package.Package):
       else:
         raise RuntimeError('You must set --with-hip-arch=gfx900, gfx906, gfx908, gfx90a etc or make ROCM utility "rocminfo" available on your PATH')
 
-    config.package.Package.configureLibrary(self)
+      # Record rocBlas and rocSparse directories as they are needed by Kokkos-Kernels HIP TPL, so that we can hanle
+      # a weird (but valid) case --with-hipcc=/opt/rocm-4.5.2/hip/bin/hipcc --with-hip-dir=/opt/rocm-4.5.2 (which
+      # should be better written as --with-hipcc=/opt/rocm-4.5.2/bin/hipcc --with-hip-dir=/opt/rocm-4.5.2 or simply
+      # --with-hip-dir=/opt/rocm-4.5.2)
+      if self.directory:
+        self.rocBlasDir   = self.directory
+        self.rocSparseDir = self.directory
+      else: # directory is '', indicating we are using the compiler's default, so the last resort is to guess the dir from hipcc
+        self.setFullPathHIPC()
+        hipDir            = os.path.dirname(os.path.dirname(self.fullPathHIPC)) # Ex. peel /opt/rocm-4.5.2/bin/hipcc twice
+        self.rocBlasDir   = hipDir
+        self.rocSparseDir = hipDir
     #self.checkHIPDoubleAlign()
     self.configureTypes()
     self.libraries.popLanguage()
