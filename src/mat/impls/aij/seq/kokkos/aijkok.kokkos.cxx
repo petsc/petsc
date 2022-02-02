@@ -508,14 +508,14 @@ static PetscErrorCode MatTranspose_SeqAIJKokkos(Mat A,MatReuse reuse,Mat *B)
 {
   PetscErrorCode    ierr;
   Mat               At;
-  KokkosCsrMatrix   *internT,*csrmatT;
+  KokkosCsrMatrix   *internT;
   Mat_SeqAIJKokkos  *atkok,*bkok;
 
   PetscFunctionBegin;
   ierr = MatSeqAIJKokkosGenerateTranspose_Private(A,&internT);CHKERRQ(ierr); /* Generate a transpose internally */
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
-    CHKERRCXX(csrmatT = new KokkosCsrMatrix("csrmat",*internT)); /* Deep copy internT to csrmatT, as we want to isolate the internal transpose */
-    CHKERRCXX(atkok   = new Mat_SeqAIJKokkos(*csrmatT));
+    /* Deep copy internT, as we want to isolate the internal transpose */
+    CHKERRCXX(atkok = new Mat_SeqAIJKokkos(KokkosCsrMatrix("csrmat",*internT)));
     ierr = MatCreateSeqAIJKokkosWithCSRMatrix(PetscObjectComm((PetscObject)A),atkok,&At);CHKERRQ(ierr);
     if (reuse == MAT_INITIAL_MATRIX) *B = At;
     else {ierr = MatHeaderReplace(A,&At);CHKERRQ(ierr);} /* Replace A with At inplace */
@@ -1272,9 +1272,9 @@ PETSC_INTERN PetscErrorCode  MatSetSeqAIJKokkosWithCSRMatrix(Mat A,Mat_SeqAIJKok
 
   /* It is critical to set the nonzerostate, as we use it to check if sparsity pattern (hence data) has changed on host in MatAssemblyEnd */
   akok->nonzerostate = A->nonzerostate;
+  A->spptr = akok; /* Set A->spptr before MatAssembly so that A->spptr won't be allocated again there */
   ierr     = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
   ierr     = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
-  A->spptr = akok;
   PetscFunctionReturn(0);
 }
 

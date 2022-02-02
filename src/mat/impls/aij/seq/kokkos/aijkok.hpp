@@ -121,7 +121,7 @@ struct Mat_SeqAIJKokkos {
   }
 
   /* Construct with a KokkosCsrMatrix. For performance, only i, j are copied to host, but not the matrix values. */
-  Mat_SeqAIJKokkos(const KokkosCsrMatrix& csr) : csrmat(csr)
+  Mat_SeqAIJKokkos(const KokkosCsrMatrix& csr) : csrmat(csr) /* Shallow-copy csr's views to csrmat */
   {
     auto a_d = csr.values;
     /* Get a non-const version since I don't want to deal with DualView<const T*>, which is not well defined */
