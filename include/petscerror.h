@@ -4,6 +4,9 @@
 #if !defined(PETSCERROR_H)
 #define PETSCERROR_H
 
+#include <petscmacros.h>
+#include <petscsystypes.h>
+
 /*
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code. The string versions are
