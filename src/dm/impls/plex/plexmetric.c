@@ -1,6 +1,8 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscblaslapack.h>
 
+PetscLogEvent DMPLEX_MetricEnforceSPD, DMPLEX_MetricNormalize, DMPLEX_MetricAverage, DMPLEX_MetricIntersection;
+
 PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
 {
   MPI_Comm       comm;
@@ -1163,6 +1165,7 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
   PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_MetricEnforceSPD,0,0,0,0);CHKERRQ(ierr);
 
   /* Extract metadata from dm */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -1214,6 +1217,8 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
     ierr = VecRestoreArray(*determinant, &det);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(*metricOut, &met);CHKERRQ(ierr);
+
+  ierr = PetscLogEventEnd(DMPLEX_MetricEnforceSPD,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1269,6 +1274,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   Vec              determinant;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_MetricNormalize,0,0,0,0);CHKERRQ(ierr);
 
   /* Extract metadata from dm */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
@@ -1355,6 +1361,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   ierr = VecDestroy(&determinant);CHKERRQ(ierr);
   if (!uniform) { ierr = DMDestroy(&dmDet);CHKERRQ(ierr); }
 
+  ierr = PetscLogEventEnd(DMPLEX_MetricNormalize,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1387,6 +1394,7 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
   PetscReal      sum = 0.0, tol = 1.0e-10;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_MetricAverage,0,0,0,0);CHKERRQ(ierr);
   if (numMetrics < 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot average %d < 1 metrics", numMetrics);
   ierr = DMPlexMetricCreate(dm, 0, metricAvg);CHKERRQ(ierr);
   ierr = VecSet(*metricAvg, 0.0);CHKERRQ(ierr);
@@ -1410,6 +1418,8 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
   /* Compute metric average */
   for (i = 0; i < numMetrics; ++i) { ierr = VecAXPY(*metricAvg, weights[i], metrics[i]);CHKERRQ(ierr); }
   if (!haveWeights) { ierr = PetscFree(weights); }
+
+  ierr = PetscLogEventEnd(DMPLEX_MetricAverage,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1622,6 +1632,7 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
   PetscScalar   *met, *meti;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_MetricIntersection,0,0,0,0);CHKERRQ(ierr);
   if (numMetrics < 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot intersect %d < 1 metrics", numMetrics);
 
   /* Copy over the first metric */
@@ -1669,6 +1680,8 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
     }
     ierr = VecRestoreArray(*metricInt, &met);CHKERRQ(ierr);
   }
+
+  ierr = PetscLogEventEnd(DMPLEX_MetricIntersection,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

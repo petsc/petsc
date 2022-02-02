@@ -57,6 +57,10 @@ PETSC_EXTERN PetscLogEvent DMPLEX_CoordinatesLoad;
 PETSC_EXTERN PetscLogEvent DMPLEX_SectionLoad;
 PETSC_EXTERN PetscLogEvent DMPLEX_GlobalVectorLoad;
 PETSC_EXTERN PetscLogEvent DMPLEX_LocalVectorLoad;
+PETSC_EXTERN PetscLogEvent DMPLEX_MetricEnforceSPD;
+PETSC_EXTERN PetscLogEvent DMPLEX_MetricNormalize;
+PETSC_EXTERN PetscLogEvent DMPLEX_MetricAverage;
+PETSC_EXTERN PetscLogEvent DMPLEX_MetricIntersection;
 
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
