@@ -80,7 +80,8 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Temporal_Private(PetscConvEst ce
     ierr = PetscConvEstComputeError(ce, r, ce->idm, u, &ce->errors[r*Nf]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(ce->event, ce, 0, 0, 0);CHKERRQ(ierr);
     for (f = 0; f < Nf; ++f) {
-      ierr = PetscLogEventSetDof(ce->event, f, 1.0/dt[r]);CHKERRQ(ierr);
+      ce->dofs[r*Nf+f] = 1.0/dt[r];
+      ierr = PetscLogEventSetDof(ce->event, f, ce->dofs[r*Nf+f]);CHKERRQ(ierr);
       ierr = PetscLogEventSetError(ce->event, f, ce->errors[r*Nf+f]);CHKERRQ(ierr);
     }
     /* Monitor */

@@ -1346,26 +1346,53 @@ PetscErrorCode  DMCreateInjection(DM dac,DM daf,Mat *mat)
   Collective on dac
 
   Input Parameters:
-+ dac - the DM object
-- daf - the second, finer DM object
++ dmc - the target DM object
+- dmf - the source DM object
 
   Output Parameter:
-. mat - the interpolation
+. mat - the mass matrix
 
   Level: developer
 
-.seealso DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction(), DMCreateInterpolation(), DMCreateInjection()
+.seealso DMCreateMassMatrixLumped(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction(), DMCreateInterpolation(), DMCreateInjection()
 @*/
-PetscErrorCode DMCreateMassMatrix(DM dac, DM daf, Mat *mat)
+PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(daf, DM_CLASSID, 2);
+  PetscValidHeaderSpecific(dmc, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmf, DM_CLASSID, 2);
   PetscValidPointer(mat,3);
-  if (!dac->ops->createmassmatrix) SETERRQ1(PetscObjectComm((PetscObject)dac),PETSC_ERR_SUP,"DM type %s does not implement DMCreateMassMatrix",((PetscObject)dac)->type_name);
-  ierr = (*dac->ops->createmassmatrix)(dac, daf, mat);CHKERRQ(ierr);
+  if (!dmc->ops->createmassmatrix) SETERRQ1(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"DM type %s does not implement DMCreateMassMatrix",((PetscObject)dmc)->type_name);
+  ierr = (*dmc->ops->createmassmatrix)(dmc, dmf, mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMCreateMassMatrixLumped - Gets the lumped mass matrix for a given DM
+
+  Collective on dm
+
+  Input Parameter:
+. dm - the DM object
+
+  Output Parameter:
+. lm - the lumped mass matrix
+
+  Level: developer
+
+.seealso DMCreateMassMatrix(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction(), DMCreateInterpolation(), DMCreateInjection()
+@*/
+PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *lm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(lm,2);
+  if (!dm->ops->createmassmatrixlumped) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMCreateMassMatrixLumped",((PetscObject)dm)->type_name);
+  ierr = (*dm->ops->createmassmatrixlumped)(dm, lm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

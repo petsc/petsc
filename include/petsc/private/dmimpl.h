@@ -56,6 +56,7 @@ struct _DMOps {
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*createrestriction)(DM,DM,Mat*);
   PetscErrorCode (*createmassmatrix)(DM,DM,Mat*);
+  PetscErrorCode (*createmassmatrixlumped)(DM,Vec*);
   PetscErrorCode (*hascreateinjection)(DM,PetscBool*);
   PetscErrorCode (*createinjection)(DM,DM,Mat*);
 

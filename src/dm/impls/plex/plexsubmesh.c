@@ -1879,6 +1879,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(label, 0, &dimIS);CHKERRQ(ierr);
+  /* TODO Why are we including cross edges here? Shouldn't they be in the star of boundary vertices? */
   if (blabel) {ierr = DMLabelGetStratumIS(blabel, 2, &crossEdgeIS);CHKERRQ(ierr);}
   if (dimIS && crossEdgeIS) {
     IS vertIS = dimIS;
@@ -1984,7 +1985,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   }
   ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
-  /* If any faces touching the fault divide cells on either side, split them */
+  /* If any faces touching the fault divide cells on either side, split them
+       This only occurs without a surface boundary */
   ierr = DMLabelGetStratumIS(label,   shift+dim-1,  &facePosIS);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(label, -(shift+dim-1), &faceNegIS);CHKERRQ(ierr);
   ierr = ISExpand(facePosIS, faceNegIS, &dimIS);CHKERRQ(ierr);
@@ -3655,7 +3657,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
 }
 
 /*@C
-  DMPlexCreateCohesiveSubmesh - Extract from a mesh with cohesive cells the hypersurface defined by one face of the cells. Optionally, a Label an be given to restrict the cells.
+  DMPlexCreateCohesiveSubmesh - Extract from a mesh with cohesive cells the hypersurface defined by one face of the cells. Optionally, a Label can be given to restrict the cells.
 
   Input Parameters:
 + dm          - The original mesh
