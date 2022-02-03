@@ -408,13 +408,13 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
+PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  V->boundtocpu = pin;
-  if (pin) {
+  V->boundtocpu = bind;
+  if (bind) {
     ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
     V->offloadmask                 = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dot                    = VecDot_Seq;

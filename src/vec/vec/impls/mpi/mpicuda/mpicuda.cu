@@ -409,13 +409,13 @@ PetscErrorCode VecMin_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
+PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool bind)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  V->boundtocpu = pin;
-  if (pin) {
+  V->boundtocpu = bind;
+  if (bind) {
     ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
     V->offloadmask = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dotnorm2               = NULL;
