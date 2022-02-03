@@ -1246,7 +1246,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
 /* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
    is greater than value, or last if there is no such element.
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscSortedIntUpperBound(PetscInt *array,PetscInt first,PetscInt last,PetscInt value,PetscInt *upper)
+static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array,PetscInt first,PetscInt last,PetscInt value,PetscInt *upper)
 {
   PetscInt  it,step,count = last - first;
 

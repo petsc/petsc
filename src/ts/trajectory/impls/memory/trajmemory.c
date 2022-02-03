@@ -8,7 +8,7 @@
 
 typedef int PetscRevolveInt;
 
-PETSC_STATIC_INLINE PetscErrorCode PetscRevolveIntCast(PetscInt a,PetscRevolveInt *b)
+static inline PetscErrorCode PetscRevolveIntCast(PetscInt a,PetscRevolveInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)

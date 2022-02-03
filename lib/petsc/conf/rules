@@ -707,7 +707,7 @@ checkbadSource:
 	-@echo "{ before SETERRQ -------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "{ on the same line as a function definition ----------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|PETSC_STATIC_INLINE)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|static inline)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "CHKERRQ following SETERRQ ----------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";CHKERRQ" >> checkbadSource.out;true
 	-@echo "SETERRQ() without defined error code -----------------" >> checkbadSource.out

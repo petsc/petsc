@@ -98,7 +98,7 @@ static const char *datasets[ns]  =
 };
 
 /* beware this yields PETSC_FALSE for "" but group "" is interpreted as "/" */
-PETSC_STATIC_INLINE PetscErrorCode shouldExist(const char name[], PetscBool emptyExists, PetscBool *has)
+static inline PetscErrorCode shouldExist(const char name[], PetscBool emptyExists, PetscBool *has)
 {
   size_t         len=0;
   PetscErrorCode ierr;
@@ -114,7 +114,7 @@ PETSC_STATIC_INLINE PetscErrorCode shouldExist(const char name[], PetscBool empt
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode isPop(const char path[], PetscBool *has)
+static inline PetscErrorCode isPop(const char path[], PetscBool *has)
 {
   PetscErrorCode ierr;
 
@@ -123,7 +123,7 @@ PETSC_STATIC_INLINE PetscErrorCode isPop(const char path[], PetscBool *has)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode isDot(const char path[], PetscBool *has)
+static inline PetscErrorCode isDot(const char path[], PetscBool *has)
 {
   PetscErrorCode ierr;
 
@@ -132,7 +132,7 @@ PETSC_STATIC_INLINE PetscErrorCode isDot(const char path[], PetscBool *has)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode isRoot(const char path[], PetscBool *flg)
+static inline PetscErrorCode isRoot(const char path[], PetscBool *flg)
 {
   size_t         len;
   PetscErrorCode ierr;
@@ -146,7 +146,7 @@ PETSC_STATIC_INLINE PetscErrorCode isRoot(const char path[], PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode compare(PetscDataType dt, void *ptr0, void *ptr1, PetscBool *flg)
+static inline PetscErrorCode compare(PetscDataType dt, void *ptr0, void *ptr1, PetscBool *flg)
 {
   PetscErrorCode ierr;
 
@@ -197,7 +197,7 @@ PETSC_STATIC_INLINE PetscErrorCode compare(PetscDataType dt, void *ptr0, void *p
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode alterString(const char oldstr[], char str[])
+static inline PetscErrorCode alterString(const char oldstr[], char str[])
 {
   size_t          i,n;
   PetscErrorCode  ierr;
@@ -505,7 +505,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode formPath(PetscBool relativize, const char path[], const char dataset[], char buf[], size_t bufsize)
+static inline PetscErrorCode formPath(PetscBool relativize, const char path[], const char dataset[], char buf[], size_t bufsize)
 {
   PetscBool      isroot=PETSC_FALSE;
   PetscErrorCode ierr;

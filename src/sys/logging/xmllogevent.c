@@ -245,7 +245,7 @@ static PetscErrorCode PetscLogEventFindNestedTimer(NestedEventId nstEvent,int *e
 
 static PetscLogStage savedStage = 0;
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLogStageOverride(void)
+static inline PetscErrorCode PetscLogStageOverride(void)
 {
   PetscStageLog  stageLog = petsc_stageLog;
   PetscErrorCode ierr;
@@ -258,7 +258,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogStageOverride(void)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLogStageRestore(void)
+static inline PetscErrorCode PetscLogStageRestore(void)
 {
   PetscStageLog  stageLog = petsc_stageLog;
   PetscErrorCode ierr;

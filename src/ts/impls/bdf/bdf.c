@@ -31,7 +31,7 @@ typedef struct {
 /* Compute Lagrange polynomials on T[:n] evaluated at t.
  * If one has data (T[i], Y[i]), then the interpolation/extrapolation is f(t) = \sum_i L[i]*Y[i].
  */
-PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
+static inline void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
 {
   PetscInt k,j;
   for (k=0; k<n; k++)
@@ -40,7 +40,7 @@ PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscRea
         L[k] *= (t - T[j])/(T[k] - T[j]);
 }
 
-PETSC_STATIC_INLINE void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
+static inline void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
 {
   PetscInt  k,j,i;
   for (k=0; k<n; k++)

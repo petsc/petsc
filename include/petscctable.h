@@ -14,12 +14,12 @@ struct _n_PetscTable {
 typedef struct _n_PetscTable* PetscTable;
 typedef PetscInt* PetscTablePosition;
 
-PETSC_STATIC_INLINE unsigned long PetscHash(PetscTable ta,unsigned long x)
+static inline unsigned long PetscHash(PetscTable ta,unsigned long x)
 {
   return(x%(unsigned long)ta->tablesize);
 }
 
-PETSC_STATIC_INLINE unsigned long PetscHashStep(PetscTable ta,unsigned long x)
+static inline unsigned long PetscHashStep(PetscTable ta,unsigned long x)
 {
   return(1+(x%(unsigned long)(ta->tablesize-1)));
 }
@@ -35,7 +35,7 @@ PETSC_EXTERN PetscErrorCode PetscTableGetHeadPosition(PetscTable,PetscTablePosit
 PETSC_EXTERN PetscErrorCode PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
 
-PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
+static inline PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
 {
   PetscErrorCode ierr;
   PetscInt       i,hash = (PetscInt)PetscHash(ta,(unsigned long)key);
@@ -85,7 +85,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
   /* PetscFunctionReturn(0); */
 }
 
-PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
+static inline PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
 {
   PetscErrorCode ierr;
   PetscInt       i,hash = (PetscInt)PetscHash(ta,(unsigned long)key);
@@ -117,7 +117,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
 /*
     PetscTableFind - finds data in table from a given key, if the key is valid but not in the table returns 0
 */
-PETSC_STATIC_INLINE PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,PetscInt *data)
+static inline PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,PetscInt *data)
 {
   PetscInt       ii = 0;
   PetscInt       hash = (PetscInt)PetscHash(ta,(unsigned long)key);

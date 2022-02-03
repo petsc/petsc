@@ -359,7 +359,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 }
 
 /* Uses Anderson-Bjorck variant of regula falsi method */
-PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t,PetscReal tright,PetscScalar fleft,PetscScalar f,PetscScalar fright,PetscInt side,PetscReal dt)
+static inline PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t,PetscReal tright,PetscScalar fleft,PetscScalar f,PetscScalar fright,PetscInt side,PetscReal dt)
 {
   PetscReal new_dt, scal = 1.0;
   if (PetscRealPart(fleft)*PetscRealPart(f) < 0) {

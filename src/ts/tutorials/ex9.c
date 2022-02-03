@@ -37,16 +37,16 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 
 #include <petsc/private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
 
-PETSC_STATIC_INLINE PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
-PETSC_STATIC_INLINE PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
-PETSC_STATIC_INLINE PetscReal Sqr(PetscReal a) { return a*a; }
-PETSC_STATIC_INLINE PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
-PETSC_UNUSED PETSC_STATIC_INLINE PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
-PETSC_STATIC_INLINE PetscReal MinMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
-PETSC_STATIC_INLINE PetscReal MaxMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
-PETSC_STATIC_INLINE PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c) {return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
+static inline PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
+static inline PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
+static inline PetscReal Sqr(PetscReal a) { return a*a; }
+static inline PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
+PETSC_UNUSED static inline PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
+static inline PetscReal MinMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
+static inline PetscReal MaxMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
+static inline PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c) {return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
 
-PETSC_STATIC_INLINE PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
+static inline PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
 
 /* ----------------------- Lots of limiters, these could go in a separate library ------------------------- */
 typedef struct _LimitInfo {
@@ -478,7 +478,7 @@ typedef struct {
   PetscReal a;
 } TrafficCtx;
 
-PETSC_STATIC_INLINE PetscScalar TrafficFlux(PetscScalar a,PetscScalar u) { return a*u*(1-u); }
+static inline PetscScalar TrafficFlux(PetscScalar a,PetscScalar u) { return a*u*(1-u); }
 
 static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
@@ -612,7 +612,7 @@ typedef struct {
   PetscReal z;                  /* impedence: z = sqrt(rho*bulk) */
 } AcousticsCtx;
 
-PETSC_UNUSED PETSC_STATIC_INLINE void AcousticsFlux(AcousticsCtx *ctx,const PetscScalar *u,PetscScalar *f)
+PETSC_UNUSED static inline void AcousticsFlux(AcousticsCtx *ctx,const PetscScalar *u,PetscScalar *f)
 {
   f[0] = ctx->c*ctx->z*u[1];
   f[1] = ctx->c/ctx->z*u[0];
@@ -745,7 +745,7 @@ typedef struct {
   PetscReal acoustic_speed;
 } IsoGasCtx;
 
-PETSC_STATIC_INLINE void IsoGasFlux(PetscReal c,const PetscScalar *u,PetscScalar *f)
+static inline void IsoGasFlux(PetscReal c,const PetscScalar *u,PetscScalar *f)
 {
   f[0] = u[1];
   f[1] = PetscSqr(u[1])/u[0] + c*c*u[0];
@@ -952,7 +952,7 @@ typedef struct {
   PetscReal gravity;
 } ShallowCtx;
 
-PETSC_STATIC_INLINE void ShallowFlux(ShallowCtx *phys,const PetscScalar *u,PetscScalar *f)
+static inline void ShallowFlux(ShallowCtx *phys,const PetscScalar *u,PetscScalar *f)
 {
   f[0] = u[1];
   f[1] = PetscSqr(u[1])/u[0] + 0.5*phys->gravity*PetscSqr(u[0]);

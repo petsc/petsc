@@ -256,7 +256,7 @@ struct _n_PetscOmpCtrl {
    PETSc OpenMP controller users do not call this function directly. This function exists
    only because we want to separate shared memory allocation methods from other code.
  */
-PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
+static inline PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
 {
   PetscErrorCode        ierr;
   MPI_Aint              size;
@@ -315,7 +315,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlCreateBarrier(PetscOmpCtrl ctrl)
 }
 
 /* Destroy the pthread barrier in the PETSc OpenMP controller */
-PETSC_STATIC_INLINE PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
+static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 {
   PetscErrorCode ierr;
 

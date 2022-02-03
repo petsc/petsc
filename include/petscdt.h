@@ -126,7 +126,7 @@ PETSC_EXTERN PetscErrorCode PetscDTIndexToGradedOrder(PetscInt,PetscInt,PetscInt
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
+static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
 {
   PetscReal f = 1.0;
   PetscInt  i;
@@ -152,7 +152,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *facto
 
    Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial)
+static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial)
 {
   PetscInt facLookup[13] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600};
 
@@ -183,7 +183,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *fac
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *binomial)
+static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *binomial)
 {
   PetscFunctionBeginHot;
   *binomial = -1.0;
@@ -217,7 +217,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, Petsc
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt *binomial)
+static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt *binomial)
 {
   PetscInt bin;
 
@@ -262,7 +262,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, Pe
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PetscBool *isOdd)
 {
   PetscInt  odd = 0;
   PetscInt  i;
@@ -305,7 +305,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, Petsc
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd)
 {
   PetscInt  odd = 0;
   PetscInt  i, idx;
@@ -355,7 +355,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *
 
 .seealso: PetscDTSubsetIndex()
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt j, PetscInt *subset)
+static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt j, PetscInt *subset)
 {
   PetscInt       Nk, i, l;
   PetscErrorCode ierr;
@@ -394,7 +394,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, Pet
 
 .seealso: PetscDTEnumSubset()
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const PetscInt *subset, PetscInt *index)
+static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const PetscInt *subset, PetscInt *index)
 {
   PetscInt       i, j = 0, l, Nk;
   PetscErrorCode ierr;
@@ -436,7 +436,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, co
 
 .seealso: PetscDTEnumSubset(), PetscDTSubsetIndex()
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
 {
   PetscInt       i, l, m, *subcomp, Nk;
   PetscInt       odd;

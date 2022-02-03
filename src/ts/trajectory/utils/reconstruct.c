@@ -2,7 +2,7 @@
 #include <petscts.h>
 
 /* these two functions have been stolen from bdf.c */
-PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
+static inline void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
 {
   PetscInt k,j;
   for (k=0; k<n; k++) {
@@ -12,7 +12,7 @@ PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscRea
   }
 }
 
-PETSC_STATIC_INLINE void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
+static inline void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
 {
   PetscInt k,j,i;
   for (k=0; k<n; k++) {
@@ -28,7 +28,7 @@ PETSC_STATIC_INLINE void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscRea
   }
 }
 
-PETSC_STATIC_INLINE PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscReal T[], const PetscBool Taken[])
+static inline PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscReal T[], const PetscBool Taken[])
 {
   PetscInt _tid = 0;
   while (_tid < n && PetscAbsReal(t-T[_tid]) > PETSC_SMALL) _tid++;

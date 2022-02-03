@@ -27,12 +27,12 @@ static PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit,Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscScalar Phi(PetscScalar a,PetscScalar b)
+static inline PetscScalar Phi(PetscScalar a,PetscScalar b)
 {
   return a + b - PetscSqrtScalar(a*a + b*b);
 }
 
-PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
+static inline PetscScalar DPhi(PetscScalar a,PetscScalar b)
 {
   if ((PetscAbsScalar(a) >= 1.e-6) || (PetscAbsScalar(b) >= 1.e-6)) return 1.0 - a/ PetscSqrtScalar(a*a + b*b);
   else return .5;

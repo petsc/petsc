@@ -934,22 +934,22 @@ extern "C" {
 }
 #endif
 typedef ck_spinlock_t PetscSpinlock;
-PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
+static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_init(ck_spinlock);
   return 0;
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock)
+static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_lock(ck_spinlock);
   return 0;
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock)
+static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_unlock(ck_spinlock);
   return 0;
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
+static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 {
   return 0;
 }
@@ -957,22 +957,22 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlo
 
 #include <omp.h>
 typedef omp_lock_t PetscSpinlock;
-PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
+static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
 {
   omp_init_lock(omp_lock);
   return 0;
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
+static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
 {
   omp_set_lock(omp_lock);
   return 0;
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
+static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
 {
   omp_unset_lock(omp_lock);
   return 0;
 }
-PETSC_STATIC_INLINE PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
+static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
 {
   omp_destroy_lock(omp_lock);
   return 0;

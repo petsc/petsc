@@ -36,7 +36,7 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
 /* Function evalutions for PIPE    */
 /*-------------------------------- */
 /* consider using a one-sided higher order fd derivative at boundary. */
-PETSC_STATIC_INLINE PetscScalar dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
+static inline PetscScalar dqdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
 {
   if (i == 0) {
     return (x[i+1].q - x[i].q) / dx;
@@ -47,7 +47,7 @@ PETSC_STATIC_INLINE PetscScalar dqdx(PipeField *x,PetscInt i,PetscInt ilast,Pets
   }
 }
 
-PETSC_STATIC_INLINE PetscScalar dhdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
+static inline PetscScalar dhdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal dx)
 {
   if (i == 0) {
     return (x[i+1].h - x[i].h) / dx;

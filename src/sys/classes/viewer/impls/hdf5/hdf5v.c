@@ -1294,7 +1294,7 @@ PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObjec
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t h5, const char name[], PetscBool createGroup, PetscBool *exists_)
+static inline PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t h5, const char name[], PetscBool createGroup, PetscBool *exists_)
 {
   htri_t exists;
   hid_t group;

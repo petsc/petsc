@@ -138,7 +138,7 @@ typedef struct {
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
+static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
@@ -512,7 +512,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm,PetscInt,Pet
   #define _MM_SCALE_8    8
   #endif
 
-PETSC_STATIC_INLINE void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
+static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
 {
   __m512d  vec_x,vec_y,vec_vals;
   __m256i  vec_idx;

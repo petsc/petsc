@@ -87,7 +87,7 @@ struct is_petsc_object_impl<T,decltype(T::hdr)>
 template <typename T> using is_petsc_object = detail::is_petsc_object_impl<remove_pointer_t<T>>;
 
 template <typename T>
-PETSC_STATIC_INLINE constexpr underlying_type_t<T> integral_value(T value) noexcept
+static inline constexpr underlying_type_t<T> integral_value(T value) noexcept
 {
   static_assert(std::is_enum<T>::value,"");
   return static_cast<underlying_type_t<T>>(value);
@@ -111,7 +111,7 @@ struct can_call : decltype(detail::can_call_test::f<F,A...>(0))
 { };
 
 template <typename... A, typename F>
-PETSC_STATIC_INLINE constexpr can_call<F,A...> is_callable_with(F&&) noexcept
+static inline constexpr can_call<F,A...> is_callable_with(F&&) noexcept
 {
   return can_call<F,A...>{};
 }
@@ -121,31 +121,31 @@ template <typename... T> struct always_false : std::false_type { };
 } // namespace util
 
 template <typename T>
-PETSC_STATIC_INLINE constexpr util::remove_const_t<T>& PetscRemoveConstCast(T& object) noexcept
+static inline constexpr util::remove_const_t<T>& PetscRemoveConstCast(T& object) noexcept
 {
   return const_cast<util::remove_const_t<T>&>(object);
 }
 
 template <typename T>
-PETSC_STATIC_INLINE constexpr T& PetscRemoveConstCast(const T& object) noexcept
+static inline constexpr T& PetscRemoveConstCast(const T& object) noexcept
 {
   return const_cast<T&>(object);
 }
 
 template <typename T>
-PETSC_STATIC_INLINE constexpr T*& PetscRemoveConstCast(const T*& object) noexcept
+static inline constexpr T*& PetscRemoveConstCast(const T*& object) noexcept
 {
   return const_cast<T*&>(object);
 }
 
 template <typename T>
-PETSC_STATIC_INLINE constexpr util::add_const_t<T>& PetscAddConstCast(T& object) noexcept
+static inline constexpr util::add_const_t<T>& PetscAddConstCast(T& object) noexcept
 {
   return const_cast<util::add_const_t<T>&>(std::forward<T>(object));
 }
 
 template <typename T>
-PETSC_STATIC_INLINE constexpr util::add_const_t<T>*& PetscAddConstCast(T*& object) noexcept
+static inline constexpr util::add_const_t<T>*& PetscAddConstCast(T*& object) noexcept
 {
   static_assert(!std::is_const<T>::value,"");
   return const_cast<util::add_const_t<T>*&>(std::forward<T>(object));
@@ -167,28 +167,28 @@ PETSC_STATIC_INLINE constexpr util::add_const_t<T>*& PetscAddConstCast(T*& objec
 //
 //   not available from Fortran
 template <typename T>
-PETSC_STATIC_INLINE constexpr PetscObject& PetscObjectCast(T& object) noexcept
+static inline constexpr PetscObject& PetscObjectCast(T& object) noexcept
 {
   static_assert(util::is_petsc_object<T>::value,"Did you forget to include the private header?");
   return reinterpret_cast<PetscObject&>(object);
 }
 
 template <typename T>
-PETSC_STATIC_INLINE constexpr PetscObject& PetscObjectCast(const T& object) noexcept
+static inline constexpr PetscObject& PetscObjectCast(const T& object) noexcept
 {
   return PetscObjectCast(PetscRemoveConstCast(object));
 }
 
 #define PETSC_ALIAS_FUNCTION__(alias,original,dispatch)			\
   template <typename... Args>						\
-  PETSC_STATIC_INLINE auto dispatch(int, Args&&... args)		\
+  static inline auto dispatch(int, Args&&... args)		\
     noexcept(noexcept(original(std::forward<Args>(args)...)))		\
     -> decltype(original(std::forward<Args>(args)...))			\
   {									\
     return original(std::forward<Args>(args)...);			\
   }									\
   template <typename... Args>						\
-  PETSC_STATIC_INLINE int dispatch(char,Args&&...)			\
+  static inline int dispatch(char,Args&&...)			\
   {									\
     static_assert(							\
       Petsc::util::is_callable_with<Args...>(original) &&		\
@@ -246,7 +246,7 @@ PETSC_STATIC_INLINE constexpr PetscObject& PetscObjectCast(const T& object) noex
 //
 // for you.
 #define PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS_(alias,original,gobblefn,N) \
-  template <typename TupleT, std::size_t... idx> PETSC_STATIC_INLINE    \
+  template <typename TupleT, std::size_t... idx> static inline    \
   auto gobblefn(TupleT&& tuple, Petsc::util::index_sequence<idx...>)    \
     noexcept(noexcept(original(std::get<idx>(tuple)...)))               \
     -> decltype(original(std::get<idx>(tuple)...))                      \

@@ -191,7 +191,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSPHPDDMReset_Private(KSP ksp)
+static inline PetscErrorCode KSPHPDDMReset_Private(KSP ksp)
 {
   KSP_HPDDM *data = (KSP_HPDDM*)ksp->data;
 
@@ -232,7 +232,7 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n)
+static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n)
 {
   KSP_HPDDM              *data = (KSP_HPDDM*)ksp->data;
   KSPConvergedDefaultCtx *ctx = (KSPConvergedDefaultCtx*)ksp->cnvP;

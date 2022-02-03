@@ -8,7 +8,7 @@
 
 typedef enum {IS_INVALID, IS_GENERAL, IS_BLOCK, IS_STRIDE} ISTypeID;
 
-PETSC_STATIC_INLINE PetscErrorCode ISGetTypeID_Private(IS is,ISTypeID *id)
+static inline PetscErrorCode ISGetTypeID_Private(IS is,ISTypeID *id)
 {
   PetscErrorCode ierr;
   PetscBool      same;

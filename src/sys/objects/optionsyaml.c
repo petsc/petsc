@@ -9,12 +9,12 @@
 
 static MPI_Comm petsc_yaml_comm = MPI_COMM_NULL; /* only used for parallel error handling */
 
-PETSC_STATIC_INLINE MPI_Comm PetscYAMLGetComm(void)
+static inline MPI_Comm PetscYAMLGetComm(void)
 {
   return PetscLikely(petsc_yaml_comm != MPI_COMM_NULL) ? petsc_yaml_comm : (petsc_yaml_comm = PETSC_COMM_SELF);
 }
 
-PETSC_STATIC_INLINE MPI_Comm PetscYAMLSetComm(MPI_Comm comm)
+static inline MPI_Comm PetscYAMLSetComm(MPI_Comm comm)
 {
   MPI_Comm prev = PetscYAMLGetComm(); petsc_yaml_comm = comm; return prev;
 }

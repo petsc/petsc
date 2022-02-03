@@ -386,7 +386,7 @@ PETSC_EXTERN PetscErrorCode DMView_GLVis(DM,PetscViewer,PetscErrorCode(*)(DM,Pet
 PETSC_EXTERN PetscErrorCode DMSequenceLoad_HDF5_Internal(DM, const char *, PetscInt, PetscScalar *, PetscViewer);
 #endif
 
-PETSC_STATIC_INLINE PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
+static inline PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBeginHot;
 #if defined(PETSC_USE_DEBUG)
@@ -409,7 +409,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt poin
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
+static inline PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
@@ -432,7 +432,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
+static inline PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
@@ -459,7 +459,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt poi
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
+static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)

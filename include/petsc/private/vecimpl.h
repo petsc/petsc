@@ -264,7 +264,7 @@ PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash*,PetscLayout,P
   idx    - the global of the inserted value
   values - the value inserted
 */
-PETSC_STATIC_INLINE PetscErrorCode VecStashValue_Private(VecStash *stash,PetscInt row,PetscScalar value)
+static inline PetscErrorCode VecStashValue_Private(VecStash *stash,PetscInt row,PetscScalar value)
 {
   PetscErrorCode ierr;
   /* Check and see if we have sufficient memory */
@@ -285,7 +285,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValue_Private(VecStash *stash,PetscIn
   idx    - the global block index
   values - the values inserted
 */
-PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values)
+static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values)
 {
   PetscInt       jj,stash_bs=(stash)->bs;
   PetscScalar    *array;

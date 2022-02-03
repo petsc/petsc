@@ -31,13 +31,13 @@
 
 /* This assumes ASCII encoding and ignores locale settings */
 /* Using tolower() is about 2X slower in microbenchmarks   */
-PETSC_STATIC_INLINE int PetscToLower(int c)
+static inline int PetscToLower(int c)
 {
   return ((c >= 'A') & (c <= 'Z')) ? c + 'a' - 'A' : c;
 }
 
 /* Bob Jenkins's one at a time hash function (case-insensitive) */
-PETSC_STATIC_INLINE unsigned int PetscOptHash(const char key[])
+static inline unsigned int PetscOptHash(const char key[])
 {
   unsigned int hash = 0;
   while (*key) {
@@ -51,7 +51,7 @@ PETSC_STATIC_INLINE unsigned int PetscOptHash(const char key[])
   return hash;
 }
 
-PETSC_STATIC_INLINE int PetscOptEqual(const char a[],const char b[])
+static inline int PetscOptEqual(const char a[],const char b[])
 {
   return !PetscOptNameCmp(a,b);
 }
@@ -713,7 +713,7 @@ PetscErrorCode PetscOptionsInsertArgs(PetscOptions options,int argc,char *args[]
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscOptionsStringToBoolIfSet_Private(enum PetscPrecedentOption opt,const char *val[],PetscBool set[],PetscBool *flg)
+static inline PetscErrorCode PetscOptionsStringToBoolIfSet_Private(enum PetscPrecedentOption opt,const char *val[],PetscBool set[],PetscBool *flg)
 {
   PetscErrorCode ierr;
 
@@ -782,7 +782,7 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options,const char name[],PetscBool *flg)
+static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options,const char name[],PetscBool *flg)
 {
   int i;
   PetscErrorCode ierr;

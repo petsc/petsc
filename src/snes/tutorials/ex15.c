@@ -384,16 +384,16 @@ static PetscErrorCode FormRHS(AppCtx *user,DM da,Vec B)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal kappa(const AppCtx *ctx,PetscReal x,PetscReal y)
+static inline PetscReal kappa(const AppCtx *ctx,PetscReal x,PetscReal y)
 {
   return (((PetscInt)(x*ctx->blocks[0])) + ((PetscInt)(y*ctx->blocks[1]))) % 2 ? ctx->kappa : 1.0;
 }
 /* p-Laplacian diffusivity */
-PETSC_STATIC_INLINE PetscScalar eta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
+static inline PetscScalar eta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
 {
   return kappa(ctx,x,y) * PetscPowScalar(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-2.));
 }
-PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
+static inline PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
 {
   return (ctx->p == 2)
          ? 0

@@ -10,7 +10,7 @@
    n - the number of block indices in cc[]
    cc - the block indices (must be large enough to contain the indices)
 */
-PETSC_STATIC_INLINE PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt bs,PetscInt *n,PetscInt *cc)
+static inline PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt bs,PetscInt *n,PetscInt *cc)
 {
   PetscInt       cnt = -1,nidx,j;
   const PetscInt *idx;
@@ -36,7 +36,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt
     ncollapsed - the number of block indices
     collapsed - the block indices (must be large enough to contain the indices)
 */
-PETSC_STATIC_INLINE PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,PetscInt bs,PetscInt *w0,PetscInt *w1,PetscInt *w2,PetscInt *ncollapsed,PetscInt **collapsed)
+static inline PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,PetscInt bs,PetscInt *w0,PetscInt *w1,PetscInt *w2,PetscInt *ncollapsed,PetscInt **collapsed)
 {
   PetscInt       i,nprev,*cprev = w0,ncur = 0,*ccur = w1,*merged = w2,*cprevtmp;
   PetscErrorCode ierr;

@@ -1104,7 +1104,7 @@ PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt coordSize, PetscScalar coo
 }
 
 PETSC_UNUSED
-PETSC_STATIC_INLINE void Volume_Triangle_Internal(PetscReal *vol, PetscReal coords[])
+static inline void Volume_Triangle_Internal(PetscReal *vol, PetscReal coords[])
 {
   /* Signed volume is 1/2 the determinant
 
@@ -1128,7 +1128,7 @@ PETSC_STATIC_INLINE void Volume_Triangle_Internal(PetscReal *vol, PetscReal coor
 }
 
 PETSC_UNUSED
-PETSC_STATIC_INLINE void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal coords[])
+static inline void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal coords[])
 {
   /* Signed volume is 1/6th of the determinant
 
@@ -1156,7 +1156,7 @@ PETSC_STATIC_INLINE void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal c
   (void)PetscLogFlops(10.0);
 }
 
-PETSC_STATIC_INLINE void Volume_Tetrahedron_Origin_Internal(PetscReal *vol, PetscReal coords[])
+static inline void Volume_Tetrahedron_Origin_Internal(PetscReal *vol, PetscReal coords[])
 {
   const PetscReal onesixth = ((PetscReal)1./(PetscReal)6.);
   DMPlex_Det3D_Internal(vol, coords);

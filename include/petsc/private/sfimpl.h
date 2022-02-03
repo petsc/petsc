@@ -193,7 +193,7 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType,void*);
  #endif
 #endif
 
-PETSC_STATIC_INLINE PetscErrorCode PetscGetMemType(const void *data,PetscMemType *type)
+static inline PetscErrorCode PetscGetMemType(const void *data,PetscMemType *type)
 {
   PetscFunctionBegin;
   PetscValidPointer(type,2);

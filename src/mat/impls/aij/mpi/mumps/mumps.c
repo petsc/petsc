@@ -64,7 +64,7 @@ typedef MUMPS_INT PetscMUMPSInt;
 #define PETSC_MUMPS_INT_MIN       -2147483648
 
 /* Cast PetscInt to PetscMUMPSInt. Usually there is no overflow since <a> is row/col indices or some small integers*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMUMPSIntCast(PetscInt a,PetscMUMPSInt *b)
+static inline PetscErrorCode PetscMUMPSIntCast(PetscInt a,PetscMUMPSInt *b)
 {
   PetscFunctionBegin;
   if (PetscDefined(USE_64BIT_INDICES)) {
@@ -75,7 +75,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMUMPSIntCast(PetscInt a,PetscMUMPSInt *b
 }
 
 /* Put these utility routines here since they are only used in this file */
-PETSC_STATIC_INLINE PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscMUMPSInt currentvalue,PetscMUMPSInt *value,PetscBool *set,PetscMUMPSInt lb,PetscMUMPSInt ub)
+static inline PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscMUMPSInt currentvalue,PetscMUMPSInt *value,PetscBool *set,PetscMUMPSInt lb,PetscMUMPSInt ub)
 {
   PetscErrorCode ierr;
   PetscInt       myval;

@@ -480,7 +480,7 @@ static PetscErrorCode PCHPDDMShellSetUp(PC pc)
 }
 
 template<class Type, typename std::enable_if<std::is_same<Type, Vec>::value>::type* = nullptr>
-PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
+static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
 {
   PC_HPDDM_Level *ctx;
   PetscScalar    *out;
@@ -501,7 +501,7 @@ PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
 }
 
 template<class Type, typename std::enable_if<std::is_same<Type, Mat>::value>::type* = nullptr>
-PETSC_STATIC_INLINE PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
+static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
 {
   PC_HPDDM_Level *ctx;
   Vec            vX, vY, vC;

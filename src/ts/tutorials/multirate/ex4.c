@@ -40,8 +40,8 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 #include "finitevolume1d.h"
 #include <petsc/private/kernels/blockinvert.h>
 
-PETSC_STATIC_INLINE PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
-PETSC_STATIC_INLINE PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
+static inline PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
+static inline PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
 /* --------------------------------- Advection ----------------------------------- */
 typedef struct {
   PetscReal a;                  /* advective velocity */
@@ -122,7 +122,7 @@ typedef struct {
   PetscReal gravity;
 } ShallowCtx;
 
-PETSC_STATIC_INLINE void ShallowFlux(ShallowCtx *phys,const PetscScalar *u,PetscScalar *f)
+static inline void ShallowFlux(ShallowCtx *phys,const PetscScalar *u,PetscScalar *f)
 {
   f[0] = u[1];
   f[1] = PetscSqr(u[1])/u[0] + 0.5*phys->gravity*PetscSqr(u[0]);

@@ -222,17 +222,17 @@ PETSC_EXTERN PetscErrorCode DMGetLocalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetLocalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetGlobalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetGlobalSection(DM, PetscSection);
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetSection() (since v3.9)") PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetSection() (since v3.9)") PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetGlobalSection() (since v3.9)") PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetGlobalSection() (since v3.9)") PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetSection() (since v3.9)") PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetSection() (since v3.9)") PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetGlobalSection() (since v3.9)") PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetGlobalSection() (since v3.9)") PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
 
 PETSC_EXTERN PetscErrorCode DMGetSectionSF(DM, PetscSF*);
 PETSC_EXTERN PetscErrorCode DMSetSectionSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateSectionSF(DM, PetscSection, PetscSection);
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetSectionSF() (since v3.12)") PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *s) {return DMGetSectionSF(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetSectionSF() (since v3.12)") PetscErrorCode DMSetDefaultSF(DM dm, PetscSF s) {return DMSetSectionSF(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g) {return DMCreateSectionSF(dm,l,g);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetSectionSF() (since v3.12)") PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *s) {return DMGetSectionSF(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetSectionSF() (since v3.12)") PetscErrorCode DMSetDefaultSF(DM dm, PetscSF s) {return DMSetSectionSF(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g) {return DMCreateSectionSF(dm,l,g);}
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMGetNaturalSF(DM, PetscSF *);
@@ -384,7 +384,7 @@ PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
 {
   switch (ct) {
     case DM_POLYTOPE_POINT:
@@ -407,7 +407,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
   }
 }
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
 {
   switch (ct) {
     case DM_POLYTOPE_POINT:              return 0;
@@ -426,7 +426,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
   }
 }
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
 {
   switch (ct) {
     case DM_POLYTOPE_POINT:              return 1;
@@ -445,7 +445,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
   }
 }
 
-PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool simplex)
+static inline DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool simplex)
 {
   return dim == 0 ? DM_POLYTOPE_POINT :
         (dim == 1 ? DM_POLYTOPE_SEGMENT :
@@ -453,7 +453,7 @@ PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, Petsc
         (dim == 3 ? (simplex ? DM_POLYTOPE_TETRAHEDRON : DM_POLYTOPE_HEXAHEDRON) : DM_POLYTOPE_UNKNOWN)));
 }
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
 {
   switch (ct) {
     case DM_POLYTOPE_POINT:              return 1;
@@ -473,7 +473,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
 }
 
 /* An arrangement is a face order combined with an orientation for each face */
-PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o)
+static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntArr[1*2] = {0, 0};
   /* a: swap */
@@ -664,7 +664,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
 }
 
 /* A vertex arrangment is a vertex order */
-PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
+static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntVerts[1]    = {0};
   static const PetscInt segVerts[2*2]  = {
@@ -843,7 +843,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
 }
 
 /* This is orientation o1 acting on orientation o2 */
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct, PetscInt o1, PetscInt o2)
+static inline PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct, PetscInt o1, PetscInt o2)
 {
   static const PetscInt segMult[2*2] = {
      0, -1,
@@ -1019,7 +1019,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
 }
 
 /* This is orientation o1 acting on orientation o2^{-1} */
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientationInv(DMPolytopeType ct, PetscInt o1, PetscInt o2)
+static inline PetscInt DMPolytopeTypeComposeOrientationInv(DMPolytopeType ct, PetscInt o1, PetscInt o2)
 {
   static const PetscInt triInv[6]    = {-3, -2, -1, 0, 2, 1};
   static const PetscInt quadInv[8]   = {-4, -3, -2, -1, 0, 3, 2, 1};

@@ -57,6 +57,7 @@ Changes: Development
 - Deprecate ``SETERRQ1()`` - ``SETERRQ9()`` in favor of ``SETERRQ()`` which is now variadic
 - Deprecate ``PetscInfo1()`` - ``PetscInfo9()`` in favor of ``PetscInfo()`` which is now variadic
 - Deprecate ``PETSC_INLINE``, ``inline`` is a standard keyword since C99 and C++11
+- Deprecate ``PETSC_STATIC_INLINE``, as both ``static`` and ``inline`` are standard keywords since C99 and C++11
 - Remove ``PETSC_C_RESTRICT``, ``restrict`` is a standard keyword since C99
 - Change ``SETERRMPI()`` to be variadic
 - Change ``SETERRABORT()`` to be variadic

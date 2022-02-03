@@ -274,7 +274,7 @@ struct _n_PetscLayout{
       Not available from Fortran
 
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,PetscMPIInt *owner)
+static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,PetscMPIInt *owner)
 {
   PetscMPIInt lo = 0,hi,t;
 
@@ -313,7 +313,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
       Not available from Fortran
 
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,PetscInt idx,PetscMPIInt *owner,PetscInt *lidx)
+static inline PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,PetscInt idx,PetscMPIInt *owner,PetscInt *lidx)
 {
   PetscMPIInt lo = 0,hi,t;
 

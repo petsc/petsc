@@ -375,7 +375,7 @@ PetscErrorCode DMPlexLabelClearCells(DM dm, DMLabel label)
 
 /* take (oldEnd, added) pairs, ordered by height and convert them to (oldstart, newstart) pairs, ordered by ascending
  * index (skipping first, which is (0,0)) */
-PETSC_STATIC_INLINE PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth, PetscInt depthShift[])
+static inline PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth, PetscInt depthShift[])
 {
   PetscInt d, off = 0;
 
@@ -413,7 +413,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth
 }
 
 /* depthShift is a list of (old, new) pairs */
-PETSC_STATIC_INLINE PetscInt DMPlexShiftPoint_Internal(PetscInt p, PetscInt depth, PetscInt depthShift[])
+static inline PetscInt DMPlexShiftPoint_Internal(PetscInt p, PetscInt depth, PetscInt depthShift[])
 {
   PetscInt d;
   PetscInt newOff = 0;
@@ -426,7 +426,7 @@ PETSC_STATIC_INLINE PetscInt DMPlexShiftPoint_Internal(PetscInt p, PetscInt dept
 }
 
 /* depthShift is a list of (old, new) pairs */
-PETSC_STATIC_INLINE PetscInt DMPlexShiftPointInverse_Internal(PetscInt p, PetscInt depth, PetscInt depthShift[])
+static inline PetscInt DMPlexShiftPointInverse_Internal(PetscInt p, PetscInt depth, PetscInt depthShift[])
 {
   PetscInt d;
   PetscInt newOff = 0;
@@ -3033,7 +3033,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt firstSubPoint, PetscInt numSubPoints, const PetscInt subPoints[])
+static inline PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt firstSubPoint, PetscInt numSubPoints, const PetscInt subPoints[])
 {
   PetscInt       subPoint;
   PetscErrorCode ierr;

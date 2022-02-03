@@ -1431,7 +1431,7 @@ static PetscErrorCode PetscDTGaussLobattoJacobiEndweights_Internal(PetscInt n, P
 
 /* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
    Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
-PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
+static inline PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
 {
   PetscReal pn1, pn2;
   PetscReal cnm1, cnm1x, cnm2;
@@ -1455,7 +1455,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b
 }
 
 /* Evaluates the first derivative of P_{n}^{a,b} at a point x. */
-PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscInt k, PetscReal *P)
+static inline PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscInt k, PetscReal *P)
 {
   PetscReal      nP;
   PetscInt       i;

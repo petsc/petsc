@@ -17,7 +17,7 @@ struct _n_PetscFPT {
 };
 PETSC_INTERN PetscFPT PetscFPTData;
 
-PETSC_STATIC_INLINE PetscErrorCode  PetscFPTView(PetscViewer viewer)
+static inline PetscErrorCode  PetscFPTView(PetscViewer viewer)
 {
   PetscInt       i;
 
@@ -30,7 +30,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTView(PetscViewer viewer)
   return(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode  PetscFPTDestroy(void)
+static inline PetscErrorCode  PetscFPTDestroy(void)
 {
   PetscErrorCode ierr;
   PetscFPT       _PetscFPTData = PetscFPTData;
@@ -50,7 +50,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTDestroy(void)
 .     n - expected number of keys
 
 */
-PETSC_STATIC_INLINE PetscErrorCode  PetscFPTCreate(PetscInt n)
+static inline PetscErrorCode  PetscFPTCreate(PetscInt n)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -71,13 +71,13 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTCreate(PetscInt n)
   return(0);
 }
 
-PETSC_STATIC_INLINE unsigned long PetscFPTHashPointer(void *ptr)
+static inline unsigned long PetscFPTHashPointer(void *ptr)
 {
 #define PETSC_FPT_HASH_FACT 79943
   return((PETSC_FPT_HASH_FACT*((size_t)ptr))%PetscFPTData->tablesize);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscFPTAdd(void* key,const char* data)
+static inline PetscErrorCode PetscFPTAdd(void* key,const char* data)
 {
   PetscInt       i,hash;
 
@@ -106,7 +106,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFPTAdd(void* key,const char* data)
     If data==0, then no entry exists
 
 */
-PETSC_STATIC_INLINE PetscErrorCode  PetscFPTFind(void* key,char const **data)
+static inline PetscErrorCode  PetscFPTFind(void* key,char const **data)
 {
   PetscInt hash,ii = 0;
 

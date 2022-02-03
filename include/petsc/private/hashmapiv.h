@@ -25,7 +25,7 @@ PETSC_HASH_MAP(HMapIV, PetscInt, PetscScalar, PetscHashInt, PetscHashEqual, -1)
 
 .seealso: PetscHMapTGet(), PetscHMapTIterSet(), PetscHMapIVSet()
 M*/
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode PetscHMapIVAddValue(PetscHMapIV ht,PetscInt key,PetscScalar val)
 {
   int      ret;

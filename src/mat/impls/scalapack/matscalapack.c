@@ -1212,7 +1212,7 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatScaLAPACKCheckLayout(PetscLayout map)
+static inline PetscErrorCode MatScaLAPACKCheckLayout(PetscLayout map)
 {
   PetscErrorCode ierr;
   const PetscInt *ranges;

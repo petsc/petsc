@@ -24,7 +24,7 @@ struct _PetscHeap {
 
 #define B 1                     /* log2(ARITY) */
 #define ARITY (1 << B)          /* tree branching factor */
-PETSC_STATIC_INLINE PetscInt Parent(PetscInt loc)
+static inline PetscInt Parent(PetscInt loc)
 {
   PetscInt p = loc >> B;
   if (p < ARITY) return (PetscInt)(loc != 1);             /* Parent(1) is 0, otherwise fix entries ending up in the hole */
@@ -33,7 +33,7 @@ PETSC_STATIC_INLINE PetscInt Parent(PetscInt loc)
 #define Value(h,loc) ((h)->base[loc].value)
 #define Id(h,loc)  ((h)->base[loc].id)
 
-PETSC_STATIC_INLINE void Swap(PetscHeap h,PetscInt loc,PetscInt loc2)
+static inline void Swap(PetscHeap h,PetscInt loc,PetscInt loc2)
 {
   PetscInt id,val;
   id                  = Id(h,loc);
@@ -43,7 +43,7 @@ PETSC_STATIC_INLINE void Swap(PetscHeap h,PetscInt loc,PetscInt loc2)
   h->base[loc2].id    = id;
   h->base[loc2].value = val;
 }
-PETSC_STATIC_INLINE PetscInt MinChild(PetscHeap h,PetscInt loc)
+static inline PetscInt MinChild(PetscHeap h,PetscInt loc)
 {
   PetscInt min,chld,left,right;
   left  = loc << B;

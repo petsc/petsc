@@ -101,7 +101,7 @@ static PetscErrorCode PointQueueBack(PointQueue queue, PetscInt *p)
 }
 #endif
 
-PETSC_STATIC_INLINE PetscBool PointQueueEmpty(PointQueue queue)
+static inline PetscBool PointQueueEmpty(PointQueue queue)
 {
   if (!queue->num) return PETSC_TRUE;
   return PETSC_FALSE;

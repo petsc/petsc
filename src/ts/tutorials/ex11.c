@@ -110,7 +110,7 @@ struct _n_User {
   PetscBool vtkmon;
 };
 
-PETSC_STATIC_INLINE PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
+static inline PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
 {
   PetscInt  i;
   PetscReal prod=0.0;
@@ -118,13 +118,13 @@ PETSC_STATIC_INLINE PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
   for (i=0; i<DIM; i++) prod += x[i]*y[i];
   return prod;
 }
-PETSC_STATIC_INLINE PetscReal NormDIM(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(DotDIMReal(x,x))); }
+static inline PetscReal NormDIM(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(DotDIMReal(x,x))); }
 
-PETSC_STATIC_INLINE PetscReal Dot2Real(const PetscReal *x,const PetscReal *y) { return x[0]*y[0] + x[1]*y[1];}
-PETSC_STATIC_INLINE PetscReal Norm2Real(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(Dot2Real(x,x)));}
-PETSC_STATIC_INLINE void Normalize2Real(PetscReal *x) { PetscReal a = 1./Norm2Real(x); x[0] *= a; x[1] *= a; }
-PETSC_STATIC_INLINE void Waxpy2Real(PetscReal a,const PetscReal *x,const PetscReal *y,PetscReal *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
-PETSC_STATIC_INLINE void Scale2Real(PetscReal a,const PetscReal *x,PetscReal *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
+static inline PetscReal Dot2Real(const PetscReal *x,const PetscReal *y) { return x[0]*y[0] + x[1]*y[1];}
+static inline PetscReal Norm2Real(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(Dot2Real(x,x)));}
+static inline void Normalize2Real(PetscReal *x) { PetscReal a = 1./Norm2Real(x); x[0] *= a; x[1] *= a; }
+static inline void Waxpy2Real(PetscReal a,const PetscReal *x,const PetscReal *y,PetscReal *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
+static inline void Scale2Real(PetscReal a,const PetscReal *x,PetscReal *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
 /******************* Advect ********************/
 typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP,ADVECT_SOL_BUMP_CAVITY} AdvectSolType;

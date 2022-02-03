@@ -1278,7 +1278,7 @@ static const DMPolytopeType DMPolytopeMap[] = {
   DM_POLYTOPE_UNKNOWN
 };
 
-PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeFromGmsh(PetscInt cellType)
+static inline DMPolytopeType DMPolytopeTypeFromGmsh(PetscInt cellType)
 {
   return DMPolytopeMap[GmshCellMap[cellType].polytope];
 }

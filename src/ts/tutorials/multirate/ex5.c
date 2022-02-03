@@ -31,7 +31,7 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 
 #include "finitevolume1d.h"
 
-PETSC_STATIC_INLINE PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
+static inline PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
 
 /* --------------------------------- Advection ----------------------------------- */
 

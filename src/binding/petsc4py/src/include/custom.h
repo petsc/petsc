@@ -158,7 +158,7 @@ PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 
 /* ---------------------------------------------------------------- */
 
-PETSC_STATIC_INLINE PetscErrorCode
+static inline PetscErrorCode
 VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 {
   PetscInt          i,n,bs;
@@ -188,7 +188,7 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 
 /* ---------------------------------------------------------------- */
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
 {
   PetscFunctionBegin;
@@ -198,7 +198,7 @@ PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,PetscBool *sbaij,PetscBool *is)
 {
   void (*f)(void) = 0;

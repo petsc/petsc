@@ -19,7 +19,7 @@ typedef struct {
   PetscInt degree;         /* vertex degree */
 } GAMGNode;
 
-PETSC_STATIC_INLINE int petsc_geo_mg_compare(const void *a, const void *b)
+static inline int petsc_geo_mg_compare(const void *a, const void *b)
 {
   return (((GAMGNode*)a)->degree - ((GAMGNode*)b)->degree);
 }

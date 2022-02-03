@@ -1774,14 +1774,14 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal DiffNormReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
+static inline PetscReal DiffNormReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
 {
   PetscReal prod = 0.0;
   PetscInt  i;
   for (i = 0; i < dim; ++i) prod += PetscSqr(x[i] - y[i]);
   return PetscSqrtReal(prod);
 }
-PETSC_STATIC_INLINE PetscReal DotReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
+static inline PetscReal DotReal(PetscInt dim, const PetscReal x[], const PetscReal y[])
 {
   PetscReal prod = 0.0;
   PetscInt  i;

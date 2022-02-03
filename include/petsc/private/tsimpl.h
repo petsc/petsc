@@ -493,7 +493,7 @@ struct _n_TSMonitorEnvelopeCtx {
 /*
     Checks if the user provide a TSSetIFunction() but an explicit method is called; generate an error in that case
 */
-PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
+static inline PetscErrorCode TSCheckImplicitTerm(TS ts)
 {
   TSIFunction      ifunction;
   DM               dm;

@@ -1118,7 +1118,7 @@ PetscErrorCode VecConjugate_SeqHIP(Vec xin)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v,Vec w,PetscBool read)
+static inline PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v,Vec w,PetscBool read)
 {
   PetscErrorCode ierr;
   hipError_t     err;
@@ -1175,7 +1175,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v,Vec w,PetscBo
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreLocalVectorK_SeqHIP(Vec v,Vec w,PetscBool read)
+static inline PetscErrorCode VecRestoreLocalVectorK_SeqHIP(Vec v,Vec w,PetscBool read)
 {
   PetscErrorCode ierr;
   hipError_t     err;

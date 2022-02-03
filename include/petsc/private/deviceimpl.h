@@ -175,7 +175,7 @@ PETSC_INTERN PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType,PetscInt);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType,PetscDevice*);
 
-PETSC_STATIC_INLINE PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Internal(PetscDeviceType type)
+static inline PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Internal(PetscDeviceType type)
 {
   switch(type) {
   case PETSC_DEVICE_INVALID: return PETSC_FALSE;
@@ -194,21 +194,21 @@ PETSC_STATIC_INLINE PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Intern
  * the automatically selected default PetscDeviceType */
 #define PetscDeviceGetDefault_Internal(device) PetscDeviceGetDefaultForType_Internal(PETSC_DEVICE_DEFAULT,device)
 
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceCheckDeviceCount_Internal(PetscInt count)
+static inline PetscErrorCode PetscDeviceCheckDeviceCount_Internal(PetscInt count)
 {
   PetscFunctionBegin;
   PetscAssertDebug(count < PETSC_DEVICE_MAX_DEVICES,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Detected %" PetscInt_FMT " devices, which is larger than maximum supported number of devices %d",count,PETSC_DEVICE_MAX_DEVICES);
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode  PetscDeviceReference_Internal(PetscDevice device)
+static inline PetscErrorCode  PetscDeviceReference_Internal(PetscDevice device)
 {
   PetscFunctionBegin;
   ++(device->refcnt);
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceDereference_Internal(PetscDevice device)
+static inline PetscErrorCode PetscDeviceDereference_Internal(PetscDevice device)
 {
   PetscFunctionBegin;
   --(device->refcnt);
@@ -232,7 +232,7 @@ PETSC_INTERN PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDe
 
 /* Called in debug-mode when a context claims it is idle to check that it isn't lying. A
  * no-op when debugging is disabled */
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextValidateIdle_Internal(PetscDeviceContext dctx)
+static inline PetscErrorCode PetscDeviceContextValidateIdle_Internal(PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
@@ -247,7 +247,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextValidateIdle_Internal(Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceContext dctx, PetscDeviceType type)
+static inline PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceContext dctx, PetscDeviceType type)
 {
   PetscDevice    device;
   PetscErrorCode ierr;
@@ -262,7 +262,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Int
   PetscDeviceContextSetDefaultDeviceForType_Internal(dctx,PETSC_DEVICE_DEFAULT)
 
 /* note, only does assertion checking in debug mode */
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Internal(PetscDeviceContext *dctx, PetscDeviceType type)
+static inline PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Internal(PetscDeviceContext *dctx, PetscDeviceType type)
 {
   PetscErrorCode ierr;
 
@@ -274,7 +274,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetCurrentContextAssertType
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetBLASHandle_Internal(PetscDeviceContext dctx, void *handle)
+static inline PetscErrorCode PetscDeviceContextGetBLASHandle_Internal(PetscDeviceContext dctx, void *handle)
 {
   PetscErrorCode ierr;
 
@@ -286,7 +286,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetBLASHandle_Internal(Pets
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDeviceContext dctx, void *handle)
+static inline PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDeviceContext dctx, void *handle)
 {
   PetscErrorCode ierr;
 
@@ -298,7 +298,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(Pe
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDeviceContext dctx, void *handle)
+static inline PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(PetscDeviceContext dctx, void *handle)
 {
   PetscErrorCode ierr;
 
@@ -310,7 +310,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextGetStreamHandle_Internal(Pe
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextBeginTimer_Internal(PetscDeviceContext dctx)
+static inline PetscErrorCode PetscDeviceContextBeginTimer_Internal(PetscDeviceContext dctx)
 {
   PetscErrorCode ierr;
 
@@ -321,7 +321,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextBeginTimer_Internal(PetscDe
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceContext dctx, PetscLogDouble *elapsed)
+static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceContext dctx, PetscLogDouble *elapsed)
 {
   PetscErrorCode ierr;
 

@@ -21,7 +21,7 @@ typedef struct {
 /*              Internal utility routines                                            */
 /*===================================================================================*/
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLogMPIMessages(PetscInt nsend,PetscSFCount *sendcnts,MPI_Datatype sendtype,PetscInt nrecv,PetscSFCount* recvcnts,MPI_Datatype recvtype)
+static inline PetscErrorCode PetscLogMPIMessages(PetscInt nsend,PetscSFCount *sendcnts,MPI_Datatype sendtype,PetscInt nrecv,PetscSFCount* recvcnts,MPI_Datatype recvtype)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
@@ -183,7 +183,7 @@ static PetscErrorCode PetscSFBcastBegin_Neighbor(PetscSF sf,MPI_Datatype unit,Pe
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLeafToRootBegin_Neighbor(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op,PetscSFOperation sfop,PetscSFLink *out)
+static inline PetscErrorCode PetscSFLeafToRootBegin_Neighbor(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op,PetscSFOperation sfop,PetscSFLink *out)
 {
   PetscErrorCode       ierr;
   PetscSFLink          link;

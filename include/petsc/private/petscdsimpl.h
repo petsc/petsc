@@ -60,7 +60,7 @@ PETSC_HASH_MAP(HMapForm, PetscFormKey, PetscChunk, PetscFormKeyHash, PetscFormKe
    0: left = right
    1: left > right
 */
-PETSC_STATIC_INLINE int Compare_PetscFormKey_Private(const void *left, const void *right, PETSC_UNUSED void *ctx)
+static inline int Compare_PetscFormKey_Private(const void *left, const void *right, PETSC_UNUSED void *ctx)
 {
   PetscFormKey l = *(const PetscFormKey *) left;
   PetscFormKey r = *(const PetscFormKey *) right;

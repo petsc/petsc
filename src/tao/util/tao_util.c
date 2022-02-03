@@ -2,7 +2,7 @@
 #include <petsctao.h>      /*I "petsctao.h" I*/
 #include <petscsys.h>
 
-PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
+static inline PetscReal Fischer(PetscReal a, PetscReal b)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
@@ -101,7 +101,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
+static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
@@ -203,12 +203,12 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal fischnorm(PetscReal a, PetscReal b)
+static inline PetscReal fischnorm(PetscReal a, PetscReal b)
 {
   return PetscSqrtReal(a*a + b*b);
 }
 
-PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
+static inline PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 {
   return PetscSqrtReal(a*a + b*b + 2.0*c*c);
 }
@@ -464,17 +464,17 @@ PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal ST_InternalPN(PetscScalar in, PetscReal lb, PetscReal ub)
+static inline PetscReal ST_InternalPN(PetscScalar in, PetscReal lb, PetscReal ub)
 {
   return PetscMax(0,(PetscReal)PetscRealPart(in)-ub) - PetscMax(0,-(PetscReal)PetscRealPart(in)-PetscAbsReal(lb));
 }
 
-PETSC_STATIC_INLINE PetscReal ST_InternalNN(PetscScalar in, PetscReal lb, PetscReal ub)
+static inline PetscReal ST_InternalNN(PetscScalar in, PetscReal lb, PetscReal ub)
 {
   return PetscMax(0,(PetscReal)PetscRealPart(in) + PetscAbsReal(ub)) - PetscMax(0,-(PetscReal)PetscRealPart(in) - PetscAbsReal(lb));
 }
 
-PETSC_STATIC_INLINE PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscReal ub)
+static inline PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscReal ub)
 {
   return PetscMax(0, (PetscReal)PetscRealPart(in)-ub) + PetscMin(0, (PetscReal)PetscRealPart(in) - lb);
 }

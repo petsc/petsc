@@ -52,7 +52,7 @@ typedef struct {
 /*
  Frees the arrays from the XSELLPACK matrix type
  */
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXSELLFreeSELL(Mat AA,MatScalar **val,PetscInt **colidx)
+static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA,MatScalar **val,PetscInt **colidx)
 {
   Mat_SeqSELL    *A = (Mat_SeqSELL*) AA->data;
   PetscErrorCode ierr;

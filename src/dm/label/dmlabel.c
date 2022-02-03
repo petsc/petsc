@@ -167,7 +167,7 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 #define DMLABEL_LOOKUP_THRESHOLD 16
 #endif
 
-PETSC_STATIC_INLINE PetscErrorCode DMLabelLookupStratum(DMLabel label, PetscInt value, PetscInt *index)
+static inline PetscErrorCode DMLabelLookupStratum(DMLabel label, PetscInt value, PetscInt *index)
 {
   PetscInt       v;
   PetscErrorCode ierr;
@@ -195,7 +195,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelLookupStratum(DMLabel label, PetscInt 
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMLabelNewStratum(DMLabel label, PetscInt value, PetscInt *index)
+static inline PetscErrorCode DMLabelNewStratum(DMLabel label, PetscInt value, PetscInt *index)
 {
   PetscInt       v;
   PetscInt      *tmpV;
@@ -254,7 +254,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelNewStratum(DMLabel label, PetscInt val
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMLabelLookupAddStratum(DMLabel label, PetscInt value, PetscInt *index)
+static inline PetscErrorCode DMLabelLookupAddStratum(DMLabel label, PetscInt value, PetscInt *index)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -263,7 +263,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMLabelLookupAddStratum(DMLabel label, PetscI
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMLabelGetStratumSize_Private(DMLabel label, PetscInt v, PetscInt *size)
+static inline PetscErrorCode DMLabelGetStratumSize_Private(DMLabel label, PetscInt v, PetscInt *size)
 {
   PetscErrorCode ierr;
 

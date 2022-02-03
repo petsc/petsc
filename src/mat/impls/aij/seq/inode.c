@@ -4167,7 +4167,7 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt nzl,PetscInt nzu,PetscInt nz,const PetscInt *ai,const PetscInt *aj,const PetscInt *adiag,PetscInt row)
+static inline PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt nzl,PetscInt nzu,PetscInt nz,const PetscInt *ai,const PetscInt *aj,const PetscInt *adiag,PetscInt row)
 {
   PetscInt       k;
   const PetscInt *vi;

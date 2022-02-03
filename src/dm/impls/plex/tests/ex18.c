@@ -844,7 +844,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #define ps2d(number) ((double) PetscRealPart(number))
-PETSC_STATIC_INLINE PetscErrorCode coord2str(char buf[], size_t len, PetscInt dim, const PetscScalar coords[], PetscReal tol)
+static inline PetscErrorCode coord2str(char buf[], size_t len, PetscInt dim, const PetscScalar coords[], PetscReal tol)
 {
   PetscErrorCode ierr;
 
@@ -1025,7 +1025,7 @@ static PetscErrorCode DMLabelViewFromOptionsOnComm_Private(DMLabel label, const 
 }
 
 /* TODO: this is hotfixing DMLabelGetStratumIS() - it should be fixed systematically instead */
-PETSC_STATIC_INLINE PetscErrorCode DMLabelGetStratumISOnComm_Private(DMLabel label, PetscInt value, MPI_Comm comm, IS *is)
+static inline PetscErrorCode DMLabelGetStratumISOnComm_Private(DMLabel label, PetscInt value, MPI_Comm comm, IS *is)
 {
   IS                tmpis;
   PetscErrorCode    ierr;

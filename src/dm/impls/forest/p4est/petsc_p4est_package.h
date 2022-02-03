@@ -54,7 +54,7 @@ PETSC_INTERN jmp_buf PetscScJumpBuf;
 
 PETSC_EXTERN PetscErrorCode PetscP4estInitialize();
 
-PETSC_STATIC_INLINE PetscErrorCode P4estLocidxCast(PetscInt a,p4est_locidx_t *b)
+static inline PetscErrorCode P4estLocidxCast(PetscInt a,p4est_locidx_t *b)
 {
   PetscFunctionBegin;
   *b =  (p4est_locidx_t)(a);
@@ -64,7 +64,7 @@ PETSC_STATIC_INLINE PetscErrorCode P4estLocidxCast(PetscInt a,p4est_locidx_t *b)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode P4estTopidxCast(PetscInt a,p4est_topidx_t *b)
+static inline PetscErrorCode P4estTopidxCast(PetscInt a,p4est_topidx_t *b)
 {
   PetscFunctionBegin;
   *b =  (p4est_topidx_t)(a);

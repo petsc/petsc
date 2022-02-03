@@ -93,8 +93,8 @@ PETSC_EXTERN PetscErrorCode SNESConvergedReasonView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewFromOptions(SNES);
 PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewCancel(SNES);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonView() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode SNESReasonView(SNES snes,PetscViewer v) {return SNESConvergedReasonView(snes,v);}
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonViewFromOptions() (since version 3.14)") PETSC_STATIC_INLINE PetscErrorCode SNESReasonViewFromOptions(SNES snes) {return SNESConvergedReasonViewFromOptions(snes);}
+PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonView() (since version 3.14)") static inline PetscErrorCode SNESReasonView(SNES snes,PetscViewer v) {return SNESConvergedReasonView(snes,v);}
+PETSC_DEPRECATED_FUNCTION("Use SNESConvergedReasonViewFromOptions() (since version 3.14)") static inline PetscErrorCode SNESReasonViewFromOptions(SNES snes) {return SNESConvergedReasonViewFromOptions(snes);}
 
 #define SNES_FILE_CLASSID 1211224
 
@@ -372,7 +372,7 @@ PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES,SNESConvergedReason*);
 PETSC_EXTERN PetscErrorCode SNESGetConvergedReasonString(SNES,const char**);
 PETSC_EXTERN PetscErrorCode SNESSetConvergedReason(SNES,SNESConvergedReason);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESConvergedSkip() (since version 3.5)") PETSC_STATIC_INLINE void SNESSkipConverged(void) { /* never called */ }
+PETSC_DEPRECATED_FUNCTION("Use SNESConvergedSkip() (since version 3.5)") static inline void SNESSkipConverged(void) { /* never called */ }
 #define SNESSkipConverged (SNESSkipConverged, SNESConvergedSkip)
 
 /* --------- Solving systems of nonlinear equations --------------- */
@@ -692,8 +692,8 @@ PETSC_EXTERN PetscErrorCode SNESSetLineSearch(SNES,SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESGetLineSearch(SNES,SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
 
-PETSC_DEPRECATED_FUNCTION("Use SNESGetLineSearch() (since version 3.4)") PETSC_STATIC_INLINE PetscErrorCode SNESGetSNESLineSearch(SNES snes,SNESLineSearch *ls) {return SNESGetLineSearch(snes,ls);}
-PETSC_DEPRECATED_FUNCTION("Use SNESSetLineSearch() (since version 3.4)") PETSC_STATIC_INLINE PetscErrorCode SNESSetSNESLineSearch(SNES snes,SNESLineSearch ls) {return SNESSetLineSearch(snes,ls);}
+PETSC_DEPRECATED_FUNCTION("Use SNESGetLineSearch() (since version 3.4)") static inline PetscErrorCode SNESGetSNESLineSearch(SNES snes,SNESLineSearch *ls) {return SNESGetLineSearch(snes,ls);}
+PETSC_DEPRECATED_FUNCTION("Use SNESSetLineSearch() (since version 3.4)") static inline PetscErrorCode SNESSetSNESLineSearch(SNES snes,SNESLineSearch ls) {return SNESSetLineSearch(snes,ls);}
 
 PETSC_EXTERN PetscErrorCode SNESSetUpMatrices(SNES);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunction(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);

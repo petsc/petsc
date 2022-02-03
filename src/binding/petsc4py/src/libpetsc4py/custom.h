@@ -7,7 +7,7 @@
 
 PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject o, PetscInt id, PetscInt *v, PetscBool *exist)
 {
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject o, PetscInt id, Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject o, PetscInt id, PetscInt v)
 {
   PetscErrorCode ierr;
@@ -27,7 +27,7 @@ PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject o, PetscInt id, Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt *id)
 {
   PetscErrorCode ierr;
@@ -37,7 +37,7 @@ PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt *id)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
 {
   PetscErrorCode ierr;
@@ -47,7 +47,7 @@ PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
 {
   PetscErrorCode ierr;
@@ -57,7 +57,7 @@ PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode KSPConverged(KSP ksp,
                             PetscInt iter,PetscReal rnorm,
                             KSPConvergedReason *reason)
@@ -82,7 +82,7 @@ PetscErrorCode KSPConverged(KSP ksp,
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode SNESConverged(SNES snes,
                              PetscInt iter,PetscReal xnorm,PetscReal ynorm,PetscReal fnorm,
                              SNESConvergedReason *reason)

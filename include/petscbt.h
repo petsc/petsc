@@ -27,77 +27,77 @@ typedef char* PetscBT;
 
 /* convert an index i to an index suitable for indexing a PetscBT, such that
  * bt[PetscBTIndex(i)] returns the i'th value of the bt */
-PETSC_STATIC_INLINE PetscInt PetscBTIndex_Internal(PetscInt index)
+static inline PetscInt PetscBTIndex_Internal(PetscInt index)
 {
   return index/PETSC_BITS_PER_BYTE;
 }
 
-PETSC_STATIC_INLINE char PetscBTMask_Internal(PetscInt index)
+static inline char PetscBTMask_Internal(PetscInt index)
 {
   return 1 << index%PETSC_BITS_PER_BYTE;
 }
 
-PETSC_STATIC_INLINE PetscInt PetscBTLength(PetscInt m)
+static inline PetscInt PetscBTLength(PetscInt m)
 {
   return m/PETSC_BITS_PER_BYTE+1;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscBTMemzero(PetscInt m, PetscBT array)
+static inline PetscErrorCode PetscBTMemzero(PetscInt m, PetscBT array)
 {
   return PetscArrayzero(array,PetscBTLength(m));
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscBTDestroy(PetscBT *array)
+static inline PetscErrorCode PetscBTDestroy(PetscBT *array)
 {
   return (*array) ? PetscFree(*array) : 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscBTCreate(PetscInt m, PetscBT *array)
+static inline PetscErrorCode PetscBTCreate(PetscInt m, PetscBT *array)
 {
   return PetscCalloc1(PetscBTLength(m),array);
 }
 
-PETSC_STATIC_INLINE char PetscBTLookup(PetscBT array, PetscInt index)
+static inline char PetscBTLookup(PetscBT array, PetscInt index)
 {
   return array[PetscBTIndex_Internal(index)] & PetscBTMask_Internal(index);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscBTSet(PetscBT array, PetscInt index)
+static inline PetscErrorCode PetscBTSet(PetscBT array, PetscInt index)
 {
   PetscFunctionBegin;
   array[PetscBTIndex_Internal(index)] |= PetscBTMask_Internal(index);
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscBTNegate(PetscBT array, PetscInt index)
+static inline PetscErrorCode PetscBTNegate(PetscBT array, PetscInt index)
 {
   PetscFunctionBegin;
   array[PetscBTIndex_Internal(index)] ^= PetscBTMask_Internal(index);
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscBTClear(PetscBT array, PetscInt index)
+static inline PetscErrorCode PetscBTClear(PetscBT array, PetscInt index)
 {
   PetscFunctionBegin;
   array[PetscBTIndex_Internal(index)] &= ~PetscBTMask_Internal(index);
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE char PetscBTLookupSet(PetscBT array, PetscInt index)
+static inline char PetscBTLookupSet(PetscBT array, PetscInt index)
 {
   const char ret = PetscBTLookup(array,index);
   CHKERRCONTINUE(PetscBTSet(array,index));
   return ret;
 }
 
-PETSC_STATIC_INLINE char PetscBTLookupClear(PetscBT array, PetscInt index)
+static inline char PetscBTLookupClear(PetscBT array, PetscInt index)
 {
   const char ret = PetscBTLookup(array,index);
   CHKERRCONTINUE(PetscBTClear(array,index));
   return ret;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
+static inline PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
 {
   PetscErrorCode ierr;
 

@@ -13,12 +13,12 @@ typedef struct {
   PetscInt *perm, *invPerm;
 } PetscSectionClosurePermVal;
 
-PETSC_STATIC_INLINE PetscHash_t PetscSectionClosurePermHash(PetscSectionClosurePermKey k)
+static inline PetscHash_t PetscSectionClosurePermHash(PetscSectionClosurePermKey k)
 {
   return PetscHashCombine(PetscHashInt(k.depth), PetscHashInt(k.size));
 }
 
-PETSC_STATIC_INLINE int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, PetscSectionClosurePermKey k2)
+static inline int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, PetscSectionClosurePermKey k2)
 {
   return k1.depth == k2.depth && k1.size == k2.size;
 }

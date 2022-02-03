@@ -737,7 +737,7 @@ PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);
 PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat,PetscInt,PetscInt);
 
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+static inline PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal _rs   = sctx->rs;
   PetscReal _zero = info->zeropivot*_rs;
@@ -755,7 +755,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo 
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+static inline PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal _rs   = sctx->rs;
   PetscReal _zero = info->zeropivot*_rs;
@@ -778,7 +778,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo 
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+static inline PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal _zero = info->zeropivot;
 
@@ -792,7 +792,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+static inline PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal      _zero = info->zeropivot;
   PetscErrorCode ierr;
@@ -810,7 +810,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const Mat
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
+static inline PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscErrorCode ierr;
 
@@ -1403,7 +1403,7 @@ void MatCheckSameSize(Tm,int,Tm,int);
     lnk       - list created and initialized
     bt        - PetscBT (bitarray) with all bits set to false. Note: bt has size lnk_max, not nln_max!
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,PetscInt lnk_max,PetscInt **lnk,PetscBT *bt)
+static inline PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,PetscInt lnk_max,PetscInt **lnk,PetscBT *bt)
 {
   PetscErrorCode ierr;
   PetscInt       *llnk,lsize = 0;
@@ -1430,7 +1430,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,Pets
     lnk       - the sorted(increasing order) linked list containing previous and newly added non-redundate indices
     bt        - updated PetscBT (bitarray)
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted(PetscInt nidx,const PetscInt indices[],PetscInt lnk[],PetscBT bt)
+static inline PetscErrorCode PetscLLCondensedAddSorted(PetscInt nidx,const PetscInt indices[],PetscInt lnk[],PetscBT bt)
 {
   PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;
 
@@ -1459,7 +1459,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted(PetscInt nidx,const
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscInt nidx,PetscInt *indices,PetscInt lnk[],PetscBT bt)
+static inline PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscInt nidx,PetscInt *indices,PetscInt lnk[],PetscBT bt)
 {
   PetscErrorCode ierr;
   PetscInt       _k,_next,_nlnk;
@@ -1478,7 +1478,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscI
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
+static inline PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
 {
   PetscErrorCode ierr;
 
@@ -1493,7 +1493,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
 /*
   Free memories used by the list
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT bt)
+static inline PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT bt)
 {
   PetscErrorCode ierr;
 
@@ -1511,7 +1511,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT
   Output Parameters:
     lnk       - list created and initialized
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max,PetscInt **lnk)
+static inline PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
   PetscInt       *llnk,lsize = 0;
@@ -1526,7 +1526,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedExpand_Scalable(PetscInt nlnk_max,PetscInt **lnk)
+static inline PetscErrorCode PetscLLCondensedExpand_Scalable(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
   PetscInt       lsize = 0;
@@ -1537,7 +1537,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedExpand_Scalable(PetscInt nlnk
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
+static inline PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
 {
   PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;
   _nlnk     = lnk[0]; /* num of entries on the input lnk */
@@ -1564,7 +1564,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt n
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
+static inline PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
 {
   PetscInt _k,_next,_nlnk;
   _next = lnk[3];       /* head node */
@@ -1578,7 +1578,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *lnk)
+static inline PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *lnk)
 {
   return PetscFree(lnk);
 }
@@ -1604,7 +1604,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *ln
       lnk[8]    next valid link (this is the same as lnk[0] but without the decreases)
 */
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max,PetscInt **lnk)
+static inline PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
   PetscInt       *llnk,lsize = 0;
@@ -1624,7 +1624,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
+static inline PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
 {
   PetscInt k,entry,prev,next;
   prev      = 3;      /* first value */
@@ -1669,7 +1669,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_fast(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
+static inline PetscErrorCode PetscLLCondensedClean_fast(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
 {
   PetscInt _k,_next,_nlnk,cnt,j;
   _next = lnk[5];       /* first node */
@@ -1692,7 +1692,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_fast(PetscInt nidx,Pets
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView_fast(PetscInt *lnk)
+static inline PetscErrorCode PetscLLCondensedView_fast(PetscInt *lnk)
 {
   PetscInt k,next,nlnk;
   next = lnk[5];       /* first node */
@@ -1706,7 +1706,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView_fast(PetscInt *lnk)
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
+static inline PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
 {
   return PetscFree(lnk);
 }

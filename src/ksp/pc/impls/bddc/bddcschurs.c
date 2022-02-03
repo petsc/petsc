@@ -3,7 +3,7 @@
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petscblaslapack.h>
 
-PETSC_STATIC_INLINE PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt*,PetscInt,PetscBT,PetscInt*,PetscInt*,PetscInt*);
+static inline PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt*,PetscInt,PetscBT,PetscInt*,PetscInt*,PetscInt*);
 static PetscErrorCode PCBDDCComputeExplicitSchur(Mat,PetscBool,MatReuse,Mat*);
 static PetscErrorCode PCBDDCReuseSolvers_Interior(PC,Vec,Vec);
 static PetscErrorCode PCBDDCReuseSolvers_Correction(PC,Vec,Vec);
@@ -2037,7 +2037,7 @@ PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs* sub_schurs)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt* queue_tip,PetscInt n_prev,PetscBT touched,PetscInt* xadj,PetscInt* adjncy,PetscInt* n_added)
+static inline PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt* queue_tip,PetscInt n_prev,PetscBT touched,PetscInt* xadj,PetscInt* adjncy,PetscInt* n_added)
 {
   PetscInt       i,j,n;
   PetscErrorCode ierr;

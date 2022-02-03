@@ -460,7 +460,7 @@ DEF_DumbType(DumbInt,4,0)
 DEF_DumbType(DumbInt,8,0)
 
 #if !defined(PETSC_HAVE_MPI_TYPE_DUP)
-PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
+static inline int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
 {
   int ierr;
   ierr = MPI_Type_contiguous(1,datatype,newtype); if (ierr) return ierr;
@@ -905,7 +905,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link,PetscMemType mtype
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
+static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
 {
   PetscErrorCode ierr;
   PetscLogDouble flops;
@@ -922,7 +922,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscS
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
+static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
 {
   PetscLogDouble flops;
   PetscErrorCode ierr;
@@ -951,7 +951,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscS
   Output Parameters:
   .data    - The data to unpack to
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *indices,void *data,const void *buf,MPI_Op op)
+static inline PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *indices,void *data,const void *buf,MPI_Op op)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
@@ -973,7 +973,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(Petsc
 #endif
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt srcStart,const PetscInt *srcIdx,const void *src,PetscInt dstStart,const PetscInt *dstIdx,void *dst,MPI_Op op)
+static inline PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt srcStart,const PetscInt *srcIdx,const void *src,PetscInt dstStart,const PetscInt *dstIdx,void *dst,MPI_Op op)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
@@ -1363,7 +1363,7 @@ finish:
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFDestroyPackOpt(PetscSF sf,PetscMemType mtype,PetscSFPackOpt *out)
+static inline PetscErrorCode PetscSFDestroyPackOpt(PetscSF sf,PetscMemType mtype,PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
   PetscSFPackOpt opt = *out;

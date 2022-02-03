@@ -1534,7 +1534,7 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscStrallocpy(),
           PetscArraymove()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMemmove(void *a,const void *b,size_t n)
+static inline PetscErrorCode PetscMemmove(void *a,const void *b,size_t n)
 {
   PetscFunctionBegin;
   if (n > 0) {
@@ -1595,7 +1595,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemmove(void *a,const void *b,size_t n)
 .seealso: PetscMemzero(), PetscMemcmp(), PetscArrayzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy()
 
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
+static inline PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 {
 #if defined(PETSC_USE_DEBUG)
   size_t al = (size_t) a,bl = (size_t) b;
@@ -1661,7 +1661,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMemzero(void *a,size_t n)
+static inline PetscErrorCode PetscMemzero(void *a,size_t n)
 {
   if (n > 0) {
 #if defined(PETSC_USE_DEBUG)
@@ -1960,7 +1960,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File,MPI_Offset,void*,Pets
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscBLASIntCast(), PetscIntMultError(), PetscIntSumError()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
+static inline PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
 {
   PetscFunctionBegin;
 #if !defined(PETSC_USE_64BIT_INDICES)
@@ -1993,7 +1993,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscIntCast()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
+static inline PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_HAVE_64BIT_BLAS_INDICES)
@@ -2022,7 +2022,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 
 .seealso: PetscCuBLASInt, PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscMPIIntCast(), PetscIntCast()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscCuBLASInt *b)
+static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscCuBLASInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -2051,7 +2051,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscCuBLASInt 
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntCast()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
+static inline PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -2091,7 +2091,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult(), PetscIntMultError(), PetscIntSumError()
 @*/
-PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
+static inline PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 {
   PetscInt64 r;
 
@@ -2127,7 +2127,7 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult(), PetscIntMultError(), PetscIntSumError()
 @*/
-PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
+static inline PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 {
   PetscInt64 r;
 
@@ -2161,7 +2161,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult(), PetscIntMultError()
 @*/
-PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
+static inline PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 {
   PetscInt64 r;
 
@@ -2194,7 +2194,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64(), PetscIntSumError()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,PetscInt *result)
+static inline PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,PetscInt *result)
 {
   PetscInt64 r;
 
@@ -2229,7 +2229,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult(), PetscIntMultError()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscInt *result)
+static inline PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscInt *result)
 {
   PetscInt64 r;
 
@@ -2402,7 +2402,7 @@ PETSC_EXTERN PetscErrorCode PetscMkdir(const char[]);
 PETSC_EXTERN PetscErrorCode PetscMkdtemp(char[]);
 PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
 
-PETSC_STATIC_INLINE PetscBool PetscBinaryBigEndian(void) {long _petsc_v = 1; return ((char*)&_petsc_v)[0] ? PETSC_FALSE : PETSC_TRUE;}
+static inline PetscBool PetscBinaryBigEndian(void) {long _petsc_v = 1; return ((char*)&_petsc_v)[0] ? PETSC_FALSE : PETSC_TRUE;}
 
 PETSC_EXTERN PetscErrorCode PetscBinaryRead(int,void*,PetscInt,PetscInt*,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm,int,void*,PetscInt,PetscInt*,PetscDataType);
@@ -2469,9 +2469,9 @@ struct _n_PetscSubcomm {
   char             *subcommprefix;
 };
 
-PETSC_STATIC_INLINE MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
-PETSC_STATIC_INLINE MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
-PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
+static inline MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
+static inline MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
+static inline MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);
@@ -2519,7 +2519,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
  * possible. */
-PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,size_t count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
+static inline PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,size_t count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
 
 extern PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton;
 PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted*);
@@ -2548,7 +2548,7 @@ PETSC_EXTERN PetscSegBuffer PetscCitationsList;
      Options Database:
 .     -citations [filename]   - print out the bibtex entries for the given computation
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *set)
+static inline PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *set)
 {
   size_t         len;
   char           *vstring;
@@ -2580,7 +2580,7 @@ PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[],const char[],char[],
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],size_t);
 
 #if defined(PETSC_USE_DEBUG)
-PETSC_STATIC_INLINE unsigned int PetscStrHash(const char *str)
+static inline unsigned int PetscStrHash(const char *str)
 {
   unsigned int c,hash = 5381;
 

@@ -1096,7 +1096,7 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v,Vec w,PetscBool read)
+static inline PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v,Vec w,PetscBool read)
 {
   PetscErrorCode ierr;
   cudaError_t    err;
@@ -1153,7 +1153,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v,Vec w,PetscB
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreLocalVectorK_SeqCUDA(Vec v,Vec w,PetscBool read)
+static inline PetscErrorCode VecRestoreLocalVectorK_SeqCUDA(Vec v,Vec w,PetscBool read)
 {
   PetscErrorCode ierr;
   cudaError_t    err;

@@ -158,14 +158,14 @@
 
 #endif /* PETSC_USE_REAL_* */
 
-PETSC_STATIC_INLINE PetscReal PetscSignReal(PetscReal a)
+static inline PetscReal PetscSignReal(PetscReal a)
 {
   return (PetscReal)((a < (PetscReal)0) ? -1 : ((a > (PetscReal)0) ? 1 : 0));
 }
 
 #if !defined(PETSC_HAVE_LOG2)
 #undef PetscLog2Real
-PETSC_STATIC_INLINE PetscReal PetscLog2Real(PetscReal a)
+static inline PetscReal PetscLog2Real(PetscReal a)
 {
   return PetscLogReal(a)/PetscLogReal((PetscReal)2);
 }
@@ -231,7 +231,7 @@ M*/
 
 #if !defined(PETSC_HAVE_CXX_TAN_COMPLEX)
 #undef PetscTanComplex
-PETSC_STATIC_INLINE PetscComplex PetscTanComplex(PetscComplex z)
+static inline PetscComplex PetscTanComplex(PetscComplex z)
 {
   return PetscSinComplex(z)/PetscCosComplex(z);
 }
@@ -239,7 +239,7 @@ PETSC_STATIC_INLINE PetscComplex PetscTanComplex(PetscComplex z)
 
 #if !defined(PETSC_HAVE_CXX_TANH_COMPLEX)
 #undef PetscTanhComplex
-PETSC_STATIC_INLINE PetscComplex PetscTanhComplex(PetscComplex z)
+static inline PetscComplex PetscTanhComplex(PetscComplex z)
 {
   return PetscSinhComplex(z)/PetscCoshComplex(z);
 }
@@ -247,7 +247,7 @@ PETSC_STATIC_INLINE PetscComplex PetscTanhComplex(PetscComplex z)
 
 #if !defined(PETSC_HAVE_CXX_ASIN_COMPLEX)
 #undef PetscAsinComplex
-PETSC_STATIC_INLINE PetscComplex PetscAsinComplex(PetscComplex z)
+static inline PetscComplex PetscAsinComplex(PetscComplex z)
 {
   const PetscComplex j(0,1);
   return -j*PetscLogComplex(j*z+PetscSqrtComplex(1.0f-z*z));
@@ -256,7 +256,7 @@ PETSC_STATIC_INLINE PetscComplex PetscAsinComplex(PetscComplex z)
 
 #if !defined(PETSC_HAVE_CXX_ACOS_COMPLEX)
 #undef PetscAcosComplex
-PETSC_STATIC_INLINE PetscComplex PetscAcosComplex(PetscComplex z)
+static inline PetscComplex PetscAcosComplex(PetscComplex z)
 {
   const PetscComplex j(0,1);
   return j*PetscLogComplex(z-j*PetscSqrtComplex(1.0f-z*z));
@@ -265,7 +265,7 @@ PETSC_STATIC_INLINE PetscComplex PetscAcosComplex(PetscComplex z)
 
 #if !defined(PETSC_HAVE_CXX_ATAN_COMPLEX)
 #undef PetscAtanComplex
-PETSC_STATIC_INLINE PetscComplex PetscAtanComplex(PetscComplex z)
+static inline PetscComplex PetscAtanComplex(PetscComplex z)
 {
   const PetscComplex j(0,1);
   return 0.5f*j*PetscLogComplex((1.0f-j*z)/(1.0f+j*z));
@@ -274,7 +274,7 @@ PETSC_STATIC_INLINE PetscComplex PetscAtanComplex(PetscComplex z)
 
 #if !defined(PETSC_HAVE_CXX_ASINH_COMPLEX)
 #undef PetscAsinhComplex
-PETSC_STATIC_INLINE PetscComplex PetscAsinhComplex(PetscComplex z)
+static inline PetscComplex PetscAsinhComplex(PetscComplex z)
 {
   return PetscLogComplex(z+PetscSqrtComplex(z*z+1.0f));
 }
@@ -282,7 +282,7 @@ PETSC_STATIC_INLINE PetscComplex PetscAsinhComplex(PetscComplex z)
 
 #if !defined(PETSC_HAVE_CXX_ACOSH_COMPLEX)
 #undef PetscAcoshComplex
-PETSC_STATIC_INLINE PetscComplex PetscAcoshComplex(PetscComplex z)
+static inline PetscComplex PetscAcoshComplex(PetscComplex z)
 {
   return PetscLogComplex(z+PetscSqrtComplex(z*z-1.0f));
 }
@@ -290,7 +290,7 @@ PETSC_STATIC_INLINE PetscComplex PetscAcoshComplex(PetscComplex z)
 
 #if !defined(PETSC_HAVE_CXX_ATANH_COMPLEX)
 #undef PetscAtanhComplex
-PETSC_STATIC_INLINE PetscComplex PetscAtanhComplex(PetscComplex z)
+static inline PetscComplex PetscAtanhComplex(PetscComplex z)
 {
   return 0.5f*PetscLogComplex((1.0f+z)/(1.0f-z));
 }
@@ -382,7 +382,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
    http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1464.htm
    for details
 */
-PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
+static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 {
 #if defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
   return PetscComplex(x,y);
@@ -785,11 +785,11 @@ M*/
 PETSC_EXTERN PetscBool PetscIsInfReal(PetscReal);
 PETSC_EXTERN PetscBool PetscIsNanReal(PetscReal);
 PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
-PETSC_STATIC_INLINE PetscBool PetscIsInfOrNanReal(PetscReal v) {return PetscIsInfReal(v) || PetscIsNanReal(v) ? PETSC_TRUE : PETSC_FALSE;}
-PETSC_STATIC_INLINE PetscBool PetscIsInfScalar(PetscScalar v) {return PetscIsInfReal(PetscAbsScalar(v));}
-PETSC_STATIC_INLINE PetscBool PetscIsNanScalar(PetscScalar v) {return PetscIsNanReal(PetscAbsScalar(v));}
-PETSC_STATIC_INLINE PetscBool PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
-PETSC_STATIC_INLINE PetscBool PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
+static inline PetscBool PetscIsInfOrNanReal(PetscReal v) {return PetscIsInfReal(v) || PetscIsNanReal(v) ? PETSC_TRUE : PETSC_FALSE;}
+static inline PetscBool PetscIsInfScalar(PetscScalar v) {return PetscIsInfReal(PetscAbsScalar(v));}
+static inline PetscBool PetscIsNanScalar(PetscScalar v) {return PetscIsNanReal(PetscAbsScalar(v));}
+static inline PetscBool PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
+static inline PetscBool PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
 
 PETSC_EXTERN PetscBool PetscIsCloseAtTol(PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscBool PetscEqualReal(PetscReal,PetscReal);
@@ -823,7 +823,7 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct p
 PETSC_EXTERN MPI_Datatype MPI_4INT;
 PETSC_EXTERN MPI_Datatype MPIU_4INT;
 
-PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power)
+static inline PetscInt PetscPowInt(PetscInt base,PetscInt power)
 {
   PetscInt result = 1;
   while (power) {
@@ -834,7 +834,7 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power)
   return result;
 }
 
-PETSC_STATIC_INLINE PetscInt64 PetscPowInt64(PetscInt base,PetscInt power)
+static inline PetscInt64 PetscPowInt64(PetscInt base,PetscInt power)
 {
   PetscInt64 result = 1;
   while (power) {
@@ -845,7 +845,7 @@ PETSC_STATIC_INLINE PetscInt64 PetscPowInt64(PetscInt base,PetscInt power)
   return result;
 }
 
-PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
+static inline PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
 {
   PetscReal result = 1;
   if (power < 0) {
@@ -860,7 +860,7 @@ PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power)
   return result;
 }
 
-PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power)
+static inline PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power)
 {
   PetscScalar result = (PetscReal)1;
   if (power < 0) {
@@ -875,7 +875,7 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt powe
   return result;
 }
 
-PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal power)
+static inline PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal power)
 {
   PetscScalar cpower = power;
   return PetscPowScalar(base,cpower);
