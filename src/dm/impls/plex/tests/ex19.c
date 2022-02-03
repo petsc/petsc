@@ -133,17 +133,18 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
     const PetscScalar *coords;
     PetscScalar       *met;
     PetscReal          h;
-    PetscInt           vStart, vEnd, v;
+    PetscInt           dim, i, j, vStart, vEnd, v;
 
-    ierr = DMPlexMetricCreateUniform(dm, 0, lambda, metric);CHKERRQ(ierr);
+    ierr = DMPlexMetricCreate(dm, 0, metric);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecGetArray(*metric, &met);CHKERRQ(ierr);
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
-      PetscScalar       *vcoords;
-      PetscScalar       *pmet;
+      PetscScalar *vcoords;
+      PetscScalar *pmet;
 
       ierr = DMPlexPointLocalRead(cdm, v, coords, &vcoords);CHKERRQ(ierr);
       switch (user->metOpt) {
@@ -154,11 +155,17 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
         h = user->hmax*PetscAbsReal(((PetscReal) 1.0)-PetscExpReal(-PetscAbsScalar(vcoords[0]-(PetscReal)0.5))) + user->hmin;
         break;
       default:
-        SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1 or 2, cannot be %d", user->metOpt);
+        SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1, 2 or 3, cannot be %d", user->metOpt);
       }
-      lambda = 1/(h*h);
       ierr = DMPlexPointLocalRef(dm, v, met, &pmet);CHKERRQ(ierr);
-      pmet[0] = lambda;
+      for (i = 0; i < dim; ++i) {
+        for (j = 0; j < dim; ++j) {
+          if (i == j) {
+            if (i == 0) pmet[i*dim+j] = 1/(h*h);
+            else pmet[i*dim+j] = lambda;
+          } else pmet[i*dim+j] = 0.0;
+        }
+      }
     }
     ierr = VecRestoreArray(*metric, &met);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
