@@ -3,7 +3,7 @@
 
 PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
 {
-  MPI_Comm           comm, tmpComm;
+  MPI_Comm           comm;
   const char        *bdName = "_boundary_";
   const char        *rgName = "_regions_";
   DM                 udm, cdm;
@@ -35,7 +35,6 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_dup(comm, &tmpComm);CHKERRMPI(ierr);
   if (bdLabel) {
     ierr = PetscObjectGetName((PetscObject) bdLabel, &bdLabelName);CHKERRQ(ierr);
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
@@ -132,16 +131,13 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
   for (v = 0; v < (vEnd-vStart); ++v) {
     for (i = 0, k = 0; i < dim; ++i) {
-      for (j = i; j < dim; ++j) {
+      for (j = i; j < dim; ++j, ++k) {
         if (isotropic) {
           if (i == j) {
             if (uniform) metric[Neq*v+k] = PetscRealPart(met[0]);
             else metric[Neq*v+k] = PetscRealPart(met[v]);
           } else metric[Neq*v+k] = 0.0;
-        } else {
-          metric[Neq*v+k] = PetscRealPart(met[dim*dim*v+dim*i+j]);
-        }
-        k++;
+        } else metric[Neq*v+k] = PetscRealPart(met[dim*dim*v+dim*i+j]);
       }
     }
   }
@@ -255,7 +251,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexMetricGetVerbosity(dm, &verbosity);CHKERRQ(ierr);
   ierr = DMPlexMetricGetNumIterations(dm, &numIter);CHKERRQ(ierr);
   ierr = DMPlexMetricGetGradationFactor(dm, &gradationFactor);CHKERRQ(ierr);
-  ierr = PMMG_Init_parMesh(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, tmpComm, PMMG_ARG_end);
+  ierr = PMMG_Init_parMesh(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, comm, PMMG_ARG_end);
   ierr = PMMG_Set_meshSize(parmesh, numVertices, numCells, 0, numFaceTags, 0, 0);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_APImode, PMMG_APIDISTRIB_nodes);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_noinsert, noInsert);
@@ -298,18 +294,15 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_globalNum, 1);
   ierr = PMMG_Get_verticesGloNum(parmesh, gv_new, owners);
   for (i = 0; i < dim*numFacesNew; ++i) facesNew[i] -= 1;
-  for (i = 0; i < (dim+1)*numCellsNew; ++i) {
-    cellsNew[i] = gv_new[cellsNew[i]-1]-1;
-  }
-  numVerticesNewLoc = 0;
-  for (i = 0; i < numVerticesNew; ++i) {
+  for (i = 0; i < (dim+1)*numCellsNew; ++i) cellsNew[i] = gv_new[cellsNew[i]-1]-1;
+  for (i = 0, numVerticesNewLoc = 0; i < numVerticesNew; ++i) {
     if (owners[i] == rank) numVerticesNewLoc++;
   }
   ierr = PetscMalloc2(numVerticesNewLoc*dim, &verticesNewLoc, numVerticesNew, &verticesNewSorted);CHKERRQ(ierr);
   for (i = 0, c = 0; i < numVerticesNew; i++) {
     if (owners[i] == rank) {
       for (j=0; j<dim; ++j) verticesNewLoc[dim*c+j] = verticesNew[dim*i+j];
-        c++;
+      c++;
     }
   }
 
