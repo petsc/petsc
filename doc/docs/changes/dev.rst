@@ -91,6 +91,7 @@ Changes: Development
 -  Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
 -  Add support of ``MatSetValuesCOO()`` and ``MatSetPreallocationCOO()`` for matrix type AIJKOKKOS. Additionally, for AIJKOKKOS, they support negative indices and remote entries
 -  Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
+- Change ``MatStructures`` enumeration to avoid spaces and match capitalization of other enumerations
 
 .. rubric:: PC:
 
