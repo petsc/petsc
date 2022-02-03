@@ -398,6 +398,7 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
     ierr = PCHPDDMGetComplexities(pc, &gc, &oc);CHKERRQ(ierr);
     if (data->N > 1) {
       ierr = PetscViewerASCIIPrintf(viewer, "Neumann matrix attached? %s\n", PetscBools[data->Neumann]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "shared subdomain KSP between SLEPc and PETSc? %s\n", PetscBools[data->share]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "coarse correction: %s\n", PCHPDDMCoarseCorrectionTypes[data->correction]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "on process #0, value%s (+ threshold%s if available) for selecting deflation vectors:", data->N > 2 ? "s" : "", data->N > 2 ? "s" : "");CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
