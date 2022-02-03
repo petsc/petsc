@@ -852,7 +852,7 @@ static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in_C, Mat *out_C)
+static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in_C, Mat *out_C, IS *p)
 {
   IS                           perm;
   const PetscInt               *ptr;
@@ -879,7 +879,10 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
       ierr = ISSetPermutation(perm);CHKERRQ(ierr);
       /* permute user-provided Mat so that it matches with MatCreateSubMatrices() numbering */
       ierr = MatPermute(in_C, perm, perm, out_C);CHKERRQ(ierr);
-      ierr = ISDestroy(&perm);CHKERRQ(ierr);
+      if (p) *p = perm;
+      else { /* no need to save the permutation */
+        ierr = ISDestroy(&perm);CHKERRQ(ierr);
+      }
     }
     if (out_is) {
       ierr = PetscMalloc1(size, &concatenate);CHKERRQ(ierr);
@@ -1045,6 +1048,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   const char               *pcpre;
   const PetscScalar *const *ev;
   PetscInt                 n, requested = data->N, reused = 0;
+  MatStructure             structure = UNKNOWN_NONZERO_PATTERN;
   PetscBool                subdomains = PETSC_FALSE, flg = PETSC_FALSE, ismatis, swap = PETSC_FALSE, algebraic = PETSC_FALSE, block = PETSC_FALSE;
   DM                       dm;
   PetscErrorCode           ierr;
@@ -1199,15 +1203,31 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       /* the auxiliary Mat is _not_ the local Neumann matrix                                */
       /* it is the local Neumann matrix augmented (with zeros) through MatIncreaseOverlap() */
       data->Neumann = PETSC_FALSE;
+      structure = SAME_NONZERO_PATTERN;
+      if (data->share) {
+        data->share = PETSC_FALSE;
+        ierr = PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc with a Pmat of type MATIS\n");CHKERRQ(ierr);
+      }
     } else {
       is[0] = data->is;
       if (algebraic) subdomains = PETSC_TRUE;
       ierr = PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_define_subdomains", &subdomains, NULL);CHKERRQ(ierr);
+      if (!subdomains && data->share) {
+        data->share = PETSC_FALSE;
+        ierr = PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_define_subdomains is not true\n", pcpre ? pcpre : "");CHKERRQ(ierr);
+      }
       if (data->Neumann) {
         PetscCheck(!block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_block_splitting and -pc_hpddm_has_neumann");
         PetscCheck(!algebraic, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_has_neumann");
       }
+      if (data->Neumann || block) structure = SAME_NONZERO_PATTERN;
       ierr = ISCreateStride(PetscObjectComm((PetscObject)data->is), P->rmap->n, P->rmap->rstart, 1, &loc);CHKERRQ(ierr);
+    }
+    ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : "");CHKERRQ(ierr);
+    ierr = PetscOptionsGetEnum(NULL, prefix, "-st_matstructure", MatStructures, (PetscEnum*)&structure, &flg);CHKERRQ(ierr); /* if not user-provided, force its value when possible */
+    if (!flg && structure == SAME_NONZERO_PATTERN) { /* cannot call STSetMatStructure() yet, insert the appropriate option in the database, parsed by STSetFromOptions() */
+      ierr = PetscSNPrintf(prefix, sizeof(prefix), "-%spc_hpddm_levels_1_st_matstructure", pcpre ? pcpre : "");CHKERRQ(ierr);
+      ierr = PetscOptionsSetValue(NULL, prefix, MatStructures[structure]);CHKERRQ(ierr);
     }
     if (data->N > 1 && (data->aux || ismatis || algebraic)) {
       PetscCheck(loadedSym, PETSC_COMM_SELF, PETSC_ERR_PLIB, "HPDDM library not loaded, cannot use more than one level");
@@ -1259,10 +1279,20 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         ierr = ISGetLocalSize(data->is, &n);CHKERRQ(ierr);
         ierr = VecCreateMPI(PETSC_COMM_SELF, n, PETSC_DETERMINE, &data->levels[0]->D);CHKERRQ(ierr);
       }
-      /* it is possible to share the PC only given specific conditions, otherwise there is not warranty that the matrices have the same nonzero pattern */
-      if (!ismatis && (sub == &data->aux || block) && !data->B && subdomains && data->share) {
+      if (data->share && structure == SAME_NONZERO_PATTERN) { /* share the KSP only when the MatStructure is SAME_NONZERO_PATTERN */
+        Mat      D;
+        IS       perm = NULL;
         PetscInt size = -1;
-        ierr = PCHPDDMPermute_Private(*is, data->is, &uis, sub[0], &C);CHKERRQ(ierr);
+        ierr = PCHPDDMPermute_Private(*is, data->is, &uis, data->Neumann || block ? sub[0] : data->aux, &C, &perm);CHKERRQ(ierr);
+        if (!data->Neumann && !block) {
+          ierr = MatPermute(sub[0], perm, perm, &D);CHKERRQ(ierr); /* permute since PCASM will call ISSort() */
+          ierr = MatHeaderReplace(sub[0], &D);CHKERRQ(ierr);
+        }
+        if (data->B) { /* see PCHPDDMSetRHSMat() */
+          ierr = MatPermute(data->B, perm, perm, &D);CHKERRQ(ierr);
+          ierr = MatHeaderReplace(data->B, &D);CHKERRQ(ierr);
+        }
+        ierr = ISDestroy(&perm);CHKERRQ(ierr);
         if (!data->levels[0]->pc) {
           ierr = PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : "");CHKERRQ(ierr);
           ierr = PCCreate(PetscObjectComm((PetscObject)pc), &data->levels[0]->pc);CHKERRQ(ierr);
@@ -1286,10 +1316,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           ierr = ISDestroy(&uis);CHKERRQ(ierr);
           data->share = PETSC_FALSE;
           if (size == -1) {
-            ierr = PetscInfo(pc, "Cannot share PC between ST and subdomain solver since PCASMGetSubKSP() not found in fine-level PC\n");CHKERRQ(ierr);
+            ierr = PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since PCASMGetSubKSP() not found in fine-level PC\n");CHKERRQ(ierr);
           } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %" PetscInt_FMT " != 1", size);
         } else {
-          Mat        D;
           const char *matpre;
           PetscBool  cmp[2];
           ierr = KSPGetOperators(ksp[0], subA, subA + 1);CHKERRQ(ierr);
@@ -1320,8 +1349,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           swap = PETSC_TRUE;
         }
       } else if (data->share) {
-        ierr = PetscInfo(pc, "Cannot share PC between ST and subdomain solver\n");CHKERRQ(ierr);
         data->share = PETSC_FALSE;
+        ierr = PetscInfo(pc, "Cannot share subdomain KSP between SLEPc and PETSc since -%spc_hpddm_levels_1_st_matstructure %s (!= %s)\n", pcpre ? pcpre : "", MatStructures[structure], MatStructures[SAME_NONZERO_PATTERN]);CHKERRQ(ierr);
       }
       if (!data->levels[0]->scatter) {
         ierr = MatCreateVecs(P, &xin, NULL);CHKERRQ(ierr);
@@ -1442,7 +1471,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         if (!inner->setupcalled) { /* evaluates to PETSC_FALSE when -pc_hpddm_block_splitting */
           ierr = PCASMSetLocalSubdomains(inner, 1, is, &loc);CHKERRQ(ierr);
           if (!data->Neumann) { /* subdomain matrices are already created for the eigenproblem, reuse them for the fine-level PC */
-            ierr = PCHPDDMPermute_Private(*is, NULL, NULL, sub[0], &C);CHKERRQ(ierr);
+            ierr = PCHPDDMPermute_Private(*is, NULL, NULL, sub[0], &C, NULL);CHKERRQ(ierr);
             ierr = PCHPDDMCommunicationAvoidingPCASM_Private(inner, C, algebraic);CHKERRQ(ierr);
             ierr = MatDestroy(&C);CHKERRQ(ierr);
           }
