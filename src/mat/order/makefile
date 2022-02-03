@@ -19,7 +19,7 @@ SOURCEC   = sp1wd.c spnd.c spqmd.c sprcm.c sorder.c spectral.c sregis.c\
             genrcm.c qmdrch.c rootls.c fndsep.c gennd.c qmdmrg.c qmdupd.c wbm.c
 SOURCEH   = ../../../include/petsc/private/matorderimpl.h
 LIBBASE   = libpetscmat
-DIRS      = amd
+DIRS      = amd metisnd
 LOCDIR    = src/mat/order/
 MANSEC    = Mat
 SUBMANSEC = MatOrderings
