@@ -19,7 +19,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscInt           cStart, cEnd, c, numCells, fStart, fEnd, numFaceTags, f, vStart, vEnd, v, numVertices;
   PetscInt           dim, off, coff, maxConeSize, bdSize, i, j, k, Neq, verbosity, pStart, pEnd;
   PetscInt           numCellsNew, numVerticesNew, numCornersNew, numFacesNew;
-  PetscBool          flg = PETSC_FALSE, noInsert, noSwap, noMove;
+  PetscBool          flg = PETSC_FALSE, noInsert, noSwap, noMove, isotropic, uniform;
   MMG5_pMesh         mmg_mesh = NULL;
   MMG5_pSol          mmg_metric = NULL;
   PetscErrorCode     ierr;
@@ -119,10 +119,19 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   /* Get metric */
   ierr = VecViewFromOptions(vertexMetric, NULL, "-adapt_metric_view");CHKERRQ(ierr);
   ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
   for (v = 0; v < (vEnd-vStart); ++v) {
     for (i = 0, k = 0; i < dim; ++i) {
       for (j = i; j < dim; ++j) {
-        metric[Neq*v+k] = PetscRealPart(met[dim*dim*v+dim*i+j]);
+        if (isotropic) {
+          if (i == j) {
+            if (uniform) metric[Neq*v+k] = PetscRealPart(met[0]);
+            else metric[Neq*v+k] = PetscRealPart(met[v]);
+          } else metric[Neq*v+k] = 0.0;
+        } else {
+          metric[Neq*v+k] = PetscRealPart(met[dim*dim*v+dim*i+j]);
+        }
         k++;
       }
     }

@@ -12,6 +12,25 @@ static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return 0;
 }
 
+static PetscErrorCode CreateIndicator(DM dm, Vec *indicator, DM *dmIndi)
+{
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+  PetscFE        fe;
+  PetscInt       dim;
+
+  PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = DMClone(dm, dmIndi);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscFECreateLagrange(comm, dim, 1, PETSC_TRUE, 1, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
+  ierr = DMSetField(*dmIndi, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
+  ierr = DMCreateDS(*dmIndi);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(*dmIndi, indicator);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv) {
   DM              dm, dmDist, dmAdapt;
   DMLabel         bdLabel = NULL, rgLabel = NULL;
@@ -27,8 +46,6 @@ int main(int argc, char **argv) {
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex60.c", dim, &dim, NULL, 2, 3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-uniform", "Should the metric be assumed uniform?", "ex60.c", uniform, &uniform, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-isotropic", "Should the metric be assumed isotropic, or computed as a recovered Hessian?", "ex60.c", isotropic, &isotropic, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-noTagging", "Should tag preservation testing be turned off?", "ex60.c", noTagging, &noTagging, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
@@ -98,22 +115,18 @@ int main(int argc, char **argv) {
   }
 
   /* Construct metric */
+  ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
   if (uniform) {
-    if (isotropic) { ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric);CHKERRQ(ierr); }
-    else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported.");
+    ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric);CHKERRQ(ierr);
   }
   else {
-    DM      dmIndi;
-    PetscFE fe;
-    Vec     indicator;
+    DM  dmIndi;
+    Vec indicator;
 
     /* Construct "error indicator" */
-    ierr = DMClone(dm, &dmIndi);CHKERRQ(ierr);
-    ierr = PetscFECreateLagrange(comm, dim, 1, PETSC_TRUE, 1, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-    ierr = DMSetField(dmIndi, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
-    ierr = DMCreateDS(dmIndi);CHKERRQ(ierr);
-    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(dmIndi, &indicator);CHKERRQ(ierr);
+    ierr = CreateIndicator(dm, &indicator, &dmIndi);CHKERRQ(ierr);
     if (isotropic) {
 
       /* Isotropic case: just specify unity */
@@ -121,6 +134,7 @@ int main(int argc, char **argv) {
       ierr = DMPlexMetricCreateIsotropic(dm, 0, indicator, &metric);CHKERRQ(ierr);
 
     } else {
+      PetscFE fe;
 
       /* 'Anisotropic' case: approximate the identity by recovering the Hessian of a parabola */
       DM               dmGrad;
@@ -222,7 +236,18 @@ int main(int argc, char **argv) {
 
       ierr = DMPlexMetricGetTargetComplexity(dm, &target);CHKERRQ(ierr);
       scaling = PetscPowReal(target, 2.0/dim);
-      ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric2);CHKERRQ(ierr);
+      if (uniform) {
+        ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric2);CHKERRQ(ierr);
+      } else {
+        DM  dmIndi;
+        Vec indicator;
+
+        ierr = CreateIndicator(dm, &indicator, &dmIndi);CHKERRQ(ierr);
+        ierr = VecSet(indicator, scaling);CHKERRQ(ierr);
+        ierr = DMPlexMetricCreateIsotropic(dm, 0, indicator, &metric2);CHKERRQ(ierr);
+        ierr = DMDestroy(&dmIndi);CHKERRQ(ierr);
+        ierr = VecDestroy(&indicator);CHKERRQ(ierr);
+      }
       ierr = VecAXPY(metric2, -1, metric1);CHKERRQ(ierr);
       ierr = VecNorm(metric2, NORM_2, &errornorm);CHKERRQ(ierr);
       errornorm /= norm;
@@ -277,10 +302,10 @@ int main(int argc, char **argv) {
 
     test:
       suffix: uniform_2d_pragmatic
-      args: -uniform -isotropic
+      args: -dm_plex_metric_uniform
     test:
       suffix: iso_2d_pragmatic
-      args: -isotropic
+      args: -dm_plex_metric_isotropic
     test:
       suffix: hessian_2d_pragmatic
 
@@ -290,10 +315,10 @@ int main(int argc, char **argv) {
 
     test:
       suffix: uniform_3d_pragmatic
-      args: -uniform -isotropic -noTagging
+      args: -dm_plex_metric_uniform -noTagging
     test:
       suffix: iso_3d_pragmatic
-      args: -isotropic -noTagging
+      args: -dm_plex_metric_isotropic -noTagging
     test:
       suffix: hessian_3d_pragmatic
 
@@ -303,10 +328,10 @@ int main(int argc, char **argv) {
 
     test:
       suffix: uniform_2d_mmg
-      args: -uniform -isotropic
+      args: -dm_plex_metric_uniform
     test:
       suffix: iso_2d_mmg
-      args: -isotropic
+      args: -dm_plex_metric_isotropic
     test:
       suffix: hessian_2d_mmg
 
@@ -316,10 +341,10 @@ int main(int argc, char **argv) {
 
     test:
       suffix: uniform_3d_mmg
-      args: -uniform -isotropic
+      args: -dm_plex_metric_uniform
     test:
       suffix: iso_3d_mmg
-      args: -isotropic
+      args: -dm_plex_metric_isotropic
     test:
       suffix: hessian_3d_mmg
 
@@ -330,10 +355,10 @@ int main(int argc, char **argv) {
 
     test:
       suffix: uniform_3d_parmmg
-      args: -uniform -isotropic
+      args: -dm_plex_metric_uniform
     test:
       suffix: iso_3d_parmmg
-      args: -isotropic
+      args: -dm_plex_metric_isotropic
     test:
       suffix: hessian_3d_parmmg
 

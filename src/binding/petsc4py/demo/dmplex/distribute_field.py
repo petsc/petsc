@@ -35,11 +35,11 @@ pStart, pEnd = plex.getChart()
 plex.view()
 print("pStart, pEnd: ", pStart, pEnd)
 
-# Create section with 1 field with 1 DoF per vertex, edge amd cell
+# Create section with 1 field with 1 DoF per vertex, edge and cell
 numComp = 1
 # Start with an empty vector
 numDof = [0] * 3
-# Field defined on vertexes
+# Field defined on vertices
 numDof[0] = 1
 # Field defined on edges
 numDof[1] = 1
@@ -64,7 +64,7 @@ origVec.view()
 
 if PETSc.COMM_WORLD.size > 1:
     sf = plex.distribute()
-    sf.view()        
+    sf.view()
 
     newSect, newVec = plex.distributeField(sf, origSect, origVec)
 
