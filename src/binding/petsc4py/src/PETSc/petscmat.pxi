@@ -92,6 +92,7 @@ cdef extern from * nogil:
     PetscMatOrderingType MATORDERINGWBM
     PetscMatOrderingType MATORDERINGSPECTRAL
     PetscMatOrderingType MATORDERINGAMD
+    PetscMatOrderingType MATORDERINGMETISND
 
     ctypedef const char* PetscMatSolverType "MatSolverType"
     PetscMatSolverType MATSOLVERSUPERLU

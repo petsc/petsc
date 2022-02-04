@@ -146,6 +146,7 @@ class MatOrderingType(object):
     WBM         = S_(MATORDERINGWBM)
     SPECTRAL    = S_(MATORDERINGSPECTRAL)
     AMD         = S_(MATORDERINGAMD)
+    METISND     = S_(MATORDERINGMETISND)
 
 class MatSolverType(object):
     SUPERLU         = S_(MATSOLVERSUPERLU)
