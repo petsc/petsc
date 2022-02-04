@@ -465,12 +465,12 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
           {
-￼           PetscErrorCode (*func)(KSP,Mat,Mat,void*);
-￼           void            *ctx;
-￼
-￼           ierr = DMKSPGetComputeOperators(pc->dm, &func, &ctx);CHKERRQ(ierr);
-￼           ierr = DMKSPSetComputeOperators(dms[i],  func,  ctx);CHKERRQ(ierr);
-￼         }
+           PetscErrorCode (*func)(KSP,Mat,Mat,void*);
+           void            *ctx;
+
+           ierr = DMKSPGetComputeOperators(pc->dm, &func, &ctx);CHKERRQ(ierr);
+           ierr = DMKSPSetComputeOperators(dms[i],  func,  ctx);CHKERRQ(ierr);
+          }
           ierr = PetscObjectIncrementTabLevel((PetscObject)dms[i],(PetscObject)ilink->ksp,0);CHKERRQ(ierr);
           ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
         }
