@@ -48,6 +48,62 @@ PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm,DMBoundaryType bndx,Pet
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode DMStagRestrictSimple_1d(DM dmf,Vec xf_local,DM dmc,Vec xc_local)
+{
+  PetscScalar    **LA_xf,**LA_xc;
+  PetscInt       i,start,n,nextra,N;
+  PetscInt       d,dof[2];
+  PetscInt       slot_left_coarse, slot_element_coarse, slot_left_fine, slot_element_fine;
+
+  PetscFunctionBegin;
+  PetscCall(DMStagGetDOF(dmc,&dof[0],&dof[1],NULL,NULL));
+  PetscCall(DMStagGetCorners(dmc,&start,NULL,NULL,&n,NULL,NULL,&nextra,NULL,NULL));
+  PetscCall(DMStagGetGlobalSizes(dmc,&N,NULL,NULL));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt dof_check[2],n_fine,start_fine;
+
+    PetscCall(DMStagGetDOF(dmf,&dof_check[0],&dof_check[1],NULL,NULL));
+    PetscCall(DMStagGetCorners(dmf,&start_fine,NULL,NULL,&n_fine,NULL,NULL,NULL,NULL,NULL));
+    for (d=0; d<2; ++d) PetscCheck(dof_check[d] == dof[d],PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects with different dof on each stratum. Stratum %" PetscInt_FMT " has %" PetscInt_FMT " dof (fine) but %" PetscInt_FMT " dof (coarse)",d,dof_check[d],dof[d]);
+    PetscCheck(n_fine == 2*n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects unless there is a 2-1 coarsening. The fine DM has %" PetscInt_FMT " local elements and the coarse DM has %" PetscInt_FMT "",n_fine,n);
+    PetscCheck(start_fine == 2*start,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot transfer between DMStag objects unless there is a 2-1 coarsening. The fine DM starts at element %" PetscInt_FMT " and the coarse DM starts at %" PetscInt_FMT "",start_fine,start);
+    {
+      PetscInt size_local,entries_local;
+
+      PetscCall(DMStagGetEntriesLocal(dmf,&entries_local));
+      PetscCall(VecGetLocalSize(xf_local,&size_local));
+      PetscCheck(entries_local == size_local,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Fine vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied",entries_local,size_local);
+    }
+    {
+      PetscInt size_local,entries_local;
+
+      PetscCall(DMStagGetEntriesLocal(dmc,&entries_local));
+      PetscCall(VecGetLocalSize(xc_local,&size_local));
+      PetscCheck(entries_local == size_local,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Coarse vector must be a local vector of size %" PetscInt_FMT ", but a vector of size %" PetscInt_FMT " was supplied",entries_local,size_local);
+    }
+  }
+  PetscCall(VecZeroEntries(xc_local));
+  PetscCall(DMStagVecGetArray(dmf,xf_local,&LA_xf));
+  PetscCall(DMStagVecGetArray(dmc,xc_local,&LA_xc));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_LEFT,    0,&slot_left_fine));
+  PetscCall(DMStagGetLocationSlot(dmf,DMSTAG_ELEMENT, 0,&slot_element_fine));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_LEFT,    0,&slot_left_coarse));
+  PetscCall(DMStagGetLocationSlot(dmc,DMSTAG_ELEMENT, 0,&slot_element_coarse));
+  for (i=start; i<start+n+nextra; ++i) {
+    for (d=0; d<dof[0]; ++d) {
+      LA_xc[i][slot_left_coarse + d] = LA_xf[2*i  ][slot_left_fine  + d];
+    }
+    if (i < N) {
+      for (d=0; d<dof[1]; ++d) {
+        LA_xc[i][slot_element_coarse + d] = 0.5 * (LA_xf[2*i][slot_element_fine + d] + LA_xf[2*i+1][slot_element_fine + d]);
+      }
+    }
+  }
+  PetscCall(DMStagVecRestoreArray(dmf,xf_local,&LA_xf));
+  PetscCall(DMStagVecRestoreArray(dmc,xc_local,&LA_xc));
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm,PetscReal xmin,PetscReal xmax)
 {
   DM_Stag        *stagCoord;
@@ -225,9 +281,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
     stag->neighbors[2] = stag->rank[0]+1;
   }
 
-  if (stag->n[0] < stag->stencilWidth) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMStag 1d setup does not support local sizes (%" PetscInt_FMT ") smaller than the elementwise stencil width (%" PetscInt_FMT ")",stag->n[0],stag->stencilWidth);
-  }
+  PetscCheck(stag->n[0] >= stag->stencilWidth,PETSC_COMM_SELF,PETSC_ERR_SUP,"DMStag 1d setup does not support local sizes (%" PetscInt_FMT ") smaller than the elementwise stencil width (%" PetscInt_FMT ")",stag->n[0],stag->stencilWidth);
 
   /* Create global->local VecScatter and ISLocalToGlobalMapping */
   {

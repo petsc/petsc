@@ -112,6 +112,7 @@ PETSC_EXTERN PetscErrorCode DMStagMigrateVec(DM,Vec,DM,Vec);
 PETSC_EXTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective(DM);
 PETSC_EXTERN PetscErrorCode DMStagRestoreProductCoordinateArrays(DM,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode DMStagRestoreProductCoordinateArraysRead(DM,void*,void*,void*);
+PETSC_EXTERN PetscErrorCode DMStagRestrictSimple(DM,Vec,DM,Vec);
 PETSC_EXTERN PetscErrorCode DMStagSetBoundaryTypes(DM,DMBoundaryType,DMBoundaryType,DMBoundaryType);
 PETSC_EXTERN PetscErrorCode DMStagSetCoordinateDMType(DM,DMType);
 PETSC_EXTERN PetscErrorCode DMStagSetDOF(DM,PetscInt,PetscInt,PetscInt,PetscInt);
