@@ -1,0 +1,105 @@
+DM Object: 6 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 6 x 4 x 4
+Parallel decomposition: 3 x 2 x 1 ranks
+Boundary ghosting: NONE NONE NONE
+Elementwise ghost stencil: BOX, width 1
+1 DOF per vertex (0D)
+1 DOF per edge (1D)
+1 DOF per face (2D)
+1 DOF per element (3D)
+[0] Rank coordinates (0,0,0)
+[0] Local elements : 2 x 2 x 4 (3 x 3 x 5 with ghosts)
+[0] Local native entries: 144
+[0] Local entries total : 360
+[1] Rank coordinates (1,0,0)
+[1] Local elements : 2 x 2 x 4 (4 x 3 x 5 with ghosts)
+[1] Local native entries: 144
+[1] Local entries total : 480
+[2] Rank coordinates (2,0,0)
+[2] Local elements : 2 x 2 x 4 (4 x 3 x 5 with ghosts)
+[2] Local native entries: 180
+[2] Local entries total : 480
+[3] Rank coordinates (0,1,0)
+[3] Local elements : 2 x 2 x 4 (3 x 4 x 5 with ghosts)
+[3] Local native entries: 180
+[3] Local entries total : 480
+[4] Rank coordinates (1,1,0)
+[4] Local elements : 2 x 2 x 4 (4 x 4 x 5 with ghosts)
+[4] Local native entries: 180
+[4] Local entries total : 640
+[5] Rank coordinates (2,1,0)
+[5] Local elements : 2 x 2 x 4 (4 x 4 x 5 with ghosts)
+[5] Local native entries: 225
+[5] Local entries total : 640
+DM Object: 6 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 12 x 8 x 8
+Parallel decomposition: 3 x 2 x 1 ranks
+Boundary ghosting: NONE NONE NONE
+Elementwise ghost stencil: BOX, width 1
+1 DOF per vertex (0D)
+1 DOF per edge (1D)
+1 DOF per face (2D)
+1 DOF per element (3D)
+[0] Rank coordinates (0,0,0)
+[0] Local elements : 4 x 4 x 8 (5 x 5 x 9 with ghosts)
+[0] Local native entries: 1088
+[0] Local entries total : 1800
+[1] Rank coordinates (1,0,0)
+[1] Local elements : 4 x 4 x 8 (6 x 5 x 9 with ghosts)
+[1] Local native entries: 1088
+[1] Local entries total : 2160
+[2] Rank coordinates (2,0,0)
+[2] Local elements : 4 x 4 x 8 (6 x 5 x 9 with ghosts)
+[2] Local native entries: 1224
+[2] Local entries total : 2160
+[3] Rank coordinates (0,1,0)
+[3] Local elements : 4 x 4 x 8 (5 x 6 x 9 with ghosts)
+[3] Local native entries: 1224
+[3] Local entries total : 2160
+[4] Rank coordinates (1,1,0)
+[4] Local elements : 4 x 4 x 8 (6 x 6 x 9 with ghosts)
+[4] Local native entries: 1224
+[4] Local entries total : 2592
+[5] Rank coordinates (2,1,0)
+[5] Local elements : 4 x 4 x 8 (6 x 6 x 9 with ghosts)
+[5] Local native entries: 1377
+[5] Local entries total : 2592
+DM Object: 6 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 3 x 2 x 2
+Parallel decomposition: 3 x 2 x 1 ranks
+Boundary ghosting: NONE NONE NONE
+Elementwise ghost stencil: BOX, width 1
+1 DOF per vertex (0D)
+1 DOF per edge (1D)
+1 DOF per face (2D)
+1 DOF per element (3D)
+[0] Rank coordinates (0,0,0)
+[0] Local elements : 1 x 1 x 2 (2 x 2 x 3 with ghosts)
+[0] Local native entries: 20
+[0] Local entries total : 96
+[1] Rank coordinates (1,0,0)
+[1] Local elements : 1 x 1 x 2 (3 x 2 x 3 with ghosts)
+[1] Local native entries: 20
+[1] Local entries total : 144
+[2] Rank coordinates (2,0,0)
+[2] Local elements : 1 x 1 x 2 (3 x 2 x 3 with ghosts)
+[2] Local native entries: 30
+[2] Local entries total : 144
+[3] Rank coordinates (0,1,0)
+[3] Local elements : 1 x 1 x 2 (2 x 3 x 3 with ghosts)
+[3] Local native entries: 30
+[3] Local entries total : 144
+[4] Rank coordinates (1,1,0)
+[4] Local elements : 1 x 1 x 2 (3 x 3 x 3 with ghosts)
+[4] Local native entries: 30
+[4] Local entries total : 216
+[5] Rank coordinates (2,1,0)
+[5] Local elements : 1 x 1 x 2 (3 x 3 x 3 with ghosts)
+[5] Local native entries: 45
+[5] Local entries total : 216

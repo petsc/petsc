@@ -1,0 +1,177 @@
+DM Object: 12 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 4 x 4 x 12
+Parallel decomposition: 1 x 2 x 6 ranks
+Boundary ghosting: NONE NONE NONE
+Elementwise ghost stencil: BOX, width 1
+1 DOF per vertex (0D)
+1 DOF per edge (1D)
+1 DOF per face (2D)
+1 DOF per element (3D)
+[0] Rank coordinates (0,0,0)
+[0] Local elements : 4 x 2 x 2 (5 x 3 x 3 with ghosts)
+[0] Local native entries: 144
+[0] Local entries total : 360
+[1] Rank coordinates (0,1,0)
+[1] Local elements : 4 x 2 x 2 (5 x 4 x 3 with ghosts)
+[1] Local native entries: 180
+[1] Local entries total : 480
+[2] Rank coordinates (0,0,1)
+[2] Local elements : 4 x 2 x 2 (5 x 3 x 4 with ghosts)
+[2] Local native entries: 144
+[2] Local entries total : 480
+[3] Rank coordinates (0,1,1)
+[3] Local elements : 4 x 2 x 2 (5 x 4 x 4 with ghosts)
+[3] Local native entries: 180
+[3] Local entries total : 640
+[4] Rank coordinates (0,0,2)
+[4] Local elements : 4 x 2 x 2 (5 x 3 x 4 with ghosts)
+[4] Local native entries: 144
+[4] Local entries total : 480
+[5] Rank coordinates (0,1,2)
+[5] Local elements : 4 x 2 x 2 (5 x 4 x 4 with ghosts)
+[5] Local native entries: 180
+[5] Local entries total : 640
+[6] Rank coordinates (0,0,3)
+[6] Local elements : 4 x 2 x 2 (5 x 3 x 4 with ghosts)
+[6] Local native entries: 144
+[6] Local entries total : 480
+[7] Rank coordinates (0,1,3)
+[7] Local elements : 4 x 2 x 2 (5 x 4 x 4 with ghosts)
+[7] Local native entries: 180
+[7] Local entries total : 640
+[8] Rank coordinates (0,0,4)
+[8] Local elements : 4 x 2 x 2 (5 x 3 x 4 with ghosts)
+[8] Local native entries: 144
+[8] Local entries total : 480
+[9] Rank coordinates (0,1,4)
+[9] Local elements : 4 x 2 x 2 (5 x 4 x 4 with ghosts)
+[9] Local native entries: 180
+[9] Local entries total : 640
+[10] Rank coordinates (0,0,5)
+[10] Local elements : 4 x 2 x 2 (5 x 3 x 4 with ghosts)
+[10] Local native entries: 180
+[10] Local entries total : 480
+[11] Rank coordinates (0,1,5)
+[11] Local elements : 4 x 2 x 2 (5 x 4 x 4 with ghosts)
+[11] Local native entries: 225
+[11] Local entries total : 640
+DM Object: 12 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 8 x 8 x 24
+Parallel decomposition: 1 x 2 x 6 ranks
+Boundary ghosting: NONE NONE NONE
+Elementwise ghost stencil: BOX, width 1
+1 DOF per vertex (0D)
+1 DOF per edge (1D)
+1 DOF per face (2D)
+1 DOF per element (3D)
+[0] Rank coordinates (0,0,0)
+[0] Local elements : 8 x 4 x 4 (9 x 5 x 5 with ghosts)
+[0] Local native entries: 1088
+[0] Local entries total : 1800
+[1] Rank coordinates (0,1,0)
+[1] Local elements : 8 x 4 x 4 (9 x 6 x 5 with ghosts)
+[1] Local native entries: 1224
+[1] Local entries total : 2160
+[2] Rank coordinates (0,0,1)
+[2] Local elements : 8 x 4 x 4 (9 x 5 x 6 with ghosts)
+[2] Local native entries: 1088
+[2] Local entries total : 2160
+[3] Rank coordinates (0,1,1)
+[3] Local elements : 8 x 4 x 4 (9 x 6 x 6 with ghosts)
+[3] Local native entries: 1224
+[3] Local entries total : 2592
+[4] Rank coordinates (0,0,2)
+[4] Local elements : 8 x 4 x 4 (9 x 5 x 6 with ghosts)
+[4] Local native entries: 1088
+[4] Local entries total : 2160
+[5] Rank coordinates (0,1,2)
+[5] Local elements : 8 x 4 x 4 (9 x 6 x 6 with ghosts)
+[5] Local native entries: 1224
+[5] Local entries total : 2592
+[6] Rank coordinates (0,0,3)
+[6] Local elements : 8 x 4 x 4 (9 x 5 x 6 with ghosts)
+[6] Local native entries: 1088
+[6] Local entries total : 2160
+[7] Rank coordinates (0,1,3)
+[7] Local elements : 8 x 4 x 4 (9 x 6 x 6 with ghosts)
+[7] Local native entries: 1224
+[7] Local entries total : 2592
+[8] Rank coordinates (0,0,4)
+[8] Local elements : 8 x 4 x 4 (9 x 5 x 6 with ghosts)
+[8] Local native entries: 1088
+[8] Local entries total : 2160
+[9] Rank coordinates (0,1,4)
+[9] Local elements : 8 x 4 x 4 (9 x 6 x 6 with ghosts)
+[9] Local native entries: 1224
+[9] Local entries total : 2592
+[10] Rank coordinates (0,0,5)
+[10] Local elements : 8 x 4 x 4 (9 x 5 x 6 with ghosts)
+[10] Local native entries: 1224
+[10] Local entries total : 2160
+[11] Rank coordinates (0,1,5)
+[11] Local elements : 8 x 4 x 4 (9 x 6 x 6 with ghosts)
+[11] Local native entries: 1377
+[11] Local entries total : 2592
+DM Object: 12 MPI processes
+  type: stag
+Dimension: 3
+Global sizes: 2 x 2 x 6
+Parallel decomposition: 1 x 2 x 6 ranks
+Boundary ghosting: NONE NONE NONE
+Elementwise ghost stencil: BOX, width 1
+1 DOF per vertex (0D)
+1 DOF per edge (1D)
+1 DOF per face (2D)
+1 DOF per element (3D)
+[0] Rank coordinates (0,0,0)
+[0] Local elements : 2 x 1 x 1 (3 x 2 x 2 with ghosts)
+[0] Local native entries: 20
+[0] Local entries total : 96
+[1] Rank coordinates (0,1,0)
+[1] Local elements : 2 x 1 x 1 (3 x 3 x 2 with ghosts)
+[1] Local native entries: 30
+[1] Local entries total : 144
+[2] Rank coordinates (0,0,1)
+[2] Local elements : 2 x 1 x 1 (3 x 2 x 3 with ghosts)
+[2] Local native entries: 20
+[2] Local entries total : 144
+[3] Rank coordinates (0,1,1)
+[3] Local elements : 2 x 1 x 1 (3 x 3 x 3 with ghosts)
+[3] Local native entries: 30
+[3] Local entries total : 216
+[4] Rank coordinates (0,0,2)
+[4] Local elements : 2 x 1 x 1 (3 x 2 x 3 with ghosts)
+[4] Local native entries: 20
+[4] Local entries total : 144
+[5] Rank coordinates (0,1,2)
+[5] Local elements : 2 x 1 x 1 (3 x 3 x 3 with ghosts)
+[5] Local native entries: 30
+[5] Local entries total : 216
+[6] Rank coordinates (0,0,3)
+[6] Local elements : 2 x 1 x 1 (3 x 2 x 3 with ghosts)
+[6] Local native entries: 20
+[6] Local entries total : 144
+[7] Rank coordinates (0,1,3)
+[7] Local elements : 2 x 1 x 1 (3 x 3 x 3 with ghosts)
+[7] Local native entries: 30
+[7] Local entries total : 216
+[8] Rank coordinates (0,0,4)
+[8] Local elements : 2 x 1 x 1 (3 x 2 x 3 with ghosts)
+[8] Local native entries: 20
+[8] Local entries total : 144
+[9] Rank coordinates (0,1,4)
+[9] Local elements : 2 x 1 x 1 (3 x 3 x 3 with ghosts)
+[9] Local native entries: 30
+[9] Local entries total : 216
+[10] Rank coordinates (0,0,5)
+[10] Local elements : 2 x 1 x 1 (3 x 2 x 3 with ghosts)
+[10] Local native entries: 30
+[10] Local entries total : 144
+[11] Rank coordinates (0,1,5)
+[11] Local elements : 2 x 1 x 1 (3 x 3 x 3 with ghosts)
+[11] Local native entries: 45
+[11] Local entries total : 216
