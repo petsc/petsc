@@ -9,7 +9,7 @@
 PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,iptr,ival,nrow,*perm,*iperm,*xadj,*adjncy;
+  PetscInt       i,j,iptr,ival,nrow,*xadj,*adjncy,*perm,*iperm;
   const PetscInt *ia,*ja;
   int            status;
   Mat            B = NULL;
@@ -57,7 +57,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat,MatOrderingType type,
     xadj[j+1] = iptr;
   }
 
-  status = METIS_NodeND(&nrow,(idx_t*)xadj,(idx_t*)adjncy,NULL,options,perm,iperm);
+  status = METIS_NodeND(&nrow,(idx_t*)xadj,(idx_t*)adjncy,NULL,options,(idx_t*)perm,(idx_t*)iperm);
   switch (status) {
   case METIS_OK: break;
   case METIS_ERROR:

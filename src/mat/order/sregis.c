@@ -59,7 +59,7 @@ PetscErrorCode  MatOrderingRegisterAll(void)
   ierr = MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_METIS)
-  ierr = MatOrderingRegister(MATORDERINGMETISND,      MatGetOrdering_METISND);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGMETISND,  MatGetOrdering_METISND);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
