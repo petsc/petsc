@@ -83,6 +83,38 @@ int main(int argc,char **args)
     ierr = PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL);CHKERRQ(ierr);
     ierr = PCHPDDMHasNeumannMat(pc,PETSC_FALSE);CHKERRQ(ierr); /* PETSC_TRUE is fine as well, just testing */
   }
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-set_rhs",&flg,NULL);CHKERRQ(ierr);
+  if (flg) { /* user-provided RHS for concurrent generalized eigenvalue problems                                   */
+    Mat      a,c,P; /* usually assembled automatically in PCHPDDM, this is solely for testing PCHPDDMSetRHSMat() */
+    PetscInt rstart,rend,location;
+    ierr = MatDuplicate(aux,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr); /* duplicate so that MatStructure is SAME_NONZERO_PATTERN */
+    ierr = MatGetDiagonalBlock(A,&a);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,rend-rstart,m,1,NULL,&P);CHKERRQ(ierr);
+    for (m = rstart; m < rend; ++m) {
+      ierr = ISLocate(is,m,&location);CHKERRQ(ierr);
+      if (location < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
+      ierr = MatSetValue(P,m-rstart,location,1.0,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)a,MATSEQAIJ,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatPtAP(a,P,MAT_INITIAL_MATRIX,1.0,&X);CHKERRQ(ierr); /* MatPtAP() is used to extend diagonal blocks with zeros on the overlap */
+    } else { /* workaround for MatPtAP() limitations with some types */
+      ierr = MatConvert(a,MATSEQAIJ,MAT_INITIAL_MATRIX,&c);CHKERRQ(ierr);
+      ierr = MatPtAP(c,P,MAT_INITIAL_MATRIX,1.0,&X);CHKERRQ(ierr);
+      ierr = MatDestroy(&c);CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(&P);CHKERRQ(ierr);
+    ierr = MatAXPY(B,1.0,X,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDestroy(&X);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCHPDDMSetRHSMat(pc,B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  }
 #endif
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = MatDestroy(&aux);CHKERRQ(ierr);
@@ -189,7 +221,7 @@ int main(int argc,char **args)
         suffix: geneo_share_cholesky_matstructure
         output_file: output/ex76_geneo_share.out
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
-        args: -pc_hpddm_levels_1_sub_pc_type cholesky -mat_type {{baij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure same
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -mat_type {{baij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure same -set_rhs {{false true} shared output}
       test:
         requires: mumps
         suffix: geneo_share_lu
