@@ -20,6 +20,7 @@ class Configure(config.package.Package):
     self.hastests         = 0
     self.hastestsdatafiles= 0
     self.devicePackage    = 1
+    self.fullPathHIPC     = ''
     return
 
   def setupHelp(self, help):
@@ -75,7 +76,15 @@ class Configure(config.package.Package):
     if not hasattr(self,'fullPathHIPC'):
       raise RuntimeError('Unable to locate the HIPC compiler')
 
+  def getSearchDirectories(self):
+    # Package.getSearchDirectories() return '' by default, so that HIPC's default include path could
+    # be checked. But here we lower priority of '', so that once we validated a header path, it will
+    # be added to HIP_INCLUDE.  Other compilers, ex. CC or CXX, might need this path for compilation.
+    yield os.path.dirname(os.path.dirname(self.fullPathHIPC)) # yield /opt/rocm from /opt/rocm/bin/hipcc
+    yield ''
+
   def configureLibrary(self):
+    self.setFullPathHIPC()
     config.package.Package.configureLibrary(self)
     self.getExecutable('hipconfig',getFullPath=1,resultName='hip_config')
     if hasattr(self,'hip_config'):
@@ -148,7 +157,6 @@ class Configure(config.package.Package):
         self.rocBlasDir   = self.directory
         self.rocSparseDir = self.directory
       else: # directory is '', indicating we are using the compiler's default, so the last resort is to guess the dir from hipcc
-        self.setFullPathHIPC()
         hipDir            = os.path.dirname(os.path.dirname(self.fullPathHIPC)) # Ex. peel /opt/rocm-4.5.2/bin/hipcc twice
         self.rocBlasDir   = hipDir
         self.rocSparseDir = hipDir
