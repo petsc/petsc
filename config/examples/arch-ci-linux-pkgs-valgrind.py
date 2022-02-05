@@ -35,6 +35,8 @@ configure_options = [
   '--download-zlib=1',
   '--download-h2opus=1',
   '--download-thrust=1',
+  '--download-kokkos=1',
+  '--download-kokkos-kernels=1',
   ]
 
 if __name__ == '__main__':
