@@ -68,8 +68,8 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   ierr = MatGetSize(Y,&M2,&N2);CHKERRQ(ierr);
   ierr = MatGetLocalSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Y,&m2,&n2);CHKERRQ(ierr);
-  if (M1 != M2 || N1 != N2) SETERRQ4(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_SIZ,"Non conforming matrix add: global sizes X %" PetscInt_FMT " x %" PetscInt_FMT ", Y %" PetscInt_FMT " x %" PetscInt_FMT,M1,N1,M2,N2);
-  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes X %" PetscInt_FMT " x %" PetscInt_FMT ", Y %" PetscInt_FMT " x %" PetscInt_FMT,m1,n1,m2,n2);
+  if (M1 != M2 || N1 != N2) SETERRQ4(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_SIZ,"Non conforming matrix add: global sizes X: %" PetscInt_FMT " x %" PetscInt_FMT ", Y: %" PetscInt_FMT " x %" PetscInt_FMT,M1,N1,M2,N2);
+  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes X: %" PetscInt_FMT " x %" PetscInt_FMT ", Y: %" PetscInt_FMT " x %" PetscInt_FMT,m1,n1,m2,n2);
   if (!Y->assembled) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (Y)");
   if (!X->assembled) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (X)");
   if (a == (PetscScalar)0.0) PetscFunctionReturn(0);
