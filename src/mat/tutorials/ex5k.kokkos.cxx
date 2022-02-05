@@ -44,10 +44,10 @@ int main(int argc,char **argv)
   ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
-  // assemble end on CPU. We are not assembling redudent here, and ignoring off proc entries, but we could
+  // assemble end on CPU. We are not assembling redundant here, and ignoring off proc entries, but we could
   for (int i=Istart; i<Iend+1; i++) {
     PetscScalar values[] = {1,1,1,1};
-    PetscInt    js[] = {i-1,i}, nn = (i==N) ? 1 : 2; // negative indices are igored but >= N are not, so clip end
+    PetscInt    js[] = {i-1,i}, nn = (i==N) ? 1 : 2; // negative indices are ignored but >= N are not, so clip end
     ierr = MatSetValues(A,nn,js,nn,js,values,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   ierr = VecViewFromOptions(y,NULL,"-ex5_vec_view");CHKERRQ(ierr);
 
   // assemble on GPU
-  if (Iend<N) Iend++; // elements, ignore off processor entries so do redundent
+  if (Iend<N) Iend++; // elements, ignore off processor entries so do redundant
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
   ierr = MatKokkosGetDeviceMatWrite(A,&d_mat);CHKERRQ(ierr);
   Kokkos::fence();

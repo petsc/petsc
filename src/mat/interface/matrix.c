@@ -1914,7 +1914,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
      left unchanged.
 
      For the standard row-based matrix formats, idxm[] can only contain rows owned by the requesting MPI rank.
-     That is, rows with global index greater than or equal to restart and less than rend where restart and rend are obtainable
+     That is, rows with global index greater than or equal to rstart and less than rend where rstart and rend are obtainable
      from MatGetOwnershipRange(mat,&rstart,&rend).
 
    Level: advanced
@@ -1961,7 +1961,7 @@ PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
      If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetLocalToGlobalMapping() before using this routine.
 
      This routine can only return values that are owned by the requesting MPI rank. That is, for standard matrix formats, rows that, in the global numbering,
-     are greater than or equal to restart and less than rend where restart and rend are obtainable from MatGetOwnershipRange(mat,&rstart,&rend). One can
+     are greater than or equal to rstart and less than rend where rstart and rend are obtainable from MatGetOwnershipRange(mat,&rstart,&rend). One can
      determine if the resulting global row associated with the local row r is owned by the requesting MPI rank by applying the ISLocalToGlobalMapping set
      with MatSetLocalToGlobalMapping().
 

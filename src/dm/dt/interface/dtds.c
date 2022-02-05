@@ -1321,6 +1321,140 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f,
 }
 
 /*@C
+  PetscDSGetRHSResidual - Get the pointwise RHS residual function for explicit timestepping for a given test field
+
+  Not collective
+
+  Input Parameters:
++ ds - The PetscDS
+- f  - The test field number
+
+  Output Parameters:
++ f0 - integrand for the test function term
+- f1 - integrand for the test function gradient term
+
+  Note: We are using a first order FEM model for the weak form:
+
+  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+
+The calling sequence for the callbacks f0 and f1 is given by:
+
+$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$    PetscReal t, const PetscReal x[], PetscScalar f0[])
+
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
+- f0 - output values at the current point
+
+  Level: intermediate
+
+.seealso: PetscDSSetRHSResidual()
+@*/
+PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f,
+                                     void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                                 PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]),
+                                     void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                                 PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
+{
+  PetscPointFunc *tmp0, *tmp1;
+  PetscInt        n0, n1;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= ds->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
+  ierr = PetscWeakFormGetResidual(ds->wf, NULL, 0, f, 100, &n0, &tmp0, &n1, &tmp1);CHKERRQ(ierr);
+  *f0  = tmp0 ? tmp0[0] : NULL;
+  *f1  = tmp1 ? tmp1[0] : NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDSSetRHSResidual - Set the pointwise residual function for explicit timestepping for a given test field
+
+  Not collective
+
+  Input Parameters:
++ ds - The PetscDS
+. f  - The test field number
+. f0 - integrand for the test function term
+- f1 - integrand for the test function gradient term
+
+  Note: We are using a first order FEM model for the weak form:
+
+  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+
+The calling sequence for the callbacks f0 and f1 is given by:
+
+$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$    PetscReal t, const PetscReal x[], PetscScalar f0[])
+
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
+- f0 - output values at the current point
+
+  Level: intermediate
+
+.seealso: PetscDSGetResidual()
+@*/
+PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f,
+                                     void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                                PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]),
+                                     void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                                PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
+  if (f0) PetscValidFunction(f0, 3);
+  if (f1) PetscValidFunction(f1, 4);
+  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  ierr = PetscWeakFormSetIndexResidual(ds->wf, NULL, 0, f, 100, 0, f0, 0, f1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscDSHasJacobian - Signals that Jacobian functions have been set
 
   Not collective

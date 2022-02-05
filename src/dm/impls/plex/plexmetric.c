@@ -4,7 +4,7 @@
 PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
 {
   MPI_Comm       comm;
-  PetscBool      isotropic = PETSC_FALSE, restrictAnisotropyFirst = PETSC_FALSE;
+  PetscBool      isotropic = PETSC_FALSE, uniform = PETSC_FALSE, restrictAnisotropyFirst = PETSC_FALSE;
   PetscBool      noInsert = PETSC_FALSE, noSwap = PETSC_FALSE, noMove = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       verbosity = -1, numIter = 3;
@@ -15,6 +15,8 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   ierr = PetscOptionsBegin(comm, "", "Riemannian metric options", "DMPlexMetric");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_metric_isotropic", "Is the metric isotropic?", "DMPlexMetricCreateIsotropic", isotropic, &isotropic, NULL);CHKERRQ(ierr);
   ierr = DMPlexMetricSetIsotropic(dm, isotropic);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_metric_uniform", "Is the metric uniform?", "DMPlexMetricCreateUniform", uniform, &uniform, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetUniform(dm, uniform);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_metric_restrict_anisotropy_first", "Should anisotropy be restricted before normalization?", "DMPlexNormalize", restrictAnisotropyFirst, &restrictAnisotropyFirst, NULL);CHKERRQ(ierr);
   ierr = DMPlexMetricSetRestrictAnisotropyFirst(dm, restrictAnisotropyFirst);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_metric_no_insert", "Turn off node insertion and deletion", "DMAdaptMetric", noInsert, &noInsert, NULL);CHKERRQ(ierr);
@@ -52,7 +54,7 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
 
   Level: beginner
 
-.seealso: DMPlexMetricIsIsotropic(), DMPlexMetricSetRestrictAnisotropyFirst()
+.seealso: DMPlexMetricIsIsotropic(), DMPlexMetricSetUniform(), DMPlexMetricSetRestrictAnisotropyFirst()
 @*/
 PetscErrorCode DMPlexMetricSetIsotropic(DM dm, PetscBool isotropic)
 {
@@ -69,7 +71,7 @@ PetscErrorCode DMPlexMetricSetIsotropic(DM dm, PetscBool isotropic)
 }
 
 /*@
-  DMPlexMetricIsIsotropic - Is a metric is isotropic?
+  DMPlexMetricIsIsotropic - Is a metric isotropic?
 
   Input parameters:
 . dm        - The DM
@@ -79,7 +81,7 @@ PetscErrorCode DMPlexMetricSetIsotropic(DM dm, PetscBool isotropic)
 
   Level: beginner
 
-.seealso: DMPlexMetricSetIsotropic(), DMPlexMetricRestrictAnisotropyFirst()
+.seealso: DMPlexMetricSetIsotropic(), DMPlexMetricIsUniform(), DMPlexMetricRestrictAnisotropyFirst()
 @*/
 PetscErrorCode DMPlexMetricIsIsotropic(DM dm, PetscBool *isotropic)
 {
@@ -92,6 +94,63 @@ PetscErrorCode DMPlexMetricIsIsotropic(DM dm, PetscBool *isotropic)
     ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
   }
   *isotropic = plex->metricCtx->isotropic;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricSetUniform - Record whether a metric is uniform
+
+  Input parameters:
++ dm      - The DM
+- uniform - Is the metric uniform?
+
+  Level: beginner
+
+  Notes:
+
+  If the metric is specified as uniform then it is assumed to be isotropic, too.
+
+.seealso: DMPlexMetricIsUniform(), DMPlexMetricSetIsotropic(), DMPlexMetricSetRestrictAnisotropyFirst()
+@*/
+PetscErrorCode DMPlexMetricSetUniform(DM dm, PetscBool uniform)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->uniform = uniform;
+  if (uniform) plex->metricCtx->isotropic = uniform;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricIsUniform - Is a metric uniform?
+
+  Input parameters:
+. dm      - The DM
+
+  Output parameters:
+. uniform - Is the metric uniform?
+
+  Level: beginner
+
+.seealso: DMPlexMetricSetUniform(), DMPlexMetricIsIsotropic(), DMPlexMetricRestrictAnisotropyFirst()
+@*/
+PetscErrorCode DMPlexMetricIsUniform(DM dm, PetscBool *uniform)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *uniform = plex->metricCtx->uniform;
   PetscFunctionReturn(0);
 }
 
@@ -814,6 +873,7 @@ PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec
   Command line options for Riemannian metrics:
 
 + -dm_plex_metric_isotropic                 - Is the metric isotropic?
+. -dm_plex_metric_uniform                   - Is the metric uniform?
 . -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
 . -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
 . -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
@@ -839,6 +899,7 @@ PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec
 PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
 {
   DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscBool      isotropic, uniform;
   PetscErrorCode ierr;
   PetscInt       coordDim, Nd;
 
@@ -849,26 +910,22 @@ PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
   }
   ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
   Nd = coordDim*coordDim;
-  ierr = DMPlexP1FieldCreate_Private(dm, f, Nd, metric);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
+  if (uniform) {
+    MPI_Comm comm;
 
-typedef struct {
-  PetscReal scaling;  /* Scaling for uniform metric diagonal */
-} DMPlexMetricUniformCtx;
-
-static PetscErrorCode diagonal(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  DMPlexMetricUniformCtx *user = (DMPlexMetricUniformCtx*)ctx;
-  PetscInt                i, j;
-
-  for (i = 0; i < dim; ++i) {
-    for (j = 0; j < dim; ++j) {
-      if (i == j) u[i+dim*j] = user->scaling;
-      else u[i+dim*j] = 0.0;
-    }
+    ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+    if (!isotropic) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
+    ierr = VecCreate(comm, metric);CHKERRQ(ierr);
+    ierr = VecSetSizes(*metric, 1, PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(*metric);CHKERRQ(ierr);
+  } else if (isotropic) {
+    ierr = DMPlexP1FieldCreate_Private(dm, f, 1, metric);CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexP1FieldCreate_Private(dm, f, Nd, metric);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -884,26 +941,31 @@ static PetscErrorCode diagonal(PetscInt dim, PetscReal time, const PetscReal x[]
 
   Level: beginner
 
-  Note: It is assumed that the DM is comprised of simplices.
+  Note: In this case, the metric is constant in space and so is only specified for a single vertex.
 
 .seealso: DMPlexMetricCreate(), DMPlexMetricCreateIsotropic()
 @*/
 PetscErrorCode DMPlexMetricCreateUniform(DM dm, PetscInt f, PetscReal alpha, Vec *metric)
 {
-  DMPlexMetricUniformCtx user;
-  PetscErrorCode       (*funcs[1])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
-  PetscErrorCode         ierr;
-  void                  *ctxs[1];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexMetricSetUniform(dm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexMetricCreate(dm, f, metric);CHKERRQ(ierr);
   if (!alpha) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform metric scaling is undefined");
   if (alpha < 1.0e-30) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform metric scaling %e should be positive", alpha);
-  else user.scaling = alpha;
-  funcs[0] = diagonal;
-  ctxs[0] = &user;
-  ierr = DMProjectFunctionLocal(dm, 0.0, funcs, ctxs, INSERT_ALL_VALUES, *metric);CHKERRQ(ierr);
+  ierr = VecSet(*metric, alpha);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(*metric);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(*metric);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                     PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  f0[0] = u[0];
 }
 
 /*@
@@ -923,33 +985,32 @@ PetscErrorCode DMPlexMetricCreateUniform(DM dm, PetscInt f, PetscReal alpha, Vec
 
   It is assumed that the DM is comprised of simplices.
 
-  The indicator needs to be a scalar field defined at *vertices*.
+  The indicator needs to be a scalar field. If it is not defined vertex-wise, then it is projected appropriately.
 
 .seealso: DMPlexMetricCreate(), DMPlexMetricCreateUniform()
 @*/
 PetscErrorCode DMPlexMetricCreateIsotropic(DM dm, PetscInt f, Vec indicator, Vec *metric)
 {
-  DM                 dmIndi;
-  PetscErrorCode     ierr;
-  PetscInt           dim, d, vStart, vEnd, v;
-  const PetscScalar *indi;
-  PetscScalar       *met;
+  PetscErrorCode ierr;
+  PetscInt       m, n;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetIsotropic(dm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexMetricCreate(dm, f, metric);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(indicator, &indi);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(*metric, &met);CHKERRQ(ierr);
-  ierr = VecGetDM(indicator, &dmIndi);CHKERRQ(ierr);
-  for (v = vStart; v < vEnd; ++v) {
-    PetscScalar *vindi, *vmet;
-    ierr = DMPlexPointLocalRead(dmIndi, v, indi, &vindi);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRef(dm, v, met, &vmet);CHKERRQ(ierr);
-    for (d = 0; d < dim; ++d) vmet[d*(dim+1)] = vindi[0];
+  ierr = VecGetSize(indicator, &m);CHKERRQ(ierr);
+  ierr = VecGetSize(*metric, &n);CHKERRQ(ierr);
+  if (m == n) { ierr = VecCopy(indicator, *metric);CHKERRQ(ierr); }
+  else {
+    DM     dmIndi;
+    void (*funcs[1])(PetscInt, PetscInt, PetscInt,
+                     const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                     const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                     PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
+
+    ierr = VecGetDM(indicator, &dmIndi);CHKERRQ(ierr);
+    funcs[0] = identity;
+    ierr = DMProjectFieldLocal(dmIndi, 0.0, indicator, funcs, INSERT_VALUES, *metric);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayWrite(*metric, &met);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(indicator, &indi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -992,7 +1053,14 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
   }
 
   /* Compute eigendecomposition */
-  {
+  if (dim == 1) {
+
+    /* Isotropic case */
+    eigs[0] = PetscRealPart(Mpos[0]);
+    Mpos[0] = 1.0;
+  } else {
+
+    /* Anisotropic case */
     PetscScalar  *work;
     PetscBLASInt lwork;
 
@@ -1077,15 +1145,18 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
 
   Relevant command line options:
 
-+ -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
-. -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
-- -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
++ -dm_plex_metric_isotropic - Is the metric isotropic?
+. -dm_plex_metric_uniform   - Is the metric uniform?
+. -dm_plex_metric_h_min     - Minimum tolerated metric magnitude
+. -dm_plex_metric_h_max     - Maximum tolerated metric magnitude
+- -dm_plex_metric_a_max     - Maximum tolerated anisotropy
 
 .seealso: DMPlexMetricNormalize(), DMPlexMetricIntersection()
 @*/
 PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSizes, PetscBool restrictAnisotropy, Vec *metricOut, Vec *determinant)
 {
   DM             dmDet;
+  PetscBool      isotropic, uniform;
   PetscErrorCode ierr;
   PetscInt       dim, vStart, vEnd, v;
   PetscScalar   *met, *det;
@@ -1107,25 +1178,42 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
     a_max = PetscMin(a_max, 1.0e+30);
   }
 
-  /* Setup output metric and determinant */
+  /* Setup output metric */
   ierr = DMPlexMetricCreate(dm, 0, metricOut);CHKERRQ(ierr);
   ierr = VecCopy(metricIn, *metricOut);CHKERRQ(ierr);
-  ierr = DMClone(dm, &dmDet);CHKERRQ(ierr);
-  ierr = DMPlexP1FieldCreate_Private(dmDet, 0, 1, determinant);CHKERRQ(ierr);
 
-  /* Enforce SPD */
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  /* Enforce SPD and extract determinant */
   ierr = VecGetArray(*metricOut, &met);CHKERRQ(ierr);
-  ierr = VecGetArray(*determinant, &det);CHKERRQ(ierr);
-  for (v = vStart; v < vEnd; ++v) {
-    PetscScalar *vmet, *vdet;
-    ierr = DMPlexPointLocalRef(dm, v, met, &vmet);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRef(dmDet, v, det, &vdet);CHKERRQ(ierr);
-    ierr = DMPlexMetricModify_Private(dim, h_min, h_max, a_max, vmet, vdet);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(*determinant, &det);CHKERRQ(ierr);
-  ierr = VecRestoreArray(*metricOut, &met);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
+  if (uniform) {
+    if (!isotropic) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
+    
+    /* Uniform case */
+    ierr = VecDuplicate(metricIn, determinant);CHKERRQ(ierr);
+    ierr = VecGetArray(*determinant, &det);CHKERRQ(ierr);
+    ierr = DMPlexMetricModify_Private(1, h_min, h_max, a_max, met, det);CHKERRQ(ierr);
+    ierr = VecRestoreArray(*determinant, &det);CHKERRQ(ierr);
+  } else {
 
+    /* Spatially varying case */
+    PetscInt nrow;
+
+    if (isotropic) nrow = 1;
+    else nrow = dim;
+    ierr = DMClone(dm, &dmDet);CHKERRQ(ierr);
+    ierr = DMPlexP1FieldCreate_Private(dmDet, 0, 1, determinant);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = VecGetArray(*determinant, &det);CHKERRQ(ierr);
+    for (v = vStart; v < vEnd; ++v) {
+      PetscScalar *vmet, *vdet;
+      ierr = DMPlexPointLocalRef(dm, v, met, &vmet);CHKERRQ(ierr);
+      ierr = DMPlexPointLocalRef(dmDet, v, det, &vdet);CHKERRQ(ierr);
+      ierr = DMPlexMetricModify_Private(nrow, h_min, h_max, a_max, vmet, vdet);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(*determinant, &det);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(*metricOut, &met);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1157,7 +1245,9 @@ static void detMFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
   Relevant command line options:
 
-+ -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
++ -dm_plex_metric_isotropic                 - Is the metric isotropic?
+. -dm_plex_metric_uniform                   - Is the metric uniform?
+. -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
 . -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
 . -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
 . -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
@@ -1170,12 +1260,12 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
 {
   DM               dmDet;
   MPI_Comm         comm;
-  PetscBool        restrictAnisotropyFirst;
+  PetscBool        restrictAnisotropyFirst, isotropic, uniform;
   PetscDS          ds;
   PetscErrorCode   ierr;
   PetscInt         dim, Nd, vStart, vEnd, v, i;
   PetscScalar     *met, *det, integral, constants[1];
-  PetscReal        p, h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0, factGlob, target, realIntegral;
+  PetscReal        p, h_min = 1.0e-30, h_max = 1.0e+30, a_max = 0.0, factGlob, fact, target, realIntegral;
   Vec              determinant;
 
   PetscFunctionBegin;
@@ -1183,7 +1273,10 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   /* Extract metadata from dm */
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  Nd = dim*dim;
+  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
+  if (isotropic) Nd = 1;
+  else Nd = dim*dim;
 
   /* Set up metric and ensure it is SPD */
   ierr = DMPlexMetricRestrictAnisotropyFirst(dm, &restrictAnisotropyFirst);CHKERRQ(ierr);
@@ -1193,11 +1286,29 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   ierr = DMPlexMetricGetTargetComplexity(dm, &target);CHKERRQ(ierr);
   ierr = DMPlexMetricGetNormalizationOrder(dm, &p);CHKERRQ(ierr);
   constants[0] = p;
-  ierr = VecGetDM(determinant, &dmDet);CHKERRQ(ierr);
-  ierr = DMGetDS(dmDet, &ds);CHKERRQ(ierr);
-  ierr = PetscDSSetConstants(ds, 1, constants);CHKERRQ(ierr);
-  ierr = PetscDSSetObjective(ds, 0, detMFunc);CHKERRQ(ierr);
-  ierr = DMPlexComputeIntegralFEM(dmDet, determinant, &integral, NULL);CHKERRQ(ierr);
+  if (uniform) {
+    if (!isotropic) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
+    DM  dmTmp;
+    Vec tmp;
+
+    ierr = DMClone(dm, &dmTmp);CHKERRQ(ierr);
+    ierr = DMPlexP1FieldCreate_Private(dmTmp, 0, 1, &tmp);CHKERRQ(ierr);
+    ierr = VecGetArray(determinant, &det);CHKERRQ(ierr);
+    ierr = VecSet(tmp, det[0]);CHKERRQ(ierr);
+    ierr = VecRestoreArray(determinant, &det);CHKERRQ(ierr);
+    ierr = DMGetDS(dmTmp, &ds);CHKERRQ(ierr);
+    ierr = PetscDSSetConstants(ds, 1, constants);CHKERRQ(ierr);
+    ierr = PetscDSSetObjective(ds, 0, detMFunc);CHKERRQ(ierr);
+    ierr = DMPlexComputeIntegralFEM(dmTmp, tmp, &integral, NULL);CHKERRQ(ierr);
+    ierr = VecDestroy(&tmp);CHKERRQ(ierr);
+    ierr = DMDestroy(&dmTmp);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetDM(determinant, &dmDet);CHKERRQ(ierr);
+    ierr = DMGetDS(dmDet, &ds);CHKERRQ(ierr);
+    ierr = PetscDSSetConstants(ds, 1, constants);CHKERRQ(ierr);
+    ierr = PetscDSSetObjective(ds, 0, detMFunc);CHKERRQ(ierr);
+    ierr = DMPlexComputeIntegralFEM(dmDet, determinant, &integral, NULL);CHKERRQ(ierr);
+  }
   realIntegral = PetscRealPart(integral);
   if (realIntegral < 1.0e-30) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global metric normalization factor should be strictly positive, not %.4e Is the input metric positive-definite?", realIntegral);
   factGlob = PetscPowReal(target/realIntegral, 2.0/dim);
@@ -1216,21 +1327,33 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   }
   ierr = VecGetArray(*metricOut, &met);CHKERRQ(ierr);
   ierr = VecGetArray(determinant, &det);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  for (v = vStart; v < vEnd; ++v) {
-    PetscScalar *Mp, *detM;
-    PetscReal    fact;
+  if (uniform) {
 
-    ierr = DMPlexPointLocalRef(dm, v, met, &Mp);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRef(dmDet, v, det, &detM);CHKERRQ(ierr);
-    fact = factGlob * PetscPowReal(PetscAbsScalar(detM[0]), -1.0/(2*p+dim));
-    for (i = 0; i < Nd; ++i) Mp[i] *= fact;
-    if (restrictSizes) { ierr = DMPlexMetricModify_Private(dim, h_min, h_max, a_max, Mp, detM);CHKERRQ(ierr); }
+    /* Uniform case */
+    met[0] *= factGlob * PetscPowReal(PetscAbsScalar(det[0]), -1.0/(2*p+dim));
+    if (restrictSizes) { ierr = DMPlexMetricModify_Private(1, h_min, h_max, a_max, met, det);CHKERRQ(ierr); }
+  } else {
+
+    /* Spatially varying case */
+    PetscInt nrow;
+
+    if (isotropic) nrow = 1;
+    else nrow = dim;
+    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    for (v = vStart; v < vEnd; ++v) {
+      PetscScalar *Mp, *detM;
+
+      ierr = DMPlexPointLocalRef(dm, v, met, &Mp);CHKERRQ(ierr);
+      ierr = DMPlexPointLocalRef(dmDet, v, det, &detM);CHKERRQ(ierr);
+      fact = factGlob * PetscPowReal(PetscAbsScalar(detM[0]), -1.0/(2*p+dim));
+      for (i = 0; i < Nd; ++i) Mp[i] *= fact;
+      if (restrictSizes) { ierr = DMPlexMetricModify_Private(nrow, h_min, h_max, a_max, Mp, detM);CHKERRQ(ierr); }
+    }
   }
   ierr = VecRestoreArray(determinant, &det);CHKERRQ(ierr);
   ierr = VecRestoreArray(*metricOut, &met);CHKERRQ(ierr);
   ierr = VecDestroy(&determinant);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmDet);CHKERRQ(ierr);
+  if (!uniform) { ierr = DMDestroy(&dmDet);CHKERRQ(ierr); }
 
   PetscFunctionReturn(0);
 }
@@ -1260,13 +1383,18 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
 {
   PetscBool      haveWeights = PETSC_TRUE;
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i, m, n;
   PetscReal      sum = 0.0, tol = 1.0e-10;
 
   PetscFunctionBegin;
-  if (numMetrics < 1) { SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot average %d < 1 metrics", numMetrics); }
+  if (numMetrics < 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot average %d < 1 metrics", numMetrics);
   ierr = DMPlexMetricCreate(dm, 0, metricAvg);CHKERRQ(ierr);
   ierr = VecSet(*metricAvg, 0.0);CHKERRQ(ierr);
+  ierr = VecGetSize(*metricAvg, &m);CHKERRQ(ierr);
+  for (i = 0; i < numMetrics; ++i) {
+    ierr = VecGetSize(metrics[i], &n);CHKERRQ(ierr);
+    if (m != n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Averaging different metric types not implemented");
+  }
 
   /* Default to the unweighted case */
   if (!weights) {
@@ -1276,12 +1404,12 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
   }
 
   /* Check weights sum to unity */
-  for (i = 0; i < numMetrics; ++i) { sum += weights[i]; }
-  if (PetscAbsReal(sum - 1) > tol) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Weights do not sum to unity"); }
+  for (i = 0; i < numMetrics; ++i) sum += weights[i];
+  if (PetscAbsReal(sum - 1) > tol) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Weights do not sum to unity");
 
   /* Compute metric average */
   for (i = 0; i < numMetrics; ++i) { ierr = VecAXPY(*metricAvg, weights[i], metrics[i]);CHKERRQ(ierr); }
-  if (!haveWeights) {ierr = PetscFree(weights); }
+  if (!haveWeights) { ierr = PetscFree(weights); }
   PetscFunctionReturn(0);
 }
 
@@ -1346,6 +1474,14 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
   PetscScalar   *evecs, *sqrtM1, *isqrtM1;
 
   PetscFunctionBegin;
+
+  /* Isotropic case */
+  if (dim == 1) {
+    M2[0] = (PetscScalar)PetscMin(PetscRealPart(M1[0]), PetscRealPart(M2[0]));
+    PetscFunctionReturn(0);
+  }
+
+  /* Anisotropic case */
   ierr = PetscMalloc5(dim*dim, &evecs, dim*dim, &sqrtM1, dim*dim, &isqrtM1, dim, &evals, dim, &evals1);CHKERRQ(ierr);
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
@@ -1480,36 +1616,59 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 @*/
 PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[], Vec *metricInt)
 {
+  PetscBool      isotropic, uniform;
   PetscErrorCode ierr;
-  PetscInt       dim, vStart, vEnd, v, i;
-  PetscScalar   *met, *meti, *M, *Mi;
+  PetscInt       v, i, m, n;
+  PetscScalar   *met, *meti;
 
   PetscFunctionBegin;
-  if (numMetrics < 1) { SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot intersect %d < 1 metrics", numMetrics); }
-
-  /* Extract metadata from dm */
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexMetricCreate(dm, 0, metricInt);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  if (numMetrics < 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot intersect %d < 1 metrics", numMetrics);
 
   /* Copy over the first metric */
+  ierr = DMPlexMetricCreate(dm, 0, metricInt);CHKERRQ(ierr);
   ierr = VecCopy(metrics[0], *metricInt);CHKERRQ(ierr);
+  if (numMetrics == 1) PetscFunctionReturn(0);
+  ierr = VecGetSize(*metricInt, &m);CHKERRQ(ierr);
+  for (i = 0; i < numMetrics; ++i) {
+    ierr = VecGetSize(metrics[i], &n);CHKERRQ(ierr);
+    if (m != n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Intersecting different metric types not implemented");
+  }
 
   /* Intersect subsequent metrics in turn */
-  if (numMetrics > 1) {
+  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
+  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
+  if (uniform) {
+
+    /* Uniform case */
+    ierr = VecGetArray(*metricInt, &met);CHKERRQ(ierr);
+    for (i = 1; i < numMetrics; ++i) {
+      ierr = VecGetArray(metrics[i], &meti);CHKERRQ(ierr);
+      ierr = DMPlexMetricIntersection_Private(1, meti, met);CHKERRQ(ierr);
+      ierr = VecRestoreArray(metrics[i], &meti);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(*metricInt, &met);CHKERRQ(ierr);
+  } else {
+
+    /* Spatially varying case */
+    PetscInt     dim, vStart, vEnd, nrow;
+    PetscScalar *M, *Mi;
+
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    if (isotropic) nrow = 1;
+    else nrow = dim;
+    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     ierr = VecGetArray(*metricInt, &met);CHKERRQ(ierr);
     for (i = 1; i < numMetrics; ++i) {
       ierr = VecGetArray(metrics[i], &meti);CHKERRQ(ierr);
       for (v = vStart; v < vEnd; ++v) {
         ierr = DMPlexPointLocalRef(dm, v, met, &M);CHKERRQ(ierr);
         ierr = DMPlexPointLocalRef(dm, v, meti, &Mi);CHKERRQ(ierr);
-        ierr = DMPlexMetricIntersection_Private(dim, Mi, M);CHKERRQ(ierr);
+        ierr = DMPlexMetricIntersection_Private(nrow, Mi, M);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(metrics[i], &meti);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(*metricInt, &met);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

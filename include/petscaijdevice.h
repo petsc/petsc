@@ -106,7 +106,7 @@ struct _n_SplitCSRMat {
   }                                                                    \
 }
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
 #define SETERR return(printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found!\n",d_mat->rank,__func__,__FILE__,__LINE__,(long int)im[i],(long int)in[j]),PETSC_ERR_ARG_OUTOFRANGE)
 #else
 #define SETERR return PETSC_ERR_ARG_OUTOFRANGE

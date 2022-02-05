@@ -796,7 +796,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if not hasattr(child, 'version_tuple') or not isinstance(child.version_tuple, tuple): return
     if not child.version_tuple: return
     vt = child.version_tuple
-    prefix = 'PETSC_PKG_'+child.name.upper()+('_')
+    prefix = 'PETSC_PKG_'+child.name.upper().replace('-','_')+('_') # Ex. convert KOKKOS-KERNELS to KOKKOS_KERNELS
     ss = ('VERSION_MAJOR','VERSION_MINOR','VERSION_SUBMINOR')
     # output versioning tuple
     for t in range(min(len(vt),3)):
