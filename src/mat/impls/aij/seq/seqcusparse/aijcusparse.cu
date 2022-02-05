@@ -85,7 +85,6 @@ static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMult
 static PetscErrorCode MatSeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriFactors**);
 static PetscErrorCode MatSeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE**);
 
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
 static PetscErrorCode MatSeqAIJCUSPARSECopyFromGPU(Mat);
 static PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat,PetscBool);
 

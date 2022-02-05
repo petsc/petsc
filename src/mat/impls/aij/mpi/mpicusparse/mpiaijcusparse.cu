@@ -656,8 +656,6 @@ M*/
  .seealso: MATAIJCUSPARSE, MATSEQAIJCUSPARSE
 M*/
 
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
-
 // get GPU pointers to stripped down Mat. For both seq and MPI Mat.
 PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
 {

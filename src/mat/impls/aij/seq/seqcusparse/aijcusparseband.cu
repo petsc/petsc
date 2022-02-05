@@ -252,15 +252,6 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatrixNfDestroy(void *ptr)
-{
-  PetscInt *nf = (PetscInt *)ptr;
-  PetscErrorCode  ierr;
-  PetscFunctionBegin;
-  ierr = PetscFree(nf);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
