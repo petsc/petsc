@@ -1940,8 +1940,6 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       h_mat.offdiag.i = h_mat.offdiag.j = NULL;
       h_mat.offdiag.a = NULL;
       aijkokA = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
-      aijkokA->i_uncompressed_d = NULL;
-      aijkokA->colmap_d = NULL;
     } else {
       Mat_MPIAIJ       *aij = (Mat_MPIAIJ*)A->data;
       Mat_SeqAIJ       *jacb = (Mat_SeqAIJ*)aij->B->data;
@@ -1951,8 +1949,6 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       Amat = aij->A;
       aijkokA = static_cast<Mat_SeqAIJKokkos*>(aij->A->spptr);
       aijkokB = static_cast<Mat_SeqAIJKokkos*>(aij->B->spptr);
-      aijkokA->i_uncompressed_d = NULL;
-      aijkokA->colmap_d = NULL;
       jaca = (Mat_SeqAIJ*)aij->A->data;
       if (aij->B->cmap->n && !aij->garray) SETERRQ(comm,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
       if (aij->B->rmap->n != aij->A->rmap->n) SETERRQ(comm,PETSC_ERR_SUP,"Only support aij->B->rmap->n == aij->A->rmap->n");
@@ -1968,9 +1964,9 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       nnz = jacb->i[n];
       if (jacb->compressedrow.use) {
         const Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_i_k (jacb->i,n+1);
-        aijkokB->i_uncompressed_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_i_k));
-        Kokkos::deep_copy (*aijkokB->i_uncompressed_d, h_i_k);
-        h_mat.offdiag.i = aijkokB->i_uncompressed_d->data();
+        aijkokB->i_uncompressed_d = Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_i_k));
+        Kokkos::deep_copy (aijkokB->i_uncompressed_d, h_i_k);
+        h_mat.offdiag.i = aijkokB->i_uncompressed_d.data();
       } else {
          h_mat.offdiag.i = aijkokB->i_device_data();
       }
@@ -1978,9 +1974,9 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       h_mat.offdiag.a = aijkokB->a_device_data();
       {
         Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_colmap_k (colmap,A->cmap->N);
-        aijkokB->colmap_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_colmap_k));
-        Kokkos::deep_copy (*aijkokB->colmap_d, h_colmap_k);
-        h_mat.colmap = aijkokB->colmap_d->data();
+        aijkokB->colmap_d = Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_colmap_k));
+        Kokkos::deep_copy (aijkokB->colmap_d, h_colmap_k);
+        h_mat.colmap = aijkokB->colmap_d.data();
         ierr = PetscFree(colmap);CHKERRQ(ierr);
       }
       h_mat.offdiag.ignorezeroentries = jacb->ignorezeroentries;

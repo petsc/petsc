@@ -543,13 +543,6 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
   PetscFunctionBegin;
   if (A->factortype == MAT_FACTOR_NONE) {
     aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
-    if (aijkok) {
-      if (aijkok->device_mat_d.data()) {
-        delete aijkok->colmap_d;
-        delete aijkok->i_uncompressed_d;
-      }
-      if (aijkok->diag_d) delete aijkok->diag_d;
-    }
     delete aijkok;
   } else {
     delete static_cast<Mat_SeqAIJKokkosTriFactors*>(A->spptr);
@@ -1365,7 +1358,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKOKKOSDEVICE(Mat B,Mat A,const Ma
   IS                 isrow = b->row,isicol = b->icol;
   PetscErrorCode     ierr;
   const PetscInt     *r_h,*ic_h;
-  const PetscInt     n=A->rmap->n, *ai_d=aijkok->i_dual.view_device().data(), *aj_d=aijkok->j_dual.view_device().data(), *bi_d=baijkok->i_dual.view_device().data(), *bj_d=baijkok->j_dual.view_device().data(), *bdiag_d = baijkok->diag_d->data();
+  const PetscInt     n=A->rmap->n, *ai_d=aijkok->i_dual.view_device().data(), *aj_d=aijkok->j_dual.view_device().data(), *bi_d=baijkok->i_dual.view_device().data(), *bj_d=baijkok->j_dual.view_device().data(), *bdiag_d = baijkok->diag_d.data();
   const PetscScalar  *aa_d = aijkok->a_dual.view_device().data();
   PetscScalar        *ba_d = baijkok->a_dual.view_device().data();
   PetscBool          row_identity,col_identity;
@@ -1799,10 +1792,10 @@ static PetscErrorCode MatLUFactorSymbolic_SeqAIJKOKKOSDEVICE(Mat B,Mat A,IS isro
   ierr = MatSeqAIJKokkosSyncDevice(A);CHKERRQ(ierr); // create aijkok
   {
     Mat_SeqAIJKokkos *baijkok = static_cast<Mat_SeqAIJKokkos*>(B->spptr);
-    if (!baijkok->diag_d) {
+    if (!baijkok->diag_d.extent(0)) {
       const Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_diag (b->diag,nrows+1);
-      baijkok->diag_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_diag));
-      Kokkos::deep_copy (*baijkok->diag_d, h_diag);
+      baijkok->diag_d = Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_diag));
+      Kokkos::deep_copy (baijkok->diag_d, h_diag);
     }
   }
   PetscFunctionReturn(0);
