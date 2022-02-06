@@ -303,10 +303,13 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
+    ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"MatKAIJSetAIJ() with MATSEQKAIJ does not support %s as the AIJ mat",((PetscObject)B)->type_name);
     Mat_SeqKAIJ *a = (Mat_SeqKAIJ*)A->data;
     a->AIJ = B;
   } else {
@@ -458,6 +461,7 @@ PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
   ierr = PetscFree(b->T);CHKERRQ(ierr);
   ierr = PetscFree(b->ibdiag);CHKERRQ(ierr);
   ierr = PetscFree5(b->sor.w,b->sor.y,b->sor.work,b->sor.t,b->sor.arr);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqkaij_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -620,11 +624,7 @@ PetscErrorCode MatView_KAIJ(Mat A,PetscViewer viewer)
 
   } else {
     /* For all other matrix viewer output formats, simply convert to an AIJ matrix and call MatView() on that. */
-    if (ismpikaij) {
-      ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    } else {
-      ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    }
+    ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatView(B,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
@@ -645,6 +645,8 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   ierr = PetscFree(b->S);CHKERRQ(ierr);
   ierr = PetscFree(b->T);CHKERRQ(ierr);
   ierr = PetscFree(b->ibdiag);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpikaij_mpiaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1377,16 +1379,10 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
 PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],const PetscScalar T[],Mat *kaij)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),kaij);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
-  if (size == 1) {
-    ierr = MatSetType(*kaij,MATSEQKAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*kaij,MATMPIKAIJ);CHKERRQ(ierr);
-  }
+  ierr = MatSetType(*kaij,MATKAIJ);CHKERRQ(ierr);
   ierr = MatKAIJSetAIJ(*kaij,A);CHKERRQ(ierr);
   ierr = MatKAIJSetS(*kaij,p,q,S);CHKERRQ(ierr);
   ierr = MatKAIJSetT(*kaij,p,q,T);CHKERRQ(ierr);
@@ -1427,15 +1423,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
 
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  A->ops->setup = MatSetUp_KAIJ;
-
   b->w    = NULL;
   ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ);CHKERRQ(ierr);
-    A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_SeqKAIJ;
-    A->ops->view                = MatView_KAIJ;
     A->ops->mult                = MatMult_SeqKAIJ;
     A->ops->multadd             = MatMultAdd_SeqKAIJ;
     A->ops->invertblockdiagonal = MatInvertBlockDiagonal_SeqKAIJ;
@@ -1444,9 +1436,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
     A->ops->sor                 = MatSOR_SeqKAIJ;
   } else {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIKAIJ);CHKERRQ(ierr);
-    A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_MPIKAIJ;
-    A->ops->view                = MatView_KAIJ;
     A->ops->mult                = MatMult_MPIKAIJ;
     A->ops->multadd             = MatMultAdd_MPIKAIJ;
     A->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ;
@@ -1454,6 +1444,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
     A->ops->restorerow          = MatRestoreRow_MPIKAIJ;
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIKAIJ);CHKERRQ(ierr);
   }
+  A->ops->setup           = MatSetUp_KAIJ;
+  A->ops->view            = MatView_KAIJ;
   A->ops->createsubmatrix = MatCreateSubMatrix_KAIJ;
   PetscFunctionReturn(0);
 }
