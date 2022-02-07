@@ -6,6 +6,7 @@ typedef struct {
   PetscInt   *dnz, *onz;
   PetscInt   *dnzu, *onzu;
   PetscBool   nooffproc;
+  PetscBool   used;
 } Mat_Preallocator;
 
 PetscErrorCode MatDestroy_Preallocator(Mat A)
@@ -146,6 +147,8 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (p->used) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatPreallocatorPreallocate() can only be used once for a give MatPreallocator object. Consider using MatDuplicate() after preallocation.");
+  p->used = PETSC_TRUE;
   if (!fill) {ierr = PetscHSetIJDestroy(&p->ht);CHKERRQ(ierr);}
   ierr = MatGetBlockSize(mat, &bs);CHKERRQ(ierr);
   ierr = MatXAIJSetPreallocation(A, bs, p->dnz, p->onz, p->dnzu, p->onzu);CHKERRQ(ierr);
@@ -220,6 +223,10 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   fill = PETSC_TRUE will insert zeros into the matrix A. Internally MatPreallocatorPreallocate()
   will call MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
 
+  This function may only be called once for a given MatPreallocator object. If
+  multiple Mats need to be preallocated, consider using MatDuplicate() after
+  this function.
+
   Level: advanced
 
 .seealso: MATPREALLOCATOR
@@ -264,6 +271,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A)
   p->onz  = NULL;
   p->dnzu = NULL;
   p->onzu = NULL;
+  p->used = PETSC_FALSE;
 
   /* matrix ops */
   ierr = PetscMemzero(A->ops, sizeof(struct _MatOps));CHKERRQ(ierr);
