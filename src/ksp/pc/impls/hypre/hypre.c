@@ -76,7 +76,9 @@ typedef struct {
   PetscInt  interptype;
   PetscInt  maxc;
   PetscInt  minc;
-
+#if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
+  char      *spgemm_type; // this is a global hypre parameter but is closely associated with BoomerAMG
+#endif
   /* GPU */
   PetscBool keeptranspose;
   PetscInt  rap2;
@@ -493,6 +495,9 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   ierr = PCReset_HYPRE(pc);CHKERRQ(ierr);
   if (jac->destroy) PetscStackCallStandard(jac->destroy,(jac->hsolver));
   ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
+#if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
+  ierr = PetscFree(jac->spgemm_type);CHKERRQ(ierr);
+#endif
   if (jac->comm_hypre != MPI_COMM_NULL) {ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)pc),&jac->comm_hypre);CHKERRQ(ierr);}
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
 
@@ -507,6 +512,9 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetInterpolations_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGetCoarseOperators_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinGetMatProductAlgorithm_C",NULL);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -643,6 +651,48 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
 /* static array length */
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
+static PetscErrorCode PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc,const char name[])
+{
+  PC_HYPRE *jac  = (PC_HYPRE*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      flag;
+
+#if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
+  PetscFunctionBegin;
+  if (jac->spgemm_type) {
+    ierr = PetscStrcmp(jac->spgemm_type,name,&flag);CHKERRQ(ierr);
+    if (!flag) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Cannot reset the HYPRE SpGEMM (really we can)");
+    PetscFunctionReturn(0);
+  } else {
+    ierr = PetscStrallocpy(name, &jac->spgemm_type);CHKERRQ(ierr);
+  }
+  ierr = PetscStrcmp("cusparse",jac->spgemm_type,&flag);CHKERRQ(ierr);
+  if (flag) {
+    PetscStackCallStandard(HYPRE_SetSpGemmUseCusparse,(1));
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscStrcmp("hypre",jac->spgemm_type,&flag);CHKERRQ(ierr);
+  if (flag) {
+    PetscStackCallStandard(HYPRE_SetSpGemmUseCusparse,(0));
+    PetscFunctionReturn(0);
+  }
+  jac->spgemm_type = NULL;
+  SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE SpGEM type %s; Choices are cusparse, hypre",name);
+#endif
+}
+
+static PetscErrorCode PCMGGalerkinGetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc, const char *spgemm[])
+{
+  PC_HYPRE *jac  = (PC_HYPRE*)pc->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+#if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
+  *spgemm = jac->spgemm_type;
+#endif
+  PetscFunctionReturn(0);
+}
+
 static const char *HYPREBoomerAMGCycleType[]   = {"","V","W"};
 static const char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout", "", "PMIS", "", "HMIS"};
 static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};
@@ -664,6 +714,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   PetscBool      flg, tmp_truth;
   double         tmpdbl, twodbl[2];
   const char     *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"};
+  const char     *PCHYPRESpgemmTypes[] = {"cusparse","hypre"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE BoomerAMG Options");CHKERRQ(ierr);
@@ -903,7 +954,12 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOp
   if (flg) {
     PetscStackCallStandard(HYPRE_BoomerAMGSetMinCoarseSize,(jac->hsolver, jac->minc));
   }
-
+#if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
+  // global parameter but is closely associated with BoomerAMG
+  ierr = PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm","Type of SpGEMM to use in hypre (only for now)","PCMGGalerkinSetMatProductAlgorithm",PCHYPRESpgemmTypes,ALEN(PCHYPRESpgemmTypes),PCHYPRESpgemmTypes[0],&indx,&flg);CHKERRQ(ierr);
+  if (!flg) indx = 0;
+  ierr = PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc,PCHYPRESpgemmTypes[indx]);CHKERRQ(ierr);
+#endif
   /* AIR */
 #if PETSC_PKG_HYPRE_VERSION_GE(2,18,0)
   ierr = PetscOptionsInt("-pc_hypre_boomeramg_restriction_type", "Type of AIR method (distance 1 or 2, 0 means no AIR)", "None", jac->Rtype, &jac->Rtype, NULL);CHKERRQ(ierr);
@@ -1067,7 +1123,9 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     if (jac->nodal_relax) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Using nodal relaxation via Schwarz smoothing on levels %D\n",jac->nodal_relax_levels);CHKERRQ(ierr);
     }
-
+#if PETSC_PKG_HYPRE_VERSION_GE(2,23,0)
+    ierr = PetscViewerASCIIPrintf(viewer,"    SpGEMM type         %s\n",jac->spgemm_type);CHKERRQ(ierr);
+#endif
     /* AIR */
     if (jac->Rtype) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Using approximate ideal restriction type %D\n",jac->Rtype);CHKERRQ(ierr);
@@ -1876,7 +1934,6 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->agg_num_paths    = 1;
     jac->maxc             = 9;
     jac->minc             = 1;
-
     jac->nodal_coarsening      = 0;
     jac->nodal_coarsening_diag = 0;
     jac->vec_interp_variant    = 0;
@@ -1922,7 +1979,6 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
     PetscStackCallStandard(HYPRE_BoomerAMGSetNumSweeps,(jac->hsolver, jac->gridsweeps[0])); /* defaults coarse to 1 */
     PetscStackCallStandard(HYPRE_BoomerAMGSetMaxCoarseSize,(jac->hsolver, jac->maxc));
     PetscStackCallStandard(HYPRE_BoomerAMGSetMinCoarseSize,(jac->hsolver, jac->minc));
-
     /* GPU */
 #if PETSC_PKG_HYPRE_VERSION_GE(2,18,0)
     PetscStackCallStandard(HYPRE_BoomerAMGSetKeepTranspose,(jac->hsolver,jac->keeptranspose ? 1 : 0));
@@ -2144,6 +2200,59 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PCMGGalerkinSetMatProductAlgorithm - Set type of SpGEMM for hypre to use
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the hypre context
+-  type - one of 'cusparse', 'hypre'
+
+   Options Database Key:
+.  -pc_mg_galerkin_mat_product_algorithm <"cusparse","hypre">
+
+   Level: intermediate
+
+.seealso: PCMGGalerkinGetMatProductAlgorithm()
+
+@*/
+PetscErrorCode PCMGGalerkinSetMatProductAlgorithm(PC pc,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCMGGalerkinSetMatProductAlgorithm_C",(PC,const char[]),(pc,name));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PCMGGalerkinGetMatProductAlgorithm - Get type of SpGEMM for hypre
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the multigrid context
+
+   Output Parameter:
+.  name - one of 'cusparse', 'hypre'
+
+   Level: intermediate
+
+.seealso: PCMGGalerkinSetMatProductAlgorithm()
+
+@*/
+PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCMGGalerkinGetMatProductAlgorithm_C",(PC,const char*[]),(pc,name));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
      PCHYPRE - Allows you to use the matrix element based preconditioners in the LLNL package hypre
 
@@ -2216,6 +2325,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetInterpolations_C",PCHYPRESetInterpolations_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetEdgeConstantVectors_C",PCHYPRESetEdgeConstantVectors_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetPoissonMatrix_C",PCHYPRESetPoissonMatrix_HYPRE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinSetMatProductAlgorithm_C",PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGGalerkinGetMatProductAlgorithm_C",PCMGGalerkinGetMatProductAlgorithm_HYPRE_BoomerAMG);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
 #if defined(HYPRE_USING_HIP)
   ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);

@@ -1,0 +1,82 @@
+lid velocity = 0.000106281, prandtl # = 1., grashof # = 1.
+  0 SNES Function norm 1.036007954337e-02 
+    0 KSP Residual norm 3.529801578944e+00 
+    1 KSP Residual norm 9.549227287830e-01 
+    2 KSP Residual norm 1.833989370926e-01 
+    3 KSP Residual norm 3.207579266155e-02 
+    4 KSP Residual norm 1.205175868015e-02 
+    5 KSP Residual norm 3.633439929268e-03 
+    6 KSP Residual norm 7.859510138803e-04 
+    7 KSP Residual norm 1.906870003210e-04 
+    8 KSP Residual norm 3.576753906100e-05 
+    9 KSP Residual norm 7.330444204410e-06 
+  1 SNES Function norm 3.201130805934e-06 
+    0 KSP Residual norm 4.432732267457e-05 
+    1 KSP Residual norm 1.369208870977e-05 
+    2 KSP Residual norm 4.651992306344e-06 
+    3 KSP Residual norm 1.540951999530e-06 
+    4 KSP Residual norm 5.756704829591e-07 
+    5 KSP Residual norm 1.031576233748e-07 
+    6 KSP Residual norm 3.860545812196e-08 
+    7 KSP Residual norm 1.221937916520e-08 
+    8 KSP Residual norm 2.613169031973e-09 
+    9 KSP Residual norm 4.602224202132e-10 
+   10 KSP Residual norm 1.025651362460e-10 
+  2 SNES Function norm 4.213263970740e-11 
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=19
+  total number of function evaluations=3
+  norm schedule ALWAYS
+  Jacobian is built using colored finite differences on a DMDA
+  SNESLineSearch Object: 4 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 4 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 4 MPI processes
+    type: hypre
+      HYPRE BoomerAMG preconditioning
+        Cycle type V
+        Maximum number of levels 25
+        Maximum number of iterations PER hypre call 1
+        Convergence tolerance PER hypre call 0.
+        Threshold for strong coupling 0.25
+        Interpolation truncation factor 0.
+        Interpolation: max elements per row 0
+        Number of levels of aggressive coarsening 0
+        Number of paths for aggressive coarsening 1
+        Maximum row sums 0.9
+        Sweeps down         1
+        Sweeps up           1
+        Sweeps on coarse    1
+        Relax down          symmetric-SOR/Jacobi
+        Relax up            symmetric-SOR/Jacobi
+        Relax on coarse     Gaussian-elimination
+        Relax weight  (all)      1.
+        Outer relax weight (all) 1.
+        Using CF-relaxation
+        Not using more complex smoothers.
+        Measure type        local
+        Coarsen type        Falgout
+        Interpolation type  classical
+        SpGEMM type         cusparse
+    linear system matrix = precond matrix:
+    Mat Object: 4 MPI processes
+      type: mpiaij
+      rows=37636, cols=37636, bs=4
+      total: nonzeros=746512, allocated nonzeros=746512
+      total number of mallocs used during MatSetValues calls=0
+Number of SNES iterations = 2

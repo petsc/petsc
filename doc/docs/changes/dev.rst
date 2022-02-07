@@ -95,6 +95,8 @@ Changes: Development
 
 .. rubric:: PC:
 
+- Add MG option ``-pc_mg_galerkin_mat_product_algorithm [cusparse|hypre]`` and ``PCMGGalerkinSetMatProductAlgorithm()`` to use cuSparse or hypre's SpGEMM for Galerkin products in hypre
+
 .. rubric:: KSP:
 
 -  Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
