@@ -448,6 +448,9 @@ PetscErrorCode VecBindToCPU_MPIHIP(Vec V,PetscBool bind)
     V->ops->getlocalvectorread     = NULL;
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
+    V->ops->getarrayandmemtype     = NULL;
+    V->ops->restorearrayandmemtype = NULL;
+    V->ops->getarraywriteandmemtype= NULL;
     V->ops->max                    = VecMax_MPI;
     V->ops->min                    = VecMin_MPI;
     V->ops->reciprocal             = VecReciprocal_Default;
@@ -490,6 +493,7 @@ PetscErrorCode VecBindToCPU_MPIHIP(Vec V,PetscBool bind)
     V->ops->restorearray           = VecRestoreArray_SeqHIP;
     V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqHIP;
     V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqHIP;
+    V->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqHIP;
     V->ops->max                    = VecMax_MPIHIP;
     V->ops->min                    = VecMin_MPIHIP;
     V->ops->reciprocal             = VecReciprocal_SeqHIP;

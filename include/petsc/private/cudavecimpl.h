@@ -54,6 +54,7 @@ PETSC_INTERN PetscErrorCode VecGetArray_SeqCUDA(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecRestoreArray_SeqCUDA(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArrayAndMemType_SeqCUDA(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecRestoreArrayAndMemType_SeqCUDA(Vec,PetscScalar**);
+PETSC_INTERN PetscErrorCode VecGetArrayWriteAndMemType_SeqCUDA(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecCopy_SeqCUDA_Private(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUDA_Private(Vec);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqCUDA_Private(Vec);

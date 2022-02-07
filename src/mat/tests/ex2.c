@@ -306,6 +306,13 @@ int main(int argc,char **argv)
       filter: grep -v type | grep -v "MPI processes"
 
    test:
+      suffix: 2_aijkokkos_1
+      args: -mat_type aijkokkos
+      output_file: output/ex2_21.out
+      requires: kokkos_kernels
+      filter: grep -v type | grep -v "MPI processes"
+
+   test:
       suffix: 2_aijcusparse_2
       nsize: 3
       args: -mat_type mpiaijcusparse
@@ -318,7 +325,8 @@ int main(int argc,char **argv)
       nsize: 3
       args: -mat_type aijkokkos
       output_file: output/ex2_23.out
-      requires: !sycl kokkos_kernels
+      # Turn off hip due to intermittent CI failures on hip.txcorp.com. Should re-enable this test when the machine is upgraded.
+      requires: !sycl !hip kokkos_kernels
       filter: grep -v type | grep -v "MPI processes"
 
    test:

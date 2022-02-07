@@ -53,6 +53,7 @@ PETSC_INTERN PetscErrorCode VecGetArray_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecRestoreArray_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArrayAndMemType_SeqHIP(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecRestoreArrayAndMemType_SeqHIP(Vec,PetscScalar**);
+PETSC_INTERN PetscErrorCode VecGetArrayWriteAndMemType_SeqHIP(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecCopy_SeqHIP_Private(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqHIP_Private(Vec);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqHIP_Private(Vec);

@@ -35,19 +35,8 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf,Vec x,Vec y,InsertM
 
   PetscFunctionBegin;
   if (x != y) {ierr = VecLockReadPush(x);CHKERRQ(ierr);}
-  if (sf->use_gpu_aware_mpi || sf->vscat.packongpu) {
-    ierr = VecGetArrayReadAndMemType(x,&sf->vscat.xdata,&xmtype);CHKERRQ(ierr);
-  } else {
-    ierr = VecGetArrayRead(x,&sf->vscat.xdata);CHKERRQ(ierr);
-  }
-
-  if (x != y) {
-    if (sf->use_gpu_aware_mpi || sf->vscat.packongpu) {ierr = VecGetArrayAndMemType(y,&sf->vscat.ydata,&ymtype);CHKERRQ(ierr);}
-    else {ierr = VecGetArray(y,&sf->vscat.ydata);CHKERRQ(ierr);}
-  } else {
-    sf->vscat.ydata = (PetscScalar *)sf->vscat.xdata;
-    ymtype          = xmtype;
-  }
+  ierr = VecGetArrayReadAndMemType(x,&sf->vscat.xdata,&xmtype);CHKERRQ(ierr);
+  ierr = VecGetArrayAndMemType(y,&sf->vscat.ydata,&ymtype);CHKERRQ(ierr);
   ierr = VecLockWriteSet_Private(y,PETSC_TRUE);CHKERRQ(ierr);
 
   /* SCATTER_LOCAL indicates ignoring inter-process communication */
@@ -98,16 +87,10 @@ static PetscErrorCode VecScatterEnd_Internal(VecScatter sf,Vec x,Vec y,InsertMod
     ierr = PetscSFBcastEnd(wsf,sf->vscat.unit,sf->vscat.xdata,sf->vscat.ydata,mop);CHKERRQ(ierr);
   }
 
-  if (x != y) {
-    if (sf->use_gpu_aware_mpi || sf->vscat.packongpu) {ierr = VecRestoreArrayReadAndMemType(x,&sf->vscat.xdata);CHKERRQ(ierr);}
-    else {ierr = VecRestoreArrayRead(x,&sf->vscat.xdata);CHKERRQ(ierr);}
-    ierr = VecLockReadPop(x);CHKERRQ(ierr);
-  }
-
-  if (sf->use_gpu_aware_mpi || sf->vscat.packongpu) {ierr = VecRestoreArrayAndMemType(y,&sf->vscat.ydata);CHKERRQ(ierr);}
-  else {ierr = VecRestoreArray(y,&sf->vscat.ydata);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayReadAndMemType(x,&sf->vscat.xdata);CHKERRQ(ierr);
+  if (x != y) {ierr = VecLockReadPop(x);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayAndMemType(y,&sf->vscat.ydata);CHKERRQ(ierr);
   ierr = VecLockWriteSet_Private(y,PETSC_FALSE);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -633,10 +616,6 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
   sf->vscat.beginandendtogether = PETSC_FALSE;
   ierr = PetscOptionsBool("-vecscatter_merge","Use combined (merged) vector scatter begin and end","VecScatterCreate",sf->vscat.beginandendtogether,&sf->vscat.beginandendtogether,NULL);CHKERRQ(ierr);
   if (sf->vscat.beginandendtogether) {ierr = PetscInfo(sf,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);}
-
-  sf->vscat.packongpu = PETSC_TRUE;
-  ierr = PetscOptionsBool("-vecscatter_packongpu","For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI","VecScatterCreate",sf->vscat.packongpu,&sf->vscat.packongpu,NULL);CHKERRQ(ierr);
-  if (sf->vscat.packongpu) {ierr = PetscInfo(sf,"For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI\n");CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -663,8 +642,6 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 .  -vecscatter_view ::ascii_info    - Print less details about communication
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
                               eliminates the chance for overlap of computation and communication
--  -vecscatter_packongpu    - For GPU vectors, pack needed entries on GPU, then copy packed data to CPU, then do MPI.
-                              Otherwise, we might copy a segment encompassing needed entries. Default is TRUE.
 
     Level: intermediate
 

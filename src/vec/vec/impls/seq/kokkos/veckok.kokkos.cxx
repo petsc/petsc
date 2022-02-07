@@ -868,12 +868,12 @@ PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec v,PetscScalar** a,PetscMemTyp
   Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value || veckok->v_dual.need_sync_device()) {
-    /* When there is no device or host has newer data than device */
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
     *a = veckok->v_dual.view_host().data();
     if (mtype) *mtype = PETSC_MEMTYPE_HOST;
   } else {
-    /* When device has newer or same data as host, we always return device data */
+    /* When there is device, we always return up-to-date device data */
+    veckok->v_dual.sync_device();
     *a = veckok->v_dual.view_device().data();
     if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
   }
@@ -885,10 +885,27 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec v,PetscScalar** a)
   Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
 
   PetscFunctionBegin;
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value || veckok->v_dual.need_sync_device()) {
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
     veckok->v_dual.modify_host();
   } else {
     veckok->v_dual.modify_device();
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetArrayWriteAndMemType_SeqKokkos(Vec v,PetscScalar** a,PetscMemType *mtype)
+{
+  Vec_Kokkos     *veckok = static_cast<Vec_Kokkos*>(v->spptr);
+
+  PetscFunctionBegin;
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) {
+    *a = veckok->v_dual.view_host().data();
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  } else {
+    /* When there is device, we always return device data (but no need to sync the device) */
+    veckok->v_dual.clear_sync_state(); /* So that in restore, we can safely modify_device() */
+    *a = veckok->v_dual.view_device().data();
+    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
   }
   PetscFunctionReturn(0);
 }
@@ -942,8 +959,10 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
   v->ops->getarraywrite          = VecGetArrayWrite_SeqKokkos;
   v->ops->getarray               = VecGetArray_SeqKokkos;
   v->ops->restorearray           = VecRestoreArray_SeqKokkos;
+
   v->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqKokkos;
   v->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqKokkos;
+  v->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqKokkos;
   PetscFunctionReturn(0);
 }
 

@@ -2023,10 +2023,12 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 }
 
 /*@C
-   VecGetArrayAndMemType - Like VecGetArray(), but if this is a device vector (e.g., VECCUDA) and the device has up-to-date data,
-   the returned pointer will be a device pointer to the device memory that contains this processor's portion of the vector data.
-   Otherwise, when this is a host vector (e.g., VECMPI), or a device vector with the host having newer data than device,
-   it functions as VecGetArray() and returns a host pointer.
+   VecGetArrayAndMemType - Like VecGetArray(), but if this is a standard device vector (e.g., VECCUDA), the returned pointer will be a device
+   pointer to the device memory that contains this processor's portion of the vector data. Device data is guaranteed to have the latest value.
+   Otherwise, when this is a host vector (e.g., VECMPI), this routine functions the same as VecGetArray() and returns a host pointer.
+
+   For VECKOKKOS, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like VECSEQ/VECMPI;
+   otherwise, it works like VECCUDA or VECHIP etc.
 
    Logically Collective on Vec
 
@@ -2039,7 +2041,7 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 
    Level: beginner
 
-.seealso: VecRestoreArrayAndMemType(), VecRestoreArrayAndMemType(), VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(),
+.seealso: VecRestoreArrayAndMemType(), VecGetArrayReadAndMemType(), VecGetArrayWriteAndMemType(), VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(),
           VecPlaceArray(), VecGetArray2d(), VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayWrite(), VecRestoreArrayWrite()
 @*/
 PetscErrorCode VecGetArrayAndMemType(Vec x,PetscScalar **a,PetscMemType *mtype)
@@ -2091,9 +2093,7 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x,PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayReadAndMemType - Like VecGetArrayRead(), but if this is a CUDA vector and it is currently offloaded to GPU,
-   the returned pointer will be a GPU pointer to the GPU memory that contains this processor's portion of the
-   vector data. Otherwise, it functions as VecGetArrayRead().
+   VecGetArrayReadAndMemType - Like VecGetArrayRead(), but if the input vector is a device vector, it will return a read-only device pointer. The returned pointer is guarenteed to point to up-to-date data. For host vectors, it functions as VecGetArrayRead().
 
    Not Collective
 
@@ -2109,7 +2109,7 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x,PetscScalar **a)
    Notes:
    The array must be returned using a matching call to VecRestoreArrayReadAndMemType().
 
-.seealso: VecRestoreArrayReadAndMemType(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayAndMemType()
+.seealso: VecRestoreArrayReadAndMemType(), VecGetArrayAndMemType(), VecGetArrayWriteAndMemType(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair(), VecGetArrayAndMemType()
 @*/
 PetscErrorCode VecGetArrayReadAndMemType(Vec x,const PetscScalar **a,PetscMemType *mtype)
 {
@@ -2145,7 +2145,7 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x,const PetscScalar **a,PetscMemTyp
 
    Level: beginner
 
-.seealso: VecGetArrayReadAndMemType(), VecRestoreArrayAndMemType(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair()
+.seealso: VecGetArrayReadAndMemType(), VecRestoreArrayAndMemType(), VecRestoreArrayWriteAndMemType(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair()
 @*/
 PetscErrorCode VecRestoreArrayReadAndMemType(Vec x,const PetscScalar **a)
 {
@@ -2160,6 +2160,67 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x,const PetscScalar **a)
     ierr = (*x->ops->restorearrayread)(x,a);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot restore array read in place for vector type \"%s\"",((PetscObject)x)->type_name);
   if (a) *a = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecGetArrayWriteAndMemType - Like VecGetArrayWrite(), but if this is a device vector it will aways return
+    a device pointer to the device memory that contains this processor's portion of the vector data.
+
+   Not Collective
+
+   Input Parameter:
+.  x - the vector
+
+   Output Parameters:
++  a - the array
+-  mtype - memory type of the array
+
+   Level: beginner
+
+   Notes:
+   The array must be returned using a matching call to VecRestoreArrayWriteAndMemType(), where it will label the device memory as most recent.
+
+.seealso: VecRestoreArrayWriteAndMemType(), VecGetArrayReadAndMemType(), VecGetArrayAndMemType(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair(),
+@*/
+PetscErrorCode VecGetArrayWriteAndMemType(Vec x,PetscScalar **a,PetscMemType *mtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidType(x,1);
+  if (x->ops->getarraywriteandmemtype) { /* VECCUDA, VECHIP, VECKOKKOS etc, though they are also petscnative */
+    ierr = (*x->ops->getarrayandmemtype)(x,a,mtype);CHKERRQ(ierr);
+  } else if (x->ops->getarraywrite) { /* VECNEST, VECVIENNACL */
+    ierr = (*x->ops->getarraywrite)(x,a);CHKERRQ(ierr);
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  } else if (x->petscnative) { /* VECSTANDARD */
+    *a = *((PetscScalar**)x->data);
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  } else SETERRQ1(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot get array read in place for vector type \"%s\"",((PetscObject)x)->type_name);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecRestoreArrayWriteAndMemType - Restore array obtained with VecGetArrayWriteAndMemType()
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the array
+
+   Level: beginner
+
+.seealso: VecGetArrayWriteAndMemType(), VecRestoreArrayAndMemType(), VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair()
+@*/
+PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x,PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreArrayAndMemType(x,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
