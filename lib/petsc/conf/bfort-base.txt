@@ -5,7 +5,6 @@ native double double precision
 native float real
 native short integer*2
 native long
-native size_t
 native complex complex
 native dcomplex double precision complex
 # The default bfort definitions includes petsc.

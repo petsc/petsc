@@ -6,9 +6,9 @@
 
 struct Mat_MPIAIJKokkos {
   /* MatSetValuesCOO() related stuff */
-  PetscInt            coo_n; /* Number of COOs used in MatSetPreallocationCOO)() */
+  PetscCount          coo_n; /* Number of COOs used in MatSetPreallocationCOO)() */
   PetscSF             coo_sf; /* SF to send/recv remote values in MatSetValuesCOO() */
-  PetscInt            Annz1,Annz2,Bnnz1,Bnnz2; /* See comments in MatSetPreallocationCOO_MPIAIJKokkos() */
+  PetscCount          Annz1,Annz2,Bnnz1,Bnnz2; /* See comments in MatSetPreallocationCOO_MPIAIJKokkos() */
   MatRowMapKokkosView Aimap1_d,Ajmap1_d,Aperm1_d; /* Local entries to diag */
   MatRowMapKokkosView Bimap1_d,Bjmap1_d,Bperm1_d; /* Local entries to offdiag */
   MatRowMapKokkosView Aimap2_d,Ajmap2_d,Aperm2_d; /* Remote entries to diag */
@@ -16,7 +16,7 @@ struct Mat_MPIAIJKokkos {
   MatRowMapKokkosView Cperm1_d; /* Permutation to fill send buffer. 'C' for communication */
   MatScalarKokkosView sendbuf_d,recvbuf_d; /* Buffers for remote values in MatSetValuesCOO() */
 
-  Mat_MPIAIJKokkos(PetscInt n,PetscSF sf,PetscInt nroots,PetscInt nleaves,PetscInt Annz1,PetscInt Annz2,PetscInt Bnnz1,PetscInt Bnnz2,
+  Mat_MPIAIJKokkos(PetscCount n,PetscSF sf,PetscInt nroots,PetscInt nleaves,PetscCount Annz1,PetscCount Annz2,PetscCount Bnnz1,PetscCount Bnnz2,
                    MatRowMapKokkosViewHost& Aimap1_h,MatRowMapKokkosViewHost& Aimap2_h,MatRowMapKokkosViewHost& Bimap1_h,MatRowMapKokkosViewHost& Bimap2_h,
                    MatRowMapKokkosViewHost& Ajmap1_h,MatRowMapKokkosViewHost& Ajmap2_h,MatRowMapKokkosViewHost& Bjmap1_h,MatRowMapKokkosViewHost& Bjmap2_h,
                    MatRowMapKokkosViewHost& Aperm1_h,MatRowMapKokkosViewHost& Aperm2_h,MatRowMapKokkosViewHost& Bperm1_h,MatRowMapKokkosViewHost& Bperm2_h,MatRowMapKokkosViewHost& Cperm1_h)

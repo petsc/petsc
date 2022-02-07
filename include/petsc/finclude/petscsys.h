@@ -33,9 +33,11 @@
 #if (PETSC_SIZEOF_VOID_P == 8)
 #define PetscOffset integer8
 #define PetscFortranAddr integer8
+#define PetscCount integer8
 #else
 #define PetscOffset integer4
 #define PetscFortranAddr integer4
+#define PetscCount integer4
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -53,6 +55,9 @@
 #define PetscFortranInt integer8
 #endif
 !
+! Fortran does not support unsigned, though ISO_C_BINDING
+! supports INTEGER(KIND=C_SIZE_T). We don't use that here
+! only to avoid importing the module.
 #if (PETSC_SIZEOF_SIZE_T == 8)
 #define PetscSizeT integer8
 #else

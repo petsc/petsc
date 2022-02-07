@@ -1,4 +1,3 @@
-
 #include <petsc/private/matimpl.h>       /*I "petscmat.h"  I*/
 
 PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat,PetscInt rbs, PetscInt cbs)
@@ -535,12 +534,11 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
 {
   Mat            preallocator;
   IS             is_coo_i,is_coo_j;
   PetscScalar    zero = 0.0;
-  PetscInt       n;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -551,13 +549,14 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt c
   ierr = MatSetSizes(preallocator,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetLayouts(preallocator,A->rmap,A->cmap);CHKERRQ(ierr);
   ierr = MatSetUp(preallocator);CHKERRQ(ierr);
-  for (n = 0; n < ncoo; n++) {
+  for (PetscCount n = 0; n < ncoo; n++) {
     ierr = MatSetValue(preallocator,coo_i[n],coo_j[n],zero,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A);CHKERRQ(ierr);
   ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+  if (ncoo > PETSC_MAX_INT) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_i,PETSC_COPY_VALUES,&is_coo_i);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_j,PETSC_COPY_VALUES,&is_coo_j);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"__PETSc_coo_i",(PetscObject)is_coo_i);CHKERRQ(ierr);
@@ -592,9 +591,9 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscInt ncoo,const PetscInt c
 
 .seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOOLocal()
 @*/
-PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
 {
-  PetscErrorCode (*f)(Mat,PetscInt,const PetscInt[],const PetscInt[]) = NULL;
+  PetscErrorCode (*f)(Mat,PetscCount,const PetscInt[],const PetscInt[]) = NULL;
   PetscErrorCode ierr;
   PetscBool      isAIJKokkos;
 
@@ -607,8 +606,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)A,&isAIJKokkos,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,NULL);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG) && !isAIJKokkos) {
-    PetscInt i;
-    for (i = 0; i < ncoo; i++) {
+    for (PetscCount i = 0; i < ncoo; i++) {
       if (coo_i[i] >= 0 && (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %" PetscInt_FMT "! Must be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",coo_i[i],A->rmap->rstart,A->rmap->rend);
       if (coo_j[i] >= A->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %" PetscInt_FMT "! Must be in [0,%" PetscInt_FMT ")",coo_j[i],A->cmap->N);
     }
@@ -656,7 +654,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscInt ncoo,const PetscInt coo_i[]
 
 .seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOO()
 @*/
-PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscInt ncoo,PetscInt coo_i[],PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
 {
   PetscErrorCode ierr;
   ISLocalToGlobalMapping ltog_row,ltog_col;
@@ -669,6 +667,7 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscInt ncoo,PetscInt coo_i[],
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = MatGetLocalToGlobalMapping(A, &ltog_row, &ltog_col);CHKERRQ(ierr);
+  if (ncoo > PETSC_MAX_INT) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
   ierr = ISLocalToGlobalMappingApply(ltog_row, ncoo, coo_i, coo_i);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltog_col, ncoo, coo_j, coo_j);CHKERRQ(ierr);
   ierr = MatSetPreallocationCOO(A, ncoo, coo_i, coo_j);CHKERRQ(ierr);

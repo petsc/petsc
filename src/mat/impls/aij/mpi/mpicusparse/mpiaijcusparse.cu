@@ -101,12 +101,12 @@ struct GlobToLoc
   }
 };
 
-static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscCount n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   Mat_MPIAIJ             *b = (Mat_MPIAIJ*)B->data;
   Mat_MPIAIJCUSPARSE     *cusp = (Mat_MPIAIJCUSPARSE*)b->spptr;
   PetscErrorCode         ierr;
-  PetscInt               *jj;
+  PetscInt               N,*jj;
   size_t                 noff = 0;
   THRUSTINTARRAY         d_i(n); /* on device, storing partitioned coo_i with diagonal first, and off-diag next */
   THRUSTINTARRAY         d_j(n);
@@ -165,8 +165,8 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscInt n, c
   ierr = PetscLogGpuToCpu((noff+cusp->coo_no)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,noff,b->garray,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingSetType(l2g,ISLOCALTOGLOBALMAPPINGHASH);CHKERRQ(ierr);
-  ierr = ISGlobalToLocalMappingApply(l2g,IS_GTOLM_DROP,cusp->coo_no,jj,&n,jj);CHKERRQ(ierr);
-  if (n != cusp->coo_no) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected is size %" PetscInt_FMT " != %" PetscInt_FMT " coo size",n,cusp->coo_no);
+  ierr = ISGlobalToLocalMappingApply(l2g,IS_GTOLM_DROP,cusp->coo_no,jj,&N,jj);CHKERRQ(ierr);
+  if (N != cusp->coo_no) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected is size %" PetscInt_FMT " != %" PetscInt_FMT " coo size",N,cusp->coo_no);
   ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
@@ -655,8 +655,6 @@ M*/
 
  .seealso: MATAIJCUSPARSE, MATSEQAIJCUSPARSE
 M*/
-
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
 
 // get GPU pointers to stripped down Mat. For both seq and MPI Mat.
 PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)

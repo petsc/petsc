@@ -85,12 +85,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMult
 static PetscErrorCode MatSeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriFactors**);
 static PetscErrorCode MatSeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE**);
 
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
 static PetscErrorCode MatSeqAIJCUSPARSECopyFromGPU(Mat);
 static PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat,PetscBool);
-
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],const PetscInt[]);
-PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
 
 static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],PetscScalar[]);
 
@@ -3973,7 +3969,7 @@ PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat A, PetscBool destroy)
 }
 
 #include <thrust/binary_search.h>
-PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscInt n, const PetscInt coo_i[], const PetscInt coo_j[])
+PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscCount n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;

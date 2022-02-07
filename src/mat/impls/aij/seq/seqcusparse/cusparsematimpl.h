@@ -253,11 +253,11 @@ struct Mat_SeqAIJCUSPARSE {
   THRUSTINTARRAY               *cooPerm_a;      /* ordered array that indicate i-th nonzero (after sorting) is the j-th unique nonzero */
 };
 
-PETSC_INTERN PetscErrorCode MatCUSPARSECopyToGPU(Mat);
+PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
 PETSC_INTERN PetscErrorCode MatCUSPARSESetStream(Mat, const cudaStream_t stream);
 PETSC_INTERN PetscErrorCode MatCUSPARSESetHandle(Mat, const cusparseHandle_t handle);
 PETSC_INTERN PetscErrorCode MatCUSPARSEClearHandle(Mat);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscCount,const PetscInt[],const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);
