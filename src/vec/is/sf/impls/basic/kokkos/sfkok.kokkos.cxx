@@ -506,75 +506,75 @@ PetscErrorCode PetscSFLinkSetUp_Kokkos(PetscSF PETSC_UNUSED sf,PetscSFLink link,
   } else if (is2PetscInt) { /* TODO: when is2PetscInt and nPetscInt=2, we don't know which path to take. The two paths support different ops. */
     PackInit_PairType<Kokkos::pair<PetscInt,PetscInt>>(link);
   } else if (nPetscReal) {
-   #if !defined(PETSC_HAVE_SYCL)  /* Skip the unimportant stuff to speed up dpcpp's compilation time */
+   #if !defined(PETSC_HAVE_DEVICE)  /* Skip the unimportant stuff to speed up SF device compilation time */
     if      (nPetscReal == 8) PackInit_RealType<PetscReal,8,1>(link); else if (nPetscReal%8 == 0) PackInit_RealType<PetscReal,8,0>(link);
     else if (nPetscReal == 4) PackInit_RealType<PetscReal,4,1>(link); else if (nPetscReal%4 == 0) PackInit_RealType<PetscReal,4,0>(link);
     else if (nPetscReal == 2) PackInit_RealType<PetscReal,2,1>(link); else if (nPetscReal%2 == 0) PackInit_RealType<PetscReal,2,0>(link);
-    else
+    else if (nPetscReal == 1) PackInit_RealType<PetscReal,1,1>(link); else if (nPetscReal%1 == 0)
    #endif
-    if (nPetscReal == 1) PackInit_RealType<PetscReal,1,1>(link); else if (nPetscReal%1 == 0) PackInit_RealType<PetscReal,1,0>(link);
+    PackInit_RealType<PetscReal,1,0>(link);
   } else if (nPetscInt && sizeof(PetscInt) == sizeof(llint)) {
-   #if !defined(PETSC_HAVE_SYCL)
+   #if !defined(PETSC_HAVE_DEVICE)
     if      (nPetscInt == 8) PackInit_IntegerType<llint,8,1>(link); else if (nPetscInt%8 == 0) PackInit_IntegerType<llint,8,0>(link);
     else if (nPetscInt == 4) PackInit_IntegerType<llint,4,1>(link); else if (nPetscInt%4 == 0) PackInit_IntegerType<llint,4,0>(link);
     else if (nPetscInt == 2) PackInit_IntegerType<llint,2,1>(link); else if (nPetscInt%2 == 0) PackInit_IntegerType<llint,2,0>(link);
-    else
+    else if (nPetscInt == 1) PackInit_IntegerType<llint,1,1>(link); else if (nPetscInt%1 == 0)
    #endif
-    if (nPetscInt == 1) PackInit_IntegerType<llint,1,1>(link); else if (nPetscInt%1 == 0) PackInit_IntegerType<llint,1,0>(link);
+    PackInit_IntegerType<llint,1,0>(link);
   } else if (nInt) {
-    #if !defined(PETSC_HAVE_SYCL)
+   #if !defined(PETSC_HAVE_DEVICE)
     if      (nInt == 8) PackInit_IntegerType<int,8,1>(link); else if (nInt%8 == 0) PackInit_IntegerType<int,8,0>(link);
     else if (nInt == 4) PackInit_IntegerType<int,4,1>(link); else if (nInt%4 == 0) PackInit_IntegerType<int,4,0>(link);
     else if (nInt == 2) PackInit_IntegerType<int,2,1>(link); else if (nInt%2 == 0) PackInit_IntegerType<int,2,0>(link);
-    else
+    else if (nInt == 1) PackInit_IntegerType<int,1,1>(link); else if (nInt%1 == 0)
    #endif
-    if (nInt == 1) PackInit_IntegerType<int,1,1>(link); else if (nInt%1 == 0) PackInit_IntegerType<int,1,0>(link);
+    PackInit_IntegerType<int,1,0>(link);
   } else if (nSignedChar) {
-   #if !defined(PETSC_HAVE_SYCL)
+   #if !defined(PETSC_HAVE_DEVICE)
     if      (nSignedChar == 8) PackInit_IntegerType<char,8,1>(link); else if (nSignedChar%8 == 0) PackInit_IntegerType<char,8,0>(link);
     else if (nSignedChar == 4) PackInit_IntegerType<char,4,1>(link); else if (nSignedChar%4 == 0) PackInit_IntegerType<char,4,0>(link);
     else if (nSignedChar == 2) PackInit_IntegerType<char,2,1>(link); else if (nSignedChar%2 == 0) PackInit_IntegerType<char,2,0>(link);
-    else
+    else if (nSignedChar == 1) PackInit_IntegerType<char,1,1>(link); else if (nSignedChar%1 == 0)
    #endif
-    if (nSignedChar == 1) PackInit_IntegerType<char,1,1>(link); else if (nSignedChar%1 == 0) PackInit_IntegerType<char,1,0>(link);
+    PackInit_IntegerType<char,1,0>(link);
   }  else if (nUnsignedChar) {
-   #if !defined(PETSC_HAVE_SYCL)
+   #if !defined(PETSC_HAVE_DEVICE)
     if      (nUnsignedChar == 8) PackInit_IntegerType<unsigned char,8,1>(link); else if (nUnsignedChar%8 == 0) PackInit_IntegerType<unsigned char,8,0>(link);
     else if (nUnsignedChar == 4) PackInit_IntegerType<unsigned char,4,1>(link); else if (nUnsignedChar%4 == 0) PackInit_IntegerType<unsigned char,4,0>(link);
     else if (nUnsignedChar == 2) PackInit_IntegerType<unsigned char,2,1>(link); else if (nUnsignedChar%2 == 0) PackInit_IntegerType<unsigned char,2,0>(link);
-    else
+    else if (nUnsignedChar == 1) PackInit_IntegerType<unsigned char,1,1>(link); else if (nUnsignedChar%1 == 0)
    #endif
-    if (nUnsignedChar == 1) PackInit_IntegerType<unsigned char,1,1>(link); else if (nUnsignedChar%1 == 0) PackInit_IntegerType<unsigned char,1,0>(link);
+    PackInit_IntegerType<unsigned char,1,0>(link);
 #if defined(PETSC_HAVE_COMPLEX)
   } else if (nPetscComplex) {
-   #if !defined(PETSC_HAVE_SYCL)
+   #if !defined(PETSC_HAVE_DEVICE)
     if      (nPetscComplex == 8) PackInit_ComplexType<Kokkos::complex<PetscReal>,8,1>(link); else if (nPetscComplex%8 == 0) PackInit_ComplexType<Kokkos::complex<PetscReal>,8,0>(link);
     else if (nPetscComplex == 4) PackInit_ComplexType<Kokkos::complex<PetscReal>,4,1>(link); else if (nPetscComplex%4 == 0) PackInit_ComplexType<Kokkos::complex<PetscReal>,4,0>(link);
     else if (nPetscComplex == 2) PackInit_ComplexType<Kokkos::complex<PetscReal>,2,1>(link); else if (nPetscComplex%2 == 0) PackInit_ComplexType<Kokkos::complex<PetscReal>,2,0>(link);
-    else
+    else if (nPetscComplex == 1) PackInit_ComplexType<Kokkos::complex<PetscReal>,1,1>(link); else if (nPetscComplex%1 == 0)
    #endif
-    if (nPetscComplex == 1) PackInit_ComplexType<Kokkos::complex<PetscReal>,1,1>(link); else if (nPetscComplex%1 == 0) PackInit_ComplexType<Kokkos::complex<PetscReal>,1,0>(link);
+    PackInit_ComplexType<Kokkos::complex<PetscReal>,1,0>(link);
 #endif
   } else {
     MPI_Aint lb,nbyte;
     ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRMPI(ierr);
     if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
-     #if !defined(PETSC_HAVE_SYCL)
+     #if !defined(PETSC_HAVE_DEVICE)
       if      (nbyte == 4) PackInit_DumbType<char,4,1>(link); else if (nbyte%4 == 0) PackInit_DumbType<char,4,0>(link);
       else if (nbyte == 2) PackInit_DumbType<char,2,1>(link); else if (nbyte%2 == 0) PackInit_DumbType<char,2,0>(link);
-      else
+      else if (nbyte == 1) PackInit_DumbType<char,1,1>(link); else if (nbyte%1 == 0)
      #endif
-      if (nbyte == 1) PackInit_DumbType<char,1,1>(link); else if (nbyte%1 == 0) PackInit_DumbType<char,1,0>(link);
+      PackInit_DumbType<char,1,0>(link);
     } else {
       nInt = nbyte / sizeof(int);
-     #if !defined(PETSC_HAVE_SYCL)
+     #if !defined(PETSC_HAVE_DEVICE)
       if      (nInt == 8) PackInit_DumbType<int,8,1>(link); else if (nInt%8 == 0) PackInit_DumbType<int,8,0>(link);
       else if (nInt == 4) PackInit_DumbType<int,4,1>(link); else if (nInt%4 == 0) PackInit_DumbType<int,4,0>(link);
       else if (nInt == 2) PackInit_DumbType<int,2,1>(link); else if (nInt%2 == 0) PackInit_DumbType<int,2,0>(link);
-      else
+      else if (nInt == 1) PackInit_DumbType<int,1,1>(link); else if (nInt%1 == 0)
      #endif
-      if (nInt == 1) PackInit_DumbType<int,1,1>(link); else if (nInt%1 == 0) PackInit_DumbType<int,1,0>(link);
+      PackInit_DumbType<int,1,0>(link);
     }
   }
 
