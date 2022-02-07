@@ -3132,7 +3132,6 @@ PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
 
   if (b->lda <= 0) b->lda = B->rmap->n;
 
-  ierr = PetscIntMultError(b->lda,B->cmap->n,NULL);CHKERRQ(ierr);
   if (!data) { /* petsc-allocated storage */
     if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
     ierr = PetscCalloc1((size_t)b->lda*B->cmap->n,&b->v);CHKERRQ(ierr);
