@@ -172,13 +172,13 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s,Vec t,PetscScalar *dp,PetscScalar *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool pin)
+PetscErrorCode VecBindToCPU_MPIViennaCL(Vec vv, PetscBool bind)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  vv->boundtocpu = pin;
+  vv->boundtocpu = bind;
 
-  if (pin) {
+  if (bind) {
     ierr = VecViennaCLCopyFromGPU(vv);CHKERRQ(ierr);
     vv->offloadmask = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     vv->ops->dotnorm2               = NULL;
