@@ -126,6 +126,10 @@ PetscErrorCode DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexSectionLoad",      DM_CLASSID,&DMPLEX_SectionLoad);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexGlobalVectorLoad", DM_CLASSID,&DMPLEX_GlobalVectorLoad);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexLocalVectorLoad",  DM_CLASSID,&DMPLEX_LocalVectorLoad);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexMetricEnforceSPD", DM_CLASSID,&DMPLEX_MetricEnforceSPD);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexMetricNormalize",  DM_CLASSID,&DMPLEX_MetricNormalize);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexMetricAverage",    DM_CLASSID,&DMPLEX_MetricAverage);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexMetricIntersect",  DM_CLASSID,&DMPLEX_MetricIntersection);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup);CHKERRQ(ierr);
