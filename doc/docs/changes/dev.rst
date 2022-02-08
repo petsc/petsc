@@ -82,8 +82,6 @@ Changes: Development
 
 .. rubric:: PetscSection:
 
-.. rubric:: PetscSection:
-
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
