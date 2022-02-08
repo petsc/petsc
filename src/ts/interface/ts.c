@@ -3253,13 +3253,18 @@ PetscErrorCode  TSPreStep(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->prestep) {
     Vec              U;
+    PetscObjectId    idprev;
+    PetscBool        sameObject;
     PetscObjectState sprev,spost;
 
     ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+    ierr = PetscObjectGetId((PetscObject)U,&idprev);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)U,&sprev);CHKERRQ(ierr);
     PetscStackCallStandard((*ts->prestep),(ts));
+    ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+    ierr = PetscObjectCompareId((PetscObject)U,idprev,&sameObject);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)U,&spost);CHKERRQ(ierr);
-    if (sprev != spost) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
+    if (!sameObject || sprev != spost) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -3501,13 +3506,18 @@ PetscErrorCode  TSPostStep(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->poststep) {
     Vec              U;
+    PetscObjectId    idprev;
+    PetscBool        sameObject;
     PetscObjectState sprev,spost;
 
     ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+    ierr = PetscObjectGetId((PetscObject)U,&idprev);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)U,&sprev);CHKERRQ(ierr);
     PetscStackCallStandard((*ts->poststep),(ts));
+    ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+    ierr = PetscObjectCompareId((PetscObject)U,idprev,&sameObject);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)U,&spost);CHKERRQ(ierr);
-    if (sprev != spost) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
+    if (!sameObject || sprev != spost) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
