@@ -174,10 +174,10 @@ class Configure(config.package.CMakePackage):
 
     if deviceArchName: args.append('-DKokkos_ARCH_'+deviceArchName+'=ON')
 
-    langdialect = getattr(self.compilers,lang+'dialect',None)
+    langdialect = getattr(self.setCompilers,lang+'dialect',None)
     if langdialect:
       # langdialect is only set as an attribute if the user specifically chose a dialect
-      # (see config/compilers.py::checkCxxDialect())
+      # (see config/setCompilers.py::checkCxxDialect())
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_STANDARD=')
       args.append('-DCMAKE_CXX_STANDARD='+langdialect[-2:]) # e.g., extract 14 from C++14
     return args

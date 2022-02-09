@@ -104,13 +104,14 @@ class Configure(config.base.Configure):
     framework.require('PETSc.options.scalarTypes', self.blaslapack)
     framework.require('PETSc.options.scalarTypes', self.opencl)
 
-    self.programs.headerPrefix   = self.headerPrefix
-    self.compilers.headerPrefix  = self.headerPrefix
-    self.fortran.headerPrefix    = self.headerPrefix
-    self.types.headerPrefix      = self.headerPrefix
-    self.headers.headerPrefix    = self.headerPrefix
-    self.functions.headerPrefix  = self.headerPrefix
-    self.libraries.headerPrefix  = self.headerPrefix
+    self.programs.headerPrefix     = self.headerPrefix
+    self.setCompilers.headerPrefix = self.headerPrefix
+    self.compilers.headerPrefix    = self.headerPrefix
+    self.fortran.headerPrefix      = self.headerPrefix
+    self.types.headerPrefix        = self.headerPrefix
+    self.headers.headerPrefix      = self.headerPrefix
+    self.functions.headerPrefix    = self.headerPrefix
+    self.libraries.headerPrefix    = self.headerPrefix
 
     # Register user provided package scripts
     if 'with-package-scripts' in self.framework.argDB:
