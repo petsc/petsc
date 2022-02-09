@@ -69,6 +69,7 @@ In addition to the changes above
 .. rubric:: TS:
 
 - Add ``TSSetTimeSpan()``, ``TSGetTimeSpan()`` and ``TSGetTimeSpanSolutions()`` to support time span
+- Add ``DMTSGetIFunctionLocal()``, ``DMTSGetIJacobianLocal()``, and ``DMTSGetRHSFunctionLocal()``
 
 .. rubric:: TAO:
 
