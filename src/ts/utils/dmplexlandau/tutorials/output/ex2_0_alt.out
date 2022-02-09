@@ -3,7 +3,7 @@ charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  0.000e+00
 n:             e:  2.000e+00                           i:  2.000e+00  0.000e+00
 thermal T (K): e= 5.802e+07 i= 5.802e+07  0.000e+00. v_0= 2.965e+07 ( 9.892e-02c) n_0= 5.000e+19 t_0= 1.294e-04, classical, Intuitive, 2 batched
 Domain radius (AMR levels) grid 0: 5. (2) , 1:  8.252e-02 (2) 
-Using default Plex order for all matrices
+Using field major order for GPU Jacobian
 0) FormLandau 640 IPs, 40 cells total, Nb=16, Nq=16, dim=2, Tab: Nb=16 Nf=2 Np=16 cdim=2 N=772
 0 TS dt 0.1 time 0.
   0) species-0: charge density= -1.6022857049771e+01 z-momentum=  1.8744548923583e-20 energy=  1.2007987071479e+05
