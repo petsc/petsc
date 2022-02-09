@@ -1974,6 +1974,38 @@ static inline PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
 }
 
 /*@C
+    PetscCountCast - casts a PetscCount to a PetscInt (which may be 32 bits in size), generates an
+         error if the PetscInt is not large enough to hold the number.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the PetscCount value
+
+   Output Parameter:
+.     b - the resulting PetscInt value
+
+   Level: advanced
+
+   Notes:
+     If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using --with-64-bit-indices to make PetscInt use 64 bit ints
+
+   Not available from Fortran
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscBLASIntCast(), PetscIntMultError(), PetscIntSumError(), PetscIntCast()
+@*/
+static inline PetscErrorCode PetscCountCast(PetscCount a,PetscInt *b)
+{
+  PetscFunctionBegin;
+  if (sizeof(PetscCount) > sizeof(PetscInt) && a > PETSC_MAX_INT) {
+    *b = 0;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscCount_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices",a);
+  }
+  *b = (PetscInt)(a);
+  PetscFunctionReturn(0);
+}
+
+/*@C
     PetscBLASIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscBLASInt (which may be 32 bits in size), generates an
          error if the PetscBLASInt is not large enough to hold the number.
 
@@ -1991,7 +2023,7 @@ static inline PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
       Not available from Fortran
       Errors if the integer is negative since PETSc calls to BLAS/LAPACK never need to cast negative integer inputs
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscIntCast()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscIntCast(), PetscCountCast()
 @*/
 static inline PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 {
@@ -2313,7 +2345,9 @@ PETSC_EXTERN PetscErrorCode PetscFindMPIInt(PetscMPIInt, PetscInt, const PetscMP
 PETSC_EXTERN PetscErrorCode PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithCountArray(PetscCount,PetscInt[],PetscCount[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithArrayPair(PetscInt,PetscInt[],PetscInt[],PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount,PetscInt[],PetscInt[],PetscCount[]);
 PETSC_EXTERN PetscErrorCode PetscSortMPIInt(PetscInt,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt*,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt,PetscMPIInt[],PetscMPIInt[]);

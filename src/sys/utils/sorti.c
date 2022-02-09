@@ -123,7 +123,7 @@
 /* Templates for similar functions used below */
 #define QuickSort1(FuncName,X,n,pivot,t1,ierr)                                   \
   do {                                                                           \
-    PetscInt i,j,p,l,r,hi=n-1;                                                   \
+    PetscCount i,j,p,l,r,hi=n-1;                                                 \
     if (n < 8) {                                                                 \
       for (i=0; i<n; i++) {                                                      \
         pivot = X[i];                                                            \
@@ -146,7 +146,7 @@
 /* Templates for similar functions used below */
 #define QuickSortReverse1(FuncName,X,n,pivot,t1,ierr)                            \
   do {                                                                           \
-    PetscInt i,j,p,l,r,hi=n-1;                                                   \
+    PetscCount i,j,p,l,r,hi=n-1;                                                 \
     if (n < 8) {                                                                 \
       for (i=0; i<n; i++) {                                                      \
         pivot = X[i];                                                            \
@@ -168,7 +168,7 @@
 
 #define QuickSort2(FuncName,X,Y,n,pivot,t1,t2,ierr)                              \
   do {                                                                           \
-    PetscInt i,j,p,l,r,hi=n-1;                                                   \
+    PetscCount i,j,p,l,r,hi=n-1;                                                 \
     if (n < 8) {                                                                 \
       for (i=0; i<n; i++) {                                                      \
         pivot = X[i];                                                            \
@@ -190,7 +190,7 @@
 
 #define QuickSort3(FuncName,X,Y,Z,n,pivot,t1,t2,t3,ierr)                         \
   do {                                                                           \
-    PetscInt i,j,p,l,r,hi=n-1;                                                   \
+    PetscCount i,j,p,l,r,hi=n-1;                                                 \
     if (n < 8) {                                                                 \
       for (i=0; i<n; i++) {                                                      \
         pivot = X[i];                                                            \
@@ -462,7 +462,7 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
 
    Level: intermediate
 
-.seealso: PetscIntSortSemiOrderedWithArray(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
+.seealso: PetscIntSortSemiOrderedWithArray(), PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortIntWithCountArray()
 @*/
 PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt X[],PetscInt Y[])
 {
@@ -488,7 +488,7 @@ PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt X[],PetscInt Y[])
 
    Level: intermediate
 
-.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortIntWithArray(), PetscIntSortSemiOrdered()
+.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortIntWithArray(), PetscIntSortSemiOrdered(), PetscSortIntWithIntCountArrayPair()
 @*/
 PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt X[],PetscInt Y[],PetscInt Z[])
 {
@@ -497,6 +497,62 @@ PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt X[],PetscInt Y[],P
 
   PetscFunctionBegin;
   QuickSort3(PetscSortIntWithArrayPair,X,Y,Z,n,pivot,t1,t2,t3,ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscSortIntWithCountArray - Sorts an array of integers in place in increasing order;
+       changes a second array to match the sorted first array.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  X  - array of integers
+-  Y  - second array of PetscCounts (signed integers)
+
+   Level: intermediate
+
+.seealso: PetscIntSortSemiOrderedWithArray(), PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+@*/
+PetscErrorCode  PetscSortIntWithCountArray(PetscCount n,PetscInt X[],PetscCount Y[])
+{
+  PetscErrorCode ierr;
+  PetscInt       pivot,t1;
+  PetscCount     t2;
+
+  PetscFunctionBegin;
+  QuickSort2(PetscSortIntWithCountArray,X,Y,n,pivot,t1,t2,ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PetscSortIntWithIntCountArrayPair - Sorts an array of integers in place in increasing order;
+       changes an integer array and a PetscCount array to match the sorted first array.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  X  - array of integers
+.  Y  - second array of integers (first array of the pair)
+-  Z  - third array of PetscCounts  (second array of the pair)
+
+   Level: intermediate
+
+   Notes:
+    Usually X, Y are matrix row/column indices, and Z is a permutation array and therefore Z's type is PetscCount to allow 2B+ nonzeros even with 32-bit PetscInt.
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray(), PetscIntSortSemiOrdered(), PetscSortIntWithArrayPair()
+@*/
+PetscErrorCode  PetscSortIntWithIntCountArrayPair(PetscCount n,PetscInt X[],PetscInt Y[],PetscCount Z[])
+{
+  PetscErrorCode ierr;
+  PetscInt       pivot,t1,t2; /* pivot is take from X[], so its type is still PetscInt */
+  PetscCount     t3; /* temp for Z[] */
+
+  PetscFunctionBegin;
+  QuickSort3(PetscSortIntWithIntCountArrayPair,X,Y,Z,n,pivot,t1,t2,t3,ierr);
   PetscFunctionReturn(0);
 }
 
