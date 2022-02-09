@@ -1,21 +1,2 @@
 Function tests pass for order 0 at tolerance 1e-10
 Function tests pass for order 0 derivatives at tolerance 1e-10
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-There are 16 unused database options. They are:
-Option left: name:-field_petscdualspace_components value: 3
-Option left: name:-field_petscdualspace_form_degree value: 0
-Option left: name:-field_petscdualspace_order value: 1
-Option left: name:-field_petscdualspace_refcell value: triangular_prism
-Option left: name:-field_petscspace_components value: 3
-Option left: name:-field_petscspace_sum_concatenate value: false
-Option left: name:-field_petscspace_sum_spaces value: 2
-Option left: name:-field_petscspace_type value: sum
-Option left: name:-field_petscspace_variables value: 3
-Option left: name:-field_sumcomp_0_petscspace_components value: 3
-Option left: name:-field_sumcomp_0_petscspace_degree value: 1
-Option left: name:-field_sumcomp_0_petscspace_variables value: 3
-Option left: name:-field_sumcomp_1_petscspace_components value: 3
-Option left: name:-field_sumcomp_1_petscspace_type value: wxy
-Option left: name:-field_sumcomp_1_petscspace_variables value: 3
-Option left: name:-start_in_debugger_no (no value)
