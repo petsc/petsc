@@ -661,24 +661,27 @@ PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat
 
 PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
 {
-  DM             dmCoord;
-  PetscFE        fem = NULL;
-  SNES           snes;
-  KSP            ksp;
-  PC             pc;
-  Vec            coordsLocal, r, ref, real;
-  Mat            J;
-  PetscTabulation    T;
+  DM                 dmCoord;
+  PetscFE            fem = NULL;
+  SNES               snes;
+  KSP                ksp;
+  PC                 pc;
+  Vec                coordsLocal, r, ref, real;
+  Mat                J;
+  PetscTabulation    T = NULL;
   const PetscScalar *coords;
-  PetscScalar    *a;
-  PetscReal      xir[2];
-  PetscInt       Nf, p;
-  const PetscInt dof = ctx->dof;
-  PetscErrorCode ierr;
+  PetscScalar        *a;
+  PetscReal          xir[2] = {0., 0.};
+  PetscInt           Nf, p;
+  const PetscInt     dof = ctx->dof;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-  if (Nf) {ierr = DMGetField(dm, 0, NULL, (PetscObject *) &fem);CHKERRQ(ierr);}
+  if (Nf) {
+    ierr = DMGetField(dm, 0, NULL, (PetscObject *) &fem);CHKERRQ(ierr);
+    ierr = PetscFECreateTabulation(fem, 1, 1, xir, 0, &T);CHKERRQ(ierr);
+  }
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_SELF, &snes);CHKERRQ(ierr);
@@ -701,7 +704,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
 
   ierr = VecGetArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  ierr = PetscFECreateTabulation(fem, 1, 1, xir, 0, &T);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
     PetscScalar *x = NULL, *vertices = NULL;
     PetscScalar *xi;
@@ -724,6 +726,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
     if (4*dof != xSize) {
       PetscInt d;
 
+      if (!fem) SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "Cannot have a higher order interpolant if the discretization is not PetscFE");
       xir[0] = 2.0*xir[0] - 1.0; xir[1] = 2.0*xir[1] - 1.0;
       ierr = PetscFEComputeTabulation(fem, 1, xir, 0, T);CHKERRQ(ierr);
       for (comp = 0; comp < dof; ++comp) {
