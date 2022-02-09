@@ -333,6 +333,7 @@ PETSC_EXTERN PetscErrorCode DMSetStratumIS(DM, const char [], PetscInt, IS);
 PETSC_EXTERN PetscErrorCode DMClearLabelStratum(DM, const char[], PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetLabelOutput(DM, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);
+PETSC_EXTERN PetscErrorCode DMGetFirstLabeledPoint(DM, DM, DMLabel, PetscInt, const PetscInt *, PetscInt, PetscInt *, PetscDS *);
 
 /*E
    DMCopyLabelsMode - Determines how DMCopyLabels() behaves when there is a DMLabel in the source and destination DMs with the same name

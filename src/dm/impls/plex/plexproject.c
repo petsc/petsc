@@ -466,10 +466,24 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
   PetscFunctionReturn(0);
 }
 
-/*
- Find first labeled point p_o in odm such that the corresponding point p in dm has the specified height. Return p and the corresponding ds.
+/*@C
+  DMGetFirstLabeledPoint - Find first labeled point p_o in odm such that the corresponding point p in dm has the specified height. Return p and the corresponding ds.
+
+  Input Parameters:
+  dm - the DM
+  odm - the enclosing DM
+  label - label for DM domain, or NULL for whole domain
+  numIds - the number of ids
+  ids - An array of the label ids in sequence for the domain
+  height - Height of target cells in DMPlex topology
+
+  Output Parameters:
+  point - the first labeled point
+  ds - the ds corresponding to the first labeled point
+
+  Level: developer
 */
-PetscErrorCode DMGetFirstLabelEntry_Internal(DM dm, DM odm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt height, PetscInt *lStart, PetscDS *ds)
+PetscErrorCode DMGetFirstLabeledPoint(DM dm, DM odm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt height, PetscInt *point, PetscDS *ds)
 {
   DM              plex;
   DMEnclosureType enc;
@@ -477,7 +491,7 @@ PetscErrorCode DMGetFirstLabelEntry_Internal(DM dm, DM odm, DMLabel label, Petsc
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (lStart) *lStart = -1;
+  if (point) *point = -1;
   if (!label) PetscFunctionReturn(0);
   ierr = DMGetEnclosureRelation(dm, odm, &enc);CHKERRQ(ierr);
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
@@ -504,7 +518,7 @@ PetscErrorCode DMGetFirstLabelEntry_Internal(DM dm, DM odm, DMLabel label, Petsc
     ierr = ISDestroy(&labelIS);CHKERRQ(ierr);
     if (ls >= 0) break;
   }
-  if (lStart) *lStart = ls;
+  if (point) *point = ls;
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -594,7 +608,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
 
     ierr = DMPlexGetSimplexOrBoxCells(plex, minHeight, &pStart, &pEnd);CHKERRQ(ierr);
     if (pEnd > pStart) {
-      ierr = DMGetFirstLabelEntry_Internal(dm, dm, label, numIds, ids, minHeight, &lStart, NULL);CHKERRQ(ierr);
+      ierr = DMGetFirstLabeledPoint(dm, dm, label, numIds, ids, minHeight, &lStart, NULL);CHKERRQ(ierr);
       p    = lStart < 0 ? pStart : lStart;
       ierr = DMPlexGetCellType(plex, p, &ct);CHKERRQ(ierr);
       dim  = DMPolytopeTypeGetDim(ct);
@@ -635,9 +649,9 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   ierr = DMPlexGetMaxProjectionHeight(plex, &maxHeight);CHKERRQ(ierr);
   maxHeight = PetscMax(maxHeight, minHeight);
   if (maxHeight < 0 || maxHeight > dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %D not in [0, %D)", maxHeight, dim);
-  ierr = DMGetFirstLabelEntry_Internal(dm, dm, label, numIds, ids, 0, NULL, &ds);CHKERRQ(ierr);
+  ierr = DMGetFirstLabeledPoint(dm, dm, label, numIds, ids, 0, NULL, &ds);CHKERRQ(ierr);
   if (!ds) {ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);}
-  ierr = DMGetFirstLabelEntry_Internal(dmIn, dm, label, numIds, ids, 0, NULL, &dsIn);CHKERRQ(ierr);
+  ierr = DMGetFirstLabeledPoint(dmIn, dm, label, numIds, ids, 0, NULL, &dsIn);CHKERRQ(ierr);
   if (!dsIn) {ierr = DMGetDS(dmIn, &dsIn);CHKERRQ(ierr);}
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(dsIn, &NfIn);CHKERRQ(ierr);
@@ -751,7 +765,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       for (f = 0; f < Nf; ++f) {ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], hEff, &sp[f]);CHKERRQ(ierr);}
     }
     ierr = DMPlexGetSimplexOrBoxCells(plex, h, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMGetFirstLabelEntry_Internal(dm, dm, label, numIds, ids, h, &lStart, NULL);CHKERRQ(ierr);
+    ierr = DMGetFirstLabeledPoint(dm, dm, label, numIds, ids, h, &lStart, NULL);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(depthLabel, depth - h, &heightIS);CHKERRQ(ierr);
     if (pEnd <= pStart) {
       ierr = ISDestroy(&heightIS);CHKERRQ(ierr);
