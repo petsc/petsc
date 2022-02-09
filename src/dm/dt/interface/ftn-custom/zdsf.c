@@ -16,9 +16,16 @@
 
 static PetscFortranCallbackId riemannsolver;
 
-static PetscErrorCode ourriemannsolver(PetscInt dim,PetscInt Nf,PetscReal x[],PetscReal n[],PetscScalar uL[],PetscScalar uR[],PetscInt numConstants,PetscScalar constants[],PetscScalar flux[],void *ctx)
+// We can't use PetscObjectUseFortranCallback() because this function returns void
+static void ourriemannsolver(PetscInt dim,PetscInt Nf,const PetscReal x[],const PetscReal n[],const PetscScalar uL[],const PetscScalar uR[],PetscInt numConstants,const PetscScalar constants[],PetscScalar flux[],void *ctx)
 {
-  PetscObjectUseFortranCallback((PetscDS)ctx,riemannsolver,(PetscInt*,PetscInt*,PetscReal*,PetscReal*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),(&dim,&Nf,x,n,uL,uR,&numConstants,constants,flux,_ctx,&ierr));
+  PetscErrorCode ierr;                                    \
+  void (*func)(PetscInt *dim,PetscInt *Nf,const PetscReal x[],const PetscReal n[],const PetscScalar uL[],const PetscScalar uR[],const PetscInt *numConstants,const PetscScalar constants[],PetscScalar flux[],void *ctx);
+  void *_ctx;
+  ierr = PetscObjectGetFortranCallback((PetscObject)ctx,PETSC_FORTRAN_CALLBACK_CLASS,riemannsolver,(PetscVoidFunction*)&func,&_ctx);CHKERRABORT(PETSC_COMM_SELF,ierr);
+  if (func) {
+    (*func)(&dim,&Nf,x,n,uL,uR,&numConstants,constants,flux,_ctx);
+  }
 }
 
 PETSC_EXTERN void petscdsviewfromoptions_(PetscDS *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
@@ -46,5 +53,5 @@ PETSC_EXTERN void petscdssetcontext_(PetscDS *prob,PetscInt *f,void *ctx,PetscEr
 PETSC_EXTERN void petscdssetriemannsolver_(PetscDS *prob,PetscInt *f,void (*rs)(PetscInt*,PetscInt*,PetscReal*,PetscReal*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*prob,PETSC_FORTRAN_CALLBACK_CLASS,&riemannsolver,(PetscVoidFunction)rs,NULL);if (*ierr) return;
-  *ierr = PetscDSSetRiemannSolver(*prob,*f,(void*)ourriemannsolver);if (*ierr) return;
+  *ierr = PetscDSSetRiemannSolver(*prob,*f,ourriemannsolver);if (*ierr) return;
 }

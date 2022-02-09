@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  =
-DIRS     = interface impls
+DIRS     = interface impls tests
 LOCDIR   = src/dm/partitioner/
 MANSEC   = DM
 
