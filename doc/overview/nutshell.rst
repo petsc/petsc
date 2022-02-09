@@ -22,9 +22,9 @@ Solvers
 
 - ``PC`` preconditioners - approximate solvers to algebra systems without a history of previous iterations
 
-- ``KSP`` Krylov Subspace methods - approximate solvers with a history of previous iterations
+- ``KSP`` Krylov subspace methods - approximate solvers with a history of previous iterations
 
-- ``SNES`` nolinear equation solvers
+- ``SNES`` nonlinear equation solvers
 
 - ``TS`` time integrators (ODE/PDE), explicit, implicit, local and global error estimators
 

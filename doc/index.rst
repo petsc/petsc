@@ -19,17 +19,17 @@ News
     - `Book from SIAM Press <https://my.siam.org/Store/Product/viewproduct/?ProductId=32850137>`__
     - `Google Play E-book <https://play.google.com/store/books/details/Ed_Bueler_PETSc_for_Partial_Differential_Equations?id=tgMHEAAAQBAJ>`__
 
-.. admonition:: News: New paper on PETSc communication System
+.. admonition:: News: New paper on PETSc community
 
-  `The PetscSF Scalable Communication Layer <https://arxiv.org/abs/2102.13018>`__
+  `The Community is the Infrastructure  <https://arxiv.org/abs/2201.00967>`__
 
-.. admonition:: News: New paper on PETSc with GPUs
+.. admonition:: News: Paper on PETSc communication System
 
-  `Toward Performance-Portable PETSc for GPU-based Exascale Systems <https://arxiv.org/abs/2011.00715>`__
+  `The PetscSF Scalable Communication Layer <https://ieeexplore.ieee.org/document/9442258>`__
 
-.. admonition:: News: petsc4py Support
+.. admonition:: News: Paper on PETSc usage with GPUs
 
-  Source code for `petsc4py <https://www.mcs.anl.gov/petsc/petsc4py-current/docs/>`__, developed by Lisandro Dalcin, is now distributed with the PETSc source and supported by the PETSc team and mailing lists.
+  `Toward Performance-Portable PETSc for GPU-based Exascale Systems <https://www.sciencedirect.com/science/article/pii/S016781912100079X>`__
 
 
 Main Topics
@@ -48,7 +48,7 @@ Main Topics
    Developers <developers/index>
    Misc. <miscellaneous/index>
 
-Related toolkits/libraries that use PETSc
+Toolkits/libraries that use PETSc
 ==========================================
 
       -  `ADflow <https://github.com/mdolab/adflow>`__ An Open-Source
@@ -118,7 +118,9 @@ Related toolkits/libraries that use PETSc
 Citing PETSc
 ============
 
-When citing PETSc in a publication please cite the following:
+You can run any PETSc program with the option``-citations`` to print appropriate citations for the algorithms you are using within PETSc.
+
+For general citations on PETSc please use the following:
 
 .. literalinclude:: /petsc.bib
    :language: none
@@ -136,6 +138,22 @@ When citing PETSc in a publication please cite the following:
    :language: none
    :start-at: @inproceedings{petsc-efficient
    :end-at: year
+   :append: }
+
+For PETSc usage on GPUs please cite
+
+.. literalinclude:: /petsc.bib
+   :language: none
+   :start-at: @article{MILLS2021
+   :end-at: author
+   :append: }
+
+For PetscSF -- parallel communication in PETSc -- please cite
+
+.. literalinclude:: /petsc.bib
+   :language: none
+   :start-at: @article{PetscSF2022
+   :end-at: pages
    :append: }
 
 If you use the TS component of PETSc please cite the following:
