@@ -1795,7 +1795,7 @@ $
    an update in the preconditioner you must call MatAssemblyBegin()/MatAssemblyEnd() or PetscObjectStateIncrease((PetscObject)mat);
    each time the MATSHELL matrix has changed.
 
-   Matrix product operations (i.e. MatMat, MatTranposeMat etc) can be specified using MatShellSetMatProductOperation()
+   Matrix product operations (i.e. MatMat, MatTransposeMat etc) can be specified using MatShellSetMatProductOperation()
 
    Calling MatAssemblyBegin()/MatAssemblyEnd() on a MATSHELL removes any previously supplied shift and scales that were provided
    with MatDiagonalSet(), MatShift(), MatScale(), or MatDiagonalScale().
@@ -1956,7 +1956,7 @@ PetscErrorCode  MatShellTestMult(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec 
 }
 
 /*@C
-    MatShellTestMultTranpose - Compares the multiply transpose routine provided to the MATSHELL with differencing on a given function.
+    MatShellTestMultTranspose - Compares the multiply transpose routine provided to the MATSHELL with differencing on a given function.
 
    Logically Collective on Mat
 
