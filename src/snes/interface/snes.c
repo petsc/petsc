@@ -620,7 +620,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
   } else {
     /* This version replaces both the user-provided Jacobian and the user-
      provided preconditioner Jacobian with the default matrix free version. */
-    if ((snes->npcside== PC_LEFT) && snes->npc) {
+    if (snes->npcside == PC_LEFT && snes->npc) {
       if (!snes->jacobian) {ierr = SNESSetJacobian(snes,J,NULL,NULL,NULL);CHKERRQ(ierr);}
     } else {
       KSP       ksp;
@@ -1931,12 +1931,12 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(f,VEC_CLASSID,2);
   PetscCheckSameComm(snes,1,f,2);
-  if (snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+  if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     snes->vec_func_init_set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
   ierr = SNESGetFunction(snes,&vec_func,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecCopy(f, vec_func);CHKERRQ(ierr);
+  ierr = VecCopy(f,vec_func);CHKERRQ(ierr);
 
   snes->vec_func_init_set = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -2852,7 +2852,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
     }
     PetscFunctionReturn(0);
   }
-  if (snes->npc && snes->npcside== PC_LEFT) {
+  if (snes->npc && snes->npcside == PC_LEFT) {
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -3263,7 +3263,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunction);CHKERRQ(ierr);
   }
 
-  if (snes->npc && (snes->npcside== PC_LEFT)) {
+  if (snes->npc && snes->npcside == PC_LEFT) {
     snes->mf          = PETSC_TRUE;
     snes->mf_operator = PETSC_FALSE;
   }
@@ -3287,7 +3287,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
     /* default to 1 iteration */
     ierr = SNESSetTolerances(snes->npc,0.0,0.0,0.0,1,snes->npc->max_funcs);CHKERRQ(ierr);
-    if (snes->npcside==PC_RIGHT) {
+    if (snes->npcside == PC_RIGHT) {
       ierr = SNESSetNormSchedule(snes->npc,SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
     } else {
       ierr = SNESSetNormSchedule(snes->npc,SNES_NORM_NONE);CHKERRQ(ierr);
@@ -3321,7 +3321,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   ierr = SNESSetDefaultComputeJacobian(snes);CHKERRQ(ierr);
 
-  if (snes->npc && (snes->npcside== PC_LEFT)) {
+  if (snes->npc && snes->npcside == PC_LEFT) {
     if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
       if (snes->linesearch) {
         ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
@@ -5630,7 +5630,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
   ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   if (snes->npc) {
-    ierr = SNESSetDM(snes->npc, snes->dm);CHKERRQ(ierr);
+    ierr = SNESSetDM(snes->npc,snes->dm);CHKERRQ(ierr);
     ierr = SNESSetNPCSide(snes,snes->npcside);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -5795,7 +5795,9 @@ PetscErrorCode  SNESSetNPCSide(SNES snes,PCSide side)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveEnum(snes,side,2);
-  snes->npcside= side;
+  if (side == PC_SIDE_DEFAULT) side = PC_RIGHT;
+  if (side != PC_LEFT && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONG,"Only PC_LEFT and PC_RIGHT are supported");
+  snes->npcside = side;
   PetscFunctionReturn(0);
 }
 

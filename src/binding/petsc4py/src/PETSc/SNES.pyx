@@ -252,6 +252,14 @@ cdef class SNES(Object):
     def setNPC(self, SNES snes):
         CHKERR( SNESSetNPC(self.snes, snes.snes) )
 
+    def setNPCSide(self, side):
+        CHKERR( SNESSetNPCSide(self.snes, side) )
+
+    def getNPCSide(self):
+        cdef PetscPCSide side = PC_RIGHT
+        CHKERR( SNESGetNPCSide(self.snes, &side) )
+        return side
+
     # --- user Function/Jacobian routines ---
 
     def setLineSearchPreCheck(self, precheck, args=None, kargs=None):

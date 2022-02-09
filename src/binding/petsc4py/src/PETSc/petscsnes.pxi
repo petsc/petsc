@@ -123,6 +123,8 @@ cdef extern from * nogil:
     int SNESGetNPC(PetscSNES,PetscSNES*)
     int SNESHasNPC(PetscSNES,PetscBool*)
     int SNESSetNPC(PetscSNES,PetscSNES)
+    int SNESSetNPCSide(PetscSNES,PetscPCSide)
+    int SNESGetNPCSide(PetscSNES,PetscPCSide*)
 
     int SNESGetRhs(PetscSNES,PetscVec*)
     int SNESGetSolution(PetscSNES,PetscVec*)
