@@ -121,6 +121,10 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscObject    disc;
   PetscReal     *x, *y, slope, intercept;
   PetscInt       Nr = ce->Nr, r, Nf = ce->Nf, f, dim, oldlevel, oldnlev;
+  PetscErrorCode (*ifunc)(DM, PetscReal, Vec, Vec, Vec, void *);
+  PetscErrorCode (*ijac)(DM, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
+  PetscErrorCode (*rhsfunc)(DM, PetscReal, Vec, Vec, void *);
+  void            *fctx, *jctx, *rctx;
   void          *ctx;
 
   PetscFunctionBegin;
@@ -180,8 +184,14 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
     PetscCall(TSReset(ts));
     PetscCall(TSSetDM(ts, dm[r]));
     PetscCall(DMTSSetBoundaryLocal(dm[r], DMPlexTSComputeBoundary, ctx));
-    PetscCall(DMTSSetIFunctionLocal(dm[r], DMPlexTSComputeIFunctionFEM, ctx));
-    PetscCall(DMTSSetIJacobianLocal(dm[r], DMPlexTSComputeIJacobianFEM, ctx));
+    if (r > 0) {
+      PetscCall(DMTSGetIFunctionLocal(dm[r-1], &ifunc, &fctx));
+      PetscCall(DMTSGetIJacobianLocal(dm[r-1], &ijac,  &jctx));
+      PetscCall(DMTSGetRHSFunctionLocal(dm[r-1], &rhsfunc, &rctx));
+      if (ifunc) {PetscCall(DMTSSetIFunctionLocal(dm[r], ifunc, fctx));}
+      if (ijac) {PetscCall(DMTSSetIJacobianLocal(dm[r], ijac, jctx));}
+      if (rhsfunc) {PetscCall(DMTSSetRHSFunctionLocal(dm[r], rhsfunc, rctx));}
+    }
     PetscCall(TSSetTime(ts, 0.0));
     PetscCall(TSSetStepNumber(ts, 0));
     PetscCall(TSSetFromOptions(ts));
@@ -223,6 +233,9 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
     /* Cleanup */
     PetscCall(PetscLogStagePop());
   }
+  PetscCall(DMTSGetIFunctionLocal(dm[r-1], &ifunc, &fctx));
+  PetscCall(DMTSGetIJacobianLocal(dm[r-1], &ijac,  &jctx));
+  PetscCall(DMTSGetRHSFunctionLocal(dm[r-1], &rhsfunc, &rctx));
   for (r = 1; r <= Nr; ++r) {
     PetscCall(DMDestroy(&dm[r]));
   }
@@ -255,8 +268,9 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   }
   PetscCall(TSSetDM(ts, ce->idm));
   PetscCall(DMTSSetBoundaryLocal(ce->idm, DMPlexTSComputeBoundary, ctx));
-  PetscCall(DMTSSetIFunctionLocal(ce->idm, DMPlexTSComputeIFunctionFEM, ctx));
-  PetscCall(DMTSSetIJacobianLocal(ce->idm, DMPlexTSComputeIJacobianFEM, ctx));
+  if (ifunc) {PetscCall(DMTSSetIFunctionLocal(ce->idm, ifunc, fctx));}
+  if (ijac) {PetscCall(DMTSSetIJacobianLocal(ce->idm, ijac, jctx));}
+  if (rhsfunc) {PetscCall(DMTSSetRHSFunctionLocal(ce->idm, rhsfunc, rctx));}
   PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_ITERATING));
   PetscCall(TSSetTime(ts, 0.0));
   PetscCall(TSSetStepNumber(ts, 0));
