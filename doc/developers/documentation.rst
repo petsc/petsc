@@ -60,8 +60,7 @@ to turn off the Python virtual environment once you have built the documentation
    $ deactivate
 
 
-.. _sphinx_guidelines:
-
+.. _sec_local_docs_latex:
 
 Building the manual locally as a PDF via LaTeX
 ----------------------------------------------
@@ -80,6 +79,7 @@ Set up your local Python environment (e.g. :ref:`as above <sec_local_html_docs>`
    $ make latexpdf
    $ open _build/latex/manual.pdf  # or otherwise open in PDF viewer
 
+.. _sphinx_guidelines:
 
 Sphinx Documentation Guidelines
 -------------------------------
@@ -162,6 +162,13 @@ Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for
   .. code-block:: rst
 
      See :ref:`link text <sec_short_name>`
+
+* For internal links in the manual with targets outside the manual, always provide alt text
+  so that the text will be  properly formatted in the :ref:`standalone PDF manual <sec_local_docs_latex>`, e.g.
+
+   .. code-block:: rst
+
+     PETSc has :doc:`mailing lists </community/mailing>`.
 
 * We use the `sphinxcontrib-bibtex extension <https://sphinxcontrib-bibtex.readthedocs.io/en/latest/>`__
   to include citations from BibTeX files.
