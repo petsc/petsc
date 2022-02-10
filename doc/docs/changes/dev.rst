@@ -97,6 +97,7 @@ Changes: Development
 -  Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
 - Change ``MatStructures`` enumeration to avoid spaces and match capitalization of other enumerations
 -  Change size argument of ``MatSetPreallocationCOO()`` to ``PetscCount``
+-  Add ``MATORDERINGMETISND`` use METIS for nested dissection ordering of ``MatSeqAIJ``, with options ``nseps``, ``niter``, ``ufactor`` and ``pfactor`` under the common prefix ``-mat_ordering_metisnd_``
 
 .. rubric:: PC:
 

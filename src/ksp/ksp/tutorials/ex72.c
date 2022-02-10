@@ -497,6 +497,10 @@ int main(int argc,char **args)
       test:
          suffix: c
          args: -pc_factor_levels 1
+      test:
+         requires: metis
+         suffix: d
+         args: -pc_factor_mat_ordering_type metisnd
 
    testset:
       TODO: Matrix row/column sizes are not compatible with block size
