@@ -1911,6 +1911,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     ierr   = MatSeqAIJKokkosGetDeviceMat(aij->A,&d_mat);CHKERRQ(ierr);
     ierr   = MatSeqAIJKokkosModifyDevice(aij->A);CHKERRQ(ierr);
     ierr   = MatSeqAIJKokkosModifyDevice(aij->B);CHKERRQ(ierr);
+    if (!A->nooffprocentries && !aij->donotstash) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support offproc values insertion. Use MatSetOption(A,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) or MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE)");
   }
   // act like MatSetValues because not called on host
   if (A->assembled) {
@@ -1920,7 +1921,6 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     A->was_assembled = PETSC_TRUE; // this is done (lazy) in MatAssemble but we are not calling it anymore - done in AIJ AssemblyEnd, need here?
   } else {
     ierr = PetscInfo1(A,"Warning !assemble ??? assembled=%" PetscInt_FMT "\n",A->assembled);CHKERRQ(ierr);
-    // SETERRQ(comm,PETSC_ERR_SUP,"Need assemble matrix");
   }
   if (!d_mat) {
     struct _n_SplitCSRMat h_mat; /* host container */
