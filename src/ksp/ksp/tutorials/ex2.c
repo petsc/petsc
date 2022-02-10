@@ -353,4 +353,11 @@ int main(int argc,char **args)
       nsize: 4
       args: -ksp_monitor_short -ksp_type pipecg2 -m 15 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
 
+   test:
+      suffix: hpddm
+      nsize: 4
+      requires: hpddm
+      filter: sed -e "s/ iterations 9/ iterations 8/g"
+      args: -ksp_converged_reason -ksp_type hpddm -ksp_hpddm_precision {{single double}shared output} -ksp_pc_side {{left right}shared output}
+
  TEST*/

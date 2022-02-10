@@ -3,7 +3,11 @@
 
 #include <petsc/private/kspimpl.h>
 
-#define PETSC_HPDDM_MAXLEVELS 9
+#define PETSC_KSPHPDDM_DEFAULT_PRECISION (PetscDefined(USE_REAL_SINGLE) ? KSP_HPDDM_PRECISION_SINGLE : \
+                                          (PetscDefined(USE_REAL_DOUBLE) ? KSP_HPDDM_PRECISION_DOUBLE : \
+                                           (PetscDefined(USE_REAL___FLOAT128) ? KSP_HPDDM_PRECISION_QUADRUPLE : \
+                                            KSP_HPDDM_PRECISION_HALF)))
+#define PETSC_PCHPDDM_MAXLEVELS 9
 PETSC_EXTERN PetscLogEvent PC_HPDDM_PtAP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_PtBP;
 PETSC_EXTERN PetscLogEvent PC_HPDDM_Next;
@@ -48,6 +52,7 @@ struct KSP_HPDDM {
   int                  icntl[2];
   unsigned short       scntl[2];
   char                 cntl [5];
+  KSPHPDDMPrecision    precision;
 };
 
 PETSC_INTERN const char HPDDMCitation[];
