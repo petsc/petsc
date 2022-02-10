@@ -7,12 +7,10 @@
 
 #if defined(__cplusplus)
 
-#if (__cplusplus < 201103L) || !PetscDefined(HAVE_CXX_DIALECT_CXX11)
 // icc (and for that matter any windows compiler) is only fully compliant to the letter of
 // the standard up to C++03, while supporting the vast majority of later standards
-#  if !PetscDefined(HAVE_WINDOWS_COMPILERS)
-#    error "CUPMBlasInterface requires C++11"
-#  endif
+#if (__cplusplus < 201103L) && !PetscDefined(HAVE_WINDOWS_COMPILERS)
+#  error "CUPMBlasInterface requires C++11"
 #endif
 
 namespace Petsc
