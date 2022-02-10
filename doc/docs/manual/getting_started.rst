@@ -92,10 +92,10 @@ The manual pages provide hyperlinked indices (organized by both concept
 and routine name) to the tutorial examples and enable easy movement
 among related topics.
 
-`Visual Studio Code <https://code.visualstudio.com/>`__ , Eclipse, Emacs, and Vim users may find their development environment's options for
-searching in the source code (for example, ``etags`` ``ctags`` for Emacs and Vim) are
+`Visual Studio Code <https://code.visualstudio.com/>`__, Eclipse, Emacs, and Vim users may find their development environment's options for
+searching in the source code (for example, ``etags`` and ``ctags`` for Emacs and Vim) are
 extremely useful for exploring the PETSc source code. Details of these
-feature are provided in :any:`sec-emacs`.
+feature are provided in :any:`sec-developer-environments`.
 
 The complete PETSc distribution, manual pages, and additional information are available via the
 `PETSc home page <https://petsc.org/>`__. The PETSc
@@ -502,8 +502,31 @@ also use Valgrind to track down memory errors; see the `FAQ <https://petsc.org/r
 
 .. _sec_parallel:
 
-Parallel Programming
-^^^^^^^^^^^^^^^^^^^^
+Parallel and GPU Programming
+----------------------------
+
+Numerical computing today has multiple levels of parallelism (concurrency).
+
+- Low-level, single instruction multiple data (SIMD) parallelism
+
+- Medium-level, multiple instruction shared memory parallelism, and
+
+- High-level, distributed memory parallelism
+
+Traditional CPUs support the lower two levels via, for example, Intel AVX-like instructions (:any:`sec_cpu_simd`) and Unix threads, often managed by using OpenMP pragmas (:any:`sec_cpu_openmp`),
+(or multiple processes). GPUs also support the lower two levels via kernel functions (:any:`sec_gpu_kernels`) and streams (:any:`sec_gpu_streams`).
+Distributed memory parallelism is created by combining multiple
+CPUs and/or GPUs and using MPI for communication (:any:`sec_mpi`).
+
+In addition there is also concurrency between computations (floating point operations) and data movement (from memory to caches and registers
+and via MPI between distinct memory nodes).
+
+PETSc provides support for all these levels of parallelism but its strongest support is for MPI-based distributed memory parallelism.
+
+.. _sec_mpi:
+
+MPI Parallelism
+~~~~~~~~~~~~~~~
 
 Since PETSc uses the message-passing model for parallel programming and
 employs MPI for all interprocessor communication, the user is free to

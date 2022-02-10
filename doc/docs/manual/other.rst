@@ -864,7 +864,10 @@ Disabling Graphics at Compile Time
 To disable all X-window-based graphics, run ``configure`` with the
 additional option ``--with-x=0``
 
-.. _sec-emacs:
+.. _sec-developer-environments:
+
+Developer Environments
+~~~~~~~~~~~~~~~~~~~~~~
 
 Emacs Users
 ~~~~~~~~~~~
@@ -926,10 +929,10 @@ file and line number where a desired PETSc function is defined. Any
 string in any of the PETSc files can be found with the command ``M-x tags-search``.
 To find repeated occurrences, one can simply use ``M-,`` to find the next occurrence.
 
-VS Code Users
-~~~~~~~~~~~~~
+Visual Studio Code Users
+~~~~~~~~~~~~~~~~~~~~~~~~
 `VS Code <https://code.visualstudio.com/>`_ (unlike :ref:`sec-visual-studio`, described below) is an open source editor with a rich extension ecosystem.
-It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json`` as produced by a command such as ``bear make -B`` (see :ref:`sec-emacs`).
+It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json`` as produced by a command such as ``bear make -B`` (see :ref:`sec-developer-environments`).
 If you have no prior attachment to a specific code editor, we recommend trying VS Code.
 
 Vi and Vim Users
@@ -942,7 +945,7 @@ Vim has configurable keymaps: all of the "command mode" commands given that star
 a colon (such as ``:help``) can be assigned to short sequences in "normal mode," which
 is how most Vim users use their most frequently used commands.
 
-See the :ref:`sec-emacs` discussion above for configuration of clangd, which
+See the :ref:`sec-developer-environments` discussion above for configuration of clangd, which
 provides integrated development environment.
 
 Tags

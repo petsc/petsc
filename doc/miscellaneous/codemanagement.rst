@@ -50,7 +50,7 @@ Several easy ways to improve the cycle
       into the editor
 
 You might consider using ``Microsoft Visual Studio``, ``Eclipse`` or
-other advanced software development systems. See the :ref:`Users Manual<sec-emacs>`.
+other advanced software development systems. See the :ref:`Users Manual<sec-developer-environments>`.
 
 Debugging
 ---------
