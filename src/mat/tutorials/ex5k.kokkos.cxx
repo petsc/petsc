@@ -39,8 +39,8 @@ int main(int argc,char **argv)
   ierr = MatSetType(A, MATAIJKOKKOS);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A, nz, NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, nz,NULL,nz-1, NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
