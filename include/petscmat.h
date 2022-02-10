@@ -1226,6 +1226,7 @@ typedef const char* MatOrderingType;
 #define MATORDERINGWBM            "wbm"
 #define MATORDERINGSPECTRAL       "spectral"
 #define MATORDERINGAMD            "amd"            /* only works if UMFPACK is installed with PETSc */
+#define MATORDERINGMETISND        "metisnd"        /* only works if METIS is installed with PETSc */
 #define MATORDERINGNATURAL_OR_ND  "natural_or_nd"  /* special coase used for Cholesky and ICC, allows ND when AIJ matrix is used but Natural when SBAIJ is used */
 #define MATORDERINGEXTERNAL       "external"       /* uses an ordering type internal to the factorization package */
 

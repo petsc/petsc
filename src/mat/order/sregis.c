@@ -13,6 +13,9 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat,MatOrderingType,IS*,IS*)
 #if defined(PETSC_HAVE_SUITESPARSE)
 PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat,MatOrderingType,IS*,IS*);
 #endif
+#if defined(PETSC_HAVE_METIS)
+PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat,MatOrderingType,IS*,IS*);
+#endif
 
 /*@C
   MatOrderingRegisterAll - Registers all of the matrix
@@ -54,6 +57,9 @@ PetscErrorCode  MatOrderingRegisterAll(void)
   ierr = MatOrderingRegister(MATORDERINGSPECTRAL, MatGetOrdering_Spectral);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUITESPARSE)
   ierr = MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_METIS)
+  ierr = MatOrderingRegister(MATORDERINGMETISND,  MatGetOrdering_METISND);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
