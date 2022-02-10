@@ -53,7 +53,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
         break;
       }
     }
-    ierr = ISRestoreIndices(field_is, &fields);
+    ierr = ISRestoreIndices(field_is, &fields);CHKERRQ(ierr);
   }
   if (ds_field == -1) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Could not find dm_field %D in DS", dm_field);
 
