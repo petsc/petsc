@@ -24,7 +24,7 @@ static int OBJ=0;
 static int GRAD=1;
 static int OBJGRAD=2;
 static int OBJGTS=3;
-static int NFUNCS=4;
+static size_t NFUNCS=4;
 
 static PetscErrorCode ourtaolinesearchobjectiveroutine(TaoLineSearch ls, Vec x, PetscReal *f, void *ctx)
 {

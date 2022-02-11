@@ -74,10 +74,10 @@ typedef struct {
 } PetscOps;
 
 typedef enum {PETSC_FORTRAN_CALLBACK_CLASS,PETSC_FORTRAN_CALLBACK_SUBTYPE,PETSC_FORTRAN_CALLBACK_MAXTYPE} PetscFortranCallbackType;
-typedef int PetscFortranCallbackId;
+typedef size_t PetscFortranCallbackId;
 #define PETSC_SMALLEST_FORTRAN_CALLBACK ((PetscFortranCallbackId)1000)
 PETSC_EXTERN PetscErrorCode PetscFortranCallbackRegister(PetscClassId,const char*,PetscFortranCallbackId*);
-PETSC_EXTERN PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId,PetscFortranCallbackId*,PetscFortranCallbackId*);
 
 typedef struct {
   void (*func)(void);
@@ -123,9 +123,9 @@ typedef struct _p_PetscObject {
   PetscObjectState     *scalarcomposedstate,*scalarstarcomposedstate;
   PetscScalar          *scalarcomposeddata, **scalarstarcomposeddata;
   void                 (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
-  PetscInt             num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
+  PetscFortranCallbackId num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
   PetscFortranCallback *fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
-  PetscInt             num_fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
+  PetscFortranCallbackId num_fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
   void                 *python_context;
   PetscErrorCode       (*python_destroy)(void*);
 

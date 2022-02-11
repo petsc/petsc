@@ -8,9 +8,9 @@ struct _FortranCallbackLink {
 };
 
 typedef struct {
-  PetscInt            basecount;
-  PetscInt            maxsubtypecount;
-  FortranCallbackLink subtypes;
+  PetscFortranCallbackId basecount;
+  PetscFortranCallbackId maxsubtypecount;
+  FortranCallbackLink    subtypes;
 } FortranCallbackBase;
 
 static FortranCallbackBase *_classbase;
@@ -119,7 +119,7 @@ found:
 
 .seealso: PetscFortranCallbackRegister()
 @*/
-PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid,PetscInt *numbase,PetscInt *numsubtype)
+PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid,PetscFortranCallbackId *numbase,PetscFortranCallbackId *numsubtype)
 {
 
   PetscFunctionBegin;
