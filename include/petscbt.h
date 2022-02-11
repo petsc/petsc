@@ -27,9 +27,9 @@ typedef char* PetscBT;
 
 /* convert an index i to an index suitable for indexing a PetscBT, such that
  * bt[PetscBTIndex(i)] returns the i'th value of the bt */
-static inline PetscInt PetscBTIndex_Internal(PetscInt index)
+static inline size_t PetscBTIndex_Internal(PetscInt index)
 {
-  return index/PETSC_BITS_PER_BYTE;
+  return (size_t)index/PETSC_BITS_PER_BYTE;
 }
 
 static inline char PetscBTMask_Internal(PetscInt index)
@@ -37,9 +37,9 @@ static inline char PetscBTMask_Internal(PetscInt index)
   return 1 << index%PETSC_BITS_PER_BYTE;
 }
 
-static inline PetscInt PetscBTLength(PetscInt m)
+static inline size_t PetscBTLength(PetscInt m)
 {
-  return m/PETSC_BITS_PER_BYTE+1;
+  return (size_t)m/PETSC_BITS_PER_BYTE+1;
 }
 
 static inline PetscErrorCode PetscBTMemzero(PetscInt m, PetscBT array)
