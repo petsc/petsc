@@ -1167,6 +1167,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   KSPConvergedReason reason;
   PC                 pc;
   PCFailedReason     pcreason;
+  PetscInt           hist_len;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
@@ -1204,7 +1205,8 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   ierr = KSPGetConvergedReason(fetidp->innerksp,&ksp->reason);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(fetidp->innerksp,&ksp->its);CHKERRQ(ierr);
   ksp->totalits += ksp->its;
-  ierr = KSPGetResidualHistory(fetidp->innerksp,NULL,&ksp->res_hist_len);CHKERRQ(ierr);
+  ierr = KSPGetResidualHistory(fetidp->innerksp,NULL,&hist_len);CHKERRQ(ierr);
+  ksp->res_hist_len = (size_t) hist_len;
   /* restore defaults for inner BDDC (Pre/PostSolve flags) */
   pcbddc->temp_solution_used        = PETSC_FALSE;
   pcbddc->rhs_change                = PETSC_FALSE;

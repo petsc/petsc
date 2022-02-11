@@ -4350,7 +4350,7 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
   }
   snes->conv_hist       = a;
   snes->conv_hist_its   = its;
-  snes->conv_hist_max   = na;
+  snes->conv_hist_max   = (size_t)na;
   snes->conv_hist_len   = 0;
   snes->conv_hist_reset = reset;
   PetscFunctionReturn(0);
@@ -4407,7 +4407,7 @@ PetscErrorCode  SNESGetConvergenceHistory(SNES snes,PetscReal *a[],PetscInt *its
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (a)   *a   = snes->conv_hist;
   if (its) *its = snes->conv_hist_its;
-  if (na)  *na  = snes->conv_hist_len;
+  if (na)  *na  = (PetscInt) snes->conv_hist_len;
   PetscFunctionReturn(0);
 }
 
