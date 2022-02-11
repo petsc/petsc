@@ -859,7 +859,7 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
   ctE = tr->ctStart[tr->ctOrderOld[tr->ctOrderInvOld[ctO]+1]];
   ierr = DMPlexTransformCellTransform(tr, (DMPolytopeType) ctO, ctS, &rt, &Nct, &rct, &rsize, &cone, &ornt);CHKERRQ(ierr);
   for (n = 0; n < Nct; ++n) {
-    if (rct[n] == ctN) {
+    if ((PetscInt) rct[n] == ctN) {
       PetscInt tmp = pNew - tr->ctStartNew[ctN] - offset;
 
       rp = tmp / rsize[n];
