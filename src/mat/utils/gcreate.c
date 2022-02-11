@@ -579,15 +579,11 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt
 
    Level: beginner
 
-   Notes: Entries can be repeated, see MatSetValuesCOO().
-
-   If the matrix type is not AIJ or AIJKOKKOS, then the entries must be owned by the local part
-   of the matrix and no row or column indices are allowed to be negative.
-
-   If the matrix type is AIJ or AIJKOKKOS (sequential or parallel), the above constraints do not apply.
-   More specifically, entries with negative row or column indices are allowed but will be ignored.
-   The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries are allowed
-   and will be properly added or inserted to the matrix.
+   Notes:
+   Entries can be repeated, see MatSetValuesCOO(). Entries with negative row or column indices are allowed
+   but will be ignored. The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries
+   are allowed and will be properly added or inserted to the matrix, unless the matrix option MAT_IGNORE_OFF_PROC_ENTRIES
+   is set, in which case remote entries are ignored, or MAT_NO_OFF_PROC_ENTRIES is set, in which case an error will be generated.
 
 .seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOOLocal()
 @*/
@@ -595,7 +591,6 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
 {
   PetscErrorCode (*f)(Mat,PetscCount,const PetscInt[],const PetscInt[]) = NULL;
   PetscErrorCode ierr;
-  PetscBool      isAIJKokkos;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -604,13 +599,6 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
   if (ncoo) PetscValidIntPointer(coo_j,4);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)A,&isAIJKokkos,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,NULL);CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG) && !isAIJKokkos) {
-    for (PetscCount i = 0; i < ncoo; i++) {
-      PetscCheckFalse(coo_i[i] >= 0 && (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend),PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %" PetscInt_FMT "! Must be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",coo_i[i],A->rmap->rstart,A->rmap->rend);
-      PetscCheck(coo_j[i] < A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %" PetscInt_FMT "! Must be in [0,%" PetscInt_FMT ")",coo_j[i],A->cmap->N);
-    }
-  }
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOO_C",&f);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_PreallCOO,A,0,0,0);CHKERRQ(ierr);
   if (f) {
@@ -636,21 +624,15 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
    Level: beginner
 
    Notes:
-   Entries can be repeated, see MatSetValuesCOO().
-
    The local indices are translated using the local to global mapping, thus MatSetLocalToGlobalMapping() must have been
    called prior to this function.
 
    The indices coo_i and coo_j may be modified within this function. They might be translated to corresponding global
    indices, but the caller should not rely on them having any specific value after this function returns.
 
-   If the matrix type is not AIJ or AIJKOKKOS, then the entries must be owned by the local part
-   of the matrix and no row or column indices are allowed to be negative.
-
-   If the matrix type is AIJ or AIJKOKKOS (sequential or parallel), the above constraints do not apply.
-   More specifically, entries with negative row or column indices are allowed but will be ignored.
-   The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries are allowed
-   and will be properly added or inserted to the matrix.
+   Entries can be repeated, see MatSetValuesCOO(). Entries with negative row or column indices are allowed
+   but will be ignored. The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries
+   are allowed and will be properly added or inserted to the matrix.
 
 .seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOO()
 @*/
@@ -689,7 +671,6 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[
    Notes: The values must follow the order of the indices prescribed with MatSetPreallocationCOO() or MatSetPreallocationCOOLocal().
           When repeated entries are specified in the COO indices the coo_v values are first properly summed.
           The imode flag indicates if coo_v must be added to the current values of the matrix (ADD_VALUES) or overwritten (INSERT_VALUES).
-          Currently optimized for AIJCUSPARSE and AIJKOKKOS matrices only.
           Passing coo_v == NULL is equivalent to passing an array of zeros.
 
 .seealso: MatSetPreallocationCOO(), MatSetPreallocationCOOLocal(), InsertMode, INSERT_VALUES, ADD_VALUES

@@ -1271,7 +1271,8 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
-
+  ierr = PetscFree(a->perm);CHKERRQ(ierr);
+  ierr = PetscFree(a->jmap);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ_Inode(A);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
@@ -1320,6 +1321,8 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqdense_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaij_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJKron_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4545,6 +4548,8 @@ PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
   } else {
     *array = NULL;
   }
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4632,6 +4637,8 @@ PetscErrorCode  MatSeqAIJGetArrayWrite(Mat A,PetscScalar **array)
   } else {
     *array = aij->a;
   }
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4685,6 +4692,134 @@ PetscErrorCode  MatSeqAIJGetMaxRowNonzeros(Mat A,PetscInt *nz)
 
   PetscFunctionBegin;
   *nz = aij->rmax;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+{
+  PetscErrorCode            ierr;
+  MPI_Comm                  comm;
+  PetscInt                  *i,*j;
+  PetscInt                  M,N,row;
+  PetscCount                k,p,q,nneg,nnz,start,end; /* Index the coo array, so use PetscCount as their type */
+  PetscInt                  *Ai; /* Change to PetscCount once we use it for row pointers */
+  PetscInt                  *Aj;
+  PetscScalar               *Aa;
+  Mat_SeqAIJ                *seqaij;
+  Mat                       newmat;
+  PetscCount                *perm,*jmap;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+  ierr = PetscMalloc2(coo_n,&i,coo_n,&j);CHKERRQ(ierr);
+  ierr = PetscArraycpy(i,coo_i,coo_n);CHKERRQ(ierr); /* Make a copy since we'll modify it */
+  ierr = PetscArraycpy(j,coo_j,coo_n);CHKERRQ(ierr);
+  ierr = PetscMalloc1(coo_n,&perm);CHKERRQ(ierr);
+  for (k=0; k<coo_n; k++) { /* Ignore entries with negative row or col indices */
+    if (j[k] < 0) i[k] = -1;
+    perm[k] = k;
+  }
+
+  /* Sort by row */
+  ierr = PetscSortIntWithIntCountArrayPair(coo_n,i,j,perm);CHKERRQ(ierr);
+  for (k=0; k<coo_n; k++) {if (i[k] >= 0) break;} /* Advance k to the first row with a non-negative index */
+  nneg = k;
+  ierr = PetscMalloc1(coo_n-nneg+1,&jmap);CHKERRQ(ierr); /* +1 to make a CSR-like data structure. jmap[i] originally is the number of repeats for i-th nonzero */
+  nnz  = 0; /* Total number of unique nonzeros to be counted */
+  jmap++; /* Inc jmap by 1 for convinience */
+
+  ierr = PetscCalloc1(M+1,&Ai);CHKERRQ(ierr); /* CSR of A */
+  ierr = PetscMalloc1(coo_n-nneg,&Aj);CHKERRQ(ierr); /* We have at most coo_n-nneg unique nonzeros */
+
+  /* In each row, sort by column, then unique column indices to get row length */
+  Ai++; /* Inc by 1 for convinience */
+  q = 0; /* q-th unique nonzero, with q starting from 0 */
+  while (k<coo_n) {
+    row   = i[k];
+    start = k; /* [start,end) indices for this row */
+    while (k<coo_n && i[k] == row) k++;
+    end   = k;
+    ierr  = PetscSortIntWithCountArray(end-start,j+start,perm+start);CHKERRQ(ierr);
+    /* Find number of unique col entries in this row */
+    Aj[q]   = j[start]; /* Log the first nonzero in this row */
+    jmap[q] = 1; /* Number of repeats of this nozero entry */
+    Ai[row] = 1;
+    nnz++;
+
+    for (p=start+1; p<end; p++) { /* Scan remaining nonzero in this row */
+      if (j[p] != j[p-1]) { /* Meet a new nonzero */
+        q++;
+        jmap[q] = 1;
+        Aj[q]   = j[p];
+        Ai[row]++;
+        nnz++;
+      } else {
+        jmap[q]++;
+      }
+    }
+    q++; /* Move to next row and thus next unique nonzero */
+  }
+  ierr = PetscFree2(i,j);CHKERRQ(ierr);
+
+  Ai--; /* Back to the beginning of Ai[] */
+  for (k=0; k<M; k++) Ai[k+1] += Ai[k];
+  jmap--; /* Back to the beginning of jmap[] */
+  jmap[0] = 0;
+  for (k=0; k<nnz; k++) jmap[k+1] += jmap[k];
+  if (nnz < coo_n-nneg) { /* Realloc with actual number of unique nonzeros */
+    PetscCount *jmap_new;
+    PetscInt   *Aj_new;
+
+    ierr = PetscMalloc1(nnz+1,&jmap_new);CHKERRQ(ierr);
+    ierr = PetscArraycpy(jmap_new,jmap,nnz+1);CHKERRQ(ierr);
+    ierr = PetscFree(jmap);CHKERRQ(ierr);
+    jmap = jmap_new;
+
+    ierr = PetscMalloc1(nnz,&Aj_new);CHKERRQ(ierr);
+    ierr = PetscArraycpy(Aj_new,Aj,nnz);CHKERRQ(ierr);
+    ierr = PetscFree(Aj);CHKERRQ(ierr);
+    Aj   = Aj_new;
+  }
+
+  if (nneg) { /* Discard heading entries with negative indices in perm[], as we'll access it from index 0 in MatSetValuesCOO */
+    PetscCount *perm_new;
+    ierr = PetscMalloc1(coo_n-nneg,&perm_new);CHKERRQ(ierr);
+    ierr = PetscArraycpy(perm_new,perm+nneg,coo_n-nneg);CHKERRQ(ierr);
+    ierr = PetscFree(perm);CHKERRQ(ierr);
+    perm = perm_new;
+  }
+
+  ierr = PetscCalloc1(nnz,&Aa);CHKERRQ(ierr); /* Zero the matrix */
+  ierr = MatCreateSeqAIJWithArrays(comm,M,N,Ai,Aj,Aa,&newmat);CHKERRQ(ierr);
+  ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
+
+  seqaij = (Mat_SeqAIJ*)(mat->data);
+  seqaij->singlemalloc = PETSC_FALSE; /* Ai, Aj and Aa are not allocated in one big malloc */
+  seqaij->free_a       = seqaij->free_ij = PETSC_TRUE; /* Let newmat own Ai, Aj and Aa */
+  /* Record COO fields */
+  seqaij->coo_n        = coo_n;
+  seqaij->Atot         = coo_n-nneg; /* Annz is seqaij->nz, so no need to record that again */
+  seqaij->jmap         = jmap; /* of length nnz+1 */
+  seqaij->perm         = perm;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSetValuesCOO_SeqAIJ(Mat A,const PetscScalar v[],InsertMode imode)
+{
+  PetscErrorCode              ierr;
+  Mat_SeqAIJ                  *aseq = (Mat_SeqAIJ*)A->data;
+  PetscCount                  i,j,Annz = aseq->nz;
+  PetscCount                  *perm = aseq->perm,*jmap = aseq->jmap;
+  PetscScalar                 *Aa;
+
+  PetscFunctionBegin;
+  if (imode == INSERT_VALUES) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
+  ierr = MatSeqAIJGetArray(A,&Aa);CHKERRQ(ierr);
+  for (i=0; i<Annz; i++) {
+    for (j=jmap[i]; j<jmap[i+1]; j++) Aa[i] += v[perm[j]];
+  }
+  ierr = MatSeqAIJRestoreArray(A,&Aa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4781,6 +4916,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqdense_seqaij_C",MatProductSetFromOptions_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_seqaij_seqaij_C",MatProductSetFromOptions_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJKron_C",MatSeqAIJKron_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetValuesCOO_C",MatSetValuesCOO_SeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate_SeqAIJ_Inode(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetTypeFromOptions(B);CHKERRQ(ierr);  /* this allows changing the matrix subtype to say MATSEQAIJPERM */

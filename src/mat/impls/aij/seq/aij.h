@@ -133,6 +133,12 @@ typedef struct {
   PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
   PetscBool   diagonaldense;                  /* all entries along the diagonal have been set; i.e. no missing diagonal terms */
   PetscScalar fshift,omega;                   /* last used omega and fshift */
+
+  /* MatSetValuesCOO() related fields on host */
+  PetscCount  coo_n;  /* Number of entries in MatSetPreallocationCOO() */
+  PetscCount  Atot;   /* Total number of valid (i.e., w/ non-negative indices) entries in the COO array */
+  PetscCount  *jmap;  /* perm[jmap[i]..jmap[i+1]) give indices of entries in v[] associated with i-th nonzero of the matrix */
+  PetscCount  *perm;  /* The permutation array in sorting (i,j) by row and then by col */
 } Mat_SeqAIJ;
 
 /*
@@ -220,6 +226,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j
   } \
 
 PETSC_INTERN PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat,PetscInt,const PetscInt*);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat,PetscCount,const PetscInt[],const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat,Mat,IS,IS,const MatFactorInfo*);
