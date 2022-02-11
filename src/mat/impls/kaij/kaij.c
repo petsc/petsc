@@ -346,7 +346,7 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
   PetscFunctionBegin;
   ierr = PetscFree(a->S);CHKERRQ(ierr);
   if (S) {
-    ierr = PetscMalloc1(p*q*sizeof(PetscScalar),&a->S);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p*q,&a->S);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->S,S,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
   } else  a->S = NULL;
 
@@ -441,7 +441,7 @@ PetscErrorCode MatKAIJSetT(Mat A,PetscInt p,PetscInt q,const PetscScalar T[])
 
   ierr = PetscFree(a->T);CHKERRQ(ierr);
   if (T && (!isTI)) {
-    ierr = PetscMalloc1(p*q*sizeof(PetscScalar),&a->T);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p*q,&a->T);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->T,T,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
   } else a->T = NULL;
 
@@ -491,7 +491,7 @@ PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
        * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
        * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
        * to pass in. */
-      ierr = PetscMalloc1(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
+      ierr = PetscMalloc1(a->p*a->q,&T);CHKERRQ(ierr);
       for (i=0; i<a->p; i++) {
         for (j=0; j<a->q; j++) {
           if (i==j) T[i+j*a->p] = 1.0;
@@ -764,7 +764,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A,const PetscScalar **values)
     PetscFunctionReturn(0);
   }
   if (!b->ibdiag) {
-    ierr = PetscMalloc1(dof2*m*sizeof(PetscScalar),&b->ibdiag);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof2*m,&b->ibdiag);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)A,dof2*m*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   if (values) *values = b->ibdiag;
