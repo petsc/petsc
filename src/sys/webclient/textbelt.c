@@ -40,9 +40,9 @@ PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char messag
 
   PetscFunctionBegin;
   ierr = PetscStrlen(number,&nlen);CHKERRQ(ierr);
-  PetscAssertFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
+  PetscCheckFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
   ierr = PetscStrlen(message,&mlen);CHKERRQ(ierr);
-  PetscAssertFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
+  PetscCheckFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (rank == 0) {
     int       sock;

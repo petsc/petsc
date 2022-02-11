@@ -47,11 +47,11 @@ int main(int argc,char **args)
 
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(B,&m2,&n2);CHKERRQ(ierr);
-  PetscAssertFalse(m!=m2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices are of different size. Cannot run this example");
+  PetscCheckFalse(m!=m2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices are of different size. Cannot run this example");
 
   /* Test MatEqual() */
   ierr = MatEqual(B,C,&tflg);CHKERRQ(ierr);
-  PetscAssertFalse(!tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatEqual() failed");
+  PetscCheckFalse(!tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatEqual() failed");
 
   /* Test MatGetDiagonal() */
   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = MatGetDiagonal(B,y);CHKERRQ(ierr);
 
   ierr = VecEqual(x,y,&tflg);CHKERRQ(ierr);
-  PetscAssertFalse(!tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() failed");
+  PetscCheckFalse(!tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() failed");
 
   /* Test MatDiagonalScale() */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ int main(int argc,char **args)
   ierr  = MatMult(B,x,y);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
   rnorm = ((norm1-norm2)*100)/norm1;
-  PetscAssertFalse(rnorm<-0.1 || rnorm>0.01,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatDiagonalScale() failed Norm1 %g Norm2 %g",(double)norm1,(double)norm2);
+  PetscCheckFalse(rnorm<-0.1 || rnorm>0.01,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatDiagonalScale() failed Norm1 %g Norm2 %g",(double)norm1,(double)norm2);
 
   /* Test MatGetRow()/ MatRestoreRow() */
   for (ct=0; ct<100; ct++) {
@@ -87,9 +87,9 @@ int main(int argc,char **args)
 
     for (i=0,j=0; i<ncols1 && j<ncols2; i++) {
       while (cols2[j] != cols1[i]) j++;
-      PetscAssertFalse(vals1[i] != vals2[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - vals incorrect.");
+      PetscCheckFalse(vals1[i] != vals2[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - vals incorrect.");
     }
-    PetscAssertFalse(i<ncols1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - cols incorrect");
+    PetscCheckFalse(i<ncols1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - cols incorrect");
 
     ierr = MatRestoreRow(A,row,&ncols1,&cols1,&vals1);CHKERRQ(ierr);
     ierr = MatRestoreRow(B,row,&ncols2,&cols2,&vals2);CHKERRQ(ierr);

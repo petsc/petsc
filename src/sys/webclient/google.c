@@ -76,7 +76,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
     close(sock);
 
     ierr   = PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found);CHKERRQ(ierr);
-    PetscAssertFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return access_token");
+    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return access_token");
   }
   PetscFunctionReturn(0);
 }
@@ -141,7 +141,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
     ierr = PetscStrcat(head,"uploadType: multipart\r\n");CHKERRQ(ierr);
 
     err = stat(filename,&sb);
-    PetscAssertFalse(err,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to stat file: %s",filename);
+    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to stat file: %s",filename);
     len = 1024 + sb.st_size;
     ierr = PetscMalloc1(len,&body);CHKERRQ(ierr);
     ierr = PetscStrcpy(body,"--foo_bar_baz\r\n"
@@ -157,9 +157,9 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
                             "Content-Type: text/html\r\n\r\n");CHKERRQ(ierr);
     ierr = PetscStrlen(body,&blen);CHKERRQ(ierr);
     fd = fopen (filename, "r");
-    PetscAssertFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
+    PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
     rd = fread (body+blen, sizeof (unsigned char), sb.st_size, fd);
-    PetscAssertFalse(rd != (size_t) sb.st_size,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire file: %s %d %d",filename,(int)rd,sb.st_size);
+    PetscCheckFalse(rd != (size_t) sb.st_size,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire file: %s %d %d",filename,(int)rd,sb.st_size);
     fclose(fd);
     body[blen + rd] = 0;
     ierr = PetscStrcat(body,"\r\n\r\n"
@@ -171,7 +171,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
     ierr   = PetscStrstr(buff,"\"title\"",&title);CHKERRQ(ierr);
-    PetscAssertFalse(!title,PETSC_COMM_SELF,PETSC_ERR_LIB,"Upload of file %s failed",filename);
+    PetscCheckFalse(!title,PETSC_COMM_SELF,PETSC_ERR_LIB,"Upload of file %s failed",filename);
   }
   PetscFunctionReturn(0);
 }
@@ -219,7 +219,7 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (rank == 0) {
-    PetscAssertFalse(!isatty(fileno(PETSC_STDOUT)),PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
+    PetscCheckFalse(!isatty(fileno(PETSC_STDOUT)),PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
     ierr = PetscPrintf(comm,"Cut and paste the following into your browser:\n\n"
                             "https://accounts.google.com/o/oauth2/auth?"
                             "scope=https%%3A%%2F%%2Fwww.googleapis.com%%2Fauth%%2Fdrive.file&"
@@ -230,7 +230,7 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
                             "\n\n");CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Paste the result here:");CHKERRQ(ierr);
     ptr  = fgets(buff, 1024, stdin);
-    PetscAssertFalse(!ptr,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
+    PetscCheckFalse(!ptr,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
     ierr = PetscStrlen(buff,&len);CHKERRQ(ierr);
     buff[len-1] = 0; /* remove carriage return at end of line */
 
@@ -250,9 +250,9 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
     close(sock);
 
     ierr   = PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found);CHKERRQ(ierr);
-    PetscAssertFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return access_token");
+    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return access_token");
     ierr   = PetscPullJSONValue(buff,"refresh_token",refresh_token,tokensize,&found);CHKERRQ(ierr);
-    PetscAssertFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return refresh_token");
+    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return refresh_token");
 
     ierr = PetscPrintf(comm,"Here is your Google refresh token, save it in a save place, in the future you can run PETSc\n");CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"programs with the option -google_refresh_token %s\n",refresh_token);CHKERRQ(ierr);
@@ -296,6 +296,6 @@ PetscErrorCode PetscURLShorten(const char url[],char shorturl[],size_t lenshortu
   close(sock);
 
   ierr   = PetscPullJSONValue(buff,"id",shorturl,lenshorturl,&found);CHKERRQ(ierr);
-  PetscAssertFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return short URL");
+  PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return short URL");
   PetscFunctionReturn(0);
 }

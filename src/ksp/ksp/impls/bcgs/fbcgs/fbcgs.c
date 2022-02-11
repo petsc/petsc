@@ -40,7 +40,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   P2 = ksp->work[7];
 
   /* Only supports right preconditioning */
-  PetscAssertFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
+  PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) {
-      PetscAssertFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
+      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
       ierr  = PetscInfo(ksp,"Breakdown due to zero inner product\n");CHKERRQ(ierr);
       break;
@@ -111,7 +111,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
       /* t is 0. if s is 0, then alpha v == r, and hence alpha p may be our solution. Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
       if (d1 != 0.0) {
-        PetscAssertFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
+        PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
         else ksp->reason = KSP_DIVERGED_BREAKDOWN;
         ierr  = PetscInfo(ksp,"Failed due to singular preconditioned operator\n");CHKERRQ(ierr);
         break;
@@ -146,7 +146,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
     if (rho == 0.0) {
-     PetscAssertFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero rho inner product");
+     PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero rho inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
       ierr  = PetscInfo(ksp,"Breakdown due to zero rho inner product\n");CHKERRQ(ierr);
       break;

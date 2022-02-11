@@ -59,7 +59,7 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
+  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
   ierr       = PetscNew(&ta);CHKERRQ(ierr);
   ierr       = PetscTableCreateHashSize(n,&ta->tablesize);CHKERRQ(ierr);
   ierr       = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   if (PetscDefined(USE_DEBUG)) {
     PetscInt i;
     for (i = 0; i < ta->tablesize; i++) {
-      PetscAssertFalse(ta->keytable[i] < 0,PETSC_COMM_SELF,PETSC_ERR_COR,"ta->keytable[i] < 0");
+      PetscCheckFalse(ta->keytable[i] < 0,PETSC_COMM_SELF,PETSC_ERR_COR,"ta->keytable[i] < 0");
     }
   }
   ta->head   = 0;
@@ -163,7 +163,7 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,Ins
       ierr  = PetscTableAdd(ta,newk,ndata,imode);CHKERRQ(ierr);
     }
   }
-  PetscAssertFalse(ta->count != tcount + 1,PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
+  PetscCheckFalse(ta->count != tcount + 1,PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
 
   ierr = PetscFree(oldtab);CHKERRQ(ierr);
   ierr = PetscFree(oldkt);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ PetscErrorCode  PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos
       break;
     }
   } while (i++ < ta->tablesize);
-  PetscAssertFalse(!*ppos,PETSC_COMM_SELF,PETSC_ERR_COR,"No head");
+  PetscCheckFalse(!*ppos,PETSC_COMM_SELF,PETSC_ERR_COR,"No head");
   PetscFunctionReturn(0);
 }
 
@@ -222,12 +222,12 @@ PetscErrorCode  PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,Pe
 
   PetscFunctionBegin;
   pos = *rPosition;
-  PetscAssertFalse(!pos,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null position");
+  PetscCheckFalse(!pos,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null position");
   *data = *pos;
-  PetscAssertFalse(!*data,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null data");
+  PetscCheckFalse(!*data,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null data");
   idex  = pos - ta->table;
   *pkey = ta->keytable[idex];
-  PetscAssertFalse(!*pkey,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null key");
+  PetscCheckFalse(!*pkey,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null key");
 
   /* get next */
   do {
@@ -259,7 +259,7 @@ PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
   }
 
   ta->tablesize = PetscIntMultTruncate(2,ta->tablesize);
-  PetscAssertFalse(tsize == ta->tablesize,PETSC_COMM_SELF,PETSC_ERR_SUP,"Table is as large as possible; ./configure with the option --with-64-bit-integers to run this large case");
+  PetscCheckFalse(tsize == ta->tablesize,PETSC_COMM_SELF,PETSC_ERR_SUP,"Table is as large as possible; ./configure with the option --with-64-bit-integers to run this large case");
   ierr = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ierr = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
 
@@ -275,7 +275,7 @@ PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
     }
   }
   ierr = PetscTableAddCount(ta,key);CHKERRQ(ierr);
-  PetscAssertFalse(ta->count != tcount + 1,PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
+  PetscCheckFalse(ta->count != tcount + 1,PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
 
   ierr = PetscFree(oldtab);CHKERRQ(ierr);
   ierr = PetscFree(oldkt);CHKERRQ(ierr);

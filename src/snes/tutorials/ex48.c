@@ -654,9 +654,9 @@ static PetscErrorCode THIDAGetPrm(DM da,PrmNode ***prm)
 
   PetscFunctionBeginUser;
   ierr = PetscObjectQuery((PetscObject)da,"DMDA2Prm",(PetscObject*)&da2prm);CHKERRQ(ierr);
-  PetscAssertFalse(!da2prm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
+  PetscCheckFalse(!da2prm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
   ierr = PetscObjectQuery((PetscObject)da,"DMDA2Prm_Vec",(PetscObject*)&X);CHKERRQ(ierr);
-  PetscAssertFalse(!X,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
+  PetscCheckFalse(!X,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
   ierr = DMDAVecGetArray(da2prm,X,prm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -669,9 +669,9 @@ static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
 
   PetscFunctionBeginUser;
   ierr = PetscObjectQuery((PetscObject)da,"DMDA2Prm",(PetscObject*)&da2prm);CHKERRQ(ierr);
-  PetscAssertFalse(!da2prm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
+  PetscCheckFalse(!da2prm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
   ierr = PetscObjectQuery((PetscObject)da,"DMDA2Prm_Vec",(PetscObject*)&X);CHKERRQ(ierr);
-  PetscAssertFalse(!X,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
+  PetscCheckFalse(!X,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
   ierr = DMDAVecRestoreArray(da2prm,X,prm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -890,7 +890,7 @@ static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal 
   *min = *max = *mean = 0;
   ierr = DMDAGetInfo(da,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-  PetscAssertFalse(zs != 0 || zm != mz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected decomposition");
+  PetscCheckFalse(zs != 0 || zm != mz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected decomposition");
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1270,7 +1270,7 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
 
   PetscFunctionBeginUser;
   ierr = PetscObjectQuery((PetscObject)dac0,"THI",(PetscObject*)&thi);CHKERRQ(ierr);
-  PetscAssertFalse(!thi,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot refine this DMDA, missing composed THI instance");
+  PetscCheckFalse(!thi,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot refine this DMDA, missing composed THI instance");
   if (nlevels > 1) {
     ierr = DMRefineHierarchy(dac0,nlevels-1,hierarchy);CHKERRQ(ierr);
     dac  = hierarchy[nlevels-2];
@@ -1278,7 +1278,7 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
     dac = dac0;
   }
   ierr = DMDAGetInfo(dac,&dim, &N,&M,0, &n,&m,0, &dof,&s,0,0,0,&st);CHKERRQ(ierr);
-  PetscAssertFalse(dim != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
+  PetscCheckFalse(dim != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
 
   /* Creates a 3D DMDA with the same map-plane layout as the 2D one, with contiguous columns */
   ierr = DMDACreate3d(PetscObjectComm((PetscObject)dac),DM_BOUNDARY_NONE,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,NULL,NULL,NULL,&daf);CHKERRQ(ierr);
@@ -1318,7 +1318,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
 
     ierr = DMDAGetInfo(daf,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
     ierr = DMDAGetCorners(daf,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-    PetscAssertFalse(zs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"unexpected");
+    PetscCheckFalse(zs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"unexpected");
     ierr = MatCreate(PetscObjectComm((PetscObject)daf),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,xm*ym*zm,xm*ym,mx*my*mz,mx*my);CHKERRQ(ierr);
 
@@ -1353,7 +1353,7 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,Mat *J)
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-  PetscAssertFalse(dim != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected DMDA to be 3D");
+  PetscCheckFalse(dim != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected DMDA to be 3D");
   ierr = DMDAGetCorners(da,0,0,0,&zm,&ym,&xm);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)da),&A);CHKERRQ(ierr);
@@ -1409,11 +1409,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
         ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
       }
       zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
-      PetscAssertFalse(xm*ym*zm*dof > nmax,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
+      PetscCheckFalse(xm*ym*zm*dof > nmax,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
       if (r) {
         ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-        PetscAssertFalse(nn != xm*ym*zm*dof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
+        PetscCheckFalse(nn != xm*ym*zm*dof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
         ptr = array;
       } else ptr = x;
       ierr = PetscViewerASCIIPrintf(viewer,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);

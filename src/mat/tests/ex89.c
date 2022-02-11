@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   }
 
   ierr = MatPtAPMultEqual(A,P,C,10,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   /* (2) User API */
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
   ierr = MatProductClear(C);CHKERRQ(ierr);
 
   ierr = MatPtAPMultEqual(A,P,C,10,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);

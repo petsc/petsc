@@ -337,7 +337,7 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscAssertFalse(levels < 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
+  PetscCheckFalse(levels < 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
   PetscValidLogicalCollectiveInt(pc,levels,2);
   ierr = PetscTryMethod(pc,"PCFactorSetLevels_C",(PC,PetscInt),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -521,7 +521,7 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscAssertFalse(fill < 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
+  PetscCheckFalse(fill < 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
   ierr = PetscTryMethod(pc,"PCFactorSetFill_C",(PC,PetscReal),(pc,fill));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

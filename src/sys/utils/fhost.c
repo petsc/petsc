@@ -79,7 +79,7 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
 #if defined(PETSC_HAVE_SYSINFO_3ARG)
     sysinfo(SI_SRPC_DOMAIN,name+l,nlen-l);
 #elif defined(PETSC_HAVE_GETDOMAINNAME)
-    PetscAssertFalse(getdomainname(name+l,nlen - l),PETSC_COMM_SELF,PETSC_ERR_SYS,"getdomainname()");
+    PetscCheckFalse(getdomainname(name+l,nlen - l),PETSC_COMM_SELF,PETSC_ERR_SYS,"getdomainname()");
 #endif
     /* check if domain name is not a dnsdomainname and nuke it */
     ierr = PetscStrlen(name,&ll);CHKERRQ(ierr);

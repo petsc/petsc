@@ -56,7 +56,7 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
       ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
       ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
       ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
-    } else PetscAssertFalse(sn != pcis->n_B,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
+    } else PetscCheckFalse(sn != pcis->n_B,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
   }
   PetscFunctionReturn(0);
 }
@@ -142,11 +142,11 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Requires preconditioning matrix of type MATIS");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Requires preconditioning matrix of type MATIS");
   matis = (Mat_IS*)pc->pmat->data;
   if (pc->useAmat) {
     ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Requires linear system matrix of type MATIS");
+    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Requires linear system matrix of type MATIS");
   }
 
   /* first time creation, get info on substructuring */
@@ -242,7 +242,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesol
       ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
       ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
       ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
-    } else PetscAssertFalse(sn != pcis->n_B,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
+    } else PetscCheckFalse(sn != pcis->n_B,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Invalid size for scaling vector. Expected %D (or full %D), found %D",pcis->n_B,pcis->n,sn);
   }
 
   /*

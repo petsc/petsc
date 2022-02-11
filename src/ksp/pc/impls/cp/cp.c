@@ -23,10 +23,10 @@ static PetscErrorCode PCSetUp_CP(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles SeqAIJ matrices");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles SeqAIJ matrices");
 
   ierr = MatGetLocalSize(pc->pmat,&cp->m,&cp->n);CHKERRQ(ierr);
-  PetscAssertFalse(cp->m != cp->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for square matrices");
+  PetscCheckFalse(cp->m != cp->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for square matrices");
 
   if (!cp->work) {ierr = MatCreateVecs(pc->pmat,&cp->work,NULL);CHKERRQ(ierr);}
   if (!cp->d) {ierr = PetscMalloc1(cp->n,&cp->d);CHKERRQ(ierr);}

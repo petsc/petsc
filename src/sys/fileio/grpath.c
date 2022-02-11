@@ -52,7 +52,7 @@ PetscErrorCode  PetscGetRealPath(const char path[],char rpath[])
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_REALPATH)
-  PetscAssertFalse(!realpath(path,rpath),PETSC_COMM_SELF,PETSC_ERR_LIB,"realpath()");
+  PetscCheckFalse(!realpath(path,rpath),PETSC_COMM_SELF,PETSC_ERR_LIB,"realpath()");
 #elif defined(PETSC_HAVE_READLINK)
   /* Algorithm: we move through the path, replacing links with the real paths.   */
   ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);

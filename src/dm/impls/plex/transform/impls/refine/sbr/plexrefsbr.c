@@ -27,7 +27,7 @@ static PetscErrorCode PointQueueCreate(PetscInt size, PointQueue *queue)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(size < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
+  PetscCheckFalse(size < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
   ierr = PetscCalloc1(1, &q);CHKERRQ(ierr);
   q->size = size;
   ierr = PetscMalloc1(q->size, &q->points);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ static PetscErrorCode PointQueueEnqueue(PointQueue queue, PetscInt p)
 static PetscErrorCode PointQueueDequeue(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  PetscAssertFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot dequeue from an empty queue");
+  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot dequeue from an empty queue");
   *p = queue->points[queue->front];
   queue->front = (queue->front + 1) % queue->size;
   --queue->num;
@@ -87,7 +87,7 @@ static PetscErrorCode PointQueueDequeue(PointQueue queue, PetscInt *p)
 static PetscErrorCode PointQueueFront(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  PetscAssertFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
+  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
   *p = queue->points[queue->front];
   PetscFunctionReturn(0);
 }
@@ -95,7 +95,7 @@ static PetscErrorCode PointQueueFront(PointQueue queue, PetscInt *p)
 static PetscErrorCode PointQueueBack(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  PetscAssertFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
+  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
   *p = queue->points[queue->back];
   PetscFunctionReturn(0);
 }
@@ -128,7 +128,7 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, edge, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, edge, &coneSize);CHKERRQ(ierr);
-    PetscAssertFalse(coneSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
+    PetscCheckFalse(coneSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
     ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coordsLocal, &coords);CHKERRQ(ierr);
@@ -316,7 +316,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   ierr = PetscCalloc1(edgeLenSize, &sbr->edgeLen);CHKERRQ(ierr);
   /* Add edges of cells that are marked for refinement to edge queue */
   ierr = DMPlexTransformGetActive(tr, &active);CHKERRQ(ierr);
-  PetscAssertFalse(!active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
+  PetscCheckFalse(!active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
   ierr = PointQueueCreate(1024, &queue);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(active, DM_ADAPT_REFINE, &refineIS);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(active, DM_ADAPT_REFINE, &Nc);CHKERRQ(ierr);
@@ -656,7 +656,7 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  PetscAssertFalse(p < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
+  PetscCheckFalse(p < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
   ierr = DMLabelGetValue(trType, p, &val);CHKERRQ(ierr);
   if (rt) *rt = val;
   switch (source) {

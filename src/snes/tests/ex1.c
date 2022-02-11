@@ -80,7 +80,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscAssertFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /*
      Initialize problem parameters
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   ierr    = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
   ierr    = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   ierr    = PetscOptionsGetBool(NULL,NULL,"-pc",&pc,NULL);CHKERRQ(ierr);
-  PetscAssertFalse(user.param >= bratu_lambda_max || user.param <= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
+  PetscCheckFalse(user.param >= bratu_lambda_max || user.param <= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
   N = user.mx*user.my;
   ierr    = PetscOptionsGetBool(NULL,NULL,"-use_convergence_test",&use_convergence_test,NULL);CHKERRQ(ierr);
 
@@ -148,7 +148,7 @@ int main(int argc,char **argv)
     efficiently using a coloring of the columns of the matrix.
   */
   ierr = PetscOptionsGetBool(NULL,NULL,"-snes_fd_coloring",&fd_coloring,NULL);CHKERRQ(ierr);
-  PetscAssertFalse(matrix_free && fd_coloring,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
+  PetscCheckFalse(matrix_free && fd_coloring,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
     ISColoring   iscoloring;

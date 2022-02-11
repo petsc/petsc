@@ -281,10 +281,10 @@ static PetscErrorCode TSSetUp_BasicSymplectic(TS ts)
   PetscFunctionBegin;
   ierr = TSRHSSplitGetIS(ts,"position",&bsymp->is_q);CHKERRQ(ierr);
   ierr = TSRHSSplitGetIS(ts,"momentum",&bsymp->is_p);CHKERRQ(ierr);
-  PetscAssertFalse(!bsymp->is_q || !bsymp->is_p,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names positon and momentum respectively in order to use -ts_type basicsymplectic");
+  PetscCheckFalse(!bsymp->is_q || !bsymp->is_p,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names positon and momentum respectively in order to use -ts_type basicsymplectic");
   ierr = TSRHSSplitGetSubTS(ts,"position",&bsymp->subts_q);CHKERRQ(ierr);
   ierr = TSRHSSplitGetSubTS(ts,"momentum",&bsymp->subts_p);CHKERRQ(ierr);
-  PetscAssertFalse(!bsymp->subts_q || !bsymp->subts_p,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for position and momentum using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
+  PetscCheckFalse(!bsymp->subts_q || !bsymp->subts_p,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for position and momentum using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
 
   ierr = VecDuplicate(ts->vec_sol,&bsymp->update);CHKERRQ(ierr);
 

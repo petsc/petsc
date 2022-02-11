@@ -45,7 +45,7 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJVIENNACL,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
   if (pc->setupcalled != 0) {
     try {
       delete rowscaling->ROWSCALINGVIENNACL;
@@ -96,7 +96,7 @@ static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc,Vec x,Vec y)
   /*how to apply a certain fixed number of iterations?*/
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQVIENNACL,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQVIENNACL,&flg2);CHKERRQ(ierr);
-  PetscAssertFalse(!(flg1 && flg2),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles ViennaCL vectors");
+  PetscCheckFalse(!(flg1 && flg2),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles ViennaCL vectors");
   if (!ilu->ROWSCALINGVIENNACL) {
     ierr = PCSetUp_ROWSCALINGVIENNACL(pc);CHKERRQ(ierr);
   }

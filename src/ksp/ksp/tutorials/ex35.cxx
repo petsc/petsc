@@ -330,7 +330,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
 
     /* Get connectivity information: */
     ierr = DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect);CHKERRQ(ierr);
-    PetscAssertFalse(nconn != 3 && nconn != 4,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only TRI3/QUAD4 element bases are supported in the current example. n(Connectivity)=%D.", nconn);
+    PetscCheckFalse(nconn != 3 && nconn != 4,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only TRI3/QUAD4 element bases are supported in the current example. n(Connectivity)=%D.", nconn);
 
     ierr = PetscArrayzero(localv, nconn);CHKERRQ(ierr);
 
@@ -436,7 +436,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
 
     // Get connectivity information:
     ierr = DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect);CHKERRQ(ierr);
-    PetscAssertFalse(nconn != 3 && nconn != 4,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only QUAD4 or TRI3 element bases are supported in the current example. Connectivity=%D.", nconn);
+    PetscCheckFalse(nconn != 3 && nconn != 4,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only QUAD4 or TRI3 element bases are supported in the current example. Connectivity=%D.", nconn);
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
     ierr = DMMoabGetVertexCoordinates(dm, nconn, connect, vpos);CHKERRQ(ierr);

@@ -211,7 +211,7 @@ static int processPackets(MLINK link)
       errors++;
     } else if (packetType == RETURNPKT) {
       err = processPacket(link, 0);
-      PetscAssertFalse(err == 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from Mathematica");
+      PetscCheckFalse(err == 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from Mathematica");
       if (err == 2) loop = 0;
     } else {
       fprintf(stderr, "Invalid packet type %d\n", packetType);

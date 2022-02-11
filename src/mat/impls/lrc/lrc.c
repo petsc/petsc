@@ -169,27 +169,27 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
   PetscCheckSameComm(U,2,V,4);
 
   ierr = PetscObjectTypeCompareAny((PetscObject)U,&match,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-  PetscAssertFalse(!match,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Matrix U must be of type dense");
+  PetscCheckFalse(!match,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Matrix U must be of type dense");
   if (V) {
     ierr = PetscObjectTypeCompareAny((PetscObject)V,&match,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-    PetscAssertFalse(!match,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Matrix V must be of type dense");
+    PetscCheckFalse(!match,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Matrix V must be of type dense");
   }
 
   ierr = MatGetSize(U,NULL,&k);CHKERRQ(ierr);
   ierr = MatGetSize(V,NULL,&k1);CHKERRQ(ierr);
-  PetscAssertFalse(k!=k1,PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"U and V have different number of columns (%" PetscInt_FMT " vs %" PetscInt_FMT ")",k,k1);
+  PetscCheckFalse(k!=k1,PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"U and V have different number of columns (%" PetscInt_FMT " vs %" PetscInt_FMT ")",k,k1);
   ierr = MatGetLocalSize(U,&m,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(V,&n,NULL);CHKERRQ(ierr);
   if (A) {
     ierr = MatGetLocalSize(A,&m1,&n1);CHKERRQ(ierr);
-    PetscAssertFalse(m!=m1,PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"Local dimensions of U %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",m,m1);
-    PetscAssertFalse(n!=n1,PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"Local dimensions of V %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",n,n1);
+    PetscCheckFalse(m!=m1,PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"Local dimensions of U %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",m,m1);
+    PetscCheckFalse(n!=n1,PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"Local dimensions of V %" PetscInt_FMT " and A %" PetscInt_FMT " do not match",n,n1);
   }
   if (c) {
     ierr = VecGetSize(c,&k1);CHKERRQ(ierr);
-    PetscAssertFalse(k!=k1,PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"The length of c %" PetscInt_FMT " does not match the number of columns of U and V (%" PetscInt_FMT ")",k1,k);
+    PetscCheckFalse(k!=k1,PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"The length of c %" PetscInt_FMT " does not match the number of columns of U and V (%" PetscInt_FMT ")",k1,k);
     ierr = VecGetLocalSize(c,&k1);CHKERRQ(ierr);
-    PetscAssertFalse(k!=k1,PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"c must be a sequential vector");
+    PetscCheckFalse(k!=k1,PetscObjectComm((PetscObject)c),PETSC_ERR_ARG_INCOMP,"c must be a sequential vector");
   }
 
   ierr = MatCreate(PetscObjectComm((PetscObject)U),N);CHKERRQ(ierr);

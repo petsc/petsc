@@ -133,7 +133,7 @@ PetscErrorCode StubFunction(SNES snes ,Vec x,Vec r,void *ctx)
   ierr = VecAXPY(rk,-1.0,r);CHKERRQ(ierr);
   ierr = VecNorm(rk,NORM_2,&norm);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&rk);CHKERRQ(ierr);
-  PetscAssertFalse(norm > 1e-6,PETSC_COMM_SELF,PETSC_ERR_PLIB,"KokkosFunction() different from CpuFunction() with a diff norm = %g",norm);
+  PetscCheckFalse(norm > 1e-6,PETSC_COMM_SELF,PETSC_ERR_PLIB,"KokkosFunction() different from CpuFunction() with a diff norm = %g",norm);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

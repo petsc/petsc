@@ -111,7 +111,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
     if (dm) {
       nasm->usesdm = PETSC_TRUE;
       ierr         = DMCreateDomainDecomposition(dm,&nasm->n,NULL,NULL,NULL,&subdms);CHKERRQ(ierr);
-      PetscAssertFalse(!subdms,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
+      PetscCheckFalse(!subdms,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
       ierr = DMCreateDomainDecompositionScatters(dm,nasm->n,subdms,&nasm->iscatter,&nasm->oscatter,&nasm->gscatter);CHKERRQ(ierr);
       ierr = PetscMalloc1(nasm->n, &nasm->oscatter_copy);CHKERRQ(ierr);
       for (i=0; i<nasm->n; i++) {
@@ -298,7 +298,7 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes,PCASMType type)
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(type != PC_ASM_BASIC && type != PC_ASM_RESTRICT,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESNASM only supports basic and restrict types");
+  PetscCheckFalse(type != PC_ASM_BASIC && type != PC_ASM_RESTRICT,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESNASM only supports basic and restrict types");
   nasm->type = type;
   PetscFunctionReturn(0);
 }
@@ -371,7 +371,7 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsn
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(snes->setupcalled,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
+  PetscCheckFalse(snes->setupcalled,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
 
   /* tear down the previously set things */
   ierr = SNESReset(snes);CHKERRQ(ierr);
@@ -756,7 +756,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 
   PetscFunctionBegin;
 
-  PetscAssertFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
@@ -942,7 +942,7 @@ PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(i < 0 || i >= nasm->n,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
+  PetscCheckFalse(i < 0 || i >= nasm->n,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
   *subsnes = nasm->subsnes[i];
   PetscFunctionReturn(0);
 }

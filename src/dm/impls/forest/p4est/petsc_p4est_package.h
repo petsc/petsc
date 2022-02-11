@@ -59,7 +59,7 @@ static inline PetscErrorCode P4estLocidxCast(PetscInt a,p4est_locidx_t *b)
   PetscFunctionBegin;
   *b =  (p4est_locidx_t)(a);
 #if defined(PETSC_USE_64BIT_INDICES)
-  PetscAssertFalse((a) > P4EST_LOCIDX_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index to large for p4est_locidx_t");
+  PetscCheckFalse((a) > P4EST_LOCIDX_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index to large for p4est_locidx_t");
 #endif
   PetscFunctionReturn(0);
 }
@@ -69,7 +69,7 @@ static inline PetscErrorCode P4estTopidxCast(PetscInt a,p4est_topidx_t *b)
   PetscFunctionBegin;
   *b =  (p4est_topidx_t)(a);
 #if defined(PETSC_USE_64BIT_INDICES)
-  PetscAssertFalse((a) > P4EST_TOPIDX_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index to large for p4est_topidx_t");
+  PetscCheckFalse((a) > P4EST_TOPIDX_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index to large for p4est_topidx_t");
 #endif
   PetscFunctionReturn(0);
 }

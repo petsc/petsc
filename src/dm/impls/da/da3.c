@@ -229,28 +229,28 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR || bz == DM_BOUNDARY_MIRROR),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
+  PetscCheckFalse(stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR || bz == DM_BOUNDARY_MIRROR),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INDICES)
-  PetscAssertFalse(((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX,comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D by %D (dof) is too large for 32 bit indices",M,N,P,dof);
+  PetscCheckFalse(((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX,comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D by %D (dof) is too large for 32 bit indices",M,N,P,dof);
 #endif
 
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 
   if (m != PETSC_DECIDE) {
-    PetscAssertFalse(m < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
-    else PetscAssertFalse(m > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
+    PetscCheckFalse(m < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
+    else PetscCheckFalse(m > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
   }
   if (n != PETSC_DECIDE) {
-    PetscAssertFalse(n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
-    else PetscAssertFalse(n > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
+    PetscCheckFalse(n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
+    else PetscCheckFalse(n > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
   }
   if (p != PETSC_DECIDE) {
-    PetscAssertFalse(p < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %D",p);
-    else PetscAssertFalse(p > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %D %d",p,size);
+    PetscCheckFalse(p < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %D",p);
+    else PetscCheckFalse(p > size,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %D %d",p,size);
   }
-  PetscAssertFalse((m > 0) && (n > 0) && (p > 0) && (m*n*p != size),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %D * n %D * p %D != size %d",m,n,p,size);
+  PetscCheckFalse((m > 0) && (n > 0) && (p > 0) && (m*n*p != size),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %D * n %D * p %D != size %d",m,n,p,size);
 
   /* Partition the array among the processors */
   if (m == PETSC_DECIDE && n != PETSC_DECIDE && p != PETSC_DECIDE) {
@@ -268,7 +268,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       if (m*n*p == size) break;
       m--;
     }
-    PetscAssertFalse(!m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %D",p);
+    PetscCheckFalse(!m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %D",p);
     if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -279,7 +279,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       if (m*n*p == size) break;
       m--;
     }
-    PetscAssertFalse(!m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %D",n);
+    PetscCheckFalse(!m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %D",n);
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -290,7 +290,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       if (m*n*p == size) break;
       n--;
     }
-    PetscAssertFalse(!n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %D",n);
+    PetscCheckFalse(!n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %D",n);
     if (N > P && n < p) {PetscInt _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -310,12 +310,12 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       m--;
     }
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
-  } else PetscAssertFalse(m*n*p != size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
+  } else PetscCheckFalse(m*n*p != size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
 
-  PetscAssertFalse(m*n*p != size,PetscObjectComm((PetscObject)da),PETSC_ERR_PLIB,"Could not find good partition");
-  PetscAssertFalse(M < m,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  PetscAssertFalse(N < n,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
-  PetscAssertFalse(P < p,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %D %D",P,p);
+  PetscCheckFalse(m*n*p != size,PetscObjectComm((PetscObject)da),PETSC_ERR_PLIB,"Could not find good partition");
+  PetscCheckFalse(M < m,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
+  PetscCheckFalse(N < n,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+  PetscCheckFalse(P < p,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %D %D",P,p);
 
   /*
      Determine locally owned region
@@ -330,7 +330,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   x  = lx[rank % m];
   xs = 0;
   for (i=0; i<(rank%m); i++) xs += lx[i];
-  PetscAssertFalse((x < s) && ((m > 1) || (bx == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  PetscCheckFalse((x < s) && ((m > 1) || (bx == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
 
   if (!ly) {
     ierr = PetscMalloc1(n, &dd->ly);CHKERRQ(ierr);
@@ -338,7 +338,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     for (i=0; i<n; i++) ly[i] = N/n + ((N % n) > (i % n));
   }
   y = ly[(rank % (m*n))/m];
-  PetscAssertFalse((y < s) && ((n > 1) || (by == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
+  PetscCheckFalse((y < s) && ((n > 1) || (by == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
 
   ys = 0;
   for (i=0; i<(rank % (m*n))/m; i++) ys += ly[i];
@@ -355,7 +355,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
    in a 3D code.  Additional code for this case is noted with "2d case" comments */
   twod = PETSC_FALSE;
   if (P == 1) twod = PETSC_TRUE;
-  else PetscAssertFalse((z < s) && ((p > 1) || (bz == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local z-width of domain z %D is smaller than stencil width s %D",z,s);
+  else PetscCheckFalse((z < s) && ((p > 1) || (bz == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local z-width of domain z %D is smaller than stencil width s %D",z,s);
   zs = 0;
   for (i=0; i<(rank/(m*n)); i++) zs += lz[i];
   ye = ys + y;

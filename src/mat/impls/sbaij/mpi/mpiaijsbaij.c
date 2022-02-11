@@ -18,7 +18,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
   const PetscInt    *cwork;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!A->symmetric && !A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
+  PetscCheckFalse(!A->symmetric && !A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
   if (reuse != MAT_REUSE_MATRIX) {
     ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);

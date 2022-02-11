@@ -35,8 +35,8 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
   maxl += 1;
   if (ldl == PETSC_DECIDE) ldl = maxl;
   if (ldr == PETSC_DECIDE) ldr = nr;
-  PetscAssertFalse(ldr < nr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldr,nr);
-  PetscAssertFalse(ldl < maxl,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldl,maxl);
+  PetscCheckFalse(ldr < nr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldr,nr);
+  PetscCheckFalse(ldl < maxl,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldl,maxl);
   vnr  = nr*nv;
   vnl  = nl*nv;
   ierr = PetscMalloc1(vnl,&viremote);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
     if (j < 0 || sranks[j] != r) {
       ierr = PetscFindMPIInt(r,nranks,sranks,&j);CHKERRQ(ierr);
     }
-    PetscAssertFalse(j < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to locate neighbor rank %" PetscInt_FMT,r);
+    PetscCheckFalse(j < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to locate neighbor rank %" PetscInt_FMT,r);
     for (v=0;v<nv;v++) {
       viremote[v*nl + i].rank  = r;
       viremote[v*nl + i].index = v*ldrs[j] + ii;
@@ -113,7 +113,7 @@ PETSC_INTERN PetscErrorCode VecSign(Vec v, Vec s)
   PetscValidHeaderSpecific(s,VEC_CLASSID,2);
   ierr = VecGetLocalSize(s,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&i);CHKERRQ(ierr);
-  PetscAssertFalse(i != n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Invalid local sizes %" PetscInt_FMT " != %" PetscInt_FMT,i,n);
+  PetscCheckFalse(i != n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Invalid local sizes %" PetscInt_FMT " != %" PetscInt_FMT,i,n);
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)v,&viscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)s,&siscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);

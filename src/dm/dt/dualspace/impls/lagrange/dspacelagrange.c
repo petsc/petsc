@@ -33,7 +33,7 @@ static PetscErrorCode Petsc1DNodeFamilyCreate(PetscDTNodeType family, PetscReal 
   f->endpoints = endpoints;
   f->gaussJacobiExp = 0.;
   if (family == PETSCDTNODES_GAUSSJACOBI) {
-    PetscAssertFalse(gaussJacobiExp <= -1.,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Gauss-Jacobi exponent must be > -1.");
+    PetscCheckFalse(gaussJacobiExp <= -1.,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Gauss-Jacobi exponent must be > -1.");
     f->gaussJacobiExp = gaussJacobiExp;
   }
   f->refct = 1;
@@ -159,8 +159,8 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(dim < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative dimension");
-  PetscAssertFalse(degree < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative degree");
+  PetscCheckFalse(dim < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative dimension");
+  PetscCheckFalse(degree < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative degree");
   if (!dim) PetscFunctionReturn(0);
   ierr = PetscCalloc1(dim+2, &tup);CHKERRQ(ierr);
   k = 0;
@@ -620,7 +620,7 @@ static PetscErrorCode PetscLagNodeIndicesPushForward(DM dm, PetscLagNodeIndices 
           break;
         }
       }
-      PetscAssertFalse(subi < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Did not find matching coordinate");
+      PetscCheckFalse(subi < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Did not find matching coordinate");
       /* that component in the vertp system becomes component i in the vert system for each dof */
       for (n = 0; n < nNodes; n++) pfNodeIdx[n * nodeIdxDim + i] = nodeIdx[n * subNodeIdxDim + subi];
     }
@@ -784,9 +784,9 @@ static PetscErrorCode PetscLagNodeIndicesMerge(PetscLagNodeIndices niA, PetscLag
   PetscFunctionBegin;
   ierr = PetscNew(&ni);CHKERRQ(ierr);
   ni->nodeIdxDim = nodeIdxDim = niA->nodeIdxDim;
-  PetscAssertFalse(niB->nodeIdxDim != nodeIdxDim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cannot merge PetscLagNodeIndices with different nodeIdxDim");
+  PetscCheckFalse(niB->nodeIdxDim != nodeIdxDim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cannot merge PetscLagNodeIndices with different nodeIdxDim");
   ni->nodeVecDim = nodeVecDim = niA->nodeVecDim;
-  PetscAssertFalse(niB->nodeVecDim != nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cannot merge PetscLagNodeIndices with different nodeVecDim");
+  PetscCheckFalse(niB->nodeVecDim != nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cannot merge PetscLagNodeIndices with different nodeVecDim");
   ni->nNodes = nNodes = niA->nNodes + niB->nNodes;
   ni->refct = 1;
   ierr = PetscMalloc1(nNodes * nodeIdxDim, &(ni->nodeIdx));CHKERRQ(ierr);
@@ -1098,18 +1098,18 @@ static PetscErrorCode MatTensorAltV(Mat trace, Mat fiber, PetscInt dimTrace, Pet
   PetscFunctionBegin;
   ierr = MatGetSize(trace, &mTrace, &nTrace);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(dimTrace, PetscAbsInt(kTrace), &NkTrace);CHKERRQ(ierr);
-  PetscAssertFalse(nTrace % NkTrace,PETSC_COMM_SELF, PETSC_ERR_PLIB, "point value space of trace matrix is not a multiple of k-form size");
+  PetscCheckFalse(nTrace % NkTrace,PETSC_COMM_SELF, PETSC_ERR_PLIB, "point value space of trace matrix is not a multiple of k-form size");
   ierr = MatGetSize(fiber, &mFiber, &nFiber);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(dimFiber, PetscAbsInt(kFiber), &NkFiber);CHKERRQ(ierr);
-  PetscAssertFalse(nFiber % NkFiber,PETSC_COMM_SELF, PETSC_ERR_PLIB, "point value space of fiber matrix is not a multiple of k-form size");
+  PetscCheckFalse(nFiber % NkFiber,PETSC_COMM_SELF, PETSC_ERR_PLIB, "point value space of fiber matrix is not a multiple of k-form size");
   ierr = PetscMalloc2(mTrace, &nnzTrace, mFiber, &nnzFiber);CHKERRQ(ierr);
   for (i = 0; i < mTrace; i++) {
     ierr = MatGetRow(trace, i, &(nnzTrace[i]), NULL, NULL);CHKERRQ(ierr);
-    PetscAssertFalse(nnzTrace[i] % NkTrace,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in trace matrix are not in k-form size blocks");
+    PetscCheckFalse(nnzTrace[i] % NkTrace,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in trace matrix are not in k-form size blocks");
   }
   for (i = 0; i < mFiber; i++) {
     ierr = MatGetRow(fiber, i, &(nnzFiber[i]), NULL, NULL);CHKERRQ(ierr);
-    PetscAssertFalse(nnzFiber[i] % NkFiber,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in fiber matrix are not in k-form size blocks");
+    PetscCheckFalse(nnzFiber[i] % NkFiber,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in fiber matrix are not in k-form size blocks");
   }
   dim = dimTrace + dimFiber;
   k = kFiber + kTrace;
@@ -1234,7 +1234,7 @@ static PetscErrorCode PetscQuadraturePointsMerge(PetscQuadrature quadA, PetscQua
   PetscFunctionBegin;
   ierr = PetscQuadratureGetData(quadA, &dimA, NULL, &nA, &pointsA, NULL);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(quadB, &dimB, NULL, &nB, &pointsB, NULL);CHKERRQ(ierr);
-  PetscAssertFalse(dimA != dimB,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Quadrature points must be in the same dimension");
+  PetscCheckFalse(dimA != dimB,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Quadrature points must be in the same dimension");
   nJoint = nA;
   ierr = PetscMalloc1(nA, &aToJ);CHKERRQ(ierr);
   for (i = 0; i < nA; i++) aToJ[i] = i;
@@ -1281,21 +1281,21 @@ static PetscErrorCode MatricesMerge(Mat matA, Mat matB, PetscInt dim, PetscInt k
   PetscFunctionBegin;
   ierr = PetscDTBinomialInt(dim, PetscAbsInt(k), &Nk);CHKERRQ(ierr);
   ierr = MatGetSize(matA, &mA, &nA);CHKERRQ(ierr);
-  PetscAssertFalse(nA % Nk,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "matA column space not a multiple of k-form size");
+  PetscCheckFalse(nA % Nk,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "matA column space not a multiple of k-form size");
   ierr = MatGetSize(matB, &mB, &nB);CHKERRQ(ierr);
-  PetscAssertFalse(nB % Nk,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "matB column space not a multiple of k-form size");
+  PetscCheckFalse(nB % Nk,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "matB column space not a multiple of k-form size");
   m = mA + mB;
   n = numMerged * Nk;
   ierr = PetscMalloc1(m, &nnz);CHKERRQ(ierr);
   maxnnz = 0;
   for (i = 0; i < mA; i++) {
     ierr = MatGetRow(matA, i, &(nnz[i]), NULL, NULL);CHKERRQ(ierr);
-    PetscAssertFalse(nnz[i] % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in matA are not in k-form size blocks");
+    PetscCheckFalse(nnz[i] % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in matA are not in k-form size blocks");
     maxnnz = PetscMax(maxnnz, nnz[i]);
   }
   for (i = 0; i < mB; i++) {
     ierr = MatGetRow(matB, i, &(nnz[i+mA]), NULL, NULL);CHKERRQ(ierr);
-    PetscAssertFalse(nnz[i+mA] % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in matB are not in k-form size blocks");
+    PetscCheckFalse(nnz[i+mA] % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in matB are not in k-form size blocks");
     maxnnz = PetscMax(maxnnz, nnz[i+mA]);
   }
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, m, n, 0, nnz, &M);CHKERRQ(ierr);
@@ -1583,7 +1583,7 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
       PetscInt maxNzformsp;
 
       ierr = MatSeqAIJGetMaxRowNonzeros(intMat, &maxNzsp);CHKERRQ(ierr);
-      PetscAssertFalse(maxNzsp % pNk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interior matrix is not laid out as blocks of k-forms");
+      PetscCheckFalse(maxNzsp % pNk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interior matrix is not laid out as blocks of k-forms");
       maxNzformsp = maxNzsp / pNk;
       maxNzforms = PetscMax(maxNzforms, maxNzformsp);
     }
@@ -1656,12 +1656,12 @@ static PetscErrorCode PetscDualSpaceCreateAllDataFromInteriorData(PetscDualSpace
         PetscInt row = j + off;
 
         ierr = MatGetRow(intMat, j, &ncols, &cols, &vals);CHKERRQ(ierr);
-        PetscAssertFalse(ncols % pNk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interior matrix is not laid out as blocks of k-forms");
+        PetscCheckFalse(ncols % pNk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interior matrix is not laid out as blocks of k-forms");
         for (l = 0; l < ncols / pNk; l++) {
           PetscInt blockcol;
 
           for (d = 0; d < pNk; d++) {
-            PetscAssertFalse((cols[l * pNk + d] % pNk) != d,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interior matrix is not laid out as blocks of k-forms");
+            PetscCheckFalse((cols[l * pNk + d] % pNk) != d,PETSC_COMM_SELF, PETSC_ERR_PLIB, "interior matrix is not laid out as blocks of k-forms");
           }
           blockcol = cols[l * pNk] / pNk;
           for (d = 0; d < Nk; d++) {
@@ -1725,7 +1725,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
   ierr = MatGetSize(allMat, &nDofs, NULL);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetSection(sp, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &spdim);CHKERRQ(ierr);
-  PetscAssertFalse(spdim != nDofs,PETSC_COMM_SELF, PETSC_ERR_PLIB, "incompatible all matrix size");
+  PetscCheckFalse(spdim != nDofs,PETSC_COMM_SELF, PETSC_ERR_PLIB, "incompatible all matrix size");
   ierr = PetscMalloc1(nDofs, &(sp->functional));CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeGetUseMoments(sp, &useMoments);CHKERRQ(ierr);
   if (useMoments) {
@@ -1735,7 +1735,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
     const PetscReal *weights;
     PetscScalar     *array;
 
-    PetscAssertFalse(nDofs != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "We do not yet support moments beyond P0, nDofs == %D", nDofs);
+    PetscCheckFalse(nDofs != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "We do not yet support moments beyond P0, nDofs == %D", nDofs);
     ierr = PetscDualSpaceLagrangeGetMomentOrder(sp, &momentOrder);CHKERRQ(ierr);
     ierr = PetscDualSpaceLagrangeGetTensor(sp, &tensor);CHKERRQ(ierr);
     if (!tensor) {ierr = PetscDTStroudConicalQuadrature(dim, Nc, PetscMax(momentOrder + 1,1), -1.0, 1.0, &(sp->functional[0]));CHKERRQ(ierr);}
@@ -1765,7 +1765,7 @@ static PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDualSpace
     PetscInt countNodes;
 
     ierr = MatGetRow(allMat, f, &ncols, &cols, &vals);CHKERRQ(ierr);
-    PetscAssertFalse(ncols % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "all matrix is not laid out as blocks of k-forms");
+    PetscCheckFalse(ncols % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "all matrix is not laid out as blocks of k-forms");
     for (c = 1, nNodesf = 1; c < ncols; c++) {
       if ((cols[c] / Nc) != (cols[c-1] / Nc)) nNodesf++;
     }
@@ -1802,12 +1802,12 @@ static PetscErrorCode PetscDualSpaceLagrangeMatrixCreateCopies(Mat A, PetscInt N
 
   PetscFunctionBegin;
   ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);
-  PetscAssertFalse(n % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of columns in A %D is not a multiple of Nk %D", n, Nk);
+  PetscCheckFalse(n % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of columns in A %D is not a multiple of Nk %D", n, Nk);
   ierr = PetscMalloc1(m * Ncopies, &nnz);CHKERRQ(ierr);
   for (i = 0, maxnnz = 0; i < m; i++) {
     PetscInt innz;
     ierr = MatGetRow(A, i, &innz, NULL, NULL);CHKERRQ(ierr);
-    PetscAssertFalse(innz % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "A row %D nnzs is not a multiple of Nk %D", innz, Nk);
+    PetscCheckFalse(innz % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "A row %D nnzs is not a multiple of Nk %D", innz, Nk);
     for (j = 0; j < Ncopies; j++) nnz[i * Ncopies + j] = innz;
     maxnnz = PetscMax(maxnnz, innz);
   }
@@ -1970,7 +1970,7 @@ static PetscErrorCode DMPlexPointIsTensor(DM dm, PetscInt p, PetscBool *isTensor
 
   PetscFunctionBegin;
   ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
-  PetscAssertFalse(interpolated != DMPLEX_INTERPOLATED_FULL,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Only for interpolated DMPlex's");
+  PetscCheckFalse(interpolated != DMPLEX_INTERPOLATED_FULL,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Only for interpolated DMPlex's");
   ierr = DMPlexPointIsTensor_Internal(dm, p, isTensor, endA, endB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2109,18 +2109,18 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     ierr = PetscObjectChangeTypeName((PetscObject)sp, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
   }
   ierr = PetscDualSpaceGetFormDegree(sp, &formDegree);CHKERRQ(ierr);
-  PetscAssertFalse(PetscAbsInt(formDegree) > dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "Form degree must be bounded by dimension");
+  PetscCheckFalse(PetscAbsInt(formDegree) > dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "Form degree must be bounded by dimension");
   ierr = PetscDTBinomialInt(dim,PetscAbsInt(formDegree),&Nk);CHKERRQ(ierr);
   if (sp->Nc <= 0 && lag->numCopies > 0) sp->Nc = Nk * lag->numCopies;
   Nc = sp->Nc;
-  PetscAssertFalse(Nc % Nk,comm, PETSC_ERR_ARG_INCOMP, "Number of components is not a multiple of form degree size");
+  PetscCheckFalse(Nc % Nk,comm, PETSC_ERR_ARG_INCOMP, "Number of components is not a multiple of form degree size");
   if (lag->numCopies <= 0) lag->numCopies = Nc / Nk;
   Ncopies = lag->numCopies;
-  PetscAssertFalse(Nc / Nk != Ncopies,comm, PETSC_ERR_ARG_INCOMP, "Number of copies * (dim choose k) != Nc");
+  PetscCheckFalse(Nc / Nk != Ncopies,comm, PETSC_ERR_ARG_INCOMP, "Number of copies * (dim choose k) != Nc");
   if (!dim) sp->order = 0;
   order = sp->order;
   uniform = sp->uniform;
-  PetscAssertFalse(!uniform,PETSC_COMM_SELF, PETSC_ERR_SUP, "Variable order not supported yet");
+  PetscCheckFalse(!uniform,PETSC_COMM_SELF, PETSC_ERR_SUP, "Variable order not supported yet");
   if (lag->trimmed && !formDegree) lag->trimmed = PETSC_FALSE; /* trimmed spaces are the same as full spaces for 0-forms */
   if (lag->nodeType == PETSCDTNODES_DEFAULT) {
     lag->nodeType = PETSCDTNODES_GAUSSJACOBI;
@@ -2131,7 +2131,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   /* If a trimmed space and the user did choose nodes with endpoints, skip them by default */
   if (lag->numNodeSkip < 0) lag->numNodeSkip = (lag->trimmed && lag->endNodes) ? 1 : 0;
   numNodeSkip = lag->numNodeSkip;
-  PetscAssertFalse(lag->trimmed && !order,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot have zeroth order trimmed elements");
+  PetscCheckFalse(lag->trimmed && !order,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot have zeroth order trimmed elements");
   if (lag->trimmed && PetscAbsInt(formDegree) == dim) { /* convert trimmed n-forms to untrimmed of one polynomial order less */
     sp->order--;
     order--;
@@ -2143,8 +2143,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  PetscAssertFalse(pStart != 0 || cStart != 0,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Expect DM with chart starting at zero and cells first");
-  PetscAssertFalse(cEnd != 1,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Use PETSCDUALSPACEREFINED for multi-cell reference meshes");
+  PetscCheckFalse(pStart != 0 || cStart != 0,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Expect DM with chart starting at zero and cells first");
+  PetscCheckFalse(cEnd != 1,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Use PETSCDUALSPACEREFINED for multi-cell reference meshes");
   ierr = DMPlexIsInterpolated(dm, &interpolated);CHKERRQ(ierr);
   if (interpolated != DMPLEX_INTERPOLATED_FULL) {
     ierr = DMPlexInterpolate(dm, &dmint);CHKERRQ(ierr);
@@ -2163,7 +2163,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     ierr = Petsc1DNodeFamilyCreate(lag->nodeType, lag->nodeExponent, lag->endNodes, &lag->nodeFamily);CHKERRQ(ierr);
   }
   nodeFamily = lag->nodeFamily;
-  PetscAssertFalse(interpolated != DMPLEX_INTERPOLATED_FULL && continuous && (PetscAbsInt(formDegree) > 0 || order > 1),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Reference element won't support all boundary nodes");
+  PetscCheckFalse(interpolated != DMPLEX_INTERPOLATED_FULL && continuous && (PetscAbsInt(formDegree) > 0 || order > 1),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Reference element won't support all boundary nodes");
 
   /* step 2: construct the boundary spaces */
   ierr = PetscMalloc2(depth+1,&pStratStart,depth+1,&pStratEnd);CHKERRQ(ierr);
@@ -2221,7 +2221,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           ierr = DMPlexGetConeSize(dm, q, &coneSize);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, q, &cone);CHKERRQ(ierr);
           for (c = 0; c < coneSize; c++) if (cone[c] == p) break;
-          PetscAssertFalse(c == coneSize,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "cone/support mismatch");
+          PetscCheckFalse(c == coneSize,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "cone/support mismatch");
           ierr = PetscDualSpaceGetDM(qsp, &qdm);CHKERRQ(ierr);
           ierr = DMPlexGetCone(qdm, 0, &refCone);CHKERRQ(ierr);
           /* get the equivalent dual space from the support dual space */
@@ -2394,7 +2394,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
               const PetscScalar *rVals;
 
               ierr = MatGetRow(intMat, row, &nrCols, &rCols, &rVals);CHKERRQ(ierr);
-              PetscAssertFalse(nrCols % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in intMat matrix are not in k-form size blocks");
+              PetscCheckFalse(nrCols % Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nonzeros in intMat matrix are not in k-form size blocks");
               for (PetscInt b = 0; b < nrCols; b += Nk) {
                 const PetscScalar *v = &rVals[b];
                 PetscScalar *w = &work[b];
@@ -2652,7 +2652,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
         for (d = 0; d < nodeIdxDim; d++) if (mind[d] != nind[d]) break;
         if (d < nodeIdxDim) break;
       }
-      PetscAssertFalse(m < nEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dofs with same index after symmetry not same block size");
+      PetscCheckFalse(m < nEnd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dofs with same index after symmetry not same block size");
     }
     groupSize = nEnd - n;
     /* each pushforward dof vector will be expressed in a basis of the unpermuted dofs */
@@ -2661,7 +2661,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
     maxGroupSize = PetscMax(maxGroupSize, nEnd - n);
     n = nEnd;
   }
-  PetscAssertFalse(maxGroupSize > nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dofs are not in blocks that can be solved");
+  PetscCheckFalse(maxGroupSize > nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dofs are not in blocks that can be solved");
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, nNodes, nNodes, 0, nnz, &A);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
   ierr = PetscMalloc3(maxGroupSize * nodeVecDim, &V, maxGroupSize * nodeVecDim, &W, nodeVecDim * 2, &work);CHKERRQ(ierr);
@@ -2701,7 +2701,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
       PetscBLASInt info;
 
       PetscStackCallBLAS("LAPACKgels",LAPACKgels_(&transpose,&bm,&bn,&bnrhs,V,&blda,W,&bldb,work,&blwork, &info));
-      PetscAssertFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
+      PetscCheckFalse(info != 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELS");
       /* repack */
       {
         PetscInt i, j;
@@ -2733,7 +2733,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
             res += PetscAbsScalar(W[i * nodeVecDim + j]);
           }
         }
-        PetscAssertFalse(res > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_LIB,"Dof block did not solve");
+        PetscCheckFalse(res > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_LIB,"Dof block did not solve");
       }
     }
     ierr = MatSetValues(A, groupSize, &permOrnt[n], groupSize, &perm[n], V, INSERT_VALUES);CHKERRQ(ierr);
@@ -2808,8 +2808,8 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
       /* we want to be able to index symmetries directly with the orientations, which range from [-numFaces,numFaces) */
       symperms[0] = &cellSymperms[numFaces];
       symflips[0] = &cellSymflips[numFaces];
-      PetscAssertFalse(lag->intNodeIndices->nodeVecDim * nCopies != Nc,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node indices incompatible with dofs");
-      PetscAssertFalse(nNodes * nCopies != spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node indices incompatible with dofs");
+      PetscCheckFalse(lag->intNodeIndices->nodeVecDim * nCopies != Nc,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node indices incompatible with dofs");
+      PetscCheckFalse(nNodes * nCopies != spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node indices incompatible with dofs");
       for (ornt = -numFaces; ornt < numFaces; ornt++) { /* for every symmetry, compute the symmetry matrix, and extract rows to see if it fits in the perm + flip framework */
         Mat symMat;
         PetscInt *perm;
@@ -2831,11 +2831,11 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
           ierr = MatGetRow(symMat, i, &ncols, &cols, &vals);CHKERRQ(ierr);
           for (j = 0; j < ncols; j++) {
             if (PetscAbsScalar(vals[j]) > PETSC_SMALL) {
-              PetscAssertFalse(nz_seen,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              PetscCheckFalse(nz_seen,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               nz_seen = PETSC_TRUE;
-              PetscAssertFalse(PetscAbsReal(PetscAbsScalar(vals[j]) - PetscRealConstant(1.)) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
-              PetscAssertFalse(PetscAbsReal(PetscImaginaryPart(vals[j])) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
-              PetscAssertFalse(perm[cols[j] * nCopies] >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              PetscCheckFalse(PetscAbsReal(PetscAbsScalar(vals[j]) - PetscRealConstant(1.)) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              PetscCheckFalse(PetscAbsReal(PetscImaginaryPart(vals[j])) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              PetscCheckFalse(perm[cols[j] * nCopies] >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               for (k = 0; k < nCopies; k++) {
                 perm[cols[j] * nCopies + k] = i * nCopies + k;
               }
@@ -3050,7 +3050,7 @@ static PetscErrorCode PetscDualSpaceLagrangeSetNodeType_Lagrange(PetscDualSpace 
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(nodeType == PETSCDTNODES_GAUSSJACOBI && exponent <= -1.,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Exponent must be > -1");
+  PetscCheckFalse(nodeType == PETSCDTNODES_GAUSSJACOBI && exponent <= -1.,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Exponent must be > -1");
   lag->nodeType = nodeType;
   lag->endNodes = boundary;
   lag->nodeExponent = exponent;

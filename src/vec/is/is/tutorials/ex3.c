@@ -56,19 +56,19 @@ int main(int argc,char **argv)
     Check if this is really a block index set
   */
   ierr = PetscObjectTypeCompare((PetscObject)set,ISBLOCK,&isblock);CHKERRQ(ierr);
-  PetscAssertFalse(!isblock,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index set is not blocked!");
+  PetscCheckFalse(!isblock,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set
   */
   ierr = ISGetBlockSize(set,&bs);CHKERRQ(ierr);
-  PetscAssertFalse(bs != 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Block size is not 3!");
+  PetscCheckFalse(bs != 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Block size is not 3!");
 
   /*
     Get the number of blocks
   */
   ierr = ISBlockGetLocalSize(set,&n);CHKERRQ(ierr);
-  PetscAssertFalse(n != 4,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks not 4!");
+  PetscCheckFalse(n != 4,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks not 4!");
 
   ierr = ISDestroy(&set);CHKERRQ(ierr);
   ierr = PetscFinalize();

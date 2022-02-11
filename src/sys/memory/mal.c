@@ -35,7 +35,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t mem,PetscBool clear,int line
   {
     if (!currentmktype) err = memkind_posix_memalign(MEMKIND_DEFAULT,result,PETSC_MEMALIGN,mem);
     else err = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,result,PETSC_MEMALIGN,mem);
-    PetscAssertFalse(err == EINVAL,PETSC_COMM_SELF,PETSC_ERR_MEM,"Memkind: invalid 3rd or 4th argument of memkind_posix_memalign()");
+    PetscCheckFalse(err == EINVAL,PETSC_COMM_SELF,PETSC_ERR_MEM,"Memkind: invalid 3rd or 4th argument of memkind_posix_memalign()");
     if (err == ENOMEM) PetscInfo(0,"Memkind: fail to request HBW memory %.0f, falling back to normal memory\n",(PetscLogDouble)mem);
     if (!*result) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
     if (clear) {ierr = PetscMemzero(*result,mem);CHKERRQ(ierr);}
@@ -167,7 +167,7 @@ PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t mem, int line, const char f
       int err;
       if (!currentmktype) err = memkind_posix_memalign(MEMKIND_DEFAULT,&newResult,PETSC_MEMALIGN,mem);
       else err = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,&newResult,PETSC_MEMALIGN,mem);
-      PetscAssertFalse(err == EINVAL,PETSC_COMM_SELF,PETSC_ERR_MEM,"Memkind: invalid 3rd or 4th argument of memkind_posix_memalign()");
+      PetscCheckFalse(err == EINVAL,PETSC_COMM_SELF,PETSC_ERR_MEM,"Memkind: invalid 3rd or 4th argument of memkind_posix_memalign()");
       if (err == ENOMEM) PetscInfo(0,"Memkind: fail to request HBW memory %.0f, falling back to normal memory\n",(PetscLogDouble)mem);
     }
 #  else
@@ -221,7 +221,7 @@ PetscErrorCode PetscMallocSet(PetscErrorCode (*imalloc)(size_t,PetscBool,int,con
                               PetscErrorCode (*iralloc)(size_t, int, const char[], const char[], void **))
 {
   PetscFunctionBegin;
-  PetscAssertFalse(petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree),PETSC_COMM_SELF,PETSC_ERR_SUP,"cannot call multiple times");
+  PetscCheckFalse(petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree),PETSC_COMM_SELF,PETSC_ERR_SUP,"cannot call multiple times");
   PetscTrMalloc         = imalloc;
   PetscTrFree           = ifree;
   PetscTrRealloc        = iralloc;
@@ -400,7 +400,7 @@ PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *functio
   int            i;
 
   PetscFunctionBegin;
-  PetscAssertFalse(n > 8,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only 8 supported",n);
+  PetscCheckFalse(n > 8,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only 8 supported",n);
   bytes[0] = bytes0;
   ptr[0] = (void**)ptr0;
   sumbytes = (bytes0 + PETSC_MEMALIGN-1) & ~(PETSC_MEMALIGN-1);
@@ -455,7 +455,7 @@ PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *file
   int            i;
 
   PetscFunctionBegin;
-  PetscAssertFalse(n > 8,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only up to 8 supported",n);
+  PetscCheckFalse(n > 8,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only up to 8 supported",n);
   ptr[0] = (void**)ptr0;
   va_start(Argp,ptr0);
   for (i=1; i<n; i++) {

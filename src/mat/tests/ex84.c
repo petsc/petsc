@@ -48,7 +48,7 @@ static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer 
     ierr = PetscViewerFileGetMode(*r, &mode);CHKERRQ(ierr);
     flg = (PetscBool) (mode == FILE_MODE_READ);
   }
-  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Need to specify %s viewer_type:file:format:read", option);
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Need to specify %s viewer_type:file:format:read", option);
   PetscFunctionReturn(0);
 }
 
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
   ierr = MatDestroy(&data_mat);CHKERRQ(ierr);
 
   for (i=0; i<NNORMS; i++) {
-    PetscAssertFalse(PetscAbs(norms0[i] - norms1[i]) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
+    PetscCheckFalse(PetscAbs(norms0[i] - norms1[i]) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
   }
 
   ierr = PetscFinalize();

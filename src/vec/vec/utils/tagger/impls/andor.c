@@ -133,7 +133,7 @@ static PetscErrorCode VecTaggerSetUp_AndOr (VecTagger tagger)
 
   PetscFunctionBegin;
   ierr = VecTaggerGetSubs_AndOr(tagger,&nsubs,&subs);CHKERRQ(ierr);
-  PetscAssertFalse(!nsubs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set sub taggers before calling setup.");
+  PetscCheckFalse(!nsubs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set sub taggers before calling setup.");
   for (i = 0; i < nsubs; i++) {
     ierr = VecTaggerSetUp(subs[i]);CHKERRQ(ierr);
   }

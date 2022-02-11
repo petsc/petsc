@@ -209,7 +209,7 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
   PetscValidHeaderSpecific(isrow,IS_CLASSID,2);
   PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
   PetscValidPointer(newmat,4);
-  PetscAssertFalse(!A->rmap->mapping,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
+  PetscCheckFalse(!A->rmap->mapping,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
   *newmat = NULL;
 
   ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);

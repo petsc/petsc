@@ -112,7 +112,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A,MatType type,Mat
   if (baijmkl->sparse_optimized) {
     sparse_status_t stat;
     stat = mkl_sparse_destroy(baijmkl->bsrA);
-    PetscAssertFalse(stat != SPARSE_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: error in mkl_sparse_destroy");
+    PetscCheckFalse(stat != SPARSE_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: error in mkl_sparse_destroy");
   }
   ierr = PetscFree2(baijmkl->ai1,baijmkl->aj1);CHKERRQ(ierr);
   ierr = PetscFree(B->spptr);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ static PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A)
     if (baijmkl->sparse_optimized) {
       sparse_status_t stat = SPARSE_STATUS_SUCCESS;
       stat = mkl_sparse_destroy(baijmkl->bsrA);
-      PetscAssertFalse(stat != SPARSE_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: error in mkl_sparse_destroy");
+      PetscCheckFalse(stat != SPARSE_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: error in mkl_sparse_destroy");
     }
     ierr = PetscFree2(baijmkl->ai1,baijmkl->aj1);CHKERRQ(ierr);
     ierr = PetscFree(A->spptr);CHKERRQ(ierr);

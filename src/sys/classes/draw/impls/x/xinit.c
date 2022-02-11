@@ -80,7 +80,7 @@ static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin,PetscDrawXiPixVal f
   gcvalues.foreground = fg;
   XiWin->gc.cur_pix   = fg;
   XiWin->gc.set       = XCreateGC(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),GCFunction|GCForeground,&gcvalues);
-  PetscAssertFalse(!XiWin->gc.set,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X graphics context");
+  PetscCheckFalse(!XiWin->gc.set,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X graphics context");
   PetscFunctionReturn(0);
 }
 
@@ -144,7 +144,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
   /* get the available widths */
   wavail = DisplayWidth(XiWin->disp,XiWin->screen);
   havail = DisplayHeight(XiWin->disp,XiWin->screen);
-  PetscAssertFalse(w <= 0 || h <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"X Window display has invalid height or width");
+  PetscCheckFalse(w <= 0 || h <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"X Window display has invalid height or width");
   if ((unsigned int)w > wavail) w = wavail;
   if ((unsigned int)h > havail) h = havail;
 
@@ -181,7 +181,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
           CWCursor     | CWColormap;
 
   XiWin->win = XCreateWindow(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),x,y,w,h,border_width,XiWin->depth,InputOutput,XiWin->vis,wmask,&window_attributes);
-  PetscAssertFalse(!XiWin->win,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open X window");
+  PetscCheckFalse(!XiWin->win,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open X window");
 
   /* set window manager hints */
   {
@@ -220,7 +220,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
   XMapWindow(XiWin->disp,XiWin->win);
   /* some window systems are cruel and interfere with the placement of
      windows.  We wait here for the window to be created or to die */
-  PetscAssertFalse(PetscDrawXiWaitMap(XiWin),PETSC_COMM_SELF,PETSC_ERR_LIB,"Wait for X window failed");
+  PetscCheckFalse(PetscDrawXiWaitMap(XiWin),PETSC_COMM_SELF,PETSC_ERR_LIB,"Wait for X window failed");
   XSelectInput(XiWin->disp,XiWin->win,NoEventMask);
   PetscFunctionReturn(0);
 }

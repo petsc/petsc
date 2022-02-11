@@ -76,8 +76,8 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
       break;
     }
   }
-  PetscAssertFalse(dim > 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot perform child symmetry for %d-cells",dim);
-  PetscAssertFalse(!dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A vertex has no children");
+  PetscCheckFalse(dim > 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot perform child symmetry for %d-cells",dim);
+  PetscCheckFalse(!dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A vertex has no children");
   if (childA < dStart || childA >= dEnd) {
     /* this is a lower-dimensional child: bootstrap */
     PetscInt size, i, sA = -1, sB, sOrientB, sConeSize;
@@ -97,7 +97,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
         break;
       }
     }
-    PetscAssertFalse(i == size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"could not find support in children");
+    PetscCheckFalse(i == size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"could not find support in children");
     /* find out which point sB is in an equivalent position to sA under
      * parentOrientB */
     ierr = DMPlexReferenceTreeGetChildSymmetry_Default(dm,parent,parentOrientA,0,sA,parentOrientB,&sOrientB,&sB);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
 
           ierr          = DMPlexGetConeSize(dm,childA,&coneSize);CHKERRQ(ierr);
           /* compose sOrientB and oB[j] */
-          PetscAssertFalse(coneSize != 0 && coneSize != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
+          PetscCheckFalse(coneSize != 0 && coneSize != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a vertex or an edge");
           ct = coneSize ? DM_POLYTOPE_SEGMENT : DM_POLYTOPE_POINT;
           /* we may have to flip an edge */
           oBtrue        = (sOrientB >= 0) ? oB[j] : DMPolytopeTypeComposeOrientation(ct, -1, oB[j]);
@@ -130,7 +130,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
         break;
       }
     }
-    PetscAssertFalse(i == sConeSize,PETSC_COMM_SELF,PETSC_ERR_PLIB,"support cone mismatch");
+    PetscCheckFalse(i == sConeSize,PETSC_COMM_SELF,PETSC_ERR_PLIB,"support cone mismatch");
     PetscFunctionReturn(0);
   }
   /* get the cone size and symmetry swap */
@@ -163,7 +163,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
     if (posA >= coneSize) {
       /* this is the triangle in the middle of a uniformly refined triangle: it
        * is invariant */
-      PetscAssertFalse(dim != 2 || posA != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Expected a middle triangle, got something else");
+      PetscCheckFalse(dim != 2 || posA != 3,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Expected a middle triangle, got something else");
       *childB = childA;
     }
     else {
@@ -204,7 +204,7 @@ PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscAssertFalse(!mesh->getchildsymmetry,PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlexReferenceTreeGetChildSymmetry not implemented");
+  PetscCheckFalse(!mesh->getchildsymmetry,PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlexReferenceTreeGetChildSymmetry not implemented");
   ierr = mesh->getchildsymmetry(dm,parent,parentOrientA,childOrientA,childA,parentOrientB,childOrientB,childB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1019,7 +1019,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
         ierr = DMPlexGetTreeChildren(dm,p,&numChildren,&children);CHKERRQ(ierr);
         if (numChildren) {
-          PetscAssertFalse(numChildren != cNumChildren,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"All parent points in a stratum should have the same number of children: %d != %d", numChildren, cNumChildren);
+          PetscCheckFalse(numChildren != cNumChildren,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"All parent points in a stratum should have the same number of children: %d != %d", numChildren, cNumChildren);
           ierr = DMSetLabelValue(dm,"canonical",p,canon);CHKERRQ(ierr);
           for (i = 0; i < numChildren; i++) {
             ierr = DMSetLabelValue(dm,"canonical",children[i],cChildren[i]);CHKERRQ(ierr);
@@ -1298,7 +1298,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
 
       ierr = PetscDualSpaceGetFunctional(dspace,i,&quad);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad,NULL,&thisNc,&qPoints,NULL,NULL);CHKERRQ(ierr);
-      PetscAssertFalse(thisNc != Nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %D does not much basis dim %D",thisNc,Nc);
+      PetscCheckFalse(thisNc != Nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %D does not much basis dim %D",thisNc,Nc);
       nPoints += qPoints;
     }
     ierr = PetscMalloc7(fSize,&sizes,nPoints*Nc,&weights,spdim*nPoints,&pointsRef,spdim*nPoints,&pointsReal,nPoints*fSize*Nc,&work,maxDof,&workIndRow,maxDof,&workIndCol);CHKERRQ(ierr);
@@ -1730,7 +1730,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
     PetscScalar *vals;
 
     ierr = MatGetRowIJ(cMat,0,PETSC_FALSE,PETSC_FALSE,&nRows,&ia,&ja,&done);CHKERRQ(ierr);
-    PetscAssertFalse(!done,PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not get RowIJ of constraint matrix");
+    PetscCheckFalse(!done,PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not get RowIJ of constraint matrix");
     nnz  = ia[nRows];
     /* malloc and then zero rows right before we fill them: this way valgrind
      * can tell if we are doing progressive fill in the wrong order */
@@ -1766,7 +1766,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
         if (PetscDefined(USE_DEBUG)) {
           for (r = 0; r < cDof; r++) {
             if (cDof > 1 && r) {
-              PetscAssertFalse((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1]),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %D vs. %D", (ia[cOff+r+1]-ia[cOff+r]), (ia[cOff+r]-ia[cOff+r-1]));
+              PetscCheckFalse((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1]),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %D vs. %D", (ia[cOff+r+1]-ia[cOff+r]), (ia[cOff+r]-ia[cOff+r-1]));
             }
           }
         }
@@ -1828,7 +1828,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
                   break;
                 }
               }
-              PetscAssertFalse(k == numFillCols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%d, %d)", cOff, col);
+              PetscCheckFalse(k == numFillCols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%d, %d)", cOff, col);
               for (r = 0; r < cDof; r++) {
                 vals[matOffset + numFillCols * r + k] = pointWork[r * aNumFillCols + j];
               }
@@ -1841,7 +1841,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
                 break;
               }
             }
-            PetscAssertFalse(k == numFillCols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%d, %d)", cOff, aOff);
+            PetscCheckFalse(k == numFillCols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%d, %d)", cOff, aOff);
             for (r = 0; r < cDof; r++) {
               for (j = 0; j < aDof; j++) {
                 PetscInt col = perm ? perm[j] : j;
@@ -1864,7 +1864,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
       ierr = MatSetValues(cMat,1,&row,ia[row+1]-ia[row],&ja[ia[row]],&vals[ia[row]],INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatRestoreRowIJ(cMat,0,PETSC_FALSE,PETSC_FALSE,&nRows,&ia,&ja,&done);CHKERRQ(ierr);
-    PetscAssertFalse(!done,PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not restore RowIJ of constraint matrix");
+    PetscCheckFalse(!done,PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not restore RowIJ of constraint matrix");
     ierr = MatAssemblyBegin(cMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(cMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);
@@ -1931,7 +1931,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
       offset = pNewEnd[d];
 
     }
-    PetscAssertFalse(cell < pOldStart[0] || cell >= pOldEnd[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%d not in cell range [%d, %d)", cell, pOldStart[0], pOldEnd[0]);
+    PetscCheckFalse(cell < pOldStart[0] || cell >= pOldEnd[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%d not in cell range [%d, %d)", cell, pOldStart[0], pOldEnd[0]);
     /* get the current closure of the cell that we are removing */
     ierr = DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&nc,&cellClosure);CHKERRQ(ierr);
 
@@ -2100,7 +2100,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
         ierr = DMPlexGetHeightStratum(K,0,&kStart,&kEnd);CHKERRQ(ierr);
         for (k = kStart; k < kEnd; k++) {
           ierr = DMPlexComputeCellGeometryFEM(K, k, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
-          PetscAssertFalse(detJ <= 0.,PETSC_COMM_SELF,PETSC_ERR_PLIB,"reference tree cell %d has bad determinant",k);
+          PetscCheckFalse(detJ <= 0.,PETSC_COMM_SELF,PETSC_ERR_PLIB,"reference tree cell %d has bad determinant",k);
         }
       }
       ierr = DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
@@ -2421,7 +2421,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         if (!numRowIndices) { /* don't need to calculate the mat, just the indices */
           PetscInt numIndices, *indices;
           ierr = DMPlexGetClosureIndices(coarse,localCoarse,globalCoarse,p,PETSC_TRUE,&numIndices,&indices,offsets,NULL);CHKERRQ(ierr);
-          PetscAssertFalse(numIndices != numColIndices,PETSC_COMM_SELF,PETSC_ERR_PLIB,"mismatching constraint indices calculations");
+          PetscCheckFalse(numIndices != numColIndices,PETSC_COMM_SELF,PETSC_ERR_PLIB,"mismatching constraint indices calculations");
           for (i = 0; i < numColIndices; i++) {
             pInd[i] = indices[i];
           }
@@ -2523,7 +2523,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         PetscInt *rowIndices, *colIndices, a, aDof, aOff;
 
         numRowIndices = matSize / numColIndices;
-        PetscAssertFalse(numRowIndices != dof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Miscounted dofs");
+        PetscCheckFalse(numRowIndices != dof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Miscounted dofs");
         ierr = DMGetWorkArray(coarse,numRowIndices,MPIU_INT,&rowIndices);CHKERRQ(ierr);
         ierr = DMGetWorkArray(coarse,numColIndices,MPIU_INT,&colIndices);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(cSec,p,&cOff);CHKERRQ(ierr);
@@ -2679,12 +2679,12 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
         continue;
       }
       ierr = PetscSectionGetOffset(globalFine,p,&gOff);CHKERRQ(ierr);
-      PetscAssertFalse(gOff < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"I though having global dofs meant a non-negative offset");
-      PetscAssertFalse((gOff < rowStart) || ((gOff + gDof - gcDof) > rowEnd),PETSC_COMM_SELF,PETSC_ERR_PLIB,"I thought the row map would constrain the global dofs");
+      PetscCheckFalse(gOff < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"I though having global dofs meant a non-negative offset");
+      PetscCheckFalse((gOff < rowStart) || ((gOff + gDof - gcDof) > rowEnd),PETSC_COMM_SELF,PETSC_ERR_PLIB,"I thought the row map would constrain the global dofs");
       ierr = PetscSectionGetDof(leafIndicesSec,p,&numColIndices);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(leafIndicesSec,p,&pIndOff);CHKERRQ(ierr);
       numColIndices -= 2 * numFields;
-      PetscAssertFalse(numColIndices <= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"global fine dof with no dofs to interpolate from");
+      PetscCheckFalse(numColIndices <= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"global fine dof with no dofs to interpolate from");
       pInd = &leafIndices[pIndOff];
       offsets[0]        = 0;
       offsetsCopy[0]    = 0;
@@ -2748,15 +2748,15 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
                 PetscInt gIndCoarse = pInd[newOffsets[f] + row];
                 PetscInt gIndFine   = rowIndices[offsets[f] + row];
                 if (gIndCoarse >= colStart && gIndCoarse < colEnd) { /* local */
-                  PetscAssertFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                  PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                   dnnz[gIndFine - rowStart] = 1;
                 }
                 else if (gIndCoarse >= 0) { /* remote */
-                  PetscAssertFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                  PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                   onnz[gIndFine - rowStart] = 1;
                 }
                 else { /* constrained */
-                  PetscAssertFalse(gIndFine >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                  PetscCheckFalse(gIndFine >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 }
               }
             }
@@ -2767,15 +2767,15 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               PetscInt gIndCoarse = pInd[i];
               PetscInt gIndFine   = rowIndices[i];
               if (gIndCoarse >= colStart && gIndCoarse < colEnd) { /* local */
-                PetscAssertFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 dnnz[gIndFine - rowStart] = 1;
               }
               else if (gIndCoarse >= 0) { /* remote */
-                PetscAssertFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 onnz[gIndFine - rowStart] = 1;
               }
               else { /* constrained */
-                PetscAssertFalse(gIndFine >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheckFalse(gIndFine >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
               }
             }
           }
@@ -2788,7 +2788,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               for (row = 0; row < numRows; row++) {
                 PetscInt gIndFine = rowIndices[offsets[f] + row];
                 if (gIndFine >= 0) {
-                  PetscAssertFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                  PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                   dnnz[gIndFine - rowStart] = numD[f];
                   onnz[gIndFine - rowStart] = numO[f];
                 }
@@ -2800,7 +2800,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             for (i = 0; i < gDof; i++) {
               PetscInt gIndFine = rowIndices[i];
               if (gIndFine >= 0) {
-                PetscAssertFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 dnnz[gIndFine - rowStart] = numD[0];
                 onnz[gIndFine - rowStart] = numO[0];
               }
@@ -2816,7 +2816,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             for (row = 0; row < numRows; row++) {
               PetscInt gIndFine = rowIndices[offsets[f] + row];
               if (gIndFine >= 0) {
-                PetscAssertFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+                PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
                 dnnz[gIndFine - rowStart] = numD[f];
                 onnz[gIndFine - rowStart] = numO[f];
               }
@@ -2828,7 +2828,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           for (i = 0; i < gDof; i++) {
             PetscInt gIndFine = rowIndices[i];
             if (gIndFine >= 0) {
-              PetscAssertFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
+              PetscCheckFalse(gIndFine < rowStart || gIndFine >= rowEnd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mismatched number of constrained dofs");
               dnnz[gIndFine - rowStart] = numD[0];
               onnz[gIndFine - rowStart] = numO[0];
             }
@@ -2950,7 +2950,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               PetscInt numInRows = rowOffsets[f+1]-rowOffsets[f];
               PetscScalar *inMat = &pMat[count];
               PetscInt i, j, k;
-              PetscAssertFalse(refPointFieldN[childId - pRefStart][f] != numInRows,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point constraint matrix multiply dimension mismatch");
+              PetscCheckFalse(refPointFieldN[childId - pRefStart][f] != numInRows,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point constraint matrix multiply dimension mismatch");
               for (i = 0; i < numRows; i++) {
                 for (j = 0; j < numCols; j++) {
                   PetscScalar val = 0.;
@@ -2969,7 +2969,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             PetscInt numCols   = numColIndices;
             PetscInt numInRows = matSize / numColIndices;
             PetscInt i, j, k;
-            PetscAssertFalse(refPointFieldN[childId - pRefStart][0] != numInRows,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point constraint matrix multiply dimension mismatch");
+            PetscCheckFalse(refPointFieldN[childId - pRefStart][0] != numInRows,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point constraint matrix multiply dimension mismatch");
             for (i = 0; i < numRows; i++) {
               for (j = 0; j < numCols; j++) {
                 PetscScalar val = 0.;
@@ -3240,7 +3240,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
 
           ierr = PetscDualSpaceGetFunctional(dsp,parentCellShapeDof,&q);CHKERRQ(ierr);
           ierr = PetscQuadratureGetData(q,&dim,&thisNc,&numPoints,&points,&weights);CHKERRQ(ierr);
-          PetscAssertFalse(thisNc != Nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %D does not much basis dim %D",thisNc,Nc);
+          PetscCheckFalse(thisNc != Nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Functional dim %D does not much basis dim %D",thisNc,Nc);
           ierr = PetscFECreateTabulation(fe,1,numPoints,points,0,&Tparent);CHKERRQ(ierr); /* I'm expecting a nodal basis: weights[:]' * Bparent[:,cellShapeDof] = 1. */
           for (j = 0; j < numPoints; j++) {
             PetscInt          childCell = -1;
@@ -3279,7 +3279,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
               ierr = DMPlexRestoreTransitiveClosure(refTree,child,PETSC_FALSE,&numStar,&star);CHKERRQ(ierr);
               if (childCell >= 0) break;
             }
-            PetscAssertFalse(childCell < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not locate quadrature point");
+            PetscCheckFalse(childCell < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not locate quadrature point");
             ierr = DMPlexComputeCellGeometryFEM(refTree, childCell, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
             ierr = DMPlexComputeCellGeometryFEM(refTree, parentCell, NULL, v0parent, Jparent, NULL, &detJparent);CHKERRQ(ierr);
             CoordinatesRefToReal(dim, dim, xi0, v0parent, Jparent, pointReal, vtmp);
@@ -3828,7 +3828,7 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
           PetscInt colIndex = childIndices[i];
           PetscInt rowIndex = parentIndices[i];
           if (rowIndex < 0) continue;
-          PetscAssertFalse(colIndex < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unconstrained fine and constrained coarse");
+          PetscCheckFalse(colIndex < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unconstrained fine and constrained coarse");
           if (colIndex >= colStart && colIndex < colEnd) {
             nnzD[rowIndex - rowStart] = 1;
           }

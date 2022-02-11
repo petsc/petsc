@@ -46,7 +46,7 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
   V  = ksp->work[14];
 
   /* Only supports right preconditioning */
-  PetscAssertFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP pipebcgs does not support %s",PCSides[ksp->pc_side]);
+  PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP pipebcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
     ierr = VecDotEnd(W,RP,&d2);CHKERRQ(ierr);
     ierr = VecDotEnd(Z,RP,&d3);CHKERRQ(ierr);
 
-    PetscAssertFalse(d2 + beta * d1 - beta * omega * d3 == 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
+    PetscCheckFalse(d2 + beta * d1 - beta * omega * d3 == 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
 
     beta = (rho/rhoold) * (alpha/omega);
     alpha = rho/(d2 + beta * d1 - beta * omega * d3); /* alpha <- rho / (d2 + beta * d1 - beta * omega * d3) */

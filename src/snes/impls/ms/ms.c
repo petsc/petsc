@@ -200,13 +200,13 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
-  PetscAssertFalse(nstages < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have at least one stage");
+  PetscCheckFalse(nstages < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have at least one stage");
   if (gamma || delta) {
-    PetscAssertFalse(nregisters != 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 3-register form");
+    PetscCheckFalse(nregisters != 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 3-register form");
     PetscValidRealPointer(gamma,5);
     PetscValidRealPointer(delta,6);
   } else {
-    PetscAssertFalse(nregisters != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 1-register form");
+    PetscCheckFalse(nregisters != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for methods written in 1-register form");
   }
   PetscValidRealPointer(betasub,7);
 
@@ -348,7 +348,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
 
   snes->reason = SNES_CONVERGED_ITERATING;

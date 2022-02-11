@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
-  PetscAssertFalse(n != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetSize");
+  PetscCheckFalse(n != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetSize");
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /*
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    PetscAssertFalse(ii[i] != indices[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetIndices");
+    PetscCheckFalse(ii[i] != indices[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetIndices");
   }
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
 
@@ -48,23 +48,23 @@ int main(int argc,char **argv)
   */
   /* ISPermutation doesn't check if not set */
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
+  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
-  PetscAssertFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
+  PetscCheckFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
+  PetscCheckFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
-  PetscAssertFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
+  PetscCheckFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
+  PetscCheckFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISIdentity");
   ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,compute,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
-  PetscAssertFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
+  PetscCheckFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
+  PetscCheckFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
   /* we can override the computed values with ISSetInfo() */
   ierr = ISSetInfo(is,IS_PERMUTATION,IS_LOCAL,permanent,PETSC_TRUE);CHKERRQ(ierr);
   ierr = ISSetInfo(is,IS_IDENTITY,IS_LOCAL,permanent,PETSC_TRUE);CHKERRQ(ierr);
   ierr = ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   ierr = ISGetInfo(is,IS_IDENTITY,IS_LOCAL,compute,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
 
   ierr = ISClearInfoCache(is,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -72,28 +72,28 @@ int main(int argc,char **argv)
      Check equality of index sets
   */
   ierr = ISEqual(is,is,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISEqual");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISEqual");
 
   /*
      Sorting
   */
   ierr = ISSort(is);CHKERRQ(ierr);
   ierr = ISSorted(is,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISSort");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISSort");
   ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,compute,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_SORTED,IS_LOCAL)");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_SORTED,IS_LOCAL)");
   ierr = ISSorted(is,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISSort");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISSort");
   ierr = ISGetInfo(is,IS_SORTED,IS_LOCAL,compute,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_SORTED,IS_LOCAL)");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_SORTED,IS_LOCAL)");
 
   /*
      Thinks it is a different type?
   */
   ierr = PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
+  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
   ierr = PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISBlock");
+  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISBlock");
 
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
   ierr = ISInvertPermutation(is,PETSC_DECIDE,&newis);CHKERRQ(ierr);
   ierr = ISGetIndices(newis,&ii);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    PetscAssertFalse(ii[i] != n - i - 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISInvertPermutation");
+    PetscCheckFalse(ii[i] != n - i - 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISInvertPermutation");
   }
   ierr = ISRestoreIndices(newis,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(&newis);CHKERRQ(ierr);

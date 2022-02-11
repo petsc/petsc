@@ -32,7 +32,7 @@ PetscErrorCode  PetscHasExternalPackage(const char pkg[], PetscBool *has)
 
   PetscFunctionBegin;
   ierr = PetscSNPrintfCount(pkgstr,sizeof(pkgstr),":%s:",&cnt,pkg);CHKERRQ(ierr);
-  PetscAssertFalse(cnt >= sizeof(pkgstr),PETSC_COMM_SELF, PETSC_ERR_SUP, "Package name is too long: \"%s\"", pkg);
+  PetscCheckFalse(cnt >= sizeof(pkgstr),PETSC_COMM_SELF, PETSC_ERR_SUP, "Package name is too long: \"%s\"", pkg);
   ierr = PetscStrtolower(pkgstr);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PACKAGES)
   ierr = PetscStrstr(PETSC_HAVE_PACKAGES, pkgstr, &loc);CHKERRQ(ierr);

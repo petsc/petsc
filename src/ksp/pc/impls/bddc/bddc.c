@@ -396,7 +396,7 @@ PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, PetscBool trans, IS v
   PetscValidLogicalCollectiveBool(pc,trans,3);
   if (vl2l) PetscValidHeaderSpecific(vl2l,IS_CLASSID,4);
   ierr = PetscObjectTypeCompare((PetscObject)divudotp,MATIS,&ismatis);CHKERRQ(ierr);
-  PetscAssertFalse(!ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
+  PetscCheckFalse(!ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
   ierr = PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,PetscBool,IS),(pc,divudotp,trans,vl2l));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -441,12 +441,12 @@ PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change, PetscBool interior)
     PetscInt rows_c,cols_c,rows,cols;
     ierr = MatGetSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
     ierr = MatGetSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
-    PetscAssertFalse(rows_c != rows,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %D != %D",rows_c,rows);
-    PetscAssertFalse(cols_c != cols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %D != %D",cols_c,cols);
+    PetscCheckFalse(rows_c != rows,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %D != %D",rows_c,rows);
+    PetscCheckFalse(cols_c != cols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %D != %D",cols_c,cols);
     ierr = MatGetLocalSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
     ierr = MatGetLocalSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
-    PetscAssertFalse(rows_c != rows,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %D != %D",rows_c,rows);
-    PetscAssertFalse(cols_c != cols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %D != %D",cols_c,cols);
+    PetscCheckFalse(rows_c != rows,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %D != %D",rows_c,rows);
+    PetscCheckFalse(cols_c != cols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %D != %D",cols_c,cols);
   }
   ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisMat_C",(PC,Mat,PetscBool),(pc,change,interior));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -702,7 +702,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(levels > PETSC_PCBDDC_MAXLEVELS-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d",PETSC_PCBDDC_MAXLEVELS-1);
+  PetscCheckFalse(levels > PETSC_PCBDDC_MAXLEVELS-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d",PETSC_PCBDDC_MAXLEVELS-1);
   pcbddc->max_levels = levels;
   PetscFunctionReturn(0);
 }
@@ -1602,9 +1602,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis);CHKERRQ(ierr);
-  PetscAssertFalse(!ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
+  PetscCheckFalse(!ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
   ierr = MatGetSize(pc->pmat,&nrows,&ncols);CHKERRQ(ierr);
-  PetscAssertFalse(nrows != ncols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
+  PetscCheckFalse(nrows != ncols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
 
   matis = (Mat_IS*)pc->pmat->data;
@@ -1722,7 +1722,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (pcbddc->compute_nonetflux) {
       MatNullSpace nnfnnsp;
 
-      PetscAssertFalse(!pcbddc->divudotp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Missing divudotp operator");
+      PetscCheckFalse(!pcbddc->divudotp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Missing divudotp operator");
       ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_trans,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
       /* TODO what if a nearnullspace is already attached? */
       if (nnfnnsp) {
@@ -1981,7 +1981,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     }
   }
   if (pcbddc->interface_extension == PC_BDDC_INTERFACE_EXT_LUMP) {
-    PetscAssertFalse(!pcbddc->switch_static,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"You forgot to pass -pc_bddc_switch_static");
+    PetscCheckFalse(!pcbddc->switch_static,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"You forgot to pass -pc_bddc_switch_static");
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
@@ -2563,7 +2563,7 @@ static PetscErrorCode PCSetUp_BDDCIPC(PC pc)
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc,&bddcipc_ctx);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)bddcipc_ctx->bddc,PCBDDC,&isbddc);CHKERRQ(ierr);
-  PetscAssertFalse(!isbddc,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid type %s. Must be of type bddc",((PetscObject)bddcipc_ctx->bddc)->type_name);
+  PetscCheckFalse(!isbddc,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid type %s. Must be of type bddc",((PetscObject)bddcipc_ctx->bddc)->type_name);
   ierr = PCSetUp(bddcipc_ctx->bddc);CHKERRQ(ierr);
 
   /* create interface scatter */

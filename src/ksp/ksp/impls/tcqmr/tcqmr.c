@@ -151,7 +151,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTCQMR");
+  PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTCQMR");
   ierr = KSPSetWorkVecs(ksp,TCQMR_VECS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

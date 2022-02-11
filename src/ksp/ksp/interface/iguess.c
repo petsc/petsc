@@ -214,7 +214,7 @@ PetscErrorCode  KSPGuessSetType(KSPGuess guess, KSPGuessType type)
   if (match) PetscFunctionReturn(0);
 
   ierr =  PetscFunctionListFind(KSPGuessList,type,&r);CHKERRQ(ierr);
-  PetscAssertFalse(!r,PetscObjectComm((PetscObject)guess),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSPGuess type %s",type);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject)guess),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSPGuess type %s",type);
   if (guess->ops->destroy) {
     ierr                = (*guess->ops->destroy)(guess);CHKERRQ(ierr);
     guess->ops->destroy = NULL;

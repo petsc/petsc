@@ -485,7 +485,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
       pm1  = p-1;
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("N",&pm1,&glldata->zGL[1],M,&x,&pm1,M,&lierr));
-      PetscAssertFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
+      PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = PetscFree(M);CHKERRQ(ierr);
     }
@@ -984,14 +984,14 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->scalingfactor = PetscPowScalar(10.0,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
   /* test data passed in */
   if (dd->dim==1) {
-    PetscAssertFalse(sizes!=dd->npx,dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 1D must be equal to npx");
-    PetscAssertFalse(dd->nex<dd->npx,dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
+    PetscCheckFalse(sizes!=dd->npx,dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 1D must be equal to npx");
+    PetscCheckFalse(dd->nex<dd->npx,dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
   } else if (dd->dim==2) {
-    PetscAssertFalse(sizes!=dd->npx*dd->npy,dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 2D must be equal to npx*npy");
-    PetscAssertFalse(dd->nex<dd->npx || dd->ney<dd->npy,dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
+    PetscCheckFalse(sizes!=dd->npx*dd->npy,dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 2D must be equal to npx*npy");
+    PetscCheckFalse(dd->nex<dd->npx || dd->ney<dd->npy,dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
   } else {
-    PetscAssertFalse(sizes!=dd->npx*dd->npy*dd->npz,dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 3D must be equal to npx*npy*npz");
-    PetscAssertFalse(dd->nex<dd->npx || dd->ney<dd->npy || dd->nez<dd->npz,dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
+    PetscCheckFalse(sizes!=dd->npx*dd->npy*dd->npz,dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 3D must be equal to npx*npy*npz");
+    PetscCheckFalse(dd->nex<dd->npx || dd->ney<dd->npy || dd->nez<dd->npz,dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
   }
   PetscFunctionReturn(0);
 }

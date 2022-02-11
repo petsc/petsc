@@ -12,7 +12,7 @@ static PetscErrorCode TSAdaptChoose_History(TSAdapt adapt,TS ts,PetscReal h,Pets
   TSAdapt_History *thadapt = (TSAdapt_History*)adapt->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!thadapt->hist,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ORDER,"Need to call TSAdaptHistorySetHistory() first");
+  PetscCheckFalse(!thadapt->hist,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ORDER,"Need to call TSAdaptHistorySetHistory() first");
   ierr = TSGetStepNumber(ts,&step);CHKERRQ(ierr);
   ierr = TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step+1,next_h);CHKERRQ(ierr);
   *accept  = PETSC_TRUE;
@@ -90,7 +90,7 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveInt(adapt,step,2);
   ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTHISTORY,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Not for type %s",((PetscObject)adapt)->type_name);
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Not for type %s",((PetscObject)adapt)->type_name);
   thadapt = (TSAdapt_History*)adapt->data;
   ierr = TSHistoryGetTimeStep(thadapt->hist,thadapt->bw,step,dt);CHKERRQ(ierr);
   ierr = TSHistoryGetTime(thadapt->hist,thadapt->bw,step,t);CHKERRQ(ierr);

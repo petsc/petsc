@@ -136,7 +136,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
   PetscInt                  i;
 
   PetscFunctionBeginUser;
-  PetscAssertFalse(!(L.h > 0 && R.h > 0),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
+  PetscCheckFalse(!(L.h > 0 && R.h > 0),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
   cL = PetscSqrtScalar(g*L.h);
   cR = PetscSqrtScalar(g*R.h);
   c  = PetscMax(cL,cR);
@@ -154,7 +154,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
         ? PetscSqrtScalar(0.5*g*(h*h - R.h*R.h)*(1/R.h - 1/h)) /* shock */
         : 2*PetscSqrtScalar(g*h) - 2*PetscSqrtScalar(g*R.h);   /* rarefaction */
       res = R.u - L.u + fr + fl;
-      PetscAssertFalse(PetscIsInfOrNanScalar(res),PETSC_COMM_SELF,PETSC_ERR_FP,"Infinity or Not-a-Number generated in computation");
+      PetscCheckFalse(PetscIsInfOrNanScalar(res),PETSC_COMM_SELF,PETSC_ERR_FP,"Infinity or Not-a-Number generated in computation");
       if (PetscAbsScalar(res) < PETSC_SQRT_MACHINE_EPSILON || (i > 0 && PetscAbsScalar(h-h0) < PETSC_SQRT_MACHINE_EPSILON)) {
         star.h = h;
         star.u = L.u - fl;
@@ -171,7 +171,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
       tmp = h - res/(dfr+dfl);
       if (tmp <= 0) h /= 2;   /* Guard against Newton shooting off to a negative thickness */
       else h = tmp;
-      PetscAssertFalse(!((h > 0) && PetscIsNormalScalar(h)),PETSC_COMM_SELF,PETSC_ERR_FP,"non-normal iterate h=%g",(double)h);
+      PetscCheckFalse(!((h > 0) && PetscIsNormalScalar(h)),PETSC_COMM_SELF,PETSC_ERR_FP,"non-normal iterate h=%g",(double)h);
     }
     SETERRQ(PETSC_COMM_SELF,1,"Newton iteration for star.h diverged after %D iterations",i);
   }
@@ -272,7 +272,7 @@ static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const 
 static PetscErrorCode PhysicsSample_Shallow(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
   PetscFunctionBeginUser;
-  PetscAssertFalse(t > 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Exact solutions not implemented for t > 0");
+  PetscCheckFalse(t > 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Exact solutions not implemented for t > 0");
   switch (initial) {
     case 0:
       u[0] = (x < 0) ? 2 : 1; /* Standard Dam Break Problem */
@@ -441,7 +441,7 @@ PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscReal       hs,hf;
 
   PetscFunctionBeginUser;
-  PetscAssertFalse(!ctx->physics2.sample2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
+  PetscCheckFalse(!ctx->physics2.sample2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
@@ -1203,13 +1203,13 @@ int main(int argc,char *argv[])
 
   /* Choose the limiter from the list of registered limiters */
   ierr = PetscFunctionListFind(limiters,lname,&ctx.limit2);CHKERRQ(ierr);
-  PetscAssertFalse(!ctx.limit2,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
+  PetscCheckFalse(!ctx.limit2,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
     ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
-    PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
+    PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);
   }
@@ -1242,7 +1242,7 @@ int main(int argc,char *argv[])
   /* create index for slow parts and fast parts,
      count_slow + count_fast = Mx, counts_slow*hs = 0.5, counts_fast*hf = 0.5 */
   count_slow = Mx/(1.0+ctx.hratio/3.0);
-  PetscAssertFalse(count_slow%2,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hratio/3) is even");
+  PetscCheckFalse(count_slow%2,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hratio/3) is even");
   count_fast = Mx-count_slow;
   ctx.sf = count_slow/2;
   ctx.fs = ctx.sf+count_fast;
@@ -1334,7 +1334,7 @@ int main(int argc,char *argv[])
       PetscBool    flg;
       const PetscScalar  *ptr_XR;
       ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
-      PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+      PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
       ierr = VecDuplicate(X0,&XR);CHKERRQ(ierr);
       ierr = VecLoad(XR,fd);CHKERRQ(ierr);

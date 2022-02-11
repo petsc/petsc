@@ -171,9 +171,9 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
   PetscValidType(v,1);
   PetscValidScalarPointer(a,2);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  PetscAssertFalse(start <  0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(start <  0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                             "Negative start %" PetscInt_FMT,start);
-  PetscAssertFalse(start >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,
+  PetscCheckFalse(start >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,
                             "Start of stride subvector (%" PetscInt_FMT ") is too large "
                             "for block size (%" PetscInt_FMT ")",start,bs);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ KSPSetIterationNumber(KSP ksp, PetscInt its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscAssertFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                        "iteration number must be nonnegative");
   ksp->its = its;
   PetscFunctionReturn(0);
@@ -287,7 +287,7 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscAssertFalse(rnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(rnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "residual norm must be nonnegative");
   ksp->rnorm = rnorm;
   PetscFunctionReturn(0);
@@ -300,9 +300,9 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(reason,4);
-  PetscAssertFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "iteration number must be nonnegative");
-  PetscAssertFalse(rnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(rnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "residual norm must be nonnegative");
   ierr = (*ksp->converged)(ksp,its,rnorm,reason,ksp->cnvP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -328,13 +328,13 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,4);
-  PetscAssertFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "iteration number must be nonnegative");
-  PetscAssertFalse(xnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(xnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "solution norm must be nonnegative");
-  PetscAssertFalse(ynorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(ynorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "step norm must be nonnegative");
-  PetscAssertFalse(fnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(fnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "function norm must be nonnegative");
   ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,reason,snes->cnvP);CHKERRQ(ierr);
   PetscFunctionReturn(0);

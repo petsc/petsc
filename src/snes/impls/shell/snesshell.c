@@ -141,7 +141,7 @@ PetscErrorCode SNESSolve_Shell(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!shell->solve,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESShellSetSolve() first");
+  PetscCheckFalse(!shell->solve,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESShellSetSolve() first");
   snes->reason = SNES_CONVERGED_ITS;
   ierr         = (*shell->solve)(snes,snes->vec_sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -69,7 +69,7 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
       if (!dm) {
         ierr = PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm);CHKERRQ(ierr);
       }
-      PetscAssertFalse(!dm,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Mesh not present");
+      PetscCheckFalse(!dm,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Mesh not present");
       ierr = PetscObjectCompose((PetscObject)Ufield[i], "__PETSc_dm",dm);CHKERRQ(ierr);
     }
   }
@@ -78,7 +78,7 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
   if (g2lfields) {
     ierr = (*g2lfields)((PetscObject)U,nfields,(PetscObject*)Ufield,userctx);CHKERRQ(ierr);
   } else {
-    PetscAssertFalse(nfields > 1,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Don't know how to sample %" PetscInt_FMT " fields",nfields);
+    PetscCheckFalse(nfields > 1,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Don't know how to sample %" PetscInt_FMT " fields",nfields);
     ierr = VecCopy(U,Ufield[0]);CHKERRQ(ierr);
   }
 

@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsInt("-PN","Number of columns of P","",PN,&PN,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mcheck","Number of matmult checks","",mcheck,&mcheck,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-fA","Path for matrix A","",file[0],file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate a file name for matrix A with the -fA option.");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate a file name for matrix A with the -fA option.");
   ierr = PetscOptionsString("-fB","Path for matrix B","",file[1],file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-A_mat_type","Matrix type","MatSetType",MatList,deft,A_mattype,256,&flgA);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-B_mat_type","Matrix type","MatSetType",MatList,deft,B_mattype,256,&flgB);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **args)
     ierr = MatProductSymbolic(C);CHKERRQ(ierr);
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
     ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
 
     /* Test reuse symbolic C */
     alpha = 0.9;
@@ -116,7 +116,7 @@ int main(int argc,char **args)
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
 
     ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     /* (1.2) Test user driver */
@@ -130,7 +130,7 @@ int main(int argc,char **args)
       ierr   = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
     }
     ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
     ierr = MatDestroy(&A);CHKERRQ(ierr);
 
     /* Test MatProductClear() */
@@ -194,7 +194,7 @@ int main(int argc,char **args)
       ierr = MatProductNumeric(C);CHKERRQ(ierr); /* test reuse symbolic C */
 
       ierr = MatTransposeMatMultEqual(P,B,C,mcheck,&flg);CHKERRQ(ierr);
-      PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error: developer driver C = P^T*B");
+      PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error: developer driver C = P^T*B");
       ierr = MatDestroy(&C);CHKERRQ(ierr);
 
       /* (2.2) Test user driver C = P^T*B */
@@ -206,7 +206,7 @@ int main(int argc,char **args)
       /* Compare P^T*B and R*B */
       ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);
       ierr = MatNormDifference(C,C1,&norm);CHKERRQ(ierr);
-      PetscAssertFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatTransposeMatMult(): %g",(double)norm);
+      PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatTransposeMatMult(): %g",(double)norm);
       ierr = MatDestroy(&C1);CHKERRQ(ierr);
 
       /* Test MatDuplicate() of C=P^T*B */
@@ -234,7 +234,7 @@ int main(int argc,char **args)
       /* Check */
       ierr = MatMatMult(B,P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);
       ierr = MatNormDifference(C,C1,&norm);CHKERRQ(ierr);
-      PetscAssertFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatTransposeMult() %g",(double)norm);
+      PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatTransposeMult() %g",(double)norm);
       ierr = MatDestroy(&C1);CHKERRQ(ierr);
       ierr = MatDestroy(&C);CHKERRQ(ierr);
     }
@@ -255,11 +255,11 @@ int main(int argc,char **args)
     ierr = MatProductSymbolic(C);CHKERRQ(ierr);
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
     ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
     ierr = MatProductNumeric(C);CHKERRQ(ierr); /* reuse symbolic C */
 
     ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     /* (4.2) Test user driver */
@@ -273,7 +273,7 @@ int main(int argc,char **args)
       ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
     }
     ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
 
     /* 5) Test MatRARt() */
     /* ----------------- */
@@ -300,7 +300,7 @@ int main(int argc,char **args)
         ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&RARt);CHKERRQ(ierr);
 
         ierr = MatNormDifference(C,RARt,&norm);CHKERRQ(ierr);
-        PetscAssertFalse(norm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
+        PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
       } else {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"MatRARt not supported\n");CHKERRQ(ierr);
       }

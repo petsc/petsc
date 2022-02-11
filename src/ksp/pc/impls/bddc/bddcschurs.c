@@ -288,12 +288,12 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)M),&size);CHKERRMPI(ierr);
-  PetscAssertFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parallel matrices");
+  PetscCheckFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parallel matrices");
   if (reuse == MAT_REUSE_MATRIX) {
     PetscBool Sdense;
 
     ierr = PetscObjectTypeCompare((PetscObject)*S, MATSEQDENSE, &Sdense);CHKERRQ(ierr);
-    PetscAssertFalse(!Sdense,PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"S should dense");
+    PetscCheckFalse(!Sdense,PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"S should dense");
   }
   ierr = MatSchurComplementGetSubMatrices(M, NULL, NULL, &B, &C, &D);CHKERRQ(ierr);
   ierr = MatSchurComplementGetKSP(M, &ksp);CHKERRQ(ierr);
@@ -436,7 +436,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   }
 
   /* preliminary checks */
-  PetscAssertFalse(!sub_schurs->schur_explicit && compute_Stilda,PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_PARDISO");
+  PetscCheckFalse(!sub_schurs->schur_explicit && compute_Stilda,PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_PARDISO");
 
   if (benign_trick) sub_schurs->is_posdef = PETSC_FALSE;
 
@@ -521,7 +521,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     const PetscInt*        idx_B;
     PetscInt               n_I,n_B,n_local_dofs,n_prev_added,j,layer,*local_numbering;
 
-    PetscAssertFalse(!xadj,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot request layering without adjacency");
+    PetscCheckFalse(!xadj,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot request layering without adjacency");
     /* get sizes */
     ierr = ISGetLocalSize(sub_schurs->is_I,&n_I);CHKERRQ(ierr);
     ierr = ISGetLocalSize(sub_schurs->is_B,&n_B);CHKERRQ(ierr);
@@ -544,7 +544,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     for (layer=0;layer<nlayers;layer++) {
       PetscInt n_added = 0;
       if (n_local_dofs == n_I+n_B) break;
-      PetscAssertFalse(n_local_dofs > n_I+n_B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %D. Out of bound access (%D > %D)",layer,n_local_dofs,n_I+n_B);
+      PetscCheckFalse(n_local_dofs > n_I+n_B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %D. Out of bound access (%D > %D)",layer,n_local_dofs,n_I+n_B);
       ierr = PCBDDCAdjGetNextLayer_Private(local_numbering+n_local_dofs,n_prev_added,touched,xadj,adjncy,&n_added);CHKERRQ(ierr);
       n_prev_added = n_added;
       n_local_dofs += n_added;
@@ -643,10 +643,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     if (use_sytr) {
       PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,&dummyscalar,&B_N,&dummyint,&lwork,&B_lwork,&B_ierr));
-      PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYTRF Lapack routine %d",(int)B_ierr);
+      PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYTRF Lapack routine %d",(int)B_ierr);
     } else {
       PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,&dummyscalar,&B_N,&dummyint,&lwork,&B_lwork,&B_ierr));
-      PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
+      PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
     }
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
@@ -665,7 +665,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   ierr = ISDestroy(&all_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&all_subsets_mult);CHKERRQ(ierr);
   ierr = ISGetLocalSize(all_subsets_n,&i);CHKERRQ(ierr);
-  PetscAssertFalse(i != local_stash_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",i,local_stash_size);
+  PetscCheckFalse(i != local_stash_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",i,local_stash_size);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,local_stash_size,NULL,&lstash);CHKERRQ(ierr);
   ierr = VecCreateMPI(comm_n,PETSC_DECIDE,global_size,&gstash);CHKERRQ(ierr);
   ierr = VecScatterCreate(lstash,NULL,gstash,all_subsets_n,&sstash);CHKERRQ(ierr);
@@ -677,7 +677,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     ierr = PetscMalloc1(local_size,&all_local_idx_B);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApply(sub_schurs->BtoNmap,IS_GTOLM_DROP,local_size,all_local_idx_N+extra,&subset_size,all_local_idx_B);CHKERRQ(ierr);
-    PetscAssertFalse(subset_size != local_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in sub_schurs serial (BtoNmap)! %D != %D",subset_size,local_size);
+    PetscCheckFalse(subset_size != local_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in sub_schurs serial (BtoNmap)! %D != %D",subset_size,local_size);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&sub_schurs->is_Ej_all);CHKERRQ(ierr);
   }
 
@@ -686,8 +686,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     IS                     change_primal_B;
     IS                     change_primal_all;
 
-    PetscAssertFalse(sub_schurs->change_primal_sub,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
-    PetscAssertFalse(sub_schurs->change,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+    PetscCheckFalse(sub_schurs->change_primal_sub,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+    PetscCheckFalse(sub_schurs->change,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
     ierr = PetscMalloc1(sub_schurs->n_subs,&sub_schurs->change_primal_sub);CHKERRQ(ierr);
     for (i=0;i<sub_schurs->n_subs;i++) {
       ISLocalToGlobalMapping NtoS;
@@ -1577,19 +1577,19 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
           if (use_potr) {
             PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,S_data,&B_N,&B_ierr));
-            PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+            PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
             PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,S_data,&B_N,&B_ierr));
-            PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+            PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
           } else if (use_sytr) {
             PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-            PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
+            PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
             PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,S_data,&B_N,pivots,Bwork,&B_ierr));
-            PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
+            PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
           } else {
             PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,S_data,&B_N,pivots,&B_ierr));
-            PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+            PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
             PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,S_data,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-            PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+            PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
           }
           ierr = PetscLogFlops(1.0*size_schur*size_schur*size_schur);CHKERRQ(ierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -1672,7 +1672,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         Mat      S_tmp;
         PetscInt nd = 0;
 
-        PetscAssertFalse(!solver_S,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+        PetscCheckFalse(!solver_S,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
         ierr = MatFactorGetSchurComplement(F,&S_tmp,NULL);CHKERRQ(ierr);
         if (use_potr) {
           PetscScalar *data;
@@ -1805,19 +1805,19 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
         if (use_potr) {
           PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,array+cum,&B_N,&B_ierr));
-          PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+          PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
           PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,array+cum,&B_N,&B_ierr));
-          PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+          PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
         } else if (use_sytr) {
           PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-          PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
+          PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
           PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,array+cum,&B_N,pivots,Bwork,&B_ierr));
-          PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
+          PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
         } else {
           PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array+cum,&B_N,pivots,&B_ierr));
-          PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+          PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
           PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-          PetscAssertFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+          PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
         }
         ierr = PetscLogFlops(1.0*subset_size*subset_size*subset_size);CHKERRQ(ierr);
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -1882,9 +1882,9 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char* prefi
 
   PetscFunctionBegin;
   ierr = ISSorted(is_I,&is_sorted);CHKERRQ(ierr);
-  PetscAssertFalse(!is_sorted,PetscObjectComm((PetscObject)is_I),PETSC_ERR_PLIB,"IS for I dofs should be shorted");
+  PetscCheckFalse(!is_sorted,PetscObjectComm((PetscObject)is_I),PETSC_ERR_PLIB,"IS for I dofs should be shorted");
   ierr = ISSorted(is_B,&is_sorted);CHKERRQ(ierr);
-  PetscAssertFalse(!is_sorted,PetscObjectComm((PetscObject)is_B),PETSC_ERR_PLIB,"IS for B dofs should be shorted");
+  PetscCheckFalse(!is_sorted,PetscObjectComm((PetscObject)is_B),PETSC_ERR_PLIB,"IS for B dofs should be shorted");
 
   /* reset any previous data */
   ierr = PCBDDCSubSchursReset(sub_schurs);CHKERRQ(ierr);

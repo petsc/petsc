@@ -44,7 +44,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!((PetscObject)is)->name,PetscObjectComm((PetscObject)is), PETSC_ERR_SUP, "Since HDF5 format gives ASCII name for each object in file; must use ISLoad() after setting name of Vec with PetscObjectSetName()");
+  PetscCheckFalse(!((PetscObject)is)->name,PetscObjectComm((PetscObject)is), PETSC_ERR_SUP, "Since HDF5 format gives ASCII name for each object in file; must use ISLoad() after setting name of Vec with PetscObjectSetName()");
 #if defined(PETSC_USE_64BIT_INDICES)
   inttype = H5T_NATIVE_LLONG;
 #else
@@ -66,7 +66,7 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)is,ISGENERAL,&isgeneral);CHKERRQ(ierr);
-  PetscAssertFalse(!isgeneral,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_INCOMP,"IS must be of type ISGENERAL to load into it");
+  PetscCheckFalse(!isgeneral,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_INCOMP,"IS must be of type ISGENERAL to load into it");
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
 
@@ -76,12 +76,12 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
   /* read IS header */
   if (!skipHeader) {
     ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
-    PetscAssertFalse(tr[0] != IS_FILE_CLASSID,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not an IS next in file");
-    PetscAssertFalse(tr[1] < 0,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"IS size (%" PetscInt_FMT ") in file is negative",tr[1]);
-    PetscAssertFalse(N >= 0 && N != tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"IS in file different size (%" PetscInt_FMT ") than input IS (%" PetscInt_FMT ")",tr[1],N);
+    PetscCheckFalse(tr[0] != IS_FILE_CLASSID,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not an IS next in file");
+    PetscCheckFalse(tr[1] < 0,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"IS size (%" PetscInt_FMT ") in file is negative",tr[1]);
+    PetscCheckFalse(N >= 0 && N != tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"IS in file different size (%" PetscInt_FMT ") than input IS (%" PetscInt_FMT ")",tr[1],N);
     rows = tr[1];
   } else {
-    PetscAssertFalse(N < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"IS binary file header was skipped, thus the user must specify the global size of input IS");
+    PetscCheckFalse(N < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"IS binary file header was skipped, thus the user must specify the global size of input IS");
     rows = N;
   }
 
@@ -93,7 +93,7 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
   ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
   ierr = PetscLayoutGetRange(map,&s,NULL);CHKERRQ(ierr);
-  PetscAssertFalse(N != rows,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"IS in file different size (%" PetscInt_FMT ") than input IS (%" PetscInt_FMT ")",rows,N);
+  PetscCheckFalse(N != rows,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"IS in file different size (%" PetscInt_FMT ") than input IS (%" PetscInt_FMT ")",rows,N);
 
   /* read IS indices */
   ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);

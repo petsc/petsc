@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-n_timesteps", &n_timesteps, NULL);CHKERRQ(ierr);
-  PetscAssertFalse(n_timesteps < 0,comm, PETSC_ERR_USER_INPUT, "-n_timesteps must be nonnegative");
+  PetscCheckFalse(n_timesteps < 0,comm, PETSC_ERR_USER_INPUT, "-n_timesteps must be nonnegative");
 
   /* create, initialize and write vectors */
   ierr = PetscRandomCreate(comm, &rand);CHKERRQ(ierr);

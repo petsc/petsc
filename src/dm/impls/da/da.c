@@ -27,10 +27,10 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
   PetscValidLogicalCollectiveInt(da,M,2);
   PetscValidLogicalCollectiveInt(da,N,3);
   PetscValidLogicalCollectiveInt(da,P,4);
-  PetscAssertFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
-  PetscAssertFalse(M < 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in X direction must be positive");
-  PetscAssertFalse(N < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in Y direction must be positive");
-  PetscAssertFalse(P < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in Z direction must be positive");
+  PetscCheckFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheckFalse(M < 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in X direction must be positive");
+  PetscCheckFalse(N < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in Y direction must be positive");
+  PetscCheckFalse(P < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number of grid points in Z direction must be positive");
 
   dd->M = M;
   dd->N = N;
@@ -63,7 +63,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   PetscValidLogicalCollectiveInt(da,m,2);
   PetscValidLogicalCollectiveInt(da,n,3);
   PetscValidLogicalCollectiveInt(da,p,4);
-  PetscAssertFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheckFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->m = m;
   dd->n = n;
   dd->p = p;
@@ -72,11 +72,11 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
     if ((dd->m > 0) && (dd->n < 0)) {
       dd->n = size/dd->m;
-      PetscAssertFalse(dd->n*dd->m != size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in X direction not divisible into comm size %d",m,size);
+      PetscCheckFalse(dd->n*dd->m != size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in X direction not divisible into comm size %d",m,size);
     }
     if ((dd->n > 0) && (dd->m < 0)) {
       dd->m = size/dd->n;
-      PetscAssertFalse(dd->n*dd->m != size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in Y direction not divisible into comm size %d",n,size);
+      PetscCheckFalse(dd->n*dd->m != size,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in Y direction not divisible into comm size %d",n,size);
     }
   }
   PetscFunctionReturn(0);
@@ -104,7 +104,7 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMBoundaryType bx,DMBoundaryType by,DM
   PetscValidLogicalCollectiveEnum(da,bx,2);
   PetscValidLogicalCollectiveEnum(da,by,3);
   PetscValidLogicalCollectiveEnum(da,bz,4);
-  PetscAssertFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheckFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->bx = bx;
   dd->by = by;
   dd->bz = bz;
@@ -131,7 +131,7 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,dof,2);
-  PetscAssertFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheckFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->w  = dof;
   da->bs = dof;
   PetscFunctionReturn(0);
@@ -446,7 +446,7 @@ PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveEnum(da,stype,2);
-  PetscAssertFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheckFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->stencil_type = stype;
   PetscFunctionReturn(0);
 }
@@ -497,7 +497,7 @@ PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidLogicalCollectiveInt(da,width,2);
-  PetscAssertFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheckFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   dd->s = width;
   PetscFunctionReturn(0);
 }
@@ -533,9 +533,9 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
   PetscInt i,sum;
 
   PetscFunctionBegin;
-  PetscAssertFalse(M < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Global dimension not set");
+  PetscCheckFalse(M < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Global dimension not set");
   for (i=sum=0; i<m; i++) sum += lx[i];
-  PetscAssertFalse(sum != M,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"Ownership ranges sum to %D but global dimension is %D",sum,M);
+  PetscCheckFalse(sum != M,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"Ownership ranges sum to %D but global dimension is %D",sum,M);
   PetscFunctionReturn(0);
 }
 
@@ -563,9 +563,9 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
-  PetscAssertFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheckFalse(da->setupcalled,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   if (lx) {
-    PetscAssertFalse(dd->m < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
+    PetscCheckFalse(dd->m < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
     ierr = DMDACheckOwnershipRanges_Private(da,dd->M,dd->m,lx);CHKERRQ(ierr);
     if (!dd->lx) {
       ierr = PetscMalloc1(dd->m, &dd->lx);CHKERRQ(ierr);
@@ -573,7 +573,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
     ierr = PetscArraycpy(dd->lx, lx, dd->m);CHKERRQ(ierr);
   }
   if (ly) {
-    PetscAssertFalse(dd->n < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
+    PetscCheckFalse(dd->n < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
     ierr = DMDACheckOwnershipRanges_Private(da,dd->N,dd->n,ly);CHKERRQ(ierr);
     if (!dd->ly) {
       ierr = PetscMalloc1(dd->n, &dd->ly);CHKERRQ(ierr);
@@ -581,7 +581,7 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
     ierr = PetscArraycpy(dd->ly, ly, dd->n);CHKERRQ(ierr);
   }
   if (lz) {
-    PetscAssertFalse(dd->p < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
+    PetscCheckFalse(dd->p < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"Cannot set ownership ranges before setting number of procs");
     ierr = DMDACheckOwnershipRanges_Private(da,dd->P,dd->p,lz);CHKERRQ(ierr);
     if (!dd->lz) {
       ierr = PetscMalloc1(dd->p, &dd->lz);CHKERRQ(ierr);
@@ -830,7 +830,7 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(ratio < 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
+  PetscCheckFalse(ratio < 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
   if (ratio == 1) {
     ierr = PetscArraycpy(lf,lc,m);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -872,7 +872,7 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(ratio < 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
+  PetscCheckFalse(ratio < 1,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Requested refinement ratio %D must be at least 1",ratio);
   if (ratio == 1) {
     ierr = PetscArraycpy(lc,lf,m);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1232,7 +1232,7 @@ PetscErrorCode  DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscAssertFalse(nlevels < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  PetscCheckFalse(nlevels < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(daf,3);
 
@@ -1265,7 +1265,7 @@ PetscErrorCode  DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscAssertFalse(nlevels < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  PetscCheckFalse(nlevels < 0,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dac,3);
   ierr = DMCoarsen(da,PetscObjectComm((PetscObject)da),&dac[0]);CHKERRQ(ierr);
@@ -1351,13 +1351,13 @@ PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM da1,DM dm2,PetscBool *compa
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!da1->setupcalled,PetscObjectComm((PetscObject)da1),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() must be called on first DM before DMGetCompatibility()");
+  PetscCheckFalse(!da1->setupcalled,PetscObjectComm((PetscObject)da1),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() must be called on first DM before DMGetCompatibility()");
   ierr = DMGetType(dm2,&dmtype2);CHKERRQ(ierr);
   ierr = PetscStrcmp(dmtype2,DMDA,&isda);CHKERRQ(ierr);
   if (isda) {
     da2 = dm2;
     dd2 = (DM_DA*)da2->data;
-    PetscAssertFalse(!da2->setupcalled,PetscObjectComm((PetscObject)da2),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() must be called on second DM before DMGetCompatibility()");
+    PetscCheckFalse(!da2->setupcalled,PetscObjectComm((PetscObject)da2),PETSC_ERR_ARG_WRONGSTATE,"DMSetUp() must be called on second DM before DMGetCompatibility()");
     compatibleLocal = (PetscBool)(da1->dim == da2->dim);
     if (compatibleLocal) compatibleLocal = (PetscBool)(compatibleLocal && (dd1->s == dd2->s)); /* Stencil width */
     /*                                                                           Global size              ranks               Boundary type */

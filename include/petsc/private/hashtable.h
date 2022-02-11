@@ -87,7 +87,7 @@
 /* --- Helper macro for error checking --- */
 
 #if defined(PETSC_USE_DEBUG)
-#define PetscHashAssert(expr) PetscAssert(expr,PETSC_COMM_SELF,PETSC_ERR_LIB,"[khash] Assertion: `%s' failed.",PetscStringize(expr))
+#define PetscHashAssert(expr) PetscCheck(expr,PETSC_COMM_SELF,PETSC_ERR_LIB,"[khash] Assertion: `%s' failed.",PetscStringize(expr))
 #else
 #define PetscHashAssert(expr) ((void)(expr))
 #endif

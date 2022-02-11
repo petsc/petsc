@@ -118,7 +118,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     }
 
     *fd = fopen(fname,"a");
-    PetscAssertFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
+    PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
 
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n");CHKERRQ(ierr);
 
     err = fflush(*fd);
-    PetscAssertFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
   PetscFunctionReturn(0);
 }
@@ -147,9 +147,9 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n");CHKERRQ(ierr);
     err  = fflush(*fd);
-    PetscAssertFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     err = fclose(*fd);
-    PetscAssertFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
   PetscFunctionReturn(0);
 }
@@ -559,7 +559,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       PetscSNPrintf(name,PETSC_MAX_PATH_LEN,"%s.%d",mname,rank);
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       file = fopen(fname,"w");
-      PetscAssertFalse(!file,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
+      PetscCheckFalse(!file,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
     } else file = PETSC_STDOUT;
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }

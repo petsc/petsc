@@ -761,7 +761,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!graph->setupcalled,PetscObjectComm((PetscObject)graph->l2gmap),PETSC_ERR_ORDER,"PCBDDCGraphSetUp should be called first");
+  PetscCheckFalse(!graph->setupcalled,PetscObjectComm((PetscObject)graph->l2gmap),PETSC_ERR_ORDER,"PCBDDCGraphSetUp should be called first");
   /* quiet return if there isn't any local info */
   if (!graph->xadj && !graph->n_local_subs) {
     PetscFunctionReturn(0);
@@ -1174,7 +1174,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = ISRenumber(subset,NULL,NULL,&subset_n);CHKERRQ(ierr);
   ierr = ISDestroy(&subset);CHKERRQ(ierr);
   ierr = ISGetLocalSize(subset_n,&k);CHKERRQ(ierr);
-  PetscAssertFalse(k != graph->ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",k,graph->ncc);
+  PetscCheckFalse(k != graph->ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",k,graph->ncc);
   ierr = ISGetIndices(subset_n,&is_indices);CHKERRQ(ierr);
   ierr = PetscArraycpy(graph->subset_ref_node,is_indices,graph->ncc);CHKERRQ(ierr);
   ierr = ISRestoreIndices(subset_n,&is_indices);CHKERRQ(ierr);
@@ -1272,7 +1272,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   PetscValidLogicalCollectiveInt(l2gmap,N,3);
   PetscValidLogicalCollectiveInt(l2gmap,maxcount,4);
   /* raise an error if already allocated */
-  PetscAssertFalse(graph->nvtxs_global,PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
+  PetscCheckFalse(graph->nvtxs_global,PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
   /* set number of vertices */
   ierr = PetscObjectReference((PetscObject)l2gmap);CHKERRQ(ierr);
   graph->l2gmap = l2gmap;

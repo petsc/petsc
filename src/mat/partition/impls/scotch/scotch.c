@@ -52,7 +52,7 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part
   PetscFunctionBegin;
   if (imb==PETSC_DEFAULT) scotch->imbalance = 0.01;
   else {
-    PetscAssertFalse(imb<0.0 || imb>1.0,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Illegal value of imb. Must be in range [0,1]");
+    PetscCheckFalse(imb<0.0 || imb>1.0,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Illegal value of imb. Must be in range [0,1]");
     scotch->imbalance = (double)imb;
   }
   PetscFunctionReturn(0);
@@ -276,7 +276,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
     ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     log2size = PetscLog2Real(size);
     subd = PetscPowInt(2,log2size);
-    PetscAssertFalse(subd != size,comm,PETSC_ERR_SUP,"Only power of 2 communicator sizes");
+    PetscCheckFalse(subd != size,comm,PETSC_ERR_SUP,"Only power of 2 communicator sizes");
     ierr = PetscMalloc1(mat->rmap->n,&NDorder);CHKERRQ(ierr);
     ierr = PetscMalloc3(2*size,&sizes,4*size,&seps,size,&level);CHKERRQ(ierr);
     SCOTCH_ParMETIS_V3_NodeND(mat->rmap->range,adj->i,adj->j,&base,NULL,NDorder,sizes,&comm);

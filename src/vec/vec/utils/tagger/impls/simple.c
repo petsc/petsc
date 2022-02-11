@@ -34,7 +34,7 @@ PetscErrorCode VecTaggerSetFromOptions_Simple(PetscOptionItems *PetscOptionsObje
   ierr = PetscOptionsScalarArray("-vec_tagger_box","lower and upper bounds of the box",funcstring,inBoxVals,&nvals,&set);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (set) {
-    PetscAssertFalse(nvals != 2 *bs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"Expect array of %" PetscInt_FMT " values for -vec_tagger_box, got %" PetscInt_FMT,2 * bs,nvals);
+    PetscCheckFalse(nvals != 2 *bs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"Expect array of %" PetscInt_FMT " values for -vec_tagger_box, got %" PetscInt_FMT,2 * bs,nvals);
     ierr = VecTaggerSetBox_Simple(tagger,(VecTaggerBox *)inBoxVals);CHKERRQ(ierr);
   }
   ierr = PetscFree(inBoxVals);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ PetscErrorCode VecTaggerSetUp_Simple(VecTagger tagger)
   VecTagger_Simple *smpl = (VecTagger_Simple *) tagger->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!smpl->box,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set a box before calling setup.");
+  PetscCheckFalse(!smpl->box,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set a box before calling setup.");
   PetscFunctionReturn(0);
 }
 

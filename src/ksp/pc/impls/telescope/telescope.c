@@ -58,7 +58,7 @@ PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f,MPI_Comm comm_c,Petsc
   PetscMPIInt    *ranks_f,*ranks_c;
 
   PetscFunctionBegin;
-  PetscAssertFalse(comm_f == MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_SUP,"comm_f cannot be MPI_COMM_NULL");
+  PetscCheckFalse(comm_f == MPI_COMM_NULL,PETSC_COMM_SELF,PETSC_ERR_SUP,"comm_f cannot be MPI_COMM_NULL");
 
   ierr = MPI_Comm_group(comm_f,&group_f);CHKERRMPI(ierr);
   if (comm_c != MPI_COMM_NULL) {
@@ -281,8 +281,8 @@ static PetscErrorCode PCTelescopeSubNullSpaceCreate_Telescope(PC pc,PC_Telescope
     /* create new (near) nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace);CHKERRQ(ierr);
     ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
-    PetscAssertFalse(nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
-    PetscAssertFalse(nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
+    PetscCheckFalse(nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
+    PetscCheckFalse(nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
   }
   PetscFunctionReturn(0);
 }
@@ -533,7 +533,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       ierr = DMGetCoarseDM(dm,&dm_coarse_partition);CHKERRQ(ierr);
       if (dm_coarse_partition) { cnt = 1; }
       ierr = MPI_Allreduce(MPI_IN_PLACE,&cnt,1,MPI_INT,MPI_SUM,comm_fine);CHKERRMPI(ierr);
-      PetscAssertFalse(cnt == 0,comm_fine,PETSC_ERR_SUP,"Zero instances of a coarse DM were found");
+      PetscCheckFalse(cnt == 0,comm_fine,PETSC_ERR_SUP,"Zero instances of a coarse DM were found");
 
       ierr = MPI_Comm_size(comm_fine,&csize_fine);CHKERRMPI(ierr);
       if (dm_coarse_partition) {
@@ -544,10 +544,10 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       cs[0] = csize_fine;
       cs[1] = csize_coarse_partition;
       ierr = MPI_Allreduce(cs,csg,2,MPI_INT,MPI_MAX,comm_fine);CHKERRMPI(ierr);
-      PetscAssertFalse(csg[0] == csg[1],comm_fine,PETSC_ERR_SUP,"Coarse DM uses the same size communicator as the parent DM attached to the PC");
+      PetscCheckFalse(csg[0] == csg[1],comm_fine,PETSC_ERR_SUP,"Coarse DM uses the same size communicator as the parent DM attached to the PC");
 
       ierr = PCTelescopeTestValidSubcomm(comm_fine,comm_coarse_partition,&isvalidsubcomm);CHKERRQ(ierr);
-      PetscAssertFalse(!isvalidsubcomm,comm_fine,PETSC_ERR_SUP,"Coarse DM communicator is not a sub-communicator of parentDM->comm");
+      PetscCheckFalse(!isvalidsubcomm,comm_fine,PETSC_ERR_SUP,"Coarse DM communicator is not a sub-communicator of parentDM->comm");
       sred->subcomm = comm_coarse_partition;
     }
   }
@@ -668,7 +668,7 @@ static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscR
   scatter = sred->scatter;
   yred    = sred->yred;
 
-  PetscAssertFalse(its > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope only supports max_it = 1");
+  PetscCheckFalse(its > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope only supports max_it = 1");
   *reason = (PCRichardsonConvergedReason)0;
 
   if (!zeroguess) {
@@ -758,7 +758,7 @@ static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsO
     ierr = PCTelescopeSetSubcommType(pc,subcommtype);CHKERRQ(ierr);
   }
   ierr = PetscOptionsInt("-pc_telescope_reduction_factor","Factor to reduce comm size by","PCTelescopeSetReductionFactor",sred->redfactor,&sred->redfactor,NULL);CHKERRQ(ierr);
-  PetscAssertFalse(sred->redfactor > size,comm,PETSC_ERR_ARG_WRONG,"-pc_telescope_reduction_factor <= comm size");
+  PetscCheckFalse(sred->redfactor > size,comm,PETSC_ERR_ARG_WRONG,"-pc_telescope_reduction_factor <= comm size");
   ierr = PetscOptionsBool("-pc_telescope_ignore_dm","Ignore any DM attached to the PC","PCTelescopeSetIgnoreDM",sred->ignore_dm,&sred->ignore_dm,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_telescope_ignore_kspcomputeoperators","Ignore method used to compute A","PCTelescopeSetIgnoreKSPComputeOperators",sred->ignore_kspcomputeoperators,&sred->ignore_kspcomputeoperators,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_telescope_use_coarse_dm","Define sub-communicator from the coarse DM","PCTelescopeSetUseCoarseDM",sred->use_coarse_dm,&sred->use_coarse_dm,NULL);CHKERRQ(ierr);
@@ -789,7 +789,7 @@ static PetscErrorCode PCTelescopeSetSubcommType_Telescope(PC pc,PetscSubcommType
   PC_Telescope     red = (PC_Telescope)pc->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You cannot change the subcommunicator type for PCTelescope after it has been set up.");
+  PetscCheckFalse(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You cannot change the subcommunicator type for PCTelescope after it has been set up.");
   red->subcommtype = subcommtype;
   PetscFunctionReturn(0);
 }
@@ -810,8 +810,8 @@ static PetscErrorCode PCTelescopeSetReductionFactor_Telescope(PC pc,PetscInt fac
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
-  PetscAssertFalse(fact <= 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be positive",fact);
-  PetscAssertFalse(fact > size,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be <= comm.size",fact);
+  PetscCheckFalse(fact <= 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be positive",fact);
+  PetscCheckFalse(fact > size,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Reduction factor of telescoping PC %D must be <= comm.size",fact);
   red->redfactor = fact;
   PetscFunctionReturn(0);
 }

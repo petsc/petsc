@@ -78,8 +78,8 @@ static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, 
   }
   ierr = PetscDTAltVApply(M, k, ww, Lx, &wLx);CHKERRQ(ierr);
   diff = PetscAbsReal(wLx - Lstarwx);
-  PetscAssertFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(wLx) + PetscAbsReal(Lstarwx)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback does not commute with application: w(Lx)(%g) != (L* w)(x)(%g)", wLx, Lstarwx);
-  PetscAssertFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback matrix does match matrix free result");
+  PetscCheckFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(wLx) + PetscAbsReal(Lstarwx)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback does not commute with application: w(Lx)(%g) != (L* w)(x)(%g)", wLx, Lstarwx);
+  PetscCheckFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "pullback check: pullback matrix does match matrix free result");
   ierr = PetscFree2(Lstar, Lstarwcheck);CHKERRQ(ierr);
   ierr = PetscFree2(Lstarw, Lx);CHKERRQ(ierr);
   ierr = PetscFree(walloc);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
         }
         ierr = PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even");CHKERRQ(ierr);
         ierr = PetscDTPermIndex(N, perm, &kCheck, &isOddCheck);CHKERRQ(ierr);
-        PetscAssertFalse(kCheck != k || isOddCheck != isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumPerm / PetscDTPermIndex mismatch for (%D, %D)", N, k);
+        PetscCheckFalse(kCheck != k || isOddCheck != isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumPerm / PetscDTPermIndex mismatch for (%D, %D)", N, k);
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscFree(perm);CHKERRQ(ierr);
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 
         ierr = PetscDTEnumSplit(N, k, j, subset, &isOdd);CHKERRQ(ierr);
         ierr = PetscDTPermIndex(N, subset, &kCheck, &isOddCheck);CHKERRQ(ierr);
-        PetscAssertFalse(isOddCheck != isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumSplit sign does not mmatch PetscDTPermIndex sign");
+        PetscCheckFalse(isOddCheck != isOdd,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTEnumSplit sign does not mmatch PetscDTPermIndex sign");
         if (verbose) {
           PetscInt l;
 
@@ -169,7 +169,7 @@ int main(int argc, char **argv)
           ierr = PetscPrintf(PETSC_COMM_WORLD, ", %s\n", isOdd ? "odd" : "even");CHKERRQ(ierr);
         }
         ierr = PetscDTSubsetIndex(N, k, subset, &jCheck);CHKERRQ(ierr);
-        PetscAssertFalse(jCheck != j,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "jCheck (%D) != j (%D)", jCheck, j);
+        PetscCheckFalse(jCheck != j,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "jCheck (%D) != j (%D)", jCheck, j);
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscFree(subset);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
 
         for (l = 0; l < N; l++) wvcheck += w[l] * v[l];
         diff = PetscSqrtReal(PetscSqr(wvcheck - wv));
-        PetscAssertFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "1-form / dot product equivalence: wvcheck (%g) != wv (%g)", (double) wvcheck, (double) wv);
+        PetscCheckFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "1-form / dot product equivalence: wvcheck (%g) != wv (%g)", (double) wvcheck, (double) wv);
       }
       if (k == N && N < 5) { /* n-forms are scaled determinants */
         PetscReal det, wvcheck, diff;
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
         }
         wvcheck = det * w[0];
         diff = PetscSqrtReal(PetscSqr(wvcheck - wv));
-        PetscAssertFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "n-form / determinant equivalence: wvcheck (%g) != wv (%g) %g", (double) wvcheck, (double) wv, (double) diff);
+        PetscCheckFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "n-form / determinant equivalence: wvcheck (%g) != wv (%g) %g", (double) wvcheck, (double) wv, (double) diff);
       }
       if (k > 0) { /* k-forms are linear in each component */
         PetscReal alpha;
@@ -270,7 +270,7 @@ int main(int argc, char **argv)
         ierr = PetscDTAltVApply(N, k, w, axv, &waxv);CHKERRQ(ierr);
         waxvcheck = alpha * wx + wv;
         diff = waxv - waxvcheck;
-        PetscAssertFalse(PetscAbsReal(diff) > 10. * PETSC_SMALL * (PetscAbsReal(waxv) + PetscAbsReal(waxvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "linearity check: component %D, waxvcheck (%g) != waxv (%g)", j, (double) waxvcheck, (double) waxv);
+        PetscCheckFalse(PetscAbsReal(diff) > 10. * PETSC_SMALL * (PetscAbsReal(waxv) + PetscAbsReal(waxvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "linearity check: component %D, waxvcheck (%g) != waxv (%g)", j, (double) waxvcheck, (double) waxv);
         ierr = PetscFree2(x,axv);CHKERRQ(ierr);
       }
       if (k > 1) { /* k-forms are antisymmetric */
@@ -294,7 +294,7 @@ int main(int argc, char **argv)
         }
         ierr = PetscDTAltVApply(N, k, w, swapv, &wswapv);CHKERRQ(ierr);
         diff = PetscAbsReal(wswapv + wv);
-        PetscAssertFalse(diff > PETSC_SMALL * (PetscAbsReal(wswapv) + PetscAbsReal(wv)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "antisymmetry check: components %D & %D, wswapv (%g) != -wv (%g)", j, l, (double) wswapv, (double) wv);
+        PetscCheckFalse(diff > PETSC_SMALL * (PetscAbsReal(wswapv) + PetscAbsReal(wv)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "antisymmetry check: components %D & %D, wswapv (%g) != -wv (%g)", j, l, (double) wswapv, (double) wv);
         ierr = PetscFree(swapv);CHKERRQ(ierr);
       }
       for (j = 0; j <= k && j + k <= N; j++) { /* wedge product */
@@ -342,7 +342,7 @@ int main(int argc, char **argv)
           uWwxcheck += isOdd ? -(ux * wx) : (ux * wx);
         }
         diff = PetscAbsReal(uWwx - uWwxcheck);
-        PetscAssertFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(uWwx) + PetscAbsReal(uWwxcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge check: forms %D & %D, uWwxcheck (%g) != uWwx (%g)", j, k, (double) uWwxcheck, (double) uWwx);
+        PetscCheckFalse(diff > 10. * PETSC_SMALL * (PetscAbsReal(uWwx) + PetscAbsReal(uWwxcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge check: forms %D & %D, uWwxcheck (%g) != uWwx (%g)", j, k, (double) uWwxcheck, (double) uWwx);
         ierr = PetscFree(split);CHKERRQ(ierr);
         ierr = PetscMalloc2(Nk * Njk, &uWwmat, Njk, &uWwcheck);CHKERRQ(ierr);
         ierr = PetscDTAltVWedgeMatrix(N, j, k, u, uWwmat);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ int main(int argc, char **argv)
         }
         diff = PetscSqrtReal(diff);
         norm = PetscSqrtReal(norm);
-        PetscAssertFalse(diff > PETSC_SMALL * norm,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge matrix check: wedge matrix application does not match wedge direct application");
+        PetscCheckFalse(diff > PETSC_SMALL * norm,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wedge matrix check: wedge matrix application does not match wedge direct application");
         ierr = PetscFree2(uWwmat, uWwcheck);CHKERRQ(ierr);
         ierr = PetscFree4(u, uWw, x, xsplit);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -436,7 +436,7 @@ int main(int argc, char **argv)
         }
         diffMat = PetscSqrtReal(diffMat);
         normMat = PetscSqrtReal(normMat);
-        PetscAssertFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: matrix pattern does not match matrix");
+        PetscCheckFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: matrix pattern does not match matrix");
         diffMat = 0.;
         normMat = 0.;
         for (l = 0; l < Nkm; l++) {
@@ -450,7 +450,7 @@ int main(int argc, char **argv)
         }
         diffMat = PetscSqrtReal(diffMat);
         normMat = PetscSqrtReal(normMat);
-        PetscAssertFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: application does not match matrix");
+        PetscCheckFalse(diffMat > PETSC_SMALL * normMat,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: application does not match matrix");
         if (verbose) {
           ierr = PetscViewerASCIIPrintf(viewer, "(w int v_0):\n");CHKERRQ(ierr);
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -464,7 +464,7 @@ int main(int argc, char **argv)
         }
         ierr = PetscDTAltVApply(N, k - 1, wIntv0, &v[N], &wvcheck);CHKERRQ(ierr);
         diff = PetscSqrtReal(PetscSqr(wvcheck - wv));
-        PetscAssertFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: (w Int v0)(v_rem) (%g) != w(v) (%g)", (double) wvcheck, (double) wv);
+        PetscCheckFalse(diff >= PETSC_SMALL * (PetscAbsReal(wv) + PetscAbsReal(wvcheck)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior product check: (w Int v0)(v_rem) (%g) != w(v) (%g)", (double) wvcheck, (double) wv);
         ierr = PetscFree5(wIntv0,wIntv0check,intv0mat,matcheck,indices);CHKERRQ(ierr);
       }
       if (k >= N - k) { /* Hodge star */
@@ -493,7 +493,7 @@ int main(int argc, char **argv)
         starwdotu = 0.;
         for (l = 0; l < Nk; l++) starwdotu += starw[l] * u[l];
         diff = PetscAbsReal(wu - starwdotu);
-        PetscAssertFalse(diff > PETSC_SMALL * (PetscAbsReal(wu) + PetscAbsReal(starwdotu)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: (star w, u) (%g) != (w wedge u) (%g)", (double) starwdotu, (double) wu);
+        PetscCheckFalse(diff > PETSC_SMALL * (PetscAbsReal(wu) + PetscAbsReal(starwdotu)),PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: (star w, u) (%g) != (w wedge u) (%g)", (double) starwdotu, (double) wu);
 
         diff = 0.;
         norm = 0.;
@@ -503,7 +503,7 @@ int main(int argc, char **argv)
         }
         diff = PetscSqrtReal(diff);
         norm = PetscSqrtReal(norm);
-        PetscAssertFalse(diff > PETSC_SMALL * norm,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: star(star(w)) != (-1)^(N*(N-k)) w");
+        PetscCheckFalse(diff > PETSC_SMALL * norm,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Hodge star check: star(star(w)) != (-1)^(N*(N-k)) w");
         ierr = PetscFree3(u, starw, starstarw);CHKERRQ(ierr);
       }
       ierr = PetscFree(v);CHKERRQ(ierr);

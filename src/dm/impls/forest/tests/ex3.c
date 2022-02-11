@@ -135,7 +135,7 @@ int main (int argc, char **argv)
   /*  Check if the data is the same*/
   ierr = VecAXPY(g2, -1.0, g);CHKERRQ(ierr);
   ierr = VecNorm(g2, NORM_INFINITY, &nrm);CHKERRQ(ierr);
-  PetscAssertFalse(PetscAbsReal(nrm) > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid difference norm %g", (double) nrm);
+  PetscCheckFalse(PetscAbsReal(nrm) > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid difference norm %g", (double) nrm);
 
   ierr = VecDestroy(&g);CHKERRQ(ierr);
   ierr = VecDestroy(&g2);CHKERRQ(ierr);

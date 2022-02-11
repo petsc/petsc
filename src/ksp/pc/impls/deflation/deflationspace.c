@@ -211,7 +211,7 @@ PetscErrorCode PCDeflationComputeSpace(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscAssertFalse(def->spacesize < 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PCDeflation space size specified: %D",def->spacesize);
+  PetscCheckFalse(def->spacesize < 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Wrong PCDeflation space size specified: %D",def->spacesize);
   switch (def->spacetype) {
     case PC_DEFLATION_SPACE_HAAR:
       transp = PETSC_FALSE;

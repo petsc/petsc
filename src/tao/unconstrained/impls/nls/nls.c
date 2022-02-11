@@ -89,7 +89,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   ierr = KSPCGSetRadius(tao->ksp,nlsP->max_radius);CHKERRQ(ierr);
 
   if (is_nash || is_stcg || is_gltr) {
-    PetscAssertFalse(tao->trust0 < 0.0,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"Initial radius negative");
+    PetscCheckFalse(tao->trust0 < 0.0,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_OUTOFRANGE,"Initial radius negative");
     tao->trust = tao->trust0;
     tao->trust = PetscMax(tao->trust, nlsP->min_radius);
     tao->trust = PetscMin(tao->trust, nlsP->max_radius);
@@ -98,7 +98,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
   ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-  PetscAssertFalse(PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheckFalse(PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
 
   tao->reason = TAO_CONTINUE_ITERATING;
   ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     ierr = MatSetSizes(nlsP->M, n, n, N, N);CHKERRQ(ierr);
     ierr = MatLMVMAllocate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
     ierr = MatIsSymmetricKnown(nlsP->M, &sym_set, &is_symmetric);CHKERRQ(ierr);
-    PetscAssertFalse(!sym_set || !is_symmetric,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
+    PetscCheckFalse(!sym_set || !is_symmetric,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
   } else if (is_jacobi) {
     ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -224,7 +224,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           ierr = TaoComputeGradient(tao,tao->solution,tao->gradient);CHKERRQ(ierr);
 
           ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-          PetscAssertFalse(PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute gradient generated Inf or NaN");
+          PetscCheckFalse(PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute gradient generated Inf or NaN");
           needH = 1;
 
           ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
@@ -313,7 +313,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           tao->ksp_tot_its+=kspits;
           ierr = KSPCGGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
 
-          PetscAssertFalse(norm_d == 0.0,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Initial direction zero");
+          PetscCheckFalse(norm_d == 0.0,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Initial direction zero");
         }
       }
     } else {
@@ -696,7 +696,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
     /*  Check for termination */
     ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-    PetscAssertFalse(PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER,"User provided compute function generated Not-a-Number");
+    PetscCheckFalse(PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER,"User provided compute function generated Not-a-Number");
     needH = 1;
     ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao,tao->niter,f,gnorm,0.0,step);CHKERRQ(ierr);

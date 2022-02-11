@@ -21,7 +21,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     ierr = DMLabelGetValue(label, i, &val);CHKERRQ(ierr);
-    PetscAssertFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d for point %d should be %d", val, i, values[i%5]);
+    PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d for point %d should be %d", val, i, values[i%5]);
   }
   /* Test stratum */
   for (v = 0; v < 5; ++v) {
@@ -30,11 +30,11 @@ static PetscErrorCode TestInsertion()
     PetscInt        n;
 
     ierr = DMLabelGetStratumIS(label, values[v], &stratum);CHKERRQ(ierr);
-    PetscAssertFalse(!stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %d is empty!", v);
+    PetscCheckFalse(!stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %d is empty!", v);
     ierr = ISGetIndices(stratum, &points);CHKERRQ(ierr);
     ierr = ISGetLocalSize(stratum, &n);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) {
-      PetscAssertFalse(points[i] != i*5+v,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d should be %d", points[i], i*5+v);
+      PetscCheckFalse(points[i] != i*5+v,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d should be %d", points[i], i*5+v);
     }
     ierr = ISRestoreIndices(stratum, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&stratum);CHKERRQ(ierr);
@@ -44,7 +44,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     ierr = DMLabelGetValue(label, i, &val);CHKERRQ(ierr);
-    PetscAssertFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
+    PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
   }
   /* Test Duplicate */
   ierr = DMLabelDuplicate(label, &label2);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ static PetscErrorCode TestInsertion()
     PetscInt val;
 
     ierr = DMLabelGetValue(label2, i, &val);CHKERRQ(ierr);
-    PetscAssertFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
+    PetscCheckFalse(val != values[i%5],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Value %d should be %d", val, values[i%5]);
   }
   ierr = DMLabelDestroy(&label2);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&label);CHKERRQ(ierr);

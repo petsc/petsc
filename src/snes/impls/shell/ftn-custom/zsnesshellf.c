@@ -12,7 +12,7 @@ static PetscErrorCode oursnesshellsolve(SNES snes,Vec x)
   PetscErrorCode ierr = 0;
   void (*func)(SNES*,Vec*,PetscErrorCode*);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESShellSolve_C",&func);CHKERRQ(ierr);
-  PetscAssertFalse(!func,PetscObjectComm((PetscObject)snes),PETSC_ERR_USER,"SNESShellSetSolve() must be called before SNESSolve()");
+  PetscCheckFalse(!func,PetscObjectComm((PetscObject)snes),PETSC_ERR_USER,"SNESShellSetSolve() must be called before SNESSolve()");
   func(&snes,&x,&ierr);CHKERRQ(ierr);
   return 0;
 }

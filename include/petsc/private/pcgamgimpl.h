@@ -93,7 +93,7 @@ static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscIn
   PetscInt kk,idx;
 
   PetscFunctionBegin;
-  PetscAssert(a_key>=0,PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %" PetscInt_FMT,a_key);
+  PetscCheck(a_key>=0,PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %" PetscInt_FMT,a_key);
   for (kk = 0, idx = GAMG_HASH(a_key); kk < a_tab->size; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1) {
     if (a_tab->table[idx] == a_key) {
       *a_data = a_tab->data[idx];
@@ -104,7 +104,7 @@ static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscIn
       break;
     }
   }
-  PetscAssert(kk!=a_tab->size,PETSC_COMM_SELF,PETSC_ERR_USER,"key %" PetscInt_FMT " not found in table",a_key);
+  PetscCheck(kk!=a_tab->size,PETSC_COMM_SELF,PETSC_ERR_USER,"key %" PetscInt_FMT " not found in table",a_key);
   PetscFunctionReturn(0);
 }
 

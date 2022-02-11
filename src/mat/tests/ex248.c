@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = MatCreateKAIJ(A,p,q,NULL,Bv,&K);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(Bd,&Bv);CHKERRQ(ierr);
   ierr = MatMultEqual(C,K,10,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"K*x != C*x");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"K*x != C*x");
   ierr = MatScale(A,1.3);CHKERRQ(ierr);
   ierr = MatScale(B,0.3);CHKERRQ(ierr);
   ierr = MatScale(Bd,0.3);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = MatKAIJSetT(K,p,q,Bv);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(Bd,&Bv);CHKERRQ(ierr);
   ierr = MatMultEqual(C,K,10,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"K*x != C*x");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"K*x != C*x");
   ierr = MatDestroy(&K);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

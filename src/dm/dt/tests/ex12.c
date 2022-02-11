@@ -42,10 +42,10 @@ static PetscErrorCode CheckResidual(PetscWeakForm wf, PetscFormKey key, PetscInt
 
   PetscFunctionBegin;
   ierr = PetscWeakFormGetResidual(wf, key.label, key.value, key.field, key.part, &n0, &f0, &n1, &f1);CHKERRQ(ierr);
-  PetscAssertFalse(n0 != in0,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Found %D f0 functions != %D functions input", n0, in0);
-  for (i = 0; i < n0; ++i) {PetscAssertFalse(f0[i] != if0[i],PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "f0[%D] != input f0[%D]", i, i);}
-  PetscAssertFalse(n1 != in1,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Found %D f1 functions != %D functions input", n0, in0);
-  for (i = 0; i < n1; ++i) {PetscAssertFalse(f1[i] != if1[i],PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "f1[%D] != input f1[%D]", i, i);}
+  PetscCheckFalse(n0 != in0,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Found %D f0 functions != %D functions input", n0, in0);
+  for (i = 0; i < n0; ++i) {PetscCheckFalse(f0[i] != if0[i],PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "f0[%D] != input f0[%D]", i, i);}
+  PetscCheckFalse(n1 != in1,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Found %D f1 functions != %D functions input", n0, in0);
+  for (i = 0; i < n1; ++i) {PetscCheckFalse(f1[i] != if1[i],PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "f1[%D] != input f1[%D]", i, i);}
   PetscFunctionReturn(0);
 }
 

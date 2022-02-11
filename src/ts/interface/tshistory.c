@@ -9,7 +9,7 @@
     PetscInt b1[2],b2[2];                                               \
     b1[0] = -b; b1[1] = b;                                              \
     _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,a);CHKERRMPI(_7_ierr); \
-    PetscAssertFalse(-b2[0] != b2[1],a,PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
+    PetscCheckFalse(-b2[0] != b2[1],a,PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #define PetscValidLogicalCollectiveBoolComm(a,b,c)                      \
@@ -18,7 +18,7 @@
     PetscMPIInt b1[2],b2[2];                                            \
     b1[0] = -(PetscMPIInt)b; b1[1] = (PetscMPIInt)b;                    \
     _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,a);CHKERRMPI(_7_ierr); \
-    PetscAssertFalse(-b2[0] != b2[1],a,PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",c); \
+    PetscCheckFalse(-b2[0] != b2[1],a,PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #define PetscValidLogicalCollectiveRealComm(a,b,c)                      \
@@ -28,7 +28,7 @@
     if (PetscIsNanReal(b)) {b1[2] = 1;} else {b1[2] = 0;};              \
     b1[0] = -b; b1[1] = b;                                              \
     _7_ierr = MPI_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,a);CHKERRMPI(_7_ierr); \
-    PetscAssertFalse(!(b2[2] > 0) && !PetscEqualReal(-b2[0],b2[1]),a,PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
+    PetscCheckFalse(!(b2[2] > 0) && !PetscEqualReal(-b2[0],b2[1]),a,PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #else
@@ -79,7 +79,7 @@ PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
     ierr = PetscSortInt(tsh->n,ids);CHKERRQ(ierr);
     ierr = PetscFindInt(id,tsh->n,ids,&loc);CHKERRQ(ierr);
     ierr = PetscFree(ids);CHKERRQ(ierr);
-    PetscAssertFalse(loc >=0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"History id should be unique");
+    PetscCheckFalse(loc >=0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"History id should be unique");
   }
 #endif
   tsh->hist[tsh->n]    = time;
@@ -101,7 +101,7 @@ PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step
     ierr = PetscSortRealWithArrayInt(tsh->n,tsh->hist,tsh->hist_id);CHKERRQ(ierr);
     tsh->sorted = PETSC_TRUE;
   }
-  PetscAssertFalse(step < 0 || step >= tsh->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,tsh->n);
+  PetscCheckFalse(step < 0 || step >= tsh->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,tsh->n);
   if (!backward) *t = tsh->hist[step];
   else           *t = tsh->hist[tsh->n-step-1];
   PetscFunctionReturn(0);
@@ -120,7 +120,7 @@ PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt 
     ierr = PetscSortRealWithArrayInt(tsh->n,tsh->hist,tsh->hist_id);CHKERRQ(ierr);
     tsh->sorted = PETSC_TRUE;
   }
-  PetscAssertFalse(step < 0 || step > tsh->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,tsh->n);
+  PetscCheckFalse(step < 0 || step > tsh->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,tsh->n);
   if (!backward) *dt = tsh->hist[PetscMin(step+1,tsh->n-1)] - tsh->hist[PetscMin(step,tsh->n-1)];
   else           *dt = tsh->hist[PetscMax(tsh->n-step-1,0)] - tsh->hist[PetscMax(tsh->n-step-2,0)];
   PetscFunctionReturn(0);

@@ -496,7 +496,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
 
   /* Second-order adjoint */
   if (ts->vecs_sensi2) { /* U_{n+1} */
-    PetscAssertFalse(!th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Operation not implemented in TS_Theta");
+    PetscCheckFalse(!th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Operation not implemented in TS_Theta");
     /* Get w1 at t_{n+1} from TLM matrix */
     ierr = MatDenseGetColumn(ts->mat_sensip,0,&xarr);CHKERRQ(ierr);
     ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
@@ -1177,7 +1177,7 @@ static PetscErrorCode TSThetaSetTheta_Theta(TS ts,PetscReal theta)
   TS_Theta *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(theta <= 0 || 1 < theta,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Theta %g not in range (0,1]",(double)theta);
+  PetscCheckFalse(theta <= 0 || 1 < theta,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Theta %g not in range (0,1]",(double)theta);
   th->Theta = theta;
   th->order = (th->Theta == 0.5) ? 2 : 1;
   PetscFunctionReturn(0);
@@ -1457,8 +1457,8 @@ static PetscErrorCode TSSetUp_BEuler(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(th->Theta != 1.0,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (1) of theta when using backward Euler");
-  PetscAssertFalse(th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the endpoint form of the Theta methods when using backward Euler");
+  PetscCheckFalse(th->Theta != 1.0,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (1) of theta when using backward Euler");
+  PetscCheckFalse(th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the endpoint form of the Theta methods when using backward Euler");
   ierr = TSSetUp_Theta(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1501,8 +1501,8 @@ static PetscErrorCode TSSetUp_CN(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(th->Theta != 0.5,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (0.5) of theta when using Crank-Nicolson");
-  PetscAssertFalse(!th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the midpoint form of the Theta methods when using Crank-Nicolson");
+  PetscCheckFalse(th->Theta != 0.5,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (0.5) of theta when using Crank-Nicolson");
+  PetscCheckFalse(!th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the midpoint form of the Theta methods when using Crank-Nicolson");
   ierr = TSSetUp_Theta(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

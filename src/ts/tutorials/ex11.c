@@ -486,7 +486,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   PetscReal dx[2],r,sigma;
 
   PetscFunctionBeginUser;
-  PetscAssertFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  PetscCheckFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
   r     = Norm2Real(dx);
@@ -602,7 +602,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   EulerNode       *uu  = (EulerNode*)u;
   PetscReal        p0,gamma,c;
   PetscFunctionBeginUser;
-  PetscAssertFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  PetscCheckFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
 
   for (i=0; i<DIM; i++) uu->ru[i] = 0.0; /* zero out initial velocity */
   /* set E and rho */
@@ -677,7 +677,7 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *gamma, const EulerNode *x
 
   PetscFunctionBeginUser;
   Pressure_PG(*gamma,x,&p);
-  PetscAssertFalse(p<0.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",(double) p);
+  PetscCheckFalse(p<0.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",(double) p);
   /* pars[EULER_PAR_GAMMA] = heat capacity ratio */
   (*c)=PetscSqrtReal(*gamma * p / x->r);
   PetscFunctionReturn(0);
@@ -830,7 +830,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     ierr = PetscOptionsReal("-eu_rho2","Density right of discontinuity","",eu->pars[EULER_PAR_RHOR],&eu->pars[EULER_PAR_RHOR],NULL);CHKERRQ(ierr);
     alpha = 60.;
     ierr = PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL);CHKERRQ(ierr);
-    PetscAssertFalse(alpha<=0. || alpha>90.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
+    PetscCheckFalse(alpha<=0. || alpha>90.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
     eu->pars[EULER_PAR_ITANA] = 1./PetscTanReal( alpha * PETSC_PI / 180.0);
     ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,"linear_wave", &is);CHKERRQ(ierr);
@@ -840,7 +840,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"linear_wave");CHKERRQ(ierr);
     }
     else {
-      PetscAssertFalse(DIM != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
+      PetscCheckFalse(DIM != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
       ierr = PetscStrcmp(type,"iv_shock", &is);CHKERRQ(ierr);
       if (is) {
         eu->type = EULER_IV_SHOCK;
@@ -990,7 +990,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
         sides[1] = faces[g];
         ierr = DMPlexPointLocalRead(dmFace, faces[g], fgeom, &fgB);CHKERRQ(ierr);
         ierr = DMPlexGetJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
-        PetscAssertFalse(numCells != 1,PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
+        PetscCheckFalse(numCells != 1,PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
         ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cg);CHKERRQ(ierr);
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgA->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgA->centroid[0] - cg->centroid[0]));
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgB->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgB->centroid[0] - cg->centroid[0]));
@@ -1057,7 +1057,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptionItems *
       ierr = PetscStrcasecmp(names[i],link->name,&match);CHKERRQ(ierr);
       if (match) break;
     }
-    PetscAssertFalse(!link,mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
+    PetscCheckFalse(!link,mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
     mod->functionalMonitored[i] = link;
     for (j=0; j<i; j++) {
       if (mod->functionalCall[j]->func == link->func && mod->functionalCall[j]->ctx == link->ctx) goto next_name;
@@ -1463,7 +1463,7 @@ int main(int argc, char **argv)
     ierr = (*physcreate)(mod,phys,PetscOptionsObject);CHKERRQ(ierr);
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
-    PetscAssertFalse(phys->dof <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
+    PetscCheckFalse(phys->dof <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
     ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1496,7 +1496,7 @@ int main(int argc, char **argv)
         ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
         ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
         ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-        PetscAssertFalse(nCoords % dimEmbed,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
+        PetscCheckFalse(nCoords % dimEmbed,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
         ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
         for (i = 0; i < nCoords; i += dimEmbed) {
           PetscInt j;
@@ -1681,7 +1681,7 @@ int main(int argc, char **argv)
   ierr = DMPlexGetGeometryFVM(plex, NULL, NULL, &minRadius);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-  PetscAssertFalse(mod->maxspeed <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+  PetscCheckFalse(mod->maxspeed <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
   dt   = cfl * minRadius / mod->maxspeed;
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -1722,7 +1722,7 @@ int main(int argc, char **argv)
         ierr = DMPlexGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
         ierr = DMDestroy(&plex);CHKERRQ(ierr);
         ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-        PetscAssertFalse(mod->maxspeed <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+        PetscCheckFalse(mod->maxspeed <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
         dt   = cfl * minRadius / mod->maxspeed;
         ierr = TSSetStepNumber(ts,nsteps);CHKERRQ(ierr);
         ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);

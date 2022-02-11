@@ -58,7 +58,7 @@ int main(int Argc,char **Args)
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
-    PetscAssertFalse(N[i] < 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"Too many levels or N is not large enough");
+    PetscCheckFalse(N[i] < 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"Too many levels or N is not large enough");
   }
 
   ierr = Create1dLaplacian(N[levels-1],&cmat);CHKERRQ(ierr);

@@ -102,7 +102,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
 
       if (tj->lag.TT[tj->lag.order+1 + s-low]) continue;
       tid = LagrangeGetId(t,tj->lag.order+1,tj->lag.T,tj->lag.TT);
-      PetscAssertFalse(tid >= 0,PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"This should not happen");
+      PetscCheckFalse(tid >= 0,PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"This should not happen");
       tid = -tid-1;
       if (tj->monitor) {
         if (tj->lag.T[tid] < PETSC_MAX_REAL) {

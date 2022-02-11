@@ -559,7 +559,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   ierr = DMGetApplicationContext(adaptor->idm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(adaptor->idm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &numFields);CHKERRQ(ierr);
-  PetscAssertFalse(numFields == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fields is zero!");
+  PetscCheckFalse(numFields == 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fields is zero!");
 
   /* Adapt until nothing changes */
   /* Adapt for a specified number of iterates */
@@ -584,7 +584,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
     switch (adaptor->adaptCriterion) {
     case DM_ADAPTATION_REFINE:
       ierr = DMRefine(dm, comm, &odm);CHKERRQ(ierr);
-      PetscAssertFalse(!odm,comm, PETSC_ERR_ARG_INCOMP, "DMRefine() did not perform any refinement, cannot continue grid sequencing");
+      PetscCheckFalse(!odm,comm, PETSC_ERR_ARG_INCOMP, "DMRefine() did not perform any refinement, cannot continue grid sequencing");
       adapted = PETSC_TRUE;
       break;
     case DM_ADAPTATION_LABEL:
@@ -661,7 +661,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       /*     Setup finite element spaces */
       ierr = DMClone(dm, &dmGrad);CHKERRQ(ierr);
       ierr = DMClone(dm, &dmHess);CHKERRQ(ierr);
-      PetscAssertFalse(numFields > 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple fields not yet considered");  // TODO
+      PetscCheckFalse(numFields > 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple fields not yet considered");  // TODO
       for (f = 0; f < numFields; ++f) {
         PetscFE         fe, feGrad, feHess;
         PetscDualSpace  Q;
@@ -673,7 +673,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 
         ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-        PetscAssertFalse(Nc > 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple components not yet considered");  // TODO
+        PetscCheckFalse(Nc > 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Adaptation with multiple components not yet considered");  // TODO
         ierr = PetscFEGetBasisSpace(fe, &space);CHKERRQ(ierr);
         ierr = PetscSpaceGetDegree(space, NULL, &p);CHKERRQ(ierr);
         if (p > 1) higherOrder = PETSC_TRUE;

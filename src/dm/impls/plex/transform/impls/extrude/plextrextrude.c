@@ -45,14 +45,14 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
   Nc = 3;
   ierr = PetscOptionsRealArray("-dm_plex_transform_extrude_normal", "Input normal vector for extrusion", "", normal, &Nc, &flg);CHKERRQ(ierr);
   if (flg) {
-    PetscAssertFalse(Nc != ex->cdimEx,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_SIZ, "Input normal has size %D != %D extruded coordinate dimension", Nc, ex->cdimEx);
+    PetscCheckFalse(Nc != ex->cdimEx,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_SIZ, "Input normal has size %D != %D extruded coordinate dimension", Nc, ex->cdimEx);
     ierr = DMPlexTransformExtrudeSetNormal(tr, normal);CHKERRQ(ierr);
   }
   nl   = ex->layers;
   ierr = PetscMalloc1(nl, &thicknesses);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-dm_plex_transform_extrude_thicknesses", "Thickness of each individual extruded layer", "", thicknesses, &nl, &flg);CHKERRQ(ierr);
   if (flg) {
-    PetscAssertFalse(!nl,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Must give at least one thickness for -dm_plex_transform_extrude_thicknesses");
+    PetscCheckFalse(!nl,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Must give at least one thickness for -dm_plex_transform_extrude_thicknesses");
     ierr = DMPlexTransformExtrudeSetThicknesses(tr, nl, thicknesses);CHKERRQ(ierr);
   }
   ierr = PetscFree(thicknesses);CHKERRQ(ierr);
@@ -419,10 +419,10 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   PetscErrorCode           ierr;
 
   PetscFunctionBeginHot;
-  PetscAssertFalse(pct != DM_POLYTOPE_POINT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parent point type %s",DMPolytopeTypes[pct]);
-  PetscAssertFalse(ct  != DM_POLYTOPE_POINT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for refined point type %s",DMPolytopeTypes[ct]);
-  PetscAssertFalse(Nv != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertices should be produced from a single vertex, not %D",Nv);
-  PetscAssertFalse(dE != ex->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Coordinate dim %D != %D original dimension", dE, ex->cdim);
+  PetscCheckFalse(pct != DM_POLYTOPE_POINT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parent point type %s",DMPolytopeTypes[pct]);
+  PetscCheckFalse(ct  != DM_POLYTOPE_POINT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for refined point type %s",DMPolytopeTypes[ct]);
+  PetscCheckFalse(Nv != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertices should be produced from a single vertex, not %D",Nv);
+  PetscCheckFalse(dE != ex->cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Coordinate dim %D != %D original dimension", dE, ex->cdim);
 
   ierr = DMPlexTransformGetDM(tr, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -593,7 +593,7 @@ PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscAssertFalse(thickness <= 0.,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Height of layers %g must be positive", (double) thickness);
+  PetscCheckFalse(thickness <= 0.,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Height of layers %g must be positive", (double) thickness);
   ex->thickness = thickness;
   PetscFunctionReturn(0);
 }
@@ -660,12 +660,12 @@ PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscAssertFalse(Nth <= 0,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Number of thicknesses %D must be positive", Nth);
+  PetscCheckFalse(Nth <= 0,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Number of thicknesses %D must be positive", Nth);
   ex->Nth = PetscMin(Nth, ex->layers);
   ierr = PetscFree(ex->thicknesses);CHKERRQ(ierr);
   ierr = PetscMalloc1(ex->Nth, &ex->thicknesses);CHKERRQ(ierr);
   for (t = 0; t < ex->Nth; ++t) {
-    PetscAssertFalse(thicknesses[t] <= 0.,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Thickness %g of layer %D must be positive", (double) thicknesses[t], t);
+    PetscCheckFalse(thicknesses[t] <= 0.,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Thickness %g of layer %D must be positive", (double) thicknesses[t], t);
     ex->thicknesses[t] = thicknesses[t];
   }
   PetscFunctionReturn(0);

@@ -17,7 +17,7 @@ int main(int argc,char **args)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&NP);CHKERRMPI(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  PetscAssertFalse(M < 6,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Matrix has to have more than 6 columns");
+  PetscCheckFalse(M < 6,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Matrix has to have more than 6 columns");
   /* Hypre matrix */
   ierr = MatCreate(comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-  PetscAssertFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues %g",err);
+  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues %g",err);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   /* MatZeroRows */
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-  PetscAssertFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatZeroRows %g",err);
+  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatZeroRows %g",err);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
 
@@ -75,7 +75,7 @@ int main(int argc,char **args)
   ierr = MatZeroEntries(B);CHKERRQ(ierr);
   ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-  PetscAssertFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatZeroEntries %g",err);
+  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatZeroEntries %g",err);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   /* Insert Values */
@@ -114,12 +114,12 @@ int main(int argc,char **args)
     for (i=rstart; i<rend; i++) {
       ierr = MatGetRow(A,i,&nzA,&idxA,&vA);CHKERRQ(ierr);
       ierr = MatGetRow(B,i,&nzB,&idxB,&vB);CHKERRQ(ierr);
-      PetscAssertFalse(nzA!=nzB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT, nzA-nzB);
+      PetscCheckFalse(nzA!=nzB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT, nzA-nzB);
       ierr = PetscSortIntWithScalarArray(nzB,(PetscInt*)idxB,(PetscScalar*)vB);CHKERRQ(ierr);
       ierr = PetscArraycmp(idxA,idxB,nzA,&flg);CHKERRQ(ierr);
-      PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (indices)",i);
+      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (indices)",i);
       ierr = PetscArraycmp(vA,vB,nzA,&flg);CHKERRQ(ierr);
-      PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (values)",i);
+      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (values)",i);
       ierr = MatRestoreRow(A,i,&nzA,&idxA,&vA);CHKERRQ(ierr);
       ierr = MatRestoreRow(B,i,&nzB,&idxB,&vB);CHKERRQ(ierr);
     }
@@ -133,7 +133,7 @@ int main(int argc,char **args)
 
     for (i=0; i<(rend-rstart); i++) {
       ierr = PetscArraycmp(valuesA + 6*i,valuesB + 6*i,6,&flg);CHKERRQ(ierr);
-      PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetValues %" PetscInt_FMT,i + rstart);
+      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetValues %" PetscInt_FMT,i + rstart);
     }
     ierr = PetscFree3(valuesA,valuesB,rows);CHKERRQ(ierr);
   }
@@ -142,7 +142,7 @@ int main(int argc,char **args)
   ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
-  PetscAssertFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues with INSERT_VALUES %g",err);
+  PetscCheckFalse(err > PETSC_SMALL,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"Error MatSetValues with INSERT_VALUES %g",err);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

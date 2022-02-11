@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
-  PetscAssertFalse(size <2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run more than one processor");
+  PetscCheckFalse(size <2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run more than one processor");
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
   n    = bs*n;
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&x1);CHKERRQ(ierr);
   ierr = VecCopy(x,x1);CHKERRQ(ierr);
   ierr = VecEqual(x,x1,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"x1 != x");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"x1 != x");
 
   ierr = VecScale(x1,2.0);CHKERRQ(ierr);
   ierr = VecSet(x1,10.0);CHKERRQ(ierr);

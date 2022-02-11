@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   } else {
     ierr = DMStagVecGetArrayRead(dm,vecLocal2,&a2);CHKERRQ(ierr);
     ierr = DMStagGetGlobalSizes(dm,&Nx,&Ny,&Nz);CHKERRQ(ierr);
-    PetscAssertFalse(stencilWidth > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Check implemented assuming stencilWidth = 1");
+    PetscCheckFalse(stencilWidth > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Check implemented assuming stencilWidth = 1");
     for (k=startz; k<startz + nz; ++k) {
       for (j=starty; j<starty + ny; ++j) {
         for (i=startx; i<startx + nx; ++i) {

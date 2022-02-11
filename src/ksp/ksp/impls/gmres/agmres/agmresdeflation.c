@@ -39,7 +39,7 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
       pivot_i   = val_i[L];
       abs_pivot = PetscSqrtReal(pivot_r * pivot_r + pivot_i * pivot_i);
       ipivot    = perm[L];
-      PetscAssertFalse(i == DEPTH - 1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
+      PetscCheckFalse(i == DEPTH - 1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
       while (L < R) {
         abs_val = PetscSqrtReal(val_r[R] * val_r[R] + val_i[R] * val_i[R]);
         while (abs_val >= abs_pivot && L < R) {
@@ -71,7 +71,7 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
       fin[i+1] = fin[i];
       fin[i]   = L;
       i       += 1;
-      PetscAssertFalse(i == DEPTH - 1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
+      PetscCheckFalse(i == DEPTH - 1,PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
     } else i--;
   }
   PetscFunctionReturn(0);
@@ -127,10 +127,10 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   /* Compute the Schur form */
   if (IsReduced) {                /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
     PetscStackCallBLAS("LAPACKhgeqz",LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &ihi, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
-    PetscAssertFalse(info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
+    PetscCheckFalse(info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
   } else {
     PetscStackCallBLAS("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &KspSize, A, &ldA, B, &ldB, &sdim, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
-    PetscAssertFalse(info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
+    PetscCheckFalse(info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
   }
 
   /* We should avoid computing these ratio...  */
@@ -158,7 +158,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
     for (j = 0; j < r; j++) select[perm[KspSize-j-1]] = 1;
   }
   PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
-  PetscAssertFalse(info == 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
+  PetscCheckFalse(info == 1,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
   /* Extract the Schur vectors associated to the r smallest eigenvalues */
   ierr = PetscArrayzero(Sr,(N+1)*r);CHKERRQ(ierr);
   for (j = 0; j < r; j++) {

@@ -452,7 +452,7 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   if (rank) goto finally;
 
   /* change cursor to indicate input */
-  cursor = XCreateFontCursor(win->disp,XC_hand2); PetscAssertFalse(!cursor,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X cursor");
+  cursor = XCreateFontCursor(win->disp,XC_hand2); PetscCheckFalse(!cursor,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X cursor");
   XDefineCursor(win->disp,win->win,cursor);
   /* wait for mouse button events */
   XSelectInput(win->disp,win->win,ButtonPressMask|ButtonReleaseMask);
@@ -781,7 +781,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   } /* endif (!dvirtual) */
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
-  PetscAssertFalse(rank == 0 && (w <= 0 || h <= 0),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
+  PetscCheckFalse(rank == 0 && (w <= 0 || h <= 0),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
 
   ierr = PetscNewLog(draw,&Xwin);CHKERRQ(ierr);
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);

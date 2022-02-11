@@ -23,12 +23,12 @@ int main(int argc,char **argv)
   */
   ierr = ISCreateStride(PETSC_COMM_SELF,0,0,2,&is);CHKERRQ(ierr);
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
-  PetscAssertFalse(n != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISCreateStride");
+  PetscCheckFalse(n != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISCreateStride");
   ierr = ISStrideGetInfo(is,&start,&stride);CHKERRQ(ierr);
-  PetscAssertFalse(start != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
-  PetscAssertFalse(stride != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
+  PetscCheckFalse(start != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
+  PetscCheckFalse(stride != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
   ierr = PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   for (i=0; i<10000; i++) {
-    PetscAssertFalse(ii[i] != -8 + 3*i,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetIndices");
+    PetscCheckFalse(ii[i] != -8 + 3*i,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetIndices");
   }
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);

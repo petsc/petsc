@@ -54,7 +54,7 @@ int main(int argc,char **argv)
       Determine information on stride
   */
   ierr = ISStrideGetInfo(set,&first,&step);CHKERRQ(ierr);
-  PetscAssertFalse(first != 3 || step != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!");
+  PetscCheckFalse(first != 3 || step != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!");
   ierr = ISDestroy(&set);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

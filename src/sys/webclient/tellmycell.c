@@ -42,9 +42,9 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
 
   PetscFunctionBegin;
   ierr = PetscStrlen(number,&nlen);CHKERRQ(ierr);
-  PetscAssertFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
+  PetscCheckFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
   ierr = PetscStrlen(message,&mlen);CHKERRQ(ierr);
-  PetscAssertFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
+  PetscCheckFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (rank == 0) {
     int       sock;
@@ -55,9 +55,9 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
     PetscBool set;
 
     ierr = PetscOptionsGetString(NULL,NULL,"-tellmycell_user",Username,sizeof(Username),&set);CHKERRQ(ierr);
-    PetscAssertFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell user name with -tellmycell_user <Username>");
+    PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell user name with -tellmycell_user <Username>");
     ierr = PetscOptionsGetString(NULL,NULL,"-tellmycell_password",Password,sizeof(Password),&set);CHKERRQ(ierr);
-    PetscAssertFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell password with -tellmycell_password <Password>");
+    PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell password with -tellmycell_password <Password>");
     ierr = PetscMalloc1(mlen+nlen+100,&body);CHKERRQ(ierr);
     ierr = PetscStrcpy(body,"User=");CHKERRQ(ierr);
     ierr = PetscStrcat(body,Username);CHKERRQ(ierr);

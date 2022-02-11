@@ -334,7 +334,7 @@ struct BlasInterface<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
         auto ierr = PetscSleep(3);CHKERRQ(ierr);
         continue;
       }
-      PetscAssert(cerr == CUSOLVER_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSolverDn");
+      PetscCheck(cerr == CUSOLVER_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSolverDn");
     }
     PetscFunctionReturn(0);
   }

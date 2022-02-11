@@ -70,9 +70,9 @@ static PetscErrorCode CreateMatrix(UserCtx ctx)
 
   /* Set matrix elements in  2-D fiveopoint stencil format. */
   if (!(ctx->matops)) {
-    PetscAssertFalse(ctx->m != ctx->n,PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Stencil matrix must be square");
+    PetscCheckFalse(ctx->m != ctx->n,PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Stencil matrix must be square");
     gridN = (PetscInt) PetscSqrtReal((PetscReal) ctx->m);
-    PetscAssertFalse(gridN * gridN != ctx->m,PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Number of rows must be square");
+    PetscCheckFalse(gridN * gridN != ctx->m,PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Number of rows must be square");
     for (Ii=Istart; Ii<Iend; Ii++) {
       i   = Ii / gridN; j = Ii % gridN;
       I_n = i * gridN + j + 1;

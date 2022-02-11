@@ -333,7 +333,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     MPI_Comm      comm = PetscObjectComm((PetscObject)dm);
 
     ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-    PetscAssertFalse(size > 1,comm,PETSC_ERR_SUP,"Local constraint test can only be performed in serial");
+    PetscCheckFalse(size > 1,comm,PETSC_ERR_SUP,"Local constraint test can only be performed in serial");
 
     /* we are going to test constraints by using them to enforce periodicity
      * in one direction, and comparing to the existing method of enforcing
@@ -403,7 +403,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
         ierr = PetscSectionGetDof(aSec,c,&cDof);CHKERRQ(ierr);
         if (cDof) {
           PetscInt cOff, a, aDof, aOff, j;
-          PetscAssertFalse(cDof != 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d anchor points: should be just one",cDof);
+          PetscCheckFalse(cDof != 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d anchor points: should be just one",cDof);
 
           /* find the anchor point */
           ierr = PetscSectionGetOffset(aSec,c,&cOff);CHKERRQ(ierr);
@@ -417,8 +417,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
           ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
           ierr = PetscSectionGetOffset(section,a,&aOff);CHKERRQ(ierr);
 
-          PetscAssertFalse(cDof != aDof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point and anchor have different number of dofs: %d, %d",cDof,aDof);
-          PetscAssertFalse(cDof % numComp,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point dofs not divisible by field components: %d, %d",cDof,numComp);
+          PetscCheckFalse(cDof != aDof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point and anchor have different number of dofs: %d, %d",cDof,aDof);
+          PetscCheckFalse(cDof % numComp,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point dofs not divisible by field components: %d, %d",cDof,numComp);
 
           /* put in a simple equality constraint */
           for (j = 0; j < cDof; j++) {
@@ -465,7 +465,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     PetscDS      ds;
 
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    PetscAssertFalse(user->numComponents != dim,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, dim);
+    PetscCheckFalse(user->numComponents != dim,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, dim);
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);

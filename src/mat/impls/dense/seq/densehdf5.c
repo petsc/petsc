@@ -36,7 +36,7 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
   /* we store dense matrix columns as blocks, like MATLAB save(filename,variables,'-v7.3') does */
   hdf5->horizontal = PETSC_TRUE;
 
-  PetscAssertFalse(!((PetscObject)mat)->name,PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat name must be set with PetscObjectSetName() before MatLoad()");
+  PetscCheckFalse(!((PetscObject)mat)->name,PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat name must be set with PetscObjectSetName() before MatLoad()");
 #if defined(PETSC_USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)

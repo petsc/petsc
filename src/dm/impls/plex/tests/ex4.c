@@ -593,7 +593,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   switch (dim) {
   case 1:
-    PetscAssertFalse(cellHybrid,comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
+    PetscCheckFalse(cellHybrid,comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
     ierr = CreateSimplex_1D(comm, dm);CHKERRQ(ierr);
     break;
   case 2:

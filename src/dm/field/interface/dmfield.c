@@ -127,7 +127,7 @@ PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(DMFieldList,type,&r);CHKERRQ(ierr);
-  PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested DMField type %s",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested DMField type %s",type);
   /* Destroy the previous private DMField context */
   if (field->ops->destroy) {
     ierr = (*(field)->ops->destroy)(field);CHKERRQ(ierr);
@@ -527,7 +527,7 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   ierr = DMFieldGetDegree(field,pointIS,NULL,&maxDegree);CHKERRQ(ierr);
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
   if (faceData) {
-    PetscAssertFalse(!field->ops->computeFaceData,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data");
+    PetscCheckFalse(!field->ops->computeFaceData,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data");
     ierr = (*field->ops->computeFaceData) (field, pointIS, quad, g);CHKERRQ(ierr);
   }
   *geom = g;

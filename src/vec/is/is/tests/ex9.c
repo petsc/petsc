@@ -80,7 +80,7 @@ int main(int argc,char **argv)
       ierr = ISView(output1, viewer);CHKERRQ(ierr);
     }
     ierr = ISEqual(output0, output1, &flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,comm, PETSC_ERR_PLIB, "output0 != output1");
+    PetscCheckFalse(!flg,comm, PETSC_ERR_PLIB, "output0 != output1");
     ierr = ISDestroy(&input);CHKERRQ(ierr);
     ierr = ISDestroy(&output0);CHKERRQ(ierr);
     ierr = ISDestroy(&output1);CHKERRQ(ierr);

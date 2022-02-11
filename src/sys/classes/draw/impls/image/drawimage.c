@@ -2,8 +2,7 @@
 #include <petsc/private/drawimpl.h>                          /*I  "petscdraw.h" I*/
 
 #if defined(PETSC_USE_DEBUG)
-#define PetscDrawValidColor(color) \
-do { PetscAssertFalse(PetscUnlikely((color)<0||(color)>=256),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value %" PetscInt_FMT " out of range [0..255]",(PetscInt)(color)); } while (0)
+#define PetscDrawValidColor(color) PetscCheck((color)>=0&&(color)<256,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value %" PetscInt_FMT " out of range [0..255]",(PetscInt)(color))
 #else
 #define PetscDrawValidColor(color) do {} while (0)
 #endif

@@ -136,7 +136,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
     PetscBool sorted;
 
     ierr = PetscParallelSortedInt(mapin->comm, size - 1, pivots, &sorted);CHKERRQ(ierr);
-    PetscAssertFalse(!sorted,mapin->comm, PETSC_ERR_PLIB, "bitonic sort failed");
+    PetscCheckFalse(!sorted,mapin->comm, PETSC_ERR_PLIB, "bitonic sort failed");
   }
 
   /* if there are Z nonempty processes, we have (P - 1) * Z real pivots, and we want to select
@@ -295,7 +295,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
     PetscBool sorted;
 
     ierr = PetscParallelSortedInt(mapin->comm, nrecv, buffer, &sorted);CHKERRQ(ierr);
-    PetscAssertFalse(!sorted,mapin->comm, PETSC_ERR_PLIB, "samplesort (pre-redistribute) sort failed");
+    PetscCheckFalse(!sorted,mapin->comm, PETSC_ERR_PLIB, "samplesort (pre-redistribute) sort failed");
   }
 #endif
 
@@ -343,12 +343,12 @@ PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, Petsc
   PetscValidPointer(mapin, 1);
   PetscValidPointer(mapout, 2);
   ierr = MPI_Comm_compare(mapin->comm, mapout->comm, &result);CHKERRMPI(ierr);
-  PetscAssertFalse(result != MPI_IDENT && result != MPI_CONGRUENT,mapin->comm, PETSC_ERR_ARG_NOTSAMECOMM, "layouts are not on the same communicator");
+  PetscCheckFalse(result != MPI_IDENT && result != MPI_CONGRUENT,mapin->comm, PETSC_ERR_ARG_NOTSAMECOMM, "layouts are not on the same communicator");
   ierr = PetscLayoutSetUp(mapin);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mapout);CHKERRQ(ierr);
   if (mapin->n) PetscValidIntPointer(keysin, 3);
   if (mapout->n) PetscValidIntPointer(keysout, 4);
-  PetscAssertFalse(mapin->N != mapout->N,mapin->comm, PETSC_ERR_ARG_SIZ, "Input and output layouts have different global sizes (%" PetscInt_FMT " != %" PetscInt_FMT ")", mapin->N, mapout->N);
+  PetscCheckFalse(mapin->N != mapout->N,mapin->comm, PETSC_ERR_ARG_SIZ, "Input and output layouts have different global sizes (%" PetscInt_FMT " != %" PetscInt_FMT ")", mapin->N, mapout->N);
   ierr = MPI_Comm_size(mapin->comm, &size);CHKERRMPI(ierr);
   if (size == 1) {
     if (keysout != keysin) {
@@ -368,7 +368,7 @@ PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, Petsc
     PetscBool sorted;
 
     ierr = PetscParallelSortedInt(mapout->comm, mapout->n, keysout, &sorted);CHKERRQ(ierr);
-    PetscAssertFalse(!sorted,mapout->comm, PETSC_ERR_PLIB, "samplesort sort failed");
+    PetscCheckFalse(!sorted,mapout->comm, PETSC_ERR_PLIB, "samplesort sort failed");
   }
 #endif
   ierr = PetscFree(keysincopy);CHKERRQ(ierr);

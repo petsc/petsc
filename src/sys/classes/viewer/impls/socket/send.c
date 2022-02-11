@@ -69,7 +69,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 #else
     ierr = close(vmatlab->port);
 #endif
-    PetscAssertFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"System error closing socket");
+    PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"System error closing socket");
   }
   ierr = PetscFree(vmatlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -140,7 +140,7 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
         sleep((unsigned) 1);
       } else if (errno == ECONNREFUSED) {
         refcnt++;
-        PetscAssertFalse(refcnt > 5,PETSC_COMM_SELF,PETSC_ERR_SYS,"Connection refused by remote host %s port %d",hostname,portnum);
+        PetscCheckFalse(refcnt > 5,PETSC_COMM_SELF,PETSC_ERR_SYS,"Connection refused by remote host %s port %d",hostname,portnum);
         ierr = PetscInfo(NULL,"Connection refused in attaching socket, trying again\n");CHKERRQ(ierr);
         sleep((unsigned) 1);
       } else {
@@ -188,12 +188,12 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   ierr = PetscMemzero(&sa,sizeof(struct sockaddr_in));CHKERRQ(ierr);
 
   hp = gethostbyname(myname);
-  PetscAssertFalse(!hp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
+  PetscCheckFalse(!hp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
 
   sa.sin_family = hp->h_addrtype;
   sa.sin_port   = htons((u_short)portnum);
 
-  PetscAssertFalse((s = socket(AF_INET,SOCK_STREAM,0)) < 0,PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
+  PetscCheckFalse((s = socket(AF_INET,SOCK_STREAM,0)) < 0,PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
 #if defined(PETSC_HAVE_SO_REUSEADDR)
   {
     int optval = 1; /* Turn on the option */
@@ -242,7 +242,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport,int *t)
   PetscFunctionBegin;
   /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  PetscAssertFalse((*t = accept(listenport,(struct sockaddr*)&isa,(socklen_t*)&i)) < 0,PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()");
+  PetscCheckFalse((*t = accept(listenport,(struct sockaddr*)&isa,(socklen_t*)&i)) < 0,PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()");
   PetscFunctionReturn(0);
 }
 

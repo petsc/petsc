@@ -466,12 +466,12 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   }
 
   /* Lets check for some valid input */
-  PetscAssertFalse(genCtx.dim < 1 || genCtx.dim > 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid topological dimension specified: %d.", genCtx.dim);
-  PetscAssertFalse(genCtx.M * genCtx.N * genCtx.K != nprocs,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid [m, n, k] data: %d, %d, %d. Product must be equal to global size = %d.", genCtx.M, genCtx.N, genCtx.K, nprocs);
+  PetscCheckFalse(genCtx.dim < 1 || genCtx.dim > 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid topological dimension specified: %d.", genCtx.dim);
+  PetscCheckFalse(genCtx.M * genCtx.N * genCtx.K != nprocs,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid [m, n, k] data: %d, %d, %d. Product must be equal to global size = %d.", genCtx.M, genCtx.N, genCtx.K, nprocs);
   /* validate the bounds data */
-  PetscAssertFalse(genCtx.xyzbounds[0] >= genCtx.xyzbounds[1],PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "X-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[0], genCtx.xyzbounds[1]);
-  PetscAssertFalse(genCtx.dim > 1 && (genCtx.xyzbounds[2] >= genCtx.xyzbounds[3]),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Y-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[2], genCtx.xyzbounds[3]);
-  PetscAssertFalse(genCtx.dim > 2 && (genCtx.xyzbounds[4] >= genCtx.xyzbounds[5]),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Z-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[4], genCtx.xyzbounds[5]);
+  PetscCheckFalse(genCtx.xyzbounds[0] >= genCtx.xyzbounds[1],PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "X-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[0], genCtx.xyzbounds[1]);
+  PetscCheckFalse(genCtx.dim > 1 && (genCtx.xyzbounds[2] >= genCtx.xyzbounds[3]),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Y-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[2], genCtx.xyzbounds[3]);
+  PetscCheckFalse(genCtx.dim > 2 && (genCtx.xyzbounds[4] >= genCtx.xyzbounds[5]),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Z-dim: Left boundary cannot be greater than right. [%G >= %G]", genCtx.xyzbounds[4], genCtx.xyzbounds[5]);
 
   PetscInfo(NULL, "Local elements:= %d, %d, %d\n", genCtx.blockSizeElementXYZ[0], genCtx.blockSizeElementXYZ[1], genCtx.blockSizeElementXYZ[2]);
   PetscInfo(NULL, "Local vertices:= %d, %d, %d\n", genCtx.blockSizeVertexXYZ[0], genCtx.blockSizeVertexXYZ[1], genCtx.blockSizeVertexXYZ[2]);
@@ -523,7 +523,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   PetscInt               ml = 0, nl = 0, kl = 0;
 
   PetscFunctionBegin;
-  PetscAssertFalse(dim < 1 || dim > 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension argument for mesh: dim=[1,3].");
+  PetscCheckFalse(dim < 1 || dim > 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension argument for mesh: dim=[1,3].");
 
   ierr = PetscLogEventRegister("GenerateMesh", DM_CLASSID,   &genCtx.generateMesh);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AddVertices", DM_CLASSID,   &genCtx.generateVertices);CHKERRQ(ierr);
@@ -535,9 +535,9 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   n = pow(npts, dim);
 
   /* do some error checking */
-  PetscAssertFalse(n < 2,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of points must be >= 2.");
-  PetscAssertFalse(global_size > n,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of processors must be less than or equal to number of elements.");
-  PetscAssertFalse(nghost < 0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of ghost layers cannot be negative.");
+  PetscCheckFalse(n < 2,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of points must be >= 2.");
+  PetscCheckFalse(global_size > n,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of processors must be less than or equal to number of elements.");
+  PetscCheckFalse(nghost < 0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Number of ghost layers cannot be negative.");
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
   ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, dm);CHKERRQ(ierr);
@@ -588,7 +588,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   ierr = DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele);CHKERRQ(ierr);
 
-  //PetscAssertFalse(nele<nprocs,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
+  //PetscCheckFalse(nele<nprocs,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
 
   if (genCtx.adjEnts) genCtx.keep_skins = true; /* do not delete anything - consumes more memory */
 

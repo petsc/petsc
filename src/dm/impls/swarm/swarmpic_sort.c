@@ -140,10 +140,10 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *np
 
   PetscFunctionBegin;
   ctx = swarm->sort_context;
-  PetscAssertFalse(!ctx,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
-  PetscAssertFalse(!ctx->isvalid,PETSC_COMM_SELF,PETSC_ERR_USER,"SwarmPointSort container is not valid. Must call DMSwarmSortGetAccess() first");
-  PetscAssertFalse(e >= ctx->ncells,PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%D) is greater than max number of local cells (%D)",e,ctx->ncells);
-  PetscAssertFalse(e < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%D) cannot be negative",e);
+  PetscCheckFalse(!ctx,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
+  PetscCheckFalse(!ctx->isvalid,PETSC_COMM_SELF,PETSC_ERR_USER,"SwarmPointSort container is not valid. Must call DMSwarmSortGetAccess() first");
+  PetscCheckFalse(e >= ctx->ncells,PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%D) is greater than max number of local cells (%D)",e,ctx->ncells);
+  PetscCheckFalse(e < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Cell index (%D) cannot be negative",e);
   points_per_cell = ctx->pcell_offsets[e+1] - ctx->pcell_offsets[e];
   *npoints = points_per_cell;
   PetscFunctionReturn(0);
@@ -180,7 +180,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscIn
 
   PetscFunctionBegin;
   ctx = swarm->sort_context;
-  PetscAssertFalse(!ctx,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
+  PetscCheckFalse(!ctx,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
   ierr = DMSwarmSortGetNumberOfPointsPerCell(dm,e,&points_per_cell);CHKERRQ(ierr);
   ierr = PetscMalloc1(points_per_cell,&plist);CHKERRQ(ierr);
   for (p=0; p<points_per_cell; p++) {
@@ -299,7 +299,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
 
   PetscFunctionBegin;
   if (!swarm->sort_context) PetscFunctionReturn(0);
-  PetscAssertFalse(!swarm->sort_context->isvalid,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"You must call DMSwarmSortGetAccess() before calling DMSwarmSortRestoreAccess()");
+  PetscCheckFalse(!swarm->sort_context->isvalid,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"You must call DMSwarmSortGetAccess() before calling DMSwarmSortRestoreAccess()");
   swarm->sort_context->isvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

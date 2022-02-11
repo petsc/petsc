@@ -299,7 +299,7 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
 
       /* invert the jacobian */
       ierr = DMatrix_Invert_2x2_Internal(jacobian, ijacobian, volume);CHKERRQ(ierr);
-      PetscAssertFalse(*volume < 1e-12,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Quadrangular element has zero volume: %g. Degenerate element or invalid connectivity", *volume);
+      PetscCheckFalse(*volume < 1e-12,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Quadrangular element has zero volume: %g. Degenerate element or invalid connectivity", *volume);
 
       if (jxw) jxw[j] *= *volume;
 
@@ -325,7 +325,7 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
 
     /* invert the jacobian */
     ierr = DMatrix_Invert_2x2_Internal(jacobian, ijacobian, volume);CHKERRQ(ierr);
-    PetscAssertFalse(*volume < 1e-12,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Triangular element has zero volume: %g. Degenerate element or invalid connectivity", (double)*volume);
+    PetscCheckFalse(*volume < 1e-12,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Triangular element has zero volume: %g. Degenerate element or invalid connectivity", (double)*volume);
 
     const PetscReal Dx[3] = { ijacobian[0], ijacobian[2], - ijacobian[0] - ijacobian[2] };
     const PetscReal Dy[3] = { ijacobian[1], ijacobian[3], - ijacobian[1] - ijacobian[3] };
@@ -500,7 +500,7 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
 
       /* invert the jacobian */
       ierr = DMatrix_Invert_3x3_Internal(jacobian, ijacobian, volume);CHKERRQ(ierr);
-      PetscAssertFalse(*volume < 1e-8,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Hexahedral element has zero volume: %g. Degenerate element or invalid connectivity", *volume);
+      PetscCheckFalse(*volume < 1e-8,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Hexahedral element has zero volume: %g. Degenerate element or invalid connectivity", *volume);
 
       if (jxw) jxw[j] *= (*volume);
 
@@ -527,7 +527,7 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
 
     /* invert the jacobian */
     ierr = DMatrix_Invert_3x3_Internal(jacobian, ijacobian, volume);CHKERRQ(ierr);
-    PetscAssertFalse(*volume < 1e-8,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Tetrahedral element has zero volume: %g. Degenerate element or invalid connectivity", (double)*volume);
+    PetscCheckFalse(*volume < 1e-8,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Tetrahedral element has zero volume: %g. Degenerate element or invalid connectivity", (double)*volume);
 
     if (dphidx) {
       Dx[0] =   ( coords[1 + 2 * 3] * ( coords[2 + 1 * 3] - coords[2 + 3 * 3])
@@ -646,7 +646,7 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
 
   /* Get the quadrature points and weights for the given quadrature rule */
   ierr = PetscQuadratureGetData(quadrature, &idim, NULL, &npoints, &quadpts, &quadwts);CHKERRQ(ierr);
-  PetscAssertFalse(idim != dim,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Dimension mismatch: provided (%D) vs quadrature (%D)",idim,dim);
+  PetscCheckFalse(idim != dim,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Dimension mismatch: provided (%D) vs quadrature (%D)",idim,dim);
   if (jacobian_quadrature_weight_product) {
     ierr = PetscArraycpy(jacobian_quadrature_weight_product, quadwts, npoints);CHKERRQ(ierr);
   }
@@ -919,7 +919,7 @@ PetscErrorCode ComputeJacobian_Internal (const PetscInt dim, const PetscInt nver
     }
 
   }
-  PetscAssertFalse(volume < 1e-12,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Element has zero volume: %g. Degenerate element or invalid connectivity", volume);
+  PetscCheckFalse(volume < 1e-12,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Element has zero volume: %g. Degenerate element or invalid connectivity", volume);
   if (dvolume) *dvolume = volume;
   PetscFunctionReturn(0);
 }

@@ -143,7 +143,7 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(u,&low,NULL);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
-    PetscAssertFalse(values[i] != (PetscScalar)(i + low),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!");
+    PetscCheckFalse(values[i] != (PetscScalar)(i + low),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!");
   }
   ierr = VecRestoreArrayRead(u,&values);CHKERRQ(ierr);
 

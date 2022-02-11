@@ -172,7 +172,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
   PetscFunctionBegin;
   PetscValidHeader(src,1);
   PetscValidHeader(dest,2);
-  PetscAssertFalse(src->classid != dest->classid,src->comm,PETSC_ERR_ARG_INCOMP,"Objects must be of the same class");
+  PetscCheckFalse(src->classid != dest->classid,src->comm,PETSC_ERR_ARG_INCOMP,"Objects must be of the same class");
 
   ierr = PetscFree(dest->fortran_func_pointers);CHKERRQ(ierr);
   ierr = PetscMalloc(src->num_fortran_func_pointers*sizeof(void(*)(void)),&dest->fortran_func_pointers);CHKERRQ(ierr);
@@ -255,8 +255,8 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  PetscAssertFalse(cid < PETSC_SMALLEST_FORTRAN_CALLBACK,obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback Id invalid");
-  PetscAssertFalse(cid >= PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype],obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback not set on this object");
+  PetscCheckFalse(cid < PETSC_SMALLEST_FORTRAN_CALLBACK,obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback Id invalid");
+  PetscCheckFalse(cid >= PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype],obj->comm,PETSC_ERR_ARG_CORRUPT,"Fortran callback not set on this object");
   cb = &obj->fortrancallback[cbtype][cid-PETSC_SMALLEST_FORTRAN_CALLBACK];
   if (func) *func = cb->func;
   if (ctx) *ctx = cb->ctx;
@@ -358,7 +358,7 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_WORLD;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  PetscAssertFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only supports ASCII viewer");
+  PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only supports ASCII viewer");
   ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectsDump(fd,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -473,7 +473,7 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*han
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  PetscAssertFalse(obj->noptionhandler >= PETSC_MAX_OPTIONS_HANDLER,obj->comm,PETSC_ERR_ARG_OUTOFRANGE,"To many options handlers added");
+  PetscCheckFalse(obj->noptionhandler >= PETSC_MAX_OPTIONS_HANDLER,obj->comm,PETSC_ERR_ARG_OUTOFRANGE,"To many options handlers added");
   obj->optionhandler[obj->noptionhandler] = handle;
   obj->optiondestroy[obj->noptionhandler] = destroy;
   obj->optionctx[obj->noptionhandler++]   = ctx;
@@ -612,7 +612,7 @@ PetscErrorCode  PetscObjectDereference(PetscObject obj)
   PetscValidHeader(obj,1);
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(&obj);CHKERRQ(ierr);
-  } else PetscAssertFalse(!--obj->refct,PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
+  } else PetscCheckFalse(!--obj->refct,PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
   PetscFunctionReturn(0);
 }
 
@@ -648,7 +648,7 @@ PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscO
   PetscFunctionBegin;
   if (ptr) {
     ierr = PetscObjectListReverseFind(ptr->olist,obj,&tname,&skipreference);CHKERRQ(ierr);
-    PetscAssertFalse(tname && !skipreference,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was composed with it");
+    PetscCheckFalse(tname && !skipreference,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was composed with it");
   }
   ierr = PetscObjectListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -722,7 +722,7 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
   if (ptr) PetscValidHeader(ptr,3);
-  PetscAssertFalse(obj == ptr,PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot compose object with itself");
+  PetscCheckFalse(obj == ptr,PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot compose object with itself");
   ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -138,11 +138,11 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   cudaError_t    cerr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(ndim < 0,PETSC_COMM_SELF, PETSC_ERR_USER, "ndim %d must be > 0", ndim);
+  PetscCheckFalse(ndim < 0,PETSC_COMM_SELF, PETSC_ERR_USER, "ndim %d must be > 0", ndim);
   ierr = MatCreate(comm, A);CHKERRQ(ierr);
   m    = 1;
   for (d = 0; d < ndim; ++d) {
-    PetscAssertFalse(dim[d] < 0,PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%d]=%d must be > 0", d, dim[d]);
+    PetscCheckFalse(dim[d] < 0,PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%d]=%d must be > 0", d, dim[d]);
     m *= dim[d];
   }
   ierr = MatSetSizes(*A, m, m, m, m);CHKERRQ(ierr);

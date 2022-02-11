@@ -99,9 +99,9 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   */
 
   PetscFunctionBegin;
-  PetscAssertFalse(A->cmap->N != A->rmap->N,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_SIZ,"matrix must be square");
+  PetscCheckFalse(A->cmap->N != A->rmap->N,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_SIZ,"matrix must be square");
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
-  PetscAssertFalse(!ismpiaij,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only supports MPIAIJ matrices");
+  PetscCheckFalse(!ismpiaij,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only supports MPIAIJ matrices");
 
   /* generate the local to global mapping */
   ncol = a->A->cmap->n + a->B->cmap->n;
@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_compare(PETSC_COMM_WORLD,PetscObjectComm((PetscObject)pc),&cmp);CHKERRMPI(ierr);
-  PetscAssertFalse(cmp != MPI_IDENT && cmp != MPI_CONGRUENT,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"TFS only works with PETSC_COMM_WORLD objects");
+  PetscCheckFalse(cmp != MPI_IDENT && cmp != MPI_CONGRUENT,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"TFS only works with PETSC_COMM_WORLD objects");
   ierr = PetscNewLog(pc,&tfs);CHKERRQ(ierr);
 
   tfs->xxt = NULL;

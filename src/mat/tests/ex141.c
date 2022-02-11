@@ -19,7 +19,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscAssertFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* input matrix C */
   if (loadmat) {
@@ -73,7 +73,7 @@ int main(int argc,char **args)
   /* convert C to BAIJ format */
   ierr = MatConvert(C,MATSEQBAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = MatMultEqual(B,C,10,&equal);CHKERRQ(ierr);
-  PetscAssertFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert fails!");
+  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert fails!");
 
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);

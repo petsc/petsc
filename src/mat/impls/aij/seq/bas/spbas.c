@@ -645,7 +645,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
+  PetscCheckFalse(matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
 
   if (do_values) {
     ierr = PetscMalloc1(nrows, &vals);CHKERRQ(ierr);
@@ -686,7 +686,7 @@ PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A,const PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "must have diagonal offsets in pattern");
+  PetscCheckFalse(matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "must have diagonal offsets in pattern");
 
   for (i=0; i<nrows; i++) {
     icols   = matrix_A->icols[i];
@@ -804,10 +804,10 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix,PetscInt power, spbas_matrix *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(in_matrix.col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
-  PetscAssertFalse(ncols != nrows,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Dimension error");
-  PetscAssertFalse(in_matrix.values,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input array must be sparseness pattern (no values)");
-  PetscAssertFalse(power<=0,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Power must be 1 or up");
+  PetscCheckFalse(in_matrix.col_idx_type != SPBAS_DIAGONAL_OFFSETS,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern");
+  PetscCheckFalse(ncols != nrows,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Dimension error");
+  PetscCheckFalse(in_matrix.values,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input array must be sparseness pattern (no values)");
+  PetscCheckFalse(power<=0,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Power must be 1 or up");
 
   /* Copy input values*/
   retval.nrows        = ncols;
@@ -867,7 +867,7 @@ PetscErrorCode spbas_keep_upper(spbas_matrix * inout_matrix)
   PetscInt jstart;
 
   PetscFunctionBegin;
-  PetscAssertFalse(inout_matrix->block_data,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Not yet for block data matrices");
+  PetscCheckFalse(inout_matrix->block_data,PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Not yet for block data matrices");
   for (i=0; i<inout_matrix->nrows; i++)  {
     for (jstart=0; (jstart<inout_matrix->row_nnz[i]) && (inout_matrix->icols[i][jstart]<0); jstart++) {}
     if (jstart>0) {

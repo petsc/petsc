@@ -483,45 +483,45 @@ PetscErrorCode readinput(struct in *put)
 
   PetscFunctionBegin;
   ifp = fopen("ex5_control.txt", "r");
-  PetscAssertFalse(!ifp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open input file");
-  for (i=0; i<110; i++) { PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  PetscCheckFalse(!ifp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open input file");
+  for (i=0; i<110; i++) { PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->Ts = tmp;
 
-  for (i=0; i<43; i++) { PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<43; i++) { PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->Td = tmp;
 
-  for (i=0; i<43; i++) { PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<43; i++) { PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->Ta = tmp;
 
-  for (i=0; i<43; i++) { PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp)!= 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<43; i++) { PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp)!= 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->Tc = tmp;
 
-  for (i=0; i<43; i++) { PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<43; i++) { PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->fr = tmp;
 
-  for (i=0; i<43; i++) {PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<43; i++) {PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->wnd = tmp;
 
-  for (i=0; i<43; i++) {PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<43; i++) {PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->pwt = tmp;
 
-  for (i=0; i<43; i++) {PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<43; i++) {PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->wndDir = tmp;
 
-  for (i=0; i<43; i++) {PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<43; i++) {PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->time = tmp;
 
-  for (i=0; i<63; i++) {PetscAssertFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
-  PetscAssertFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
+  for (i=0; i<63; i++) {PetscCheckFalse(fscanf(ifp, "%c", &x) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");}
+  PetscCheckFalse(fscanf(ifp, "%lf", &tmp) != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to read file");
   put->init = tmp;
   PetscFunctionReturn(0);
 }

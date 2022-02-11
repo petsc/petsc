@@ -913,11 +913,11 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   PetscBool      done = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!mask[0],PETSC_COMM_SELF,PETSC_ERR_SUP,"Mask of 0th location must be set");
+  PetscCheckFalse(!mask[0],PETSC_COMM_SELF,PETSC_ERR_SUP,"Mask of 0th location must be set");
   for (i=0; i<n; i++) {
     if (mask[i]) continue;
-    PetscAssertFalse(parentid[i]  == i,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Node labeled as own parent");
-    PetscAssertFalse(parentid[i] && mask[parentid[i]],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Parent is masked");
+    PetscCheckFalse(parentid[i]  == i,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Node labeled as own parent");
+    PetscCheckFalse(parentid[i] && mask[parentid[i]],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Parent is masked");
   }
 
   for (i=0; i<n; i++) {
@@ -968,7 +968,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
     ierr  = PetscArraycpy(idbylevel+tcnt,workid,cnt);CHKERRQ(ierr);
     tcnt += cnt;
   }
-  PetscAssertFalse(tcnt != nmask,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent count of unmasked nodes");
+  PetscCheckFalse(tcnt != nmask,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent count of unmasked nodes");
   ierr = PetscFree2(workid,workparentid);CHKERRQ(ierr);
 
   /* for each node list its column */

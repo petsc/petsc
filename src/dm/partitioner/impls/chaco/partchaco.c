@@ -105,7 +105,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     ival = (numVertices > 0);
     ierr = MPI_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm);CHKERRMPI(ierr);
     distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
-    PetscAssertFalse(distributed,comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
+    PetscCheckFalse(distributed,comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
   }
   if (!numVertices) { /* distributed case, return if not holding the graph */
     ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   {
     int piperet;
     piperet = pipe(fd_pipe);
-    PetscAssertFalse(piperet,PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not create pipe");
+    PetscCheckFalse(piperet,PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not create pipe");
     fd_stdout = dup(1);
     close(1);
     dup2(fd_pipe[1], 1);
@@ -152,10 +152,10 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     close(fd_stdout);
     close(fd_pipe[0]);
     close(fd_pipe[1]);
-    PetscAssertFalse(ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
+    PetscCheckFalse(ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
   }
 #else
-  PetscAssertFalse(ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
+  PetscCheckFalse(ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
 #endif
   /* Convert to PetscSection+IS */
   for (v = 0; v < nvtxs; ++v) {
@@ -167,7 +167,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
       if (assignment[v] == p) points[i++] = v;
     }
   }
-  PetscAssertFalse(i != nvtxs,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
+  PetscCheckFalse(i != nvtxs,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
   ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   if (global_method == INERTIAL_METHOD) {
     /* manager.destroyCellCoordinates(nvtxs, &x, &y, &z); */

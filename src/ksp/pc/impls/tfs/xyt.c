@@ -90,7 +90,7 @@ PetscErrorCode XYT_factor(xyt_ADT xyt_handle,     /* prev. allocated xyt  handle
   check_handle(xyt_handle);
 
   /* only 2^k for now and all nodes participating */
-  PetscAssertFalse((1<<(xyt_handle->level=PCTFS_i_log2_num_nodes))!=PCTFS_num_nodes,PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D",1<<PCTFS_i_log2_num_nodes,PCTFS_num_nodes);
+  PetscCheckFalse((1<<(xyt_handle->level=PCTFS_i_log2_num_nodes))!=PCTFS_num_nodes,PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D",1<<PCTFS_i_log2_num_nodes,PCTFS_num_nodes);
 
   /* space for X info */
   xyt_handle->info = (xyt_info*)malloc(sizeof(xyt_info));
@@ -323,7 +323,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
   for (dim=i=j=0; i<m; i++) {
     /* time to move to the next level? */
     while (i==segs[dim]) {
-      PetscAssertFalse(dim==level,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level");
+      PetscCheckFalse(dim==level,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level");
       stages[dim++]=i;
       end         +=lnsep[dim];
     }
@@ -408,7 +408,7 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
 
     /* check for small alpha                             */
     /* LATER use this to detect and determine null space */
-    PetscAssertFalse(PetscAbsScalar(alpha)<1.0e-14,PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g",alpha);
+    PetscCheckFalse(PetscAbsScalar(alpha)<1.0e-14,PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g",alpha);
 
     /* compute v_l = v_l/sqrt(alpha) */
     PCTFS_rvec_scale(v,1.0/alpha,n);
@@ -589,11 +589,11 @@ static PetscErrorCode check_handle(xyt_ADT xyt_handle)
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 
   PetscFunctionBegin;
-  PetscAssertFalse(!xyt_handle,PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D",xyt_handle);
+  PetscCheckFalse(!xyt_handle,PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D",xyt_handle);
 
   vals[0]=vals[1]=xyt_handle->id;
   PCTFS_giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
-  PetscAssertFalse((vals[0]!=vals[1])||(xyt_handle->id<=0),PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D", vals[0],vals[1], xyt_handle->id);
+  PetscCheckFalse((vals[0]!=vals[1])||(xyt_handle->id<=0),PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D", vals[0],vals[1], xyt_handle->id);
   PetscFunctionReturn(0);
 }
 

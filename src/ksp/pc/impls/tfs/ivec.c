@@ -265,7 +265,7 @@ PetscErrorCode PCTFS_ivec_sort(PetscInt *ar,  PetscInt size)
       SWAP(*ar,*pj)
 
       /* test stack_size to see if we've exhausted our stack */
-      PetscAssertFalse(top_s-bottom_s >= SORT_STACK,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort() :: STACK EXHAUSTED!!!");
+      PetscCheckFalse(top_s-bottom_s >= SORT_STACK,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort() :: STACK EXHAUSTED!!!");
 
       /* push right hand child iff length > 1 */
       if ((*top_s = size-((PetscInt) (pi-ar)))) {
@@ -358,7 +358,7 @@ PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *ar,  PetscInt *ar2,  PetscInt
       SWAP(*ar2,*pj2)
 
       /* test stack_size to see if we've exhausted our stack */
-      PetscAssertFalse(top_s-bottom_s >= SORT_STACK,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort_companion() :: STACK EXHAUSTED!!!");
+      PetscCheckFalse(top_s-bottom_s >= SORT_STACK,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort_companion() :: STACK EXHAUSTED!!!");
 
       /* push right hand child iff length > 1 */
       if ((*top_s = size-((PetscInt) (pi-ar)))) {
@@ -458,7 +458,7 @@ PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt *ar,  PetscInt **ar2, Pet
       P_SWAP(*ar2,*pj2)
 
       /* test stack_size to see if we've exhausted our stack */
-      PetscAssertFalse(top_s-bottom_s >= SORT_STACK,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort_companion_hack() :: STACK EXHAUSTED!!!");
+      PetscCheckFalse(top_s-bottom_s >= SORT_STACK,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_ivec_sort_companion_hack() :: STACK EXHAUSTED!!!");
 
       /* push right hand child iff length > 1 */
       if ((*top_s = size-((PetscInt) (pi-ar)))) {

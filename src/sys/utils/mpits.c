@@ -40,7 +40,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
     b1[0] = -(PetscMPIInt)twosided;
     b1[1] = (PetscMPIInt)twosided;
     ierr  = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,comm);CHKERRMPI(ierr);
-    PetscAssertFalse(-b2[0] != b2[1],comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
+    PetscCheckFalse(-b2[0] != b2[1],comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes");
   }
   _twosided_type = twosided;
   PetscFunctionReturn(0);
@@ -92,7 +92,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  PetscAssertFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   tdata = (char*)todata;
   ierr  = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
   for (i=0; i<nto; i++) {
@@ -157,7 +157,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
   ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
   if (!counter->iflags) {
     ierr   = PetscCalloc1(size,&counter->iflags);CHKERRQ(ierr);
     iflags = counter->iflags;
@@ -169,7 +169,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr     = MPIU_Allreduce(MPI_IN_PLACE,iflags,size,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   nrecvs   = iflags[rank];
   ierr     = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  PetscAssertFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
   ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
   ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
   if (!counter->iflags) {
     ierr   = PetscCalloc1(size,&counter->iflags);CHKERRQ(ierr);
     iflags = counter->iflags;
@@ -218,7 +218,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
   ierr     = MPI_Reduce_scatter_block(iflags,&nrecvs,1,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
   ierr     = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  PetscAssertFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
   ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
@@ -337,7 +337,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
   ierr = PetscMalloc1(*nfrom*ntags,&recvreq);CHKERRQ(ierr);
 
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  PetscAssertFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   for (i=0; i<nto; i++) {
     PetscMPIInt k;
     for (k=0; k<ntags; k++) sendreq[i*ntags+k] = MPI_REQUEST_NULL;
@@ -378,7 +378,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
     ierr = PetscCommGetNewTag(comm,&tags[i]);CHKERRQ(ierr);
   }
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRMPI(ierr);
-  PetscAssertFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+  PetscCheckFalse(lb != 0,comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
   tdata = (char*)todata;
   ierr = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
   ierr = PetscMalloc1(nto*ntags,&usendreqs);CHKERRQ(ierr);
@@ -552,7 +552,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   for (i=0; i<nto; i++) {
-    PetscAssertFalse(toranks[i] < 0 || size <= toranks[i],comm,PETSC_ERR_ARG_OUTOFRANGE,"toranks[%d] %d not in comm size %d",i,toranks[i],size);
+    PetscCheckFalse(toranks[i] < 0 || size <= toranks[i],comm,PETSC_ERR_ARG_OUTOFRANGE,"toranks[%d] %d not in comm size %d",i,toranks[i],size);
   }
   ierr = PetscLogEventSync(PETSC_BuildTwoSidedF,comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PETSC_BuildTwoSidedF,0,0,0,0);CHKERRQ(ierr);

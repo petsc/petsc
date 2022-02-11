@@ -41,7 +41,7 @@ static PetscErrorCode PCApplyTranspose_SOR(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   ierr = MatIsSymmetricKnown(pc->pmat,&set,&sym);CHKERRQ(ierr);
-  PetscAssertFalse(!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
+  PetscCheckFalse(!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
   ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
   ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -133,7 +133,7 @@ static PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
   PC_SOR *jac = (PC_SOR*)pc->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(omega >= 2.0 || omega <= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
+  PetscCheckFalse(omega >= 2.0 || omega <= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   jac->omega = omega;
   PetscFunctionReturn(0);
 }

@@ -118,7 +118,7 @@ static PetscInt  inoviewers = 0;
 PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 {
   PetscFunctionBegin;
-  PetscAssertFalse(inoviewers > PETSCVIEWERGETVIEWEROFFPUSHESMAX - 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPushGetViewerOff(), perhaps you forgot PetscOptionsPopGetViewerOff()?");
+  PetscCheckFalse(inoviewers > PETSCVIEWERGETVIEWEROFFPUSHESMAX - 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPushGetViewerOff(), perhaps you forgot PetscOptionsPopGetViewerOff()?");
 
   noviewers[inoviewers++] = noviewer;
   noviewer = flg;
@@ -141,7 +141,7 @@ PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 {
   PetscFunctionBegin;
-  PetscAssertFalse(!inoviewers,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");
+  PetscCheckFalse(!inoviewers,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");
   noviewer = noviewers[--inoviewers];
   PetscFunctionReturn(0);
 }
@@ -274,7 +274,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
       }
       if (loc3_fmode) *loc3_fmode++ = 0;
       ierr = PetscStrendswithwhich(*loc0_vtype ? loc0_vtype : "ascii",viewers,&cnt);CHKERRQ(ierr);
-      PetscAssertFalse(cnt > (PetscInt) sizeof(viewers)-1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",loc0_vtype);
+      PetscCheckFalse(cnt > (PetscInt) sizeof(viewers)-1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",loc0_vtype);
       if (viewer) {
         if (!loc1_fname) {
           switch (cnt) {
@@ -329,7 +329,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
             fmode = FILE_MODE_WRITE;
             if (loc3_fmode && *loc3_fmode) { /* Has non-empty file mode ("write" or "append") */
               ierr = PetscEnumFind(PetscFileModes,loc3_fmode,(PetscEnum*)&fmode,&flag);CHKERRQ(ierr);
-              PetscAssertFalse(!flag,comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
+              PetscCheckFalse(!flag,comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
             }
             if (loc2_fmt) {
               PetscBool tk,im;
@@ -357,7 +357,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 
         ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)&tfmt,&flag);CHKERRQ(ierr);
         if (format) *format = tfmt;
-        PetscAssertFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
+        PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
       } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
         ierr = PetscViewerGetFormat(*viewer,format);CHKERRQ(ierr);
       }
@@ -439,7 +439,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
 
   ierr =  PetscFunctionListFind(PetscViewerList,type,&r);CHKERRQ(ierr);
-  PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
 
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
   ierr = (*r)(viewer);CHKERRQ(ierr);

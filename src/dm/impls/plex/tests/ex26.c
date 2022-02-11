@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
   ierr = PetscOptionsString("-o", "Filename to write", "ex26", ofilename, ofilename, sizeof(ofilename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-order", "FEM polynomial order", "ex26", order, &order, NULL,1);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscAssertFalse((order > 2) || (order < 1),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported polynomial order %D not in [1, 2]", order);
+  PetscCheckFalse((order > 2) || (order < 1),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported polynomial order %D not in [1, 2]", order);
 
   /* Read the mesh from a file in any supported format */
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
@@ -394,7 +394,7 @@ int main(int argc, char **argv) {
     ierr = VecLoad(tmpVec, viewer);CHKERRQ(ierr);
     ierr = VecAXPY(UA, -1.0, tmpVec);CHKERRQ(ierr);
     ierr = VecNorm(UA, NORM_INFINITY, &norm);CHKERRQ(ierr);
-    PetscAssertFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha ||Vin - Vout|| = %g", (double) norm);
+    PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha ||Vin - Vout|| = %g", (double) norm);
     ierr = DMRestoreGlobalVector(dmUA, &tmpVec);CHKERRQ(ierr);
 
     /* same thing with the UA2 Vec obtained from the superDM */
@@ -408,7 +408,7 @@ int main(int argc, char **argv) {
     ierr = VecLoad(tmpVec,viewer);CHKERRQ(ierr);
     ierr = VecAXPY(UA2, -1.0, tmpVec);CHKERRQ(ierr);
     ierr = VecNorm(UA2, NORM_INFINITY, &norm);CHKERRQ(ierr);
-    PetscAssertFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha2 ||Vin - Vout|| = %g", (double) norm);
+    PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha2 ||Vin - Vout|| = %g", (double) norm);
     ierr = DMRestoreGlobalVector(dmUA2, &tmpVec);CHKERRQ(ierr);
 
     /* Building and saving Sigma
@@ -462,7 +462,7 @@ int main(int argc, char **argv) {
     ierr = VecLoad(tmpVec,viewer);CHKERRQ(ierr);
     ierr = VecAXPY(S, -1.0, tmpVec);CHKERRQ(ierr);
     ierr = VecNorm(S, NORM_INFINITY, &norm);CHKERRQ(ierr);
-    PetscAssertFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g", (double) norm);
+    PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g", (double) norm);
     ierr = DMRestoreGlobalVector(dmS, &tmpVec);CHKERRQ(ierr);
   }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

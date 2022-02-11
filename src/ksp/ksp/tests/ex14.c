@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
-  PetscAssertFalse(user.param >= bratu_lambda_max || user.param <= bratu_lambda_min,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
+  PetscCheckFalse(user.param >= bratu_lambda_max || user.param <= bratu_lambda_min,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
   N = user.mx*user.my;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   Nx   = PETSC_DECIDE; Ny = PETSC_DECIDE;
   ierr = PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
-  PetscAssertFalse(Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE),PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Incompatible number of processors:  Nx * Ny != size");
+  PetscCheckFalse(Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE),PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.da);CHKERRQ(ierr);
   ierr = DMSetUp(user.da);CHKERRQ(ierr);

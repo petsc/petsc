@@ -29,7 +29,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  PetscAssertFalse(!iascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer type %s not supported for AO MemoryScalable",((PetscObject)viewer)->type_name);
+  PetscCheckFalse(!iascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer type %s not supported for AO MemoryScalable",((PetscObject)viewer)->type_name);
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao),&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ao),&size);CHKERRMPI(ierr);
@@ -193,7 +193,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,const 
       count++;
     }
   }
-  PetscAssertFalse(nsends != count,comm,PETSC_ERR_SUP,"nsends %" PetscInt_FMT " != count %" PetscInt_FMT,nsends,count);
+  PetscCheckFalse(nsends != count,comm,PETSC_ERR_SUP,"nsends %" PetscInt_FMT " != count %" PetscInt_FMT,nsends,count);
 
   /* wait on 1st sends */
   if (nsends) {
@@ -360,7 +360,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
       count++;
     }
   }
-  PetscAssertFalse(nsends != count,comm,PETSC_ERR_SUP,"nsends %" PetscInt_FMT " != count %" PetscInt_FMT,nsends,count);
+  PetscCheckFalse(nsends != count,comm,PETSC_ERR_SUP,"nsends %" PetscInt_FMT " != count %" PetscInt_FMT,nsends,count);
 
   /* wait on sends */
   if (nsends) {
@@ -403,7 +403,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   PetscMPIInt       size,rank;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!isapp,PetscObjectComm((PetscObject)ao),PETSC_ERR_ARG_WRONGSTATE,"AOSetIS() must be called before AOSetType()");
+  PetscCheckFalse(!isapp,PetscObjectComm((PetscObject)ao),PETSC_ERR_ARG_WRONGSTATE,"AOSetIS() must be called before AOSetType()");
   /* create special struct aomems */
   ierr     = PetscNewLog(ao,&aomems);CHKERRQ(ierr);
   ao->data = (void*) aomems;

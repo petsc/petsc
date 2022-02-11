@@ -52,7 +52,7 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
   PetscValidCharPointer(format,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (!isstring) PetscFunctionReturn(0);
-  PetscAssertFalse(!vstr->string,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerStringSetString() before using");
+  PetscCheckFalse(!vstr->string,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerStringSetString() before using");
 
   va_start(Argp,format);
   ierr = PetscVSNPrintf(tmp,4096,format,&fullLength,Argp);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ PetscErrorCode  PetscViewerStringGetStringRead(PetscViewer viewer,const char *st
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
-  PetscAssertFalse(!isstring,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for PETSCVIEWERSTRING");
+  PetscCheckFalse(!isstring,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for PETSCVIEWERSTRING");
   if (string) *string = vstr->string;
   if (len)    *len    = vstr->maxlen;
   PetscFunctionReturn(0);
@@ -217,7 +217,7 @@ PetscErrorCode  PetscViewerStringSetString(PetscViewer viewer,char string[],size
   PetscValidCharPointer(string,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (!isstring) PetscFunctionReturn(0);
-  PetscAssertFalse(len <= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
+  PetscCheckFalse(len <= 2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
 
   ierr         = PetscArrayzero(string,len);CHKERRQ(ierr);
   vstr->string = string;

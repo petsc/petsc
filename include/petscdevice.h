@@ -37,7 +37,7 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
 #else /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
 #define CHKERRCUDA(cerr) do { \
   const cudaError_t _p_cuda_err__ = cerr; \
-  PetscAssert(_p_cuda_err__ == cudaSuccess,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuda error %d",(PetscErrorCode)_p_cuda_err__);
+  PetscCheck(_p_cuda_err__ == cudaSuccess,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuda error %d",(PetscErrorCode)_p_cuda_err__);
 } while (0)
 
 #endif /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
@@ -68,14 +68,14 @@ do {\
   if (PetscUnlikely(_p_cusparse_stat__)) {\
     const char *name  = cusparseGetErrorName(_p_cusparse_stat__);\
     const char *descr = cusparseGetErrorString(_p_cusparse_stat__);\
-    PetscAssert((_p_cusparse_stat__ != CUSPARSE_STATUS_NOT_INITIALIZED) && (_p_cusparse_stat__ != CUSPARSE_STATUS_ALLOC_FAILED),PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuSPARSE errorcode %d (%s) : %s. Reports not initialized or alloc failed; this indicates the GPU has run out resources",(int)_p_cusparse_stat__,name,descr); \
+    PetscCheck((_p_cusparse_stat__ != CUSPARSE_STATUS_NOT_INITIALIZED) && (_p_cusparse_stat__ != CUSPARSE_STATUS_ALLOC_FAILED),PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuSPARSE errorcode %d (%s) : %s. Reports not initialized or alloc failed; this indicates the GPU has run out resources",(int)_p_cusparse_stat__,name,descr); \
     else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d (%s) : %s",(int)_p_cusparse_stat__,name,descr);\
   }\
 } while (0)
 #else  /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
 #define CHKERRCUSPARSE(stat) do { \
   const cusparseStatus_t _p_cusparse_stat__ = stat; \
-  PetscAssert(_p_cusparse_stat__ == CUSPARSE_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d",(PetscErrorCode)_p_cusparse_stat__); \
+  PetscCheck(_p_cusparse_stat__ == CUSPARSE_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d",(PetscErrorCode)_p_cusparse_stat__); \
   } while (0)
 #endif /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
 
@@ -178,7 +178,7 @@ PETSC_EXTERN const char* PetscHIPBLASGetErrorName(hipblasStatus_t); /* PETSC_EXT
 /* TODO: SEK:  Need to figure out the hipsolver issues */
 #define CHKERRHIPSOLVER(stat) do { \
     const hipsolverStatus_t _p_hipsolver_stat__ = stat; \
-    PetscAssert(!_p_hipsolver_stat__,PETSC_COMM_SELF,PETSC_ERR_GPU,"HIPSOLVER error %d",(PetscErrorCode)_p_hipsolver_stat__); \
+    PetscCheck(!_p_hipsolver_stat__,PETSC_COMM_SELF,PETSC_ERR_GPU,"HIPSOLVER error %d",(PetscErrorCode)_p_hipsolver_stat__); \
   } while (0)
 
 /* hipSolver does not exist yet so we work around it

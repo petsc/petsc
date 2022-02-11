@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   } else {
     ierr = DMStagVecGetArrayRead(dm,vecLocal2,&a2);CHKERRQ(ierr);
     ierr = DMStagGetGlobalSizes(dm,&Nx,&Ny,NULL);CHKERRQ(ierr);
-    PetscAssertFalse(stencilWidth > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Non-periodic check implemented assuming stencilWidth = 1");
+    PetscCheckFalse(stencilWidth > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Non-periodic check implemented assuming stencilWidth = 1");
       for (j=starty; j<starty + ny; ++j) {
         for (i=startx; i<startx + nx; ++i) {
           PetscInt  dd,extra[2];

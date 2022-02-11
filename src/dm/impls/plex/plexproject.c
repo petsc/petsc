@@ -308,7 +308,7 @@ static PetscErrorCode DMProjectPoint_BdField_Private(DM dm, PetscDS ds, DM dmIn,
   PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
-  PetscAssertFalse(dm != dmIn,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Not yet upgraded to use different input DM");
+  PetscCheckFalse(dm != dmIn,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Not yet upgraded to use different input DM");
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetComponents(ds, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(ds, &uOff);CHKERRQ(ierr);
@@ -456,7 +456,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
 
       ierr = PetscDualSpaceGetAllData(sp[f],&fAllPoints, NULL);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(fAllPoints, &qdim, NULL, &fNumPoints, &fPoints, NULL);CHKERRQ(ierr);
-      PetscAssertFalse(qdim != dim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Spatial dimension %D for dual basis does not match input dimension %D", qdim, dim);
+      PetscCheckFalse(qdim != dim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Spatial dimension %D for dual basis does not match input dimension %D", qdim, dim);
       for (q = 0; q < fNumPoints*dim; ++q) points[numPoints*dim+q] = fPoints[q];
       numPoints += fNumPoints;
     }
@@ -597,7 +597,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   if (dmAux) {
     ierr = DMConvert(dmAux, DMPLEX, &plexAux);CHKERRQ(ierr);
     if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) {
-      PetscAssertFalse(!localA,PETSC_COMM_SELF, PETSC_ERR_USER, "Missing localA vector");
+      PetscCheckFalse(!localA,PETSC_COMM_SELF, PETSC_ERR_USER, "Missing localA vector");
     }
   }
   /* Determine height for iteration of all meshes */
@@ -637,7 +637,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     {
       PetscInt dimProj = PetscMin(PetscMin(dim, dimIn), dimAux);
 
-      PetscAssertFalse(PetscAbsInt(dimProj - dim) > 1 || PetscAbsInt(dimProj - dimIn) > 1 || PetscAbsInt(dimProj - dimAux) > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not currently support differences of more than 1 in dimension");
+      PetscCheckFalse(PetscAbsInt(dimProj - dim) > 1 || PetscAbsInt(dimProj - dimIn) > 1 || PetscAbsInt(dimProj - dimAux) > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not currently support differences of more than 1 in dimension");
       if (dimProj < dim) minHeight = 1;
       htInc    =  dim    - dimProj;
       htIncIn  =  dimIn  - dimProj;
@@ -648,7 +648,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   ierr = DMPlexGetDepthLabel(plex, &depthLabel);CHKERRQ(ierr);
   ierr = DMPlexGetMaxProjectionHeight(plex, &maxHeight);CHKERRQ(ierr);
   maxHeight = PetscMax(maxHeight, minHeight);
-  PetscAssert(maxHeight >= 0 && maxHeight <= dim,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %D not in [0, %D)", maxHeight, dim);
+  PetscCheck(maxHeight >= 0 && maxHeight <= dim,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %D not in [0, %D)", maxHeight, dim);
   ierr = DMGetFirstLabeledPoint(dm, dm, label, numIds, ids, 0, NULL, &ds);CHKERRQ(ierr);
   if (!ds) {ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);}
   ierr = DMGetFirstLabeledPoint(dmIn, dm, label, numIds, ids, 0, NULL, &dsIn);CHKERRQ(ierr);
@@ -723,7 +723,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     const PetscReal *points;
     PetscInt         numPoints;
 
-    PetscAssertFalse(maxHeight > minHeight,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
+    PetscCheckFalse(maxHeight > minHeight,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
     ierr = PetscDualSpaceGetAllPointsUnion(Nf, sp, dim-htInc, funcs, &allPoints);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(allPoints, NULL, NULL, &numPoints, &points, NULL);CHKERRQ(ierr);
     ierr = PetscMalloc2(NfIn, &T, NfAux, &TAux);CHKERRQ(ierr);
@@ -784,7 +784,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     }
     p    = lStart < 0 ? pStart : lStart;
     ierr = DMPlexVecGetClosure(plex, section, localX, p, &numValues, NULL);CHKERRQ(ierr);
-    PetscAssertFalse(numValues != totDim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The output section point (%D) closure size %D != dual space dimension %D at height %D in [%D, %D]", p, numValues, totDim, h, minHeight, maxHeight);
+    PetscCheckFalse(numValues != totDim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The output section point (%D) closure size %D != dual space dimension %D at height %D in [%D, %D]", p, numValues, totDim, h, minHeight, maxHeight);
     if (!totDim) {
       ierr = ISDestroy(&heightIS);CHKERRQ(ierr);
       continue;
@@ -806,7 +806,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       }
       ierr = DMGetEnclosurePoint(dmIn, dm, encIn, lStart < 0 ? pStart : lStart, &pIn);CHKERRQ(ierr);
       ierr = DMPlexVecGetClosure(plexIn, NULL, localU, pIn, &numValuesIn, NULL);CHKERRQ(ierr);
-      PetscAssertFalse(numValuesIn != totDimIn,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The input section point (%D) closure size %D != dual space dimension %D at height %D", pIn, numValuesIn, totDimIn, htIncIn);
+      PetscCheckFalse(numValuesIn != totDimIn,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The input section point (%D) closure size %D != dual space dimension %D at height %D", pIn, numValuesIn, totDimIn, htIncIn);
       if (htIncIn) {ierr = PetscDSGetHeightSubspace(dsIn, hEffIn, &dsEffIn);CHKERRQ(ierr);}
     }
     if (htIncAux) {ierr = PetscDSGetHeightSubspace(dsAux, hEffAux, &dsEffAux);CHKERRQ(ierr);}

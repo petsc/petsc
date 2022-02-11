@@ -72,7 +72,7 @@ static PetscErrorCode TestExplicitTS(TS ts,PetscInt order,const char subtype[])
   ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   for (i = 0; i < order; i++) {
     PetscReal error = PetscAbsReal(PetscRealPart(xx[i]) - PetscPowReal(t,i+1));
-    PetscAssertFalse(error > eps,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad solution, error %g, %s '%s'",(double)error,type,subtype);
+    PetscCheckFalse(error > eps,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad solution, error %g, %s '%s'",(double)error,type,subtype);
   }
   ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ static PetscErrorCode TestExplicitTS(TS ts,PetscInt order,const char subtype[])
   ierr = VecGetArrayRead(Y,&yy);CHKERRQ(ierr);
   for (i = 0; done && i < order-1; i++) {
     PetscReal error = PetscAbsReal(PetscRealPart(yy[i]) - PetscPowReal(t,i+1));
-    PetscAssertFalse(error > eps,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad estimator, error %g, %s '%s'",(double)error,type,subtype);
+    PetscCheckFalse(error > eps,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad estimator, error %g, %s '%s'",(double)error,type,subtype);
   }
   ierr = VecRestoreArrayRead(Y,&yy);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
@@ -99,8 +99,8 @@ static PetscErrorCode TestExplicitTS(TS ts,PetscInt order,const char subtype[])
   ierr = TSSetErrorIfStepFails(ts,PETSC_TRUE);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&step);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
-  PetscAssertFalse(step != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad step number %D, %s '%s'",step,type,subtype);
-  PetscAssertFalse(reason != TS_DIVERGED_STEP_REJECTED,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad reason %s, %s '%s'",TSConvergedReasons[reason],type,subtype);
+  PetscCheckFalse(step != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad step number %D, %s '%s'",step,type,subtype);
+  PetscCheckFalse(reason != TS_DIVERGED_STEP_REJECTED,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bad reason %s, %s '%s'",TSConvergedReasons[reason],type,subtype);
   PetscFunctionReturn(0);
 }
 

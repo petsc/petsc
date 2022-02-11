@@ -29,7 +29,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
 
   ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscPartitionerList, name, &r);CHKERRQ(ierr);
-  PetscAssertFalse(!r,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
 
   if (part->ops->destroy) {
     ierr = (*part->ops->destroy)(part);CHKERRQ(ierr);
@@ -305,8 +305,8 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidLogicalCollectiveInt(part, nparts, 2);
-  PetscAssertFalse(nparts <= 0,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Number of parts must be positive");
-  PetscAssertFalse(numVertices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
+  PetscCheckFalse(nparts <= 0,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Number of parts must be positive");
+  PetscCheckFalse(numVertices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices must be non-negative");
   if (numVertices && !part->noGraph) {
     PetscValidIntPointer(start, 4);
     PetscValidIntPointer(start + numVertices, 4);
@@ -317,14 +317,14 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
 
     PetscValidHeaderSpecific(vertexSection, PETSC_SECTION_CLASSID, 6);
     ierr = PetscSectionGetChart(vertexSection, &s, &e);CHKERRQ(ierr);
-    PetscAssertFalse(s > 0 || e < numVertices,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid vertexSection chart [%D,%D)",s,e);
+    PetscCheckFalse(s > 0 || e < numVertices,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid vertexSection chart [%D,%D)",s,e);
   }
   if (targetSection) {
     PetscInt s,e;
 
     PetscValidHeaderSpecific(targetSection, PETSC_SECTION_CLASSID, 7);
     ierr = PetscSectionGetChart(targetSection, &s, &e);CHKERRQ(ierr);
-    PetscAssertFalse(s > 0 || e < nparts,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid targetSection chart [%D,%D)",s,e);
+    PetscCheckFalse(s > 0 || e < nparts,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid targetSection chart [%D,%D)",s,e);
   }
   PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 8);
   PetscValidPointer(partition, 9);
@@ -335,7 +335,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     ierr = PetscSectionSetDof(partSection, 0, numVertices);CHKERRQ(ierr);
     ierr = ISCreateStride(PetscObjectComm((PetscObject)part),numVertices,0,1,partition);CHKERRQ(ierr);
   } else {
-    PetscAssertFalse(!part->ops->partition,PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "PetscPartitioner %s has no partitioning method", ((PetscObject)part)->type_name);
+    PetscCheckFalse(!part->ops->partition,PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "PetscPartitioner %s has no partitioning method", ((PetscObject)part)->type_name);
     ierr = (*part->ops->partition)(part, nparts, numVertices, start, adjacency, vertexSection, targetSection, partSection, partition);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);

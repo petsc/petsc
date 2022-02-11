@@ -26,7 +26,7 @@ PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(A,fraction,2);
   PetscValidPointer(bw, 3);
-  PetscAssertFalse((fraction > 0.0) && (fraction < 1.0),PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "We do not yet support a fractional bandwidth");
+  PetscCheckFalse((fraction > 0.0) && (fraction < 1.0),PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "We do not yet support a fractional bandwidth");
   ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
   for (r = rStart; r < rEnd; ++r) {
     const PetscInt *cols;

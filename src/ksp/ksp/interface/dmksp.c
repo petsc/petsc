@@ -149,7 +149,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
-  PetscAssertFalse(!kdm->originaldm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMKSP has a NULL originaldm");
+  PetscCheckFalse(!kdm->originaldm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMKSP has a NULL originaldm");
   if (kdm->originaldm != dm) {  /* Copy on write */
     DMKSP oldkdm = kdm;
     ierr      = PetscInfo(dm,"Copying DMKSP due to write\n");CHKERRQ(ierr);

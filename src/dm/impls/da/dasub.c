@@ -41,8 +41,8 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   PetscMPIInt    rank,root;
 
   PetscFunctionBegin;
-  PetscAssertFalse(da->dim == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 1d DMDA");
-  PetscAssertFalse(da->dim == 3,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 3d DMDA");
+  PetscCheckFalse(da->dim == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 1d DMDA");
+  PetscCheckFalse(da->dim == 3,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 3d DMDA");
 
   *II = -1;
   *JJ = -1;
@@ -111,7 +111,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
   PetscInt       *indices,i,j;
 
   PetscFunctionBegin;
-  PetscAssertFalse(da->dim == 3,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
+  PetscCheckFalse(da->dim == 3,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank);CHKERRMPI(ierr);
   ierr = DMDAGetAO(da, &ao);CHKERRQ(ierr);
   if (rank == 0) {
@@ -126,7 +126,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
         ierr = VecSetSizes(*newvec, dd->w, PETSC_DETERMINE);CHKERRQ(ierr);
         ierr = VecSetType(*newvec, VECSEQ);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PETSC_COMM_SELF, dd->w, indices, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
-      } else PetscAssertFalse(dir == DM_Y,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
+      } else PetscCheckFalse(dir == DM_Y,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
       else SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
     } else {
       if (dir == DM_Y) {
@@ -210,15 +210,15 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
   if (dir == DM_Z) {
-    PetscAssertFalse(da->dim < 3,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
-    PetscAssertFalse(gp < 0 || gp > dd->P,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheckFalse(da->dim < 3,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
+    PetscCheckFalse(gp < 0 || gp > dd->P,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= zs && gp < zs+zm) flag = 1;
   } else if (dir == DM_Y) {
-    PetscAssertFalse(da->dim == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
-    PetscAssertFalse(gp < 0 || gp > dd->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheckFalse(da->dim == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
+    PetscCheckFalse(gp < 0 || gp > dd->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= ys && gp < ys+ym) flag = 1;
   } else if (dir == DM_X) {
-    PetscAssertFalse(gp < 0 || gp > dd->M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheckFalse(gp < 0 || gp > dd->M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
@@ -282,10 +282,10 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
   ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   if (dir == DM_Z) {
-    PetscAssertFalse(da->dim < 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
+    PetscCheckFalse(da->dim < 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
     firstPoint = zs;
   } else if (dir == DM_Y) {
-    PetscAssertFalse(da->dim == 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
+    PetscCheckFalse(da->dim == 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
     firstPoint = ys;
   } else if (dir == DM_X) {
     firstPoint = xs;

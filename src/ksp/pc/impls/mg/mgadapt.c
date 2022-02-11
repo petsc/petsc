@@ -80,7 +80,7 @@ static PetscErrorCode PCMGCreateCoarseSpaceDefault_Private(PC pc, PetscInt level
   PetscFunctionBegin;
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-  PetscAssertFalse(Nc % dim,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "The number of coarse vectors %D must be divisible by the dimension %D", Nc, dim);
+  PetscCheckFalse(Nc % dim,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "The number of coarse vectors %D must be divisible by the dimension %D", Nc, dim);
   ierr = PetscMalloc2(Nf, &funcs, Nf, &ctxs);CHKERRQ(ierr);
   if (!*coarseSpace) {ierr = PetscCalloc1(Nc, coarseSpace);CHKERRQ(ierr);}
   for (k = 0; k < Nc/dim; ++k) {

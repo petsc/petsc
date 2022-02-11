@@ -21,7 +21,7 @@ static PetscErrorCode TSSSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(ssp->workout,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Work vectors already gotten");
+  PetscCheckFalse(ssp->workout,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Work vectors already gotten");
   if (ssp->nwork < n) {
     if (ssp->nwork > 0) {
       ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);
@@ -39,8 +39,8 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
   TS_SSP *ssp = (TS_SSP*)ts->data;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!ssp->workout,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Work vectors have not been gotten");
-  PetscAssertFalse(*work != ssp->work,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong work vectors checked out");
+  PetscCheckFalse(!ssp->workout,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Work vectors have not been gotten");
+  PetscCheckFalse(*work != ssp->work,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong work vectors checked out");
   ssp->workout = PETSC_FALSE;
   *work = NULL;
   PetscFunctionReturn(0);
@@ -100,7 +100,7 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   s = ssp->nstages;
   n = (PetscInt)(PetscSqrtReal((PetscReal)s)+0.001);
   r = s-n;
-  PetscAssertFalse(n*n != s,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
+  PetscCheckFalse(n*n != s,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
   ierr = TSSSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
   F    = work[2];
   ierr = VecCopy(sol,work[0]);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ static PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListFind(TSSSPList,type,&r);CHKERRQ(ierr);
-  PetscAssertFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type,&ssp->type_name);CHKERRQ(ierr);

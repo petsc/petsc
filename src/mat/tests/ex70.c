@@ -38,8 +38,8 @@ static PetscErrorCode CheckLocal(Mat A, Mat B, PetscScalar *a, PetscScalar *b)
     }
     ierr = MatDenseRestoreArrayRead(B,&Bb);CHKERRQ(ierr);
   }
-  PetscAssertFalse(wA || wB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array in first Mat? %d, Wrong array in second Mat? %d",wA,wB);
-  PetscAssertFalse(wAv || wBv,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong data in first Mat? %d, Wrong data in second Mat? %d",wAv,wBv);
+  PetscCheckFalse(wA || wB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong array in first Mat? %d, Wrong array in second Mat? %d",wA,wB);
+  PetscCheckFalse(wAv || wBv,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong data in first Mat? %d, Wrong data in second Mat? %d",wAv,wBv);
   PetscFunctionReturn(0);
 }
 
@@ -55,7 +55,7 @@ PetscErrorCode proj_destroy(void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!userdata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing userdata");
+  PetscCheckFalse(!userdata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing userdata");
   ierr = MatDestroy(&userdata->A);CHKERRQ(ierr);
   ierr = MatDestroy(&userdata->P);CHKERRQ(ierr);
   ierr = MatDestroy(&userdata->R);CHKERRQ(ierr);
@@ -73,13 +73,13 @@ PetscErrorCode proj_mult(Mat S, Vec X, Vec Y)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(S,&userdata);CHKERRQ(ierr);
-  PetscAssertFalse(!userdata,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing userdata");
+  PetscCheckFalse(!userdata,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing userdata");
   A = userdata->A;
   R = userdata->R;
   P = userdata->P;
-  PetscAssertFalse(!A,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing matrix");
-  PetscAssertFalse(!R && !P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing projectors");
-  PetscAssertFalse(R && P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Both projectors");
+  PetscCheckFalse(!A,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing matrix");
+  PetscCheckFalse(!R && !P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing projectors");
+  PetscCheckFalse(R && P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Both projectors");
   ierr = MatCreateVecs(A,&Ax,&Ay);CHKERRQ(ierr);
   if (R) {
     ierr = MatCreateVecs(R,&Py,&Px);CHKERRQ(ierr);

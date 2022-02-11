@@ -121,7 +121,7 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A,Vec b,Vec x)
   ierr = VecCopy(b,x); /* klu_solve stores the solution in rhs */
   ierr = VecGetArray(x,&xa);
   status = klu_K_solve(lu->Symbolic,lu->Numeric,A->rmap->n,1,(PetscReal*)xa,&lu->Common);
-  PetscAssertFalse(status != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
+  PetscCheckFalse(status != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,7 @@ static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
 #else
   status = klu_K_tsolve(lu->Symbolic,lu->Numeric,A->rmap->n,1,xa,&lu->Common);
 #endif
-  PetscAssertFalse(status != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
+  PetscCheckFalse(status != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -164,7 +164,7 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,const MatFactorInfo *in
     klu_K_free_numeric(&lu->Numeric,&lu->Common);
   }
   lu->Numeric = klu_K_factor(ai,aj,(PetscReal*)av,lu->Symbolic,&lu->Common);
-  PetscAssertFalse(!lu->Numeric,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Numeric factorization failed");
+  PetscCheckFalse(!lu->Numeric,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Numeric factorization failed");
 
   lu->flg                = SAME_NONZERO_PATTERN;
   lu->CleanUpKLU         = PETSC_TRUE;
@@ -201,7 +201,7 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFac
   } else { /* use klu internal ordering */
     lu->Symbolic = klu_K_analyze(n,ai,aj,&lu->Common);
   }
-  PetscAssertFalse(!lu->Symbolic,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Symbolic Factorization failed");
+  PetscCheckFalse(!lu->Symbolic,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Symbolic Factorization failed");
 
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpKLU            = PETSC_TRUE;
@@ -318,7 +318,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   /* ------------------------------------------------*/
   /* get the default control parameters */
   status = klu_K_defaults(&lu->Common);
-  PetscAssertFalse(status <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Initialization failed");
+  PetscCheckFalse(status <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Initialization failed");
 
   lu->Common.scale = 0; /* No row scaling */
 

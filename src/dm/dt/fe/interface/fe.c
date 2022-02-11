@@ -125,7 +125,7 @@ PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
 
   if (!PetscFERegisterAllCalled) {ierr = PetscFERegisterAll();CHKERRQ(ierr);}
   ierr = PetscFunctionListFind(PetscFEList, name, &r);CHKERRQ(ierr);
-  PetscAssertFalse(!r,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFE type: %s", name);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFE type: %s", name);
 
   if (fem->ops->destroy) {
     ierr              = (*fem->ops->destroy)(fem);CHKERRQ(ierr);
@@ -668,7 +668,7 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
   if (q == fem->quadrature) PetscFunctionReturn(0);
   ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
   ierr = PetscQuadratureGetNumComponents(q, &qNc);CHKERRQ(ierr);
-  PetscAssertFalse((qNc != 1) && (Nc != qNc),PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
+  PetscCheckFalse((qNc != 1) && (Nc != qNc),PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
   ierr = PetscTabulationDestroy(&fem->T);CHKERRQ(ierr);
   ierr = PetscTabulationDestroy(&fem->Tc);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
@@ -723,7 +723,7 @@ PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
   ierr = PetscQuadratureGetNumComponents(q, &qNc);CHKERRQ(ierr);
-  PetscAssertFalse((qNc != 1) && (Nc != qNc),PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
+  PetscCheckFalse((qNc != 1) && (Nc != qNc),PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
   ierr = PetscTabulationDestroy(&fem->Tf);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&fem->faceQuadrature);CHKERRQ(ierr);
   fem->faceQuadrature = q;
@@ -817,7 +817,7 @@ PetscErrorCode PetscFEGetCellTabulation(PetscFE fem, PetscInt k, PetscTabulation
   PetscValidPointer(T, 3);
   ierr = PetscQuadratureGetData(fem->quadrature, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
   if (!fem->T) {ierr = PetscFECreateTabulation(fem, 1, npoints, points, k, &fem->T);CHKERRQ(ierr);}
-  PetscAssertFalse(fem->T && k > fem->T->K,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %D derivatives, but only tabulated %D", k, fem->T->K);
+  PetscCheckFalse(fem->T && k > fem->T->K,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %D derivatives, but only tabulated %D", k, fem->T->K);
   *T = fem->T;
   PetscFunctionReturn(0);
 }
@@ -878,7 +878,7 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscInt k, PetscTabulation
       ierr = PetscFree(facePoints);CHKERRQ(ierr);
     }
   }
-  PetscAssertFalse(fem->Tf && k > fem->Tf->K,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %D derivatives, but only tabulated %D", k, fem->Tf->K);
+  PetscCheckFalse(fem->Tf && k > fem->Tf->K,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_OUTOFRANGE, "Requested %D derivatives, but only tabulated %D", k, fem->Tf->K);
   *Tf = fem->Tf;
   PetscFunctionReturn(0);
 }
@@ -1036,10 +1036,10 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
     ierr = DMGetDimension(dm, &cdim);CHKERRQ(ierr);
     ierr = PetscDualSpaceGetDimension(Q, &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
-    PetscAssertFalse(T->K    != (!cdim ? 0 : K),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation K %D must match requested K %D", T->K, !cdim ? 0 : K);
-    PetscAssertFalse(T->Nb   != Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nb %D must match requested Nb %D", T->Nb, Nb);
-    PetscAssertFalse(T->Nc   != Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nc %D must match requested Nc %D", T->Nc, Nc);
-    PetscAssertFalse(T->cdim != cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation cdim %D must match requested cdim %D", T->cdim, cdim);
+    PetscCheckFalse(T->K    != (!cdim ? 0 : K),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation K %D must match requested K %D", T->K, !cdim ? 0 : K);
+    PetscCheckFalse(T->Nb   != Nb,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nb %D must match requested Nb %D", T->Nb, Nb);
+    PetscCheckFalse(T->Nc   != Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation Nc %D must match requested Nc %D", T->Nc, Nc);
+    PetscCheckFalse(T->cdim != cdim,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Tabulation cdim %D must match requested cdim %D", T->cdim, cdim);
   }
   T->Nr = 1;
   T->Np = npoints;
@@ -1734,7 +1734,7 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
   ierr = PetscFEGetFaceQuadrature(fe, &subq);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(Q, &dim);CHKERRQ(ierr);
-  PetscAssertFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
+  PetscCheckFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
   if (!fe->subspaces) {ierr = PetscCalloc1(dim, &fe->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!fe->subspaces[height-1]) {

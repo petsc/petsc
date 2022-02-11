@@ -379,7 +379,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMGetCoordinates(*dm, &coordinates);CHKERRQ(ierr);
     ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
     ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
-    PetscAssertFalse(bs != cdim,comm, PETSC_ERR_ARG_WRONG, "Invalid coordinate blocksize %D != embedding dimension %D", bs, cdim);
+    PetscCheckFalse(bs != cdim,comm, PETSC_ERR_ARG_WRONG, "Invalid coordinate blocksize %D != embedding dimension %D", bs, cdim);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
     theta = param->theta;
@@ -525,7 +525,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt ofield, PetscInt n
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  PetscAssertFalse(ofield != 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Nullspace must be for pressure field at index 1, not %D", ofield);
+  PetscCheckFalse(ofield != 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Nullspace must be for pressure field at index 1, not %D", ofield);
   funcs[nfield] = constant;
   ierr = DMCreateGlobalVector(dm, &vec);CHKERRQ(ierr);
   ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);

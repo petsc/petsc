@@ -79,12 +79,12 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   /* read vector header */
   if (!skipHeader) {
     ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
-    PetscAssertFalse(tr[0] != VEC_FILE_CLASSID,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not a vector next in file");
-    PetscAssertFalse(tr[1] < 0,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Vector size (%" PetscInt_FMT ") in file is negative",tr[1]);
-    PetscAssertFalse(N >= 0 && N != tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")",tr[1],N);
+    PetscCheckFalse(tr[0] != VEC_FILE_CLASSID,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not a vector next in file");
+    PetscCheckFalse(tr[1] < 0,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Vector size (%" PetscInt_FMT ") in file is negative",tr[1]);
+    PetscCheckFalse(N >= 0 && N != tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")",tr[1],N);
     rows = tr[1];
   } else {
-    PetscAssertFalse(N < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Vector binary file header was skipped, thus the user must specify the global size of input vector");
+    PetscCheckFalse(N < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Vector binary file header was skipped, thus the user must specify the global size of input vector");
     rows = N;
   }
 
@@ -100,7 +100,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(vec,&s,NULL);CHKERRQ(ierr);
-  PetscAssertFalse(N != rows,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")",rows,N);
+  PetscCheckFalse(N != rows,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")",rows,N);
 
   /* read vector values */
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!((PetscObject)xin)->name,PetscObjectComm((PetscObject)xin), PETSC_ERR_SUP, "Vec name must be set with PetscObjectSetName() before VecLoad()");
+  PetscCheckFalse(!((PetscObject)xin)->name,PetscObjectComm((PetscObject)xin), PETSC_ERR_SUP, "Vec name must be set with PetscObjectSetName() before VecLoad()");
 #if defined(PETSC_USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
@@ -164,7 +164,7 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
 
   v    = adios_inq_var(adios->adios_fp, vecname);
-  PetscAssertFalse(v->ndim != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file is not of dimension 1 (%" PetscInt_FMT ")", v->ndim);
+  PetscCheckFalse(v->ndim != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file is not of dimension 1 (%" PetscInt_FMT ")", v->ndim);
   Nfile = (PetscInt) v->dims[0];
 
   /* Set Vec sizes,blocksize,and type if not already set */
@@ -174,7 +174,7 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
-  PetscAssertFalse(N != Nfile,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%" PetscInt_FMT ") then input vector (%" PetscInt_FMT ")", Nfile, N);
+  PetscCheckFalse(N != Nfile,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%" PetscInt_FMT ") then input vector (%" PetscInt_FMT ")", Nfile, N);
 
   ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
   rstart_t = rstart;

@@ -50,7 +50,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
         break;
       }
     }
-    PetscAssertFalse(pi == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pi cannot be determined : range %D, val %D",Mp,i);
+    PetscCheckFalse(pi == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pi cannot be determined : range %D, val %D",Mp,i);
     *_pi = pi;
   }
 
@@ -61,7 +61,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
         break;
       }
     }
-    PetscAssertFalse(pj == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pj cannot be determined : range %D, val %D",Np,j);
+    PetscCheckFalse(pj == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pj cannot be determined : range %D, val %D",Np,j);
     *_pj = pj;
   }
 
@@ -72,7 +72,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,Pe
         break;
       }
     }
-    PetscAssertFalse(pk == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pk cannot be determined : range %D, val %D",Pp,k);
+    PetscCheckFalse(pk == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ijk] pk cannot be determined : range %D, val %D",Pp,k);
     *_pk = pk;
   }
 
@@ -179,7 +179,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred,DM 
         c = c + 2;
       }
     }
-    PetscAssertFalse(c != Ml*Nl*2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"c %D should equal 2 * Ml %D * Nl %D",c,Ml,Nl);
+    PetscCheckFalse(c != Ml*Nl*2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"c %D should equal 2 * Ml %D * Nl %D",c,Ml,Nl);
   }
 
   /* generate scatter */
@@ -556,11 +556,11 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
                                                &rank_reI[0],&rank_reI[1],&rank_reI[2],&rank_ijk_re);CHKERRQ(ierr);
         ierr = _DMDADetermineGlobalS0(3,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re);CHKERRQ(ierr);
         ii = i - ctx->start_i_re[ rank_reI[0] ];
-        PetscAssertFalse(ii < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error ii");
+        PetscCheckFalse(ii < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error ii");
         jj = j - ctx->start_j_re[ rank_reI[1] ];
-        PetscAssertFalse(jj < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error jj");
+        PetscCheckFalse(jj < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error jj");
         kk = k - ctx->start_k_re[ rank_reI[2] ];
-        PetscAssertFalse(kk < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error kk");
+        PetscCheckFalse(kk < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm3d] index error kk");
         lenI_re[0] = ctx->range_i_re[ rank_reI[0] ];
         lenI_re[1] = ctx->range_j_re[ rank_reI[1] ];
         lenI_re[2] = ctx->range_k_re[ rank_reI[2] ];
@@ -629,9 +629,9 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
       ierr = _DMDADetermineGlobalS0(2,rank_ijk_re, ctx->Mp_re,ctx->Np_re,ctx->Pp_re, ctx->range_i_re,ctx->range_j_re,ctx->range_k_re, &s0_re);CHKERRQ(ierr);
 
       ii = i - ctx->start_i_re[ rank_reI[0] ];
-      PetscAssertFalse(ii < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error ii");
+      PetscCheckFalse(ii < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error ii");
       jj = j - ctx->start_j_re[ rank_reI[1] ];
-      PetscAssertFalse(jj < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error jj");
+      PetscCheckFalse(jj < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error jj");
 
       lenI_re[0] = ctx->range_i_re[ rank_reI[0] ];
       lenI_re[1] = ctx->range_j_re[ rank_reI[1] ];
@@ -859,8 +859,8 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc,PC_Telescope s
     /* create new (near) nullspace for redundant object */
     ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace);CHKERRQ(ierr);
     ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
-    PetscAssertFalse(nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
-    PetscAssertFalse(nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
+    PetscCheckFalse(nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
+    PetscCheckFalse(nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
   }
   PetscFunctionReturn(0);
 }
@@ -987,7 +987,7 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscRea
   perm    = ctx->permutation;
   xp      = ctx->xp;
 
-  PetscAssertFalse(its > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope_dmda only supports max_it = 1");
+  PetscCheckFalse(its > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCApplyRichardson_Telescope_dmda only supports max_it = 1");
   *reason = (PCRichardsonConvergedReason)0;
 
   if (!zeroguess) {

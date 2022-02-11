@@ -310,7 +310,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
   YNtmp  = snes->work[4];               /* Newton solution */
   YCtmp  = snes->work[5];               /* Cauchy solution */
 
-  PetscAssertFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = VecGetBlockSize(YNtmp,&bs);CHKERRQ(ierr);
 

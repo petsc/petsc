@@ -111,7 +111,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
       ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
       if (value < 0) continue;
       ierr = PetscFindInt(value, Nv, values, &vidx);CHKERRQ(ierr);
-      PetscAssertFalse(vidx < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D for cell %D does not exist in label", value, c);
+      PetscCheckFalse(vidx < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D for cell %D does not exist in label", value, c);
       if (volume > volConst[vidx])        {ierr = DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE);CHKERRQ(ierr);  ++nAdaptLoc[0];}
       if (volume < volConst[vidx]*ratio) {ierr = DMLabelSetValue(adaptLabel, c, DM_ADAPT_COARSEN);CHKERRQ(ierr); ++nAdaptLoc[1];}
     }

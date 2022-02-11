@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 
     ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
     ierr = PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg);CHKERRQ(ierr);
-    PetscAssertFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a filename for input with the -f option");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a filename for input with the -f option");
 
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, filename, FILE_MODE_READ, &viewer);CHKERRQ(ierr);
     ierr = MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, 36, 36, NULL, &A);CHKERRQ(ierr);

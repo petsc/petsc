@@ -16,9 +16,9 @@ typedef struct {
     PetscValidHeaderSpecific(x,VEC_CLASSID,xarg);                       \
     PetscValidHeaderSpecific(y,VEC_CLASSID,yarg);                       \
     PetscCheckSameComm(x,xarg,y,yarg);                                  \
-    PetscAssertFalse(!((Vec_Nest*)x->data)->setup_called,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",xarg); \
-    PetscAssertFalse(!((Vec_Nest*)y->data)->setup_called,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",yarg); \
-    PetscAssertFalse(((Vec_Nest*)x->data)->nb != ((Vec_Nest*)y->data)->nb,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"Nest vector arguments %d and %d have different numbers of blocks.",xarg,yarg); \
+    PetscCheckFalse(!((Vec_Nest*)x->data)->setup_called,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",xarg); \
+    PetscCheckFalse(!((Vec_Nest*)y->data)->setup_called,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",yarg); \
+    PetscCheckFalse(((Vec_Nest*)x->data)->nb != ((Vec_Nest*)y->data)->nb,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"Nest vector arguments %d and %d have different numbers of blocks.",xarg,yarg); \
   } while (0)
 
 #define VecNestCheckCompatible3(x,xarg,y,yarg,z,zarg) do {             \
@@ -27,11 +27,11 @@ typedef struct {
     PetscValidHeaderSpecific(z,VEC_CLASSID,zarg);                       \
     PetscCheckSameComm(x,xarg,y,yarg);                                  \
     PetscCheckSameComm(x,xarg,z,zarg);                                  \
-    PetscAssertFalse(!((Vec_Nest*)x->data)->setup_called,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",xarg); \
-    PetscAssertFalse(!((Vec_Nest*)y->data)->setup_called,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",yarg); \
-    PetscAssertFalse(!((Vec_Nest*)z->data)->setup_called,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",zarg); \
-    PetscAssertFalse(((Vec_Nest*)x->data)->nb != ((Vec_Nest*)y->data)->nb,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector arguments %d and %d have different numbers of blocks.",xarg,yarg); \
-    PetscAssertFalse(((Vec_Nest*)x->data)->nb != ((Vec_Nest*)z->data)->nb,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector arguments %d and %d have different numbers of blocks.",xarg,zarg); \
+    PetscCheckFalse(!((Vec_Nest*)x->data)->setup_called,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",xarg); \
+    PetscCheckFalse(!((Vec_Nest*)y->data)->setup_called,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",yarg); \
+    PetscCheckFalse(!((Vec_Nest*)z->data)->setup_called,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector argument %d not setup.",zarg); \
+    PetscCheckFalse(((Vec_Nest*)x->data)->nb != ((Vec_Nest*)y->data)->nb,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector arguments %d and %d have different numbers of blocks.",xarg,yarg); \
+    PetscCheckFalse(((Vec_Nest*)x->data)->nb != ((Vec_Nest*)z->data)->nb,PetscObjectComm((PetscObject)w),PETSC_ERR_ARG_WRONG,"Nest vector arguments %d and %d have different numbers of blocks.",xarg,zarg); \
   } while (0)
 #else
 template <typename Tv>

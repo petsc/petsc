@@ -14,7 +14,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscAssertFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is an example with two processors only!");
+  PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is an example with two processors only!");
   ierr = MatCreate(PETSC_COMM_SELF,&ssbaij);CHKERRQ(ierr);
   ierr = MatSetType(ssbaij,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatSetBlockSize(ssbaij,2);CHKERRQ(ierr);

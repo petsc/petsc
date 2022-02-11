@@ -212,7 +212,7 @@ PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scat
   ierr = PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq);CHKERRQ(ierr);
   if (ismpi) {
     v = (Vec_MPI*)g->data;
-    PetscAssertFalse(!v->localrep,PetscObjectComm((PetscObject)g),PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
+    PetscCheckFalse(!v->localrep,PetscObjectComm((PetscObject)g),PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
     if (!v->localupdate) PetscFunctionReturn(0);
     if (scattermode == SCATTER_REVERSE) {
       ierr = VecScatterBegin(v->localupdate,v->localrep,g,insertmode,scattermode);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scatte
   ierr = PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
   if (ismpi) {
     v = (Vec_MPI*)g->data;
-    PetscAssertFalse(!v->localrep,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
+    PetscCheckFalse(!v->localrep,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
     if (!v->localupdate) PetscFunctionReturn(0);
     if (scattermode == SCATTER_REVERSE) {
       ierr = VecScatterEnd(v->localupdate,v->localrep,g,insertmode,scattermode);CHKERRQ(ierr);

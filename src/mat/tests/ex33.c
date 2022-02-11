@@ -37,7 +37,7 @@ PetscErrorCode TestMPIDerivedDataType()
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_size(MPI_COMM_WORLD, &size);CHKERRMPI(ierr);
-  PetscAssertFalse(size < 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use at least 2 processors");
+  PetscCheckFalse(size < 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use at least 2 processors");
   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
   if (rank == 0) {
@@ -138,7 +138,7 @@ int main(int argc, char **args)
 
   /* Check accuracy */
   ierr = MatMatMultEqual(A,X,Y,10,&flg);CHKERRQ(ierr);
-  PetscAssertFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult()");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult()");
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);

@@ -104,7 +104,7 @@ PetscErrorCode Device<T>::DeviceInternal::configure() noexcept
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalseDebug(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being configured before it was initialized",id_);
+  PetscAssertFalse(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being configured before it was initialized",id_);
   // why on EARTH nvidia insists on making otherwise informational states into
   // fully-fledged error codes is beyond me. Why couldn't a pointer to bool argument have
   // sufficed?!?!?!
@@ -122,7 +122,7 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalseDebug(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
+  PetscAssertFalse(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
   ierr = PetscObjectTypeCompare(PetscObjectCast(viewer),PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     MPI_Comm    comm;
@@ -364,15 +364,15 @@ PetscErrorCode Device<T>::getDevice(PetscDevice device, PetscInt id) const noexc
 
   PetscFunctionBegin;
   if (PetscUnlikelyDebug(defaultDevice_ < 0)) {
-    PetscAssertFalse(defaultDevice_ == PETSC_CUPM_DEVICE_NONE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a %s PetscDevice when it has been disabled",cupmName());
+    PetscCheckFalse(defaultDevice_ == PETSC_CUPM_DEVICE_NONE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a %s PetscDevice when it has been disabled",cupmName());
     const auto cerr = static_cast<cupmError_t>(-defaultDevice_);
 
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"Cannot lazily initialize PetscDevice: %s error %d (%s) : %s",cupmName(),static_cast<PetscErrorCode>(cerr),cupmGetErrorName(cerr),cupmGetErrorString(cerr));
   }
   if (id == PETSC_DECIDE) id = defaultDevice_;
-  PetscAssertDebug(static_cast<std::size_t>(id) < devices_.size(),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_.size(),id);
+  PetscAssert(static_cast<std::size_t>(id) < devices_.size(),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_.size(),id);
   if (devices_[id]) {
-    PetscAssertDebug(id == devices_[id]->id(),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %d",id,devices_[id]->id());
+    PetscAssert(id == devices_[id]->id(),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %d",id,devices_[id]->id());
   } else devices_[id] = DeviceInternal::makeDevice(id);
   ierr = devices_[id]->initialize();CHKERRQ(ierr);
   device->deviceId           = devices_[id]->id(); // technically id = _devices[id]->_id here

@@ -61,8 +61,7 @@ Changes: Development
 - Remove ``PETSC_C_RESTRICT``, ``restrict`` is a standard keyword since C99
 - Change ``SETERRMPI()`` to be variadic
 - Change ``SETERRABORT()`` to be variadic
-- Add ``PetscAssert()`` for asserting a boolean condition is true
-- Add ``PetscAssertDebug()`` for asserting a condition is true but only when PETSc is configured with debugging
+- Add ``PetscCheck()`` and ``PetscAssert()`` for checking a boolean condition is true. The former is always enabled, while the latter is enabled only in debug builds.
 
 .. rubric:: PetscViewer:
 

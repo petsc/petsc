@@ -112,7 +112,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (vtol) PetscValidRealPointer(vtol,3);
-  PetscAssertFalse(!ts->event,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
+  PetscCheckFalse(!ts->event,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
 
   event = ts->event;
   if (vtol) {

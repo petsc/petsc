@@ -85,7 +85,7 @@ PetscErrorCode PetscHeapAdd(PetscHeap h,PetscInt id,PetscInt val)
   PetscFunctionBegin;
   if (1 < h->end && h->end < ARITY) h->end = ARITY;
   loc = h->end++;
-  PetscAssertFalse(h->end > h->stash,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Addition would exceed allocation %" PetscInt_FMT " (%" PetscInt_FMT " stashed)",h->alloc,(h->alloc-h->stash));
+  PetscCheckFalse(h->end > h->stash,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Addition would exceed allocation %" PetscInt_FMT " (%" PetscInt_FMT " stashed)",h->alloc,(h->alloc-h->stash));
   h->base[loc].id    = id;
   h->base[loc].value = val;
 

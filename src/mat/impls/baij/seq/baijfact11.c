@@ -579,10 +579,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
   allowzeropivot = PetscNot(A->erroriffailure);
   SSE_SCOPE_BEGIN;
 
-  PetscAssertFalse((unsigned long)aa%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
-  PetscAssertFalse((unsigned long)ba%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)aa%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)ba%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
   ierr = PetscMalloc1(16*(n+1),&rtmp);CHKERRQ(ierr);
-  PetscAssertFalse((unsigned long)rtmp%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)rtmp%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
 /*    if ((unsigned long)bj==(unsigned long)aj) { */
 /*      colscale = 4; */
 /*    } */
@@ -1022,10 +1022,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   allowzeropivot = PetscNot(A->erroriffailure);
   SSE_SCOPE_BEGIN;
 
-  PetscAssertFalse((unsigned long)aa%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
-  PetscAssertFalse((unsigned long)ba%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)aa%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)ba%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
   ierr = PetscMalloc1(16*(n+1),&rtmp);CHKERRQ(ierr);
-  PetscAssertFalse((unsigned long)rtmp%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)rtmp%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
 /*    if ((unsigned long)bj==(unsigned long)aj) { */
 /*      colscale = 4; */
 /*    } */
@@ -1464,10 +1464,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
   allowzeropivot = PetscNot(A->erroriffailure);
   SSE_SCOPE_BEGIN;
 
-  PetscAssertFalse((unsigned long)aa%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
-  PetscAssertFalse((unsigned long)ba%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)aa%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)ba%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
   ierr = PetscMalloc1(16*(n+1),&rtmp);CHKERRQ(ierr);
-  PetscAssertFalse((unsigned long)rtmp%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
+  PetscCheckFalse((unsigned long)rtmp%16!=0,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
 /*    if ((unsigned long)bj==(unsigned long)aj) { */
 /*      colscale = 4; */
 /*    } */
