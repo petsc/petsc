@@ -1,13 +1,12 @@
 .. _doc_config_faq:
 
-#####################
-Configuring PETSc FAQ
-#####################
+#################
+Configuring PETSc
+#################
 
 .. important::
 
-   Please obtain PETSc via the repository or download the latest patched tarball. See
-   :ref:`download documentation <doc_download>` for more information.
+   Obtain PETSc via the repository or download the latest tarball: :ref:`download documentation <doc_download>`.
 
    See :ref:`quick-start tutorial <tut_install>` for a step-by-step walk-through of the installation process.
 
@@ -71,7 +70,7 @@ Common Example Usages
    :class: yellow
 
    Do not specify ``--with-cc``, ``--with-fc`` etc for the above when using
-   ``--with-mpi-dir`` - so that ``mpicc``/ ``mpif90`` can be picked up from mpi-dir!
+   ``--with-mpi-dir`` - so that ``mpicc``/ ``mpif90`` will be picked up from mpi-dir!
 
 * Build Complex version of PETSc (using c++ compiler):
 
@@ -114,7 +113,7 @@ Compilers
 .. important::
 
    It's best to use MPI compilers as this will avoid the situation where MPI is compiled
-   with one set of compilers (like ``gcc``/``gfortran``) and user specified incompatible
+   with one set of compilers (like ``gcc``/``gfortran``) and the user specified incompatible
    compilers to PETSc (perhaps ``icc``/``ifort``). This can be done by either specifying
    ``--with-cc=mpicc`` or ``--with-mpi-dir`` (and not ``--with-cc=gcc``)
 
@@ -268,10 +267,6 @@ The following modes can be used to download/install :ref:`external packages
      ``--with-PACKAGENAME-dir``. Architectures like Microsoft Windows might have issues
      with these options. In these cases, ``--with-PACKAGENAME-include`` and
      ``--with-PACKAGENAME-lib`` options should be preferred.
-   - If you want to download a compatible external package manually, then the URL for this
-     package is listed in configure source for this package. For example, check
-     ``config/BuildSystem/config/packages/SuperLU.py`` for the url for download this
-     package.
 
 - ``--with-packages-build-dir=PATH``: By default, external packages will be unpacked and
   the build process is run in ``$PETSC_DIR/$PETSC_ARCH/externalpackages``. However one
@@ -360,7 +355,7 @@ It's best to install PETSc with MPI compiler wrappers (often called ``mpicc``,
 build PETSc. See the section on :ref:`compilers <doc_config_compilers>` above for more
 details.
 
-- Vendor provided MPI might already be installed. IBM, SGI, Cray etc provide their own:
+- Vendor provided MPI might already be installed. IBM, Intel, NVIDIA, and Cray provide their own:
 
   .. code-block:: console
 
