@@ -394,7 +394,7 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &ascii);CHKERRQ(ierr);
   if (ascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, "level%s: %D\n", data->N > 1 ? "s" : "", data->N);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "level%s: %" PetscInt_FMT "\n", data->N > 1 ? "s" : "", data->N);CHKERRQ(ierr);
     ierr = PCHPDDMGetComplexities(pc, &gc, &oc);CHKERRQ(ierr);
     if (data->N > 1) {
       ierr = PetscViewerASCIIPrintf(viewer, "Neumann matrix attached? %s\n", PetscBools[data->Neumann]);CHKERRQ(ierr);
@@ -404,7 +404,7 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
       ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
       ierr = PetscViewerASCIISetTab(viewer, 0);CHKERRQ(ierr);
       for (i = 1; i < data->N; ++i) {
-        ierr = PetscViewerASCIIPrintf(viewer, " %D", data->levels[i - 1]->nu);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, data->levels[i - 1]->nu);CHKERRQ(ierr);
         if (data->levels[i - 1]->threshold > -0.1) {
           ierr = PetscViewerASCIIPrintf(viewer, " (%g)", (double)data->levels[i - 1]->threshold);CHKERRQ(ierr);
         }
