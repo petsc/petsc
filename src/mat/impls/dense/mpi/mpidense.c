@@ -3059,7 +3059,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C)
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
   } else {
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)C),((PetscObject)C)->prefix,"MatProduct_ABt","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-matproduct_abt_mpidense_mpidense_via","Algorithmic approach","MatProduct_ABt",algTypes,nalg,algTypes[alg],&alg,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_product_algorithm","Algorithmic approach","MatProduct_ABt",algTypes,nalg,algTypes[alg],&alg,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
   }
   if (flg) {

@@ -39,9 +39,11 @@ int main(int argc,char **args)
     if (test == 0) {
       /* Compute B = A*A; B misses 0-th diagonal */
       ierr = MatProductSetType(B,MATPRODUCT_AB);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(B,"AB_");CHKERRQ(ierr);
     } else {
       /* Compute B = A^t*A; B misses 0-th diagonal */
       ierr = MatProductSetType(B,MATPRODUCT_AtB);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(B,"AtB_");CHKERRQ(ierr);
     }
 
     /* Force allocate missing diagonal entries of B */
@@ -80,30 +82,30 @@ int main(int argc,char **args)
 
    test:
      suffix: 2
-     args: -matproduct_atb_via at*b
+     args: -AtB_mat_product_algorithm at*b
      output_file: output/ex81_1.out
 
    test:
      suffix: 3
-     args: -matproduct_atb_via outerproduct
+     args: -AtB_mat_product_algorithm outerproduct
      output_file: output/ex81_1.out
 
    test:
      suffix: 4
      nsize: 3
-     args: -matproduct_atb_via nonscalable
+     args: -AtB_mat_product_algorithm nonscalable
      output_file: output/ex81_3.out
 
    test:
      suffix: 5
      nsize: 3
-     args: -matproduct_atb_via scalable
+     args: -AtB_mat_product_algorithm scalable
      output_file: output/ex81_3.out
 
    test:
      suffix: 6
      nsize: 3
-     args: -matproduct_atb_via at*b
+     args: -AtB_mat_product_algorithm at*b
      output_file: output/ex81_3.out
 
 TEST*/

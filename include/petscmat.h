@@ -182,7 +182,7 @@ PETSC_DEPRECATED_FUNCTION("Use MatSolverTypeGet() (since version 3.9)") PETSC_ST
 
     Level: beginner
 
-.seealso: MatSolverType, MatProductSetType()
+.seealso: MatProductSetType()
 E*/
 typedef enum {MATPRODUCT_UNSPECIFIED=0,MATPRODUCT_AB,MATPRODUCT_AtB,MATPRODUCT_ABt,MATPRODUCT_PtAP,MATPRODUCT_RARt,MATPRODUCT_ABC} MatProductType;
 PETSC_EXTERN const char *const MatProductTypes[];
@@ -192,10 +192,32 @@ PETSC_EXTERN const char *const MatProductTypes[];
 
    Level: beginner
 
-.seealso: MatSetType(), Mat, MatSolverType, MatRegister(), MatProductSetAlgorithm(), MatProductType
+.seealso: MatSetType(), Mat, MatProductSetAlgorithm(), MatProductType
 J*/
 typedef const char* MatProductAlgorithm;
-#define MATPRODUCTALGORITHM_DEFAULT "default"
+#define MATPRODUCTALGORITHMDEFAULT "default"
+#define MATPRODUCTALGORITHMSORTED "sorted"
+#define MATPRODUCTALGORITHMSCALABLE "scalable"
+#define MATPRODUCTALGORITHMSCALABLEFAST "scalable_fast"
+#define MATPRODUCTALGORITHMHEAP "heap"
+#define MATPRODUCTALGORITHMBHEAP "btheap"
+#define MATPRODUCTALGORITHMLLCONDENSED "llcondensed"
+#define MATPRODUCTALGORITHMROWMERGE "rowmerge"
+#define MATPRODUCTALGORITHMOUTERPRODUCT "outerproduct"
+#define MATPRODUCTALGORITHMATB "at*b"
+#define MATPRODUCTALGORITHMRAP "rap"
+#define MATPRODUCTALGORITHMNONSCALABLE "nonscalable"
+#define MATPRODUCTALGORITHMSEQMPI "seqmpi"
+#define MATPRODUCTALGORITHMBACKEND "backend"
+#define MATPRODUCTALGORITHMOVERLAPPING "overlapping"
+#define MATPRODUCTALGORITHMMERGED "merged"
+#define MATPRODUCTALGORITHMALLATONCE "allatonce"
+#define MATPRODUCTALGORITHMALLATONCEMERGED "allatonce_merged"
+#define MATPRODUCTALGORITHMALLGATHERV "allgatherv"
+#define MATPRODUCTALGORITHMCYCLIC "cyclic"
+#if defined(PETSC_HAVE_HYPRE)
+#define MATPRODUCTALGORITHMHYPRE "hypre"
+#endif
 
 PETSC_EXTERN PetscErrorCode MatProductCreate(Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatProductCreateWithMat(Mat,Mat,Mat,Mat);

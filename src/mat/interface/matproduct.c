@@ -71,14 +71,14 @@ static PetscErrorCode MatProductSymbolic_PtAP_Unsafe(Mat C)
   /* AP = A*P */
   ierr = MatProductCreate(A,P,NULL,&AP);CHKERRQ(ierr);
   ierr = MatProductSetType(AP,MATPRODUCT_AB);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(AP,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(AP,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFill(AP,fill);CHKERRQ(ierr);
   ierr = MatProductSetFromOptions(AP);CHKERRQ(ierr);
   ierr = MatProductSymbolic(AP);CHKERRQ(ierr);
 
   /* C = P^T*AP */
   ierr = MatProductSetType(C,MATPRODUCT_AtB);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   product->A = P;
   product->B = AP;
   ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
@@ -120,14 +120,14 @@ static PetscErrorCode MatProductSymbolic_RARt_Unsafe(Mat C)
   /* RA = R*A */
   ierr = MatProductCreate(R,A,NULL,&RA);CHKERRQ(ierr);
   ierr = MatProductSetType(RA,MATPRODUCT_AB);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(RA,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(RA,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFill(RA,fill);CHKERRQ(ierr);
   ierr = MatProductSetFromOptions(RA);CHKERRQ(ierr);
   ierr = MatProductSymbolic(RA);CHKERRQ(ierr);
 
   /* C = RA*R^T */
   ierr = MatProductSetType(C,MATPRODUCT_ABt);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   product->A = RA;
   ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatProductSymbolic(C);CHKERRQ(ierr);
@@ -166,14 +166,14 @@ static PetscErrorCode MatProductSymbolic_ABC_Unsafe(Mat mat)
   /* Symbolic BC = B*C */
   ierr = MatProductCreate(B,C,NULL,&BC);CHKERRQ(ierr);
   ierr = MatProductSetType(BC,MATPRODUCT_AB);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(BC,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(BC,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFill(BC,fill);CHKERRQ(ierr);
   ierr = MatProductSetFromOptions(BC);CHKERRQ(ierr);
   ierr = MatProductSymbolic(BC);CHKERRQ(ierr);
 
   /* Symbolic mat = A*BC */
   ierr = MatProductSetType(mat,MATPRODUCT_AB);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(mat,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(mat,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   product->B     = BC;
   product->Dwork = BC;
   ierr = MatProductSetFromOptions(mat);CHKERRQ(ierr);
@@ -871,7 +871,11 @@ PetscErrorCode MatProductSetFill(Mat mat,PetscReal fill)
 
    Input Parameters:
 +  mat - the matrix product
--  alg - particular implementation algorithm of the matrix product, e.g., MATPRODUCTALGORITHM_DEFAULT.
+-  alg - particular implementation algorithm of the matrix product, e.g., MATPRODUCTALGORITHMDEFAULT.
+
+   Options Database Key:
+.  -mat_product_algorithm <algorithm> - Sets the algorithm; use -help for a list
+    of available algorithms (for instance, scalable, outerproduct, etc.)
 
    Level: intermediate
 
@@ -978,7 +982,7 @@ PetscErrorCode MatProductCreate_Private(Mat A,Mat B,Mat C,Mat D)
   product->clear    = PETSC_FALSE;
   D->product        = product;
 
-  ierr = MatProductSetAlgorithm(D,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(D,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFill(D,PETSC_DEFAULT);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
@@ -1178,7 +1182,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   ierr = MatSetOptionsPrefix(mmabc->BC,prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(mmabc->BC,"P1_");CHKERRQ(ierr);
   ierr = MatProductSetType(mmabc->BC,p1);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(mmabc->BC,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(mmabc->BC,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFill(mmabc->BC,product->fill);CHKERRQ(ierr);
   mmabc->BC->product->api_user = product->api_user;
   ierr = MatProductSetFromOptions(mmabc->BC);CHKERRQ(ierr);
@@ -1190,7 +1194,7 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
   ierr = MatSetOptionsPrefix(mmabc->ABC,prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(mmabc->ABC,"P2_");CHKERRQ(ierr);
   ierr = MatProductSetType(mmabc->ABC,p2);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(mmabc->ABC,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+  ierr = MatProductSetAlgorithm(mmabc->ABC,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
   ierr = MatProductSetFill(mmabc->ABC,product->fill);CHKERRQ(ierr);
   mmabc->ABC->product->api_user = product->api_user;
   ierr = MatProductSetFromOptions(mmabc->ABC);CHKERRQ(ierr);
