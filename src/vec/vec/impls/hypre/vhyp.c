@@ -78,62 +78,50 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,VecHYPRE_IJVector ij)
 */
 PETSC_STATIC_INLINE PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLocation hmem, PetscScalar **ptr, PetscErrorCode(**res)(Vec,PetscScalar**))
 {
-  PetscBool      usehip = PETSC_FALSE,usecuda = PETSC_FALSE;
   PetscErrorCode ierr;
+  PetscMemType   mtype;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
 #if !defined(PETSC_HAVE_HYPRE_DEVICE)
   hmem = HYPRE_MEMORY_HOST; /* this is just a convenience because HYPRE_MEMORY_HOST and HYPRE_MEMORY_DEVICE are the same in this case */
-#else
-#if defined(HYPRE_USING_HIP)
-  usehip = PETSC_TRUE;
-#elif defined(HYPRE_USING_CUDA)
-  usecuda = PETSC_TRUE;
-#else
-#error Not yet coded!
-#endif
 #endif
   *ptr = NULL;
   *res = NULL;
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
   switch (rw) {
   case 0: /* read */
     if (hmem == HYPRE_MEMORY_HOST) {
       ierr = VecGetArrayRead(v,(const PetscScalar**)ptr);CHKERRQ(ierr);
       *res = (PetscErrorCode(*)(Vec,PetscScalar**))VecRestoreArrayRead;
-    } else if (usehip) {
-      ierr = VecHIPGetArrayRead(v,(const PetscScalar**)ptr);CHKERRQ(ierr);
-      *res = (PetscErrorCode(*)(Vec,PetscScalar**))VecHIPRestoreArrayRead;
-    } else if (usecuda) {
-      ierr = VecCUDAGetArrayRead(v,(const PetscScalar**)ptr);CHKERRQ(ierr);
-      *res = (PetscErrorCode(*)(Vec,PetscScalar**))VecCUDARestoreArrayRead;
+    } else {
+      ierr = VecGetArrayReadAndMemType(v,(const PetscScalar**)ptr,&mtype);CHKERRQ(ierr);
+      if (!PetscMemTypeDevice(mtype)) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
+      *res = (PetscErrorCode(*)(Vec,PetscScalar**))VecRestoreArrayReadAndMemType;
     }
     break;
   case 1: /* write */
     if (hmem == HYPRE_MEMORY_HOST) {
       ierr = VecGetArrayWrite(v,ptr);CHKERRQ(ierr);
       *res = VecRestoreArrayWrite;
-    } else if (usehip) {
-      ierr = VecHIPGetArrayWrite(v,(PetscScalar**)ptr);CHKERRQ(ierr);
-      *res = VecHIPRestoreArrayWrite;
-    } else if (usecuda) {
-      ierr = VecCUDAGetArrayWrite(v,(PetscScalar**)ptr);CHKERRQ(ierr);
-      *res = VecCUDARestoreArrayWrite;
+    } else {
+      ierr = VecGetArrayWriteAndMemType(v,(PetscScalar**)ptr,&mtype);CHKERRQ(ierr);
+      if (!PetscMemTypeDevice(mtype)) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
+      *res = VecRestoreArrayWriteAndMemType;
     }
     break;
   case 2: /* read/write */
     if (hmem == HYPRE_MEMORY_HOST) {
       ierr = VecGetArray(v,ptr);CHKERRQ(ierr);
       *res = VecRestoreArray;
-    } else if (usehip) {
-      ierr = VecHIPGetArray(v,(PetscScalar**)ptr);CHKERRQ(ierr);
-      *res = VecHIPRestoreArray;
-    } else if (usecuda) {
-      ierr = VecCUDAGetArray(v,(PetscScalar**)ptr);CHKERRQ(ierr);
-      *res = VecCUDARestoreArray;
+    } else {
+      ierr = VecGetArrayAndMemType(v,(PetscScalar**)ptr,&mtype);CHKERRQ(ierr);
+      if (!PetscMemTypeDevice(mtype)) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
+      *res = VecRestoreArrayAndMemType;
     }
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)v),PETSC_ERR_SUP,"Unhandled case %d",rw);
+    SETERRQ1(comm,PETSC_ERR_SUP,"Unhandled case %d",rw);
   }
   PetscFunctionReturn(0);
 }
