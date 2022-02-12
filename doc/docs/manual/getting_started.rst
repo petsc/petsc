@@ -595,8 +595,8 @@ on the PETSc website https://petsc.org/ or given in the file
 
    $ cd $PETSC_DIR/src/ksp/ksp/tutorials
    $ make ex2
-   /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -o ex2.o -c -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden -g3   -I/Users/patrick/petsc/include -I/Users/patrick/petsc/arch-darwin-double-debug/include -I/opt/X11/include -I/opt/local/include    `pwd`/ex2.c
-   /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -Wl,-multiply_defined,suppress -Wl,-multiply_defined -Wl,suppress -Wl,-commons,use_dylibs -Wl,-search_paths_first -Wl,-multiply_defined,suppress -Wl,-multiply_defined -Wl,suppress -Wl,-commons,use_dylibs -Wl,-search_paths_first    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden -g3  -o ex2 ex2.o  -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib  -lpetsc -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -lf2clapack -lf2cblas -Wl,-rpath,/opt/X11/lib -L/opt/X11/lib -lX11 -lssl -lcrypto -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/lib/darwin -lmpifort -lgfortran -Wl,-rpath,/opt/local/lib/gcc5/gcc/x86_64-apple-darwin14/5.3.0 -L/opt/local/lib/gcc5/gcc/x86_64-apple-darwin14/5.3.0 -Wl,-rpath,/opt/local/lib/gcc5 -L/opt/local/lib/gcc5 -lgfortran -lgcc_ext.10.5 -lquadmath -lm -lclang_rt.osx -lmpicxx -lc++ -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -lclang_rt.osx -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib -ldl -lmpi -lpmpi -lSystem -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -lclang_rt.osx -ldl
+   /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -o ex2.o -c -g3   -I/Users/patrick/petsc/include -I/Users/patrick/petsc/arch-darwin-double-debug/include -I/opt/X11/include -I/opt/local/include    `pwd`/ex2.c
+   /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -g3  -o ex2 ex2.o  -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib  -lpetsc -lf2clapack -lf2cblas -lmpifort -lgfortran -lgcc_ext.10.5 -lquadmath -lm -lclang_rt.osx -lmpicxx -lc++ -ldl -lmpi -lpmpi -lSystem
    /bin/rm -f ex2.o
    $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 1 ./ex2
    Norm of error 0.000156044 iterations 6
@@ -629,8 +629,6 @@ merely to demonstrate the ease of extracting performance information.
    Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ----  Total
                       Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
    ------------------------------------------------------------------------------------------------------------------------
-
-   --- Event Stage 0: Main Stage
 
    VecMDot                1 1.0 3.2830e-06 1.0 2.00e+03 1.0 0.0e+00 0.0e+00 0.0e+00  0  5  0  0  0   0  5  0  0  0   609
    VecNorm                3 1.0 4.4550e-06 1.0 6.00e+03 1.0 0.0e+00 0.0e+00 0.0e+00  0 14  0  0  0   0 14  0  0  0  1346
@@ -683,7 +681,6 @@ that new PETSc users examine programs in the directories
 ``$PETSC_DIR/src/<library>/tutorials`` where ``<library>`` denotes any
 of the PETSc libraries (listed in the following section), such as
 ``SNES`` or ``KSP`` or ``TS``. The manual pages located at
-``$PETSC_DIR/docs/index.htm`` or
 https://petsc.org/release/documentation/ provide links (organized by
 both routine names and concepts) to the tutorial examples.
 
@@ -738,9 +735,13 @@ To develop an application program that uses PETSc, we suggest the following:
         *  Recommended approach. Examine the comments in $PETSC_DIR/shared/petsc/Makefile.user and transfer selected portions of
            that file to your makefile.
 
-        *  Minimalist. Add the line ``include ${PETSC_DIR}/lib/petsc/conf/variables`` to the bottom of your makefile.
+        *  Minimalist. Add the line
 
-           This will provide a set of PETSc specific make variables you may used in your makefile. See
+           .. code-block:: console
+
+              include ${PETSC_DIR}/lib/petsc/conf/variables
+
+           to the bottom of your makefile. This will provide a set of PETSc specific make variables you may use in your makefile. See
            the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
 
         *  Simple, but hands the build process over to PETSc's control. Add the lines
@@ -801,8 +802,7 @@ directories:
 -  ``include`` - All include files for PETSc that are visible to the
    user.
 
--  ``include/petsc/finclude`` - PETSc include files for Fortran
-   programmers using the .F suffix (recommended).
+-  ``include/petsc/finclude`` - PETSc include files for Fortran.
 
 -  ``include/petsc/private`` - Private PETSc include files that should
    *not* need to be used by application programmers.
@@ -858,10 +858,11 @@ subdirectories:
     such, these codes are not intended for examination by users.
 
 -  ``interface`` - The calling sequences for the abstract interface to
-   the component. Code here does not know about particular
-   implementations.
+   the component. In other words, provides the abstract base classes for the objects.
+   Code here does not know about particular implementations.
 
--  ``impls`` - Source code for one or more implementations.
+-  ``impls`` - Source code for one or more implementations of the class for particular
+   data structures or algorithms.
 
 -  ``utils`` - Utility routines. Source here may know about the
    implementations, but ideally will not know about implementations for
