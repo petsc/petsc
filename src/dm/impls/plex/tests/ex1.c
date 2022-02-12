@@ -534,6 +534,14 @@ int main(int argc, char **argv)
       suffix: gmsh_3d_binary_v41_32_mpiio
       requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
+  test:
+    suffix: gmsh_quad_8node
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-qua-8node.msh \
+          -dm_view -dm_plex_check_all
+  test:
+    suffix: gmsh_hex_20node
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-hex-20node.msh \
+          -dm_view -dm_plex_check_all
   testset:  # 32bit mesh, parallel
     args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all
     nsize: 2
