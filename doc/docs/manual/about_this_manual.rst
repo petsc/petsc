@@ -48,5 +48,5 @@ of many application codes simpler than “rolling them” yourself.
 
 Since PETSc is under continued development, small changes in usage and
 calling sequences of routines will occur. PETSc has been supported for twenty-five years; see
-:doc:`/community/mailing` for
+:doc:`mailing list information on our website </community/mailing>` for
 information on contacting support.

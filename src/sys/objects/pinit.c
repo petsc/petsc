@@ -756,7 +756,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char* prog,const char* 
         }
       }
       if (!flg) {
-        PetscInfo1(NULL,"PETSc warning --- MPICH library version \n%s does not match what PETSc was compiled with %.\n",mpilibraryversion,MPICH_VESION);
+        PetscInfo2(NULL,"PETSc warning --- MPICH library version \n%s does not match what PETSc was compiled with %s.\n",mpilibraryversion,MPICH_VESION);
         flg = PETSC_TRUE;
       }
     }

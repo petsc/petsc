@@ -179,7 +179,7 @@ def build_finished_handler(app, exception):
     _copy_classic_docs(app, exception)
     _fix_links(app, exception)
     _add_version_header(app, exception)
-    if app.builder.name.endswith('html'):
+    if app.builder.name == 'html':
         print("==========================================================================")
         print("    open %s/index.html in your browser to view the documentation " % app.outdir)
         print("==========================================================================")
