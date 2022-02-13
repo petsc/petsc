@@ -242,7 +242,7 @@ struct Mat_SeqAIJCUSPARSEMultStruct {
  #endif
 };
 
-/* This is a larger struct holding all the matrices for a SpMV, and SpMV Tranpose */
+/* This is a larger struct holding all the matrices for a SpMV, and SpMV Transpose */
 struct Mat_SeqAIJCUSPARSE {
   Mat_SeqAIJCUSPARSEMultStruct *mat;            /* pointer to the matrix on the GPU */
   Mat_SeqAIJCUSPARSEMultStruct *matTranspose;   /* pointer to the matrix on the GPU (for the transpose ... useful for BiCG) */
