@@ -45,7 +45,6 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   if (subset_mult) PetscValidHeaderSpecific(subset_mult,IS_CLASSID,2);
   if (N) PetscValidIntPointer(N,3);
   else if (!subset_n) PetscFunctionReturn(0);
-  PetscValidPointer(subset_n,4);
   ierr = ISGetLocalSize(subset,&n);CHKERRQ(ierr);
   if (subset_mult) {
     ierr = ISGetLocalSize(subset_mult,&i);CHKERRQ(ierr);
