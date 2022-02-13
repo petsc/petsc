@@ -104,7 +104,7 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
 
   PetscFunctionBegin;
   ierr = VecGetDM(ctx->xlocal,&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PetscObjectComm(oX),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
+  PetscCheckFalse(!da,PetscObjectComm(oX),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   ierr = DMGetApplicationContext(da,&dactx);CHKERRQ(ierr);
   ierr = VecGetBlockSize(ctx->xlocal,&bs);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,(Vec)oX,INSERT_VALUES,ctx->xlocal);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       }
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+      SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
     }
     ierr = DMSetApplicationContext(daview,dactx);CHKERRQ(ierr);
     ierr = DMSetApplicationContextDestroy(daview,DMDAGhostedDestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
@@ -218,7 +218,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       nc   = ien*(jen>0 ? jen : 1)*(ken>0 ? ken : 1);
 
       ierr = VecGetLocalSize(xcoor,&nl);CHKERRQ(ierr);
-      if (nc && nl % nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %D and number of cells %D",nl,nc);
+      PetscCheckFalse(nc && nl % nc,PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %D and number of cells %D",nl,nc);
       ierr = VecDuplicate(xcoor,&xcoorl);CHKERRQ(ierr);
       ierr = VecCopy(xcoor,xcoorl);CHKERRQ(ierr);
       ierr = VecSetDM(xcoorl,NULL);CHKERRQ(ierr);
@@ -232,7 +232,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
           while (1) {
             PetscInt degd = 1;
             for (i=0;i<dim;i++) degd *= (deg+1);
-            if (degd > cdof) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cell dofs %D",cdof);
+            PetscCheckFalse(degd > cdof,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cell dofs %D",cdof);
             if (degd == cdof) break;
             deg++;
           }
@@ -281,7 +281,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     if (bsset) {
       PetscInt t;
       for (i=0,t=0;i<nf;i++) t += bss[i];
-      if (t != dof) SETERRQ2(PetscObjectComm(oda),PETSC_ERR_USER,"Sum of block sizes %D should equal %D",t,dof);
+      PetscCheckFalse(t != dof,PetscObjectComm(oda),PETSC_ERR_USER,"Sum of block sizes %D should equal %D",t,dof);
     } else nf = dof;
 
     for (i=0,s=0;i<nf;i++) {
@@ -350,14 +350,14 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
+  PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
+  PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
 
   /* get container: determines if a process visualizes is portion of the data or not */
   ierr = PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container);CHKERRQ(ierr);
-  if (!glvis_container) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis container");
+  PetscCheckFalse(!glvis_container,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis container");
   {
     PetscViewerGLVisInfo glvis_info;
     ierr = PetscContainerGetPointer(glvis_container,(void**)&glvis_info);CHKERRQ(ierr);
@@ -368,7 +368,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscObjectQuery((PetscObject)dm,"GLVisGraphicsDMDAGhosted",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) {ierr = DMSetUpGLVisViewer_DMDA((PetscObject)dm,NULL);CHKERRQ(ierr);}
   ierr = PetscObjectQuery((PetscObject)dm,"GLVisGraphicsDMDAGhosted",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis ghosted DMDA");
+  PetscCheckFalse(!da,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis ghosted DMDA");
   ierr = DMGetCoordinateDim(da,&sdim);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer,"MFEM mesh v1.0\n");CHKERRQ(ierr);
@@ -435,14 +435,14 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
     }
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
   }
   ierr = PetscViewerASCIIPrintf(viewer,"\nboundary\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);
 
   /* vertex coordinates */
   ierr = PetscObjectQuery((PetscObject)da,"GLVisGraphicsCoordsGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
-  if (!xcoorl) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis ghosted coords");
+  PetscCheckFalse(!xcoorl,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis ghosted coords");
   ierr = DMDAGetNumVerticesGhosted(da,&ien,&jen,&ken);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\nvertices\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",ien*jen*ken);CHKERRQ(ierr);

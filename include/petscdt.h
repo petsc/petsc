@@ -126,14 +126,14 @@ PETSC_EXTERN PetscErrorCode PetscDTIndexToGradedOrder(PetscInt,PetscInt,PetscInt
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
+static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
 {
   PetscReal f = 1.0;
   PetscInt  i;
 
   PetscFunctionBegin;
   *factorial = -1.0;
-  if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Factorial called with negative number %D", n);
+  PetscCheck(n >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Factorial called with negative number %D", n);
   for (i = 1; i < n+1; ++i) f *= (PetscReal)i;
   *factorial = f;
   PetscFunctionReturn(0);
@@ -152,13 +152,13 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *facto
 
    Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial)
+static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial)
 {
   PetscInt facLookup[13] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600};
 
   PetscFunctionBegin;
   *factorial = -1;
-  if (n < 0 || n > PETSC_FACTORIAL_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
+  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
   if (n <= 12) {
     *factorial = facLookup[n];
   } else {
@@ -183,11 +183,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *fac
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *binomial)
+static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *binomial)
 {
   PetscFunctionBeginHot;
   *binomial = -1.0;
-  if (n < 0 || k < 0 || k > n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%D %D) must be non-negative, k <= n", n, k);
+  PetscCheck(n >= 0 && k >= 0 && k <= n,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%D %D) must be non-negative, k <= n", n, k);
   if (n <= 3) {
     PetscInt binomLookup[4][4] = {{1, 0, 0, 0}, {1, 1, 0, 0}, {1, 2, 1, 0}, {1, 3, 3, 1}};
 
@@ -217,14 +217,14 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, Petsc
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt *binomial)
+static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt *binomial)
 {
   PetscInt bin;
 
   PetscFunctionBegin;
   *binomial = -1;
-  if (n < 0 || k < 0 || k > n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%D %D) must be non-negative, k <= n", n, k);
-  if (n > PETSC_BINOMIAL_MAX) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial elements %D is larger than max for PetscInt, %D", n, PETSC_BINOMIAL_MAX);
+  PetscCheck(n >= 0 && k >= 0 && k <= n,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%D %D) must be non-negative, k <= n", n, k);
+  PetscCheck(n <= PETSC_BINOMIAL_MAX,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial elements %D is larger than max for PetscInt, %D", n, PETSC_BINOMIAL_MAX);
   if (n <= 3) {
     PetscInt binomLookup[4][4] = {{1, 0, 0, 0}, {1, 1, 0, 0}, {1, 2, 1, 0}, {1, 3, 3, 1}};
 
@@ -262,7 +262,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, Pe
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PetscBool *isOdd)
 {
   PetscInt  odd = 0;
   PetscInt  i;
@@ -271,7 +271,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, Petsc
 
   PetscFunctionBegin;
   if (isOdd) *isOdd = PETSC_FALSE;
-  if (n < 0 || n > PETSC_FACTORIAL_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
+  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
   w = &work[n - 2];
   for (i = 2; i <= n; i++) {
     *(w--) = k % i;
@@ -305,7 +305,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, Petsc
 
    Level: beginner
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd)
 {
   PetscInt  odd = 0;
   PetscInt  i, idx;
@@ -315,7 +315,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *
   PetscFunctionBeginHot;
   *k = -1;
   if (isOdd) *isOdd = PETSC_FALSE;
-  if (n < 0 || n > PETSC_FACTORIAL_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
+  PetscCheck(n >= 0 && n <= PETSC_FACTORIAL_MAX,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of elements %D is not in supported range [0,%D]",n,PETSC_FACTORIAL_MAX);
   for (i = 0; i < n; i++) work[i] = i;  /* partial permutation */
   for (i = 0; i < n; i++) iwork[i] = i; /* partial permutation inverse */
   for (idx = 0, i = 0; i < n - 1; i++) {
@@ -355,7 +355,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *
 
 .seealso: PetscDTSubsetIndex()
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt j, PetscInt *subset)
+static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt j, PetscInt *subset)
 {
   PetscInt       Nk, i, l;
   PetscErrorCode ierr;
@@ -394,7 +394,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, Pet
 
 .seealso: PetscDTEnumSubset()
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const PetscInt *subset, PetscInt *index)
+static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const PetscInt *subset, PetscInt *index)
 {
   PetscInt       i, j = 0, l, Nk;
   PetscErrorCode ierr;
@@ -436,7 +436,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, co
 
 .seealso: PetscDTEnumSubset(), PetscDTSubsetIndex()
 M*/
-PETSC_STATIC_INLINE PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
 {
   PetscInt       i, l, m, *subcomp, Nk;
   PetscInt       odd;

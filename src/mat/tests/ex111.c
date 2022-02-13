@@ -152,7 +152,7 @@ int main(int argc,char **argv)
     ierr = MatMatMatMult(R,Adense,P,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
 
     ierr = MatMultEqual(D,Cdense,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D*v != Cdense*v");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D*v != Cdense*v");
     ierr = MatDestroy(&Adense);CHKERRQ(ierr);
     ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
   }
@@ -163,13 +163,13 @@ int main(int argc,char **argv)
 
   /* Test D == C */
   ierr = MatEqual(D,C,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D != C");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D != C");
 
   /* Test C == PtAP */
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"C != PtAP");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"C != PtAP");
   ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
 
   /* Clean up */

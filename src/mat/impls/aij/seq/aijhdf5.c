@@ -34,7 +34,7 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
     case PETSC_VIEWER_HDF5_MAT:
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"PetscViewerFormat %s not supported for HDF5 input.",PetscViewerFormats[format]);
+      SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"PetscViewerFormat %s not supported for HDF5 input.",PetscViewerFormats[format]);
   }
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -76,8 +76,8 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   }
 
   /* If global sizes are set, check if they are consistent with that given in the file */
-  if (mat->rmap->N >= 0 && mat->rmap->N != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows: Matrix in file has (%" PetscInt_FMT ") and input matrix has (%" PetscInt_FMT ")",mat->rmap->N,M);
-  if (mat->cmap->N >= 0 && mat->cmap->N != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols: Matrix in file has (%" PetscInt_FMT ") and input matrix has (%" PetscInt_FMT ")",mat->cmap->N,N);
+  PetscCheckFalse(mat->rmap->N >= 0 && mat->rmap->N != M,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of rows: Matrix in file has (%" PetscInt_FMT ") and input matrix has (%" PetscInt_FMT ")",mat->rmap->N,M);
+  PetscCheckFalse(mat->cmap->N >= 0 && mat->cmap->N != N,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Inconsistent # of cols: Matrix in file has (%" PetscInt_FMT ") and input matrix has (%" PetscInt_FMT ")",mat->cmap->N,N);
 
   /* Determine ownership of all (block) rows and columns */
   mat->rmap->N = M;

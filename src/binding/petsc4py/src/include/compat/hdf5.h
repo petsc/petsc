@@ -6,7 +6,7 @@
 
 #define PetscViewerHDF5Error do {               \
     PetscFunctionBegin; \
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires HDF5",PETSC_FUNCTION_NAME); \
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires HDF5",PETSC_FUNCTION_NAME); \
     PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
 
 PetscErrorCode PetscViewerHDF5PushGroup(PETSC_UNUSED PetscViewer vw,PETSC_UNUSED const char g[]){PetscViewerHDF5Error;}

@@ -367,7 +367,7 @@ PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,Pe
 
 .seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValueLocal()
 M*/
-PETSC_STATIC_INLINE PetscErrorCode VecSetValue(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValues(v,1,&i,&va,mode);}
+static inline PetscErrorCode VecSetValue(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValues(v,1,&i,&va,mode);}
 
 PETSC_EXTERN PetscErrorCode VecSetBlockSize(Vec,PetscInt);
 PETSC_EXTERN PetscErrorCode VecGetBlockSize(Vec,PetscInt*);
@@ -499,7 +499,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
 .seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValue()
 M*/
-PETSC_STATIC_INLINE PetscErrorCode VecSetValueLocal(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValuesLocal(v,1,&i,&va,mode);}
+static inline PetscErrorCode VecSetValueLocal(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValuesLocal(v,1,&i,&va,mode);}
 
 PETSC_EXTERN PetscErrorCode VecSetValuesBlockedLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode VecGetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping*);
@@ -518,7 +518,7 @@ PETSC_EXTERN PetscErrorCode VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
 PETSC_EXTERN PetscErrorCode VecBindToCPU(Vec,PetscBool);
-PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") PETSC_STATIC_INLINE PetscErrorCode VecPinToCPU(Vec v,PetscBool flg) {return VecBindToCPU(v,flg);}
+PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") static inline PetscErrorCode VecPinToCPU(Vec v,PetscBool flg) {return VecBindToCPU(v,flg);}
 PETSC_EXTERN PetscErrorCode VecBoundToCPU(Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode VecSetBindingPropagates(Vec,PetscBool);
 PETSC_EXTERN PetscErrorCode VecGetBindingPropagates(Vec,PetscBool *);
@@ -567,7 +567,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec,PetscScalar**);
 .seealso: VecGetArray(), VecGetArrayRead(), VecRestoreArrayPair()
 
 @*/
-PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
+static inline PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
 {
   PetscErrorCode ierr;
 
@@ -601,7 +601,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,
 .seealso: VecGetArray(), VecGetArrayRead(), VecGetArrayPair()
 
 @*/
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
+static inline PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
 {
   PetscErrorCode ierr;
 
@@ -618,14 +618,14 @@ PETSC_EXTERN PetscErrorCode VecLockReadPush(Vec);
 PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
 /* We also have a non-public VecLockWriteSet_Private() in vecimpl.h */
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
-PETSC_STATIC_INLINE PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
+static inline PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
 {
   PetscInt       state;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecLockGet(x,&state);CHKERRQ(ierr);
-  if (PetscUnlikely(state != 0)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %" PetscInt_FMT,arg);
+  PetscCheck(state == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %" PetscInt_FMT,arg);
   PetscFunctionReturn(0);
 }
 /* The three are deprecated */

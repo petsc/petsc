@@ -3053,7 +3053,7 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
     ierr = PetscBagRegisterReal(bag, &p->xc,   0.5, "xc",   "x-coordinate of the viscosity jump");CHKERRQ(ierr);
     break;
   default:
-    SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
   }
   ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
   ierr = PetscBagViewFromOptions(bag, NULL, "-param_view");CHKERRQ(ierr);
@@ -3134,7 +3134,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     ierr = PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J_cx, NULL, NULL, NULL);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
   }
   ierr = PetscBagGetData(user->bag, &data);CHKERRQ(ierr);
   switch (dim) {
@@ -3149,11 +3149,11 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetExactSolution(prob, 1, SolCxSolutionPressure, data);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", (PetscInt) user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", dim);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", dim);
   }
   /* Setup constants */
   {
@@ -3183,7 +3183,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetConstants(prob, 5, constants);CHKERRQ(ierr);
     }
     break;
-    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
+    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
     }
   }
   /* Setup Boundary Conditions */
@@ -3210,7 +3210,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscIn
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  if (origField != 1) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
+  PetscCheckFalse(origField != 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
   funcs[field] = one;
   {
     PetscDS ds;
@@ -3304,12 +3304,12 @@ static PetscErrorCode CorrectDiscretePressure(DM dm, MatNullSpace nullspace, Vec
   ierr = PetscDSSetObjective(ds, 1, pressure);CHKERRQ(ierr);
   ierr = MatNullSpaceGetVecs(nullspace, NULL, NULL, &nullvecs);CHKERRQ(ierr);
   ierr = VecDot(nullvecs[0], u, &pintd);CHKERRQ(ierr);
-  if (PetscAbsScalar(pintd) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g", (double) PetscRealPart(pintd));
+  PetscCheckFalse(PetscAbsScalar(pintd) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Discrete integral of pressure: %g", (double) PetscRealPart(pintd));
   ierr = DMPlexComputeIntegralFEM(dm, nullvecs[0], intn, user);CHKERRQ(ierr);
   ierr = DMPlexComputeIntegralFEM(dm, u, intc, user);CHKERRQ(ierr);
   ierr = VecAXPY(u, -intc[1]/intn[1], nullvecs[0]);CHKERRQ(ierr);
   ierr = DMPlexComputeIntegralFEM(dm, u, intc, user);CHKERRQ(ierr);
-  if (PetscAbsScalar(intc[1]) > PETSC_SMALL) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double) PetscRealPart(intc[1]));
+  PetscCheckFalse(PetscAbsScalar(intc[1]) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double) PetscRealPart(intc[1]));
   PetscFunctionReturn(0);
 }
 
@@ -3329,7 +3329,7 @@ static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, Pet
     ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes, &J, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = MatGetNullSpace(J, &nullspace);CHKERRQ(ierr);
-    if (!nullspace) SETERRQ(PetscObjectComm((PetscObject) snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
+    PetscCheckFalse(!nullspace,PetscObjectComm((PetscObject) snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
     ierr = CorrectDiscretePressure(dm, nullspace, u, (AppCtx *) user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

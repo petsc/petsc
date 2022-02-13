@@ -33,7 +33,7 @@
    handlers, but can instead use the simplified interface SETERRQ, which
    has the calling sequence
 $     SETERRQ(comm,number,mess)
-   or its variants, SETERRQ1(number,formatstring,arg1), SETERRQ2(), ... that
+   or its variants, SETERRQ(number,formatstring,arg1), SETERRQ(), ... that
    allow including arguments in the message.
 
    Notes for experienced users:

@@ -91,7 +91,7 @@ PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
   PetscFunctionBegin;
   ierr = MatStashScatterBegin_Private(A, &A->stash, A->rmap->range);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&A->stash, &nstash, &reallocs);CHKERRQ(ierr);
-  ierr = PetscInfo2(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs);CHKERRQ(ierr);
+  ierr = PetscInfo(A, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +147,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (p->used) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatPreallocatorPreallocate() can only be used once for a give MatPreallocator object. Consider using MatDuplicate() after preallocation.");
+  PetscCheck(!p->used,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatPreallocatorPreallocate() can only be used once for a give MatPreallocator object. Consider using MatDuplicate() after preallocation.");
   p->used = PETSC_TRUE;
   if (!fill) {ierr = PetscHSetIJDestroy(&p->ht);CHKERRQ(ierr);}
   ierr = MatGetBlockSize(mat, &bs);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
       rowstarts[i+1] = rowstarts[i] + p->dnz[i] + p->onz[i];
       maxrow = PetscMax(maxrow, p->dnz[i] + p->onz[i]);
     }
-    if (rowstarts[rEnd-rStart] != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash claims %" PetscInt_FMT " entries, but dnz+onz counts %" PetscInt_FMT,n,rowstarts[rEnd-rStart]);
+    PetscCheckFalse(rowstarts[rEnd-rStart] != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash claims %" PetscInt_FMT " entries, but dnz+onz counts %" PetscInt_FMT,n,rowstarts[rEnd-rStart]);
 
     PetscHashIterBegin(p->ht,hi);
     for (PetscInt i=0; !PetscHashIterAtEnd(p->ht,hi); i++) {

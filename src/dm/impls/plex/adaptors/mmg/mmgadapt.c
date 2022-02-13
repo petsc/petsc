@@ -29,12 +29,12 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   if (bdLabel) {
     ierr = PetscObjectGetName((PetscObject) bdLabel, &bdLabelName);CHKERRQ(ierr);
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
-    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+    PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
   }
   if (rgLabel) {
     ierr = PetscObjectGetName((PetscObject) rgLabel, &rgLabelName);CHKERRQ(ierr);
     ierr = PetscStrcmp(rgLabelName, rgName, &flg);CHKERRQ(ierr);
-    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
+    PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
   }
 
   /* Get mesh information */
@@ -175,7 +175,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     ierr = MMG3D_Set_tensorSols(mmg_metric, metric);
     ierr = MMG3D_mmg3dlib(mmg_mesh, mmg_metric);
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
   }
   ierr = PetscFree(cells);CHKERRQ(ierr);
   ierr = PetscFree2(metric, vertices);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     for (i = 0; i < numCellsNew; ++i) { ierr = DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4*i]);CHKERRQ(ierr); }
     break;
 
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
   }
 
   /* Create new Plex */
@@ -222,7 +222,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   case 3:
     ierr = MMG3D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
   }
   ierr = PetscFree4(verticesNew, verTagsNew, corners, requiredVer);CHKERRQ(ierr);
 
@@ -246,7 +246,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
         f = j;
       }
     }
-    if (numFaces != 1) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "%d vertices cannot define more than 1 facet (%d)", dim, numFaces);
+    PetscCheckFalse(numFaces != 1,comm, PETSC_ERR_ARG_OUTOFRANGE, "%d vertices cannot define more than 1 facet (%d)", dim, numFaces);
     ierr = DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]);CHKERRQ(ierr);
     ierr = DMPlexRestoreJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);
   }

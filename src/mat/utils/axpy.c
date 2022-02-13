@@ -68,10 +68,10 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   ierr = MatGetSize(Y,&M2,&N2);CHKERRQ(ierr);
   ierr = MatGetLocalSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Y,&m2,&n2);CHKERRQ(ierr);
-  if (M1 != M2 || N1 != N2) SETERRQ4(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_SIZ,"Non conforming matrix add: global sizes X: %" PetscInt_FMT " x %" PetscInt_FMT ", Y: %" PetscInt_FMT " x %" PetscInt_FMT,M1,N1,M2,N2);
-  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes X: %" PetscInt_FMT " x %" PetscInt_FMT ", Y: %" PetscInt_FMT " x %" PetscInt_FMT,m1,n1,m2,n2);
-  if (!Y->assembled) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (Y)");
-  if (!X->assembled) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (X)");
+  PetscCheck(M1 == M2 && N1 == N2,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_SIZ,"Non conforming matrix add: global sizes X %" PetscInt_FMT " x %" PetscInt_FMT ", Y %" PetscInt_FMT " x %" PetscInt_FMT,M1,N1,M2,N2);
+  PetscCheck(m1 == m2 && n1 == n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: local sizes X %" PetscInt_FMT " x %" PetscInt_FMT ", Y %" PetscInt_FMT " x %" PetscInt_FMT,m1,n1,m2,n2);
+  PetscCheck(Y->assembled,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (Y)");
+  PetscCheck(X->assembled,PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix (X)");
   if (a == (PetscScalar)0.0) PetscFunctionReturn(0);
   if (Y == X) {
     ierr = MatScale(Y,1.0 + a);CHKERRQ(ierr);
@@ -297,8 +297,8 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-  if (!Y->assembled) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (Y->factortype) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheckFalse(!Y->assembled,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheckFalse(Y->factortype,PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(Y,1);
   if (a == 0.0) PetscFunctionReturn(0);
 
@@ -361,7 +361,7 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   PetscValidHeaderSpecific(D,VEC_CLASSID,2);
   ierr = MatGetLocalSize(Y,&matlocal,NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(D,&veclocal);CHKERRQ(ierr);
-  if (matlocal != veclocal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number local rows of matrix %" PetscInt_FMT " does not match that of vector for diagonal %" PetscInt_FMT,matlocal,veclocal);
+  PetscCheckFalse(matlocal != veclocal,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number local rows of matrix %" PetscInt_FMT " does not match that of vector for diagonal %" PetscInt_FMT,matlocal,veclocal);
   if (Y->ops->diagonalset) {
     ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
   } else {

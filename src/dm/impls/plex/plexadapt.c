@@ -34,7 +34,7 @@ static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, P
       case DM_ADAPT_DETERMINE:
         break;
       default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMPlex does not support refinement flag %D", refFlag);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMPlex does not support refinement flag %D", refFlag);
       }
       if (anyRefine) break;
     }
@@ -195,7 +195,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
       }
       fl = fl->next;
     }
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid refiner %s not registered",name);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid refiner %s not registered",name);
   } else {
     while (fl) {
       if (fl->dim < 0 || dim-1 == fl->dim) {
@@ -205,7 +205,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
       }
       fl = fl->next;
     }
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid refiner of dimension %D registered",dim);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid refiner of dimension %D registered",dim);
   }
 
   gotit:
@@ -233,7 +233,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
         ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
       }
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
+    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
   }
   ((DM_Plex *) (*dmRefined)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
   ierr = DMCopyDisc(dm, *dmRefined);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLa
     case DM_ADAPT_COARSEN:
       ierr = DMCoarsen(dm, MPI_COMM_NULL, dmAdapted);CHKERRQ(ierr);break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"DMPlex does not support refinement flag %D", minFlag);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"DMPlex does not support refinement flag %D", minFlag);
     }
   } else {
     ierr = DMPlexSetRefinementUniform(dm, PETSC_FALSE);CHKERRQ(ierr);

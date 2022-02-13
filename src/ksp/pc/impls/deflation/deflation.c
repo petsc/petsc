@@ -622,7 +622,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         ierr = MatGetColumnNorms(def->WtAW,NORM_INFINITY,norms);CHKERRQ(ierr);
         for (i=0; i<m; i++) {
           if (norms[i] < 100*PETSC_MACHINE_EPSILON) {
-            SETERRQ1(comm,PETSC_ERR_SUP,"Column %D of W is in kernel of A.",i);
+            SETERRQ(comm,PETSC_ERR_SUP,"Column %D of W is in kernel of A.",i);
           }
         }
         ierr = PetscFree(norms);CHKERRQ(ierr);
@@ -666,7 +666,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       ierr = KSPAppendOptionsPrefix(def->WtAWinv,"deflation_tel_");CHKERRQ(ierr);
       ierr = PCSetFromOptions(pcinner);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)pcinner,PCTELESCOPE,&match);CHKERRQ(ierr);
-      if (!match) SETERRQ(comm,PETSC_ERR_SUP,"User can not owerwrite PCTELESCOPE on bottom level, use reduction factor = 1 instead.");
+      PetscCheckFalse(!match,comm,PETSC_ERR_SUP,"User can not owerwrite PCTELESCOPE on bottom level, use reduction factor = 1 instead.");
       /* Reduction factor choice */
       red = def->reductionfact;
       if (red < 0) {
@@ -674,7 +674,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
         red  = PetscCeilInt(commsize,PetscCeilInt(m,commsize));
         ierr = PetscObjectTypeCompareAny((PetscObject)(def->WtAW),&match,MATSEQDENSE,MATMPIDENSE,MATDENSE,"");CHKERRQ(ierr);
         if (match) red = commsize;
-        ierr = PetscInfo1(pc,"Auto choosing reduction factor %D\n",red);CHKERRQ(ierr);
+        ierr = PetscInfo(pc,"Auto choosing reduction factor %D\n",red);CHKERRQ(ierr);
       }
       ierr = PCTelescopeSetReductionFactor(pcinner,red);CHKERRQ(ierr);
       ierr = PCSetUp(pcinner);CHKERRQ(ierr);

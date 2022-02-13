@@ -568,7 +568,7 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
     PetscFunctionReturn(0);
   }
   if (done) *done = PETSC_FALSE;
-  else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"GLEE '%s' of order %D cannot evaluate step at order %D",tab->name,tab->order,order);
+  else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"GLEE '%s' of order %D cannot evaluate step at order %D",tab->name,tab->order,order);
   PetscFunctionReturn(0);
 }
 
@@ -683,7 +683,7 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts,PetscReal itime,Vec X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!B) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSGLEE %s does not have an interpolation formula",glee->tableau->name);
+  PetscCheckFalse(!B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSGLEE %s does not have an interpolation formula",glee->tableau->name);
   switch (glee->status) {
     case TS_STEP_INCOMPLETE:
     case TS_STEP_PENDING:
@@ -1024,7 +1024,7 @@ PetscErrorCode  TSGLEESetType_GLEE(TS ts,TSGLEEType gleetype)
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",gleetype);
+  SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",gleetype);
 }
 
 static PetscErrorCode  TSGetStages_GLEE(TS ts,PetscInt *ns,Vec **Y)
@@ -1048,7 +1048,7 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
   else {
     if ((*n >= 0) && (*n < tab->r)) {
       ierr = VecCopy(glee->Y[*n],*Y);CHKERRQ(ierr);
-    } else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Second argument (%d) out of range[%d,%d].",*n,0,tab->r-1);
+    } else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Second argument (%d) out of range[%d,%d].",*n,0,tab->r-1);
   }
   PetscFunctionReturn(0);
 }
@@ -1103,7 +1103,7 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (r != 2) SETERRQ2(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
+  PetscCheckFalse(r != 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
   for (i=1; i<r; i++) {
     ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
     ierr = VecAXPBY(Y[i],S[0],S[1],X);CHKERRQ(ierr);

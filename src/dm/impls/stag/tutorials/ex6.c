@@ -97,7 +97,7 @@ int main(int argc,char *argv[])
         dof0 = 0; dof1 = 0; dof2 = 1; dof3 = 0; /* 1 dof per cell boundary */
         ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,30,30,30,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof0,dof1,dof2,dof3,DMSTAG_STENCIL_BOX,stencilWidth,NULL,NULL,NULL,&ctx.dm_velocity);CHKERRQ(ierr);
         break;
-      default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
+      default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
     }
   }
   ierr = DMSetFromOptions(ctx.dm_velocity);CHKERRQ(ierr); /* Options control velocity DM */
@@ -114,7 +114,7 @@ int main(int argc,char *argv[])
       /* One shear stress component on element edges, three shear stress components on elements */
       ierr = DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,3,&ctx.dm_stress);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
   }
   ierr = DMSetUp(ctx.dm_stress);CHKERRQ(ierr);
   ierr = DMStagSetUniformCoordinatesProduct(ctx.dm_stress,ctx.xmin,ctx.xmax,ctx.ymin,ctx.ymax,ctx.zmin,ctx.zmax);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ int main(int argc,char *argv[])
       /* buoyancy on element boundaries (faces) */
       ierr = DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,0,1,0,&ctx.dm_buoyancy);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
   }
   ierr = DMSetUp(ctx.dm_buoyancy);CHKERRQ(ierr);
 
@@ -142,7 +142,7 @@ int main(int argc,char *argv[])
       /* mu and lambda + 2*mu on element centers, mu on edges */
       ierr = DMStagCreateCompatibleDMStag(ctx.dm_velocity,0,1,0,2,&ctx.dm_lame);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
+    default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not Implemented for dimension %D",ctx.dim);
   }
   ierr = DMSetUp(ctx.dm_lame);CHKERRQ(ierr);
 
@@ -275,7 +275,7 @@ static PetscErrorCode CreateLame(Ctx *ctx)
         }
       }
     }
-  } else SETERRQ1(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
   ierr = VecAssemblyBegin(ctx->lame);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ctx->lame);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -524,7 +524,7 @@ static PetscErrorCode UpdateVelocity(const Ctx *ctx,Vec velocity,Vec stress, Vec
     ierr = UpdateVelocity_2d(ctx,velocity,stress,buoyancy);CHKERRQ(ierr);
   } else if (ctx->dim == 3) {
     ierr = UpdateVelocity_3d(ctx,velocity,stress,buoyancy);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
   PetscFunctionReturn(0);
 }
 
@@ -830,7 +830,7 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx,Vec velocity,PetscInt timestep
     ierr = DMStagCreateCompatibleDMStag(ctx->dm_velocity,0,0,2,0,&dmVelAvg);CHKERRQ(ierr); /* 2 dof per element */
   } else if (ctx->dim == 3) {
     ierr = DMStagCreateCompatibleDMStag(ctx->dm_velocity,0,0,0,3,&dmVelAvg);CHKERRQ(ierr); /* 3 dof per element */
-  } else SETERRQ1(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
   ierr = DMSetUp(dmVelAvg);CHKERRQ(ierr);
   ierr = DMStagSetUniformCoordinatesProduct(dmVelAvg,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax,ctx->zmin,ctx->zmax);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmVelAvg,&velAvg);CHKERRQ(ierr);
@@ -874,7 +874,7 @@ static PetscErrorCode DumpVelocity(const Ctx *ctx,Vec velocity,PetscInt timestep
         }
       }
     }
-  } else SETERRQ1(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)ctx->dm_velocity),PETSC_ERR_SUP,"Unsupported dim %d",ctx->dim);
   ierr = VecAssemblyBegin(velAvg);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(velAvg);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(ctx->dm_velocity,&velocity_local);CHKERRQ(ierr);

@@ -70,7 +70,7 @@ class Configure(config.package.Package):
     if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
     self.cflags = self.cflags + ' -DCOMMON_RANDOM_FIXED_SEED'
     # do not use -DSCOTCH_PTHREAD because requires MPI built for threads.
-    self.cflags = self.cflags + ' -DSCOTCH_RENAME -Drestrict="'+self.compilers.cRestrict+'"'
+    self.cflags = self.cflags + ' -DSCOTCH_RENAME -Drestrict="restrict"'
     # this is needed on the Mac, because common2.c includes common.h which DOES NOT include mpi.h because
     # SCOTCH_PTSCOTCH is NOT defined above Mac does not know what clock_gettime() is!
     if self.setCompilers.isDarwin(self.log):

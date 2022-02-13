@@ -214,7 +214,7 @@ PetscErrorCode VecView_Network(Vec v,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = VecGetDM(v,&dm);CHKERRQ(ierr);
-  if (!dm) SETERRQ(PetscObjectComm((PetscObject)v),PETSC_ERR_ARG_WRONG,"Vector not generated from a DM");
+  PetscCheckFalse(!dm,PetscObjectComm((PetscObject)v),PETSC_ERR_ARG_WRONG,"Vector not generated from a DM");
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)v,VECSEQ,&isseq);CHKERRQ(ierr);
 

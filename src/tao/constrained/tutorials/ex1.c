@@ -67,7 +67,7 @@ PetscErrorCode main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size>2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"More than 2 processors detected. Example written to use max of 2 processors.");
+  PetscCheckFalse(size>2,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"More than 2 processors detected. Example written to use max of 2 processors.");
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"---- Constrained Problem -----\n");CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr); /* sets up problem, function below */
@@ -98,7 +98,7 @@ PetscErrorCode main(int argc,char **argv)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);CHKERRQ(ierr);  /* requires mumps to solve pdipm */
 #else
-  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Requires an external package that supports parallel PCCHOLESKY, e.g., MUMPS.");
+  PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Requires an external package that supports parallel PCCHOLESKY, e.g., MUMPS.");
 #endif
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);

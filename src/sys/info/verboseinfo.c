@@ -57,7 +57,7 @@ FILE                      *PetscInfoFile = NULL;
 PetscErrorCode PetscInfoEnabled(PetscClassId classid, PetscBool *enabled)
 {
   PetscFunctionBegin;
-  if (classid < PETSC_SMALLEST_CLASSID) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Classid (current: %d) must be equal to or greater than PETSC_SMALLEST_CLASSID", classid);
+  PetscCheckFalse(classid < PETSC_SMALLEST_CLASSID,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Classid (current: %d) must be equal to or greater than PETSC_SMALLEST_CLASSID", classid);
   *enabled = (PetscBool) (PetscLogPrintInfo && PetscInfoFlags[classid - PETSC_SMALLEST_CLASSID]);
   PetscFunctionReturn(0);
 }
@@ -119,7 +119,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
     PetscLogPrintInfo = oldflag;
     /* PetscFOpen will write to PETSC_STDOUT and not PetscInfoFile here, so we disable the PetscInfo call inside it, and
      call it afterwards so that it actually writes to file */
-    ierr = PetscInfo1(NULL, "Opened PetscInfo file %s\n", fname);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL, "Opened PetscInfo file %s\n", fname);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -188,7 +188,7 @@ PetscErrorCode PetscInfoSetClasses(PetscBool exclude, PetscInt N, const char *co
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (PetscInfoClassesLocked) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscInfoSetClasses() cannot be called after PetscInfoGetClass() or PetscInfoProcessClass()");
+  PetscCheckFalse(PetscInfoClassesLocked,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PetscInfoSetClasses() cannot be called after PetscInfoGetClass() or PetscInfoProcessClass()");
   ierr = PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames);CHKERRQ(ierr);
   ierr = PetscStrNArrayallocpy(N, classnames, &PetscInfoClassnames);CHKERRQ(ierr);
   PetscInfoNumClasses = N;
@@ -433,7 +433,7 @@ PetscErrorCode PetscInfoDestroy(void)
   ierr = PetscInfoAllow(PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscStrNArrayDestroy(PetscInfoNumClasses, &PetscInfoClassnames);CHKERRQ(ierr);
   err  = fflush(PetscInfoFile);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   if (PetscInfoFilename) {
     ierr  = PetscFClose(MPI_COMM_SELF, PetscInfoFile);CHKERRQ(ierr);
   }
@@ -506,8 +506,8 @@ PETSC_INTERN FILE *petsc_history;
    Synopsis:
        #include <petscsys.h>
        PetscErrorCode PetscInfo(PetscObject obj, const char message[])
-       PetscErrorCode PetscInfo1(PetscObject obj, const char formatmessage[],arg1)
-       PetscErrorCode PetscInfo2(PetscObject obj, const char formatmessage[],arg1,arg2)
+       PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1)
+       PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1,arg2)
        ...
 
     Collective on obj
@@ -542,13 +542,13 @@ $   -info [filename][:[~]<list,of,classnames>[:[~]self]]
 $     Mat A;
 $     PetscInt alpha;
 $     ...
-$     PetscInfo1(A,"Matrix uses parameter alpha=%" PetscInt_FMT "\n",alpha);
+$     PetscInfo(A,"Matrix uses parameter alpha=%" PetscInt_FMT "\n",alpha);
 
     Options Examples:
     Each call of the form
 $     PetscInfo(obj, msg);
-$     PetscInfo1(obj, msg, arg1);
-$     PetscInfo2(obj, msg, arg1, arg2);
+$     PetscInfo(obj, msg, arg1);
+$     PetscInfo(obj, msg, arg1, arg2);
     is evaluated as follows.
 $     -info or -info :: prints msg to PETSC_STDOUT, for any obj regardless class or communicator
 $     -info :mat:self prints msg to PETSC_STDOUT only if class of obj is Mat, and its communicator has size = 1
@@ -560,7 +560,7 @@ $     -info :sys:~self
 
     Fortran Note:
     This function does not take the obj argument, there is only the PetscInfo()
-     version, not PetscInfo1() etc.
+     version, not PetscInfo() etc.
 
     Level: intermediate
 
@@ -605,7 +605,7 @@ PetscErrorCode  PetscInfo_Private(const char func[],PetscObject obj, const char 
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message,&fullLength, Argp);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
   err  = fflush(PetscInfoFile);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   if (petsc_history) {
     va_start(Argp, message);
     ierr = (*PetscVFPrintf)(petsc_history, message, Argp);CHKERRQ(ierr);

@@ -241,7 +241,7 @@ int main(int argc,char **args)
     Lx = 1.; /* or ne for rod */
     max_conv_its = 3;
     ierr = PetscOptionsInt("-max_conv_its","Number of iterations in convergence study","",max_conv_its,&max_conv_its,NULL);CHKERRQ(ierr);
-    if (max_conv_its<=0 || max_conv_its>7) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
+    PetscCheckFalse(max_conv_its<=0 || max_conv_its>7,PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
     ierr = PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
@@ -318,9 +318,9 @@ int main(int argc,char **args)
     }
     ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
-    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
+    PetscCheckFalse(dimEmbed != dim,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
     ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
+    PetscCheckFalse(nCoords % dimEmbed,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
     ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
     for (i = 0; i < nCoords; i += dimEmbed) {
       PetscInt    j;
@@ -347,7 +347,7 @@ int main(int argc,char **args)
       ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
       ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
-      if (!isForest) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
+      PetscCheckFalse(!isForest,PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = newdm;
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
@@ -443,7 +443,7 @@ int main(int argc,char **args)
     ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
-    ierr = PetscInfo2(snes,"%D global equations, %D vertices\n",N,N/dim);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"%D global equations, %D vertices\n",N,N/dim);CHKERRQ(ierr);
     if ((use_nearnullspace || attach_nearnullspace) && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
@@ -481,7 +481,7 @@ int main(int argc,char **args)
     ierr = VecZeroEntries(bb);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
     local_sizes[iter] = i;
-    ierr = PetscInfo2(snes,"%D equations in vector, %D vertices\n",i,i/dim);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"%D equations in vector, %D vertices\n",i,i/dim);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     /* solve */
     ierr = PetscLogStagePush(stage[iter]);CHKERRQ(ierr);

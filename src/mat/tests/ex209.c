@@ -59,7 +59,7 @@ int main(int argc,char **args)
 
   /* Compare C and AtA */
   ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
+  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
   ierr = MatDestroy(&AtA);CHKERRQ(ierr);
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);

@@ -78,7 +78,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 #endif
 
   PetscFunctionBegin;
-  if (part->use_edge_weights) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Chaco does not support edge weights");
+  PetscCheckFalse(part->use_edge_weights,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Chaco does not support edge weights");
   FREE_GRAPH = 0; /* otherwise Chaco will attempt to free memory for adjacency graph */
   ierr       = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRMPI(ierr);
   ierr       = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRMPI(ierr);
@@ -133,7 +133,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
   fd_stdout = dup(1);
-  if (pipe(fd_pipe)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
+  PetscCheckFalse(pipe(fd_pipe),PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
   dup2(fd_pipe[1],1);
   ierr = PetscMalloc1(SIZE_LOG,&mesg_log);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 
 #if defined(PETSC_HAVE_UNISTD_H)
   err = fflush(stdout);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
   count = read(fd_pipe[0],mesg_log,(SIZE_LOG-1)*sizeof(char));
   if (count<0) count = 0;
   mesg_log[count] = 0;
@@ -160,7 +160,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   }
   ierr = PetscFree(mesg_log);CHKERRQ(ierr);
 #endif
-  if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
+  PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
 
   ierr = PetscMalloc1(mat->rmap->N,&parttab);CHKERRQ(ierr);
   for (i=0; i<nvtxs; i++) parttab[i] = assignment[i];
@@ -395,7 +395,7 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part,Pet
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
 
   PetscFunctionBegin;
-  if (level<0.0 || level>1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Chaco: level of coarsening out of range [0.0-1.0]");
+  PetscCheckFalse(level<0.0 || level>1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Chaco: level of coarsening out of range [0.0-1.0]");
   chaco->nbvtxcoarsed = (PetscInt)(part->adj->cmap->N * level);
   if (chaco->nbvtxcoarsed < 20) chaco->nbvtxcoarsed = 20;
   PetscFunctionReturn(0);
@@ -519,7 +519,7 @@ PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part,PetscR
   PetscFunctionBegin;
   if (tol==PETSC_DEFAULT) chaco->eigtol = 0.001;
   else {
-    if (tol<=0.0) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be positive");
+    PetscCheckFalse(tol<=0.0,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be positive");
     chaco->eigtol = tol;
   }
   PetscFunctionReturn(0);
@@ -599,7 +599,7 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part,Pet
   PetscFunctionBegin;
   if (num==PETSC_DEFAULT) chaco->eignum = 1;
   else {
-    if (num<1 || num>3) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Can only specify 1, 2 or 3 eigenvectors");
+    PetscCheckFalse(num<1 || num>3,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Can only specify 1, 2 or 3 eigenvectors");
     chaco->eignum = num;
   }
   PetscFunctionReturn(0);

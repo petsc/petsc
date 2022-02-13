@@ -78,7 +78,7 @@ PetscInt PCTFS_ct_bits(char *ptr, PetscInt n)
 /*********************************bit_mask.c***********************************/
 PetscInt PCTFS_div_ceil(PetscInt numer,  PetscInt denom)
 {
-  if ((numer<0)||(denom<=0)) SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_div_ceil() :: numer=%D ! >=0, denom=%D ! >0");
+  if ((numer<0)||(denom<=0)) SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_div_ceil() :: numer=%" PetscInt_FMT " ! >=0, denom=%" PetscInt_FMT " ! >0",numer,denom);
   return(PetscCeilInt(numer,denom));
 }
 
@@ -87,7 +87,7 @@ PetscInt PCTFS_len_bit_mask(PetscInt num_items)
 {
   PetscInt rt_val, tmp;
 
-  if (num_items<0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Value Sent To PCTFS_len_bit_mask() Must be >= 0!");
+  PetscCheckFalse(num_items<0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Value Sent To PCTFS_len_bit_mask() Must be >= 0!");
 
   rt_val = PetscCeilInt(num_items,BYTE);
   /* make multiple of sizeof PetscInt */
@@ -103,7 +103,7 @@ PetscErrorCode PCTFS_set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val)
   char     *cptr;
 
    PetscFunctionBegin;
-  if (PCTFS_len_bit_mask(val)>len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");
+  PetscCheckFalse(PCTFS_len_bit_mask(val)>len,PETSC_COMM_SELF,PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");
 
   cptr = (char*) bm;
 

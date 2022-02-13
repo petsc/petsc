@@ -112,7 +112,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (vtol) PetscValidRealPointer(vtol,3);
-  if (!ts->event) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
+  PetscCheckFalse(!ts->event,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
 
   event = ts->event;
   if (vtol) {
@@ -359,7 +359,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 }
 
 /* Uses Anderson-Bjorck variant of regula falsi method */
-PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t,PetscReal tright,PetscScalar fleft,PetscScalar f,PetscScalar fright,PetscInt side,PetscReal dt)
+static inline PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t,PetscReal tright,PetscScalar fleft,PetscScalar f,PetscScalar fright,PetscInt side,PetscReal dt)
 {
   PetscReal new_dt, scal = 1.0;
   if (PetscRealPart(fleft)*PetscRealPart(f) < 0) {

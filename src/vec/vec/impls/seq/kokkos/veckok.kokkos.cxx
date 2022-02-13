@@ -19,7 +19,7 @@
       PetscErrorCode   ierr; \
       PetscBool        isKokkos = PETSC_FALSE; \
       ierr = PetscObjectTypeCompareAny((PetscObject)(v),&isKokkos,VECSEQKOKKOS,VECMPIKOKKOS,VECKOKKOS,"");CHKERRQ(ierr); \
-      if (!isKokkos) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Calling VECKOKKOS methods on a non-VECKOKKOS object"); \
+      PetscCheckFalse(!isKokkos,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Calling VECKOKKOS methods on a non-VECKOKKOS object"); \
     } while (0)
 #else
   #define VecErrorIfNotKokkos(v) do {(void)(v);} while (0)
@@ -975,7 +975,7 @@ static PetscErrorCode BuildVecKokkosFromVecSeq_Private(Vec v)
   Vec_Kokkos     *veckok = NULL;
 
   PetscFunctionBegin;
-  if (v->spptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"v->spptr not NULL");
+  PetscCheckFalse(v->spptr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"v->spptr not NULL");
   veckok = new Vec_Kokkos(v->map->n,vecseq->array);
   Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
   v->spptr = static_cast<void*>(veckok);
@@ -1040,7 +1040,7 @@ PetscErrorCode  VecCreateSeqKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQKOKKOS on more than one process");
+  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQKOKKOS on more than one process");
 
   ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
   ierr = VecCreate(comm,&w);CHKERRQ(ierr);

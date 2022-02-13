@@ -264,7 +264,7 @@ PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash*,PetscLayout,P
   idx    - the global of the inserted value
   values - the value inserted
 */
-PETSC_STATIC_INLINE PetscErrorCode VecStashValue_Private(VecStash *stash,PetscInt row,PetscScalar value)
+static inline PetscErrorCode VecStashValue_Private(VecStash *stash,PetscInt row,PetscScalar value)
 {
   PetscErrorCode ierr;
   /* Check and see if we have sufficient memory */
@@ -285,7 +285,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValue_Private(VecStash *stash,PetscIn
   idx    - the global block index
   values - the values inserted
 */
-PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values)
+static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values)
 {
   PetscInt       jj,stash_bs=(stash)->bs;
   PetscScalar    *array;
@@ -315,20 +315,20 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSec
 PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 
 #define VecCheckSameLocalSize(x,ar1,y,ar2) do {                         \
-    if (PetscUnlikely((x)->map->n != (y)->map->n)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d local size %" PetscInt_FMT " != parameter # %d local size %" PetscInt_FMT,ar1,(x)->map->n, ar2,(y)->map->n); \
+    PetscCheck((x)->map->n == (y)->map->n,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d local size %" PetscInt_FMT " != parameter # %d local size %" PetscInt_FMT,ar1,(x)->map->n, ar2,(y)->map->n); \
   } while (0)
 
 #define VecCheckSameSize(x,ar1,y,ar2) do {                              \
-    if (PetscUnlikely((x)->map->N != (y)->map->N)) SETERRQ4(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d global size %" PetscInt_FMT " != parameter # %d global size %" PetscInt_FMT,ar1,(x)->map->N,ar2,(y)->map->N); \
+    PetscCheck((x)->map->N == (y)->map->N,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d global size %" PetscInt_FMT " != parameter # %d global size %" PetscInt_FMT,ar1,(x)->map->N,ar2,(y)->map->N); \
     VecCheckSameLocalSize(x,ar1,y,ar2);                                 \
   } while (0)
 
 #define VecCheckLocalSize(x,ar1,n) do {                                 \
-    if (PetscUnlikely((x)->map->n != (n))) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect vector local size: parameter # %d local size %" PetscInt_FMT " != %" PetscInt_FMT,ar1,(x)->map->n,n); \
+    PetscCheck((x)->map->n == (n),PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incorrect vector local size: parameter # %d local size %" PetscInt_FMT " != %" PetscInt_FMT,ar1,(x)->map->n,n); \
   } while (0)
 
 #define VecCheckSize(x,ar1,n,N) do {                                    \
-    if (PetscUnlikely((x)->map->N != (N))) SETERRQ3(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incorrect vector global size: parameter # %d global size %" PetscInt_FMT " != %" PetscInt_FMT,ar1,(x)->map->N,N); \
+    PetscCheck((x)->map->N == (N),PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_INCOMP,"Incorrect vector global size: parameter # %d global size %" PetscInt_FMT " != %" PetscInt_FMT,ar1,(x)->map->N,N); \
     VecCheckLocalSize(x,ar1,n);                                         \
   } while (0)
 

@@ -12,7 +12,7 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
   if (!da->e) {
     PetscInt corners[2];
 
-    if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
+    PetscCheckFalse(!da->s,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
     ierr   = DMDAGetCorners(dm,&xs,NULL,NULL,&xe,NULL,NULL);CHKERRQ(ierr);
     ierr   = DMDAGetGhostCorners(dm,&Xs,NULL,NULL,&Xe,NULL,NULL);CHKERRQ(ierr);
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
@@ -48,7 +48,7 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
   if (!da->e) {
     PetscInt corners[4],nn = 0;
 
-    if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
+    PetscCheckFalse(!da->s,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
 
     switch (da->elementtype) {
     case DMDA_ELEMENT_Q1:
@@ -58,7 +58,7 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
       da->nen = 3;
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unknown element type %d",da->elementtype);
+      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unknown element type %d",da->elementtype);
     }
     nn = da->nen;
 
@@ -116,7 +116,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
   if (!da->e) {
     PetscInt corners[8],nn = 0;
 
-    if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
+    PetscCheckFalse(!da->s,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
 
     switch (da->elementtype) {
     case DMDA_ELEMENT_Q1:
@@ -126,7 +126,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
       da->nen = 4;
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unknown element type %d",da->elementtype);
+      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unknown element type %d",da->elementtype);
     }
     nn = da->nen;
 
@@ -210,7 +210,7 @@ PetscErrorCode  DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscI
   if (gy) PetscValidIntPointer(gy,3);
   if (gz) PetscValidIntPointer(gz,4);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
+  PetscCheckFalse(!isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL);CHKERRQ(ierr);
   if (xs != Xs) xs -= 1;
@@ -257,7 +257,7 @@ PetscErrorCode  DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt
   if (my) PetscValidIntPointer(my,3);
   if (mz) PetscValidIntPointer(mz,4);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
+  PetscCheckFalse(!isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,NULL,NULL,NULL);CHKERRQ(ierr);
   xe  += xs; if (xs != Xs) xs -= 1;
@@ -342,7 +342,7 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(etype,2);
   ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
+  PetscCheckFalse(!isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)da)->type_name);
   *etype = dd->elementtype;
   PetscFunctionReturn(0);
 }
@@ -387,8 +387,8 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
   PetscValidIntPointer(nen,3);
   PetscValidPointer(e,4);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
-  if (dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElements() requires you use a stencil type of DMDA_STENCIL_BOX");
+  PetscCheckFalse(!isda,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
+  PetscCheckFalse(dd->stencil_type == DMDA_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElements() requires you use a stencil type of DMDA_STENCIL_BOX");
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dd->e) {
     *nel = dd->ne;
@@ -404,7 +404,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
     ierr = DMDAGetElements_2D(dm,nel,nen,e);CHKERRQ(ierr);
   } else if (dim==3) {
     ierr = DMDAGetElements_3D(dm,nel,nen,e);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D",dim);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D",dim);
   PetscFunctionReturn(0);
 }
 
@@ -437,8 +437,8 @@ PetscErrorCode  DMDAGetSubdomainCornersIS(DM dm,IS *is)
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidPointer(is,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
-  if (dd->stencil_type == DMDA_STENCIL_STAR) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
+  PetscCheckFalse(!isda,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for DM type %s",((PetscObject)dm)->type_name);
+  PetscCheckFalse(dd->stencil_type == DMDA_STENCIL_STAR,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DMDAGetElement() requires you use a stencil type of DMDA_STENCIL_BOX");
   if (!dd->ecorners) { /* compute elements if not yet done */
     const PetscInt *e;
     PetscInt       nel,nen;

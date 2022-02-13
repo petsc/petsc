@@ -25,7 +25,7 @@ int main(int argc,char **args)
 
   /* Check out if MatLoad() works */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Input file not specified");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Input file not specified");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
@@ -150,9 +150,9 @@ int main(int argc,char **args)
 
     for (i=0,j=0; i<ncols1 && j<ncols2; j++) {
       while (cols2[j] != cols1[i]) i++;
-      if (v1[i] != v2[j]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - vals incorrect.");
+      PetscCheckFalse(v1[i] != v2[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - vals incorrect.");
     }
-    if (j<ncols2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - cols incorrect");
+    PetscCheckFalse(j<ncols2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - cols incorrect");
 
     ierr = MatRestoreRow(A,row,&ncols1,&cols1,&v1);CHKERRQ(ierr);
     ierr = MatRestoreRow(B,row,&ncols2,&cols2,&v2);CHKERRQ(ierr);

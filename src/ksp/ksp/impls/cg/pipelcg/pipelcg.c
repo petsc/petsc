@@ -42,9 +42,9 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)ksp);
-  if (max_it < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: max_it argument must be positive.",((PetscObject)ksp)->type_name);
-  if (l < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be positive.",((PetscObject)ksp)->type_name);
-  if (l > max_it) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be less than max_it.",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(max_it < 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: max_it argument must be positive.",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(l < 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be positive.",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(l > max_it,comm,PETSC_ERR_ARG_OUTOFRANGE,"%s: pipel argument must be less than max_it.",((PetscObject)ksp)->type_name);
 
   ierr = KSPSetWorkVecs(ksp,1);CHKERRQ(ierr); /* get work vectors needed by PIPELCG */
   plcg->p = ksp->work[0];
@@ -445,7 +445,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   comm = PetscObjectComm((PetscObject)ksp);
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) {
-    SETERRQ1(comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+    SETERRQ(comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   }
 
   x = ksp->vec_sol;

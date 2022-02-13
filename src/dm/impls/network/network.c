@@ -89,17 +89,17 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm,PetscInt nsubnet,PetscInt Nsubne
   DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
-  if (network->Nsubnet != 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Network sizes alread set, cannot resize the network");
+  PetscCheckFalse(network->Nsubnet != 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Network sizes alread set, cannot resize the network");
 
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidLogicalCollectiveInt(dm,nsubnet,2);
   PetscValidLogicalCollectiveInt(dm,Nsubnet,3);
 
   if (Nsubnet == PETSC_DECIDE) {
-    if (nsubnet < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of local subnetworks %D cannot be less than 0",nsubnet);
+    PetscCheckFalse(nsubnet < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of local subnetworks %D cannot be less than 0",nsubnet);
     ierr = MPIU_Allreduce(&nsubnet,&Nsubnet,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
   }
-  if (Nsubnet < 1) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Number of global subnetworks %D cannot be less than 1",Nsubnet);
+  PetscCheckFalse(Nsubnet < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Number of global subnetworks %D cannot be less than 1",Nsubnet);
 
   network->Nsubnet  = Nsubnet;
   network->nsubnet  = 0;       /* initia value; will be determind by DMNetworkAddSubnetwork() */
@@ -192,7 +192,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm,const char* name,PetscInt ne,PetscIn
 
   PetscFunctionBegin;
   for (i=0; i<ne; i++) {
-    if (edgelist[2*i] == edgelist[2*i+1]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Edge %D has the same vertex %D at each endpoint",i,edgelist[2*i]);
+    PetscCheckFalse(edgelist[2*i] == edgelist[2*i+1],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Edge %D has the same vertex %D at each endpoint",i,edgelist[2*i]);
   }
   /* Get global total Nvtx = max(edgelist[])+1 for this subnet */
   nvtx = -1; i = 0;
@@ -492,7 +492,7 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm,PetscInt *edges,PetscInt *nmerg
     }
   }
 #if defined(PETSC_USE_DEBUG)
-  if (i != network->nVertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"%D != %D nVertices",i,network->nVertices);
+  PetscCheckFalse(i != network->nVertices,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"%D != %D nVertices",i,network->nVertices);
 #endif
 
   /* (2.3) Setup svtable for querry shared vertices */
@@ -559,11 +559,11 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   SVtx           *svtx=NULL;
 
   PetscFunctionBegin;
-  if (network->nsubnet != network->Nsubnet) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Must call DMNetworkAddSubnetwork() %D times",network->Nsubnet);
+  PetscCheckFalse(network->nsubnet != network->Nsubnet,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Must call DMNetworkAddSubnetwork() %D times",network->Nsubnet);
 
   /* This implementation requires user input each subnet by a single processor when Nsubnet>1, thus subnet[net].nvtx=subnet[net].Nvtx when net>0 */
   for (net=1; net<Nsubnet; net++) {
-    if (network->subnet[net].nvtx && network->subnet[net].nvtx != network->subnet[net].Nvtx) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"subnetwork %D local num of vertices %D != %D global num",net,network->subnet[net].nvtx,network->subnet[net].Nvtx);
+    PetscCheckFalse(network->subnet[net].nvtx && network->subnet[net].nvtx != network->subnet[net].Nvtx,PETSC_COMM_SELF,PETSC_ERR_SUP,"subnetwork %D local num of vertices %D != %D global num",net,network->subnet[net].nvtx,network->subnet[net].Nvtx);
   }
 
   /* Create svtable for querry shared vertices */
@@ -736,7 +736,7 @@ PetscErrorCode DMNetworkGetSubnetwork(DM dm,PetscInt netnum,PetscInt *nv,PetscIn
   DM_Network *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
-  if (netnum >= network->Nsubnet) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subnet index %D exceeds the num of subnets %D",netnum,network->Nsubnet);
+  PetscCheckFalse(netnum >= network->Nsubnet,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subnet index %D exceeds the num of subnets %D",netnum,network->Nsubnet);
   if (nv) *nv     = network->subnet[netnum].nvtx;
   if (ne) *ne     = network->subnet[netnum].nedge;
   if (vtx) *vtx   = network->subnet[netnum].vertices;
@@ -768,8 +768,8 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm,PetscInt anetnum,PetscInt bnetnu
   PetscInt       i,nsubnet = network->Nsubnet,*sedgelist,Nsvtx=network->Nsvtx;
 
   PetscFunctionBegin;
-  if (anetnum == bnetnum) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Subnetworks must have different netnum");
-  if (anetnum < 0 || bnetnum < 0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"netnum cannot be negative");
+  PetscCheckFalse(anetnum == bnetnum,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Subnetworks must have different netnum");
+  PetscCheckFalse(anetnum < 0 || bnetnum < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"netnum cannot be negative");
   if (!Nsvtx) {
     /* allocate network->sedgelist to hold at most 2*nsubnet pairs of shared vertices */
     ierr = PetscMalloc1(2*4*nsubnet,&network->sedgelist);CHKERRQ(ierr);
@@ -781,7 +781,7 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm,PetscInt anetnum,PetscInt bnetnu
     sedgelist[4*Nsvtx+2] = bnetnum; sedgelist[4*Nsvtx+3] = bsvtx[i];
     Nsvtx++;
   }
-  if (Nsvtx > 2*nsubnet) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"allocate more space for coupling edgelist");
+  PetscCheckFalse(Nsvtx > 2*nsubnet,PETSC_COMM_SELF,PETSC_ERR_SUP,"allocate more space for coupling edgelist");
   network->Nsvtx = Nsvtx;
   PetscFunctionReturn(0);
 }
@@ -945,7 +945,7 @@ static PetscErrorCode DMNetworkGetIndex(DM dm,PetscInt p,PetscInt *index)
   DMNetworkComponentHeader header;
 
   PetscFunctionBegin;
-  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE,"Must call DMSetUp() first");
+  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE,"Must call DMSetUp() first");
   ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
   header = (DMNetworkComponentHeader)(network->componentdataarray+offsetp);
   *index = header->index;
@@ -1193,7 +1193,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm,PetscInt p,PetscInt componentkey,void
   void*                    *compdata;
 
   PetscFunctionBegin;
-  if (componentkey < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"componentkey %D cannot be negative. Input a component key returned while registering the component with DMNetworkRegisterComponent()",componentkey);
+  PetscCheckFalse(componentkey < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"componentkey %D cannot be negative. Input a component key returned while registering the component with DMNetworkRegisterComponent()",componentkey);
 
   /* The owning rank and all ghost ranks add nvar */
   ierr = PetscSectionAddDof(network->DofSection,p,nvar);CHKERRQ(ierr);
@@ -1470,7 +1470,7 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
    Add all subnetid for the input vertex v in this process to the btable
    vertex_subnetid = supportingedge_subnetid
 */
-PETSC_STATIC_INLINE PetscErrorCode SetSubnetIdLookupBT(DM dm,PetscInt v,PetscInt Nsubnet,PetscBT btable)
+static inline PetscErrorCode SetSubnetIdLookupBT(DM dm,PetscInt v,PetscInt Nsubnet,PetscBT btable)
 {
   PetscErrorCode ierr;
   PetscInt       e,nedges,offset;
@@ -1529,7 +1529,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   if (size == 1) PetscFunctionReturn(0);
 
-  if (overlap) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"overlap %D != 0 is not supported yet",overlap);
+  PetscCheckFalse(overlap,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"overlap %D != 0 is not supported yet",overlap);
 
   /* This routine moves the component data to the appropriate processors. It makes use of the DataSection and the componentdataarray to move the component data to appropriate processors and returns a new DataSection and new componentdataarray. */
   ierr = DMNetworkCreate(PetscObjectComm((PetscObject)*dm),&newDM);CHKERRQ(ierr);
@@ -1993,7 +1993,7 @@ PetscErrorCode DMNetworkEdgeSetMatrix(DM dm,PetscInt p,Mat J[])
   DM_Network *network=(DM_Network*)dm->data;
 
   PetscFunctionBegin;
-  if (!network->Je) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"Must call DMNetworkHasJacobian() collectively before calling DMNetworkEdgeSetMatrix");
+  PetscCheckFalse(!network->Je,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"Must call DMNetworkHasJacobian() collectively before calling DMNetworkEdgeSetMatrix");
 
   if (J) {
     network->Je[3*p]   = J[0];
@@ -2028,7 +2028,7 @@ PetscErrorCode DMNetworkVertexSetMatrix(DM dm,PetscInt p,Mat J[])
   const PetscInt *edges;
 
   PetscFunctionBegin;
-  if (!network->Jv) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"Must call DMNetworkHasJacobian() collectively before calling DMNetworkVertexSetMatrix");
+  PetscCheckFalse(!network->Jv,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"Must call DMNetworkHasJacobian() collectively before calling DMNetworkVertexSetMatrix");
 
   if (J) {
     vptr = network->Jvptr;
@@ -2041,7 +2041,7 @@ PetscErrorCode DMNetworkVertexSetMatrix(DM dm,PetscInt p,Mat J[])
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
+static inline PetscErrorCode MatSetPreallocationDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
   PetscInt       j;
@@ -2060,7 +2060,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationDenseblock_private(PetscIn
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
+static inline PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
   PetscInt       j,ncols_u;
@@ -2085,7 +2085,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju,P
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
+static inline PetscErrorCode MatSetPreallocationblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
 
@@ -2098,7 +2098,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationblock_private(Mat Ju,Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatSetDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+static inline PetscErrorCode MatSetDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       j,*cols;
@@ -2112,7 +2112,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetDenseblock_private(PetscInt nrows,Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+static inline PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       j,M,N,row,col,ncols_u;
@@ -2121,7 +2121,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows
 
   PetscFunctionBegin;
   ierr = MatGetSize(Ju,&M,&N);CHKERRQ(ierr);
-  if (nrows != M || ncols != N) SETERRQ4(PetscObjectComm((PetscObject)Ju),PETSC_ERR_USER,"%D by %D must equal %D by %D",nrows,ncols,M,N);
+  PetscCheckFalse(nrows != M || ncols != N,PetscObjectComm((PetscObject)Ju),PETSC_ERR_USER,"%D by %D must equal %D by %D",nrows,ncols,M,N);
 
   for (row=0; row<nrows; row++) {
     ierr = MatGetRow(Ju,row,&ncols_u,&cols,NULL);CHKERRQ(ierr);
@@ -2134,7 +2134,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
+static inline PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
 
@@ -2573,7 +2573,7 @@ PetscErrorCode DMView_Network(DM dm,PetscViewer viewer)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  if (!dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE,"Must call DMSetUp() first");
+  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE,"Must call DMSetUp() first");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRMPI(ierr);
   PetscValidHeaderSpecific(dm,DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
@@ -2634,7 +2634,7 @@ PetscErrorCode DMView_Network(DM dm,PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMNetwork writing", ((PetscObject)viewer)->type_name);
+  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMNetwork writing", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -2700,7 +2700,7 @@ PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm,PetscInt vloc,Petsc
   PetscInt    *vltog = network->vltog;
 
   PetscFunctionBegin;
-  if (!vltog) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Must call DMNetworkSetVertexLocalToGlobalOrdering() first");
+  PetscCheckFalse(!vltog,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Must call DMNetworkSetVertexLocalToGlobalOrdering() first");
   *vg = vltog[vloc];
   PetscFunctionReturn(0);
 }
@@ -2745,7 +2745,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
     PetscFunctionReturn(0);
   }
 
-  if (!network->distributecalled) SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE,"Must call DMNetworkDistribute() first");
+  PetscCheckFalse(!network->distributecalled,comm, PETSC_ERR_ARG_WRONGSTATE,"Must call DMNetworkDistribute() first");
   if (network->vltog) {
     ierr = PetscFree(network->vltog);CHKERRQ(ierr);
   }
@@ -2825,7 +2825,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMISAddSize_private(DM_Network *network,PetscInt p,PetscInt numkeys,PetscInt keys[],PetscInt blocksize[],PetscInt nselectedvar[],PetscInt *nidx)
+static inline PetscErrorCode DMISAddSize_private(DM_Network *network,PetscInt p,PetscInt numkeys,PetscInt keys[],PetscInt blocksize[],PetscInt nselectedvar[],PetscInt *nidx)
 {
   PetscErrorCode           ierr;
   PetscInt                 i,j,ncomps,nvar,key,offset=0;
@@ -2852,7 +2852,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMISAddSize_private(DM_Network *network,Petsc
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMISComputeIdx_private(DM dm,PetscInt p,PetscInt numkeys,PetscInt keys[],PetscInt blocksize[],PetscInt nselectedvar[],PetscInt *selectedvar[],PetscInt *ii,PetscInt *idx)
+static inline PetscErrorCode DMISComputeIdx_private(DM dm,PetscInt p,PetscInt numkeys,PetscInt keys[],PetscInt blocksize[],PetscInt nselectedvar[],PetscInt *selectedvar[],PetscInt *ii,PetscInt *idx)
 {
   PetscErrorCode           ierr;
   PetscInt                 i,j,ncomps,nvar,key,offsetg,k,k1,offset=0;
@@ -2920,7 +2920,7 @@ PetscErrorCode DMNetworkCreateIS(DM dm,PetscInt numkeys,PetscInt keys[],PetscInt
   /* Check input parameters */
   for (i=0; i<numkeys; i++) {
     if (!blocksize || blocksize[i] == -1) continue;
-    if (nselectedvar[i] > blocksize[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"number of selectedvariables %D cannot be larger than blocksize %D",nselectedvar[i],blocksize[i]);
+    PetscCheckFalse(nselectedvar[i] > blocksize[i],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"number of selectedvariables %D cannot be larger than blocksize %D",nselectedvar[i],blocksize[i]);
   }
 
   ierr = DMNetworkGetEdgeRange(dm,&estart,&eend);CHKERRQ(ierr);
@@ -2955,7 +2955,7 @@ PetscErrorCode DMNetworkCreateIS(DM dm,PetscInt numkeys,PetscInt keys[],PetscInt
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode DMISComputeLocalIdx_private(DM dm,PetscInt p,PetscInt numkeys,PetscInt keys[],PetscInt blocksize[],PetscInt nselectedvar[],PetscInt *selectedvar[],PetscInt *ii,PetscInt *idx)
+static inline PetscErrorCode DMISComputeLocalIdx_private(DM dm,PetscInt p,PetscInt numkeys,PetscInt keys[],PetscInt blocksize[],PetscInt nselectedvar[],PetscInt *selectedvar[],PetscInt *ii,PetscInt *idx)
 {
   PetscErrorCode           ierr;
   PetscInt                 i,j,ncomps,nvar,key,offsetl,k,k1,offset=0;
@@ -3019,7 +3019,7 @@ PetscErrorCode DMNetworkCreateLocalIS(DM dm,PetscInt numkeys,PetscInt keys[],Pet
   /* Check input parameters */
   for (i=0; i<numkeys; i++) {
     if (!blocksize || blocksize[i] == -1) continue;
-    if (nselectedvar[i] > blocksize[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"number of selectedvariables %D cannot be larger than blocksize %D",nselectedvar[i],blocksize[i]);
+    PetscCheckFalse(nselectedvar[i] > blocksize[i],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"number of selectedvariables %D cannot be larger than blocksize %D",nselectedvar[i],blocksize[i]);
   }
 
   pstart = network->pStart;

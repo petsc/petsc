@@ -6,7 +6,7 @@ static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTFQMR");
+  PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTFQMR");
   ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

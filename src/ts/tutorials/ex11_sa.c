@@ -106,7 +106,7 @@ struct _n_User {
   Model    model;
 };
 
-PETSC_STATIC_INLINE PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y)
+static inline PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y)
 {
   PetscInt    i;
   PetscScalar prod=0.0;
@@ -114,18 +114,18 @@ PETSC_STATIC_INLINE PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y
   for (i=0; i<DIM; i++) prod += x[i]*y[i];
   return prod;
 }
-PETSC_STATIC_INLINE PetscReal NormDIM(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(DotDIM(x,x))); }
-PETSC_STATIC_INLINE void axDIM(const PetscScalar a,PetscScalar *x)
+static inline PetscReal NormDIM(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(DotDIM(x,x))); }
+static inline void axDIM(const PetscScalar a,PetscScalar *x)
 {
   PetscInt i;
   for (i=0; i<DIM; i++) x[i] *= a;
 }
-PETSC_STATIC_INLINE void waxDIM(const PetscScalar a,const PetscScalar *x, PetscScalar *w)
+static inline void waxDIM(const PetscScalar a,const PetscScalar *x, PetscScalar *w)
 {
   PetscInt i;
   for (i=0; i<DIM; i++) w[i] = x[i]*a;
 }
-PETSC_STATIC_INLINE void NormalSplitDIM(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
+static inline void NormalSplitDIM(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
 {                               /* Split x into normal and tangential components */
   PetscInt    i;
   PetscScalar c;
@@ -136,17 +136,17 @@ PETSC_STATIC_INLINE void NormalSplitDIM(const PetscReal *n,const PetscScalar *x,
   }
 }
 
-PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*y[0] + x[1]*y[1];}
-PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
-PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x); x[0] *= a; x[1] *= a; }
-PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
-PETSC_STATIC_INLINE void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
+static inline PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*y[0] + x[1]*y[1];}
+static inline PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
+static inline void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x); x[0] *= a; x[1] *= a; }
+static inline void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
+static inline void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
-PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscScalar a, const PetscScalar *x, const PetscScalar *y, PetscScalar *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
-PETSC_STATIC_INLINE PetscScalar DotD(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscScalar sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
-PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscScalar *x) {return PetscSqrtReal(PetscAbsScalar(DotD(dim,x,x)));}
+static inline void WaxpyD(PetscInt dim, PetscScalar a, const PetscScalar *x, const PetscScalar *y, PetscScalar *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
+static inline PetscScalar DotD(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscScalar sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
+static inline PetscReal NormD(PetscInt dim, const PetscScalar *x) {return PetscSqrtReal(PetscAbsScalar(DotD(dim,x,x)));}
 
-PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
+static inline void NormalSplit(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
 {                               /* Split x into normal and tangential components */
   Scale2(Dot2(x,n)/Dot2(n,n),n,xn);
   Waxpy2(-1,xn,x,xt);
@@ -214,7 +214,7 @@ static PetscErrorCode PhysicsRiemann_Advect(const PetscReal *qp, const PetscReal
     wind[0] = -qp[1];
     wind[1] = qp[0];
     break;
-  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]);
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]);
   }
   wn      = Dot2(wind, n);
   flux[0] = (wn > 0 ? xL[0] : xR[0]) * wn;
@@ -383,7 +383,7 @@ static PetscErrorCode PhysicsRiemann_SW(const PetscReal *qp, const PetscReal *n,
   PetscInt     i;
 
   PetscFunctionBeginUser;
-  if (uL->h < 0 || uR->h < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
+  PetscCheckFalse(uL->h < 0 || uR->h < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2(nn);
@@ -401,7 +401,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   PetscReal dx[2],r,sigma;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  PetscCheckFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
   r     = Norm2(dx);
@@ -559,7 +559,7 @@ static PetscErrorCode PhysicsRiemann_Euler_Rusanov(const PetscReal *qp, const Pe
   PetscInt        i;
 
   PetscFunctionBeginUser;
-  if (uL->r < 0 || uR->r < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative");
+  PetscCheckFalse(uL->r < 0 || uR->r < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative");
   EulerFlux(phys,n,uL,&fL);
   EulerFlux(phys,n,uR,&fR);
   eu->sound(eu->pars,uL,&cL);
@@ -574,7 +574,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   PetscInt i;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  PetscCheckFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   u[0]     = 1.0;
   u[DIM+1] = 1.0+PetscAbsReal(x[0]);
   for (i=1; i<DIM+1; i++) u[i] = 0.0;
@@ -671,7 +671,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
     const PetscInt *faces;
     PetscInt       numFaces, f;
 
-    if ((cell < cStart) || (cell >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", cell);
+    PetscCheckFalse((cell < cStart) || (cell >= cEnd),PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", cell);
     ierr = DMPlexGetConeSize(dm, cell, &numFaces);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f) {
@@ -679,17 +679,17 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
       const PetscInt *neighbors;
       PetscInt       nC, regionA, regionB;
 
-      if ((face < fStart) || (face >= fEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a face", face);
+      PetscCheckFalse((face < fStart) || (face >= fEnd),PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a face", face);
       ierr = DMPlexGetSupportSize(dm, face, &nC);CHKERRQ(ierr);
       if (nC != 2) continue;
       ierr = DMPlexGetSupport(dm, face, &neighbors);CHKERRQ(ierr);
       if ((neighbors[0] >= cEndInterior) || (neighbors[1] >= cEndInterior)) continue;
-      if ((neighbors[0] < cStart) || (neighbors[0] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[0]);
-      if ((neighbors[1] < cStart) || (neighbors[1] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[1]);
+      PetscCheckFalse((neighbors[0] < cStart) || (neighbors[0] >= cEnd),PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[0]);
+      PetscCheckFalse((neighbors[1] < cStart) || (neighbors[1] >= cEnd),PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[1]);
       ierr = DMGetLabelValue(dm, name, neighbors[0], &regionA);CHKERRQ(ierr);
       ierr = DMGetLabelValue(dm, name, neighbors[1], &regionB);CHKERRQ(ierr);
-      if (regionA < 0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
-      if (regionB < 0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
+      PetscCheckFalse(regionA < 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
+      PetscCheckFalse(regionB < 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
       if (regionA != regionB) {
         ierr = DMSetLabelValue(dm, bdname, faces[f], 1);CHKERRQ(ierr);
       }
@@ -1010,7 +1010,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
         sides[1] = faces[g];
         ierr = DMPlexPointLocalRead(dmFace, faces[g], fgeom, &fgB);CHKERRQ(ierr);
         ierr = DMPlexGetJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
-        if (numCells != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
+        PetscCheckFalse(numCells != 1,PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
         ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cg);CHKERRQ(ierr);
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgA->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgA->centroid[0] - cg->centroid[0]));
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgB->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgB->centroid[0] - cg->centroid[0]));
@@ -1154,7 +1154,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *Pets
       ierr = PetscStrcasecmp(names[i],link->name,&match);CHKERRQ(ierr);
       if (match) break;
     }
-    if (!link) SETERRQ1(mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
+    PetscCheckFalse(!link,mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
     mod->functionalMonitored[i] = link;
     for (j=0; j<i; j++) {
       if (mod->functionalCall[j]->func == link->func && mod->functionalCall[j]->ctx == link->ctx) goto next_name;
@@ -1370,7 +1370,7 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   ierr = VecCreate(PETSC_COMM_WORLD,&odesolution);CHKERRQ(ierr);
   ierr = VecLoad(odesolution,viewer);CHKERRQ(ierr);
   VecEqual(X,odesolution,&equal);
-  if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the vec data from file");
+  PetscCheckFalse(!equal,PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the vec data from file");
   else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Vec\n");CHKERRQ(ierr);
   }
@@ -1378,7 +1378,7 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
    ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);*/
   ierr = PetscViewerBinaryRead(viewer,&timeread,1,NULL,PETSC_REAL);CHKERRQ(ierr);
 
-  if (timeread!=time) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
+  PetscCheckFalse(timeread!=time,PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
   else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for PetscReal\n");CHKERRQ(ierr);
   }
@@ -1479,8 +1479,8 @@ int main(int argc, char **argv)
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
 
-    if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
-    if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
+    PetscCheckFalse(mod->maxspeed <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+    PetscCheckFalse(phys->dof <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
     ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

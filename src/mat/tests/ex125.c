@@ -46,7 +46,7 @@ int main(int argc,char **args)
     ierr = MatShift(A,1.0);CHKERRQ(ierr);
   }
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
+  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
   ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **args)
   switch (ipack) {
 #if defined(PETSC_HAVE_SUPERLU)
   case 0:
-    if (chol) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
+    PetscCheckFalse(chol,PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
     ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     matsolvexx = PETSC_TRUE;
@@ -95,7 +95,7 @@ int main(int argc,char **args)
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   case 1:
-    if (chol) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
+    PetscCheckFalse(chol,PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
     ierr = PetscPrintf(PETSC_COMM_WORLD," SUPERLU_DIST LU:\n");CHKERRQ(ierr);
     ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     matsolvexx = PETSC_TRUE;

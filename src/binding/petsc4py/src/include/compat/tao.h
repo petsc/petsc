@@ -4,7 +4,7 @@
 
 #define PetscTaoError do { \
     PetscFunctionBegin; \
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() not supported with complex scalars",PETSC_FUNCTION_NAME); \
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() not supported with complex scalars",PETSC_FUNCTION_NAME); \
     PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
 
 PetscErrorCode TaoLMVMSetH0(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat mat) {PetscTaoError;}

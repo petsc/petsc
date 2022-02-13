@@ -312,7 +312,7 @@ PetscErrorCode  VecCreateMPIKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
   PetscScalar    *harray;
 
   PetscFunctionBegin;
-  if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
+  PetscCheckFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
   ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   ierr = VecCreate(comm,&w);CHKERRQ(ierr);

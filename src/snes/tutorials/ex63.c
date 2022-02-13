@@ -275,7 +275,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     user->exactFuncs[1] = linear_p_3d;
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
   PetscFunctionReturn(0);
 }
@@ -474,7 +474,7 @@ int main(int argc, char **argv)
 
       ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
-      //if (!isNull) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
+      //PetscCheckFalse(!isNull,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);

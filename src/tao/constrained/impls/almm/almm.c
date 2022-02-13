@@ -34,7 +34,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
   ierr = (*auglag->sub_obj)(tao);CHKERRQ(ierr);
   ierr = TaoALMMComputeOptimalityNorms_Private(tao);CHKERRQ(ierr);
   /* print initial step and check convergence */
-  ierr = PetscInfo1(tao,"Solving with %s formulation\n",TaoALMMTypes[auglag->type]);CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"Solving with %s formulation\n",TaoALMMTypes[auglag->type]);CHKERRQ(ierr);
   ierr = TaoLogConvergenceHistory(tao, auglag->Lval, auglag->gnorm, auglag->cnorm, tao->ksp_its);CHKERRQ(ierr);
   ierr = TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, 0.0);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);
@@ -62,20 +62,20 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
       break;
   }
   auglag->gtol = auglag->gtol0;
-  ierr = PetscInfo1(tao,"Initial penalty: %.2f\n",auglag->mu);CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"Initial penalty: %.2f\n",auglag->mu);CHKERRQ(ierr);
 
   /* start aug-lag outer loop */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     ++tao->niter;
     /* update subsolver tolerance */
-    ierr = PetscInfo1(tao,"Subsolver tolerance: ||G|| <= %e\n",auglag->gtol);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Subsolver tolerance: ||G|| <= %e\n",auglag->gtol);CHKERRQ(ierr);
     ierr = TaoSetTolerances(auglag->subsolver, auglag->gtol, 0.0, 0.0);CHKERRQ(ierr);
     /* solve the bound-constrained or unconstrained subproblem */
     ierr = TaoSolve(auglag->subsolver);CHKERRQ(ierr);
     ierr = TaoGetConvergedReason(auglag->subsolver, &reason);CHKERRQ(ierr);
     tao->ksp_its += auglag->subsolver->ksp_its;
     if (reason != TAO_CONVERGED_GATOL) {
-      ierr = PetscInfo1(tao,"Subsolver failed to converge, reason: %s\n",TaoConvergedReasons[reason]);CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Subsolver failed to converge, reason: %s\n",TaoConvergedReasons[reason]);CHKERRQ(ierr);
     }
     /* evaluate solution and test convergence */
     ierr = (*auglag->sub_obj)(tao);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     /* decide whether to update multipliers or not */
     updated = 0.0;
     if (auglag->cnorm <= auglag->ytol) {
-      ierr = PetscInfo1(tao,"Multipliers updated: ||C|| <= %e\n",auglag->ytol);CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Multipliers updated: ||C|| <= %e\n",auglag->ytol);CHKERRQ(ierr);
       /* constraints are good, update multipliers and convergence tolerances */
       if (tao->eq_constrained) {
         ierr = VecAXPY(auglag->Ye, auglag->mu, auglag->Ce);CHKERRQ(ierr);
@@ -113,7 +113,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
         auglag->ytol = PetscMax(tao->catol, 0.1/PetscPowReal(auglag->mu, auglag->mu_pow_bad));
         auglag->gtol = PetscMax(tao->gatol, 1.0/auglag->mu);
       }
-      ierr = PetscInfo1(tao,"Penalty increased: mu = %.2f\n",auglag->mu);CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Penalty increased: mu = %.2f\n",auglag->mu);CHKERRQ(ierr);
     }
     ierr = TaoLogConvergenceHistory(tao, auglag->fval, auglag->gnorm, auglag->cnorm, tao->ksp_its);CHKERRQ(ierr);
     ierr = TaoMonitor(tao, tao->niter, auglag->fval, auglag->gnorm, auglag->cnorm, updated);CHKERRQ(ierr);
@@ -151,8 +151,8 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tao->ineq_doublesided) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TAOALMM does not support double-sided inequality constraint definition. Please restructure your inequality constrainst to fit the form c(x) >= 0.");
-  if (!tao->eq_constrained && !tao->ineq_constrained) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "Equality and/or inequality constraints must be defined before solver setup.");
+  PetscCheckFalse(tao->ineq_doublesided,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TAOALMM does not support double-sided inequality constraint definition. Please restructure your inequality constrainst to fit the form c(x) >= 0.");
+  PetscCheckFalse(!tao->eq_constrained && !tao->ineq_constrained,PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "Equality and/or inequality constraints must be defined before solver setup.");
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
   /* alias base vectors and create extras */
   ierr = VecGetType(tao->solution, &vec_type);CHKERRQ(ierr);

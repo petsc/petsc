@@ -394,7 +394,7 @@ PetscErrorCode MatSolve_MKL_CPARDISO(Mat A,Vec b,Vec x)
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
     (PetscInt*)&mat_mkl_cpardiso->err);
 
-  if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
+  PetscCheckFalse(mat_mkl_cpardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
@@ -432,7 +432,7 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
     ierr = MatDenseGetArrayRead(B,&barray);CHKERRQ(ierr);
     ierr = MatDenseGetArray(X,&xarray);CHKERRQ(ierr);
 
-    if (barray == xarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
+    PetscCheckFalse(barray == xarray,PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
 
     /* solve phase */
     /*-------------*/
@@ -455,7 +455,7 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
       (void*)xarray,
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
       (PetscInt*)&mat_mkl_cpardiso->err);
-    if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
+    PetscCheckFalse(mat_mkl_cpardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
     ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
     ierr = MatDenseRestoreArray(X,&xarray);CHKERRQ(ierr);
 
@@ -495,7 +495,7 @@ PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *in
     NULL,
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
     &mat_mkl_cpardiso->err);
-  if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
+  PetscCheckFalse(mat_mkl_cpardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   mat_mkl_cpardiso->matstruc = SAME_NONZERO_PATTERN;
   mat_mkl_cpardiso->CleanUp  = PETSC_TRUE;
@@ -700,7 +700,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const M
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
     (PetscInt*)&mat_mkl_cpardiso->err);
 
-  if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\".Check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
+  PetscCheckFalse(mat_mkl_cpardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\".Check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
   F->ops->lufactornumeric = MatFactorNumeric_MKL_CPARDISO;
@@ -725,7 +725,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS perm,con
   mat_mkl_cpardiso->n = A->rmap->N;
   if (mat_mkl_cpardiso->iparm[36]) mat_mkl_cpardiso->n /= mat_mkl_cpardiso->iparm[36];
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with complex scalars! Use MAT_FACTOR_LU instead",((PetscObject)A)->type_name);
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with complex scalars! Use MAT_FACTOR_LU instead",((PetscObject)A)->type_name);
 #endif
   if (A->spd_set && A->spd) mat_mkl_cpardiso->mtype = 2;
   else                      mat_mkl_cpardiso->mtype = -2;
@@ -753,7 +753,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS perm,con
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
     (PetscInt*)&mat_mkl_cpardiso->err);
 
-  if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\".Check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
+  PetscCheckFalse(mat_mkl_cpardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\".Check manual",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
   F->ops->choleskyfactornumeric = MatFactorNumeric_MKL_CPARDISO;

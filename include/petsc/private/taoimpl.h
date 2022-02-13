@@ -193,7 +193,7 @@ PETSC_EXTERN PetscLogEvent TAO_HessianEval;
 PETSC_EXTERN PetscLogEvent TAO_ConstraintsEval;
 PETSC_EXTERN PetscLogEvent TAO_JacobianEval;
 
-PETSC_STATIC_INLINE PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal obj, PetscReal resid, PetscReal cnorm, PetscInt totits)
+static inline PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal obj, PetscReal resid, PetscReal cnorm, PetscInt totits)
 {
   PetscFunctionBegin;
   if (tao->hist_max > tao->hist_len) {

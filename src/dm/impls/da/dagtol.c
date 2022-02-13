@@ -42,9 +42,9 @@ PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
   if (mode == ADD_VALUES) {
     ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
-    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->bx != DM_BOUNDARY_NONE && dd->s > 0 && dd->m == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in x direction");
-    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->by != DM_BOUNDARY_NONE && dd->s > 0 && dd->n == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in y direction");
-    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->bz != DM_BOUNDARY_NONE && dd->s > 0 && dd->p == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in z direction");
+    PetscCheckFalse(dd->bx != DM_BOUNDARY_GHOSTED && dd->bx != DM_BOUNDARY_NONE && dd->s > 0 && dd->m == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in x direction");
+    PetscCheckFalse(dd->bx != DM_BOUNDARY_GHOSTED && dd->by != DM_BOUNDARY_NONE && dd->s > 0 && dd->n == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in y direction");
+    PetscCheckFalse(dd->bx != DM_BOUNDARY_GHOSTED && dd->bz != DM_BOUNDARY_NONE && dd->s > 0 && dd->p == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in z direction");
     ierr = VecScatterBegin(dd->gtol,l,g,INSERT_VALUES,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
@@ -95,14 +95,14 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (!dd->natural) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
+  PetscCheckFalse(!dd->natural,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
 
   /* create the scatter context */
   ierr = VecGetLocalSize(dd->natural,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(dd->natural,&start,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
-  if (Nlocal != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
+  PetscCheckFalse(Nlocal != m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,NULL,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,dd->natural,to,&dd->gton);CHKERRQ(ierr);

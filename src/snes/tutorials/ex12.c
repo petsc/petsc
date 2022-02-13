@@ -627,7 +627,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetResidual(ds, 0, f0_cross_u_3d, f1_u);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
     }
     ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
     break;
@@ -635,7 +635,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     ierr = PetscDSSetResidual(ds, 0, f0_checkerboard_0_u, f1_field_u);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_field_uu);CHKERRQ(ierr);
     break;
-  default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
+  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
   }
   switch (dim) {
   case 2:
@@ -683,7 +683,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
   }
   /* Setup constants */
   switch (user->variableCoefficient) {
@@ -996,7 +996,7 @@ int main(int argc, char **argv)
     ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
     ierr = DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) PetscAbsScalar(bdInt));CHKERRQ(ierr);
-    if (PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double) PetscAbsScalar(bdInt), (double)exact);
+    PetscCheckFalse(PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double) PetscAbsScalar(bdInt), (double)exact);
   }
 
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);

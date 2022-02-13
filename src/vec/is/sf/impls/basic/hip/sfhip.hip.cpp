@@ -777,7 +777,7 @@ PetscErrorCode PetscSFMalloc_HIP(PetscMemType mtype,size_t size,void** ptr)
   else if (PetscMemTypeDevice(mtype)) {
     PetscErrorCode ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);
     hipError_t     err  = hipMalloc(ptr,size);CHKERRHIP(err);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(0);
 }
 
@@ -786,7 +786,7 @@ PetscErrorCode PetscSFFree_HIP(PetscMemType mtype,void* ptr)
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {PetscErrorCode ierr = PetscFree(ptr);CHKERRQ(ierr);}
   else if (PetscMemTypeDevice(mtype)) {hipError_t err = hipFree(ptr);CHKERRHIP(err);}
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong PetscMemType %d",(int)mtype);
   PetscFunctionReturn(0);
 }
 
@@ -889,7 +889,7 @@ PetscErrorCode PetscSFLinkSetUp_HIP(PetscSF sf,PetscSFLink link,MPI_Datatype uni
   } else {
     MPI_Aint lb,nbyte;
     ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRMPI(ierr);
-    if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+    PetscCheckFalse(lb != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
      #if !defined(PETSC_HAVE_DEVICE)
       if      (nbyte == 4) PackInit_DumbType<char,4,1>(link); else if (nbyte%4 == 0) PackInit_DumbType<char,4,0>(link);

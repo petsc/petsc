@@ -42,13 +42,13 @@ int main(int argc,char **argv)
     for (i=0; i<3; i++) {
       for (j=0; j<size; j++) indices[cnt++] = rstart+i*(size+2)+j;
     }
-    if (cnt != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"inconsistent count");
+    PetscCheckFalse(cnt != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"inconsistent count");
     ierr = ISGeneralSetIndices(is[1],n,indices,PETSC_COPY_VALUES);CHKERRQ(ierr);
     ierr = PetscFree(indices);CHKERRQ(ierr);
   }
 
   ierr = ISEqual(is[0],is[1],&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"is[0] should be equal to is[1]");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is[0] should be equal to is[1]");
 
   ierr = ISComplement(is[0],rstart,rend,&isc);CHKERRQ(ierr);
   ierr = ISView(is[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

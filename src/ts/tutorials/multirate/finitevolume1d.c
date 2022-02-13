@@ -6,14 +6,14 @@
 #include <petsc/private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
 const char *FVBCTypes[] = {"PERIODIC","OUTFLOW","INFLOW","FVBCType","FVBC_",0};
 
-PETSC_STATIC_INLINE PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
-PETSC_STATIC_INLINE PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
-PETSC_STATIC_INLINE PetscReal Sqr(PetscReal a) { return a*a; }
+static inline PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
+static inline PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
+static inline PetscReal Sqr(PetscReal a) { return a*a; }
 
-PETSC_UNUSED PETSC_STATIC_INLINE PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
-PETSC_STATIC_INLINE PetscReal MinMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
-PETSC_STATIC_INLINE PetscReal MaxMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
-PETSC_STATIC_INLINE PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c) {return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
+PETSC_UNUSED static inline PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
+static inline PetscReal MinMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
+static inline PetscReal MaxMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
+static inline PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c) {return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
 
 /* ----------------------- Lots of limiters, these could go in a separate library ------------------------- */
 void Limit_Upwind(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
@@ -445,7 +445,7 @@ PetscErrorCode RiemannListFind(PetscFunctionList flist,const char *name,RiemannF
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
-  if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
+  PetscCheckFalse(!*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -464,7 +464,7 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,Reco
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
-  if (!*r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
+  PetscCheckFalse(!*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -483,7 +483,7 @@ PetscErrorCode RiemannListFind_2WaySplit(PetscFunctionList flist,const char *nam
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
-  if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
+  PetscCheckFalse(!*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -502,7 +502,7 @@ PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist,const char 
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
-  if (!*r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
+  PetscCheckFalse(!*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -610,7 +610,7 @@ PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     if (dt > 0.5/ctx->cfl_idt) {
       if (1) {
         ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
-      } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
     }
   }
   PetscFunctionReturn(0);
@@ -623,7 +623,7 @@ PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscInt       i,j,k,dof,xs,xm,Mx;
 
   PetscFunctionBeginUser;
-  if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
+  PetscCheckFalse(!ctx->physics.sample,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);

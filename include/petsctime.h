@@ -99,19 +99,19 @@ M*/
 
 M*/
 
-PETSC_STATIC_INLINE PetscErrorCode PetscTime(PetscLogDouble *v)
+static inline PetscErrorCode PetscTime(PetscLogDouble *v)
 {
   *v = MPI_Wtime();
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
+static inline PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
 {
   *v -= MPI_Wtime();
   return 0;
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
+static inline PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
 {
   *v += MPI_Wtime();
   return 0;

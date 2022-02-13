@@ -111,7 +111,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
       ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
       if (value < 0) continue;
       ierr = PetscFindInt(value, Nv, values, &vidx);CHKERRQ(ierr);
-      if (vidx < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D for cell %D does not exist in label", value, c);
+      PetscCheckFalse(vidx < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D for cell %D does not exist in label", value, c);
       if (volume > volConst[vidx])        {ierr = DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE);CHKERRQ(ierr);  ++nAdaptLoc[0];}
       if (volume < volConst[vidx]*ratio) {ierr = DMLabelSetValue(adaptLabel, c, DM_ADAPT_COARSEN);CHKERRQ(ierr); ++nAdaptLoc[1];}
     }
@@ -119,7 +119,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&nAdaptLoc, &nAdapt, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) dmCur));CHKERRMPI(ierr);
     if (nAdapt[0]) {
-      ierr = PetscInfo2(dmCur, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nAdapt[0], nAdapt[1]);CHKERRQ(ierr);
+      ierr = PetscInfo(dmCur, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nAdapt[0], nAdapt[1]);CHKERRQ(ierr);
       ierr = DMAdaptLabel(dmCur, adaptLabel, &dmAdapt);CHKERRQ(ierr);
       ierr = DMDestroy(&dmCur);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dmAdapt, NULL, "-adapt_dm_view");CHKERRQ(ierr);

@@ -5,7 +5,7 @@
 
 #define PetscPCHPDDMError do { \
     PetscFunctionBegin; \
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires HPDDM",PETSC_FUNCTION_NAME); \
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires HPDDM",PETSC_FUNCTION_NAME); \
     PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
 
 PetscErrorCode PCHPDDMSetAuxiliaryMat(PETSC_UNUSED PC pc,PETSC_UNUSED IS is,PETSC_UNUSED Mat aux,PETSC_UNUSED PetscErrorCode (*setup)(Mat,PetscReal,Vec,Vec,PetscReal,IS,void*),PETSC_UNUSED void* ctx){PetscPCHPDDMError;}

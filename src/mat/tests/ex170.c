@@ -121,7 +121,7 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
   }
   break;
   default:
-    SETERRQ1(comm, PETSC_ERR_PLIB, "Unknown test %d", testnum);
+    SETERRQ(comm, PETSC_ERR_PLIB, "Unknown test %d", testnum);
   }
   *A = G;
   PetscFunctionReturn(0);

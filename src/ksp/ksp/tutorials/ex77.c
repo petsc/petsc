@@ -25,7 +25,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",name,sizeof(name),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must provide a binary file for the matrix");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must provide a binary file for the matrix");
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-breakdown",&breakdown,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-ksp_hpddm_deflation_tol",&deflation,NULL);CHKERRQ(ierr);
@@ -104,19 +104,19 @@ int main(int argc,char **args)
         ierr = MatMatSolve(F,B,B);CHKERRQ(ierr);
         ierr = MatAYPX(B,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(B,NORM_INFINITY,&norm);CHKERRQ(ierr);
-        if (norm > 100*PETSC_MACHINE_EPSILON) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
+        PetscCheckFalse(norm > 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPMatSolve() and MatMatSolve() difference has nonzero norm %g",(double)norm);
       }
     } else {
       ierr = MatZeroEntries(B);CHKERRQ(ierr);
       ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
       ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-      if (reason != KSP_CONVERGED_HAPPY_BREAKDOWN) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN",KSPConvergedReasons[reason]);
+      PetscCheckFalse(reason != KSP_CONVERGED_HAPPY_BREAKDOWN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_CONVERGED_HAPPY_BREAKDOWN",KSPConvergedReasons[reason]);
       ierr = MatDenseGetArrayWrite(B,&x);CHKERRQ(ierr);
       for (i=0; i<m*N; ++i) x[i] = 1.0;
       ierr = MatDenseRestoreArrayWrite(B,&x);CHKERRQ(ierr);
       ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
       ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-      if (reason != KSP_DIVERGED_BREAKDOWN && deflation < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
+      PetscCheckFalse(reason != KSP_DIVERGED_BREAKDOWN && deflation < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"KSPConvergedReason() %s != KSP_DIVERGED_BREAKDOWN",KSPConvergedReasons[reason]);
     }
   } else {
     ierr = KSPSetOperators(ksp,KA,KA);CHKERRQ(ierr);

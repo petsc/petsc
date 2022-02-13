@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
   ierr = PetscObjectSetName((PetscObject) y, "y");CHKERRQ(ierr);
   ierr = VecViewFromOptions(y, NULL, "-y_view");CHKERRQ(ierr);
   ierr = VecNorm(y, NORM_2, &error);CHKERRQ(ierr);
-  if (error > PETSC_SMALL) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid output, x should be in the nullspace of A");
+  PetscCheckFalse(error > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output, x should be in the nullspace of A");
   /* Check that an interior unit vector gets mapped to something of 1-norm 4 */
   if (size > 1) {
     ierr = VecSet(x, 0.0);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
     ierr = MatMult(A, x, y);CHKERRQ(ierr);
     ierr = VecNorm(y, NORM_1, &error);CHKERRQ(ierr);
-    if (PetscAbsReal(error - 4) > PETSC_SMALL) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
+    PetscCheckFalse(PetscAbsReal(error - 4) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
   }
   /* Cleanup */
   ierr = MatDestroy(&A);CHKERRQ(ierr);

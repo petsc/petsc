@@ -163,8 +163,8 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = MatLoad(user->H,loader);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
   ierr = MatGetSize(user->H,&nrows,&ncols);CHKERRQ(ierr);
-  if (nrows != user->n) SETERRQ(comm,PETSC_ERR_ARG_SIZ,"H: nrows != n");
-  if (ncols != user->n) SETERRQ(comm,PETSC_ERR_ARG_SIZ,"H: ncols != n");
+  PetscCheckFalse(nrows != user->n,comm,PETSC_ERR_ARG_SIZ,"H: nrows != n");
+  PetscCheckFalse(ncols != user->n,comm,PETSC_ERR_ARG_SIZ,"H: ncols != n");
   ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);
 
   ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
@@ -178,7 +178,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
     ierr = MatLoad(user->Aeq,loader);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
     ierr = MatGetSize(user->Aeq,&nrows,&ncols);CHKERRQ(ierr);
-    if (ncols != user->n) SETERRQ(comm,PETSC_ERR_ARG_SIZ,"Aeq ncols != H nrows");
+    PetscCheckFalse(ncols != user->n,comm,PETSC_ERR_ARG_SIZ,"Aeq ncols != H nrows");
     ierr = MatSetFromOptions(user->Aeq);CHKERRQ(ierr);
     user->me = nrows;
   }
@@ -193,7 +193,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
     ierr = VecLoad(user->beq,loader);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
     ierr = VecGetSize(user->beq,&nrows);CHKERRQ(ierr);
-    if (nrows != user->me) SETERRQ(comm,PETSC_ERR_ARG_SIZ,"Aeq nrows != Beq n");
+    PetscCheckFalse(nrows != user->me,comm,PETSC_ERR_ARG_SIZ,"Aeq nrows != Beq n");
     ierr = VecSetFromOptions(user->beq);CHKERRQ(ierr);
   }
 

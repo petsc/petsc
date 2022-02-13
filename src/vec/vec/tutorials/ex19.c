@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-n_timesteps", &n_timesteps, NULL);CHKERRQ(ierr);
-  if (n_timesteps < 0) SETERRQ(comm, PETSC_ERR_USER_INPUT, "-n_timesteps must be nonnegative");
+  PetscCheckFalse(n_timesteps < 0,comm, PETSC_ERR_USER_INPUT, "-n_timesteps must be nonnegative");
 
   /* create, initialize and write vectors */
   ierr = PetscRandomCreate(comm, &rand);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
     if (!equal) {
       ierr = VecView(x3r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecView(x3ts[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      SETERRQ1(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x3ts[%" PetscInt_FMT "] != x3r", i);
+      SETERRQ(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x3ts[%" PetscInt_FMT "] != x3r", i);
     }
   }
 
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
     if (!equal) {
       ierr = VecView(x4r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecView(x4ts[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      SETERRQ1(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x4ts[%" PetscInt_FMT "] != x4r", i);
+      SETERRQ(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x4ts[%" PetscInt_FMT "] != x4r", i);
     }
     ierr = PetscViewerHDF5IncrementTimestep(viewer);CHKERRQ(ierr);
   }

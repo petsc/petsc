@@ -56,7 +56,7 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
   PetscFunctionBegin;
 
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X  = ksp->vec_sol;
   B  = ksp->vec_rhs;
@@ -121,7 +121,7 @@ static PetscErrorCode  KSPSolve_PIPEPRCG(KSP ksp)
     case KSP_NORM_NONE:
       dp   = 0.0;
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+    default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
 
     ksp->rnorm = dp;

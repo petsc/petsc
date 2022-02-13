@@ -27,7 +27,7 @@ int main(int argc,char **argv)
       ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,3,2,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
   }
 
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);

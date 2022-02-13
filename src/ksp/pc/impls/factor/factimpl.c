@@ -9,7 +9,7 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!pc->pmat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
+  PetscCheckFalse(!pc->pmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
   if (!pc->setupcalled && !((PC_Factor*)icc)->fact) {
     ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,((PC_Factor*)icc)->factortype,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
   }
@@ -87,7 +87,7 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering
     ierr = PetscStrallocpy(ordering,(char**)&dir->ordering);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcmp(dir->ordering,ordering,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change ordering after use");
+    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change ordering after use");
   }
   PetscFunctionReturn(0);
 }
@@ -139,7 +139,7 @@ PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
     ierr             = (*pc->ops->reset)(pc);CHKERRQ(ierr); /* remove previous factored matrices */
     pc->setupcalled  = 0; /* force a complete rebuild of preconditioner factored matrices */
     ilu->info.levels = levels;
-  } else if (ilu->info.usedt) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change levels after use with ILUdt");
+  } else PetscCheckFalse(ilu->info.usedt,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change levels after use with ILUdt");
   PetscFunctionReturn(0);
 }
 
@@ -177,7 +177,7 @@ PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
   PC_Factor *ilu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (!ilu->fact) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
+  PetscCheckFalse(!ilu->fact,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }
@@ -196,7 +196,7 @@ PetscErrorCode  PCFactorSetMatSolverType_Factor(PC pc,MatSolverType stype)
     PetscBool     flg;
     ierr = MatFactorGetSolverType(lu->fact,&ltype);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package from %s to %s after PC has been setup or used",ltype,stype);
+    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package from %s to %s after PC has been setup or used",ltype,stype);
   }
 
   ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
@@ -218,7 +218,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
   PC_Factor *dir = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %g must be between 0 and 1",(double)dtcol);
+  PetscCheckFalse(dtcol < 0.0 || dtcol > 1.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %g must be between 0 and 1",(double)dtcol);
   dir->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }

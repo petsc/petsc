@@ -56,8 +56,8 @@ PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1)
   ierr = PetscObjectGetName((PetscObject)label0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)label1, &name1);CHKERRQ(ierr);
   ierr = DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg);CHKERRQ(ierr);
-  if (same != (PetscBool) !msg) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  if (!same) SETERRQ3(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  PetscCheckFalse(same != (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
+  PetscCheckFalse(!same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   ierr = DMLabelCompare(PETSC_COMM_WORLD, label0, label1, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscFree(msg);CHKERRQ(ierr);
@@ -75,8 +75,8 @@ PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1)
   ierr = PetscObjectGetName((PetscObject)label0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)label1, &name1);CHKERRQ(ierr);
   ierr = DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg);CHKERRQ(ierr);
-  if (same != (PetscBool) !msg) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  if (same) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
+  PetscCheckFalse(same != (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
+  PetscCheckFalse(same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Compare label \"%s\" with \"%s\": %s\n", name0, name1, msg);CHKERRQ(ierr);
   ierr = PetscFree(msg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -93,8 +93,8 @@ PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1)
   ierr = PetscObjectGetName((PetscObject)dm0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm1, &name1);CHKERRQ(ierr);
   ierr = DMCompareLabels(dm0, dm1, &same, &msg);CHKERRQ(ierr);
-  if (same != (PetscBool) !msg) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  if (!same) SETERRQ3(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  PetscCheckFalse(same != (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
+  PetscCheckFalse(!same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   ierr = DMCompareLabels(dm0, dm1, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscFree(msg);CHKERRQ(ierr);
@@ -112,8 +112,8 @@ PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1)
   ierr = PetscObjectGetName((PetscObject)dm0, &name0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm1, &name1);CHKERRQ(ierr);
   ierr = DMCompareLabels(dm0, dm1, &same, &msg);CHKERRQ(ierr);
-  if (same != (PetscBool) !msg) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  if (same) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
+  PetscCheckFalse(same != (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
+  PetscCheckFalse(same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Labels of DMs \"%s\" and \"%s\" differ: %s\n", name0, name1, msg);CHKERRQ(ierr);
   ierr = PetscFree(msg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -275,21 +275,21 @@ int main(int argc, char **argv)
     DMLabel label0, label1, label2;
     ierr = DMGetLabel(dm, "label0", &label0);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "label1", &label1);CHKERRQ(ierr);
-    if (!label0) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must not be NULL now");
-    if (!label1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must not be NULL now");
+    PetscCheckFalse(!label0,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must not be NULL now");
+    PetscCheckFalse(!label1,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must not be NULL now");
     ierr = DMRemoveLabel(dm, "label1", NULL);CHKERRQ(ierr);
     ierr = DMRemoveLabel(dm, "label2", &label2);CHKERRQ(ierr);
     ierr = DMRemoveLabelBySelf(dm, &label0, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "label0", &label0);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "label1", &label1);CHKERRQ(ierr);
-    if (label0) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must be NULL now");
-    if (label1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must be NULL now");
-    if (!label2) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
+    PetscCheckFalse(label0,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must be NULL now");
+    PetscCheckFalse(label1,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must be NULL now");
+    PetscCheckFalse(!label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
     ierr = DMRemoveLabelBySelf(dm, &label2, PETSC_FALSE);CHKERRQ(ierr); /* this should do nothing */
-    if (!label2) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
+    PetscCheckFalse(!label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
     ierr = DMLabelDestroy(&label2);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, "label2", &label2);CHKERRQ(ierr);
-    if (label2) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must be NULL now");
+    PetscCheckFalse(label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must be NULL now");
   }
 
   ierr = DMDestroy(&dm);CHKERRQ(ierr);

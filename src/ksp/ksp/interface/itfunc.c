@@ -9,7 +9,7 @@
 /* number of nested levels of KSPSetUp/Solve(). This is used to determine if KSP_DIVERGED_ITS should be fatal. */
 static PetscInt level = 0;
 
-PETSC_STATIC_INLINE PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, PetscViewerFormat format)
+static inline PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, PetscViewerFormat format)
 {
   PetscErrorCode ierr;
 
@@ -61,7 +61,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidRealPointer(emax,2);
   PetscValidRealPointer(emin,3);
-  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Singular values not requested before KSPSetUp()");
+  PetscCheckFalse(!ksp->calc_sings,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Singular values not requested before KSPSetUp()");
 
   if (ksp->ops->computeextremesingularvalues) {
     ierr = (*ksp->ops->computeextremesingularvalues)(ksp,emax,emin);CHKERRQ(ierr);
@@ -122,9 +122,9 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (n) PetscValidRealPointer(r,3);
   if (n) PetscValidRealPointer(c,4);
-  if (n<0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requested < 0 Eigenvalues");
+  PetscCheckFalse(n<0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requested < 0 Eigenvalues");
   PetscValidIntPointer(neig,5);
-  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Eigenvalues not requested before KSPSetUp()");
+  PetscCheckFalse(!ksp->calc_sings,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Eigenvalues not requested before KSPSetUp()");
 
   if (n && ksp->ops->computeeigenvalues) {
     ierr = (*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
@@ -180,7 +180,7 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->calc_ritz) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Ritz pairs not requested before KSPSetUp()");
+  PetscCheckFalse(!ksp->calc_ritz,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Ritz pairs not requested before KSPSetUp()");
   if (ksp->ops->computeritz) {ierr = (*ksp->ops->computeritz)(ksp,ritz,small,nrit,S,tetar,tetai);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -534,7 +534,7 @@ PetscErrorCode  KSPConvergedReasonViewSet(KSP ksp,PetscErrorCode (*f)(KSP,void*)
     ierr = PetscMonitorCompare((PetscErrorCode (*)(void))f,vctx,reasonviewdestroy,(PetscErrorCode (*)(void))ksp->reasonview[i],ksp->reasonviewcontext[i],ksp->reasonviewdestroy[i],&identical);CHKERRQ(ierr);
     if (identical) PetscFunctionReturn(0);
   }
-  if (ksp->numberreasonviews >= MAXKSPREASONVIEWS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP reasonview set");
+  PetscCheckFalse(ksp->numberreasonviews >= MAXKSPREASONVIEWS,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP reasonview set");
   ksp->reasonview[ksp->numberreasonviews]          = f;
   ksp->reasonviewdestroy[ksp->numberreasonviews]   = reasonviewdestroy;
   ksp->reasonviewcontext[ksp->numberreasonviews++] = (void*)vctx;
@@ -753,7 +753,7 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
-  if (ksp->dscale && !ksp->dscalefix) SETERRQ(PetscObjectComm((PetscObject) ksp), PETSC_ERR_ARG_WRONGSTATE, "Cannot compute final scale with -ksp_diagonal_scale except also with -ksp_diagonal_scale_fix");
+  PetscCheckFalse(ksp->dscale && !ksp->dscalefix,PetscObjectComm((PetscObject) ksp), PETSC_ERR_ARG_WRONGSTATE, "Cannot compute final scale with -ksp_diagonal_scale except also with -ksp_diagonal_scale_fix");
   if (isascii) {
     Mat       A;
     Vec       t;
@@ -821,7 +821,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
   level++;
   comm = PetscObjectComm((PetscObject)ksp);
   if (x && x == b) {
-    if (!ksp->guess_zero) SETERRQ(comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
+    PetscCheckFalse(!ksp->guess_zero,comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
     ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
     inXisinB = PETSC_TRUE;
   }
@@ -933,7 +933,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 
   ksp->guess_zero = guess_zero;
 
-  if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+  PetscCheckFalse(!ksp->reason,comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ksp->totalits += ksp->its;
 
   ierr = KSPConvergedReasonViewFromOptions(ksp);CHKERRQ(ierr);
@@ -1013,8 +1013,8 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
     if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
       PCFailedReason reason;
       ierr = PCGetFailedReason(ksp->pc,&reason);CHKERRQ(ierr);
-      SETERRQ2(comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged, reason %s PC failed due to %s",KSPConvergedReasons[ksp->reason],PCFailedReasons[reason]);
-    } else SETERRQ1(comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged, reason %s",KSPConvergedReasons[ksp->reason]);
+      SETERRQ(comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged, reason %s PC failed due to %s",KSPConvergedReasons[ksp->reason],PCFailedReasons[reason]);
+    } else SETERRQ(comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged, reason %s",KSPConvergedReasons[ksp->reason]);
   }
   level--;
   PetscFunctionReturn(0);
@@ -1217,24 +1217,24 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
   PetscCheckSameComm(ksp, 1, B, 2);
   PetscCheckSameComm(ksp, 1, X, 3);
-  if (!B->assembled) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
+  PetscCheckFalse(!B->assembled,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   MatCheckPreallocated(X, 3);
   if (!X->assembled) {
     ierr = MatSetOption(X, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(X, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  if (B == X) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_IDN, "B and X must be different matrices");
+  PetscCheckFalse(B == X,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_IDN, "B and X must be different matrices");
   ierr = KSPGetOperators(ksp, &A, &P);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B, NULL, &n2);CHKERRQ(ierr);
   ierr = MatGetLocalSize(X, NULL, &n1);CHKERRQ(ierr);
   ierr = MatGetSize(B, NULL, &N2);CHKERRQ(ierr);
   ierr = MatGetSize(X, NULL, &N1);CHKERRQ(ierr);
-  if (n1 != n2 || N1 != N2) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of right-hand sides (n,N) = (%D,%D) and block of solutions (n,N) = (%D,%D)", n2, N2, n1, N1);
+  PetscCheckFalse(n1 != n2 || N1 != N2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of right-hand sides (n,N) = (%D,%D) and block of solutions (n,N) = (%D,%D)", n2, N2, n1, N1);
   ierr = PetscObjectBaseTypeCompareAny((PetscObject)B, &match, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
-  if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of right-hand sides not stored in a dense Mat");
+  PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of right-hand sides not stored in a dense Mat");
   ierr = PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, "");CHKERRQ(ierr);
-  if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of solutions not stored in a dense Mat");
+  PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of solutions not stored in a dense Mat");
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   if (ksp->ops->matsolve) {
@@ -1245,8 +1245,8 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     ierr = KSPGetMatSolveBatchSize(ksp, &Bbn);CHKERRQ(ierr);
     /* by default, do a single solve with all columns */
     if (Bbn == PETSC_DECIDE) Bbn = N2;
-    else if (Bbn < 1) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() batch size %D must be positive", Bbn);
-    ierr = PetscInfo2(ksp, "KSP type %s solving using batches of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
+    else PetscCheckFalse(Bbn < 1,PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() batch size %D must be positive", Bbn);
+    ierr = PetscInfo(ksp, "KSP type %s solving using batches of width at most %D\n", ((PetscObject)ksp)->type_name, Bbn);CHKERRQ(ierr);
     /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
       ierr = (*ksp->ops->matsolve)(ksp, B, X);CHKERRQ(ierr);
@@ -1290,7 +1290,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
     }
     ierr = PetscLogEventEnd(KSP_MatSolve, ksp, B, X, 0);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo1(ksp, "KSP type %s solving column by column\n", ((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+    ierr = PetscInfo(ksp, "KSP type %s solving column by column\n", ((PetscObject)ksp)->type_name);CHKERRQ(ierr);
     for (n2 = 0; n2 < N2; ++n2) {
       ierr = MatDenseGetColumnVecRead(B, n2, &cb);CHKERRQ(ierr);
       ierr = MatDenseGetColumnVecWrite(X, n2, &cx);CHKERRQ(ierr);
@@ -1642,19 +1642,19 @@ PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscRe
   PetscValidLogicalCollectiveInt(ksp,maxits,5);
 
   if (rtol != PETSC_DEFAULT) {
-    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %g must be non-negative and less than 1.0",(double)rtol);
+    PetscCheckFalse(rtol < 0.0 || 1.0 <= rtol,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %g must be non-negative and less than 1.0",(double)rtol);
     ksp->rtol = rtol;
   }
   if (abstol != PETSC_DEFAULT) {
-    if (abstol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %g must be non-negative",(double)abstol);
+    PetscCheckFalse(abstol < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %g must be non-negative",(double)abstol);
     ksp->abstol = abstol;
   }
   if (dtol != PETSC_DEFAULT) {
-    if (dtol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Divergence tolerance %g must be larger than 1.0",(double)dtol);
+    PetscCheckFalse(dtol < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Divergence tolerance %g must be larger than 1.0",(double)dtol);
     ksp->divtol = dtol;
   }
   if (maxits != PETSC_DEFAULT) {
-    if (maxits < 0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxits);
+    PetscCheckFalse(maxits < 0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxits);
     ksp->max_it = maxits;
   }
   PetscFunctionReturn(0);
@@ -2187,7 +2187,7 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
     ierr = PetscMonitorCompare((PetscErrorCode (*)(void))monitor,mctx,monitordestroy,(PetscErrorCode (*)(void))ksp->monitor[i],ksp->monitorcontext[i],ksp->monitordestroy[i],&identical);CHKERRQ(ierr);
     if (identical) PetscFunctionReturn(0);
   }
-  if (ksp->numbermonitors >= MAXKSPMONITORS) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
+  PetscCheckFalse(ksp->numbermonitors >= MAXKSPMONITORS,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
   ksp->monitor[ksp->numbermonitors]          = monitor;
   ksp->monitordestroy[ksp->numbermonitors]   = monitordestroy;
   ksp->monitorcontext[ksp->numbermonitors++] = (void*)mctx;
@@ -2691,7 +2691,7 @@ PetscErrorCode  KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!V && !v) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"Must provide either v or V");
+  PetscCheckFalse(!V && !v,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"Must provide either v or V");
   if (!V) V = &v;
   ierr = (*ksp->ops->buildsolution)(ksp,v,V);CHKERRQ(ierr);
   PetscFunctionReturn(0);

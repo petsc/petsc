@@ -26,7 +26,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
   /*  Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheckFalse(PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
 
   tao->reason = TAO_CONTINUE_ITERATING;
   ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
 
     /*  Check for bad value */
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER,"User-provided compute function generated Inf or NaN");
+    PetscCheckFalse(PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER,"User-provided compute function generated Inf or NaN");
 
     /*  Check for termination */
     gnorm2 =gnorm * gnorm;

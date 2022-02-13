@@ -30,7 +30,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PetscBool tran
       ierr = KSPCheckSolve(mglevels->smoothd,pc,mglevels->x);CHKERRQ(ierr);
     }
   } else {
-    if (matapp) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not supported");
+    PetscCheckFalse(matapp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not supported");
     ierr = KSPSolveTranspose(mglevels->smoothu,mglevels->b,mglevels->x);CHKERRQ(ierr); /* transpose of post-smooth */
     ierr = KSPCheckSolve(mglevels->smoothu,pc,mglevels->x);CHKERRQ(ierr);
   }
@@ -56,10 +56,10 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PetscBool tran
       if (rnorm <= mg->ttol) {
         if (rnorm < mg->abstol) {
           *reason = PCRICHARDSON_CONVERGED_ATOL;
-          ierr    = PetscInfo2(pc,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",(double)rnorm,(double)mg->abstol);CHKERRQ(ierr);
+          ierr    = PetscInfo(pc,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",(double)rnorm,(double)mg->abstol);CHKERRQ(ierr);
         } else {
           *reason = PCRICHARDSON_CONVERGED_RTOL;
-          ierr    = PetscInfo2(pc,"Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",(double)rnorm,(double)mg->ttol);CHKERRQ(ierr);
+          ierr    = PetscInfo(pc,"Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",(double)rnorm,(double)mg->ttol);CHKERRQ(ierr);
         }
         PetscFunctionReturn(0);
       }
@@ -105,12 +105,12 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PetscBool tran
         ierr = KSPCheckSolve(mglevels->smoothu,pc,mglevels->x);CHKERRQ(ierr);
       }
     } else {
-      if (matapp) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not supported");
+      PetscCheckFalse(matapp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not supported");
       ierr = KSPSolveTranspose(mglevels->smoothd,mglevels->b,mglevels->x);CHKERRQ(ierr);    /* post smooth */
       ierr = KSPCheckSolve(mglevels->smoothd,pc,mglevels->x);CHKERRQ(ierr);
     }
     if (mglevels->cr) {
-      if (matapp) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not supported");
+      PetscCheckFalse(matapp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not supported");
       /* TODO Turn on copy and turn off noisy if we have an exact solution
       ierr = VecCopy(mglevels->x, mglevels->crx);CHKERRQ(ierr);
       ierr = VecCopy(mglevels->b, mglevels->crb);CHKERRQ(ierr); */
@@ -293,7 +293,7 @@ static PetscErrorCode CRSetup_Private(PC pc)
   PetscFunctionBeginUser;
   ierr = PCShellGetContext(pc, &ctx);CHKERRQ(ierr);
   ierr = PCMGGetInjection(ctx->mg, ctx->l, &It);CHKERRQ(ierr);
-  if (!It) SETERRQ(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONGSTATE, "CR requires that injection be defined for this PCMG");
+  PetscCheckFalse(!It,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONGSTATE, "CR requires that injection be defined for this PCMG");
   ierr = MatCreateTranspose(It, &ctx->Inj);CHKERRQ(ierr);
   ierr = MatCreateNormal(ctx->Inj, &ctx->S);CHKERRQ(ierr);
   ierr = MatScale(ctx->S, -1.0);CHKERRQ(ierr);
@@ -768,7 +768,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   /* Check option consistency */
   ierr = PCMGGetGalerkin(pc, &gtype);CHKERRQ(ierr);
   ierr = PCMGGetAdaptInterpolation(pc, &flg);CHKERRQ(ierr);
-  if (flg && (gtype >= PC_MG_GALERKIN_NONE)) SETERRQ(PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_INCOMP, "Must use Galerkin coarse operators when adapting the interpolator");
+  PetscCheckFalse(flg && (gtype >= PC_MG_GALERKIN_NONE),PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_INCOMP, "Must use Galerkin coarse operators when adapting the interpolator");
   PetscFunctionReturn(0);
 }
 
@@ -889,7 +889,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscBool      dAeqdB = PETSC_FALSE, needRestricts = PETSC_FALSE, doCR = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels with PCMGSetLevels() before setting up");
+  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels with PCMGSetLevels() before setting up");
   n = mglevels[0]->levels;
   /* FIX: Move this to PCSetFromOptions_MG? */
   if (mg->usedmfornumberoflevels) {
@@ -1060,7 +1060,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if ((mg->galerkin == PC_MG_GALERKIN_MAT) || ((mg->galerkin == PC_MG_GALERKIN_BOTH) && (dA != dB))) doA = PETSC_TRUE;
     if (pc->setupcalled) reuse = MAT_REUSE_MATRIX;
     for (i=n-2; i>-1; i--) {
-      if (!mglevels[i+1]->restrct && !mglevels[i+1]->interpolate) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must provide interpolation or restriction for each MG level except level 0");
+      PetscCheckFalse(!mglevels[i+1]->restrct && !mglevels[i+1]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must provide interpolation or restriction for each MG level except level 0");
       if (!mglevels[i+1]->interpolate) {
         ierr = PCMGSetInterpolation(pc,i+1,mglevels[i+1]->restrct);CHKERRQ(ierr);
       }
@@ -1408,7 +1408,7 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,n,2);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
+  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
   for (i=0; i<levels; i++) mglevels[i]->cycles = n;
   PetscFunctionReturn(0);
@@ -1691,7 +1691,7 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,n,2);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
+  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
 
   for (i=1; i<levels; i++) {
@@ -1733,7 +1733,7 @@ PetscErrorCode  PCMGSetDistinctSmoothUp(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
+  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
 
   for (i=1; i<levels; i++) {
@@ -1757,7 +1757,7 @@ PetscErrorCode  PCGetInterpolations_MG(PC pc,PetscInt *num_levels,Mat *interpola
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   ierr = PetscMalloc1(mg->nlevels,&mat);CHKERRQ(ierr);
   for (l=1; l< mg->nlevels; l++) {
     mat[l-1] = mglevels[l]->interpolate;
@@ -1778,7 +1778,7 @@ PetscErrorCode  PCGetCoarseOperators_MG(PC pc,PetscInt *num_levels,Mat *coarseOp
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscCheckFalse(!mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   ierr = PetscMalloc1(mg->nlevels,&mat);CHKERRQ(ierr);
   for (l=0; l<mg->nlevels-1; l++) {
     ierr = KSPGetOperators(mglevels[l]->smoothd,NULL,&(mat[l]));CHKERRQ(ierr);

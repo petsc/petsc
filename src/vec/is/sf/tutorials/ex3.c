@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
   ierr             = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF type freeing options","none");CHKERRQ(ierr);
   test_dupped_type = PETSC_FALSE;

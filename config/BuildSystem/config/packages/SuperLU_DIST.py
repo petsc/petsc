@@ -19,7 +19,6 @@ class Configure(config.package.CMakePackage):
     self.hastestsdatafiles= 1
     self.precisions       = ['double']
     self.buildLanguages   = ['Cxx']
-    self.minCxxVersion    = 'c++11'
     return
 
   def setupDependencies(self, framework):

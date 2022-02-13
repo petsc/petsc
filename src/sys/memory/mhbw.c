@@ -37,7 +37,7 @@ static PetscErrorCode PetscHBWMalloc(size_t a,PetscBool clear,int lineno,const c
   */
   {
     int err = hbw_posix_memalign(result,PETSC_MEMALIGN,a);
-    if (err || !*result) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"HBW Memory requested %.0f",(PetscLogDouble)a);
+    PetscCheckFalse(err || !*result,PETSC_COMM_SELF,PETSC_ERR_MEM,"HBW Memory requested %.0f",(PetscLogDouble)a);
   }
   return 0;
 #endif
@@ -65,7 +65,7 @@ static PetscErrorCode PetscHBWRealloc(size_t a,int lineno,const char function[],
     return 0;
   }
   *result = hbw_realloc(*result,a);
-  if (!*result) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested %.0f",(PetscLogDouble)a);
+  PetscCheckFalse(!*result,PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested %.0f",(PetscLogDouble)a);
   return 0;
 #endif
 }

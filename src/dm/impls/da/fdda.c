@@ -262,7 +262,7 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
     ierr = DMCreateColoring_DA_2d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else if (dim == 3) {
     ierr = DMCreateColoring_DA_3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   if (isBAIJ) {
     dd->w  = nc;
     dd->xs = dd->xs*nc;
@@ -336,7 +336,7 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
         ierr = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_LOCAL);CHKERRQ(ierr);
       }
       *coloring = dd->ghostedcoloring;
-    } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+    } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   }
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -404,7 +404,7 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColori
       ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_LOCAL);CHKERRQ(ierr);
     }
     *coloring = dd->ghostedcoloring;
-  } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -478,7 +478,7 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
       ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_LOCAL);CHKERRQ(ierr);
     }
     *coloring = dd->ghostedcoloring;
-  } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -535,7 +535,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
       ierr    = ISColoringSetType(dd->ghostedcoloring,IS_COLORING_LOCAL);CHKERRQ(ierr);
     }
     *coloring = dd->ghostedcoloring;
-  } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   PetscFunctionReturn(0);
 }
 
@@ -597,7 +597,7 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MatGetDM(A, &da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix not generated from a DMDA");
+  PetscCheckFalse(!da,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix not generated from a DMDA");
 
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
@@ -632,7 +632,7 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MatGetDM(A, &da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix not generated from a DMDA");
+  PetscCheckFalse(!da,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix not generated from a DMDA");
 
   /* Load the matrix in natural ordering */
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&Anatural);CHKERRQ(ierr);
@@ -785,19 +785,19 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
       ierr = DMCreateMatrix_DA_2d_MPIBAIJ(da,A);CHKERRQ(ierr);
     } else if (dim == 3) {
       ierr = DMCreateMatrix_DA_3d_MPIBAIJ(da,A);CHKERRQ(ierr);
-    } else SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
+    } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   } else if (sbaij) {
     if (dim == 2) {
       ierr = DMCreateMatrix_DA_2d_MPISBAIJ(da,A);CHKERRQ(ierr);
     } else if (dim == 3) {
       ierr = DMCreateMatrix_DA_3d_MPISBAIJ(da,A);CHKERRQ(ierr);
-    } else SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
+    } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   } else if (sell) {
      if (dim == 2) {
        ierr = DMCreateMatrix_DA_2d_MPISELL(da,A);CHKERRQ(ierr);
      } else if (dim == 3) {
        ierr = DMCreateMatrix_DA_3d_MPISELL(da,A);CHKERRQ(ierr);
-     } else SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
+     } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   } else if (is) {
     ierr = DMCreateMatrix_DA_IS(da,A);CHKERRQ(ierr);
   } else {
@@ -901,7 +901,7 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
     ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dimension %d",dim);
+    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dimension %d",dim);
   }
   dm->prealloc_only = flg;
   PetscFunctionReturn(0);
@@ -1537,7 +1537,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,NULL,NULL,NULL,NULL,NULL,&nc,&s,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
-  if (s > 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Matrix creation for 1d not implemented correctly for stencil width larger than 1");
+  PetscCheckFalse(s > 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Matrix creation for 1d not implemented correctly for stencil width larger than 1");
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&nx,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,NULL,NULL,&gnx,NULL,NULL);CHKERRQ(ierr);
 
@@ -2285,11 +2285,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
   */
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
-  if (bx == DM_BOUNDARY_PERIODIC && (m % col)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+  PetscCheckFalse(bx == DM_BOUNDARY_PERIODIC && (m % col),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
-  if (by == DM_BOUNDARY_PERIODIC && (n % col)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+  PetscCheckFalse(by == DM_BOUNDARY_PERIODIC && (n % col),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
-  if (bz == DM_BOUNDARY_PERIODIC && (p % col)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+  PetscCheckFalse(bz == DM_BOUNDARY_PERIODIC && (p % col),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
 
   /*

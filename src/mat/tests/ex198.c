@@ -16,13 +16,13 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* read matrices A, B and C */
   ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fA options");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fA options");
 
   ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fB options");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fB options");
 
   ierr = PetscOptionsGetString(NULL,NULL,"-fC",file[2],sizeof(file[2]),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fC options");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fC options");
 
   /* Load matrices */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   /* ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   ierr = MatEqual(ABC,D,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"ABC != D");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"ABC != D");
 
   ierr = MatDestroy(&ABC);CHKERRQ(ierr);
   ierr = MatDestroy(&BC);CHKERRQ(ierr);

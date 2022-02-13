@@ -135,7 +135,7 @@ int main(int argc,char **argv)
     ierr = PetscOptionsName("-picard","Solve with defect-correction Picard iteration","",&user.picard);CHKERRQ(ierr);
     if (user.picard) {
       user.jtype = JAC_PICARD;
-      if (user.p != 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Picard iteration is only supported for p == 3");
+      PetscCheckFalse(user.p != 3,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Picard iteration is only supported for p == 3");
       /* the Picard linearization only requires a 5 point stencil, while the Newton linearization requires a 9 point stencil */
       /* hence allocating the 5 point stencil gives the same convergence as the 9 point stencil since the extra stencil points are not used */
       ierr = PetscOptionsBool("-alloc_star","Allocate for STAR stencil (5-point)","",alloc_star,&alloc_star,NULL);CHKERRQ(ierr);
@@ -384,16 +384,16 @@ static PetscErrorCode FormRHS(AppCtx *user,DM da,Vec B)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal kappa(const AppCtx *ctx,PetscReal x,PetscReal y)
+static inline PetscReal kappa(const AppCtx *ctx,PetscReal x,PetscReal y)
 {
   return (((PetscInt)(x*ctx->blocks[0])) + ((PetscInt)(y*ctx->blocks[1]))) % 2 ? ctx->kappa : 1.0;
 }
 /* p-Laplacian diffusivity */
-PETSC_STATIC_INLINE PetscScalar eta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
+static inline PetscScalar eta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
 {
   return kappa(ctx,x,y) * PetscPowScalar(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-2.));
 }
-PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
+static inline PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
 {
   return (ctx->p == 2)
          ? 0
@@ -617,7 +617,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
           ierr     = MatSetValuesStencil(B,1,&row,9,col,v,INSERT_VALUES);CHKERRQ(ierr);
           break;
         default:
-          SETERRQ1(PetscObjectComm((PetscObject)info->da),PETSC_ERR_SUP,"Jacobian type %d not implemented",user->jtype);
+          SETERRQ(PetscObjectComm((PetscObject)info->da),PETSC_ERR_SUP,"Jacobian type %d not implemented",user->jtype);
         }
       }
     }

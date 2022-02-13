@@ -328,7 +328,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
   }
   ierr = PetscNew(&newsh);CHKERRQ(ierr);
   if (sh) {
-    if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
+    PetscCheckFalse(sh->classid != SIGNAL_CLASSID,PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;
   }  else newsh->previous = NULL;
   newsh->handler = routine;
@@ -357,7 +357,7 @@ PetscErrorCode  PetscPopSignalHandler(void)
 
   PetscFunctionBegin;
   if (!sh) PetscFunctionReturn(0);
-  if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
+  PetscCheckFalse(sh->classid != SIGNAL_CLASSID,PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
 
   tmp = sh;
   sh  = sh->previous;

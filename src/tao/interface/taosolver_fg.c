@@ -214,7 +214,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
     ierr = VecDestroy(&temp);CHKERRQ(ierr);
     tao->nfuncgrads++;
   }  else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() has not been called");
-  ierr = PetscInfo1(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
   ierr = VecLockReadPop(X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -277,7 +277,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
     ierr = PetscLogEventEnd(TAO_GradientEval,tao,X,G,NULL);CHKERRQ(ierr);
     tao->ngrads++;
   } else SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() or TaoSetGradientRoutine() not set");
-  ierr = PetscInfo1(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"TAO Function evaluation: %20.19e\n",(double)(*f));CHKERRQ(ierr);
   ierr = VecLockReadPop(X);CHKERRQ(ierr);
 
   ierr = TaoTestGradient(tao,X,G);CHKERRQ(ierr);

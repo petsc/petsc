@@ -56,7 +56,7 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
       ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_SYMMETRIC) {
       ierr = PCApplySymmetricLeft(ksp->pc,vt2,vres);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
+    } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
   } else {
     ierr = VecCopy(vb,vt2);CHKERRQ(ierr);
     if (ksp->pc_side == PC_RIGHT) {
@@ -66,7 +66,7 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
       ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_SYMMETRIC) {
       ierr = PCApplySymmetricLeft(ksp->pc, vb, vres);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
+    } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
   }
   PetscFunctionReturn(0);
 }

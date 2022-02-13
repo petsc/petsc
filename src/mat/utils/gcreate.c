@@ -4,8 +4,8 @@ PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat,PetscInt rbs, Petsc
 {
   PetscFunctionBegin;
   if (!mat->preallocated) PetscFunctionReturn(0);
-  if (mat->rmap->bs > 0 && mat->rmap->bs != rbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->bs,rbs);
-  if (mat->cmap->bs > 0 && mat->cmap->bs != cbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->bs,cbs);
+  PetscCheckFalse(mat->rmap->bs > 0 && mat->rmap->bs != rbs,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->bs,rbs);
+  PetscCheckFalse(mat->cmap->bs > 0 && mat->cmap->bs != cbs,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->bs,cbs);
   PetscFunctionReturn(0);
 }
 
@@ -153,10 +153,10 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(A,M,4);
   PetscValidLogicalCollectiveInt(A,N,5);
-  if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %" PetscInt_FMT " cannot be larger than global row size %" PetscInt_FMT,m,M);
-  if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %" PetscInt_FMT " cannot be larger than global column size %" PetscInt_FMT,n,N);
-  if ((A->rmap->n >= 0 && A->rmap->N >= 0) && (A->rmap->n != m || (M > 0 && A->rmap->N != M))) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",m,M,A->rmap->n,A->rmap->N);
-  if ((A->cmap->n >= 0 && A->cmap->N >= 0) && (A->cmap->n != n || (N > 0 && A->cmap->N != N))) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,A->cmap->n,A->cmap->N);
+  PetscCheckFalse(M > 0 && m > M,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %" PetscInt_FMT " cannot be larger than global row size %" PetscInt_FMT,m,M);
+  PetscCheckFalse(N > 0 && n > N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %" PetscInt_FMT " cannot be larger than global column size %" PetscInt_FMT,n,N);
+  PetscCheckFalse((A->rmap->n >= 0 && A->rmap->N >= 0) && (A->rmap->n != m || (M > 0 && A->rmap->N != M)),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",m,M,A->rmap->n,A->rmap->N);
+  PetscCheckFalse((A->cmap->n >= 0 && A->cmap->N >= 0) && (A->cmap->n != n || (N > 0 && A->cmap->N != N)),PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset column sizes to %" PetscInt_FMT " local %" PetscInt_FMT " global after previously setting them to %" PetscInt_FMT " local %" PetscInt_FMT " global",n,N,A->cmap->n,A->cmap->N);
   A->rmap->n = m;
   A->cmap->n = n;
   A->rmap->N = M > -1 ? M : A->rmap->N;
@@ -429,7 +429,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
   PetscValidHeaderSpecific(*C,MAT_CLASSID,2);
   if (A == *C) PetscFunctionReturn(0);
   PetscCheckSameComm(A,1,*C,2);
-  if (((PetscObject)*C)->refct != 1) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %" PetscInt_FMT " > 1, would leave hanging reference",((PetscObject)*C)->refct);
+  PetscCheckFalse(((PetscObject)*C)->refct != 1,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %" PetscInt_FMT " > 1, would leave hanging reference",((PetscObject)*C)->refct);
 
   /* swap C and A */
   refct   = ((PetscObject)A)->refct;
@@ -514,11 +514,11 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"__PETSc_coo_i",(PetscObject*)&is_coo_i);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)A,"__PETSc_coo_j",(PetscObject*)&is_coo_j);CHKERRQ(ierr);
-  if (!is_coo_i) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_i IS");
-  if (!is_coo_j) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_j IS");
+  PetscCheckFalse(!is_coo_i,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_i IS");
+  PetscCheckFalse(!is_coo_j,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_j IS");
   ierr = ISGetLocalSize(is_coo_i,&n_i);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is_coo_j,&n_j);CHKERRQ(ierr);
-  if (n_i != n_j)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong local size %" PetscInt_FMT " != %" PetscInt_FMT,n_i,n_j);
+  PetscCheckFalse(n_i != n_j,PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong local size %" PetscInt_FMT " != %" PetscInt_FMT,n_i,n_j);
   ierr = ISGetIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
   ierr = ISGetIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
   if (imode != ADD_VALUES) {
@@ -556,7 +556,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt
   ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A);CHKERRQ(ierr);
   ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
-  if (ncoo > PETSC_MAX_INT) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
+  PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_i,PETSC_COPY_VALUES,&is_coo_i);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncoo,coo_j,PETSC_COPY_VALUES,&is_coo_j);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"__PETSc_coo_i",(PetscObject)is_coo_i);CHKERRQ(ierr);
@@ -607,8 +607,8 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
   ierr = PetscObjectTypeCompareAny((PetscObject)A,&isAIJKokkos,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,NULL);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG) && !isAIJKokkos) {
     for (PetscCount i = 0; i < ncoo; i++) {
-      if (coo_i[i] >= 0 && (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %" PetscInt_FMT "! Must be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",coo_i[i],A->rmap->rstart,A->rmap->rend);
-      if (coo_j[i] >= A->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %" PetscInt_FMT "! Must be in [0,%" PetscInt_FMT ")",coo_j[i],A->cmap->N);
+      PetscCheckFalse(coo_i[i] >= 0 && (coo_i[i] < A->rmap->rstart || coo_i[i] >= A->rmap->rend),PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid row index %" PetscInt_FMT "! Must be in [%" PetscInt_FMT ",%" PetscInt_FMT ")",coo_i[i],A->rmap->rstart,A->rmap->rend);
+      PetscCheck(coo_j[i] < A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid col index %" PetscInt_FMT "! Must be in [0,%" PetscInt_FMT ")",coo_j[i],A->cmap->N);
     }
   }
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOO_C",&f);CHKERRQ(ierr);
@@ -667,7 +667,7 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = MatGetLocalToGlobalMapping(A, &ltog_row, &ltog_col);CHKERRQ(ierr);
-  if (ncoo > PETSC_MAX_INT) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
+  PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
   ierr = ISLocalToGlobalMappingApply(ltog_row, ncoo, coo_i, coo_i);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltog_col, ncoo, coo_j, coo_j);CHKERRQ(ierr);
   ierr = MatSetPreallocationCOO(A, ncoo, coo_i, coo_j);CHKERRQ(ierr);

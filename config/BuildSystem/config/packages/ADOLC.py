@@ -10,7 +10,6 @@ class Configure(config.package.GNUPackage):
     self.liblist          = [['libadolc.a']]
     self.functions        = ['myalloc2','myfree2']
     self.buildLanguages   = ['Cxx']
-    self.minCxxVersion    = 'c++11'
     self.precisions       = ['double']
     self.complex          = 0
     self.downloaddirnames = ['ADOL-C']

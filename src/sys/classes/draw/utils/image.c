@@ -78,16 +78,16 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePNG(const char filename[],unsigned
   /* open file and create libpng structures */
   ierr = PetscFOpen(PETSC_COMM_SELF,filename,"wb",&fp);CHKERRQ(ierr);
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
-  if (!png_ptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create PNG context");
+  PetscCheckFalse(!png_ptr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create PNG context");
   info_ptr = png_create_info_struct(png_ptr);
-  if (!info_ptr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create PNG context");
+  PetscCheckFalse(!info_ptr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create PNG context");
 
   /* setup libpng error handling */
 #if defined(PNG_SETJMP_SUPPORTED)
   if (setjmp(png_jmpbuf(png_ptr))) {
     png_destroy_write_struct(&png_ptr,&info_ptr);
     (void)PetscFClose(PETSC_COMM_SELF,fp);
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error writing PNG file %s",filename);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error writing PNG file %s",filename);
   }
 #endif
 
@@ -145,7 +145,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveGIF(const char filename[],unsigned
   int            ColorCount = 256;
   ColorMapObject *GifCMap = NULL;
   GifFileType    *GifFile = NULL;
-# define         SETERRGIF(msg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,msg", GIF file: %s",filename)
+# define         SETERRGIF(msg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,msg", GIF file: %s",filename)
 # define         CHKERRGIF(msg) do {if (Error != GIF_OK) SETERRGIF(msg);} while (0)
 
   PetscFunctionBegin;
@@ -178,7 +178,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieSaveGIF(const char pattern[],PetscInt 
   GifFileType    *GifMovie = NULL;
   GifFileType    *GifImage = NULL;
   PetscErrorCode ierr;
-# define         SETERRGIF(msg,fn) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,msg" GIF file %s",fn)
+# define         SETERRGIF(msg,fn) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,msg" GIF file %s",fn)
 
   PetscFunctionBegin;
   PetscValidCharPointer(pattern,1);
@@ -282,7 +282,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveJPG(const char filename[],unsigned
     jerr.format_message((j_common_ptr)&cinfo,message);
     jpeg_destroy_compress(&cinfo);
     (void)PetscFClose(PETSC_COMM_SELF,fp);
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error writing JPEG file %s\n%s",filename,message);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error writing JPEG file %s\n%s",filename,message);
   }
 #endif
   jpeg_create_compress(&cinfo);
@@ -345,7 +345,7 @@ PetscErrorCode PetscDrawImageCheckFormat(const char *ext[])
     ierr = PetscStrcasecmp(*ext,PetscDrawImageSaveTable[k].extension,&match);CHKERRQ(ierr);
     if (match && PetscDrawImageSaveTable[k].SaveImage) PetscFunctionReturn(0);
   }
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Image extension %s not supported, use .ppm or see PetscDrawSetSave() for what ./configure option you may need",*ext);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Image extension %s not supported, use .ppm or see PetscDrawSetSave() for what ./configure option you may need",*ext);
 }
 
 PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
@@ -370,7 +370,7 @@ PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigne
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Image extension %s not supported, use .ppm",ext);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Image extension %s not supported, use .ppm",ext);
 }
 
 PetscErrorCode PetscDrawMovieCheckFormat(const char *ext[])

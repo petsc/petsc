@@ -7,8 +7,8 @@ static PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 
   PetscFunctionBegin;
   /* check user parameters and functions */
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPBiCG");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPBiCG");
+  PetscCheckFalse(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPBiCG");
+  else PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPBiCG");
   ierr = KSPSetWorkVecs(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -25,7 +25,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X  = ksp->vec_sol;
   B  = ksp->vec_rhs;

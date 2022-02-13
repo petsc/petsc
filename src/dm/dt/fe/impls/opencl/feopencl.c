@@ -16,7 +16,7 @@ static PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#define CHKERRSTR(err) do {CHKERRQ(err); string_tail += count; if (string_tail == end_of_buffer) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB,"Buffer overflow");} while (0)
+#define CHKERRSTR(err) do {CHKERRQ(err); string_tail += count; PetscCheckFalse(string_tail == end_of_buffer,PETSC_COMM_SELF, PETSC_ERR_PLIB,"Buffer overflow");} while (0)
 enum {LAPLACIAN = 0, ELASTICITY = 1};
 
 /* NOTE: This is now broken for vector problems. Must redo loops to respect vector basis elements */
@@ -61,7 +61,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   ierr = PetscFEGetNumComponents(fem, &N_c);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, NULL, &qNc, &N_q, &points, &weights);CHKERRQ(ierr);
-  if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheckFalse(qNc != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
   N_t  = N_b * N_c * N_q * N_bl;
   /* Enable device extension for double precision */
   if (ocl->realType == PETSC_DOUBLE) {
@@ -382,7 +382,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
     }}
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "PDE operator %d is not supported", op);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PDE operator %d is not supported", op);
   }
   if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_0[fidx] *= detJ[cell]*w;\n", &count);CHKERRSTR(ierr);}
   if (useF1) {
@@ -471,7 +471,7 @@ static PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool u
   err = clBuildProgram(*ocl_prog, 0, NULL, NULL, NULL, NULL);
   if (err != CL_SUCCESS) {
     err = clGetProgramBuildInfo(*ocl_prog, ocl->dev_id, CL_PROGRAM_BUILD_LOG, 8192*sizeof(char), &errMsg, NULL);
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Build failed! Log:\n %s", errMsg);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Build failed! Log:\n %s", errMsg);
   }
   ierr = PetscFree(buffer);CHKERRQ(ierr);
   *ocl_kernel = clCreateKernel(*ocl_prog, "integrateElementQuadrature", &ierr);
@@ -483,14 +483,14 @@ static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscI
   const PetscInt Nblocks = N/blockSize;
 
   PetscFunctionBegin;
-  if (N % blockSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
+  PetscCheckFalse(N % blockSize,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
   *z = 1;
   *y = 1;
   for (*x = (size_t) (PetscSqrtReal(Nblocks) + 0.5); *x > 0; --*x) {
     *y = Nblocks / *x;
     if (*x * *y == (size_t)Nblocks) break;
   }
-  if (*x * *y != (size_t)Nblocks) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %D with block size %D", N, blockSize);
+  PetscCheckFalse(*x * *y != (size_t)Nblocks,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %D with block size %D", N, blockSize);
   PetscFunctionReturn(0);
 }
 
@@ -563,7 +563,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, NULL, &qNc, &N_q, &points, &weights);CHKERRQ(ierr);
-  if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
+  PetscCheckFalse(qNc != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
   ierr = PetscFEGetDimension(fem, &N_b);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &N_comp);CHKERRQ(ierr);
   ierr = PetscDSGetResidual(prob, field, &f0_func, &f1_func);CHKERRQ(ierr);
@@ -571,7 +571,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   N_bt  = N_b*N_comp;
   N_bst = N_bt*N_q;
   N_t   = N_bst*N_bl;
-  if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
+  PetscCheckFalse(N_bc*N_comp != N_t,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
   /* Calculate layout */
   if (Ne % (N_cb*N_bc)) { /* Remainder cells */
     ierr = PetscFEIntegrateResidual_Basic(prob, key, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
@@ -584,8 +584,8 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   global_work_size[0] = x * local_work_size[0];
   global_work_size[1] = y * local_work_size[1];
   global_work_size[2] = z * local_work_size[2];
-  ierr = PetscInfo7(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
-  ierr = PetscInfo2(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);CHKERRQ(ierr);
+  ierr = PetscInfo(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
+  ierr = PetscInfo(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);CHKERRQ(ierr);
   /* Generate code */
   if (probAux) {
     PetscSpace P;
@@ -598,13 +598,13 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       ierr = PetscDSGetDiscretization(probAux, f, (PetscObject *) &feAux);CHKERRQ(ierr);
       ierr = PetscFEGetBasisSpace(feAux, &P);CHKERRQ(ierr);
       ierr = PetscSpaceGetDegree(P, &order, NULL);CHKERRQ(ierr);
-      if (order > 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
+      PetscCheckFalse(order > 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
     }
   }
   ierr = PetscFEOpenCLGetIntegrationKernel(fem, useAux, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
   /* Create buffers on the device and send data over */
   ierr = PetscDataTypeGetSize(ocl->realType, &realSize);CHKERRQ(ierr);
-  if (cgeom->numPoints > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support affine geometry for OpenCL integration right now");
+  PetscCheckFalse(cgeom->numPoints > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support affine geometry for OpenCL integration right now");
   if (sizeof(PetscReal) != realSize) {
     switch (ocl->realType) {
     case PETSC_FLOAT:
@@ -666,7 +666,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
     }
     break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
     }
   } else {
     PetscInt c, d;
@@ -736,7 +736,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
     }
     break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
     }
   } else {
     ierr = PetscFree2(r_invJ,r_detJ);CHKERRQ(ierr);
@@ -817,11 +817,11 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
 
   /* Init Platform */
   ierr = clGetPlatformIDs(42, platform_ids, &num_platforms);CHKERRQ(ierr);
-  if (!num_platforms) SETERRQ(PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL platform found.");
+  PetscCheckFalse(!num_platforms,PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL platform found.");
   ocl->pf_id = platform_ids[0];
   /* Init Device */
   ierr = clGetDeviceIDs(ocl->pf_id, CL_DEVICE_TYPE_ALL, 42, device_ids, &num_devices);CHKERRQ(ierr);
-  if (!num_devices) SETERRQ(PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL device found.");
+  PetscCheckFalse(!num_devices,PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL device found.");
   ocl->dev_id = device_ids[0];
   /* Create context with one command queue */
   ocl->ctx_id   = clCreateContext(0, 1, &(ocl->dev_id), NULL, NULL, &err);CHKERRQ(err);

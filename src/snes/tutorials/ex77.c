@@ -50,13 +50,13 @@ typedef struct {
 } AppCtx;
 
 #if 0
-PETSC_STATIC_INLINE void Det2D(PetscReal *detJ, const PetscReal J[])
+static inline void Det2D(PetscReal *detJ, const PetscReal J[])
 {
   *detJ = J[0]*J[3] - J[1]*J[2];
 }
 #endif
 
-PETSC_STATIC_INLINE void Det3D(PetscReal *detJ, const PetscScalar J[])
+static inline void Det3D(PetscReal *detJ, const PetscScalar J[])
 {
   *detJ = PetscRealPart(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                         J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
@@ -64,7 +64,7 @@ PETSC_STATIC_INLINE void Det3D(PetscReal *detJ, const PetscScalar J[])
 }
 
 #if 0
-PETSC_STATIC_INLINE void Cof2D(PetscReal C[], const PetscReal A[])
+static inline void Cof2D(PetscReal C[], const PetscReal A[])
 {
   C[0] =  A[3];
   C[1] = -A[2];
@@ -73,7 +73,7 @@ PETSC_STATIC_INLINE void Cof2D(PetscReal C[], const PetscReal A[])
 }
 #endif
 
-PETSC_STATIC_INLINE void Cof3D(PetscReal C[], const PetscScalar A[])
+static inline void Cof3D(PetscReal C[], const PetscScalar A[])
 {
   C[0*3+0] = PetscRealPart(A[1*3+1]*A[2*3+2] - A[1*3+2]*A[2*3+1]);
   C[0*3+1] = PetscRealPart(A[1*3+2]*A[2*3+0] - A[1*3+0]*A[2*3+2]);

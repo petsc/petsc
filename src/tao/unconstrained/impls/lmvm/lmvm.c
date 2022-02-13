@@ -23,7 +23,7 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
   ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
 
-  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheckFalse(PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
 
   tao->reason = TAO_CONTINUE_ITERATING;
   ierr = TaoLogConvergenceHistory(tao,f,gnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
   ierr = MatSetSizes(lmP->M, n, n, N, N);CHKERRQ(ierr);
   ierr = MatLMVMAllocate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
   ierr = MatGetOption(lmP->M, MAT_SPD, &is_spd);CHKERRQ(ierr);
-  if (!is_spd) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
+  PetscCheckFalse(!is_spd,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix is not symmetric positive-definite.");
 
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (lmP->H0) {

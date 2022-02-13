@@ -11,7 +11,7 @@ static PetscErrorCode PetscConvEstSetTS_Private(PetscConvEst ce, PetscObject sol
 
   PetscFunctionBegin;
   ierr = PetscObjectGetClassId(ce->solver, &id);CHKERRQ(ierr);
-  if (id != TS_CLASSID) SETERRQ(PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "Solver was not a TS");
+  PetscCheckFalse(id != TS_CLASSID,PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "Solver was not a TS");
   ierr = TSGetDM((TS) ce->solver, &ce->idm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -124,7 +124,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ce->r != 2.0) SETERRQ1(PetscObjectComm((PetscObject) ce), PETSC_ERR_SUP, "Only refinement factor 2 is currently supported (not %g)", (double) ce->r);
+  PetscCheckFalse(ce->r != 2.0,PetscObjectComm((PetscObject) ce), PETSC_ERR_SUP, "Only refinement factor 2 is currently supported (not %g)", (double) ce->r);
   ierr = DMGetDimension(ce->idm, &dim);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);

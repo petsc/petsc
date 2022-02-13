@@ -35,13 +35,13 @@ int main (int argc, char** argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (size > 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for <=2 procs");
+  PetscCheckFalse(size > 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for <=2 procs");
 
   ierr = PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate dof indices file for rank 0 with -f0 option");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate dof indices file for rank 0 with -f0 option");
   if (size == 2) {
     ierr = PetscOptionsGetString(NULL,NULL,"-f1",file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate dof indices file for rank 1 with -f1 option");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate dof indices file for rank 1 with -f1 option");
   }
 
   if (size == 1) {
@@ -70,7 +70,7 @@ int main (int argc, char** argv)
         while (std::getline(sstream, token, ' ')) {dof_indices.push_back(std::atoi(token.c_str()));}
         elem_dof_indices[proc_id].push_back(dof_indices);
       }
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Could not open file %s",file[proc_id]);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Could not open file %s",file[proc_id]);
   }
 
   // Debugging: Verify we read in elem_dof_indices correctly

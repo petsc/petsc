@@ -19,10 +19,10 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 
   if (ts->ops->evaluatewlte) {
     ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
-    if (enorm >= 0 && order < 1) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
+    PetscCheckFalse(enorm >= 0 && order < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
   } else if (ts->ops->evaluatestep) {
-    if (adapt->candidates.n < 1) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
-    if (!adapt->candidates.inuse_set) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
+    PetscCheckFalse(adapt->candidates.n < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
+    PetscCheckFalse(!adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
     order = adapt->candidates.order[0];
     ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm,&Y);CHKERRQ(ierr);
@@ -42,17 +42,17 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   if (enorm > 1) {
     if (!*accept) safety *= adapt->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
-      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else if (adapt->always_accept) {
-      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else {
-      ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+      ierr = PetscInfo(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_FALSE;
     }
   } else {
-    ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
+    ierr = PetscInfo(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
     *accept = PETSC_TRUE;
   }
 

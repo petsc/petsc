@@ -30,9 +30,9 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size < 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must run with at least 4 MPI processes");
+  PetscCheckFalse(size < 4,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must run with at least 4 MPI processes");
   ierr = PetscOptionsGetViewer(comm,NULL,NULL,"-viewer",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (!viewer) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use -viewer option");
+  PetscCheckFalse(!viewer,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use -viewer option");
 
   ierr = PetscViewerASCIIPrintf(viewer,"Print called on original full viewer %d\n",PetscGlobalRank);CHKERRQ(ierr);
 

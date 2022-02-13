@@ -122,9 +122,9 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (p < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scheme order must be positive");
-  if (r < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one item must be carried between steps");
-  if (s < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
+  PetscCheckFalse(p < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scheme order must be positive");
+  PetscCheckFalse(r < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one item must be carried between steps");
+  PetscCheckFalse(s < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
   PetscValidPointer(inscheme,10);
   *inscheme = NULL;
   ierr      = PetscNew(&scheme);CHKERRQ(ierr);
@@ -161,8 +161,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
     ierr = PetscBLASIntCast(r-1,&m);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(r,&n);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&m,&one,ImV,&n,ipiv,scheme->alpha+1,&n,&info));
-    if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GESV");
-    if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
+    PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GESV");
+    PetscCheckFalse(info > 0,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
 
     /* Build right hand side for beta (tp1 - glm.B(2:end,:)*(glm.c.^(p+1)./factorial(p+1)) - e.alpha) */
     for (i=1; i<r; i++) {
@@ -170,8 +170,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
       for (j=0; j<s; j++) scheme->beta[i] -= b[i*s+j]*CPowF(c[j],p+1);
     }
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->beta+1,&n,&info));
-    if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
-    if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
+    PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
+    PetscCheckFalse(info > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
 
     /* Build stage_error vector
            xi = glm.c.^(p+1)/factorial(p+1) - glm.A*glm.c.^p/factorial(p) + glm.U(:,2:end)*e.alpha;
@@ -195,8 +195,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
       for (j=0; j<s; j++) scheme->gamma[i] += b[i*s+j]*scheme->stage_error[j];
     }
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->gamma+1,&n,&info));
-    if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
-    if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
+    PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
+    PetscCheckFalse(info > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
 
     /* beta[0] (rho in B,J,W 2007)
         e.rho = 1/factorial(p+2) - glm.B(1,:)*glm.c.^(p+1)/factorial(p+1) ...
@@ -249,8 +249,8 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
     PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info));
 #endif
-    if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
-    if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
+    PetscCheckFalse(info < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
+    PetscCheckFalse(info > 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
 
     for (j=0; j<3; j++) {
       for (k=0; k<s; k++) scheme->phi[k+j*s] = bmat[k+j*ss];
@@ -363,7 +363,7 @@ static PetscErrorCode TSGLLESchemeView(TSGLLEScheme sc,PetscBool view_details,Pe
       ierr = TSGLLEViewTable_Private(viewer,1,sc->s,sc->stage_error,"Stage error xi");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -373,7 +373,7 @@ static PetscErrorCode TSGLLEEstimateHigherMoments_Default(TSGLLEScheme sc,PetscR
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (sc->r > 64 || sc->s > 64) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Ridiculous number of stages or items passed between stages");
+  PetscCheckFalse(sc->r > 64 || sc->s > 64,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Ridiculous number of stages or items passed between stages");
   /* build error vectors*/
   for (i=0; i<3; i++) {
     PetscScalar phih[64];
@@ -437,7 +437,7 @@ static PetscErrorCode TSGLLECompleteStep_RescaleAndModify(TSGLLEScheme sc,PetscR
     ierr = VecMAXPY(X[i],r,vrow,Xold);CHKERRQ(ierr);
   }
   if (r < next_sc->r) {
-    if (r+1 != next_sc->r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
+    PetscCheckFalse(r+1 != next_sc->r,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
     ierr = VecZeroEntries(X[r]);CHKERRQ(ierr);
     for (j=0; j<s; j++) brow[j] = h*PetscPowRealInt(ratio,p+1)*sc->phi[0*s+j];
     ierr = VecMAXPY(X[r],s,brow,Ydot);CHKERRQ(ierr);
@@ -742,7 +742,7 @@ static PetscErrorCode TSGLLESetType_GLLE(TS ts,TSGLLEType type)
   }
 
   ierr = PetscFunctionListFind(TSGLLEList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLE type \"%s\" given",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLE type \"%s\" given",type);
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscStrcpy(gl->type_name,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -756,7 +756,7 @@ static PetscErrorCode TSGLLESetAcceptType_GLLE(TS ts,TSGLLEAcceptType type)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListFind(TSGLLEAcceptList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLEAccept type \"%s\" given",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLEAccept type \"%s\" given",type);
   gl->Accept = r;
   ierr = PetscStrncpy(gl->accept_name,type,sizeof(gl->accept_name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -801,10 +801,10 @@ static PetscErrorCode TSGLLEChooseNextScheme(TS ts,PetscReal h,const PetscReal h
     if (i == gl->current_scheme) cur = n;
     n++;
   }
-  if (cur < 0 || gl->nschemes <= cur) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Current scheme not found in scheme list");
+  PetscCheckFalse(cur < 0 || gl->nschemes <= cur,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Current scheme not found in scheme list");
   ierr = TSGLLEAdaptChoose(gl->adapt,n,orders,errors,costs,cur,h,tleft,&next_sc,next_h,finish);CHKERRQ(ierr);
   *next_scheme = candidates[next_sc];
-  ierr = PetscInfo7(ts,"Adapt chose scheme %d (%d,%d,%d,%d) with step size %6.2e, finish=%d\n",*next_scheme,gl->schemes[*next_scheme]->p,gl->schemes[*next_scheme]->q,gl->schemes[*next_scheme]->r,gl->schemes[*next_scheme]->s,*next_h,*finish);CHKERRQ(ierr);
+  ierr = PetscInfo(ts,"Adapt chose scheme %d (%d,%d,%d,%d) with step size %6.2e, finish=%d\n",*next_scheme,gl->schemes[*next_scheme]->p,gl->schemes[*next_scheme]->q,gl->schemes[*next_scheme]->r,gl->schemes[*next_scheme]->s,*next_h,*finish);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -852,12 +852,12 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
     ts->snes_its += its; ts->ksp_its += lits;
     if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
       ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-      ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }
 
-  if (gl->current_scheme < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"A starting scheme has not been provided");
+  PetscCheckFalse(gl->current_scheme < 0,PETSC_COMM_SELF,PETSC_ERR_ORDER,"A starting scheme has not been provided");
 
   for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<ts->max_steps && !finish; k++) {
     PetscInt          j,r,s,next_scheme = 0,rejections;
@@ -926,7 +926,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
         ts->snes_its += its; ts->ksp_its += lits;
         if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
           ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-          ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+          ierr = PetscInfo(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
       }
@@ -944,7 +944,7 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
       ierr = (*gl->Accept)(ts,ts->max_time-gl->stage_time,h,enorm,&accept);CHKERRQ(ierr);
       if (accept) goto accepted;
       rejections++;
-      ierr = PetscInfo3(ts,"Step %D (t=%g) not accepted, rejections=%D\n",k,gl->stage_time,rejections);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step %D (t=%g) not accepted, rejections=%D\n",k,gl->stage_time,rejections);CHKERRQ(ierr);
       if (rejections > gl->max_step_rejections) break;
       /*
         There are lots of reasons why a step might be rejected, including solvers not converging and other factors that
@@ -959,14 +959,14 @@ static PetscErrorCode TSSolve_GLLE(TS ts)
         ierr = VecScale(X[i],PetscPowRealInt(0.5,i));CHKERRQ(ierr);
       }
     }
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures",k,gl->stage_time,rejections);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures",k,gl->stage_time,rejections);
 
 accepted:
     /* This term is not error, but it *would* be the leading term for a lower order method */
     ierr = TSGLLEVecNormWRMS(ts,gl->X[scheme->r-1],&hmnorm[0]);CHKERRQ(ierr);
     /* Correct scaling so that these are equivalent to norms of the Nordsieck vectors */
 
-    ierr = PetscInfo4(ts,"Last moment norm %10.2e, estimated error norms %10.2e %10.2e %10.2e\n",hmnorm[0],enorm[0],enorm[1],enorm[2]);CHKERRQ(ierr);
+    ierr = PetscInfo(ts,"Last moment norm %10.2e, estimated error norms %10.2e %10.2e %10.2e\n",hmnorm[0],enorm[0],enorm[1],enorm[2]);CHKERRQ(ierr);
     if (!final_step) {
       ierr = TSGLLEChooseNextScheme(ts,h,hmnorm,&next_scheme,&next_h,&final_step);CHKERRQ(ierr);
     } else {
@@ -1109,7 +1109,7 @@ static PetscErrorCode TSSetUp_GLLE(TS ts)
     PetscInt i;
     for (i=0;; i++) {
       if (gl->schemes[i]->p == gl->start_order) break;
-      if (i+1 == gl->nschemes) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No schemes available with requested start order %d",i);
+      PetscCheckFalse(i+1 == gl->nschemes,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No schemes available with requested start order %d",i);
     }
     gl->current_scheme = i;
   }
@@ -1149,7 +1149,7 @@ static PetscErrorCode TSSetFromOptions_GLLE(PetscOptionItems *PetscOptionsObject
       ierr = PetscStrcmp(completef,"rescale-and-modify",&match2);CHKERRQ(ierr);
       if (match1)      gl->CompleteStep = TSGLLECompleteStep_Rescale;
       else if (match2) gl->CompleteStep = TSGLLECompleteStep_RescaleAndModify;
-      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"%s",completef);
+      else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"%s",completef);
     }
     {
       char type[256] = TSGLLEACCEPT_ALWAYS;

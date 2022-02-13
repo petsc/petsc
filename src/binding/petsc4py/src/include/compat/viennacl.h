@@ -5,7 +5,7 @@
 
 #define PetscViennaCLError do { \
     PetscFunctionBegin; \
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires ViennaCL",PETSC_FUNCTION_NAME); \
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires ViennaCL",PETSC_FUNCTION_NAME); \
     PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
 
 PetscErrorCode  VecCreateSeqViennaCLWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,PetscScalar cpuarray[],PetscScalar* viennaclvec,Vec *V) {PetscViennaCLError;}

@@ -629,7 +629,7 @@ PetscErrorCode PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEvent
 
   PetscFunctionBegin;
   PetscValidPointer(info,3);
-  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
+  PetscCheckFalse(!PetscLogPLB,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   if (stage < 0) {ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);}
   ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
@@ -645,7 +645,7 @@ PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event,PetscLogDouble *flops)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
+  PetscCheckFalse(!PetscLogPLB,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
   ierr   = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr   = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
   ierr   = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
@@ -755,7 +755,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event,int t,PetscObject o1,
   /* Check for double counting */
   eventLog->eventInfo[event].depth--;
   if (eventLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
-  else if (eventLog->eventInfo[event].depth < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
+  else PetscCheckFalse(eventLog->eventInfo[event].depth < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
   /* Log performance info */
   PetscTimeAdd(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].time          += eventLog->eventInfo[event].timeTmp;
@@ -898,7 +898,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event,int t,PetscObject o1
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth--;
   if (eventPerfLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
-  else if (eventPerfLog->eventInfo[event].depth < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
+  else PetscCheckFalse(eventPerfLog->eventInfo[event].depth < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
   /* Log the performance info */
   eventPerfLog->eventInfo[event].count++;
   eventPerfLog->eventInfo[event].time          += curTime;
@@ -939,7 +939,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event,int t,PetscObject o1,
   petsc_tracespace[2*petsc_tracelevel] = 0;
 
   err = fflush(petsc_tracefile);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   PetscFunctionReturn(0);
 }
 
@@ -963,7 +963,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth--;
   if (eventPerfLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
-  else if (eventPerfLog->eventInfo[event].depth < 0 || petsc_tracelevel < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
+  else PetscCheckFalse(eventPerfLog->eventInfo[event].depth < 0 || petsc_tracelevel < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Logging event had unbalanced begin/end pairs");
 
   /* Log performance info */
   if (petsc_tracelevel) {
@@ -973,7 +973,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
   PetscTime(&cur_time);
   ierr = PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile,"%s[%d] %g Event end: %s\n",petsc_tracespace,rank,cur_time-petsc_tracetime,eventRegLog->eventInfo[event].name);CHKERRQ(ierr);
   err  = fflush(petsc_tracefile);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   PetscFunctionReturn(0);
 }
 
@@ -1004,7 +1004,7 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if ((n < 0) || (n > 7)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
+  PetscCheckFalse((n < 0) || (n > 7),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);
@@ -1040,7 +1040,7 @@ PetscErrorCode PetscLogEventSetError(PetscLogEvent event, PetscInt n, PetscLogDo
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if ((n < 0) || (n > 7)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
+  PetscCheckFalse((n < 0) || (n > 7),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Error index %" PetscInt_FMT " is not in [0, 8)", n);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetCurrent(stageLog,&stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventPerfLog(stageLog,stage,&eventLog);CHKERRQ(ierr);

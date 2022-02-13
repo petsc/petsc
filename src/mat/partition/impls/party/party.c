@@ -42,7 +42,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 #endif
 
   PetscFunctionBegin;
-  if (part->use_edge_weights) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Party does not support edge weights");
+  PetscCheckFalse(part->use_edge_weights,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Party does not support edge weights");
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRMPI(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
   fd_stdout = dup(1);
-  if (pipe(fd_pipe)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
+  PetscCheckFalse(pipe(fd_pipe),PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
   dup2(fd_pipe[1],1);
   ierr = PetscMalloc1(SIZE_LOG,&mesg_log);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 
 #if defined(PETSC_HAVE_UNISTD_H)
   err = fflush(stdout);
-  if (PetscUnlikely(err)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
   count = read(fd_pipe[0],mesg_log,(SIZE_LOG-1)*sizeof(char));
   if (count<0) count = 0;
   mesg_log[count] = 0;
@@ -119,7 +119,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   }
   ierr = PetscFree(mesg_log);CHKERRQ(ierr);
 #endif
-  if (PetscUnlikely(ierr)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
+  PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
 
   ierr = PetscMalloc1(mat->rmap->N,&parttab);CHKERRQ(ierr);
   for (i=0; i<mat->rmap->N; i++) parttab[i] = part_party[i];
@@ -277,7 +277,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part,Pet
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  if (level<0.0 || level>1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.0-1.0]");
+  PetscCheckFalse(level<0.0 || level>1.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.0-1.0]");
   party->nbvtxcoarsed = (PetscInt)(part->adj->cmap->N * level);
   if (party->nbvtxcoarsed < 20) party->nbvtxcoarsed = 20;
   PetscFunctionReturn(0);

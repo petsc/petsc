@@ -226,7 +226,7 @@ int main(int argc, char **argv)
     case 6: ierr = test6(dm, &options);CHKERRQ(ierr); break;
     case 7: ierr = test7(dm, &options);CHKERRQ(ierr); break;
     case 8: ierr = test8(dm, &options);CHKERRQ(ierr); break;
-    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No such test: %D", options.test);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No such test: %D", options.test);
   }
 
   ierr = DMDestroy(&dm);CHKERRQ(ierr);

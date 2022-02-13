@@ -13,14 +13,14 @@ static PetscErrorCode TestGeneral(void)
   PetscFunctionBegin;
   ierr = ISCreateGeneral(comm,n,idx,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISLocate(is,key,&location);CHKERRQ(ierr);
-  if (location != keylocation) SETERRQ3(comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
+  PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
   ierr = ISLocate(is,nonkey,&location);CHKERRQ(ierr);
-  if (location >= 0) SETERRQ2(comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
+  PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
   ierr = ISSort(is);CHKERRQ(ierr);
   ierr = ISLocate(is,key,&location);CHKERRQ(ierr);
-  if (location != sortedlocation) SETERRQ3(comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
+  PetscCheckFalse(location != sortedlocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
   ierr = ISLocate(is,nonkey,&location);CHKERRQ(ierr);
-  if (location >= 0) SETERRQ2(comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
+  PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -36,14 +36,14 @@ static PetscErrorCode TestBlock(void)
   PetscFunctionBegin;
   ierr = ISCreateBlock(comm,bs,n,idx,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISLocate(is,key,&location);CHKERRQ(ierr);
-  if (location != keylocation) SETERRQ3(comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
+  PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
   ierr = ISLocate(is,nonkey,&location);CHKERRQ(ierr);
-  if (location >= 0) SETERRQ2(comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
+  PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
   ierr = ISSort(is);CHKERRQ(ierr);
   ierr = ISLocate(is,key,&location);CHKERRQ(ierr);
-  if (location != sortedlocation) SETERRQ3(comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
+  PetscCheckFalse(location != sortedlocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,sortedlocation,location);
   ierr = ISLocate(is,nonkey,&location);CHKERRQ(ierr);
-  if (location >= 0) SETERRQ2(comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
+  PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey,location);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -59,10 +59,10 @@ static PetscErrorCode TestStride(void)
   PetscFunctionBegin;
   ierr = ISCreateStride(comm,n,first,stride,&is);CHKERRQ(ierr);
   ierr = ISLocate(is,key,&location);CHKERRQ(ierr);
-  if (location != keylocation) SETERRQ3(comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
+  PetscCheckFalse(location != keylocation,comm,PETSC_ERR_PLIB,"Key %" PetscInt_FMT " not at %" PetscInt_FMT ": %" PetscInt_FMT,key,keylocation,location);
   for (i = 0; i < 2; i++) {
     ierr = ISLocate(is,nonkey[i],&location);CHKERRQ(ierr);
-    if (location >= 0) SETERRQ2(comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey[i],location);
+    PetscCheckFalse(location >= 0,comm,PETSC_ERR_PLIB,"Nonkey %" PetscInt_FMT " found at %" PetscInt_FMT,nonkey[i],location);
   }
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);

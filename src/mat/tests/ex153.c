@@ -20,7 +20,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
-  if (size!=1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uni-processor example only");
+  PetscCheckFalse(size!=1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uni-processor example only");
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF,&input);CHKERRQ(ierr);

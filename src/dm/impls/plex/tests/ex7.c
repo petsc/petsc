@@ -189,7 +189,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[2] = {0, 0};
@@ -226,7 +226,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[2] = {0, 0};
@@ -278,7 +278,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[2] = {0, 0};
@@ -317,7 +317,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[2] = {0, 0};
@@ -357,7 +357,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
       }
       break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);

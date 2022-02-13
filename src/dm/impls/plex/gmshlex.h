@@ -37,13 +37,13 @@
 
 #define GMSH_MAX_ORDER 10
 
-PETSC_STATIC_INLINE int GmshLexOrder_VTX(int p, int lex[], int node)
+static inline int GmshLexOrder_VTX(int p, int lex[], int node)
 {
   lex[0] = node++; (void)p;
   return node;
 }
 
-PETSC_STATIC_INLINE int GmshLexOrder_SEG(int p, int lex[], int node)
+static inline int GmshLexOrder_SEG(int p, int lex[], int node)
 {
 #define loop1(i) SL1(p, i)
 #define index(i) SI1(p, i)
@@ -62,7 +62,7 @@ PETSC_STATIC_INLINE int GmshLexOrder_SEG(int p, int lex[], int node)
 #undef index
 }
 
-PETSC_STATIC_INLINE int GmshLexOrder_TRI(int p, int lex[], int node)
+static inline int GmshLexOrder_TRI(int p, int lex[], int node)
 {
 #define loop1(i)    SL1(p, i)
 #define loop2(i, j) SL2(p, i, j)
@@ -90,7 +90,7 @@ PETSC_STATIC_INLINE int GmshLexOrder_TRI(int p, int lex[], int node)
 #undef index
 }
 
-PETSC_STATIC_INLINE int GmshLexOrder_QUA(int p, int lex[], int node)
+static inline int GmshLexOrder_QUA(int p, int lex[], int node)
 {
 #define loop1(i)    BL1(p, i)
 #define loop2(i, j) BL2(p, i, j)
@@ -119,7 +119,7 @@ PETSC_STATIC_INLINE int GmshLexOrder_QUA(int p, int lex[], int node)
 #undef index
 }
 
-PETSC_STATIC_INLINE int GmshLexOrder_TET(int p, int lex[], int node)
+static inline int GmshLexOrder_TET(int p, int lex[], int node)
 {
 #define loop1(i)       SL1(p, i)
 #define loop2(i, j)    SL2(p, i, j)
@@ -163,7 +163,7 @@ PETSC_STATIC_INLINE int GmshLexOrder_TET(int p, int lex[], int node)
 #undef index
 }
 
-PETSC_STATIC_INLINE int GmshLexOrder_HEX(int p, int lex[], int node)
+static inline int GmshLexOrder_HEX(int p, int lex[], int node)
 {
 #define loop1(i)       BL1(p, i)
 #define loop2(i, j)    BL2(p, i, j)
@@ -219,7 +219,7 @@ PETSC_STATIC_INLINE int GmshLexOrder_HEX(int p, int lex[], int node)
 #undef index
 }
 
-PETSC_STATIC_INLINE int GmshLexOrder_PRI(int p, int lex[], int node)
+static inline int GmshLexOrder_PRI(int p, int lex[], int node)
 {
 #define loop1(i)       BL1(p, i)
 #define loops(i, j)    SL2(p, i, j)
@@ -286,7 +286,7 @@ PETSC_STATIC_INLINE int GmshLexOrder_PRI(int p, int lex[], int node)
 #undef index
 }
 
-PETSC_STATIC_INLINE int GmshLexOrder_PYR(int p, int lex[], int node)
+static inline int GmshLexOrder_PYR(int p, int lex[], int node)
 {
   int i, m = GmshNumNodes_PYR(p);
   for (i=0; i<m; ++i) {lex[i] = node++; } /* TODO */

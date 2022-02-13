@@ -325,7 +325,7 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
       exactFuncs[0] = trig_u;
       exactFuncs[1] = trig_p;
       break;
-    default: SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", SolTypes[PetscMin(user->sol, SOL_UNKNOWN)], user->sol);
+    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", SolTypes[PetscMin(user->sol, SOL_UNKNOWN)], user->sol);
   }
   ierr = PetscDSSetResidual(ds, 1, f0_p, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL,  NULL,  g3_uu);CHKERRQ(ierr);
@@ -372,7 +372,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscIn
   PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
-  if (origField != 1) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
+  PetscCheckFalse(origField != 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Field %D should be 1 for pressure", origField);
   funcs[field] = one;
   {
     PetscDS ds;

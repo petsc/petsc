@@ -396,7 +396,7 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
         case INSERT_VALUES:
           stash->array[j] = stash->array[i];
           break;
-        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",stash->insertmode);
+        default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",stash->insertmode);
         }
       } else {
         j++;
@@ -424,7 +424,7 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
         case INSERT_VALUES:
           for (k=0; k<bs; k++) arr[j*bs+k] = stash->array[perm[i]*bs+k];
           break;
-        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",stash->insertmode);
+        default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",stash->insertmode);
         }
       } else {
         j++;
@@ -447,7 +447,7 @@ PetscErrorCode VecStashGetOwnerList_Private(VecStash *stash,PetscLayout map,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (bs != 1 && bs != map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Stash block size %" PetscInt_FMT " does not match layout block size %" PetscInt_FMT,bs,map->bs);
+  PetscCheckFalse(bs != 1 && bs != map->bs,map->comm,PETSC_ERR_PLIB,"Stash block size %" PetscInt_FMT " does not match layout block size %" PetscInt_FMT,bs,map->bs);
   ierr = PetscSegBufferCreate(sizeof(PetscMPIInt),50,&seg);CHKERRQ(ierr);
   *nowners = 0;
   for (i=0,r=-1; i<stash->n; i++) {

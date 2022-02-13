@@ -779,7 +779,7 @@ int main(int argc,char **argv)
   PetscFunctionBeginUser;
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&user.vec_q);CHKERRQ(ierr);
 

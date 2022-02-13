@@ -55,7 +55,7 @@ int main(int argc,char **args)
 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
+  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = N;
@@ -85,7 +85,7 @@ int main(int argc,char **args)
       /* Test Cholesky Factorization */
       PetscBool flg;
       ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A must be symmetric for Cholesky factorization");
+      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A must be symmetric for Cholesky factorization");
 
       ierr = PetscPrintf(PETSC_COMM_WORLD,"test Cholesky factorization\n");CHKERRQ(ierr);
       ierr = MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);

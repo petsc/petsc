@@ -216,7 +216,7 @@ PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
     yptr = thrust::device_pointer_cast(yarray);
     thrust::transform(VecCUDAThrustPolicy(win),xptr,xptr+n,yptr,wptr,thrust::divides<PetscScalar>());
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(n);CHKERRQ(ierr);
@@ -534,7 +534,7 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
   PetscFunctionBegin;
   ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
-  if (nv <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of vectors provided to VecMDot_SeqCUDA not positive.");
+  PetscCheckFalse(nv <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of vectors provided to VecMDot_SeqCUDA not positive.");
   /* Handle the case of local size zero first */
   if (!xin->map->n) {
     for (i=0; i<nv; ++i) z[i] = 0;
@@ -692,7 +692,7 @@ PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
       xptr = thrust::device_pointer_cast(xarray);
       thrust::fill(xptr,xptr+n,alpha);
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
     ierr = PetscLogCpuToGpuScalar(sizeof(PetscScalar));CHKERRQ(ierr);
   }
@@ -724,7 +724,7 @@ PetscErrorCode VecReciprocal_SeqCUDA(Vec v)
     auto xptr = thrust::device_pointer_cast(x);
     thrust::transform(VecCUDAThrustPolicy(v),xptr,xptr+n,xptr,PetscScalarReciprocal());
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArray(v,&x);CHKERRQ(ierr);
@@ -963,7 +963,7 @@ PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
     yptr = thrust::device_pointer_cast(yarray);
     thrust::transform(VecCUDAThrustPolicy(win),xptr,xptr+n,yptr,wptr,thrust::multiplies<PetscScalar>());
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -1086,7 +1086,7 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
     xptr = thrust::device_pointer_cast(xarray);
     thrust::transform(VecCUDAThrustPolicy(xin),xptr,xptr+n,xptr,conjugate());
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArray(xin,&xarray);CHKERRQ(ierr);
@@ -1096,7 +1096,7 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v,Vec w,PetscBool read)
+static inline PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v,Vec w,PetscBool read)
 {
   PetscErrorCode ierr;
   cudaError_t    err;
@@ -1153,7 +1153,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetLocalVectorK_SeqCUDA(Vec v,Vec w,PetscB
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreLocalVectorK_SeqCUDA(Vec v,Vec w,PetscBool read)
+static inline PetscErrorCode VecRestoreLocalVectorK_SeqCUDA(Vec v,Vec w,PetscBool read)
 {
   PetscErrorCode ierr;
   cudaError_t    err;
@@ -1305,7 +1305,7 @@ PetscErrorCode VecMax_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
       res = thrust::reduce(VecCUDAThrustPolicy(v),zibit,zibit+n,res,petscmaxi());
 #endif
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
     *m = res.get<0>();
     *p = res.get<1>();
@@ -1317,7 +1317,7 @@ PetscErrorCode VecMax_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
       *m = thrust::reduce(VecCUDAThrustPolicy(v),avpt,avpt+n,PETSC_MIN_REAL,petscmax());
 #endif
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
@@ -1352,7 +1352,7 @@ PetscErrorCode VecMin_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
       res = thrust::reduce(VecCUDAThrustPolicy(v),zibit,zibit+n,res,petscmini());
 #endif
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
     *m = res.get<0>();
     *p = res.get<1>();
@@ -1364,7 +1364,7 @@ PetscErrorCode VecMin_SeqCUDA(Vec v, PetscInt *p, PetscReal *m)
       *m = thrust::reduce(VecCUDAThrustPolicy(v),avpt,avpt+n,PETSC_MAX_REAL,petscmin());
 #endif
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
@@ -1387,7 +1387,7 @@ PetscErrorCode VecSum_SeqCUDA(Vec v,PetscScalar *sum)
   try {
     *sum = thrust::reduce(VecCUDAThrustPolicy(v),dptr,dptr+n,PetscScalar(0.0));
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArrayRead(v,&a);CHKERRQ(ierr);
@@ -1417,7 +1417,7 @@ PetscErrorCode VecShift_SeqCUDA(Vec v,PetscScalar shift)
   try {
     thrust::transform(VecCUDAThrustPolicy(v),dptr,dptr+n,dptr,petscshift(shift)); /* in-place transform */
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecCUDARestoreArray(v,&a);CHKERRQ(ierr);

@@ -190,7 +190,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = PetscObjectGetOptions((PetscObject)ts,&optionscopy);CHKERRQ(ierr);
-  if (options != optionscopy) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"PetscObjectGetOptions() failed");
+  PetscCheckFalse(options != optionscopy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"PetscObjectGetOptions() failed");
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);

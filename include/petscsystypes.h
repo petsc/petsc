@@ -2,6 +2,7 @@
 #define PETSCSYSTYPES_H
 
 #include <petscconf.h>
+#include <petscconf_poison.h>
 #include <petscfix.h>
 #include <stddef.h>
 

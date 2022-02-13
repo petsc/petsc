@@ -15,7 +15,7 @@ static PetscErrorCode DMPlexTransformView_Alfeld(DMPlexTransform tr, PetscViewer
     ierr = PetscObjectGetName((PetscObject) tr, &name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Alfeld refinement %s\n", name ? name : "");CHKERRQ(ierr);
   } else {
-    SETERRQ1(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
+    SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -142,7 +142,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
         *rnew = tri_tri[(so+3)*6 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, tri_tri[(so+3)*6 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
   } else if (dim == 3 && sct == DM_POLYTOPE_TETRAHEDRON) {
     switch (tct) {
@@ -159,7 +159,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
         *rnew = tet_tet[(so+12)*8 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, tet_tet[(so+12)*8 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
   } else {
     ierr = DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew);CHKERRQ(ierr);

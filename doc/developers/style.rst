@@ -208,15 +208,12 @@ C Formatting
 
 #. Do not leave sections of commented-out code in the source files.
 
-#. Use classic block comments (``/* Comment */``) for multi-line comments and
-   for *all* comments in headers.  Single-line comments in source files (*not*
-   headers) may use the C99/C++ style (``// Comment``).  The rationale is that
-   it must be possible for users to build applications using strict ``-std=c89``
-   even though PETSc (since v3.14) uses select C99 features internally.
+#. Use classic block comments (``/* Comment */``) for multi-line comments, and ``//
+   Comment`` for single-line comments in source files.
 
 #. All variables must be declared at the beginning of the code block (C89
-   style), never mixed in with code.  When variables are only used in a limited
-   scope, it is encouraged to declare them in that scope.  For example::
+   style), never mixed in with code. When variables are only used in a limited
+   scope, it is encouraged to declare them in that scope. For example::
 
      if (cond) {
        PetscScalar *tmp;
@@ -280,8 +277,18 @@ C Usage
    ``if (flg == PETSC_TRUE)`` or ``if (flg == PETSC_FALSE)``. Instead, use
    ``if (!v)`` or ``if (flg)`` or ``if (!flg)``.
 
-#. Do not use ``#ifdef`` or ``#ifndef``. Rather, use ``#if defined(...``
-   or ``#if !defined(...``.  Better, use ``PetscDefined()`` (see below).
+#. Do not use ``#ifdef`` or ``#ifndef``. Rather, use ``#if defined(...`` or ``#if
+   !defined(...``.  Better, use ``PetscDefined()`` (see below). The only exception to this
+   rule is for header guards, where the ``#ifndef`` form is preferred (see below).
+
+#. Header guard macros should include the full name and end in ``_FILE_EXTENSION`` of the
+   file and be formed using ``#ifndef``. For example::
+
+     // my_petsc_header_file.h
+     #ifndef MY_PETSC_HEADER_FILE_H
+     #define MY_PETSC_HEADER_FILE_H
+
+     #endif // MY_PETSC_HEADER_FILE_H
 
 #. Never use system random number generators such as ``rand()`` in PETSc
    code or examples because these can produce different results on
@@ -289,24 +296,59 @@ C Usage
    use ``PetscRandom`` which produces the exact same results regardless
    of system it is used on.
 
-#. Variadic macros may be used in PETSc source files, but must work with MSVC
-   and must not be required in public headers (which must be usable with strict
-   ``-std=c89``).  Most compilers have conforming implementations of the
-   C99/C++11 rules for ``__VA_ARGS__``, but MSVC's implementation is not
-   conforming and may need workarounds.  See ``PetscDefined()`` for an example
-   of how to work around MSVC's limitations to write a macro that is usable in
-   both.
+#. Variadic macros may be used in PETSc, but must work with MSVC v1900+ (Visual Studio
+   2015). Most compilers have conforming implementations of the C99/C++11 rules for
+   ``__VA_ARGS__``, but MSVC's implementation is not conforming and may need workarounds.
+   See ``PetscDefined()`` for an example of how to work around MSVC's limitations to write
+   a macro that is usable in both.
 
-#. Do not use language features that are not in the intersection of C99, C++11,
-   and MSVC.  Examples of such features include designated initializers and
-   variable-length arrays.  Note that variable-length arrays (including
-   VLA-pointers) are not supported in C++ and were made optional in C11 and that
-   designated initializers are not in C++.
+#. Do not use language features that are not in the intersection of C99, C++11, and MSVC
+   v1900+ (Visual Studio 2015).  Examples of such features include variable-length arrays.
+   Note that variable-length arrays (including VLA-pointers) are not supported in C++ and
+   were made optional in C11. You may use designated initializers via the
+   ``PetscDesignatedInitializer()`` macro.
 
 .. _usage_of_petsc_functions_and_macros:
 
 Usage of PETSc Functions and Macros
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. Lengthy conditional preprocessor blocks should mark any ``#else`` or ``#endif``
+   directives with a comment containing (or explaining) either the boolean condition or
+   the name of the macro if the first directive is testing whether one is defined. One
+   should be able to read any part of the macro block and be able to find or deduce the
+   initial ``#if``. That is::
+
+     #if defined(MY_MACRO)
+     // many lines of code
+     #else // MY_MACRO (use name of macro)
+     // many more lines of code
+     #endif // MY_MACRO
+
+     #if MY_MACRO > 10
+     // code
+     #else // MY_MACRO < 10
+     // more code
+     #endif // MY_MACRO > 10
+
+#. Nested preprocessor blocks should be indent the text (*not* the ``#``) following the
+   normal indentation rules outlined above. For example::
+
+     // Right
+     #if MY_VARIABLE > 10
+     #  if MY_OTHER_VARIABLE > 15
+     #    define BIG_VARIABLE 1
+
+
+     // Wrong
+     #if MY_VARIABLE > 10
+       #if MY_OTHER_VARIABLE > 15
+         #define BIG_VARIABLE 1
+
+     // Wrong
+     #if MY_VARIABLE > 10
+     #if MY_OTHER_VARIABLE > 15
+     #define BIG_VARIABLE 1
 
 #. Public PETSc include files, ``petsc*.h``, should not reference
    private PETSc ``petsc/private/*impl.h`` include files.

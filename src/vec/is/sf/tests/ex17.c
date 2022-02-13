@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"The test can only run with two MPI ranks");
+  PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"The test can only run with two MPI ranks");
 
   /* Test PetscSF */
   ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   ierr = PetscSFReduceBegin(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM);CHKERRQ(ierr); /* rank 1->0, add leafdata to rootdata */
   ierr = PetscSFReduceEnd(sf,MPI_SIGNED_CHAR,leafdata,rootdata,MPI_SUM);CHKERRQ(ierr);
   if (!rank) {
-    if (rootdata[0] != 22 || rootdata[nroots-1] != 24) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF: wrong results");
+    PetscCheckFalse(rootdata[0] != 22 || rootdata[nroots-1] != 24,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF: wrong results");
   }
 
   ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(vscat,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   ierr = VecGetArrayRead(x,&xv);CHKERRQ(ierr);
-  if (xv[0] != 6.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"VecScatter: wrong results");
+  PetscCheckFalse(xv[0] != 6.0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"VecScatter: wrong results");
   ierr = VecRestoreArrayRead(x,&xv);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);

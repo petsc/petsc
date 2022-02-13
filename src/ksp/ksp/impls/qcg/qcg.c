@@ -24,7 +24,7 @@ PetscErrorCode  KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (delta < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
+  PetscCheckFalse(delta < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   ierr = PetscTryMethod(ksp,"KSPQCGSetTrustRegionRadius_C",(KSP,PetscReal),(ksp,delta));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -113,8 +113,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  if (ksp->transpose_solve) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Currently does not support transpose solve");
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(ksp->transpose_solve,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Currently does not support transpose solve");
 
   ksp->its = 0;
   maxit    = ksp->max_it;
@@ -128,9 +128,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   X        = ksp->vec_sol;
   B        = ksp->vec_rhs;
 
-  if (pcgP->delta <= dzero) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
+  PetscCheckFalse(pcgP->delta <= dzero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
   ierr = KSPGetPCSide(ksp,&side);CHKERRQ(ierr);
-  if (side != PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
+  PetscCheckFalse(side != PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
   ierr = VecSet(W,0.0);CHKERRQ(ierr);  /* W = 0 */
@@ -199,9 +199,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
       pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
       ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
       if (!i) {
-        ierr = PetscInfo1(ksp,"negative curvature: delta=%g\n",(double)pcgP->delta);CHKERRQ(ierr);
+        ierr = PetscInfo(ksp,"negative curvature: delta=%g\n",(double)pcgP->delta);CHKERRQ(ierr);
       } else {
-        ierr = PetscInfo3(ksp,"negative curvature: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta);CHKERRQ(ierr);
+        ierr = PetscInfo(ksp,"negative curvature: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta);CHKERRQ(ierr);
       }
 
     } else {
@@ -229,9 +229,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         pcgP->ltsnrm = pcgP->delta;
         ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED; /* convergence along constrained step */
         if (!i) {
-          ierr = PetscInfo1(ksp,"constrained step: delta=%g\n",(double)pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo(ksp,"constrained step: delta=%g\n",(double)pcgP->delta);CHKERRQ(ierr);
         } else {
-          ierr = PetscInfo3(ksp,"constrained step: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo(ksp,"constrained step: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta);CHKERRQ(ierr);
         }
 
       } else {
@@ -249,7 +249,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) {                 /* convergence for */
-          ierr = PetscInfo3(ksp,"truncated step: step=%g, rnrm=%g, delta=%g\n",(double)PetscRealPart(step),(double)rnrm,(double)pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo(ksp,"truncated step: step=%g, rnrm=%g, delta=%g\n",(double)PetscRealPart(step),(double)rnrm,(double)pcgP->delta);CHKERRQ(ierr);
         }
       }
     }

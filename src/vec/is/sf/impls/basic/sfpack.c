@@ -460,7 +460,7 @@ DEF_DumbType(DumbInt,4,0)
 DEF_DumbType(DumbInt,8,0)
 
 #if !defined(PETSC_HAVE_MPI_TYPE_DUP)
-PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
+static inline int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
 {
   int ierr;
   ierr = MPI_Type_contiguous(1,datatype,newtype); if (ierr) return ierr;
@@ -630,7 +630,7 @@ PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,
     if (rootdata || leafdata) {
       for (p=&bas->inuse; (link=*p); p=&link->next) {
         ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
-        if (match && (rootdata == link->rootdata) && (leafdata == link->leafdata)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Overlapped PetscSF with the same rootdata(%p), leafdata(%p) and data type. Undo the overlapping to avoid the error.",rootdata,leafdata);
+        PetscCheckFalse(match && (rootdata == link->rootdata) && (leafdata == link->leafdata),PETSC_COMM_SELF,PETSC_ERR_SUP,"Overlapped PetscSF with the same rootdata(%p), leafdata(%p) and data type. Undo the overlapping to avoid the error.",rootdata,leafdata);
       }
     }
   }
@@ -746,7 +746,7 @@ PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf,PetscSFLink link,MPI_Datatype un
   } else {
     MPI_Aint lb,nbyte;
     ierr = MPI_Type_get_extent(unit,&lb,&nbyte);CHKERRMPI(ierr);
-    if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
+    PetscCheckFalse(lb != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld",(long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
       if      (nbyte == 4) PackInit_DumbType_char_4_1(link); else if (nbyte%4 == 0) PackInit_DumbType_char_4_0(link);
       else if (nbyte == 2) PackInit_DumbType_char_2_1(link); else if (nbyte%2 == 0) PackInit_DumbType_char_2_0(link);
@@ -883,7 +883,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOp(PetscSFLink link,PetscMemType mtype,MPI_
 {
   PetscFunctionBegin;
   *FetchAndOp = NULL;
-  if (op != MPI_SUM && op != MPIU_SUM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op in FetchAndOp");
+  PetscCheckFalse(op != MPI_SUM && op != MPIU_SUM,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op in FetchAndOp");
   if (PetscMemTypeHost(mtype)) *FetchAndOp = link->h_FetchAndAdd;
 #if defined(PETSC_HAVE_DEVICE)
   else if (PetscMemTypeDevice(mtype) && !atomic) *FetchAndOp = link->d_FetchAndAdd;
@@ -896,7 +896,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link,PetscMemType mtype
 {
   PetscFunctionBegin;
   *FetchAndOpLocal = NULL;
-  if (op != MPI_SUM && op != MPIU_SUM) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op in FetchAndOp");
+  PetscCheckFalse(op != MPI_SUM && op != MPIU_SUM,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for MPI_Op in FetchAndOp");
   if (PetscMemTypeHost(mtype)) *FetchAndOpLocal = link->h_FetchAndAddLocal;
 #if defined(PETSC_HAVE_DEVICE)
   else if (PetscMemTypeDevice(mtype) && !atomic) *FetchAndOpLocal = link->d_FetchAndAddLocal;
@@ -905,7 +905,7 @@ PetscErrorCode PetscSFLinkGetFetchAndOpLocal(PetscSFLink link,PetscMemType mtype
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
+static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
 {
   PetscErrorCode ierr;
   PetscLogDouble flops;
@@ -922,7 +922,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackRootData(PetscS
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
+static inline PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscSF sf,PetscSFLink link,PetscSFScope scope,MPI_Op op)
 {
   PetscLogDouble flops;
   PetscErrorCode ierr;
@@ -951,7 +951,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkLogFlopsAfterUnpackLeafData(PetscS
   Output Parameters:
   .data    - The data to unpack to
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *indices,void *data,const void *buf,MPI_Op op)
+static inline PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt start,const PetscInt *indices,void *data,const void *buf,MPI_Op op)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
@@ -973,7 +973,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkUnpackDataWithMPIReduceLocal(Petsc
 #endif
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt srcStart,const PetscInt *srcIdx,const void *src,PetscInt dstStart,const PetscInt *dstIdx,void *dst,MPI_Op op)
+static inline PetscErrorCode PetscSFLinkScatterDataWithMPIReduceLocal(PetscSF sf,PetscSFLink link,PetscInt count,PetscInt srcStart,const PetscInt *srcIdx,const void *src,PetscInt dstStart,const PetscInt *dstIdx,void *dst,MPI_Op op)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
@@ -1363,7 +1363,7 @@ finish:
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscSFDestroyPackOpt(PetscSF sf,PetscMemType mtype,PetscSFPackOpt *out)
+static inline PetscErrorCode PetscSFDestroyPackOpt(PetscSF sf,PetscMemType mtype,PetscSFPackOpt *out)
 {
   PetscErrorCode ierr;
   PetscSFPackOpt opt = *out;

@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"This is a uniprocessor example only!");
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-r",&r,NULL);CHKERRQ(ierr);
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-vsize",&vsize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-order",NULL,&order);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-array_view",&vwr,NULL,NULL);CHKERRQ(ierr);
-  if (n<1 || r<1 || d<1 || d>n) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Wrong input n=%" PetscInt_FMT ",r=%" PetscInt_FMT ",d=%" PetscInt_FMT ". They must be >=1 and n>=d",n,r,d);
+  PetscCheckFalse(n<1 || r<1 || d<1 || d>n,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Wrong input n=%" PetscInt_FMT ",r=%" PetscInt_FMT ",d=%" PetscInt_FMT ". They must be >=1 and n>=d",n,r,d);
 
   ierr = PetscCalloc6(n,&X,n,&X1,n,&XR,n,&XSO,n,&Y,n,&Z);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
@@ -84,9 +84,9 @@ int main(int argc,char **argv)
     ierr = PetscSortInt(n,X);CHKERRQ(ierr);
     ierr = PetscTimeAdd(&time);CHKERRQ(ierr);
 
-    for (i=0; i<n-1; i++) {if (X[i] > X[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSortInt() produced wrong results!");}
-    for (i=0; i<n; i++) {if (X[i] != X1[i]) SETERRQ7(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscIntSortSemiOrdered() rep %" PetscInt_FMT " X1[%" PetscInt_FMT "]:%" PetscInt_FMT " does not match PetscSortInt() X[%" PetscInt_FMT "]:%" PetscInt_FMT "! randomSeed %lu, orderedSeed %lu",l,i,X1[i],i,X[i],seedr,seedo);}
-    for (i=0; i<n-1; i++) {if (X1[i] > X1[i+1]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscIntSortSemiOrdered() produced wrong results! randomSeed %lu orderedSeed %lu",seedr,seedo);}
+    for (i=0; i<n-1; i++) {PetscCheckFalse(X[i] > X[i+1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSortInt() produced wrong results!");}
+    for (i=0; i<n; i++) {PetscCheckFalse(X[i] != X1[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscIntSortSemiOrdered() rep %" PetscInt_FMT " X1[%" PetscInt_FMT "]:%" PetscInt_FMT " does not match PetscSortInt() X[%" PetscInt_FMT "]:%" PetscInt_FMT "! randomSeed %lu, orderedSeed %lu",l,i,X1[i],i,X[i],seedr,seedo);}
+    for (i=0; i<n-1; i++) {PetscCheckFalse(X1[i] > X1[i+1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscIntSortSemiOrdered() produced wrong results! randomSeed %lu orderedSeed %lu",seedr,seedo);}
     ierr = PetscArrayzero(X,n);CHKERRQ(ierr);
     ierr = PetscArrayzero(X1,n);CHKERRQ(ierr);
   }
@@ -126,9 +126,9 @@ int main(int argc,char **argv)
     ierr = PetscTimeAdd(&time);CHKERRQ(ierr);
 
     for (i=0; i<n-1; i++) {if (Y[i] > Y[i+1]) {PetscIntView(n,Y,0);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSortIntWithArray() produced wrong results!");}}
-    for (i=0; i<n-1; i++) {if (W[i] > W[i+1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSortIntWithArrayPair() produced wrong results!");}
-    for (i=0; i<n; i++) {if (X1P[i] != X[i]) SETERRQ7(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscIntSortSemiOrdered() rep %" PetscInt_FMT " X1[%" PetscInt_FMT "]:%" PetscInt_FMT " does not match PetscSortIntWithArray() X[%" PetscInt_FMT "]:%" PetscInt_FMT "! randomSeed %lu, orderedSeed %lu",l,i,X1[i],i,X[i],seedr,seedo);}
-    for (i=0; i<n-1; i++) {if (X1[i] > X1[i+1]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscIntSortSemiOrdered() produced wrong results! randomSeed %lu orderedSeed %lu",seedr,seedo);}
+    for (i=0; i<n-1; i++) {PetscCheckFalse(W[i] > W[i+1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSortIntWithArrayPair() produced wrong results!");}
+    for (i=0; i<n; i++) {PetscCheckFalse(X1P[i] != X[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscIntSortSemiOrdered() rep %" PetscInt_FMT " X1[%" PetscInt_FMT "]:%" PetscInt_FMT " does not match PetscSortIntWithArray() X[%" PetscInt_FMT "]:%" PetscInt_FMT "! randomSeed %lu, orderedSeed %lu",l,i,X1[i],i,X[i],seedr,seedo);}
+    for (i=0; i<n-1; i++) {PetscCheckFalse(X1[i] > X1[i+1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscIntSortSemiOrdered() produced wrong results! randomSeed %lu orderedSeed %lu",seedr,seedo);}
     ierr = PetscArrayzero(X1,n);CHKERRQ(ierr);
     ierr = PetscArrayzero(X1P,n);CHKERRQ(ierr);
     ierr = PetscArrayzero(X,n);CHKERRQ(ierr);

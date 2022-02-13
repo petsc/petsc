@@ -90,16 +90,13 @@ The macro ``CHKERRQ()`` is defined by
    :start-at: #define CHKERRQ
    :end-at: #define CHKERRQ
 
-In addition to ``SETERRQ()``, the macros ``SETERRQ1()``, ``SETERRQ2()``,
-``SETERRQ3()``, and ``SETERRQ4()`` allow one to provide additional
-arguments to a formatted message string, for example,
+The message passed to ``SETERRQ()`` is treated as a ``printf()``-style
+format string, with all additional parameters passed after the string as
+its arguments. For example:
 
 .. code-block::
 
-    SETERRQ2(comm,PETSC_ERR,"Iteration overflow: its %D norm %g",its,(double)norm);
-
-The reason for the numbered format is that C89 CPP macros cannot handle
-a variable number of arguments.
+    SETERRQ(comm,PETSC_ERR,"Iteration overflow: its %D norm %g",its,(double)norm);
 
 Error Handlers
 ~~~~~~~~~~~~~~
@@ -161,7 +158,7 @@ C++ Exceptions
 
 In PETSc code, when one calls C++ functions that do not return with an error code but might
 instead throw C++ exceptions, one can use ``CHKERRCXX(func)``, which catches the exceptions
-in *func* and then calls ``SETERRQ1()``.  The macro ``CHKERRCXX(func)`` is given by
+in *func* and then calls ``SETERRQ()``.  The macro ``CHKERRCXX(func)`` is given by
 
 .. literalinclude:: /../include/petscerror.h
    :language: c

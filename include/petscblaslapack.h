@@ -124,7 +124,7 @@ BLAS_EXTERN void LAPACKgels_(const char*,const PetscBLASInt*,const PetscBLASInt*
 
 /* handle complex dot() with special code */
 #if defined(PETSC_USE_COMPLEX)
-PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
+static inline PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
 {
   PetscScalar sum=0.0;
   PetscInt    i,j,k;
@@ -135,7 +135,7 @@ PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar
   }
   return sum;
 }
-PETSC_STATIC_INLINE PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
+static inline PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
 {
   PetscScalar sum=0.0;
   PetscInt    i,j,k;

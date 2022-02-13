@@ -138,7 +138,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,vo
       case IS_COLORING_GLOBAL:
         ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))SNESComputeFunction_DMLocal,dmlocalsnes);CHKERRQ(ierr);
         break;
-      default: SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"No support for coloring type '%s'",ISColoringTypes[dm->coloringtype]);
+      default: SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"No support for coloring type '%s'",ISColoringTypes[dm->coloringtype]);
       }
       ierr = PetscObjectSetOptionsPrefix((PetscObject)fdcoloring,((PetscObject)dm)->prefix);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);

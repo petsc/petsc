@@ -28,7 +28,7 @@ int main(int argc,char **argv)
 
   if (isreplace)  {op = MPI_REPLACE; mpiopname = "MPI_REPLACE";}
   else if (issum) {op = MPIU_SUM;     mpiopname = "MPI_SUM";}
-  else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Unsupported argument (%s) to -op, which must be 'replace' or 'sum'",opname);
+  else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Unsupported argument (%s) to -op, which must be 'replace' or 'sum'",opname);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);

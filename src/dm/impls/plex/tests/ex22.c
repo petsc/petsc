@@ -99,7 +99,7 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
         }
       }
       ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,")\n",&count);CHKERRQ(ierr);
-      ierr = PetscInfo1(dm,"%s",strBuf);CHKERRQ(ierr);
+      ierr = PetscInfo(dm,"%s",strBuf);CHKERRQ(ierr);
     }
   }
 
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
             ierr = DMSetCoordinatesLocal(dm,localCoords);CHKERRQ(ierr);
             ierr = VecDestroy(&localCoords);CHKERRQ(ierr);
           }
-          ierr = PetscInfo4(dm,"Testing %s%D %DD mesh embedded in %DD\n",isSimplex ? "P" : "Q" , order, dim, dimC);CHKERRQ(ierr);
+          ierr = PetscInfo(dm,"Testing %s%D %DD mesh embedded in %DD\n",isSimplex ? "P" : "Q" , order, dim, dimC);CHKERRQ(ierr);
           ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
           ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
           if (dimC > dim) { /* reembed in higher dimension */
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
               PetscInt nDof;
 
               ierr = PetscSectionGetDof(sec,p,&nDof);CHKERRQ(ierr);
-              if (nDof % dim) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
+              PetscCheckFalse(nDof % dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
               ierr = PetscSectionSetDof(newSec,p,(nDof/dim)*dimC);CHKERRQ(ierr);
               ierr = PetscSectionSetFieldDof(newSec,p,0,(nDof/dim)*dimC);CHKERRQ(ierr);
             }

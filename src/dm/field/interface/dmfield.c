@@ -127,7 +127,7 @@ PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(DMFieldList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested DMField type %s",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested DMField type %s",type);
   /* Destroy the previous private DMField context */
   if (field->ops->destroy) {
     ierr = (*(field)->ops->destroy)(field);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
   if (H) PetscValidPointer(H,6);
   if (field->ops->evaluate) {
     ierr = (*field->ops->evaluate) (field, points, datatype, B, D, H);CHKERRQ(ierr);
-  } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
+  } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
 
@@ -302,7 +302,7 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
   if (H) PetscValidPointer(H,7);
   if (field->ops->evaluateFE) {
     ierr = (*field->ops->evaluateFE) (field, cellIS, points, datatype, B, D, H);CHKERRQ(ierr);
-  } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
+  } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
 
@@ -345,7 +345,7 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
   if (H) PetscValidPointer(H,6);
   if (field->ops->evaluateFV) {
     ierr = (*field->ops->evaluateFV) (field, cellIS, datatype, B, D, H);CHKERRQ(ierr);
-  } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
+  } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +527,7 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   ierr = DMFieldGetDegree(field,pointIS,NULL,&maxDegree);CHKERRQ(ierr);
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
   if (faceData) {
-    if (!field->ops->computeFaceData) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data");
+    PetscCheckFalse(!field->ops->computeFaceData,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data");
     ierr = (*field->ops->computeFaceData) (field, pointIS, quad, g);CHKERRQ(ierr);
   }
   *geom = g;

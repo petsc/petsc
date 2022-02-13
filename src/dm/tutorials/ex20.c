@@ -148,7 +148,7 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
     ierr = PetscFree(trivert);CHKERRQ(ierr);
     ierr = PetscFree(tricells);CHKERRQ(ierr);
   }
-  if (dim == 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 2D PLEX example supported");
+  PetscCheckFalse(dim == 3,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 2D PLEX example supported");
 
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(celldm,0,NULL,&distributedMesh);CHKERRQ(ierr);

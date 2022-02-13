@@ -29,7 +29,7 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len,char 
     f1 = 3;
     f2 = 3;
     f3 = 1;
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
 
   ierr = PetscCalloc1(f0*dof0,&stencil0);CHKERRQ(ierr);
   ierr = PetscCalloc1(f1*dof1,&stencil1);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len,char 
         stencil3[d].loc = DMSTAG_ELEMENT;
         stencil3[d].c = d;
       }
-    } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
 
     cnt = 0;
     if (dof0 != 0) {
@@ -208,7 +208,7 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len,char 
         ++cnt;
       }
     }
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %" PetscInt_FMT,dim);
   if (dmlist) {
     ierr = PetscMalloc1(n_fields,dmlist);CHKERRQ(ierr);
     cnt = 0;
@@ -280,7 +280,7 @@ static PetscErrorCode DMCreateGlobalVector_Stag(DM dm,Vec *vec)
   DM_Stag * const stag = (DM_Stag*)dm->data;
 
   PetscFunctionBegin;
-  if (PetscUnlikely(!dm->setupcalled)) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),stag->entries,PETSC_DECIDE,vec);CHKERRQ(ierr);
   ierr = VecSetDM(*vec,dm);CHKERRQ(ierr);
   /* Could set some ops, as DMDA does */
@@ -294,7 +294,7 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm,Vec *vec)
   DM_Stag * const stag = (DM_Stag*)dm->data;
 
   PetscFunctionBegin;
-  if (PetscUnlikely(!dm->setupcalled)) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = VecCreateSeq(PETSC_COMM_SELF,stag->entriesGhost,vec);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vec,stag->entriesPerElement);CHKERRQ(ierr);
   ierr = VecSetDM(*vec,dm);CHKERRQ(ierr);
@@ -310,7 +310,7 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
   ISLocalToGlobalMapping ltogmap;
 
   PetscFunctionBegin;
-  if (PetscUnlikely(!dm->setupcalled)) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMGetMatType(dm,&mat_type);CHKERRQ(ierr);
   ierr = DMStagGetEntries(dm,&entries);CHKERRQ(ierr);
@@ -352,7 +352,7 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
       case 3:
         ierr = DMCreateMatrix_Stag_3D_AIJ_Assemble(dm,preallocator);CHKERRQ(ierr);
         break;
-      default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
+      default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
     }
     ierr = MatPreallocatorPreallocate(preallocator,fill_with_zeros,*mat);CHKERRQ(ierr);
     ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
@@ -368,14 +368,14 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
         case 3:
           ierr = DMCreateMatrix_Stag_3D_AIJ_Assemble(dm,*mat);CHKERRQ(ierr);
           break;
-        default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
+        default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %" PetscInt_FMT,dim);
       }
     }
     /* Note: GPU-related logic, e.g. at the end of DMCreateMatrix_DA_1d_MPIAIJ, is not included here
        but might be desirable */
   } else if (is_shell) {
     /* nothing more to do */
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for Mattype %s",mat_type);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for Mattype %s",mat_type);
   PetscFunctionReturn(0);
 }
 
@@ -394,7 +394,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   ierr = DMGetType(dm2,&type2);CHKERRQ(ierr);
   ierr = PetscStrcmp(DMSTAG,type2,&sameType);CHKERRQ(ierr);
   if (!sameType) {
-    ierr = PetscInfo1((PetscObject)dm,"DMStag compatibility check not implemented with DM of type %s\n",type2);CHKERRQ(ierr);
+    ierr = PetscInfo((PetscObject)dm,"DMStag compatibility check not implemented with DM of type %s\n",type2);CHKERRQ(ierr);
     *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
@@ -402,7 +402,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_compare(comm,PetscObjectComm((PetscObject)dm2),&sameComm);CHKERRMPI(ierr);
   if (sameComm != MPI_IDENT) {
-    ierr = PetscInfo2((PetscObject)dm,"DMStag objects have different communicators: %d != %d\n",comm,PetscObjectComm((PetscObject)dm2));CHKERRQ(ierr);
+    ierr = PetscInfo((PetscObject)dm,"DMStag objects have different communicators: %d != %d\n",comm,PetscObjectComm((PetscObject)dm2));CHKERRQ(ierr);
     *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
@@ -416,19 +416,19 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
   }
   for (i=0; i<dim; ++i) {
     if (stag->N[i] != stag2->N[i]) {
-      ierr = PetscInfo3((PetscObject)dm,"DMStag objects have different global numbers of elements in dimension %D: %D != %D\n",i,stag->n[i],stag2->n[i]);CHKERRQ(ierr);
+      ierr = PetscInfo((PetscObject)dm,"DMStag objects have different global numbers of elements in dimension %D: %D != %D\n",i,stag->n[i],stag2->n[i]);CHKERRQ(ierr);
       *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
     if (stag->n[i] != stag2->n[i]) {
-      ierr = PetscInfo3((PetscObject)dm,"DMStag objects have different local numbers of elements in dimension %D: %D != %D\n",i,stag->n[i],stag2->n[i]);CHKERRQ(ierr);
+      ierr = PetscInfo((PetscObject)dm,"DMStag objects have different local numbers of elements in dimension %D: %D != %D\n",i,stag->n[i],stag2->n[i]);CHKERRQ(ierr);
       *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
     }
     if (stag->boundaryType[i] != stag2->boundaryType[i]) {
-      ierr = PetscInfo3((PetscObject)dm,"DMStag objects have different boundary types in dimension %d: %s != %s\n",i,stag->boundaryType[i],stag2->boundaryType[i]);CHKERRQ(ierr);
+      ierr = PetscInfo((PetscObject)dm,"DMStag objects have different boundary types in dimension %d: %s != %s\n",i,stag->boundaryType[i],stag2->boundaryType[i]);CHKERRQ(ierr);
       *set = PETSC_TRUE;
       *compatible = PETSC_FALSE;
       PetscFunctionReturn(0);
@@ -439,13 +439,13 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm,DM dm2,PetscBool *compatible
      of wanting to transfer between two other-wise compatible DMs with different
      stencil characteristics. */
   if (stag->stencilType != stag2->stencilType) {
-    ierr = PetscInfo2((PetscObject)dm,"DMStag objects have different ghost stencil types: %s != %s\n",DMStagStencilTypes[stag->stencilType],DMStagStencilTypes[stag2->stencilType]);CHKERRQ(ierr);
+    ierr = PetscInfo((PetscObject)dm,"DMStag objects have different ghost stencil types: %s != %s\n",DMStagStencilTypes[stag->stencilType],DMStagStencilTypes[stag2->stencilType]);CHKERRQ(ierr);
     *set = PETSC_TRUE;
     *compatible = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
   if (stag->stencilWidth != stag2->stencilWidth) {
-    ierr = PetscInfo2((PetscObject)dm,"DMStag objects have different ghost stencil widths: %D != %D\n",stag->stencilWidth,stag->stencilWidth);CHKERRQ(ierr);
+    ierr = PetscInfo((PetscObject)dm,"DMStag objects have different ghost stencil widths: %D != %D\n",stag->stencilWidth,stag->stencilWidth);CHKERRQ(ierr);
     *set = PETSC_TRUE;
     *compatible = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -533,7 +533,7 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm,DM *dmc)
 
   PetscFunctionBegin;
 
-  if (!stag->coordinateDMType) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Before creating a coordinate DM, a type must be specified with DMStagSetCoordinateDMType()");
+  PetscCheckFalse(!stag->coordinateDMType,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Before creating a coordinate DM, a type must be specified with DMStagSetCoordinateDMType()");
 
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = PetscStrcmp(stag->coordinateDMType,DMSTAG,&isstag);CHKERRQ(ierr);
@@ -549,7 +549,7 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm,DM *dmc)
     ierr = DMCreate(PETSC_COMM_WORLD,dmc);CHKERRQ(ierr);
     ierr = DMSetType(*dmc,DMPRODUCT);CHKERRQ(ierr);
     ierr = DMSetDimension(*dmc,dim);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported coordinate DM type %s",stag->coordinateDMType);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported coordinate DM type %s",stag->coordinateDMType);
   PetscFunctionReturn(0);
 }
 
@@ -565,7 +565,7 @@ static PetscErrorCode DMGetNeighbors_Stag(DM dm,PetscInt *nRanks,const PetscMPII
     case 1: *nRanks = 3; break;
     case 2: *nRanks = 9; break;
     case 3: *nRanks = 27; break;
-    default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Get neighbors not implemented for dim = %D",dim);
+    default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Get neighbors not implemented for dim = %D",dim);
   }
   *ranks = stag->neighbors;
   PetscFunctionReturn(0);
@@ -598,7 +598,7 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"Global sizes: %D x %D x %D\n",stag->N[0],stag->N[1],stag->N[2]);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"Parallel decomposition: %D x %D x %D ranks\n",stag->nRanks[0],stag->nRanks[1],stag->nRanks[2]);CHKERRQ(ierr);
         break;
-      default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%D",dim);
+      default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%D",dim);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"Boundary ghosting:");CHKERRQ(ierr);
     for (i=0; i<dim; ++i) {
@@ -638,7 +638,7 @@ static PetscErrorCode DMView_Stag(DM dm,PetscViewer viewer)
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Rank coordinates (%d,%d,%d)\n",rank,stag->rank[0],stag->rank[1],stag->rank[2]);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local elements : %D x %D x %D (%D x %D x %D with ghosts)\n",rank,stag->n[0],stag->n[1],stag->n[2],stag->nGhost[0],stag->nGhost[1],stag->nGhost[2]);CHKERRQ(ierr);
           break;
-        default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%D",dim);
+        default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim==%D",dim);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local native entries: %d\n",rank,stag->entries);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local entries total : %d\n",rank,stag->entriesGhost);CHKERRQ(ierr);
@@ -727,7 +727,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   stag->coordinateDMType                              = NULL;
 
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  if (dim != 1 && dim != 2 && dim != 3) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
+  PetscCheckFalse(dim != 1 && dim != 2 && dim != 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
 
   ierr = PetscMemzero(dm->ops,sizeof(*(dm->ops)));CHKERRQ(ierr);
   dm->ops->createcoordinatedm       = DMCreateCoordinateDM_Stag;
@@ -746,7 +746,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
     case 1: dm->ops->setup          = DMSetUp_Stag_1d; break;
     case 2: dm->ops->setup          = DMSetUp_Stag_2d; break;
     case 3: dm->ops->setup          = DMSetUp_Stag_3d; break;
-    default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
+    default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
   }
   dm->ops->clone                    = DMClone_Stag;
   dm->ops->view                     = DMView_Stag;

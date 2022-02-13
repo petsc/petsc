@@ -691,7 +691,7 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'for \( ' -- ${GITSRC} >> checkbadSource.out;true
 	-@git --no-pager grep -n -P 'while \( ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' \)' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '(?!.*\\$$) \)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Space before CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE) ------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '; CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE)\(' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "No space after if, for or while ----------------------" >> checkbadSource.out
@@ -707,11 +707,11 @@ checkbadSource:
 	-@echo "{ before SETERRQ -------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "{ on the same line as a function definition ----------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|PETSC_STATIC_INLINE)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|static inline)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "CHKERRQ following SETERRQ ----------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";CHKERRQ" >> checkbadSource.out;true
 	-@echo "SETERRQ() without defined error code -----------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P 'SETERRQ\(' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v flow.c >> checkbadSource.out;true
 	-@echo "SETERRQ() with trailing newline ----------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P "SETERRQ[1-9]?.*\\\n\"" -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "define keyword in test definition --------------------" >> checkbadSource.out

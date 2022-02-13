@@ -54,8 +54,8 @@ PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDANaturalToGlobalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDANaturalToGlobalEnd(DM,Vec,InsertMode,Vec);
-PETSC_DEPRECATED_FUNCTION("Use DMLocalToLocalBegin() (since version 3.5)") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalBegin(dm,g,mode,l);}
-PETSC_DEPRECATED_FUNCTION("Use DMLocalToLocalEnd() (since version 3.5)") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalEnd(dm,g,mode,l);}
+PETSC_DEPRECATED_FUNCTION("Use DMLocalToLocalBegin() (since version 3.5)") static inline PetscErrorCode DMDALocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalBegin(dm,g,mode,l);}
+PETSC_DEPRECATED_FUNCTION("Use DMLocalToLocalEnd() (since version 3.5)") static inline PetscErrorCode DMDALocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalEnd(dm,g,mode,l);}
 PETSC_EXTERN PetscErrorCode DMDACreateNaturalVector(DM,Vec *);
 
 PETSC_EXTERN PetscErrorCode DMDAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);

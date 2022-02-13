@@ -85,7 +85,7 @@ int main(int argc,char **args)
     ierr = MatCholeskyFactorSymbolic(F,A[0],perm,&info);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s",factortype);
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s",factortype);
   }
 
   /* Compute numeric factors using same F, then solve */
@@ -100,7 +100,7 @@ int main(int argc,char **args)
       ierr = MatCholeskyFactorNumeric(F,A[k],&info);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s",factortype);
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not for factor type %s",factortype);
     }
 
     /* Solve A[k] * x = b */

@@ -33,7 +33,7 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine
   mxArray        *mat;
 
   PetscFunctionBegin;
-  mat  = MatSeqAIJToMatlab((Mat)obj);if (!mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create MATLAB matrix");
+  mat  = MatSeqAIJToMatlab((Mat)obj);PetscCheckFalse(!mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create MATLAB matrix");
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   engPutVariable((Engine*)mengine,obj->name,mat);
   PetscFunctionReturn(0);
@@ -61,8 +61,8 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
     ierr = MatSetSizes(mat,n,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetUp(mat);CHKERRQ(ierr);
   } else {
-    if (mat->rmap->n != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->n,n);
-    if (mat->cmap->n != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->n,m);
+    PetscCheckFalse(mat->rmap->n != n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %" PetscInt_FMT " to %" PetscInt_FMT,mat->rmap->n,n);
+    PetscCheckFalse(mat->cmap->n != m,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change size of PETSc matrix %" PetscInt_FMT " to %" PetscInt_FMT,mat->cmap->n,m);
   }
   if (nz != aij->nz) {
     /* number of nonzeros in matrix has changed, so need new data structure */
@@ -165,7 +165,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
 PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
+  PetscCheckFalse(A->cmap->N != A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   F->ops->lufactornumeric = MatLUFactorNumeric_Matlab;
   F->assembled            = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -194,7 +194,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
+  PetscCheckFalse(A->cmap->N != A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square");
   ierr                         = MatCreate(PetscObjectComm((PetscObject)A),F);CHKERRQ(ierr);
   ierr                         = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr                         = PetscStrallocpy("matlab",&((PetscObject)*F)->type_name);CHKERRQ(ierr);

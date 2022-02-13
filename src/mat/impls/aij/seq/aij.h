@@ -138,7 +138,7 @@ typedef struct {
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
+static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
@@ -162,7 +162,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=NULL,*new_j=NULL; \
     datatype *new_a; \
  \
-    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
+    PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
     ierr = PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i);CHKERRQ(ierr); \
  \
@@ -194,7 +194,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     /* there is no extra room in row, therefore enlarge */ \
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=NULL,*new_j=NULL; \
  \
-    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
+    PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
     ierr = PetscMalloc1(new_nz,&new_j);CHKERRQ(ierr); \
     ierr = PetscMalloc1(AM+1,&new_i);CHKERRQ(ierr);\
@@ -512,7 +512,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm,PetscInt,Pet
   #define _MM_SCALE_8    8
   #endif
 
-PETSC_STATIC_INLINE void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
+static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
 {
   __m512d  vec_x,vec_y,vec_vals;
   __m256i  vec_idx;

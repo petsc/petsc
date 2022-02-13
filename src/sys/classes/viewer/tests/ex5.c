@@ -21,7 +21,7 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,&flg);CHKERRQ(ierr);
-    if (flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Pushed viewer off, but viewer was set");
+    PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Pushed viewer off, but viewer was set");
     if (viewer) {
       ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 1);CHKERRQ(ierr);

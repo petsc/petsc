@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
 
   for (i=1; i<n; i++) {
-    if (values[i] < values[i-1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Values not sorted");
+    PetscCheckFalse(values[i] < values[i-1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Values not sorted");
     if (values_view && rank == 0) {ierr = PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i,values[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree(values);CHKERRQ(ierr);

@@ -41,7 +41,7 @@ static PetscErrorCode PCApplyTranspose_SOR(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   ierr = MatIsSymmetricKnown(pc->pmat,&set,&sym);CHKERRQ(ierr);
-  if (!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
+  PetscCheckFalse(!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
   ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
   ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -54,7 +54,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   MatSORType     stype = jac->sym;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(pc,"Warning, convergence critera ignored, using %D iterations\n",its);CHKERRQ(ierr);
+  ierr = PetscInfo(pc,"Warning, convergence critera ignored, using %D iterations\n",its);CHKERRQ(ierr);
   if (guesszero) stype = (MatSORType) (stype | SOR_ZERO_INITIAL_GUESS);
   ierr = MatSOR(pc->pmat,b,jac->omega,stype,jac->fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
   ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
@@ -133,7 +133,7 @@ static PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
   PC_SOR *jac = (PC_SOR*)pc->data;
 
   PetscFunctionBegin;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
+  PetscCheckFalse(omega >= 2.0 || omega <= 0.0,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   jac->omega = omega;
   PetscFunctionReturn(0);
 }

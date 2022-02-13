@@ -151,12 +151,12 @@ static PetscErrorCode VecTaggerComputeIS_And(VecTagger tagger, Vec vec, IS *is,P
     PetscFunctionReturn(0);
   }
   ierr = VecTaggerComputeIS(subs[0],vec,&isectIS,&boxlisted);CHKERRQ(ierr);
-  if (!boxlisted) SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Does not support VecTaggerComputeIS()");
+  PetscCheckFalse(!boxlisted,PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Does not support VecTaggerComputeIS()");
   for (i = 1; i < nsubs; i++) {
     IS subIS, newIsectIS;
 
     ierr = VecTaggerComputeIS(subs[i],vec,&subIS,&boxlisted);CHKERRQ(ierr);
-    if (!boxlisted) SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Does not support VecTaggerComputeIS()");
+    PetscCheckFalse(!boxlisted,PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Does not support VecTaggerComputeIS()");
     ierr = ISIntersect(isectIS,subIS,&newIsectIS);CHKERRQ(ierr);
     ierr = ISDestroy(&isectIS);CHKERRQ(ierr);
     ierr = ISDestroy(&subIS);CHKERRQ(ierr);

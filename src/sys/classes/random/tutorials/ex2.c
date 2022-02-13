@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
   hinfo.totalNumSim = 1000;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-num_of_stocks",&(hinfo.n),NULL);CHKERRQ(ierr);
-  if (hinfo.n <1 || hinfo.n > 31) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only 31 stocks listed in stock.txt. num_of_stocks %" PetscInt_FMT " must between 1 and 31",hinfo.n);
+  PetscCheckFalse(hinfo.n <1 || hinfo.n > 31,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only 31 stocks listed in stock.txt. num_of_stocks %" PetscInt_FMT " must between 1 and 31",hinfo.n);
   ierr = PetscOptionsGetReal(NULL,NULL,"-interest_rate",&(hinfo.r),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-time_interval",&(hinfo.dt),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-num_of_simulations",&(hinfo.totalNumSim),NULL);CHKERRQ(ierr);
@@ -155,7 +155,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
     ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);
     for (i=0;i<num;i++) {
       double vv,tt;
-      if (fscanf(fd,"%s%lf%lf",temp,&vv,&tt) != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
+      PetscCheckFalse(fscanf(fd,"%s%lf%lf",temp,&vv,&tt) != 3,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Badly formatted input file");
       v[i] = vv;
       t[i] = tt;
     }

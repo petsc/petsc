@@ -40,9 +40,9 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   if (bdLabel) {
     ierr = PetscObjectGetName((PetscObject) bdLabel, &bdLabelName);CHKERRQ(ierr);
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
-    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+    PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
   }
-  if (rgLabel) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot currently preserve cell tags with Pragmatic");
+  PetscCheckFalse(rgLabel,comm, PETSC_ERR_ARG_WRONG, "Cannot currently preserve cell tags with Pragmatic");
 #if 0
   /* Check for overlap by looking for cell in the SF */
   if (!overlapped) {
@@ -62,7 +62,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
     PetscMPIInt rank;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot perform mesh adaptation because process %d does not own any cells.", rank);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot perform mesh adaptation because process %d does not own any cells.", rank);
   }
   numVertices = vEnd - vStart;
   ierr = PetscCalloc5(numVertices, &x, numVertices, &y, numVertices, &z, numVertices*PetscSqr(dim), &metric, numCells*maxConeSize, &cells);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   case 3:
     pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2gv, numLocVertices, comm);
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %D", dim);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %D", dim);
   }
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
   pragmatic_set_metric(metric);
@@ -187,7 +187,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
     pragmatic_get_coords_3d_mpi(xNew[0], xNew[1], xNew[2]);
     break;
   default:
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %D", dim);
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %D", dim);
   }
   for (v = 0; v < numVerticesNew; ++v) {for (d = 0; d < dim; ++d) coordsNew[v*dim+d] = xNew[d][v];}
   ierr = PetscMalloc1(numCellsNew*(dim+1), &cellsNew);CHKERRQ(ierr);

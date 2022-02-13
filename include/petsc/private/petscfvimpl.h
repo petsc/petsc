@@ -88,7 +88,7 @@ typedef struct {
   PetscScalar *B, *Binv, *tau, *work;
 } PetscFV_LeastSquares;
 
-PETSC_STATIC_INLINE PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
+static inline PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
 {
   PetscInt       Nc, fc;
   PetscErrorCode ierr;

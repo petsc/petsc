@@ -225,7 +225,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm,DM celldm,DMSwarm
     case DMDA_ELEMENT_P1:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DA support is not currently available for DMDA_ELEMENT_P1");
     case DMDA_ELEMENT_Q1:
-      if (dim == 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only available for dim = 2, 3");
+      PetscCheckFalse(dim == 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only available for dim = 2, 3");
       ierr = private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm,celldm,layout_param,layout);CHKERRQ(ierr);
       break;
   }
@@ -326,7 +326,7 @@ PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt proje
 
   PetscFunctionBegin;
   ierr = DMDAGetElementType(celldm,&etype);CHKERRQ(ierr);
-  if (etype == DMDA_ELEMENT_P1) SETERRQ(PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"Only Q1 DMDA supported");
+  PetscCheckFalse(etype == DMDA_ELEMENT_P1,PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"Only Q1 DMDA supported");
 
   ierr = DMGetDimension(swarm,&dim);CHKERRQ(ierr);
   switch (dim) {

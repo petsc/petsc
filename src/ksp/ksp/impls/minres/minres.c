@@ -10,8 +10,8 @@ static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No right preconditioning for KSPMINRES");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No symmetric preconditioning for KSPMINRES");
+  PetscCheckFalse(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No right preconditioning for KSPMINRES");
+  else PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No symmetric preconditioning for KSPMINRES");
   ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -31,7 +31,7 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X     = ksp->vec_sol;
   B     = ksp->vec_rhs;
@@ -67,8 +67,8 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   KSPCheckDot(ksp,dp);
 
   if (PetscRealPart(dp) < minres->haptol && np > minres->haptol) {
-    if (ksp->errorifnotconverged) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
-    ierr = PetscInfo2(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
+    PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
+    ierr = PetscInfo(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(0);
   }
@@ -146,7 +146,7 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
         residual norm to check for convergence
     */
     if (PetscRealPart(dp) < minres->haptol) {
-      ierr = PetscInfo2(ksp,"Possible indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp,"Possible indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
       ierr = KSP_MatMult(ksp,Amat,X,VOLD);CHKERRQ(ierr);
       ierr = VecAXPY(VOLD,none,B);CHKERRQ(ierr);
       ierr = VecNorm(VOLD,NORM_2,&np);CHKERRQ(ierr);
@@ -163,8 +163,8 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
     if (ksp->reason) break;
 
     if (PetscRealPart(dp) < minres->haptol) {
-      if (ksp->errorifnotconverged) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
-      ierr = PetscInfo2(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
+      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
+      ierr = PetscInfo(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
       break;
     }

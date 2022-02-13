@@ -26,7 +26,7 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (weighted) SETERRQ(PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Will get to this soon");
+  PetscCheck(!weighted,PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Will get to this soon");
   ierr = MatCreate(PetscObjectComm((PetscObject) A), L);CHKERRQ(ierr);
   ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &m, &n);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
         newVals[newcols] = -1.0;
         ++newcols;
       }
-      if (newcols > colMax) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Overran work space");
+      PetscCheck(newcols <= colMax,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Overran work space");
     }
     if (!hasdiag) {
       newCols[newcols] = r;
@@ -116,7 +116,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     ierr = VecSet(x, 1.0);CHKERRQ(ierr);
     ierr = MatMult(L, x, y);CHKERRQ(ierr);
     ierr = VecNorm(y, NORM_INFINITY, &norm);CHKERRQ(ierr);
-    if (PetscUnlikely(norm > 1.0e-10)) SETERRQ(PetscObjectComm((PetscObject) y), PETSC_ERR_PLIB, "Invalid graph Laplacian");
+    PetscCheck(norm <= 1.0e-10,PetscObjectComm((PetscObject) y), PETSC_ERR_PLIB, "Invalid graph Laplacian");
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&y);CHKERRQ(ierr);
   }
@@ -142,7 +142,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     ierr = PetscMalloc4(n,&realpart,n,&imagpart,n*n,&eigvec,lwork,&work);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgeev", LAPACKgeev_("N","V",&bn,a,&bN,realpart,imagpart,&sdummy,&idummy,eigvec,&bN,work,&lwork,&lierr));
-    if (PetscUnlikely(lierr)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
+    PetscCheck(!lierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     ierr = MatDenseRestoreArray(LD,&a);CHKERRQ(ierr);
     ierr = MatDestroy(&LD);CHKERRQ(ierr);
@@ -151,12 +151,12 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     for (i = 0; i < n; ++i) perm[i] = i;
     ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     evInd = perm[0];
-    if (PetscUnlikely((realpart[evInd] > 1.0e-12) || (imagpart[evInd] > 1.0e-12))) SETERRQ(PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have lowest eigenvalue 0");
+    PetscCheck(realpart[evInd] <= 1.0e-12 && imagpart[evInd] <= 1.0e-12,PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have lowest eigenvalue 0");
     evInd = perm[1];
-    if (PetscUnlikely((realpart[evInd] < 1.0e-12) && (imagpart[evInd] < 1.0e-12))) SETERRQ(PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have only one zero eigenvalue");
+    PetscCheck(realpart[evInd] >= 1.0e-12 || imagpart[evInd] >= 1.0e-12,PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have only one zero eigenvalue");
     evInd = perm[0];
     for (i = 0; i < n; ++i) {
-      if (PetscUnlikely(PetscAbsReal(eigvec[evInd*n+i] - eigvec[evInd*n+0]) > 1.0e-10)) SETERRQ3(PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have constant lowest eigenvector ev_%" PetscInt_FMT " %g != ev_0 %g", i, (double)(eigvec[evInd*n+i]), (double)(eigvec[evInd*n+0]));
+      PetscCheck(PetscAbsReal(eigvec[evInd*n+i] - eigvec[evInd*n+0]) <= 1.0e-10,PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have constant lowest eigenvector ev_%" PetscInt_FMT " %g != ev_0 %g", i, (double)(eigvec[evInd*n+i]), (double)(eigvec[evInd*n+0]));
     }
     /* Construct Fiedler partition */
     evInd = perm[1];

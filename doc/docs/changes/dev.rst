@@ -12,15 +12,20 @@ Changes: Development
 
 .. rubric:: General:
 
+- PETSc now requires a C99 compliant C compiler in all cases. Previously C99 was only required when building PETSc, but this now extends to public interfaces and header-files
+- PETSc now requires a C++11 compliant C++ compiler. Note this requirement is only enforced if C++ is used; it is acceptable to have a compiler that does not support C++11 if you only ever build C source
+- PETSc now requires at least Microsoft Visual Studio 2015 when using the Microsoft Visual C/C++ Compiler
+
 .. rubric:: Configure/Build:
 
+- Change minimum value of ``--with-cxx-dialect`` argument from "03" to "11"
 - C++ dialect will now also be inferred from compiler flags, although users will be warned that they should let PETSc auto-detect the flag when setting the dialect this way
 - Change C++ dialect flag option to be consistent with compiler flags;  ``--with-cxx-dialect=gnu++14`` means you want ``-std=gnu++14``, no more, no less
 - Fix for requesting no C++ dialect flag via ``--with-cxx-dialect=0``. Previously ``configure`` would bail out immediately without running the tests and therefore wouldn't set any of the capability defines. ``configure`` now runs all tests, just doesn't add the flag in the end
 - Fix a number of corner-cases when handling C++ dialect detection
-- Remove deprecated PETSC_VERSION_PATCH so as to not have confusion with patch releases where the subminor version changes
-- Change PETSC_HAVE_MKL to PETSC_HAVE_MKL_LIBS
-- Add PETSC_HAVE_MKL_INCLUDES
+- Remove deprecated ``PETSC_VERSION_PATCH`` so as to not have confusion with patch releases where the subminor version changes
+- Change ``PETSC_HAVE_MKL`` to ``PETSC_HAVE_MKL_LIBS``
+- Add ``PETSC_HAVE_MKL_INCLUDES``
 - Enable HYPRE GPU for 64bit indices build (using HYPRE's mixed-int configuration)
 
 .. rubric:: Sys:
@@ -46,13 +51,21 @@ Changes: Development
 - Add ``PetscHasAttribute()`` macro to query for existence of an ``__attribute__`` specifier
 - Add ``PetscCommGetComm()`` and ``PetscCommRestoreComm()`` to allow reuse of MPI communicator with external packages, as some MPI implementations have  broken ``MPI_Comm_free()``
 - Add ``PetscExpand()``, ``PetscConcat()``, ``PetscCompl()``, and ``PetscExpandToNothing()``
-- Add ``PETSC_CONSTEXPR``, ``PETSC_CONSTEXPR_14``, ``PETSC_NOEXCEPT``, ``PETSC_NULLPTR``, and ``PETSC_NODISCARD``
+- Add ``PETSC_CONSTEXPR_14``, ``PETSC_NULLPTR``, and ``PETSC_NODISCARD``
 - Add ``PetscSizeT`` as a language-agnostic equivalent of ``size_t`` from ``<stddef.h>``
 - Add ``PetscCount`` as a signed datatype for counts, equivalent to ``ptrdiff_t`` from ``<stddef.h>``.
+- Deprecate ``SETERRQ1()`` - ``SETERRQ9()`` in favor of ``SETERRQ()`` which is now variadic
+- Deprecate ``PetscInfo1()`` - ``PetscInfo9()`` in favor of ``PetscInfo()`` which is now variadic
+- Deprecate ``PETSC_INLINE``, ``inline`` is a standard keyword since C99 and C++11
+- Deprecate ``PETSC_STATIC_INLINE``, as both ``static`` and ``inline`` are standard keywords since C99 and C++11
+- Remove ``PETSC_C_RESTRICT``, ``restrict`` is a standard keyword since C99
+- Change ``SETERRMPI()`` to be variadic
+- Change ``SETERRABORT()`` to be variadic
+- Add ``PetscCheck()`` and ``PetscAssert()`` for checking a boolean condition is true. The former is always enabled, while the latter is enabled only in debug builds.
 
 .. rubric:: PetscViewer:
 
-- Add  ``PetscViewerHDF5SetDefaultTimestepping`` and ``PetscViewerHDF5SetDefaultTimestepping`` to deal with HDF5 files missing the timestepping attribute
+- Add  ``PetscViewerHDF5SetDefaultTimestepping()`` and ``PetscViewerHDF5SetDefaultTimestepping()`` to deal with HDF5 files missing the timestepping attribute
 
 .. rubric:: PetscDraw:
 

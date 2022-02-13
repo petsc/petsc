@@ -23,7 +23,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-reorder",&reorder,NULL);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ int main(int argc,char **args)
       ierr     = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     } else if (prob ==2) { /* matrix for the five point stencil */
       n1 = (PetscInt) (PetscSqrtReal((PetscReal)n) + 0.001);
-      if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive integer!");
+      PetscCheckFalse(n1*n1 - n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive integer!");
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           Ii = j + n1*i;
@@ -127,12 +127,12 @@ int main(int argc,char **args)
   ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
   ierr = MatMultEqual(A,sA,20,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A != sA");
+  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_USER,"A != sA");
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
-  if (i-Ii || j-J) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetOwnershipRange() in MatSBAIJ format");
+  PetscCheckFalse(i-Ii || j-J,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetOwnershipRange() in MatSBAIJ format");
 
   /* Vectors */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);

@@ -210,7 +210,7 @@ PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidHeaderSpecific(pc,PC_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
-  if (!isbddc) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"KSPFETIDPSetInnerBDDC need a PCBDDC preconditioner");
+  PetscCheckFalse(!isbddc,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"KSPFETIDPSetInnerBDDC need a PCBDDC preconditioner");
   ierr = PetscTryMethod(ksp,"KSPFETIDPSetInnerBDDC_C",(KSP,PC),(ksp,pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -285,7 +285,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCheckSameComm(ksp,1,viewer,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported viewer");
+  PetscCheckFalse(!isascii,comm,PETSC_ERR_SUP,"Unsupported viewer");
   ierr = PetscViewerASCIIPrintf(viewer,"----------FETI-DP MAT  --------------\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
   ierr = KSPGetOperators(fetidp->innerksp,&F,NULL);CHKERRQ(ierr);
@@ -551,7 +551,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
   ierr = KSPGetOperators(ksp,&A,&Ap);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis);CHKERRQ(ierr);
-  if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Amat should be of type MATIS");
+  PetscCheckFalse(!ismatis,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Amat should be of type MATIS");
 
   /* Quiet return if the matrix states are unchanged.
      Needed only for the saddle point case since it uses MatZeroRows
@@ -663,7 +663,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         if (pcbddc->n_ISForDofsLocal) {
           PetscInt np;
 
-          if (fid < 0 || fid >= pcbddc->n_ISForDofsLocal) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofsLocal);
+          PetscCheckFalse(fid < 0 || fid >= pcbddc->n_ISForDofsLocal,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofsLocal);
           /* need a sequential IS */
           ierr = ISGetLocalSize(pcbddc->ISForDofsLocal[fid],&np);CHKERRQ(ierr);
           ierr = ISGetIndices(pcbddc->ISForDofsLocal[fid],&idxs);CHKERRQ(ierr);
@@ -671,7 +671,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[fid],&idxs);CHKERRQ(ierr);
           ploc = PETSC_TRUE;
         } else if (pcbddc->n_ISForDofs) {
-          if (fid < 0 || fid >= pcbddc->n_ISForDofs) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofs);
+          PetscCheckFalse(fid < 0 || fid >= pcbddc->n_ISForDofs,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Invalid field id for pressure %D, max %D",fid,pcbddc->n_ISForDofs);
           ierr = PetscObjectReference((PetscObject)pcbddc->ISForDofs[fid]);CHKERRQ(ierr);
           Pall = pcbddc->ISForDofs[fid];
         } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Cannot detect pressure field! Use KSPFETIDPGetInnerBDDC() + PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal");
@@ -749,7 +749,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       if (!ploc) {
         PetscInt *widxs2;
 
-        if (!pP) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Missing parallel pressure IS");
+        PetscCheckFalse(!pP,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Missing parallel pressure IS");
         ierr = ISGetLocalSize(pP,&ni);CHKERRQ(ierr);
         ierr = ISGetIndices(pP,&idxs);CHKERRQ(ierr);
         for (i=0;i<ni;i++) matis->sf_rootdata[idxs[i]-rst] = 1;
@@ -765,7 +765,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_gP",(PetscObject)is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
       } else {
-        if (!lP) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing sequential pressure IS");
+        PetscCheckFalse(!lP,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing sequential pressure IS");
         ierr = ISGetLocalSize(lP,&ni);CHKERRQ(ierr);
         ierr = ISGetIndices(lP,&idxs);CHKERRQ(ierr);
         for (i=0;i<ni;i++)
@@ -800,7 +800,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISGlobalToLocalMappingApplyIS(l2g_t,IS_GTOLM_DROP,is2,&is1);CHKERRQ(ierr);
         ierr = ISGetLocalSize(is1,&i);CHKERRQ(ierr);
         ierr = ISGetLocalSize(is2,&j);CHKERRQ(ierr);
-        if (i != j) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
+        PetscCheckFalse(i != j,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iV",(PetscObject)is1);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingDestroy(&l2g_t);CHKERRQ(ierr);
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
@@ -1055,10 +1055,10 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
         ierr = ISGetLocalSize(Pall,&pIl);CHKERRQ(ierr);
         ierr = ISGetLocalSize(fetidp->pP,&pl);CHKERRQ(ierr);
-        if (PAM != PAN) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
-        if (pam != pan) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
-        if (pam != am && pam != pl && pam != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
-        if (pan != an && pan != pl && pan != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
+        PetscCheckFalse(PAM != PAN,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
+        PetscCheckFalse(pam != pan,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
+        PetscCheckFalse(pam != am && pam != pl && pam != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
+        PetscCheckFalse(pan != an && pan != pl && pan != pIl,PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */
           if (schp) {
             ierr = MatCreateSubMatrix(PPmat,Pall,Pall,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
@@ -1077,7 +1077,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
             C    = PPmat;
           }
         } else if (pIg == PAM) { /* global ordering for selected pressure only */
-          if (schp) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Need the entire matrix");
+          PetscCheckFalse(schp,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Need the entire matrix");
           ierr = PetscObjectReference((PetscObject)PPmat);CHKERRQ(ierr);
           C    = PPmat;
         } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Unable to use the pressure matrix");
@@ -1193,7 +1193,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
     ierr = KSPGetIterationNumber(fetidp->innerksp,&its);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_PC_FAILED;
     ierr = VecSetInf(Xl);CHKERRQ(ierr);
-    ierr = PetscInfo3(ksp,"Inner KSP solve failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
+    ierr = PetscInfo(ksp,"Inner KSP solve failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
   }
   ierr = PCBDDCMatFETIDPGetSolution(F,Xl,X);CHKERRQ(ierr);
   ierr = MatGetNullSpace(A,&nsp);CHKERRQ(ierr);

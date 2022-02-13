@@ -48,7 +48,7 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
     bas->iranks[i] = sf->ranks[i];
     bas->ioffset[i+1] = bas->ioffset[i] + rlengths[i];
   }
-  if (bas->ndiranks > 1 || (bas->ndiranks == 1 && bas->iranks[0] != rank)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Broken setup for shared ranks");
+  PetscCheckFalse(bas->ndiranks > 1 || (bas->ndiranks == 1 && bas->iranks[0] != rank),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Broken setup for shared ranks");
   for (; i<bas->niranks; i++) {
     bas->iranks[i] = iranks[i-bas->ndiranks];
     bas->ioffset[i+1] = bas->ioffset[i] + ilengths[i-bas->ndiranks];
@@ -68,9 +68,9 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   for (i=0; i<sf->nranks; i++) {
     PetscInt npoints = sf->roffset[i+1] - sf->roffset[i];
     if (i < sf->ndranks) {
-      if (sf->ranks[i] != rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot interpret distinguished leaf rank");
-      if (bas->iranks[0] != rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot interpret distinguished root rank");
-      if (npoints != bas->ioffset[1]-bas->ioffset[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Distinguished rank exchange has mismatched lengths");
+      PetscCheckFalse(sf->ranks[i] != rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot interpret distinguished leaf rank");
+      PetscCheckFalse(bas->iranks[0] != rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot interpret distinguished root rank");
+      PetscCheckFalse(npoints != bas->ioffset[1]-bas->ioffset[0],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Distinguished rank exchange has mismatched lengths");
       ierr = PetscArraycpy(bas->irootloc+bas->ioffset[0],sf->rremote+sf->roffset[i],npoints);CHKERRQ(ierr);
       continue;
     }
@@ -96,7 +96,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   PetscSFLink       link = bas->avail,next;
 
   PetscFunctionBegin;
-  if (bas->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
+  PetscCheckFalse(bas->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   ierr = PetscFree2(bas->iranks,bas->ioffset);CHKERRQ(ierr);
   ierr = PetscFree(bas->irootloc);CHKERRQ(ierr);
 
@@ -224,7 +224,7 @@ PETSC_INTERN PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf,MPI_Datatype unit,c
 }
 
 /* Shared by ReduceBegin and FetchAndOpBegin */
-PETSC_STATIC_INLINE PetscErrorCode PetscSFLeafToRootBegin_Basic(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op,PetscSFOperation sfop,PetscSFLink *out)
+static inline PetscErrorCode PetscSFLeafToRootBegin_Basic(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op,PetscSFOperation sfop,PetscSFLink *out)
 {
   PetscErrorCode    ierr;
   PetscSFLink       link = NULL;

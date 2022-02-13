@@ -558,7 +558,7 @@ int Update(SNES snes, void *ctx)
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = SNESGetNonlinearStepFailures(snes, &nfails);CHKERRQ(ierr);
     nfailsCum += nfails; nfails = 0;
-    if (nfailsCum >= 2) SETERRQ(PETSC_COMM_SELF,1,"Unable to find a Newton Step");
+    PetscCheckFalse(nfailsCum >= 2,PETSC_COMM_SELF,1,"Unable to find a Newton Step");
     if (print_flag)
       PetscPrintf(MPI_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n", i,
                   tsCtx->cfl, tsCtx->fnorm);
@@ -809,7 +809,7 @@ int GetLocalOrdering(GRID *grid)
         ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
       }
       fptr = fopen(spart_file,"r");
-      if (!fptr) SETERRQ1(PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
+      PetscCheckFalse(!fptr,PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
       for (inode = 0; inode < nnodes; inode++) {
         fscanf(fptr,"%d\n",&node1);
         v2p[inode] = node1;
@@ -1855,7 +1855,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
   ierr = PetscFree(val_offd);CHKERRQ(ierr);
 
 #else
-  if (CommSize > 1) SETERRQ(PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
+  PetscCheckFalse(CommSize > 1,PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
   ICALLOC(nnodes*bs, &val_diag);
   ICALLOC(nnodes*bs, &val_offd);
   for (j = 0; j < bs; j++) {
@@ -2748,7 +2748,7 @@ int write_fine_grid(GRID *grid)
 int EventCountersBegin(int *gen_start, PetscScalar * time_start_counters)
 {
   int ierr;
-  if ((*gen_start = start_counters(event0,event1)) < 0) SETERRQ(PETSC_COMM_SELF,1,"Error in start_counters");
+  PetscCheckFalse((*gen_start = start_counters(event0,event1)) < 0,PETSC_COMM_SELF,1,"Error in start_counters");
   ierr = PetscTime(&time_start_counters);CHKERRQ(ierr);
   return 0;
 }
@@ -2759,9 +2759,9 @@ int EventCountersEnd(int gen_start, PetscScalar time_start_counters)
   PetscScalar time_read_counters;
   long long   _counter0, _counter1;
 
-  if ((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0) SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter");
+  PetscCheckFalse((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0,PETSC_COMM_SELF,1,"Error in read_counter");
   ierr = PetscTime(&&time_read_counters);CHKERRQ(ierr);
-  if (gen_read != gen_start) SETERRQ(PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
+  PetscCheckFalse(gen_read != gen_start,PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
 
   counter0      += _counter0;
   counter1      += _counter1;

@@ -10,7 +10,6 @@ class Configure(config.package.CMakePackage):
     self.includes          = []
     self.functions         = []
     self.buildLanguages    = ['Cxx']
-    self.minCxxVersion     = 'c++11'
     self.downloadonWindows = 0
     self.hastests          = 1
     self.linkedbypetsc     = 0
@@ -28,8 +27,6 @@ class Configure(config.package.CMakePackage):
     self.flibs    = framework.require('config.packages.flibs',self)
     self.cxxlibs  = framework.require('config.packages.cxxlibs',self)
     self.mathlib  = framework.require('config.packages.mathlib',self)
-    #
-    # also requires the ./configure option --with-cxx-dialect=C++11
     return
 
   # the install is delayed until postProcess() since xSDKTrilinos install requires PETSc to be installed before xSDKTrilinos can be built

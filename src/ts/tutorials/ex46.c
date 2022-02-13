@@ -293,10 +293,10 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
       ierr = PetscDSSetExactSolution(ds, 1, mms2_p_2d, ctx);CHKERRQ(ierr);
       ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) mms2_u_2d, NULL, ctx, NULL);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid MMS %D", ctx->mms);
+    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid MMS %D", ctx->mms);
     }
     break;
-  default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", dim);
+  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", dim);
   }
   PetscFunctionReturn(0);
 }

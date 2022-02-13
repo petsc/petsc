@@ -20,7 +20,7 @@ int main(int argc,char **argv)
       ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,elx,ely,elz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof[0],dof[1],dof[2],dof[3],DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dmstag);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for dimension %D",dim);
   }
   ierr = DMSetFromOptions(dmstag);CHKERRQ(ierr);
   ierr = DMSetUp(dmstag);CHKERRQ(ierr);
@@ -43,11 +43,11 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
   {
     PetscInt nRanks[3],n[3],dim;
     ierr = DMGetDimension(dmstag,&dim);CHKERRQ(ierr);
-    if (dim != 3) SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This is a 3d test");
+    PetscCheckFalse(dim != 3,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This is a 3d test");
     ierr = DMStagGetNumRanks(dmstag,&nRanks[0],&nRanks[1],&nRanks[2]);CHKERRQ(ierr);
-    for (i=0; i<3; ++i) if (nRanks[i] != 3) SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 3x3x3 rank grid (run on 27 ranks)");
+    for (i=0; i<3; ++i) PetscCheckFalse(nRanks[i] != 3,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 3x3x3 rank grid (run on 27 ranks)");
     ierr = DMStagGetGlobalSizes(dmstag,&n[0],&n[1],&n[2]);CHKERRQ(ierr);
-    for (i=0; i<3; ++i) if (n[i] != 4) SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 4x4x4 element grid");
+    for (i=0; i<3; ++i) PetscCheckFalse(n[i] != 4,PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"This test requires a 4x4x4 element grid");
   }
 
   /* Populate global vector by converting the global index number to a scalar value. */

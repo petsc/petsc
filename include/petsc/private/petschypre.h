@@ -16,7 +16,7 @@ typedef PetscInt HYPRE_BigInt;
   With scalar type == real, HYPRE_Complex == PetscScalar;
   With scalar type == complex,  HYPRE_Complex is double __complex__ while PetscScalar may be std::complex<double>
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *b)
+static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *b)
 {
   PetscFunctionBegin;
 #if defined(HYPRE_COMPLEX)

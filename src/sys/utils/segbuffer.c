@@ -160,7 +160,7 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg,void *contig)
     ierr = PetscFree(t);CHKERRQ(ierr);
     t    = tail;
   }
-  if (ptr != contig) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Tail count does not match");
+  PetscCheckFalse(ptr != contig,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Tail count does not match");
   s->used             = 0;
   s->tailused         = 0;
   s->tail             = NULL;
@@ -278,7 +278,7 @@ PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg,size_t unused)
 
   PetscFunctionBegin;
   head = seg->head;
-  if (PetscUnlikely(head->used < unused)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to return more unused entries (%zu) than previously gotten (%zu)",unused,head->used);
+  PetscCheckFalse(head->used < unused,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to return more unused entries (%zu) than previously gotten (%zu)",unused,head->used);
   head->used -= unused;
   PetscFunctionReturn(0);
 }

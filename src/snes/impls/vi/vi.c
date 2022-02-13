@@ -126,7 +126,7 @@ PetscErrorCode SNESVICheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal
     /* Compute || J^T F|| */
     ierr = MatMultTranspose(A,F,W);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
-    ierr = PetscInfo1(snes,"|| J^T F|| %g near zero implies found a local minimum\n",(double)(a1/fnorm));CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"|| J^T F|| %g near zero implies found a local minimum\n",(double)(a1/fnorm));CHKERRQ(ierr);
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
   } else {
     Vec         work;
@@ -140,7 +140,7 @@ PetscErrorCode SNESVICheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal
     ierr = VecDot(F,work,&result);CHKERRQ(ierr);
     ierr = VecDestroy(&work);CHKERRQ(ierr);
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
-    ierr = PetscInfo1(snes,"(F^T J random)/(|| F ||*||random|| %g near zero implies found a local minimum\n",(double)a1);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"(F^T J random)/(|| F ||*||random|| %g near zero implies found a local minimum\n",(double)a1);CHKERRQ(ierr);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -166,7 +166,7 @@ PetscErrorCode SNESVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
     ierr = VecNorm(W1,NORM_2,&a1);CHKERRQ(ierr);
     ierr = VecNorm(W2,NORM_2,&a2);CHKERRQ(ierr);
     if (a1 != 0.0) {
-      ierr = PetscInfo1(snes,"||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n",(double)(a2/a1));CHKERRQ(ierr);
+      ierr = PetscInfo(snes,"||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n",(double)(a2/a1));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -198,16 +198,16 @@ PetscErrorCode SNESConvergedDefault_VI(SNES snes,PetscInt it,PetscReal xnorm,Pet
     ierr    = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm < snes->abstol && (it || !snes->forceiteration)) {
-    ierr    = PetscInfo2(snes,"Converged due to function norm %g < %g\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Converged due to function norm %g < %g\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-    ierr    = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
 
   if (it && !*reason) {
     if (fnorm < snes->ttol) {
-      ierr    = PetscInfo2(snes,"Converged due to function norm %g < %g (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
+      ierr    = PetscInfo(snes,"Converged due to function norm %g < %g (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_FNORM_RELATIVE;
     }
   }
@@ -472,14 +472,14 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
 
   PetscFunctionBegin;
   ierr = SNESGetFunction(snes,&snes->vec_func,NULL,NULL);CHKERRQ(ierr);
-  if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
+  PetscCheckFalse(!snes->vec_func,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   {
     PetscInt xlN,xuN,N;
     ierr = VecGetSize(xl,&xlN);CHKERRQ(ierr);
     ierr = VecGetSize(xu,&xuN);CHKERRQ(ierr);
     ierr = VecGetSize(snes->vec_func,&N);CHKERRQ(ierr);
-    if (xlN != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xlN,N);
-    if (xuN != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xuN,N);
+    PetscCheckFalse(xlN != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xlN,N);
+    PetscCheckFalse(xuN != N,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xuN,N);
   }
   ierr     = PetscObjectReference((PetscObject)xl);CHKERRQ(ierr);
   ierr     = PetscObjectReference((PetscObject)xu);CHKERRQ(ierr);

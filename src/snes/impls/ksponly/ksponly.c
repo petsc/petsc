@@ -12,7 +12,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   Vec            Y,X,F;
 
   PetscFunctionBegin;
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
@@ -54,7 +54,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   SNESCheckKSPSolve(snes);
 
   ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
-  ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
+  ierr = PetscInfo(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
   snes->iter++;
 
   /* Take the computed step. */

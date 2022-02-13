@@ -394,7 +394,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
     PetscInt     i;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&nb,a,&nb,eigr,eigi,NULL,&nb,NULL,&nb,work,&lwork,&lierr));
-    if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"geev() error %d",lierr);
+    PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"geev() error %d",lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
@@ -617,7 +617,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
     ierr = DMGetGlobalSection(dm, &gs);CHKERRQ(ierr);
     if (!s || !gs) {ierr = SNESMonitorDefault(snes, its, fgnorm, vf);CHKERRQ(ierr);}
     ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
-    if (Nf > 256) SETERRQ1(PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
+    PetscCheckFalse(Nf > 256,PetscObjectComm((PetscObject) snes), PETSC_ERR_SUP, "Do not support %d fields > 256", Nf);
     ierr = PetscSectionVecNorm(s, gs, r, NORM_2, res);CHKERRQ(ierr);
     ierr = PetscObjectGetTabLevel((PetscObject) snes, &tablevel);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
@@ -698,22 +698,22 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
     ierr    = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm < snes->abstol && (it || !snes->forceiteration)) {
-    ierr    = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-    ierr    = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
 
   if (it && !*reason) {
     if (fnorm <= snes->ttol) {
-      ierr    = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
+      ierr    = PetscInfo(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_FNORM_RELATIVE;
     } else if (snorm < snes->stol*xnorm) {
-      ierr    = PetscInfo3(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm);CHKERRQ(ierr);
+      ierr    = PetscInfo(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_SNORM_RELATIVE;
     } else if (snes->divtol > 0 && (fnorm > snes->divtol*snes->rnorm0)) {
-      ierr    = PetscInfo3(snes,"Diverged due to increase in function norm: %14.12e > %14.12e * %14.12e\n",(double)fnorm,(double)snes->divtol,(double)snes->rnorm0);CHKERRQ(ierr);
+      ierr    = PetscInfo(snes,"Diverged due to increase in function norm: %14.12e > %14.12e * %14.12e\n",(double)fnorm,(double)snes->divtol,(double)snes->rnorm0);CHKERRQ(ierr);
       *reason = SNES_DIVERGED_DTOL;
     }
 

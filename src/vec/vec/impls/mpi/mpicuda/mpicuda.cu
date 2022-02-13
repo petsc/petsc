@@ -291,7 +291,7 @@ PetscErrorCode  VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
+  PetscCheckFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
   ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);

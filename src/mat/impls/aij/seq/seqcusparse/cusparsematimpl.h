@@ -22,7 +22,7 @@
     try {                                                                   \
       body;                                                                 \
     } catch(thrust::system_error& e) {                                      \
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in Thrust %s",e.what());\
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in Thrust %s",e.what());\
     }                                                                       \
   } while (0)
 
@@ -262,7 +262,7 @@ PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);
 
-PETSC_STATIC_INLINE bool isCudaMem(const void *data)
+static inline bool isCudaMem(const void *data)
 {
   cudaError_t                  cerr;
   struct cudaPointerAttributes attr;
