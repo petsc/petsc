@@ -963,7 +963,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A,Mat P,Mat 
   /* Update the PETSc AIJ representation for matrix C from contents of MKL handle.
    * This is more complicated than it should be: it turns out that, though mkl_sparse_sypr() will accept a full AIJ/CSR matrix,
    * the output matrix only contains the upper or lower triangle (we arbitrarily have chosen upper) of the symmetric matrix.
-   * We have to fill in the missing portion, which we currently do below by forming the tranpose and performing at MatAXPY
+   * We have to fill in the missing portion, which we currently do below by forming the transpose and performing at MatAXPY
    * operation. This may kill any performance benefit of using the optimized mkl_sparse_sypr() routine. Performance might
    * improve if we come up with a more efficient way to do this, or we can convince the MKL team to provide an option to output
    * the full matrix. */

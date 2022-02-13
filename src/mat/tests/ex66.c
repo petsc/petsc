@@ -213,7 +213,7 @@ int main(int argc,char **argv)
   if (testtrans) {
     ierr = MatMultTransposeEqual(B,D,10,&flg);CHKERRQ(ierr);
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMultTranpose error after MatDuplicate\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMultTranspose error after MatDuplicate\n");CHKERRQ(ierr);
     }
   }
   ierr = MatDestroy(&D);CHKERRQ(ierr);

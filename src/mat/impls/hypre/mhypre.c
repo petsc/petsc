@@ -487,10 +487,10 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
   }
 
   if (!sameint) {
-    for (i=0;i<m+1;i++)  dii[i] = (PetscInt)(hypre_CSRMatrixI(hdiag)[i]);
+    if (reuse != MAT_REUSE_MATRIX) { for (i=0;i<m+1;i++)  dii[i] = (PetscInt)(hypre_CSRMatrixI(hdiag)[i]); }
     for (i=0;i<dnnz;i++) djj[i] = (PetscInt)(hypre_CSRMatrixJ(hdiag)[i]);
   } else {
-    ierr = PetscArraycpy(dii,hypre_CSRMatrixI(hdiag),m+1);CHKERRQ(ierr);
+    if (reuse != MAT_REUSE_MATRIX) { ierr = PetscArraycpy(dii,hypre_CSRMatrixI(hdiag),m+1);CHKERRQ(ierr); }
     ierr = PetscArraycpy(djj,hypre_CSRMatrixJ(hdiag),dnnz);CHKERRQ(ierr);
   }
   ierr = PetscArraycpy(da,hypre_CSRMatrixData(hdiag),dnnz);CHKERRQ(ierr);
@@ -529,23 +529,42 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       }
       oa = (PetscScalar*)hypre_CSRMatrixData(hoffd);
     }
-    if (!sameint) {
-      for (i=0;i<m+1;i++) oii[i] = (PetscInt)(hypre_CSRMatrixI(hoffd)[i]);
-    } else {
-      ierr = PetscArraycpy(oii,hypre_CSRMatrixI(hoffd),m+1);CHKERRQ(ierr);
+    if (reuse != MAT_REUSE_MATRIX) {
+      if (!sameint) {
+        for (i=0;i<m+1;i++) oii[i] = (PetscInt)(hypre_CSRMatrixI(hoffd)[i]);
+      } else {
+        ierr = PetscArraycpy(oii,hypre_CSRMatrixI(hoffd),m+1);CHKERRQ(ierr);
+      }
     }
+    ierr = PetscArraycpy(oa,hypre_CSRMatrixData(hoffd),onnz);CHKERRQ(ierr);
+
     offdj = hypre_CSRMatrixJ(hoffd);
     coffd = hypre_ParCSRMatrixColMapOffd(parcsr);
-    for (i=0; i<onnz; i++) ojj[i] = coffd[offdj[i]];
-    ierr = PetscArraycpy(oa,hypre_CSRMatrixData(hoffd),onnz);CHKERRQ(ierr);
+    /* we only need the permutation to be computed properly, I don't know if HYPRE
+       messes up with the ordering. Just in case, allocate some memory and free it
+       later */
+    if (reuse == MAT_REUSE_MATRIX) {
+      Mat_MPIAIJ *b = (Mat_MPIAIJ*)((*B)->data);
+      PetscInt   mnz;
+
+      ierr = MatSeqAIJGetMaxRowNonzeros(b->B,&mnz);CHKERRQ(ierr);
+      ierr = PetscMalloc1(mnz,&ojj);CHKERRQ(ierr);
+    } else for (i=0; i<onnz; i++) ojj[i] = coffd[offdj[i]];
     iptr = ojj;
     aptr = oa;
     for (i=0; i<m; i++) {
        PetscInt nc = oii[i+1]-oii[i];
+       if (reuse == MAT_REUSE_MATRIX) {
+         PetscInt j;
+
+         iptr = ojj;
+         for (j=0; j<nc; j++) iptr[j] = coffd[offdj[oii[i] + j]];
+       }
        ierr = PetscSortIntWithScalarArray(nc,iptr,aptr);CHKERRQ(ierr);
        iptr += nc;
        aptr += nc;
     }
+    if (reuse == MAT_REUSE_MATRIX) { ierr = PetscFree(ojj);CHKERRQ(ierr); }
     if (reuse == MAT_INITIAL_MATRIX) {
       Mat_MPIAIJ *b;
       Mat_SeqAIJ *d,*o;

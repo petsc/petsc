@@ -14,7 +14,7 @@
              -> Query MatProductSetFromOptions_Atype_Btype_Ctype_C(D) from A, B and C (in order)
              if found -> run the specific setup that must set the symbolic operation (these callbacks should never fail)
            if callback not found or no symbolic operation set
-             -> Query MatProductSetFromOptions_anytype_C(D) from A, B and C (in order) (e.g, matrices may have inner matrices like MATTRANPOSEMAT)
+             -> Query MatProductSetFromOptions_anytype_C(D) from A, B and C (in order) (e.g, matrices may have inner matrices like MATTRANSPOSEMAT)
            if dispatch found but combination still not present do
              -> check if B is dense and product type AtB or AB -> if true, basic looping of dense columns
              -> check if triple product (PtAP, RARt or ABC) -> if true, set the Basic routines

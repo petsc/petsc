@@ -2475,6 +2475,17 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscBLASInt   one=1;
 
   PetscFunctionBegin;
+  if (str == UNKNOWN_NONZERO_PATTERN || (PetscDefined(USE_DEBUG) && str == SAME_NONZERO_PATTERN)) {
+    PetscBool e = x->nz == y->nz && x->mbs == y->mbs && bs == X->rmap->bs ? PETSC_TRUE : PETSC_FALSE;
+    if (e) {
+      ierr = PetscArraycmp(x->i,y->i,x->mbs+1,&e);CHKERRQ(ierr);
+      if (e) {
+        ierr = PetscArraycmp(x->j,y->j,x->i[x->mbs],&e);CHKERRQ(ierr);
+        if (e) str = SAME_NONZERO_PATTERN;
+      }
+    }
+    if (!e && str == SAME_NONZERO_PATTERN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatStructure is not SAME_NONZERO_PATTERN");
+  }
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar  alpha = a;
     PetscBLASInt bnz;

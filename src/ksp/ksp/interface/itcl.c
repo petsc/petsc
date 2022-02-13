@@ -664,7 +664,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_use_explicittranspose","Explicitly tranpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_use_explicittranspose","Explicitly transpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set);CHKERRQ(ierr);
   if (set) {
     ierr = KSPSetUseExplicitTranspose(ksp,flg);CHKERRQ(ierr);
   }

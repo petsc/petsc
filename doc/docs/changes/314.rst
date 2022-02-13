@@ -141,7 +141,7 @@ Changes: 3.14
 -  Add support for A*B and A^t*B operations with A = AIJCUSPARSE and
    B = DENSECUDA matrices
 -  Add basic support for MATPRODUCT_AB (resp. MATPRODUCT_AtB) for any
-   matrices with mult (multtranpose) operation defined and B dense
+   matrices with mult (multtranspose) operation defined and B dense
 -  Add MATSCALAPACK, a new Mat type that wraps a ScaLAPACK matrix
 -  Add support for MUMPS-5.3.0 distributed right hand side
 -  Add support for MatMultHermitianTranspose with SEQAIJCUSPARSE
