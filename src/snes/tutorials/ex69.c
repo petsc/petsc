@@ -3481,7 +3481,7 @@ int main(int argc, char **argv)
     suffix: q2p1fetidp
     requires: !single
     nsize: 5
-    args: -dm_distribute -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -pres_petscdualspace_lagrange_node_endpoints 0 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3504,7 +3504,7 @@ int main(int argc, char **argv)
     output_file: output/ex69_q2p1fetidp_deluxe.out
     requires: mumps double
     nsize: 5
-    args: -dm_distribute -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -pres_petscdualspace_lagrange_node_endpoints 0 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3531,7 +3531,7 @@ int main(int argc, char **argv)
     output_file: output/ex69_q2p1fetidp_deluxe_adaptive.out
     requires: mumps double
     nsize: 5
-    args: -dm_distribute -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -pres_petscdualspace_lagrange_node_endpoints 0 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3557,7 +3557,7 @@ int main(int argc, char **argv)
     suffix: p2p1fetidp
     requires: triangle
     nsize: 4
-    args: -dm_distribute -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3570,7 +3570,7 @@ int main(int argc, char **argv)
     suffix: p2p1fetidp_allp
     requires: triangle
     nsize: 4
-    args: -dm_distribute -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3583,7 +3583,7 @@ int main(int argc, char **argv)
     suffix: p2p1fetidp_discharm
     requires: triangle
     nsize: 4
-    args: -dm_distribute -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3596,7 +3596,7 @@ int main(int argc, char **argv)
     suffix: p2p1fetidp_lumped
     requires: triangle
     nsize: 4
-    args: -dm_distribute -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3609,7 +3609,7 @@ int main(int argc, char **argv)
     suffix: p2p1fetidp_deluxe
     requires: triangle mumps
     nsize: 4
-    args: -dm_distribute -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3623,7 +3623,7 @@ int main(int argc, char **argv)
     suffix: p2p1fetidp_deluxe_discharm
     requires: triangle mumps
     nsize: 4
-    args: -dm_distribute -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3637,7 +3637,7 @@ int main(int argc, char **argv)
     nsize: 4
     requires: triangle
     output_file: output/ex69_p2p1fetidp_olof.out
-    args: -dm_distribute -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
+    args: -dm_plex_separate_marker -dm_refine_pre 2 -dm_refine_uniform_pre -dm_mat_type is -dm_view -petscpartitioner_type simple \
       -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -snes_error_if_not_converged \
       -ksp_error_if_not_converged \
@@ -3660,7 +3660,7 @@ int main(int argc, char **argv)
     suffix: q2p1bddc
     output_file: output/ex69_q2p1fetidp_deluxe.out
     nsize: 5
-    args: -dm_distribute -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -pres_petscdualspace_lagrange_node_endpoints 0 -petscds_jac_pre 0 -snes_error_if_not_converged -ksp_error_if_not_converged -ksp_type cg -ksp_norm_type natural -pc_type bddc -pc_bddc_benign_trick -pc_bddc_nonetflux -pc_bddc_detect_disconnected -pc_bddc_vertex_size 2 -pc_bddc_coarse_redundant_pc_type svd -pc_bddc_use_qr_single
+    args: -dm_plex_simplex 0 -dm_plex_separate_marker -dm_refine_pre 1 -dm_mat_type is -dm_view -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -pres_petscspace_poly_tensor 0 -pres_petscdualspace_lagrange_continuity 0 -pres_petscdualspace_lagrange_node_endpoints 0 -petscds_jac_pre 0 -snes_error_if_not_converged -ksp_error_if_not_converged -ksp_type cg -ksp_norm_type natural -pc_type bddc -pc_bddc_benign_trick -pc_bddc_nonetflux -pc_bddc_detect_disconnected -pc_bddc_vertex_size 2 -pc_bddc_coarse_redundant_pc_type svd -pc_bddc_use_qr_single
     test:
       requires: double
       suffix: benign_card

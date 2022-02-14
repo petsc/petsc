@@ -92,6 +92,6 @@ int main(int argc, char **argv)
       suffix: 2
       requires: triangle
       nsize: 2
-      args: -refcell 2,-1 -dm_distribute -petscpartitioner_type simple -dm_view -adapt_dm_view
+      args: -refcell 2,-1 -petscpartitioner_type simple -dm_view -adapt_dm_view
 
 TEST*/

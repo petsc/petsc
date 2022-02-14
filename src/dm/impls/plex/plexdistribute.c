@@ -1747,6 +1747,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     ierr = DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural);CHKERRQ(ierr);
     ierr = DMSetUseNatural(*dmParallel, PETSC_TRUE);CHKERRQ(ierr);
   }
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, *dmParallel);CHKERRQ(ierr);
   /* Cleanup */
   if (sf) {*sf = sfMigration;}
   else    {ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);}
@@ -1877,6 +1878,74 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  mesh->distDefault = dist;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexDistributeSetDefault - Set flag indicating whether the DM should be distributed by default
+
+  Logically collective
+
+  Input Parameters:
++ dm   - The DM
+- dist - Flag for distribution
+
+  Level: intermediate
+
+.seealso: DMDistributeGetDefault(), DMPlexDistribute()
+@*/
+PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(dm, dist, 2);
+  ierr = PetscTryMethod(dm,"DMPlexDistributeSetDefault_C",(DM,PetscBool),(dm,dist));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  *dist = mesh->distDefault;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexDistributeGetDefault - Get flag indicating whether the DM should be distributed by default
+
+  Not collective
+
+  Input Parameter:
+. dm   - The DM
+
+  Output Parameter:
+. dist - Flag for distribution
+
+  Level: intermediate
+
+.seealso: DMDistributeSetDefault(), DMPlexDistribute()
+@*/
+PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidBoolPointer(dist, 2);
+  ierr = PetscUseMethod(dm,"DMPlexDistributeGetDefault_C",(DM,PetscBool*),(dm,dist));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMPlexGetGatherDM - Get a copy of the DMPlex that gathers all points on the
   root process of the original's communicator.
@@ -1992,6 +2061,8 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&gatherSF);CHKERRQ(ierr);
   ierr = DMDestroy(&gatherDM);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, *redundantMesh);CHKERRQ(ierr);
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, *redundantMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

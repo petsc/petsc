@@ -306,19 +306,19 @@ int main(int argc, char **argv)
     test:
       suffix: 2
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple
+      args: -petscpartitioner_type simple
     test:
       suffix: 3
       nsize: 2
-      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple
+      args: -dm_refine 2 -petscpartitioner_type simple
     test:
       suffix: 4
       nsize: 5
-      args: -dm_distribute -petscpartitioner_type simple
+      args: -petscpartitioner_type simple
     test:
       suffix: 5
       nsize: 5
-      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple
+      args: -dm_refine 2 -petscpartitioner_type simple
     test:
       suffix: 6
       args: -point_type grid
@@ -328,17 +328,17 @@ int main(int argc, char **argv)
     test:
       suffix: 8
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -point_type grid
+      args: -petscpartitioner_type simple -point_type grid
     test:
       suffix: 9
       args: -point_type grid_replicated
     test:
       suffix: 10
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -point_type grid_replicated
+      args: -petscpartitioner_type simple -point_type grid_replicated
     test:
       suffix: 11
       nsize: 2
-      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple -point_type grid_replicated
+      args: -dm_refine 2 -petscpartitioner_type simple -point_type grid_replicated
 
 TEST*/

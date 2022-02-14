@@ -19,7 +19,6 @@ Below is the guide to running TAS using ex13, which is a Poisson Problem in 2D a
    .. code-block:: console
 
       $ mpiexec -n 2 ./ex13 -log_view :/home/<user name>/PETSC_DIR/lib/petsc/bin/ex_13_test.py:ascii_info_detail \
-        -dm_distribute \
         -dm_plex_box_faces 8,8 \
         -potential_petscspace_degree 1 \
         -snes_convergence_estimate \

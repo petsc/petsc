@@ -93,7 +93,7 @@ We can look at a parallel run using extra options for the test system
 
 .. code-block:: console
 
-  $ make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_3" EXTRA_OPTIONS="-dm_view hdf5:$PETSC_DIR/mesh.h5 -dm_partition_view -dm_distribute -petscpartitioner_type parmetis" NP=5
+  $ make -f ./gmakefile test globsearch="dm_impls_plex_tutorials-ex10_3" EXTRA_OPTIONS="-dm_view hdf5:$PETSC_DIR/mesh.h5 -dm_partition_view -petscpartitioner_type parmetis" NP=5
   $ $PETSC_DIR/lib/petsc/bin/petsc_gen_xmdf.py mesh.h5
 
 .. figure:: /images/tutorials/meshing/extrusionAdaptiveParallel.png

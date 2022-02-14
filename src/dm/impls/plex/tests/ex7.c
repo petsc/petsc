@@ -391,28 +391,28 @@ int main(int argc, char **argv)
     test:
       suffix: 1
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dim 2 -dm_view ascii::ascii_info_detail
+      args: -petscpartitioner_type simple -dim 2 -dm_view ascii::ascii_info_detail
     test:
       suffix: 2
       args: -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
     test:
       suffix: 3
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
+      args: -petscpartitioner_type simple -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
     test:
       suffix: 4
       args: -dim 3 -dm_view ascii::ascii_info_detail
     test:
       suffix: 5
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dim 3 -dm_view ascii::ascii_info_detail
+      args: -petscpartitioner_type simple -dim 3 -dm_view ascii::ascii_info_detail
     test:
       suffix: 6
       args: -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
     test:
       suffix: 7
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
+      args: -petscpartitioner_type simple -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
     # 2D Hybrid Mesh 8
     test:
       suffix: 8

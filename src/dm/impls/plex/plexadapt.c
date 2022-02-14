@@ -235,8 +235,8 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ada
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %D is not supported.", dim);
   }
-  ((DM_Plex *) (*dmRefined)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
   ierr = DMCopyDisc(dm, *dmRefined);CHKERRQ(ierr);
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, *dmRefined);CHKERRQ(ierr);
   if (localized) {ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -261,8 +261,8 @@ PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ad
   if (flg) {ierr = DMGetLabel(dm, rgLabelName, &rgLabel);CHKERRQ(ierr);}
   ierr = DMAdaptMetric(dm, metricVec, bdLabel, rgLabel, dmCoarsened);CHKERRQ(ierr);
   ierr = VecDestroy(&metricVec);CHKERRQ(ierr);
-  ((DM_Plex *) (*dmCoarsened)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
   ierr = DMCopyDisc(dm, *dmCoarsened);CHKERRQ(ierr);
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, *dmCoarsened);CHKERRQ(ierr);
   if (localized) {ierr = DMLocalizeCoordinates(*dmCoarsened);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

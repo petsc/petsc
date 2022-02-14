@@ -580,7 +580,7 @@ int main(int argc, char **argv)
       suffix: 1
       requires: superlu_dist
       nsize: 2
-      args: -dm_distribute -dm_refine 0 -petscpartitioner_type simple \
+      args: -dm_refine 0 -petscpartitioner_type simple \
             -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4
       timeoutfactor: 2
 
@@ -588,7 +588,7 @@ int main(int argc, char **argv)
       suffix: 4
       requires: superlu_dist
       nsize: 2
-      args: -dm_distribute -dm_refine 0 -petscpartitioner_type simple \
+      args: -dm_refine 0 -petscpartitioner_type simple \
             -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4
       output_file: output/ex77_1.out
 
@@ -602,7 +602,7 @@ int main(int argc, char **argv)
       suffix: 2_par
       requires: superlu_dist !single
       nsize: 4
-      args: -dm_distribute -dm_refine 2 -petscpartitioner_type simple \
+      args: -dm_refine 2 -petscpartitioner_type simple \
             -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0
       output_file: output/ex77_2.out
 

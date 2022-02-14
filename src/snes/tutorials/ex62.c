@@ -488,7 +488,7 @@ int main(int argc, char **argv)
     suffix: 2d_p2_p1_check_parallel
     nsize: {{2 3 5}}
     requires: triangle
-    args: -sol quadratic -dm_refine 2 -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
+    args: -sol quadratic -dm_refine 2 -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
 
   test:
     suffix: 3d_p2_p1_check
@@ -499,7 +499,7 @@ int main(int argc, char **argv)
     suffix: 3d_p2_p1_check_parallel
     nsize: {{2 3 5}}
     requires: ctetgen
-    args: -sol quadratic -dm_refine 2 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
+    args: -sol quadratic -dm_refine 2 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -dmsnes_check 0.0001
 
   test:
     suffix: 2d_p2_p1_conv
@@ -672,7 +672,7 @@ int main(int argc, char **argv)
     suffix: 2d_p2_p1_fetidp
     requires: triangle mumps
     nsize: 5
-    args: -sol quadratic -dm_refine 2 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_refine 2 -dm_mat_type is -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_error_if_not_converged \
       -ksp_type fetidp -ksp_rtol 1.0e-8 \
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
@@ -682,7 +682,7 @@ int main(int argc, char **argv)
     suffix: 2d_q2_q1_fetidp
     requires: mumps
     nsize: 5
-    args: -sol quadratic -dm_plex_simplex 0 -dm_refine 2 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_simplex 0 -dm_refine 2 -dm_mat_type is -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_error_if_not_converged \
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
         -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none \
@@ -691,7 +691,7 @@ int main(int argc, char **argv)
     suffix: 3d_p2_p1_fetidp
     requires: ctetgen mumps suitesparse
     nsize: 5
-    args: -sol quadratic -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_error_if_not_converged \
       -ksp_type fetidp -ksp_rtol 1.0e-9  \
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
@@ -706,7 +706,7 @@ int main(int argc, char **argv)
     suffix: 3d_q2_q1_fetidp
     requires: suitesparse
     nsize: 5
-    args: -sol quadratic -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_error_if_not_converged \
       -ksp_type fetidp -ksp_rtol 1.0e-8 \
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
@@ -720,7 +720,7 @@ int main(int argc, char **argv)
     suffix: 2d_p2_p1_bddc
     nsize: 2
     requires: triangle !single
-    args: -sol quadratic -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -dm_distribute -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
+    args: -sol quadratic -dm_plex_box_faces 2,2,2 -dm_refine 1 -dm_mat_type is -petscpartitioner_type simple -vel_petscspace_degree 2 -pres_petscspace_degree 1 -petscds_jac_pre 0 \
       -snes_error_if_not_converged \
       -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-8 -ksp_error_if_not_converged \
         -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd

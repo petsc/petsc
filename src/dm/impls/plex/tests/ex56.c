@@ -351,9 +351,9 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_check_all -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_distribute -dm_plex_interpolate
+    args: -dm_plex_interpolate
     args: -load_dm_plex_check_all
-    args: -use_low_level_functions {{0 1}} -load_dm_distribute -compare_boundary
+    args: -use_low_level_functions {{0 1}} -compare_boundary
     args: -outfile ex56_1.h5
     nsize: {{1 3}}
     test:
@@ -382,9 +382,9 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_check_all -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_distribute -dm_plex_interpolate
+    args: -dm_plex_interpolate
     args: -load_dm_plex_check_all
-    args: -use_low_level_functions -distribute_after_topo_load -compare_boundary
+    args: -use_low_level_functions -load_dm_distribute 0 -distribute_after_topo_load -compare_boundary
     args: -outfile ex56_2.h5
     nsize: 3
     test:
@@ -413,7 +413,7 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_distribute -dm_plex_interpolate
+    args: -dm_plex_interpolate -load_dm_distribute 0
     args: -use_low_level_functions -compare_pre_post
     args: -outfile ex56_3.h5
     nsize: 3

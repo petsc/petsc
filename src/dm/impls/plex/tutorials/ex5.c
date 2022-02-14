@@ -98,6 +98,7 @@ int main(int argc, char **argv)
       ierr = PetscObjectSetName((PetscObject) dm, exampleDMPlexName);CHKERRQ(ierr);
       ierr = DMSetOptionsPrefix(dm,"loaded_");CHKERRQ(ierr);
       ierr = DMLoad(dm, v);CHKERRQ(ierr);
+      ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
       ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);

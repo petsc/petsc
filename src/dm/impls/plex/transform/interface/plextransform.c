@@ -2004,6 +2004,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   ierr = DMPlexTransformCreateLabels(tr, rdm);CHKERRQ(ierr);
   /* Step 7: Set coordinates */
   ierr = DMPlexTransformSetCoordinates(tr, rdm);CHKERRQ(ierr);
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, rdm);CHKERRQ(ierr);
   *tdm = rdm;
   PetscFunctionReturn(0);
 }

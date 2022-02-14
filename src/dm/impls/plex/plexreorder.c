@@ -281,6 +281,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     ierr = PetscSectionDestroy(&csectionNew);CHKERRQ(ierr);
     ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);
   }
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, *pdm);CHKERRQ(ierr);
   (*pdm)->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
