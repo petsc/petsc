@@ -64,7 +64,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
   PetscCheckFalse(!aijkok,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
   if (aijkok->a_dual.need_sync_device()) {
     aijkok->a_dual.sync_device();
-    aijkok->transpose_updated = PETSC_FALSE; /* values of the tranpose is out-of-date */
+    aijkok->transpose_updated = PETSC_FALSE; /* values of the transpose is out-of-date */
     aijkok->hermitian_updated = PETSC_FALSE;
   }
   PetscFunctionReturn(0);

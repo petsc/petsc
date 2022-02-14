@@ -811,18 +811,26 @@ cdef class PC(Object):
     def setHPDDMAuxiliaryMat(self, IS uis, Mat uaux):
         CHKERR( PCHPDDMSetAuxiliaryMat(self.pc, uis.iset, uaux.mat, NULL, <void*>NULL) )
 
+    def setHPDDMRHSMat(self, Mat B):
+        CHKERR( PCHPDDMSetRHSMat(self.pc, B.mat) )
+
     def setHPDDMHasNeumannMat(self, has):
         cdef PetscBool phas = has
         CHKERR( PCHPDDMHasNeumannMat(self.pc, phas) )
+
+    def setHPDDMCoarseCorrectionType(self, correction_type):
+        cdef PetscPCHPDDMCoarseCorrectionType ctype = correction_type
+        CHKERR( PCHPDDMSetCoarseCorrectionType(self.pc, ctype) )
 
     def getHPDDMCoarseCorrectionType(self):
         cdef PetscPCHPDDMCoarseCorrectionType cval = PC_HPDDM_COARSE_CORRECTION_DEFLATED
         CHKERR( PCHPDDMGetCoarseCorrectionType(self.pc, &cval) )
         return cval
 
-    def setHPDDMCoarseCorrectionType(self, correction_type):
-        cdef PetscPCHPDDMCoarseCorrectionType ctype = correction_type
-        CHKERR( PCHPDDMSetCoarseCorrectionType(self.pc, ctype) )
+    def getHPDDMSTShareSubKSP(self):
+        cdef PetscBool cval = PETSC_FALSE
+        CHKERR( PCHPDDMGetSTShareSubKSP(self.pc, &cval) )
+        return toBool(cval)
 
 # --------------------------------------------------------------------
 

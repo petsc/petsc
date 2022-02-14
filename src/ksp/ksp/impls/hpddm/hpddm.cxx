@@ -126,7 +126,7 @@ static PetscErrorCode KSPView_HPDDM(KSP ksp, PetscViewer viewer)
       if (!PetscDefined(HAVE_SLEPC) || !PetscDefined(USE_SHARED_LIBRARIES) || data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR) {
         ierr = PetscViewerASCIIPrintf(viewer, "deflation target: %s\n", HPDDMRecycleTarget[static_cast<PetscInt>(data->cntl[3])]);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer, "redistribution size: %D\n", static_cast<PetscInt>(data->cntl[3]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "redistribution size: %d\n", static_cast<PetscMPIInt>(data->cntl[3]));CHKERRQ(ierr);
       }
     }
     if (data->icntl[1] != static_cast<int>(PETSC_DECIDE)) {
