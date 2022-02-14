@@ -7470,7 +7470,7 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 }
 
 /*@
-   MatSetVariableBlockSizes - Sets a diagonal blocks of the matrix that need not be of the same size
+   MatSetVariableBlockSizes - Sets diagonal point-blocks of the matrix that need not be of the same size
 
    Logically Collective on Mat
 
@@ -7480,11 +7480,13 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 -  bsizes - the block sizes
 
    Notes:
-    Currently used by PCVPBJACOBI for SeqAIJ matrices
+    Currently used by PCVPBJACOBI for AIJ matrices
+
+    Each variable point-block set of degrees of freedom must live on a single MPI rank. That is a point block cannot straddle two MPI ranks.
 
    Level: intermediate
 
-.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize(), MatSetBlockSizes(), MatGetBlockSizes(), MatGetVariableBlockSizes()
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize(), MatSetBlockSizes(), MatGetBlockSizes(), MatGetVariableBlockSizes(), PCVPBJACOBI
 @*/
 PetscErrorCode MatSetVariableBlockSizes(Mat mat,PetscInt nblocks,PetscInt *bsizes)
 {
@@ -10305,7 +10307,7 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 }
 
 /*@C
-  MatInvertVariableBlockDiagonal - Inverts the block diagonal entries.
+  MatInvertVariableBlockDiagonal - Inverts the point block diagonal entries.
 
   Collective on Mat
 
