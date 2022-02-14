@@ -142,26 +142,27 @@ static PetscErrorCode PCDestroy_VPBJacobi(PC pc)
      PCVPBJACOBI - Variable size point block Jacobi preconditioner
 
    Notes:
-    See PCJACOBI for point Jacobi preconditioning, PCPBJACOBI for fixed point block size, and PCBJACOBI for large size blocks
+     See PCJACOBI for point Jacobi preconditioning, PCPBJACOBI for fixed point block size, and PCBJACOBI for large size blocks
 
-   This works for AIJ matrices
+     This works for AIJ matrices
 
-   Uses dense LU factorization with partial pivoting to invert the blocks; if a zero pivot
-   is detected a PETSc error is generated.
+     Uses dense LU factorization with partial pivoting to invert the blocks; if a zero pivot
+     is detected a PETSc error is generated.
 
-   One must call MatSetVariableBlockSizes() to use this preconditioner
+     One must call MatSetVariableBlockSizes() to use this preconditioner
+
    Developer Notes:
-    This should support the PCSetErrorIfFailure() flag set to PETSC_TRUE to allow
-   the factorization to continue even after a zero pivot is found resulting in a Nan and hence
-   terminating KSP with a KSP_DIVERGED_NANORIF allowing
-   a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
+     This should support the PCSetErrorIfFailure() flag set to PETSC_TRUE to allow
+     the factorization to continue even after a zero pivot is found resulting in a Nan and hence
+     terminating KSP with a KSP_DIVERGED_NANORIF allowing
+     a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
 
-   Perhaps should provide an option that allows generation of a valid preconditioner
-   even if a block is singular as the PCJACOBI does.
+     Perhaps should provide an option that allows generation of a valid preconditioner
+     even if a block is singular as the PCJACOBI does.
 
    Level: beginner
 
-.seealso:  MatSetVariableBlockSizes(), PCCreate(), PCSetType(), PCType (for list of available types), PC, PCJACOBI
+.seealso:  MatSetVariableBlockSizes(), PCCreate(), PCSetType(), PCType (for list of available types), PC, PCJACOBI, PCPBJACOBI, PCBJACOBI
 
 M*/
 
