@@ -68,16 +68,17 @@ public:
     ierr = PetscObjectTypeCompare(reinterpret_cast<PetscObject>(viewer),PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
     ierr = PetscObjectGetComm(reinterpret_cast<PetscObject>(viewer),&comm);CHKERRQ(ierr);
     if (iascii) {
+      PetscViewer sviewer;
+
       ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] device: %s\n",rank,syclDevice_.get_info<sycl::info::device::name>().c_str());CHKERRQ(ierr);
-      // flush the assignment information
+      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(sviewer,"[%d] device: %s\n",rank,syclDevice_.get_info<sycl::info::device::name>().c_str());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(sviewer,"-> Device vendor: %s\n",syclDevice_.get_info<sycl::info::device::vendor>().c_str());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"-> Device vendor: %s\n",syclDevice_.get_info<sycl::info::device::vendor>().c_str());CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
