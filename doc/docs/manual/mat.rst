@@ -6,8 +6,8 @@ Matrices
 PETSc provides a variety of matrix implementations because no single
 matrix format is appropriate for all problems. Currently, we support
 dense storage and compressed sparse row storage (both sequential and
-parallel versions), as well as several specialized formats. Additional
-formats can be added.
+parallel versions) for CPU and GPU based matrices, as well as several specialized formats. Additional
+specialized formats can be easily added.
 
 This chapter describes the basics of using PETSc matrices in general
 (regardless of the particular format chosen) and discusses tips for
@@ -20,10 +20,40 @@ storage formats of the matrices.
 
 .. _sec_matcreate:
 
-Creating and Assembling Matrices
+Creating matrices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The simplest routine for forming a PETSc matrix, ``A``, is followed by
+As with vectors, PETSc has APIs that allow the user to specify the exact details of the matrix
+creation process but also ``DM`` based creation routines that handle most of the details automatically
+for specific families of applications. This is done with
+
+.. code-block::
+
+   DMCreateMatrix(DM dm,Mat *A)
+
+The type of matrix created can be controlled with either
+
+.. code-block::
+
+   DMSetMatType(DM dm,MatType <MATAIJ or MATBAIJ or MATAIJCUSPARSE etc>)
+
+or with
+
+.. code-block::
+
+   DMSetSetFromOptions(DM dm)
+
+and the options database option ``-dm_mat_type <aij or baij or aijcusparse etc>`` Matrices can be created for CPU usage, for GPU usage and for usage on
+both the CPUs and GPUs. 
+
+The creation of ``DM`` objects is discussed in :any:`sec_struct`, :any:`sec_unstruct`, :any:`sec_network`.
+
+
+Low-level matrix creation routines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When using a ``DM`` is not practical for a particular application on can create matrices directly
+using
 
 .. code-block::
 
@@ -42,7 +72,10 @@ the sparse AIJ format, which is discussed in detail
 :any:`sec_matsparse`. See the manual pages for further
 information about available matrix formats.
 
-To insert or add entries to a matrix, one can call a variant of
+Assembling (putting values into) matrices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To insert or add entries to a matrix on CPUs, one can call a variant of
 ``MatSetValues()``, either
 
 .. code-block::
@@ -141,13 +174,23 @@ steps, thereby increasing efficiency. See
 for a simple example of solving two linear systems that use the same
 matrix data structure.
 
+For matrices associated with ``DMDA`` there is a higher-level interface for providing
+the numerical values based on the concept of stencils. See the manual page of ``MatSetValuesStencil()`` for usage.
+
+For GPUs the routines ``MatSetPreallocationCOO()`` and ``MatSetValuesCOO()`` should be used for efficient matrix assembly
+instead of ``MatSetValues()``.
+
+We now introduce the various families of PETSc matrices. ``DMCreateMatrix()`` manages
+the preallocation process (introduced below) automatically so many users do not need to
+worry about the details of the preallocation process.
+
 .. _sec_matsparse:
 
 Sparse Matrices
 ^^^^^^^^^^^^^^^
 
 The default matrix representation within PETSc is the general sparse AIJ
-format (also called the Yale sparse matrix format or compressed sparse
+format (also called the compressed sparse
 row format, CSR). This section discusses tips for *efficiently* using
 this matrix format for large-scale applications. Additional formats
 (such as block compressed row and block diagonal storage, which are
@@ -447,6 +490,10 @@ Often this can lead to cleaner, simpler, less buggy codes. One should
 never make code overly complicated in order to generate all values
 locally. Rather, one should organize the code in such a way that *most*
 values are generated locally.
+
+The routine ``MatCreateAIJCusparse()`` allows one to create GPU based matrices for NVIDIA systems.
+ ``MatCreateAIJKokkos()`` can create matrices for use with CPU, OpenMP, NVIDIA, AMD, or Intel based GPU systems.
+ 
 
 Limited-Memory Variable Metric (LMVM) Matrices
 ''''''''''''''''''''''''''''''''''''''''''''''
