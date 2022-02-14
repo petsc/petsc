@@ -17,7 +17,7 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],PetscObject,const cha
 
 #define PetscInfo1(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
 #define PetscInfo2(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
-#define PetscInfo3(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS_)_
+#define PetscInfo3(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
 #define PetscInfo4(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
 #define PetscInfo5(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
 #define PetscInfo6(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscInfo() (since version 3.17)\"") PetscInfo(__VA_ARGS__)
