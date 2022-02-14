@@ -11,6 +11,7 @@ cdef extern from * nogil:
     int PetscLogDefaultBegin()
     int PetscLogAllBegin()
     int PetscLogView(PetscViewer)
+    int PetscLogIsActive(PetscBool*)
 
     int PetscLogFlops(PetscLogDouble)
     int PetscGetFlops(PetscLogDouble*)
