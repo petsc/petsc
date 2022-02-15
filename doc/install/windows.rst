@@ -52,9 +52,9 @@ Windows compilers; nor can you use MS-MPI, Intel-MPI or MPICH2).
 Installation With Microsoft/Intel Windows Compilers
 ===================================================
 
-Microsoft Windows does not provide the same unix shell enviornment as the other OSes. Also
+Microsoft Windows does not provide the same unix shell environment as the other OSes. Also
 the default Microsoft/Intel compilers behave differently than other unix compilers. So to
-install PETSc on Microsoft Windows - one has to install Cygwin (for the unix enviornment)
+install PETSc on Microsoft Windows - one has to install Cygwin (for the unix environment)
 and use ``win32fe`` [#win32]_ (located at ``$PETSC_DIR/lib/petsc/bin/win32fe``, to
 interface to Microsoft/Intel compilers).
 
@@ -86,11 +86,11 @@ interface to Microsoft/Intel compilers).
 #. Setup Cygwin terminal/bash-shell with Working Compilers:
 
    We require the compilers to be setup properly in a Cygwin bash command shell, so that
-   ``cl foo.c or ``ifort foo.f`` works from this shell. For example - if using VS2005 C
+   ``cl foo.c`` or ``ifort foo.f`` works from this shell. For example - if using VS2005 C
    and Intel 10 Fortran one can do:
 
    #. Start > Programs > Intel Software Development Tools > Intel Fortran
-      Compiler 10 > Visual Fortran Build Enviornment (32bit or 64bit depending on
+      Compiler 10 > Visual Fortran Build Environment (32bit or 64bit depending on
       your usage). This should start a "dos cmd" shell.
 
    #. Within this shell - run Cygwin terminal/bash-shell ``mintty.exe`` as:
@@ -142,7 +142,7 @@ do not use it). For example usages, check ``$PETSC_DIR/config/examples/arch-mswi
       $ cygpath -u `cygpath -ms '/cygdrive/c/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64'`
       /cygdrive/c/PROGRA~2/INTELS~1/COMPIL~2/windows/mkl/lib/intel64
 
-   The use in ``configure`` as follows:
+   Then use in ``configure`` as follows:
 
    .. code-block:: console
 
