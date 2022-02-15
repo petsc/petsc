@@ -4138,11 +4138,15 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount coo_n, 
   PetscFunctionReturn(0);
 }
 
-__global__ void MatAddCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount jmap[],const PetscCount perm[],PetscScalar a[])
+__global__ void MatAddCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount jmap[],const PetscCount perm[],InsertMode imode,PetscScalar a[])
 {
   PetscCount        i = blockIdx.x*blockDim.x + threadIdx.x;
   const PetscCount  grid_size = gridDim.x * blockDim.x;
-  for (; i<nnz; i+= grid_size) {for (PetscCount k=jmap[i]; k<jmap[i+1]; k++) a[i] += kv[perm[k]];}
+  for (; i<nnz; i+= grid_size) {
+    PetscScalar sum = 0.0;
+    for (PetscCount k=jmap[i]; k<jmap[i+1]; k++) sum += kv[perm[k]];
+    a[i] = (imode == INSERT_VALUES? 0.0 : a[i]) + sum;
+  }
 }
 
 PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], InsertMode imode)
@@ -4165,14 +4169,10 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
       else {cerr = cudaMemset((void*)v1,0,seq->coo_n*sizeof(PetscScalar));CHKERRCUDA(cerr);}
     }
 
-    if (imode == INSERT_VALUES) {
-      ierr = MatZeroEntries(A);CHKERRQ(ierr);
-      ierr = MatSeqAIJCUSPARSEGetArrayWrite(A,&Aa);CHKERRQ(ierr);
-    } else { /* ADD_VALUES */
-      ierr = MatSeqAIJCUSPARSEGetArray(A,&Aa);CHKERRQ(ierr);
-    }
+    if (imode == INSERT_VALUES) {ierr = MatSeqAIJCUSPARSEGetArrayWrite(A,&Aa);CHKERRQ(ierr);}
+    else {ierr = MatSeqAIJCUSPARSEGetArray(A,&Aa);CHKERRQ(ierr);}
 
-    MatAddCOOValues<<<(Annz+255)/256,256>>>(v1,Annz,dev->jmap_d,dev->perm_d,Aa);
+    MatAddCOOValues<<<(Annz+255)/256,256>>>(v1,Annz,dev->jmap_d,dev->perm_d,imode,Aa);
 
     if (imode == INSERT_VALUES) {ierr = MatSeqAIJCUSPARSERestoreArrayWrite(A,&Aa);CHKERRQ(ierr);}
     else {ierr = MatSeqAIJCUSPARSERestoreArray(A,&Aa);CHKERRQ(ierr);}
