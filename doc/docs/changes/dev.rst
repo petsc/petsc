@@ -116,6 +116,7 @@ Changes: Development
 .. rubric:: PC:
 
 - Add MG option ``-pc_mg_galerkin_mat_product_algorithm [cusparse|hypre]`` and ``PCMGGalerkinSetMatProductAlgorithm()`` to use cuSparse or hypre's SpGEMM for Galerkin products in hypre
+- Add PC type ``PCBJKOKKOS`` a new, experimental batch Kokkos solver ``-pc_type bjkokkos -pc_bjkokkos_ksp_type [tfqmr|bicg] -pc_bjkokkos_pc_type jacobi -ksp_type preonly``
 
 .. rubric:: KSP:
 

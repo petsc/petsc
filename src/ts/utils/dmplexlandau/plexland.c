@@ -430,7 +430,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
          const PetscReal   *invJe = &invJ_a[(ip_offset[grid] + loc_elem*Nq)*dim*dim];
         ierr = PetscMalloc1(elemMatSize, &elemMat);CHKERRQ(ierr);
         ierr = PetscMemzero(elemMat, elemMatSize*sizeof(*elemMat));CHKERRQ(ierr);
-        ierr = PetscLogEventBegin(ctx->events[4],0,0,0,0);CHKERRQ(ierr);
+        if (shift==0.0) { // Jacobian
+          ierr = PetscLogEventBegin(ctx->events[4],0,0,0,0);CHKERRQ(ierr);
+        } else {
+          ierr = PetscLogEventBegin(ctx->events[16],0,0,0,0);CHKERRQ(ierr);
+        }
         for (PetscInt qj = 0; qj < Nq; ++qj) {
           const PetscInt   jpidx_glb = ip_offset[grid] + qj + loc_elem * Nq;
           PetscReal        g0[LANDAU_MAX_SPECIES], g2[LANDAU_MAX_SPECIES][LANDAU_DIM], g3[LANDAU_MAX_SPECIES][LANDAU_DIM][LANDAU_DIM]; // could make a LANDAU_MAX_SPECIES_GRID ~ number of ions - 1
@@ -569,7 +573,11 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
             }
           }
         } /* qj loop */
-        ierr = PetscLogEventEnd(ctx->events[4],0,0,0,0);CHKERRQ(ierr);
+        if (shift==0.0) { // Jacobian
+          ierr = PetscLogEventEnd(ctx->events[4],0,0,0,0);CHKERRQ(ierr);
+        } else {
+          ierr = PetscLogEventEnd(ctx->events[16],0,0,0,0);CHKERRQ(ierr);
+        }
 #if defined(PETSC_HAVE_THREADSAFETY)
         endtime = MPI_Wtime();
         if (ctx->stage) ctx->times[LANDAU_KERNEL] += (endtime - starttime);
@@ -671,7 +679,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   } /* CPU version */
   ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(JacP, NULL, "-grid_mat_view");CHKERRQ(ierr);
   /* clean up */
   if (cellClosure) {
     ierr = PetscFree(cellClosure);CHKERRQ(ierr);
@@ -1470,6 +1477,9 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ierr = PetscOptionsInt("-dm_landau_sub_thread_block_size", "Number of threads in Kokkos integration point subblock", "plexland.c", ctx->subThreadBlockSize, &ctx->subThreadBlockSize, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_landau_gpu_assembly", "Assemble Jacobian on GPU", "plexland.c", ctx->gpu_assembly, &ctx->gpu_assembly, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_landau_jacobian_field_major_order", "Reorder Jacobian for GPU assembly with field major, or block diagonal, ordering", "plexland.c", ctx->jacobian_field_major_order, &ctx->jacobian_field_major_order, NULL);CHKERRQ(ierr);
+  if (ctx->jacobian_field_major_order && !ctx->gpu_assembly) {
+    SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"-dm_landau_jacobian_field_major_order requires -dm_landau_gpu_assembly");
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   for (ii=ctx->num_species;ii<LANDAU_MAX_SPECIES;ii++) ctx->masses[ii] = ctx->thermal_temps[ii]  = ctx->charges[ii] = 0;
@@ -1493,6 +1503,10 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     ierr = MPI_Comm_rank(ctx->comm, &rank);CHKERRMPI(ierr);
     ctx->stage = 0;
     ierr = PetscLogEventRegister("Landau Create", DM_CLASSID, &ctx->events[13]);CHKERRQ(ierr); /* 13 */
+    ierr = PetscLogEventRegister(" GPU ass. setup", DM_CLASSID, &ctx->events[2]);CHKERRQ(ierr); /* 2 */
+    ierr = PetscLogEventRegister(" Build matrix", DM_CLASSID, &ctx->events[12]);CHKERRQ(ierr); /* 12 */
+    ierr = PetscLogEventRegister(" Assembly maps", DM_CLASSID, &ctx->events[15]);CHKERRQ(ierr); /* 15 */
+    ierr = PetscLogEventRegister("Landau Mass mat", DM_CLASSID, &ctx->events[14]);CHKERRQ(ierr); /* 14 */
     ierr = PetscLogEventRegister("Landau Operator", DM_CLASSID, &ctx->events[11]);CHKERRQ(ierr); /* 11 */
     ierr = PetscLogEventRegister("Landau Jacobian", DM_CLASSID, &ctx->events[0]);CHKERRQ(ierr); /* 0 */
     ierr = PetscLogEventRegister("Landau Mass", DM_CLASSID, &ctx->events[9]);CHKERRQ(ierr); /* 9 */
@@ -1501,13 +1515,10 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     ierr = PetscLogEventRegister(" dynamic IP-Jac", DM_CLASSID, &ctx->events[1]);CHKERRQ(ierr); /* 1 */
     ierr = PetscLogEventRegister(" Kernel-init", DM_CLASSID, &ctx->events[3]);CHKERRQ(ierr); /* 3 */
     ierr = PetscLogEventRegister(" Jac-f-df (GPU)", DM_CLASSID, &ctx->events[8]);CHKERRQ(ierr); /* 8 */
-    ierr = PetscLogEventRegister(" Kernel (GPU)", DM_CLASSID, &ctx->events[4]);CHKERRQ(ierr); /* 4 */
+    ierr = PetscLogEventRegister(" J Kernel (GPU)", DM_CLASSID, &ctx->events[4]);CHKERRQ(ierr); /* 4 */
+    ierr = PetscLogEventRegister(" M Kernel (GPU)", DM_CLASSID, &ctx->events[16]);CHKERRQ(ierr); /* 16 */
     ierr = PetscLogEventRegister(" Copy to CPU", DM_CLASSID, &ctx->events[5]);CHKERRQ(ierr); /* 5 */
     ierr = PetscLogEventRegister(" CPU assemble", DM_CLASSID, &ctx->events[6]);CHKERRQ(ierr); /* 6 */
-    ierr = PetscLogEventRegister(" GPU ass. setup", DM_CLASSID, &ctx->events[2]);CHKERRQ(ierr); /* 2 */
-    ierr = PetscLogEventRegister(" Field maj setup", DM_CLASSID, &ctx->events[12]);CHKERRQ(ierr); /* 12 */
-    ierr = PetscLogEventRegister(" Assembly maps", DM_CLASSID, &ctx->events[15]);CHKERRQ(ierr); /* 15 */
-    ierr = PetscLogEventRegister("Landau Mass mat", DM_CLASSID, &ctx->events[14]);CHKERRQ(ierr); /* 14 */
 
     if (rank) { /* turn off output stuff for duplicate runs - do we need to add the prefix to all this? */
       ierr = PetscOptionsClearValue(NULL,"-snes_converged_reason");CHKERRQ(ierr);
@@ -1515,6 +1526,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
       ierr = PetscOptionsClearValue(NULL,"-snes_monitor");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-ksp_monitor");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-ts_monitor");CHKERRQ(ierr);
+      ierr = PetscOptionsClearValue(NULL,"-ts_view");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-ts_adapt_monitor");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-dm_landau_amr_dm_view");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-dm_landau_amr_vec_view");CHKERRQ(ierr);
@@ -1881,7 +1893,16 @@ static void g0_r(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   g0[0] = 2.*PETSC_PI*x[0];
 }
 
-static PetscErrorCode LandauCreateBatchOrdering(MPI_Comm comm, Vec X, IS grid_batch_is_inv[LANDAU_MAX_GRIDS], LandauCtx *ctx)
+static PetscErrorCode MatrixNfDestroy(void *ptr)
+{
+  PetscInt *nf = (PetscInt *)ptr;
+  PetscErrorCode  ierr;
+  PetscFunctionBegin;
+  ierr = PetscFree(nf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_inv[LANDAU_MAX_GRIDS], LandauCtx *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       *idxs=NULL;
@@ -1910,6 +1931,7 @@ static PetscErrorCode LandauCreateBatchOrdering(MPI_Comm comm, Vec X, IS grid_ba
       ierr = PetscDSSetJacobian(prob, ix, ix, g0_fake, NULL, NULL, NULL);CHKERRQ(ierr);
     }
     ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only");
+    ierr = DMSetFromOptions(massDM);CHKERRQ(ierr);
     ierr = DMCreateMatrix(massDM, &gMat);CHKERRQ(ierr);
     ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only false");
     ierr = MatSetOption(gMat, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
@@ -1972,10 +1994,12 @@ static PetscErrorCode LandauCreateBatchOrdering(MPI_Comm comm, Vec X, IS grid_ba
     ierr = MatCreateSubMatrix(ctx->J,ctx->batch_is,ctx->batch_is,MAT_INITIAL_MATRIX,&mat_block_order);CHKERRQ(ierr); // use MatPermute
     ierr = MatDestroy(&ctx->J);CHKERRQ(ierr);
     ctx->J = mat_block_order;
+    // cache ctx for KSP with batch/field major Jacobian ordering -ksp_type gmres/etc -dm_landau_jacobian_field_major_order
     ierr = PetscContainerCreate(PETSC_COMM_SELF, &container);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container, (void *)ctx);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) ctx->J, "LandauCtx", (PetscObject) container);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+    // override ops to make KSP work in field major space
     ctx->seqaij_mult = mat_block_order->ops->mult;
     mat_block_order->ops->mult = LandauMatMult;
     mat_block_order->ops->multadd = LandauMatMultAdd;
@@ -1986,6 +2010,22 @@ static PetscErrorCode LandauCreateBatchOrdering(MPI_Comm comm, Vec X, IS grid_ba
     mat_block_order->ops->multtranspose = LandauMatMultTranspose;
     ierr = VecDuplicate(X,&ctx->work_vec);CHKERRQ(ierr);
     ierr = VecScatterCreate(X, ctx->batch_is, ctx->work_vec, NULL, &ctx->plex_batch);CHKERRQ(ierr);
+    // batch solvers need to map -- can batch solvers work
+    ierr = PetscContainerCreate(PETSC_COMM_SELF, &container);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(container, (void *)ctx->plex_batch);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) ctx->J, "plex_batch_is", (PetscObject) container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  }
+  {
+    PetscContainer  container;
+    PetscInt        *pNf;
+    ierr = PetscContainerCreate(PETSC_COMM_SELF, &container);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(*pNf), &pNf);CHKERRQ(ierr);
+    *pNf = ctx->batch_sz;
+    ierr = PetscContainerSetPointer(container, (void *)pNf);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(container, MatrixNfDestroy);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)ctx->J, "batch size", (PetscObject) container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -2126,12 +2166,9 @@ PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char
   ctx->plex_batch = NULL;
   ctx->batch_is = NULL;
   for (int i=0;i<LANDAU_MAX_GRIDS;i++) grid_batch_is_inv[i] = NULL;
-  //if (ctx->gpu_assembly && ctx->jacobian_field_major_order) {
   ierr = PetscLogEventBegin(ctx->events[12],0,0,0,0);CHKERRQ(ierr);
-  ierr = LandauCreateBatchOrdering(comm, *X, grid_batch_is_inv, ctx);CHKERRQ(ierr);
+  ierr = LandauCreateMatrix(comm, *X, grid_batch_is_inv, ctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ctx->events[12],0,0,0,0);CHKERRQ(ierr);
-  //} else {
-  //}
 
   // create AMR GPU assembly maps and static GPU data
   ierr = CreateStaticGPUData(dim,grid_batch_is_inv,ctx);CHKERRQ(ierr);

@@ -245,26 +245,6 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], c
       }
       U[i][i] += fact;
     }
-#if defined(PETSC_USE_DEBUG)
-    {
-      PetscReal diff_g[3], udiff = sqrt(udiff2), err, err2;
-      for (i = 0; i < 3; ++i) diff_g[i] = x1[i]/g1 - x2[i]/g2;
-      for (i = 0, err = 0; i < 3; ++i) {
-        double tmp=0;
-        for (j = 0; j < 3; ++j) {
-          tmp += U[i][j]*diff_g[j];
-        }
-        err += tmp * tmp;
-      }
-      err = sqrt(err);
-      err2 = udiff2*(err)/(g1*g2);
-#if defined(PETSC_USE_REAL_SINGLE)
-      if (err>1.e-6 || err!=err) exit(11);
-#else
-      if (err>1.e-13 || err!=err) exit(12);
-#endif
-    }
-#endif
   }
 }
 

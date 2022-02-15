@@ -37,6 +37,7 @@ typedef const char* PCType;
 #define PCASM             "asm"
 #define PCGASM            "gasm"
 #define PCKSP             "ksp"
+#define PCBJKOKKOS        "bjkokkos"
 #define PCCOMPOSITE       "composite"
 #define PCREDUNDANT       "redundant"
 #define PCSPAI            "spai"
