@@ -681,6 +681,35 @@ static PetscErrorCode DMFieldGetDegree_DS(DMField field, IS pointIS, PetscInt *m
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMFieldGetFVQuadrature_Internal(DMField field, IS pointIS, PetscQuadrature *quad)
+{
+  DM              dm = field->dm;
+  const PetscInt *points;
+  DMPolytopeType  ct;
+  PetscInt        dim, n;
+  PetscBool       isplex;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isplex);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(pointIS, &n);CHKERRQ(ierr);
+  if (isplex && n) {
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = DMPlexGetCellType(dm, points[0], &ct);CHKERRQ(ierr);
+    switch (ct) {
+      case DM_POLYTOPE_TRIANGLE:
+      case DM_POLYTOPE_TETRAHEDRON:
+        ierr = PetscDTStroudConicalQuadrature(dim, 1, 1, -1.0, 1.0, quad);CHKERRQ(ierr);break;
+      default: ierr = PetscDTGaussTensorQuadrature(dim, 1, 1, -1.0, 1.0, quad);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+  } else {
+    ierr = DMFieldCreateDefaultQuadrature(field, pointIS, quad);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointIS, PetscQuadrature *quad)
 {
   PetscInt       h, dim, imax, imin, cellHeight;
@@ -1092,7 +1121,7 @@ PetscErrorCode DMFieldCreateDS(DM dm, PetscInt fieldNum, Vec vec,DMField *field)
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
     if (cEnd > cStart) {ierr = DMPlexGetCellType(dm, cStart, &locct);CHKERRQ(ierr);}
-    ierr = MPI_Allreduce(&locct, &ct, 1, MPIU_INT, MPI_MIN, comm);CHKERRMPI(ierr);
+    ierr = MPI_Allreduce(&locct, &ct, 1, MPI_INT, MPI_MIN, comm);CHKERRMPI(ierr);
     ierr = PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, numComponents, ct, 1, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
     ierr = PetscFEViewFromOptions(fe, NULL, "-field_fe_view");CHKERRQ(ierr);
     disc = (PetscObject) fe;
