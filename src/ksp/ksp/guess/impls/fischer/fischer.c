@@ -470,7 +470,7 @@ PetscErrorCode  KSPGuessFischerSetModel(KSPGuess guess,PetscInt model,PetscInt s
 static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess,PetscInt model,PetscInt size)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (model == 1) {
