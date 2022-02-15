@@ -60,26 +60,26 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,1,0 -dm_plex_box_bd periodic,none -dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,1,0 -dm_plex_box_bd periodic,none -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 2
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 3
     nsize: 4
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 4
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,1,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 3,1,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 5
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view ::ascii_info_detail
   test:
     suffix: 6
     nsize: 4
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view ::ascii_info_detail
 
 TEST*/

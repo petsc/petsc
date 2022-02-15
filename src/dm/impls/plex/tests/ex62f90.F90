@@ -101,6 +101,7 @@ program ex62f90
 
     ! Read the mesh in any supported format
     call DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename,PETSC_NULL_CHARACTER,PETSC_TRUE,dm,ierr);CHKERRA(ierr)
+    call DMPlexDistributeSetDefault(dm,PETSC_FALSE,ierr);CHKERRA(ierr);
     call DMSetFromOptions(dm,ierr);CHKERRA(ierr);
     call DMGetDimension(dm, sdim,ierr);CHKERRA(ierr)
     call DMViewFromOptions(dm, PETSC_NULL_OPTIONS,"-dm_view",ierr);CHKERRA(ierr);

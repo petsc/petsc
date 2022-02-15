@@ -97,6 +97,8 @@ cdef extern from * nogil:
     int DMPlexRebalanceSharedPoints(PetscDM,PetscInt,PetscBool,PetscBool,PetscBool*)
     int DMPlexDistribute(PetscDM,PetscInt,PetscSF*,PetscDM*)
     int DMPlexDistributeOverlap(PetscDM,PetscInt,PetscSF*,PetscDM*)
+    int DMPlexDistributeGetDefault(PetscDM,PetscBool*)
+    int DMPlexDistributeSetDefault(PetscDM,PetscBool)
     int DMPlexSetPartitioner(PetscDM,PetscPartitioner)
     int DMPlexGetPartitioner(PetscDM,PetscPartitioner*)
     int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,PetscVec,PetscSection,PetscVec)

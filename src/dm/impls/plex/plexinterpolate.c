@@ -1356,19 +1356,12 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     ierr = PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_interpolate_orient_interfaces", &flg, NULL);CHKERRQ(ierr);
     if (flg) {ierr = DMPlexOrientInterface_Internal(idm);CHKERRQ(ierr);}
   }
-  {
-    PetscBool            isper;
-    const PetscReal      *maxCell, *L;
-    const DMBoundaryType *bd;
-
-    ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(idm,isper,maxCell,L,bd);CHKERRQ(ierr);
-  }
   /* This function makes the mesh fully interpolated on all ranks */
   {
     DM_Plex *plex = (DM_Plex *) idm->data;
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_FULL;
   }
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, idm);CHKERRQ(ierr);
   *dmInt = idm;
   ierr = PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1632,19 +1625,12 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
       ierr = PetscSFSetGraph(sfPointUn, vEnd, numLeavesUn, localPointsUn, PETSC_OWN_POINTER, remotePointsUn, PETSC_OWN_POINTER);CHKERRQ(ierr);
     }
   }
-  {
-    PetscBool            isper;
-    const PetscReal      *maxCell, *L;
-    const DMBoundaryType *bd;
-
-    ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(udm,isper,maxCell,L,bd);CHKERRQ(ierr);
-  }
   /* This function makes the mesh fully uninterpolated on all ranks */
   {
     DM_Plex *plex = (DM_Plex *) udm->data;
     plex->interpolated = plex->interpolatedCollective = DMPLEX_INTERPOLATED_NONE;
   }
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, udm);CHKERRQ(ierr);
   *dmUnint = udm;
   PetscFunctionReturn(0);
 }

@@ -127,6 +127,7 @@ typedef struct {
   char                *transformType;     /* Type of transform for uniform cell refinement */
   PetscReal            refinementLimit;   /* Maximum volume for refined cell */
   PetscErrorCode     (*refinementFunc)(const PetscReal [], PetscReal *); /* Function giving the maximum volume for refined cell */
+  PetscBool            distDefault;       /* Distribute the DM by default */
   PetscInt             overlap;           /* Overlap of the partitions as passed to DMPlexDistribute() or DMPlexDistributeOverlap() */
   DMPlexInterpolatedFlag interpolated;
   DMPlexInterpolatedFlag interpolatedCollective;
@@ -207,6 +208,8 @@ typedef struct {
   PetscInt             printL2;
   PetscReal            printTol;
 } DM_Plex;
+
+PETSC_INTERN PetscErrorCode DMPlexCopy_Internal(DM, PetscBool, DM);
 
 PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec,PetscViewer);
@@ -306,6 +309,8 @@ PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, Vec, DMLabel, DMLabel, DM
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM, Mat*);
 
 PETSC_INTERN PetscErrorCode DMPlexGetOverlap_Plex(DM, PetscInt *);
+PETSC_INTERN PetscErrorCode DMPlexDistributeGetDefault_Plex(DM, PetscBool *);
+PETSC_INTERN PetscErrorCode DMPlexDistributeSetDefault_Plex(DM, PetscBool);
 
 #if 1
 static inline PetscInt DihedralInvert(PetscInt N, PetscInt a)

@@ -32,12 +32,12 @@ static PetscErrorCode CreateIndicator(DM dm, Vec *indicator, DM *dmIndi)
 }
 
 int main(int argc, char **argv) {
-  DM              dm, dmDist, dmAdapt;
+  DM              dm, dmAdapt;
   DMLabel         bdLabel = NULL, rgLabel = NULL;
   MPI_Comm        comm;
   PetscBool       uniform = PETSC_FALSE, isotropic = PETSC_FALSE, noTagging = PETSC_FALSE;
   PetscErrorCode  ierr;
-  PetscInt       *faces, dim = 3, d;
+  PetscInt        dim;
   PetscReal       scaling = 1.0;
   Vec             metric;
 
@@ -45,25 +45,16 @@ int main(int argc, char **argv) {
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex60.c", dim, &dim, NULL, 2, 3);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-noTagging", "Should tag preservation testing be turned off?", "ex60.c", noTagging, &noTagging, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   /* Create box mesh */
-  ierr = PetscMalloc1(dim, &faces);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) faces[d] = 4;
-  ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_TRUE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
-  ierr = PetscFree(faces);CHKERRQ(ierr);
+  ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-
-  /* Distribute mesh over processes */
-  ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
-  if (dmDist) {
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
-    dm = dmDist;
-  }
   ierr = PetscObjectSetName((PetscObject) dm, "DM_init");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-initial_mesh_view");CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
   /* Set tags to be preserved */
   if (!noTagging) {
@@ -298,7 +289,7 @@ int main(int argc, char **argv) {
 
   testset:
     requires: pragmatic
-    args: -dm_plex_metric_target_complexity 100 -dm_adaptor pragmatic -noTagging -dim 2
+    args: -dm_plex_box_faces 4,4 -dm_plex_metric_target_complexity 100 -dm_adaptor pragmatic -noTagging
 
     test:
       suffix: uniform_2d_pragmatic
@@ -311,7 +302,7 @@ int main(int argc, char **argv) {
 
   testset:
     requires: pragmatic tetgen
-    args: -dm_plex_metric_target_complexity 100 -dm_adaptor pragmatic -noTagging -dim 3
+    args: -dm_plex_dim 3 -dm_plex_box_faces 4,4,4 -dm_plex_metric_target_complexity 100 -dm_adaptor pragmatic -noTagging
 
     test:
       suffix: uniform_3d_pragmatic
@@ -324,7 +315,7 @@ int main(int argc, char **argv) {
 
   testset:
     requires: mmg
-    args: -dm_plex_metric_target_complexity 100 -dm_adaptor mmg -dim 2
+    args: -dm_plex_box_faces 4,4 -dm_plex_metric_target_complexity 100 -dm_adaptor mmg
 
     test:
       suffix: uniform_2d_mmg
@@ -337,7 +328,7 @@ int main(int argc, char **argv) {
 
   testset:
     requires: mmg tetgen
-    args: -dm_plex_metric_target_complexity 100 -dm_adaptor mmg -dim 3
+    args: -dm_plex_dim 3 -dm_plex_box_faces 4,4,4 -dm_plex_metric_target_complexity 100 -dm_adaptor mmg
 
     test:
       suffix: uniform_3d_mmg
@@ -351,7 +342,7 @@ int main(int argc, char **argv) {
   testset:
     requires: parmmg tetgen
     nsize: 2
-    args: -dm_plex_metric_target_complexity 100 -dm_adaptor parmmg -dim 3
+    args: -dm_plex_dim 3 -dm_plex_box_faces 4,4,4 -dm_plex_metric_target_complexity 100 -dm_adaptor parmmg
 
     test:
       suffix: uniform_3d_parmmg

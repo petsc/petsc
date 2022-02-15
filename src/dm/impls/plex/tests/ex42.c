@@ -405,7 +405,7 @@ int main(int argc, char **argv)
     requires: libceed
 
   testset:
-    args: -dm_plex_simplex 0 -dm_distribute -petscspace_degree 3 -dm_view -dm_petscds_view \
+    args: -dm_plex_simplex 0 -petscspace_degree 3 -dm_view -dm_petscds_view \
           -petscfe_default_quadrature_order 4 -coord_dm_default_quadrature_order 4
 
     test:

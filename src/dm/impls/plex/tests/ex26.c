@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
 
   /* Read the mesh from a file in any supported format */
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &sdim);CHKERRQ(ierr);
