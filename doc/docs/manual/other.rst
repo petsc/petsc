@@ -432,7 +432,7 @@ it cannot set up the MPI communication and remote processes).
 
 By default the GNU debugger ``gdb`` is used when ``-start_in_debugger``
 or ``-on_error_attach_debugger`` is specified. To employ either
-``xxgdb`` or the common UNIX debugger ``dbx``, one uses command line
+``xxgdb`` or the common Unix debugger ``dbx``, one uses command line
 options as indicated above. On HP-UX machines the debugger ``xdb``
 should be used instead of ``dbx``; on RS/6000 machines the ``xldb``
 debugger is supported as well. On OS X systems with XCode tools,
@@ -1150,10 +1150,10 @@ using C++. It is available under GPL v3, LGPL v2 and a commercial
 license and may be obtained, either as part of the Qt SDK or as
 stand-alone software. It supports
 automatic makefile generation using cross-platform ``qmake`` and
-``cmake`` build systems as well as allowing one to import projects based
+CMake build systems as well as allowing one to import projects based
 on existing, possibly hand-written, makefiles. Qt Creator has a visual
 debugger using GDB and LLDB (on Linux and OS X) or Microsoft’s CDB (on
-Windows) as backends. It also has an interface to Valgrind’s “memcheck”
+Microsoft Windows) as backends. It also has an interface to Valgrind’s “memcheck”
 and “callgrind” tools to detect memory leaks and profile code. It has
 built-in support for a variety of version control systems including git,
 mercurial, and subversion. Finally, Qt Creator comes fully equipped with

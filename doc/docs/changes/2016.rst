@@ -9,7 +9,7 @@ Changes: 2.0.16
 -  Added tags file so that vi users can easily browse PETSc source
    files (just as emacs users already can by using etags). See the
    users manual subsection "VI users" for details.
--  We have stopped distributing the UNIX-style manpages with PETSc.
+-  We have stopped distributing the Unix-style manpages with PETSc.
    Instead, we now only distribute the HTML version. You can still
    access the man pages with the command $PETSC_DIR/bin/petscman.
    Alternatively, you can directly view $PETSC_DIR/docs/www/www.html.

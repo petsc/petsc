@@ -718,7 +718,7 @@ them.
    program, one should always leave at least a ten percent margin
    between the total memory a process is using and the physical size of
    the machine’s memory. One way to estimate the amount of memory used
-   by given process is with the UNIX ``getrusage`` system routine. Also,
+   by given process is with the Unix ``getrusage`` system routine. Also,
    the PETSc option ``-log_view`` prints the amount of memory used by
    the basic PETSc objects, thus providing a lower bound on the memory
    used. Another useful option is ``-malloc_view`` which reports all

@@ -118,7 +118,7 @@ PetscErrorCode  PetscDrawViewFromOptions(PetscDraw A,PetscObject obj,const char 
 
    Input Parameters:
 +  comm - MPI communicator
-.  display - X display when using X windows
+.  display - X display when using X Windows
 .  title - optional title added to top of window
 .  x,y - coordinates of lower left corner of window or PETSC_DECIDE
 -  w, h - width and height of window or PETSC_DECIDE or PETSC_DRAW_HALF_SIZE, PETSC_DRAW_FULL_SIZE,
@@ -242,7 +242,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
       PetscBool dontwarn = PETSC_TRUE;
       flg  = PETSC_TRUE;
       ierr = PetscOptionsHasName(NULL,NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
-      if (!dontwarn) (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
+      if (!dontwarn) (*PetscErrorPrintf)("PETSc installed without X Windows on this machine\nproceeding without graphics\n");
     }
   }
 #endif
@@ -356,7 +356,7 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 
 /*@
    PetscDrawSetFromOptions - Sets the graphics type from the options database.
-      Defaults to a PETSc X windows graphics.
+      Defaults to a PETSc X Windows graphics.
 
    Collective on PetscDraw
 
@@ -365,11 +365,11 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 
    Options Database Keys:
 +   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
-.   -nox_warning - when X windows support is not installed this prevents the warning message from being printed
+.   -nox_warning - when X Windows support is not installed this prevents the warning message from being printed
 .   -draw_pause <pause amount> -- -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
 .   -draw_marker_type - <x,point>
-.   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
-.   -draw_save_final_image [optional filename] - (X windows only) saves the final image displayed in a window
+.   -draw_save [optional filename] - (X Windows only) saves each image before it is cleared to a file
+.   -draw_save_final_image [optional filename] - (X Windows only) saves the final image displayed in a window
 .   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
 .   -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with 'filename/filename_%d.ext'
 .   -draw_save_on_clear - saves an image on each clear, mainly for debugging
@@ -408,7 +408,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     if (!nox) def = PETSC_DRAW_X;
 #else
     ierr = PetscOptionsHasName(NULL,NULL,"-nox_warning",&warn);CHKERRQ(ierr);
-    if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X windows or Microsoft Graphics on this machine\nproceeding without graphics\n");
+    if (!nox && !warn) (*PetscErrorPrintf)("PETSc installed without X Windows or Microsoft Graphics on this machine\nproceeding without graphics\n");
 #endif
   }
   ierr = PetscObjectOptionsBegin((PetscObject)draw);CHKERRQ(ierr);

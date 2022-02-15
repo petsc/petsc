@@ -123,7 +123,7 @@ Running PETSc Programs
 
 Before using PETSc, the user must first set the environmental variable
 ``$PETSC_DIR``, indicating the full path of the PETSc home directory. For
-example, under the UNIX bash shell a command of the form
+example, under the Unix bash shell a command of the form
 
 .. code-block:: console
 
@@ -692,7 +692,7 @@ To develop an application program that uses PETSc, we suggest the following:
 
         Use ``make ex19`` to compile your program
 
-      * cmake. Copy $PETSC_DIR/share/petsc/CMakeLists.txt to your directory, for example, ``cp $PETSC_DIR/share/petsc/CMakeLists.txt CMakeLists.txt``
+      * CMake. Copy $PETSC_DIR/share/petsc/CMakeLists.txt to your directory, for example, ``cp $PETSC_DIR/share/petsc/CMakeLists.txt CMakeLists.txt``
 
         Edit CMakeLists.txt, read the comments on usage and change the name of application from ex1 to your application executable name.
 

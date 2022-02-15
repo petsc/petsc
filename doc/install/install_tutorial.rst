@@ -66,7 +66,7 @@ Prerequisites
    While this tutorial will provide all commands necessary, it will not explain the usage
    or syntax of commands not directly implemented by PETSc. If you are unfamiliar with the
    command line, or would like to refresh your understanding, consider reviewing tutorials
-   on basic `UNIX <https://www.tutorialspoint.com/unix/index.htm>`__ and `shell
+   on basic `Unix <https://www.tutorialspoint.com/unix/index.htm>`__ and `shell
    <https://www.tutorialspoint.com/unix/shell_scripting.htm>`__ usage.
 
 
