@@ -106,4 +106,6 @@ PETSC_INTERN PetscErrorCode VecRestoreArray_SeqKokkos(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArrayWriteAndMemType_SeqKokkos(Vec,PetscScalar**,PetscMemType*);
+PETSC_INTERN PetscErrorCode VecGetSubVector_Kokkos_Private(Vec,PetscBool,IS,Vec*);
+PETSC_INTERN PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec,IS,Vec*);
 #endif
