@@ -28,7 +28,7 @@ The important PETSc classes include
 -  managing interactions between mesh data structures and vectors,
    matrices, and solvers (``DM``);
 
--   scalable optimization algorithms (``Tao``).
+-  scalable optimization algorithms (``Tao``).
 
 
 Each class consist of an abstract interface (simply a set of calling
@@ -575,12 +575,34 @@ local part of the matrix and vectors in the parallel case.
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex2.c
       :end-before: /*TEST
 
+.. _sec_cpu_simd:
+
+CPU SIMD parallelism
+~~~~~~~~~~~~~~~~~~~~
+
+.. _sec_cpu_openmp:
+
+CPU OpenMP parallelism
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. _sec_gpu_kernels:
+
+GPU kernel parallelism
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. _sec_gpu_streams:
+
+GPU stream parallelism
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 .. raw:: latex
 
   \newpage
 
 Compiling and Running Programs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 The output below illustrates compiling and running a
 PETSc program using MPICH on an OS X laptop. Note that different
@@ -606,7 +628,7 @@ on the PETSc website https://petsc.org/ or given in the file
 .. _sec_profiling_programs:
 
 Profiling Programs
-~~~~~~~~~~~~~~~~~~
+------------------
 
 The option
 ``-log_view`` activates printing of a performance summary, including
@@ -673,7 +695,7 @@ merely to demonstrate the ease of extracting performance information.
 .. _sec_writing_application_codes:
 
 Writing C/C++ or Fortran Applications
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 The examples throughout the library demonstrate the software usage and
 can serve as templates for developing custom applications. We suggest
@@ -784,7 +806,7 @@ To develop an application program that uses PETSc, we suggest the following:
 .. _sec_directory:
 
 Directory Structure
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 We conclude this introduction with an overview of the organization of
 the PETSc software. The root directory of PETSc contains the following
