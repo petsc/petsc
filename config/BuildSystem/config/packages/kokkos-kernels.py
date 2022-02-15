@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'bcc505d321da561889285184a085220da8920515' # develop of 2022-01-25
+    self.gitcommit        = '6fff4fffe0b531a8d5f93bc61bd22000c729ad0f' # develop of 2022-02-14 (fixes Ampere CSR bug)
     self.versionname      = 'KOKKOSKERNELS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos-kernels.git']
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
