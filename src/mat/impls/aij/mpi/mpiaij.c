@@ -6571,9 +6571,12 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJ(Mat mat,const PetscScalar v[],Inser
   const PetscCount     *Cperm1 = mpiaij->Cperm1;
 
   PetscFunctionBegin;
-  if (imode == INSERT_VALUES) {ierr = MatZeroEntries(mat);CHKERRQ(ierr);}
   ierr = MatSeqAIJGetArray(A,&Aa);CHKERRQ(ierr); /* Might read and write matrix values */
   ierr = MatSeqAIJGetArray(B,&Ba);CHKERRQ(ierr);
+  if (imode == INSERT_VALUES) {
+    ierr = PetscMemzero(Aa,((Mat_SeqAIJ*)A->data)->nz*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(Ba,((Mat_SeqAIJ*)B->data)->nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
 
   /* Pack entries to be sent to remote */
   for (PetscCount i=0; i<mpiaij->sendlen; i++) sendbuf[i] = v[Cperm1[i]];

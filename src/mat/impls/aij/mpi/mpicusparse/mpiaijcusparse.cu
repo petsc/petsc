@@ -319,15 +319,14 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat,const PetscScalar v
     ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr);
     if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we need to copy it to device */
       cerr = cudaMalloc((void**)&v1,mpiaij->coo_n*sizeof(PetscScalar));CHKERRCUDA(cerr);
-      if (v) {cerr = cudaMemcpy((void*)v1,v,mpiaij->coo_n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);}
-      else {cerr = cudaMemset((void*)v1,0,mpiaij->coo_n*sizeof(PetscScalar));CHKERRCUDA(cerr);}
+      cerr = cudaMemcpy((void*)v1,v,mpiaij->coo_n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
     }
 
     if (imode == INSERT_VALUES) {
-      ierr = MatZeroEntries(A);CHKERRQ(ierr);
-      ierr = MatZeroEntries(B);CHKERRQ(ierr);
       ierr = MatSeqAIJCUSPARSEGetArrayWrite(A,&Aa);CHKERRQ(ierr); /* write matrix values */
       ierr = MatSeqAIJCUSPARSEGetArrayWrite(B,&Ba);CHKERRQ(ierr);
+      cerr = cudaMemset(Aa,0,((Mat_SeqAIJ*)A->data)->nz*sizeof(PetscScalar));CHKERRCUDA(cerr);
+      cerr = cudaMemset(Ba,0,((Mat_SeqAIJ*)B->data)->nz*sizeof(PetscScalar));CHKERRCUDA(cerr);
     } else {
       ierr = MatSeqAIJCUSPARSEGetArray(A,&Aa);CHKERRQ(ierr); /* read & write matrix values */
       ierr = MatSeqAIJCUSPARSEGetArray(B,&Ba);CHKERRQ(ierr);

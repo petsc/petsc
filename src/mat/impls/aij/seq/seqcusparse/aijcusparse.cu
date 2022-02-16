@@ -4165,8 +4165,7 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
     ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr);
     if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
       cerr = cudaMalloc((void**)&v1,seq->coo_n*sizeof(PetscScalar));CHKERRCUDA(cerr);
-      if (v) {cerr = cudaMemcpy((void*)v1,v,seq->coo_n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);}
-      else {cerr = cudaMemset((void*)v1,0,seq->coo_n*sizeof(PetscScalar));CHKERRCUDA(cerr);}
+      cerr = cudaMemcpy((void*)v1,v,seq->coo_n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
     }
 
     if (imode == INSERT_VALUES) {ierr = MatSeqAIJCUSPARSEGetArrayWrite(A,&Aa);CHKERRQ(ierr);}
@@ -4177,8 +4176,6 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
     if (imode == INSERT_VALUES) {ierr = MatSeqAIJCUSPARSERestoreArrayWrite(A,&Aa);CHKERRQ(ierr);}
     else {ierr = MatSeqAIJCUSPARSERestoreArray(A,&Aa);CHKERRQ(ierr);}
 
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (PetscMemTypeHost(memtype)) {cerr = cudaFree((void*)v1);CHKERRCUDA(cerr);}
   } else {
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE_Basic(A,v,imode);CHKERRQ(ierr);
