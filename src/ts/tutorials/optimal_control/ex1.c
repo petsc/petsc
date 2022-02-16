@@ -362,21 +362,21 @@ int main(int argc,char **argv)
   }
   ierr = VecRestoreArray(PL,&p);CHKERRQ(ierr);
 
-  ierr = TaoSetInitialVector(tao,P);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,P);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao,PL,PU);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormObjFunctionGradient,(void *)&aircraft);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormObjFunctionGradient,(void *)&aircraft);CHKERRQ(ierr);
 
   if (aircraft.eh) {
     if (aircraft.mf) {
       ierr = MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,2*aircraft.nsteps,2*aircraft.nsteps,(void*)&aircraft,&aircraft.H);CHKERRQ(ierr);
       ierr = MatShellSetOperation(aircraft.H,MATOP_MULT,(void(*)(void))MyMatMult);CHKERRQ(ierr);
       ierr = MatSetOption(aircraft.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = TaoSetHessianRoutine(tao,aircraft.H,aircraft.H,MatrixFreeObjHessian,(void*)&aircraft);CHKERRQ(ierr);
+      ierr = TaoSetHessian(tao,aircraft.H,aircraft.H,MatrixFreeObjHessian,(void*)&aircraft);CHKERRQ(ierr);
     } else {
       ierr = MatCreateDense(MPI_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,2*aircraft.nsteps,2*aircraft.nsteps,NULL,&(aircraft.H));CHKERRQ(ierr);
       ierr = MatSetOption(aircraft.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = TaoSetHessianRoutine(tao,aircraft.H,aircraft.H,FormObjHessian,(void *)&aircraft);CHKERRQ(ierr);
+      ierr = TaoSetHessian(tao,aircraft.H,aircraft.H,FormObjHessian,(void *)&aircraft);CHKERRQ(ierr);
     }
   }
 
@@ -436,7 +436,7 @@ int main(int argc,char **argv)
    Input Parameters:
    tao - the Tao context
    P   - the input vector
-   ctx - optional aircraft-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+   ctx - optional aircraft-defined context, as set by TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function

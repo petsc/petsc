@@ -73,9 +73,9 @@ PetscErrorCode main(int argc,char **argv)
   ierr = InitializeProblem(&user);CHKERRQ(ierr); /* sets up problem, function below */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOPDIPM);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,user.x);CHKERRQ(ierr); /* gets solution vector from problem */
+  ierr = TaoSetSolution(tao,user.x);CHKERRQ(ierr); /* gets solution vector from problem */
   ierr = TaoSetVariableBounds(tao,user.xl,user.xu);CHKERRQ(ierr); /* sets lower upper bounds from given solution */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
 
   if (!user.noeqflag) {
     ierr = TaoSetEqualityConstraintsRoutine(tao,user.ce,FormEqualityConstraints,(void*)&user);CHKERRQ(ierr);
@@ -107,7 +107,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoGetType(tao,&type);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)tao,TAOPDIPM,&pdipm);CHKERRQ(ierr);
   if (pdipm) {
-    ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
+    ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
     if (user.initview) {
       ierr = TaoSetUp(tao);CHKERRQ(ierr);
       ierr = VecDuplicate(user.x, &G);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ PetscErrorCode main(int argc,char **argv)
   }
 
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-  ierr = TaoGetSolutionVector(tao,&x);CHKERRQ(ierr);
+  ierr = TaoGetSolution(tao,&x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free objects */

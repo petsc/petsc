@@ -241,10 +241,10 @@ int main(int argc,char **argv)
   x_ptr[1]  = 0.7;
   ierr = VecRestoreArray(ic,&x_ptr);CHKERRQ(ierr);
 
-  ierr = TaoSetInitialVector(tao,ic);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,ic);CHKERRQ(ierr);
 
   /* Set routine for function and gradient evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ int main(int argc,char **argv)
    Input Parameters:
    tao - the Tao context
    X   - the input vector
-   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function

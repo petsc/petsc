@@ -11,13 +11,13 @@ static  char help[]="";
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetInitialVector();
-   Routines: TaoSetObjectiveAndGradientRoutine();
+   Routines: TaoSetSolution();
+   Routines: TaoSetObjectiveAndGradient();
    Routines: TaoSetEqualityConstraintsRoutine();
    Routines: TaoSetInequalityConstraintsRoutine();
    Routines: TaoSetEqualityJacobianRoutine();
    Routines: TaoSetInequalityJacobianRoutine();
-   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
+   Routines: TaoSetHessian(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
    Routines: TaoGetConvergedReason();TaoDestroy();
    Processors: 1
@@ -91,14 +91,14 @@ PetscErrorCode main(int argc,char **argv)
 
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOIPM);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetEqualityConstraintsRoutine(tao,ceq,FormEqualityConstraints,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetInequalityConstraintsRoutine(tao,cin,FormInequalityConstraints,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetInequalityBounds(tao,user.bin,NULL);CHKERRQ(ierr);
   ierr = TaoSetJacobianEqualityRoutine(tao,user.Aeq,user.Aeq,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetJacobianInequalityRoutine(tao,user.Ain,user.Ain,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);

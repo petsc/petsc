@@ -1024,7 +1024,7 @@ PetscErrorCode  SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
-  PetscValidPointer(snes, 2);
+  PetscValidPointer(snes,2);
   *snes = linesearch->snes;
   PetscFunctionReturn(0);
 }

@@ -300,10 +300,10 @@ int main(int argc,char **argv)
     /* Set initial guess for TAO */
     ierr = VecDuplicate(appctx.U,&P);CHKERRQ(ierr);
     ierr = VecCopy(appctx.U,P);CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(tao,P);CHKERRQ(ierr);
+    ierr = TaoSetSolution(tao,P);CHKERRQ(ierr);
 
     /* Set routine for function and gradient evaluation */
-    ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionAndGradient,&appctx);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionAndGradient,&appctx);CHKERRQ(ierr);
 
     /* Check for any TAO command line options */
     ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -332,7 +332,7 @@ int main(int argc,char **argv)
    Input Parameters:
    tao - the Tao context
    P   - the input vector
-   ctx - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+   ctx - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function

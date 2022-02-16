@@ -30,6 +30,7 @@ cdef extern from * nogil:
     int VecCreate(MPI_Comm,PetscVec*)
 
     int VecSetOptionsPrefix(PetscVec,char[])
+    int VecAppendOptionsPrefix(PetscVec,char[])
     int VecGetOptionsPrefix(PetscVec,char*[])
     int VecSetFromOptions(PetscVec)
     int VecSetUp(PetscVec)

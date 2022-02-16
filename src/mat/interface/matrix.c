@@ -40,7 +40,7 @@ PetscLogEvent MAT_DenseCopyToGPU, MAT_DenseCopyFromGPU;
 PetscLogEvent MAT_Merge,MAT_Residual,MAT_SetRandom;
 PetscLogEvent MAT_FactorFactS,MAT_FactorInvS;
 PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_ISCreate,MATCOLORING_SetUp,MATCOLORING_Weights;
-PetscLogEvent MAT_H2Opus_Build,MAT_H2Opus_Compress,MAT_H2Opus_Orthog;
+PetscLogEvent MAT_H2Opus_Build,MAT_H2Opus_Compress,MAT_H2Opus_Orthog,MAT_H2Opus_LR;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","QR","MatFactorType","MAT_FACTOR_",NULL};
 
@@ -78,6 +78,7 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
   PetscValidHeaderSpecific(x,MAT_CLASSID,1);
   if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_CLASSID,2);
   PetscValidType(x,1);
+  MatCheckPreallocated(x,1);
 
   PetscCheckFalse(!x->ops->setrandom,PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Mat type %s",((PetscObject)x)->type_name);
 
@@ -88,13 +89,12 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
     ierr = PetscRandomSetFromOptions(randObj);CHKERRQ(ierr);
     rctx = randObj;
   }
-
   ierr = PetscLogEventBegin(MAT_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setrandom)(x,rctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(x, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(x, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&randObj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1367,9 +1367,9 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
   PetscValidIntPointer(idxn,5);
   MatCheckPreallocated(mat,1);
 
-  if (mat->insertmode == NOT_SET_VALUES) {
-    mat->insertmode = addv;
-  } else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+  if (mat->insertmode == NOT_SET_VALUES) mat->insertmode = addv;
+  else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+
   if (PetscDefined(USE_DEBUG)) {
     PetscInt       i,j;
 
@@ -4610,8 +4610,8 @@ PetscErrorCode MatSolverTypeGet(MatSolverType type,MatType mtype,MatFactorType f
 
   PetscFunctionBegin;
   if (foundtype) *foundtype = PETSC_FALSE;
-  if (foundmtype)   *foundmtype   = PETSC_FALSE;
-  if (createfactor) *createfactor    = NULL;
+  if (foundmtype) *foundmtype = PETSC_FALSE;
+  if (createfactor) *createfactor = NULL;
 
   if (type) {
     while (next) {
@@ -4862,6 +4862,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 {
   PetscErrorCode ierr;
   Mat            B;
+  VecType        vtype;
   PetscInt       i;
   PetscObject    dm;
   void           (*viewf)(void);
@@ -4885,6 +4886,8 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   if (viewf) {
     ierr = MatSetOperation(B,MATOP_VIEW,viewf);CHKERRQ(ierr);
   }
+  ierr = MatGetVecType(mat,&vtype);CHKERRQ(ierr);
+  ierr = MatSetVecType(B,vtype);CHKERRQ(ierr);
 
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;
@@ -5613,7 +5616,7 @@ PetscErrorCode MatAssemblyBegin(Mat mat,MatAssemblyType type)
 
 .seealso: MatAssemblyEnd(), MatSetValues(), MatAssemblyBegin()
 @*/
-PetscErrorCode MatAssembled(Mat mat,PetscBool  *assembled)
+PetscErrorCode MatAssembled(Mat mat,PetscBool *assembled)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);

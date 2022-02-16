@@ -254,9 +254,9 @@ int main(int argc,char **argv)
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetMonitor(tao,MonitorError,&appctx,NULL);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBQNLS);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,appctx.dat.ic);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,appctx.dat.ic);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation  */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&appctx);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&appctx);CHKERRQ(ierr);
   /* Check for any TAO command line options  */
   ierr = TaoSetTolerances(tao,1e-8,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -552,7 +552,7 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
    Input Parameters:
    tao - the Tao context
    IC   - the input vector
-   ctx - optional user-defined context, as set when calling TaoSetObjectiveAndGradientRoutine()
+   ctx - optional user-defined context, as set when calling TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function

@@ -1116,8 +1116,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     ierr = PetscObjectIncrementTabLevel((PetscObject)mfqP->subtao, (PetscObject)tao, 1);CHKERRQ(ierr);
     ierr = TaoSetType(mfqP->subtao,TAOBNTR);CHKERRQ(ierr);
     ierr = TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_");CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(mfqP->subtao,mfqP->subx);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(mfqP->subtao,pounders_fg,(void*)mfqP);CHKERRQ(ierr);
+    ierr = TaoSetSolution(mfqP->subtao,mfqP->subx);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(mfqP->subtao,NULL,pounders_fg,(void*)mfqP);CHKERRQ(ierr);
     ierr = TaoSetMaximumIterations(mfqP->subtao,mfqP->gqt_maxits);CHKERRQ(ierr);
     ierr = TaoSetFromOptions(mfqP->subtao);CHKERRQ(ierr);
     ierr = TaoGetKSP(mfqP->subtao,&ksp);CHKERRQ(ierr);
@@ -1127,7 +1127,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     }
     ierr = TaoSetVariableBounds(mfqP->subtao,mfqP->subxl,mfqP->subxu);CHKERRQ(ierr);
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,mfqP->n,mfqP->n,mfqP->Hres,&mfqP->subH);CHKERRQ(ierr);
-    ierr = TaoSetHessianRoutine(mfqP->subtao,mfqP->subH,mfqP->subH,pounders_h,(void*)mfqP);CHKERRQ(ierr);
+    ierr = TaoSetHessian(mfqP->subtao,mfqP->subH,mfqP->subH,pounders_h,(void*)mfqP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

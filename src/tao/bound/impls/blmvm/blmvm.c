@@ -181,7 +181,6 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObje
   ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tao_blmvm_recycle","enable recycling of the BFGS matrix between subsequent TaoSolve() calls","",blmP->recycle,&blmP->recycle,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(blmP->M, ((PetscObject)tao)->prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(blmP->M, "tao_blmvm_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(blmP->M);CHKERRQ(ierr);

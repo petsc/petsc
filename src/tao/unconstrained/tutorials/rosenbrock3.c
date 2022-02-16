@@ -13,9 +13,9 @@ or the chained Rosenbrock function:\n\
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate();
-   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetType(); TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
    Routines: TaoDestroy();
@@ -75,11 +75,11 @@ int main(int argc,char **argv)
 
   /* Set solution vec and an initial guess */
   ierr = VecSet(x, zero);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
 
   /* Set routines for function, gradient, hessian evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user);CHKERRQ(ierr);
-  ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,&user);CHKERRQ(ierr);
+  ierr = TaoSetHessian(tao,H,H,FormHessian,&user);CHKERRQ(ierr);
 
   /* Check for TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);

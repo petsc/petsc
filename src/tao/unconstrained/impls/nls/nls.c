@@ -259,7 +259,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
     }
     ++tao->niter;
-    tao->ksp_its=0;
+    tao->ksp_its = 0;
 
     /* Compute the Hessian */
     if (needH) {
@@ -285,8 +285,8 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = KSPCGSetRadius(tao->ksp,nlsP->max_radius);CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-      tao->ksp_its+=kspits;
-      tao->ksp_tot_its+=kspits;
+      tao->ksp_its += kspits;
+      tao->ksp_tot_its += kspits;
       ierr = KSPCGGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
 
       if (0.0 == tao->trust) {
@@ -309,8 +309,8 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           ierr = KSPCGSetRadius(tao->ksp,nlsP->max_radius);CHKERRQ(ierr);
           ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
           ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-          tao->ksp_its+=kspits;
-          tao->ksp_tot_its+=kspits;
+          tao->ksp_its += kspits;
+          tao->ksp_tot_its += kspits;
           ierr = KSPCGGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
 
           PetscCheckFalse(norm_d == 0.0,PETSC_COMM_SELF,PETSC_ERR_PLIB, "Initial direction zero");
@@ -320,7 +320,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
       tao->ksp_its += kspits;
-      tao->ksp_tot_its+=kspits;
+      tao->ksp_tot_its += kspits;
     }
     ierr = VecScale(nlsP->D, -1.0);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);

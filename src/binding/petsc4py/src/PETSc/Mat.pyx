@@ -136,6 +136,11 @@ class MatStructure(object):
     DIFFERENT = DIFFERENT_NZ = DIFFERENT_NONZERO_PATTERN
     UNKNOWN   = UNKNOWN_NZ   = UNKNOWN_NONZERO_PATTERN
 
+class MatDuplicateOption(object):
+    DO_NOT_COPY_VALUES    = MAT_DO_NOT_COPY_VALUES
+    COPY_VALUES           = MAT_COPY_VALUES
+    SHARE_NONZERO_PATTERN = MAT_SHARE_NONZERO_PATTERN
+
 class MatOrderingType(object):
     NATURAL     = S_(MATORDERINGNATURAL)
     ND          = S_(MATORDERINGND)
@@ -202,6 +207,7 @@ cdef class Mat(Object):
     AssemblyType    = MatAssemblyType
     InfoType        = MatInfoType
     Structure       = MatStructure
+    DuplicateOption = MatDuplicateOption
     OrderingType    = MatOrderingType
     SolverType      = MatSolverType
     FactorShiftType = MatFactorShiftType
@@ -660,6 +666,11 @@ cdef class Mat(Object):
         CHKERR( MatGetOptionsPrefix(self.mat, &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( MatAppendOptionsPrefix(self.mat, cval) )
+
     def setFromOptions(self):
         CHKERR( MatSetFromOptions(self.mat) )
 
@@ -669,6 +680,11 @@ cdef class Mat(Object):
 
     def setOption(self, option, flag):
         CHKERR( MatSetOption(self.mat, option, flag) )
+
+    def getOption(self, option):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( MatGetOption(self.mat, option, &flag) )
+        return toBool(flag)
 
     def getType(self):
         cdef PetscMatType cval = NULL
@@ -1587,6 +1603,25 @@ cdef class Mat(Object):
         PetscINCREF(V.obj)
         return (A, U, c, V)
 
+    # H2Opus
+
+    def H2OpusOrthogonalize(self):
+        CHKERR( MatH2OpusOrthogonalize(self.mat) )
+        return self
+
+    def H2OpusCompress(self, tol):
+        cdef PetscReal _tol = asReal(tol)
+        CHKERR( MatH2OpusCompress(self.mat, _tol) )
+        return self
+
+    def H2OpusLowRankUpdate(self, Mat U, Mat V=None, s = 1.0):
+        cdef PetscScalar _s = asScalar(s)
+        cdef PetscMat vmat = NULL
+        if V is not None:
+            vmat = V.mat
+        CHKERR( MatH2OpusLowRankUpdate(self.mat, U.mat, vmat, _s) )
+        return self
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl, ival):
@@ -1745,6 +1780,7 @@ cdef class Mat(Object):
         CHKERR( MatSetDM(self.mat, dm.dm) )
 
     # backward compatibility
+
     PtAP = ptap
 
     #
@@ -1888,6 +1924,7 @@ del MatOption
 del MatAssemblyType
 del MatInfoType
 del MatStructure
+del MatDuplicateOption
 del MatOrderingType
 del MatSolverType
 del MatFactorShiftType

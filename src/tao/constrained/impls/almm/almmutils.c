@@ -142,9 +142,9 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
   ierr = TaoDestroy(&auglag->subsolver);CHKERRQ(ierr);
   auglag->subsolver = subsolver;
   if (tao->setupcalled) {
-    ierr = TaoSetInitialVector(auglag->subsolver, auglag->P);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveRoutine(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(auglag->subsolver, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag);CHKERRQ(ierr);
+    ierr = TaoSetSolution(auglag->subsolver, auglag->P);CHKERRQ(ierr);
+    ierr = TaoSetObjective(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(auglag->subsolver, NULL, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag);CHKERRQ(ierr);
     ierr = TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

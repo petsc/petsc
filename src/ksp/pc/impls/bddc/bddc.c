@@ -165,6 +165,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     if (pcbddc->graphmaxcount != PETSC_MAX_INT) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Graph max count: %D\n",pcbddc->graphmaxcount);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPrintf(viewer,"  Corner selection: %d (selected %d)\n",pcbddc->corner_selection,pcbddc->corner_selected);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use vertices: %d (vertex size %D)\n",pcbddc->use_vertices,pcbddc->vertex_size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use edges: %d\n",pcbddc->use_edges);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use faces: %d\n",pcbddc->use_faces);CHKERRQ(ierr);

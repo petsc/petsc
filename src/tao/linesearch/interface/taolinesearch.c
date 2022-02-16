@@ -453,7 +453,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
   if (ls->ops->destroy) {
     ierr = (*(ls)->ops->destroy)(ls);CHKERRQ(ierr);
   }
-  ls->max_funcs=30;
+  ls->max_funcs = 30;
   ls->ftol = 0.0001;
   ls->gtol = 0.9;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -461,12 +461,12 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
 #else
   ls->rtol = 1.0e-10;
 #endif
-  ls->stepmin=1.0e-20;
-  ls->stepmax=1.0e+20;
+  ls->stepmin = 1.0e-20;
+  ls->stepmax = 1.0e+20;
 
-  ls->nfeval=0;
-  ls->ngeval=0;
-  ls->nfgeval=0;
+  ls->nfeval = 0;
+  ls->ngeval = 0;
+  ls->nfgeval = 0;
   ls->ops->setup = NULL;
   ls->ops->apply = NULL;
   ls->ops->view = NULL;

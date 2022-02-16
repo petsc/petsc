@@ -29,7 +29,7 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Routines: TaoSetType();
    Routines: TaoSetResidualRoutine();
    Routines: TaoSetMonitor();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
    Routines: TaoDestroy();
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
 
     /* Set the function and Jacobian routines. */
     ierr = FormStartingPoint(x);CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+    ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
     ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
 
     /* Check for any TAO command line arguments */

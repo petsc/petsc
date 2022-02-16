@@ -230,7 +230,6 @@ static PetscErrorCode TaoSetFromOptions_BNCG(PetscOptionItems *PetscOptionsObjec
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_bncg_type","cg formula", "", CG_Table, CGTypes, CG_Table[cg->cg_type], &cg->cg_type,NULL);CHKERRQ(ierr);
   if (cg->cg_type != CG_SSML_BFGS) cg->alpha = -1.0; /* Setting defaults for non-BFGS methods. User can change it below. */

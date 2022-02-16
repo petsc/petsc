@@ -530,18 +530,18 @@ int main(int argc,char **argv)
       /* Create optimization context and set up */
       ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
       ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
-      ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
+      ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
 
       if (mf) {
         ierr = MatCreateShell(PETSC_COMM_SELF,2,2,2,2,(void*)&user,&user.H);CHKERRQ(ierr);
         ierr = MatShellSetOperation(user.H,MATOP_MULT,(void(*)(void))HessianProductMat);CHKERRQ(ierr);
         ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-        ierr = TaoSetHessianRoutine(tao,user.H,user.H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
+        ierr = TaoSetHessian(tao,user.H,user.H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
       } else { /* Create Hessian matrix */
         ierr = MatCreate(PETSC_COMM_WORLD,&user.H);CHKERRQ(ierr);
         ierr = MatSetSizes(user.H,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
         ierr = MatSetUp(user.H);CHKERRQ(ierr);
-        ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
+        ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
       }
 
       /* Not use any preconditioner */
@@ -552,7 +552,7 @@ int main(int argc,char **argv)
       }
 
       /* Set initial solution guess */
-      ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+      ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
       ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
       ierr = TaoSolve(tao);CHKERRQ(ierr);
       ierr = TaoDestroy(&tao);CHKERRQ(ierr);

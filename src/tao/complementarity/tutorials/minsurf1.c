@@ -83,7 +83,7 @@ int main(int argc, char **argv)
   ierr = TaoSetType(tao,TAOSSILS);CHKERRQ(ierr);
 
   /* Set data structure */
-  ierr = TaoSetInitialVector(tao, x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao, x);CHKERRQ(ierr);
 
   /*  Set routines for constraints function and Jacobian evaluation */
   ierr = TaoSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user);CHKERRQ(ierr);

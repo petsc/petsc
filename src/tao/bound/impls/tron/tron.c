@@ -35,7 +35,6 @@ static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

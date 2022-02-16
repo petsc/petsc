@@ -1749,9 +1749,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   ierr = ISLocalToGlobalMappingGetIndices(A->rmap->mapping,&global_indices_r);CHKERRQ(ierr);
   if (A->rmap->mapping != A->cmap->mapping) {
     ierr = ISLocalToGlobalMappingGetIndices(A->cmap->mapping,&global_indices_c);CHKERRQ(ierr);
-  } else {
-    global_indices_c = global_indices_r;
-  }
+  } else global_indices_c = global_indices_r;
 
   if (issbaij) {
     ierr = MatGetRowUpperTriangular(matis->A);CHKERRQ(ierr);
@@ -1872,6 +1870,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   }
 
   /* Set preallocation */
+  ierr = MatSetBlockSizesFromMats(B,A,A);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,dnz,0,onz);CHKERRQ(ierr);
   for (i=0;i<lrows;i+=bs) {

@@ -35,11 +35,11 @@ int main(int argc,char **argv)
   PetscLayout    map;
   PetscScalar    *Adata = NULL, *Cdata = NULL, scale = 1.0;
   PetscReal      *coords,nA,nD,nB,err,nX,norms[3];
-  PetscInt       N, n = 64, dim = 1, i, j, nrhs = 11, lda = 0, ldc = 0, nt, ntrials = 2;
+  PetscInt       N, n = 64, dim = 1, i, j, nrhs = 11, lda = 0, ldc = 0, ldu = 0, nlr = 7, nt, ntrials = 2;
   PetscMPIInt    size,rank;
-  PetscBool      testlayout = PETSC_FALSE,flg,symm = PETSC_FALSE, Asymm = PETSC_TRUE, kernel = PETSC_TRUE;
+  PetscBool      testlayout = PETSC_FALSE, flg, symm = PETSC_FALSE, Asymm = PETSC_TRUE, kernel = PETSC_TRUE;
   PetscBool      checkexpl = PETSC_FALSE, agpu = PETSC_FALSE, bgpu = PETSC_FALSE, cgpu = PETSC_FALSE, flgglob;
-  PetscBool      testtrans, testnorm, randommat = PETSC_TRUE, testorthog, testcompress;
+  PetscBool      testtrans, testnorm, randommat = PETSC_TRUE, testorthog, testcompress, testhlru;
   void           (*approxnormfunc)(void);
   void           (*Anormfunc)(void);
   PetscErrorCode ierr;
@@ -54,6 +54,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-lda",&lda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-ldc",&ldc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nlr",&nlr,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-ldu",&ldu,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-matmattrials",&ntrials,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-randommat",&randommat,NULL);CHKERRQ(ierr);
   if (!flgglob) { ierr = PetscOptionsGetBool(NULL,NULL,"-testlayout",&testlayout,NULL);CHKERRQ(ierr); }
@@ -68,11 +70,13 @@ int main(int argc,char **argv)
   if (!Asymm) symm = PETSC_FALSE;
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  /* MatMultTranspose for nonsymmetric matrices in parallel not implemented */
+
+  /* Disable tests for unimplemented variants */
   testtrans = (PetscBool)(size == 1 || symm);
   testnorm = (PetscBool)(size == 1 || symm);
   testorthog = (PetscBool)(size == 1 || symm);
   testcompress = (PetscBool)(size == 1 || symm);
+  testhlru = (PetscBool)(size == 1);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscLayoutCreate(PETSC_COMM_WORLD,&map);CHKERRQ(ierr);
@@ -299,6 +303,7 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&D);CHKERRQ(ierr);
   }
 
+  /* Test basis orthogonalization */
   if (testorthog) {
     ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
     ierr = MatSetOption(D,MAT_SYMMETRIC,symm);CHKERRQ(ierr);
@@ -310,11 +315,41 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&D);CHKERRQ(ierr);
   }
 
+  /* Test matrix compression */
   if (testcompress) {
     ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
     ierr = MatSetOption(D,MAT_SYMMETRIC,symm);CHKERRQ(ierr);
     ierr = MatH2OpusCompress(D,PETSC_SMALL);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);
+  }
+
+  /* Test low-rank update */
+  if (testhlru) {
+    Mat         U, V;
+    PetscScalar *Udata = NULL, *Vdata = NULL;
+
+    if (ldu) {
+      ierr = PetscMalloc1(nlr*(n+ldu),&Udata);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nlr*(n+ldu+2),&Vdata);CHKERRQ(ierr);
+    }
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)D),n,PETSC_DECIDE,N,nlr,Udata,&U);CHKERRQ(ierr);
+    ierr = MatDenseSetLDA(U,n+ldu);CHKERRQ(ierr);
+    ierr = MatCreateDense(PetscObjectComm((PetscObject)D),n,PETSC_DECIDE,N,nlr,Vdata,&V);CHKERRQ(ierr);
+    if (ldu) { ierr = MatDenseSetLDA(V,n+ldu+2);CHKERRQ(ierr); }
+    ierr = MatSetRandom(U,NULL);CHKERRQ(ierr);
+    ierr = MatSetRandom(V,NULL);CHKERRQ(ierr);
+    ierr = MatH2OpusLowRankUpdate(D,U,V,0.5);CHKERRQ(ierr);
+    ierr = MatH2OpusLowRankUpdate(D,U,V,-0.5);CHKERRQ(ierr);
+    ierr = MatMultEqual(B,D,10,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult error after low-rank update\n");CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    ierr = MatDestroy(&U);CHKERRQ(ierr);
+    ierr = PetscFree(Udata);CHKERRQ(ierr);
+    ierr = MatDestroy(&V);CHKERRQ(ierr);
+    ierr = PetscFree(Vdata);CHKERRQ(ierr);
   }
 
   /* check explicit operator */
@@ -380,7 +415,7 @@ int main(int argc,char **argv)
      nsize: 1
      suffix: 1_ld
      output_file: output/ex66_1.out
-     args: -n 33 -kernel 1 -dim 1 -lda 13 -ldc 11 -symm 0 -checkexpl -bgpu 0
+     args: -n 33 -kernel 1 -dim 1 -lda 13 -ldc 11 -ldu 17 -symm 0 -checkexpl -bgpu 0
 
    test:
      requires: h2opus cuda
@@ -394,7 +429,7 @@ int main(int argc,char **argv)
      nsize: 1
      suffix: 1_cuda_ld
      output_file: output/ex66_1.out
-     args: -n 33 -kernel 1 -dim 1 -lda 13 -ldc 11 -symm 0 -checkexpl -bgpu 1
+     args: -n 33 -kernel 1 -dim 1 -lda 13 -ldc 11 -ldu 17 -symm 0 -checkexpl -bgpu 1
 
    test:
      requires: h2opus

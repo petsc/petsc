@@ -40,6 +40,7 @@ SNES Object: 7 MPI processes
           Use user-defined CSR: 0
           Use local mat graph: 1
           Connectivity graph topological dimension: 2
+          Corner selection: 0 (selected 0)
           Use vertices: 1 (vertex size 1)
           Use edges: 1
           Use faces: 0
@@ -214,6 +215,7 @@ SNES Object: 7 MPI processes
           Use user-defined CSR: 0
           Use local mat graph: 1
           Connectivity graph topological dimension: 2
+          Corner selection: 0 (selected 0)
           Use vertices: 1 (vertex size 1)
           Use edges: 1
           Use faces: 0
@@ -389,6 +391,7 @@ SNES Object: 7 MPI processes
           Use user-defined CSR: 0
           Use local mat graph: 1
           Connectivity graph topological dimension: 2
+          Corner selection: 0 (selected 0)
           Use vertices: 1 (vertex size 1)
           Use edges: 1
           Use faces: 0

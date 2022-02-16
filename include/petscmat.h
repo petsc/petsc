@@ -1913,6 +1913,7 @@ PETSC_EXTERN PetscErrorCode MatH2OpusSetNativeMult(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatH2OpusGetNativeMult(Mat,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatH2OpusGetIndexMap(Mat,IS*);
 PETSC_EXTERN PetscErrorCode MatH2OpusMapVec(Mat,PetscBool,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat,Mat,Mat,PetscScalar);
 #endif
 
 #ifdef PETSC_HAVE_HTOOL

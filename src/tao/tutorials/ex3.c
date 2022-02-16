@@ -369,8 +369,8 @@ int main(int argc, char **argv)
   ierr = VecSet(ub, 0.8);CHKERRQ(ierr); /* a nontrivial upper bound */
 
   ierr = TaoCreate(PETSC_COMM_WORLD, &tao);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao, u);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradientRoutine(tao, ReducedFunctionGradient, &user);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao, u);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL, ReducedFunctionGradient, &user);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao, lb, ub);CHKERRQ(ierr);
   ierr = TaoSetType(tao, TAOBLMVM);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);

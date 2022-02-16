@@ -73,8 +73,8 @@ Changes: Development
 
 .. rubric:: IS:
 
--  ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
--  Add ``ISGeneralSetIndicesFromMask()``
+- ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
+- Add ``ISGeneralSetIndicesFromMask()``
 
 .. rubric:: VecScatter / PetscSF:
 
@@ -85,29 +85,27 @@ Changes: Development
 
 .. rubric:: Vec:
 
--  Change ``VecTaggerComputeBoxes()`` and ``VecTaggerComputeIS()`` to return a boolean whose value is true if the list was created
--  Add ``-vec_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` operations
--  Add ``VecSetBindingPropagates()``
--  Add ``VecGetBindingPropagates()``
--  For CUDA and ViennaCL and HIP GPU vectors, ``VecCreate()`` no longer allocates the array on CPU eagerly, it is only allocated if it is needed
--  ``VecGetArrayAndMemType()`` and ``VecGetArrayReadAndMemType()`` now always return a device pointer (copying the data to the device if needed) for the standard CUDA, HIP, and CUDA/HIP Kokkos vectors. Previously, they did so only when the device had the latest data
--  Add ``VecGetArrayWriteAndMemType()`` and  ``VecRestoreArrayWriteAndMemType()``, which are similar to the ``VecGetArrayReadAndMemType()`` family, but only write to the vector on device
-
-.. rubric:: PetscSection:
+- Change ``VecTaggerComputeBoxes()`` and ``VecTaggerComputeIS()`` to return a boolean whose value is true if the list was created
+- Add ``-vec_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` operations
+- Add ``VecSetBindingPropagates()``
+- Add ``VecGetBindingPropagates()``
+- For CUDA and ViennaCL and HIP GPU vectors, ``VecCreate()`` no longer allocates the array on CPU eagerly, it is only allocated if it is needed
+- ``VecGetArrayAndMemType()`` and ``VecGetArrayReadAndMemType()`` now always return a device pointer (copying the data to the device if needed) for the standard CUDA, HIP, and CUDA/HIP Kokkos vectors. Previously, they did so only when the device had the latest data
+- Add ``VecGetArrayWriteAndMemType()`` and  ``VecRestoreArrayWriteAndMemType()``, which are similar to the ``VecGetArrayReadAndMemType()`` family, but only write to the vector on device
 
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
 
--  Add ``-mat_bind_below`` option for specifying size threshold below which GPU is not used for ``Mat`` operations
--  Add ``MatSetBindingPropagates()``
--  Add ``MatGetBindingPropagates()``
--  Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
--  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU
--  Change ``MatCreateIS()`` behavior when NULL is passed for the mappings. Now a NULL map implies matching local and global spaces
--  Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
--  Add support of ``MatSetValuesCOO()`` and ``MatSetPreallocationCOO()`` for matrix type AIJKOKKOS. Additionally, for AIJKOKKOS, they support negative indices and remote entries
--  Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
+- Add ``-mat_bind_below`` option for specifying size threshold below which GPU is not used for ``Mat`` operations
+- Add ``MatSetBindingPropagates()``
+- Add ``MatGetBindingPropagates()``
+- Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
+- Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU.
+- Change ``MatCreateIS()`` behavior when NULL is passed for the mappings. Now a NULL map implies matching local and global spaces
+- Add support of ``MatSetValuesCOO()`` and ``MatSetPreallocationCOO()`` for matrix type AIJKOKKOS. Additionally, for AIJKOKKOS, they support negative indices and remote entries
+- Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
+- Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
 - Change ``MatStructures`` enumeration to avoid spaces and match capitalization of other enumerations
 -  Change size argument of ``MatSetPreallocationCOO()`` to ``PetscCount``
 -  Add ``MATORDERINGMETISND`` use METIS for nested dissection ordering of ``MatSeqAIJ``, with options ``nseps``, ``niter``, ``ufactor`` and ``pfactor`` under the common prefix ``-mat_ordering_metisnd_``
@@ -119,12 +117,12 @@ Changes: Development
 
 .. rubric:: KSP:
 
--  Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
--  Add ``KSPQMRCGS`` to support qmrcgstab with right preconditioning
+- Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
+- Add ``KSPQMRCGS`` to support qmrcgstab with right preconditioning
 
 .. rubric:: SNES:
 
--  Add ``SNESNewtonTRDCGetRhoFlag()``, ``SNESNewtonTRDCSetPreCheck()``, ``SNESNewtonTRDCGetPreCheck()``, ``SNESNewtonTRDCSetPostCheck()``, ``SNESNewtonTRDCGetPostCheck()``
+- Add ``SNESNewtonTRDCGetRhoFlag()``, ``SNESNewtonTRDCSetPreCheck()``, ``SNESNewtonTRDCGetPreCheck()``, ``SNESNewtonTRDCSetPostCheck()``, ``SNESNewtonTRDCGetPostCheck()``
 
 .. rubric:: SNESLineSearch:
 
@@ -136,16 +134,26 @@ Changes: Development
   - Add ``TSDiscGradUseGonzalez()`` to set discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
 - Add ``TSRemoveTrajectory`` to destroy and remove the internal TSTrajectory object from TS
 
-.. rubric:: TAO:
+.. rubric:: Tao:
+
+- Add ``TaoGetGradient()``, ``TaoGetObjectiveAndGradient()`` and ``TaoGetHessian()``
+- Deprecate ``TaoSetInitialVector()`` in favor of ``TaoSetSolution()``
+- Deprecate ``TaoGetSolutionVector()`` in favor of ``TaoGetSolution()``
+- Deprecate ``TaoGetGradientVector()`` in favor of ``TaoGetGradient()``
+- Deprecate ``TaoSetObjectiveRoutine()`` in favor of ``TaoSetObjective()``
+- Deprecate ``TaoSetGradientRoutine()`` in favor of ``TaoSetGradient()``
+- Deprecate ``TaoSetObjectiveAndGradientRoutine()`` in favor of ``TaoSetObjectiveAndGradient()``
+- Deprecate ``TaoSetHessianRoutine()`` in favor of ``TaoSetHessian()``
+- Change ``TaoGetObjective()``. Use ``TaoGetSolutionStatus(tao,NULL,&fct,NULL,NULL,NULL,NULL)`` instead
 
 .. rubric:: DM/DA:
 
--  Add ``DMLabelGetNonEmptyStratumValuesIS()``, similar to ``DMLabelGetValueIS()`` but counts only nonempty strata
--  Add ``DMLabelCompare()`` for ``DMLabel`` comparison
--  Add ``DMCompareLabels()`` comparing ``DMLabel``\s of two ``DM``\s
--  ``DMCopyLabels()`` now takes DMCopyLabelsMode argument determining duplicity handling
--  Add ``-dm_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` and ``Mat`` objects associated with a DM
--  Add ``DMCreateMassMatrixLumped()`` to support explicit timestepping, also add ``DMTSCreateRHSMassMatrix()``, ``DMTSCreateRHSMassMatrixLumped()``, and ``DMTSDestroyRHSMassMatrix()``
+- Add ``DMLabelGetNonEmptyStratumValuesIS()``, similar to ``DMLabelGetValueIS()`` but counts only nonempty strata
+- Add ``DMLabelCompare()`` for ``DMLabel`` comparison
+- Add ``DMCompareLabels()`` comparing ``DMLabel``\s of two ``DM``\s
+- ``DMCopyLabels()`` now takes DMCopyLabelsMode argument determining duplicity handling
+- Add ``-dm_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` and ``Mat`` objects associated with a DM
+- Add ``DMCreateMassMatrixLumped()`` to support explicit timestepping, also add ``DMTSCreateRHSMassMatrix()``, ``DMTSCreateRHSMassMatrixLumped()``, and ``DMTSDestroyRHSMassMatrix()``
 - Promote ``DMGetFirstLabelEntry()`` to public API and rename
 
 .. rubric:: DMSwarm:
@@ -219,7 +227,7 @@ Changes: Development
 
 .. rubric:: DMNetwork:
 
--  ``DMNetworkAddComponent()`` now requires a valid component key for each call
+- ``DMNetworkAddComponent()`` now requires a valid component key for each call
 
 .. rubric:: DMStag:
 

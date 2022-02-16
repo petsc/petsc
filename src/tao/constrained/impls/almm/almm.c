@@ -260,9 +260,9 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
       break;
   }
   /* set up the subsolver */
-  ierr = TaoSetInitialVector(auglag->subsolver, auglag->P);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveRoutine(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradientRoutine(auglag->subsolver, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag);CHKERRQ(ierr);
+  ierr = TaoSetSolution(auglag->subsolver, auglag->P);CHKERRQ(ierr);
+  ierr = TaoSetObjective(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(auglag->subsolver, NULL, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag);CHKERRQ(ierr);
   if (tao->bounded) {
     /* make sure that the subsolver is a bound-constrained method */
     ierr = PetscObjectTypeCompare((PetscObject)auglag->subsolver, TAOCG, &is_cg);CHKERRQ(ierr);

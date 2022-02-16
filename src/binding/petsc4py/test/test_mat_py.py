@@ -28,6 +28,15 @@ class ScaledIdentity(Matrix):
         x.copy(y)
         y.scale(self.s)
 
+    def duplicate(self, mat, op):
+        dmat = PETSc.Mat()
+        dctx = ScaledIdentity()
+        dmat.createPython(mat.getSizes(), dctx, comm=mat.getComm())
+        if op == PETSc.Mat.DuplicateOption.COPY_VALUES:
+          dctx.s = self.s
+          dmat.setUp()
+        return dmat
+
     def getDiagonal(self, mat, vd):
         vd.set(self.s)
 
@@ -233,6 +242,16 @@ class Diagonal(Matrix):
     def mult(self, mat, x, y):
         y.pointwiseMult(x, self.D)
 
+    def duplicate(self, mat, op):
+        dmat = PETSc.Mat()
+        dctx = Diagonal()
+        dmat.createPython(mat.getSizes(), dctx, comm=mat.getComm())
+        dctx.D = self.D.duplicate()
+        if op == PETSc.Mat.DuplicateOption.COPY_VALUES:
+          self.D.copy(dctx.D)
+          dmat.setUp()
+        return dmat
+
     def getDiagonal(self, mat, vd):
         self.D.copy(vd)
 
@@ -266,7 +285,7 @@ class TestMatrix(unittest.TestCase):
         return self.A.getPythonContext()
 
     def setUp(self):
-        N = self.N = 10
+        N = self.N = 13
         self.A = PETSc.Mat()
         if 0: # command line way
             self.A.create(self.COMM)
@@ -329,9 +348,61 @@ class TestMatrix(unittest.TestCase):
         f = lambda : self.A.diagonalScale(x, y)
         self.assertRaises(Exception, f)
 
+    def testDuplicate(self):
+        f1 = lambda : self.A.duplicate(x, True)
+        f2 = lambda : self.A.duplicate(x, False)
+        self.assertRaises(Exception, f1)
+        self.assertRaises(Exception, f2)
+
     def testSetVecType(self):
         self.A.setVecType('mpi')
         self.assertTrue('mpi' == self.A.getVecType())
+
+    def testH2Opus(self):
+        if not PETSc.Sys.hasExternalPackage("h2opus"):
+            return
+        if self.A.getComm().Get_size() > 1:
+            return
+        h = PETSc.Mat()
+
+        # need matrix vector and its transpose for norm estimation
+        AA = self.A.getPythonContext()
+        if not hasattr(AA,'mult'):
+            return
+        AA.multTranspose = AA.mult
+
+        # without coordinates
+        h.createH2OpusFromMat(self.A,leafsize=2)
+        h.assemble()
+        h.destroy()
+
+        # with coordinates
+        coords = numpy.linspace((1,2,3),(10,20,30),self.A.getSize()[0],dtype=PETSc.RealType)
+        h.createH2OpusFromMat(self.A,coords,leafsize=2)
+        h.assemble()
+
+        # test API
+        h.H2OpusOrthogonalize()
+        h.H2OpusCompress(1.e-1)
+
+        # Low-rank update
+        U = PETSc.Mat()
+        U.createDense([h.getSizes()[0],3],comm=h.getComm())
+        U.setUp()
+        U.setRandom()
+
+        he = PETSc.Mat()
+        h.convert('dense',he)
+        he.axpy(1.0, U.matTransposeMult(U))
+
+        h.H2OpusLowRankUpdate(U)
+        self.assertTrue(he.equal(h))
+
+
+        h.destroy()
+
+        del AA.multTranspose
+
 
 class TestScaledIdentity(TestMatrix):
 
@@ -373,6 +444,12 @@ class TestScaledIdentity(TestMatrix):
         self.A.getDiagonal(d)
         self.assertTrue(o.equal(d))
 
+    def testDuplicate(self):
+        B = self.A.duplicate(False)
+        self.assertTrue(B.getPythonContext().s == 2)
+        B = self.A.duplicate(True)
+        self.assertTrue(B.getPythonContext().s == self.A.getPythonContext().s)
+
     def testMatMat(self):
         s = self._getCtx().s
         R = PETSc.Random().create(self.COMM)
@@ -409,30 +486,6 @@ class TestScaledIdentity(TestMatrix):
         self.assertAlmostEqual((self.A.matMatMult(A,B)-I.matMatMult(A,B)).norm(), 0.0, places=5)
         self.assertAlmostEqual((A.matMatMult(self.A,B)-A.matMatMult(I,B)).norm(), 0.0, places=5)
         self.assertAlmostEqual((A.matMatMult(B,self.A)-A.matMatMult(B,I)).norm(), 0.0, places=5)
-
-    def testH2Opus(self):
-        if not PETSc.Sys.hasExternalPackage("h2opus"):
-            return
-        if self.A.getComm().Get_size() > 1:
-            return
-        h = PETSc.Mat()
-
-        # need transpose operation for norm estimation
-        AA = self.A.getPythonContext()
-        AA.multTranspose = AA.mult
-
-        # without coordinates
-        h.createH2OpusFromMat(self.A,leafsize=2)
-        h.assemble()
-        h.destroy()
-
-        # with coordinates
-        coords = numpy.linspace((1,2,3),(10,20,30),self.A.getSize()[0],dtype=PETSc.RealType)
-        h.createH2OpusFromMat(self.A,coords,leafsize=2)
-        h.assemble()
-        h.destroy()
-
-        del AA.multTranspose
 
     def testShift(self):
         sold = self._getCtx().s
@@ -488,6 +541,11 @@ class TestDiagonal(TestMatrix):
         self.A.multTranspose(x,y)
         del AA.multTranspose
         self.assertTrue(y.equal(self._getCtx().D))
+
+    def testDuplicate(self):
+        B = self.A.duplicate(False)
+        B = self.A.duplicate(True)
+        self.assertTrue(B.getPythonContext().D.equal(self.A.getPythonContext().D))
 
     def testGetDiagonal(self):
         d = self.A.createVecLeft()

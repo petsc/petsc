@@ -42,9 +42,9 @@ class BaseTestTAO(object):
         constraint, varbounds = None, None
         hessian, jacobian = None, None
         tao.setObjective(objective)
-        tao.setGradient(gradient)
+        tao.setGradient(gradient,None)
         tao.setVariableBounds(varbounds)
-        tao.setObjectiveGradient(objgrad)
+        tao.setObjectiveGradient(objgrad,None)
         tao.setConstraints(constraint)
         tao.setHessian(hessian)
         tao.setJacobian(jacobian)
@@ -52,7 +52,7 @@ class BaseTestTAO(object):
     def testGetVecsAndMats(self):
         tao = self.tao
         x = tao.getSolution()
-        g = tao.getGradient()
+        (g, _) = tao.getGradient()
         l, u = tao.getVariableBounds()
         r = None#tao.getConstraintVec()
         H, HP = None,None#tao.getHessianMat()
@@ -81,10 +81,10 @@ class BaseTestTAO(object):
         J.setUp()
 
         tao.setObjective(Objective())
-        tao.setGradient(Gradient())
+        tao.setGradient(Gradient(),None)
         tao.setEqualityConstraints(EqConstraints(),c)
         tao.setJacobianEquality(EqJacobian(),J,J)
-        tao.setInitial(x)
+        tao.setSolution(x)
         tao.setType(PETSc.TAO.Type.ALMM)
         tao.setTolerances(gatol=1.e-4)
         tao.setFromOptions()

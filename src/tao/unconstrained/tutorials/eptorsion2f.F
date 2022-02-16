@@ -11,9 +11,9 @@
 !/*T
 !   Concepts: TAO^Solving an unconstrained minimization problem
 !   Routines: TaoCreate(); TaoSetType();
-!   Routines: TaoSetInitialVector();
-!   Routines: TaoSetObjectiveAndGradientRoutine();
-!   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
+!   Routines: TaoSetSolution();
+!   Routines: TaoSetObjectiveAndGradient();
+!   Routines: TaoSetHessian(); TaoSetFromOptions();
 !   Routines: TaoSetMonitor(); TaoSetConvergenceTest()
 !   Routines: TaoSolve(); TaoGetSolutionStatus()
 !   Routines: TaoDestroy();
@@ -118,14 +118,14 @@
 
 !     Set routines for function and gradient evaluation
 
-      call TaoSetObjectiveAndGradientRoutine(tao,                       &
+      call TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,                &
      &     FormFunctionGradient,0,ierr)
-      call TaoSetHessianRoutine(tao,H,H,ComputeHessian,                 &
+      call TaoSetHessian(tao,H,H,ComputeHessian,                         &
      &     0,ierr)
 
 !     Set initial guess
       call FormInitialGuess(x,ierr)
-      call TaoSetInitialVector(tao,x,ierr)
+      call TaoSetSolution(tao,x,ierr)
 
       call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-testmonitor',flg,ierr)

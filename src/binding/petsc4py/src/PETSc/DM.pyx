@@ -95,6 +95,16 @@ cdef class DM(Object):
         prefix = str2bytes(prefix, &cval)
         CHKERR( DMSetOptionsPrefix(self.dm, cval) )
 
+    def getOptionsPrefix(self):
+        cdef const char *cval = NULL
+        CHKERR( DMGetOptionsPrefix(self.dm, &cval) )
+        return bytes2str(cval)
+
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( DMAppendOptionsPrefix(self.dm, cval) )
+
     def setFromOptions(self):
         CHKERR( DMSetFromOptions(self.dm) )
 

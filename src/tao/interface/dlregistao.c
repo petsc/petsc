@@ -20,9 +20,6 @@ PetscErrorCode TaoFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-const char *const TaoADMMRegularizerTypes[] = {"REGULARIZER_USER","REGULARIZER_SOFT_THRESH","TaoADMMRegularizerType","TAO_ADMM_",NULL};
-const char *const TaoADMMUpdateTypes[]      = {"UPDATE_BASIC","UPDATE_ADAPTIVE","UPDATE_ADAPTIVE_RELAXED","TaoADMMUpdateType","TAO_ADMM_",NULL};
-const char *const TaoALMMTypes[]            = {"CLASSIC","PHR","TaoALMMType","TAO_ALMM_",NULL};
 /*@C
   TaoInitializePackage - This function sets up PETSc to use the Tao
   package.  When using static or shared libraries, this function is called from the
@@ -40,7 +37,6 @@ PetscErrorCode TaoInitializePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (TaoPackageInitialized) PetscFunctionReturn(0);
   TaoPackageInitialized = PETSC_TRUE;
   /* Register Classes */
@@ -73,7 +69,7 @@ PetscErrorCode TaoInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_DYNAMIC_LIBRARIES
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 /*
   PetscDLLibraryRegister - this function is called when the dynamic library it
   is in is opened.
@@ -84,15 +80,13 @@ PetscErrorCode TaoInitializePackage(void)
   Input Parameter:
 . path - library path
 */
-
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsctao(void)
 {
-    PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-    ierr = TaoInitializePackage();CHKERRQ(ierr);
-    ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  ierr = TaoInitializePackage();CHKERRQ(ierr);
+  ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
-
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

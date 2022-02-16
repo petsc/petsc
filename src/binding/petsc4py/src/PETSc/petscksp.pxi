@@ -103,9 +103,9 @@ cdef extern from * nogil:
                                                PetscMat,
                                                void*) except PETSC_ERR_PYTHON
 
-    int KSPCreate(MPI_Comm,PetscKSP* CREATE)
+    int KSPCreate(MPI_Comm,PetscKSP*)
     int KSPDestroy(PetscKSP*)
-    int KSPView(PetscKSP,PetscViewer OPTIONAL)
+    int KSPView(PetscKSP,PetscViewer)
 
     int KSPSetType(PetscKSP,PetscKSPType)
     int KSPGetType(PetscKSP,PetscKSPType*)

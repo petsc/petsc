@@ -1,6 +1,6 @@
 ALL: lib
 
-CFLAGS   =-DTAO_LIB_DIR='"${TAO_LIB_DIR}"'
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = taosolver.c taosolver_fg.c taosolverregi.c taosolver_hj.c taosolver_bounds.c dlregistao.c fdiff.c
 SOURCEF  =

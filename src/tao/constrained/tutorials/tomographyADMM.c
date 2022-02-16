@@ -49,8 +49,8 @@ static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
 
   lambda = user->lambda;
   work   = user->workN;
-  ierr   = TaoGetSolutionVector(tao, &out);CHKERRQ(ierr);
-  ierr   = TaoGetSolutionVector(misfit, &x);CHKERRQ(ierr);
+  ierr   = TaoGetSolution(tao, &out);CHKERRQ(ierr);
+  ierr   = TaoGetSolution(misfit, &x);CHKERRQ(ierr);
   ierr   = TaoADMMGetDualVector(admm_tao, &y);CHKERRQ(ierr);
 
   /* Dx + y/mu */
@@ -320,12 +320,12 @@ int main(int argc,char **argv)
 
   ierr = TaoCreate(PETSC_COMM_WORLD, &tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao, TAOADMM);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao, user->x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao, user->x);CHKERRQ(ierr);
   /* f(x) + g(x) for parent tao */
   ierr = TaoADMMSetSpectralPenalty(tao,1.);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradientRoutine(tao, FullObjGrad, (void*)user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL, FullObjGrad, (void*)user);CHKERRQ(ierr);
   ierr = MatShift(user->HF,user->lambda);CHKERRQ(ierr);
-  ierr = TaoSetHessianRoutine(tao, user->HF, user->HF, HessianFull, (void*)user);CHKERRQ(ierr);
+  ierr = TaoSetHessian(tao, user->HF, user->HF, HessianFull, (void*)user);CHKERRQ(ierr);
 
   /* f(x) for misfit tao */
   ierr = TaoADMMSetMisfitObjectiveAndGradientRoutine(tao, MisfitObjectiveAndGradient, (void*)user);CHKERRQ(ierr);

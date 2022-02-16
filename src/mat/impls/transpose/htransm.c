@@ -193,7 +193,6 @@ PetscErrorCode MatConvert_HT(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
           the original matrix
 
 .seealso: MatCreateNormal(), MatMult(), MatMultHermitianTranspose(), MatCreate()
-
 @*/
 PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
 {

@@ -29,7 +29,7 @@ static char help[] = "Finds the least-squares solution to the under constraint l
    Routines: TaoSetType();
    Routines: TaoSetSeparableObjectiveRoutine();
    Routines: TaoSetJacobianRoutine();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSetConvergenceHistory(); TaoGetConvergenceHistory();
    Routines: TaoSolve();
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   ierr = FormDictionaryMatrix(D,&user);CHKERRQ(ierr);
 
   /* Bind x to tao->solution. */
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
   /* Bind D to tao->data->D */
   ierr = TaoBRGNSetDictionaryMatrix(tao,D);CHKERRQ(ierr);
 

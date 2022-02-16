@@ -84,6 +84,28 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat A, PetscSF h2sf, PetscSF *osf)
+{
+  PetscSF        asf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(h2sf,PETSCSF_CLASSID,2);
+  PetscValidPointer(osf,3);
+  ierr = PetscObjectQuery((PetscObject)A,"_math2opus_vectorsf",(PetscObject*)&asf);CHKERRQ(ierr);
+  if (!asf) {
+    PetscInt lda;
+
+    ierr = MatDenseGetLDA(A,&lda);CHKERRQ(ierr);
+    ierr = PetscSFGetVectorSF(h2sf,A->cmap->N,lda,PETSC_DECIDE,&asf);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)A,"_math2opus_vectorsf",(PetscObject)asf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)asf);CHKERRQ(ierr);
+  }
+  *osf = asf;
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_CUDA)
 struct SignVector_Functor
 {

@@ -73,7 +73,7 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   ierr = VecCreateSeq(PETSC_COMM_SELF,user->n,&X);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)X,"X0");CHKERRQ(ierr);
   ierr = PetscMatlabEngineGet(user->mengine,(PetscObject)X);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,X);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,X);CHKERRQ(ierr);
 
   /* Create residuals vector and set residual function */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user->m,&F);CHKERRQ(ierr);

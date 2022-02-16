@@ -190,6 +190,11 @@ cdef class PC(Object):
         CHKERR( PCGetOptionsPrefix(self.pc, &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( PCAppendOptionsPrefix(self.pc, cval) )
+
     def setFromOptions(self):
         CHKERR( PCSetFromOptions(self.pc) )
 

@@ -79,6 +79,11 @@ cdef class Object:
         CHKERR( PetscObjectGetOptionsPrefix(self.obj[0], &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( PetscObjectAppendOptionsPrefix(self.obj[0], cval) )
+
     def setFromOptions(self):
         CHKERR( PetscObjectSetFromOptions(self.obj[0]) )
 
