@@ -303,6 +303,12 @@ PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type,
   PetscFunctionReturn(0);
 }
 
+#if PetscDefined(USE_LOG)
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
+#else
+#define PetscLogInitialize() 0
+#endif
+
 static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm, PetscDeviceType type, PetscInt defaultDeviceId, PetscBool defaultView, PetscDeviceInitType *defaultInitType)
 {
   PetscErrorCode ierr;
@@ -332,6 +338,7 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
     if (defaultView) {
       PetscViewer vwr;
 
+      ierr = PetscLogInitialize();CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(comm,&vwr);CHKERRQ(ierr);
       ierr = PetscDeviceView(defaultDevices[type],vwr);CHKERRQ(ierr);
     }

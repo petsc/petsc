@@ -127,34 +127,32 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
   if (iascii) {
     MPI_Comm    comm;
     PetscMPIInt rank;
+    PetscViewer sviewer;
 
     ierr = PetscObjectGetComm(PetscObjectCast(viewer),&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-    // flush before we start
+    ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"[%d] device %d: %s\n",rank,id_,dprop_.name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Compute capability: %d.%d\n",dprop_.major,dprop_.minor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Multiprocessor Count: %d\n",dprop_.multiProcessorCount);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Maximum Grid Dimensions: %d x %d x %d\n",dprop_.maxGridSize[0],dprop_.maxGridSize[1],dprop_.maxGridSize[2]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Maximum Block Dimensions: %d x %d x %d\n",dprop_.maxThreadsDim[0],dprop_.maxThreadsDim[1],dprop_.maxThreadsDim[2]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Maximum Threads Per Block: %d\n",dprop_.maxThreadsPerBlock);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Warp Size: %d\n",dprop_.warpSize);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Total Global Memory (bytes): %zu\n",dprop_.totalGlobalMem);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Total Constant Memory (bytes): %zu\n",dprop_.totalConstMem);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Shared Memory Per Block (bytes): %zu\n",dprop_.sharedMemPerBlock);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Multiprocessor Clock Rate (KHz): %d\n",dprop_.clockRate);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Memory Clock Rate (KHz): %d\n",dprop_.memoryClockRate);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Memory Bus Width (bits): %d\n",dprop_.memoryBusWidth);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Peak Memory Bandwidth (GB/s): %f\n",2.0*dprop_.memoryClockRate*(dprop_.memoryBusWidth/8)/1.0e6);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Can map host memory: %s\n",dprop_.canMapHostMemory ? "PETSC_TRUE" : "PETSC_FALSE");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(sviewer,"Can execute multiple kernels concurrently: %s\n",dprop_.concurrentKernels ? "PETSC_TRUE" : "PETSC_FALSE");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] device %d: %s\n",rank,id_,dprop_.name);CHKERRQ(ierr);
-    // flush the assignment information
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Compute capability: %d.%d\n",dprop_.major,dprop_.minor);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Multiprocessor Count: %d\n",dprop_.multiProcessorCount);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Maximum Grid Dimensions: %d x %d x %d\n",dprop_.maxGridSize[0],dprop_.maxGridSize[1],dprop_.maxGridSize[2]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Maximum Block Dimensions: %d x %d x %d\n",dprop_.maxThreadsDim[0],dprop_.maxThreadsDim[1],dprop_.maxThreadsDim[2]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Maximum Threads Per Block: %d\n",dprop_.maxThreadsPerBlock);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Warp Size: %d\n",dprop_.warpSize);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Total Global Memory (bytes): %zu\n",dprop_.totalGlobalMem);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Total Constant Memory (bytes): %zu\n",dprop_.totalConstMem);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Shared Memory Per Block (bytes): %zu\n",dprop_.sharedMemPerBlock);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Multiprocessor Clock Rate (KHz): %d\n",dprop_.clockRate);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Memory Clock Rate (KHz): %d\n",dprop_.memoryClockRate);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Memory Bus Width (bits): %d\n",dprop_.memoryBusWidth);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Peak Memory Bandwidth (GB/s): %f\n",2.0*dprop_.memoryClockRate*(dprop_.memoryBusWidth/8)/1.0e6);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Can map host memory: %s\n",dprop_.canMapHostMemory ? "PETSC_TRUE" : "PETSC_FALSE");CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Can execute multiple kernels concurrently: %s\n",dprop_.concurrentKernels ? "PETSC_TRUE" : "PETSC_FALSE");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
