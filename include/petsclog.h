@@ -302,6 +302,9 @@ PETSC_EXTERN PetscErrorCode PetscLogView(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscLogViewFromOptions(void);
 PETSC_EXTERN PetscErrorCode PetscLogDump(const char[]);
 
+/* Status checking functions */
+PETSC_EXTERN PetscErrorCode PetscLogIsActive(PetscBool*);
+
 /* Stage functions */
 PETSC_EXTERN PetscErrorCode PetscLogStageRegister(const char[],PetscLogStage*);
 PETSC_EXTERN PetscErrorCode PetscLogStagePush(PetscLogStage);
@@ -590,6 +593,7 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...) PE
 #define PetscLogObjects(a)                 0
 #define PetscLogSetThreshold(a,b)          0
 #define PetscLogSet(lb,le)                 0
+#define PetscLogIsActive(flag)             0
 
 #define PetscLogView(viewer)               0
 #define PetscLogViewFromOptions()          0

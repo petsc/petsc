@@ -229,6 +229,25 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
 }
 
 /*@C
+  PetscLogIsActive - Check if logging is currently in progress.
+
+  Not Collective
+
+  Output Parameter:
+. isActive - PETSC_TRUE if logging is in progress, PETSC_FALSE otherwise
+
+  Level: beginner
+
+.seealso: PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogSet()
+@*/
+PetscErrorCode PetscLogIsActive(PetscBool *isActive)
+{
+  PetscFunctionBegin;
+  *isActive = (PetscLogPLB && PetscLogPLE) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscLogDefaultBegin - Turns on logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
   This routine may be called more than once.

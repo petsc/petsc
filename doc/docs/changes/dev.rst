@@ -237,3 +237,7 @@ Changes: Development
 - Add ``PetscDSGetRHSResidual()`` and ``PetscDSSetRHSResidual()`` to support explicit timestepping
 
 .. rubric:: Fortran:
+
+.. rubric:: Logging:
+
+- Add ``PetscLogIsActive()`` to determine if logging is in progress or not

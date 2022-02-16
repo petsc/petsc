@@ -117,6 +117,13 @@ cdef class Log:
             return wrapped_func
         return decorator
 
+    @classmethod
+    def isActive(cls):
+        """Return ``True`` if logging is switched on and ``False`` otherwise."""
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( PetscLogIsActive(&flag) )
+        return toBool(flag)
+
 # --------------------------------------------------------------------
 
 cdef class LogStage:
