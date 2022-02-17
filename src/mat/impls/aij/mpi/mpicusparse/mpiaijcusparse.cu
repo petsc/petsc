@@ -21,7 +21,7 @@ struct VecCUDAEquals
   }
 };
 
-static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat A, const PetscScalar v[], InsertMode imode)
+static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE_Basic(Mat A, const PetscScalar v[], InsertMode imode)
 {
   Mat_MPIAIJ         *a = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJCUSPARSE *cusp = (Mat_MPIAIJCUSPARSE*)a->spptr;
@@ -50,11 +50,11 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat A, const PetscScalar v[
     thrust::for_each(zibit,zieit,VecCUDAEquals());
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
     delete w;
-    ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->A,cusp->coo_pw->data().get(),imode);CHKERRQ(ierr);
-    ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->B,cusp->coo_pw->data().get()+cusp->coo_nd,imode);CHKERRQ(ierr);
+    ierr = MatSetValuesCOO_SeqAIJCUSPARSE_Basic(a->A,cusp->coo_pw->data().get(),imode);CHKERRQ(ierr);
+    ierr = MatSetValuesCOO_SeqAIJCUSPARSE_Basic(a->B,cusp->coo_pw->data().get()+cusp->coo_nd,imode);CHKERRQ(ierr);
   } else {
-    ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->A,v,imode);CHKERRQ(ierr);
-    ierr = MatSetValuesCOO_SeqAIJCUSPARSE(a->B,v ? v+cusp->coo_nd : NULL,imode);CHKERRQ(ierr);
+    ierr = MatSetValuesCOO_SeqAIJCUSPARSE_Basic(a->A,v,imode);CHKERRQ(ierr);
+    ierr = MatSetValuesCOO_SeqAIJCUSPARSE_Basic(a->B,v ? v+cusp->coo_nd : NULL,imode);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   A->num_ass++;
@@ -101,7 +101,7 @@ struct GlobToLoc
   }
 };
 
-static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscCount n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCount n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   Mat_MPIAIJ             *b = (Mat_MPIAIJ*)B->data;
   Mat_MPIAIJCUSPARSE     *cusp = (Mat_MPIAIJCUSPARSE*)b->spptr;
@@ -114,8 +114,6 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscCount n,
   cudaError_t            cerr;
 
   PetscFunctionBegin;
-  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   if (b->A) { ierr = MatCUSPARSEClearHandle(b->A);CHKERRQ(ierr); }
   if (b->B) { ierr = MatCUSPARSEClearHandle(b->B);CHKERRQ(ierr); }
   ierr = PetscFree(b->garray);CHKERRQ(ierr);
@@ -179,8 +177,8 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscCount n,
   ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->B);CHKERRQ(ierr);
 
   /* GPU memory, cusparse specific call handles it internally */
-  ierr = MatSetPreallocationCOO_SeqAIJCUSPARSE(b->A,cusp->coo_nd,d_i.data().get(),d_j.data().get());CHKERRQ(ierr);
-  ierr = MatSetPreallocationCOO_SeqAIJCUSPARSE(b->B,cusp->coo_no,d_i.data().get()+cusp->coo_nd,jj);CHKERRQ(ierr);
+  ierr = MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(b->A,cusp->coo_nd,d_i.data().get(),d_j.data().get());CHKERRQ(ierr);
+  ierr = MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(b->B,cusp->coo_no,d_i.data().get()+cusp->coo_nd,jj);CHKERRQ(ierr);
   ierr = PetscFree(jj);CHKERRQ(ierr);
 
   ierr = MatCUSPARSESetFormat(b->A,MAT_CUSPARSE_MULT,cusp->diagGPUMatFormat);CHKERRQ(ierr);
@@ -200,6 +198,165 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat B, PetscCount n,
   B->offloadmask = PETSC_OFFLOAD_CPU;
   B->assembled = PETSC_FALSE;
   B->was_assembled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+{
+  PetscErrorCode         ierr;
+  Mat                    newmat;
+  Mat_MPIAIJ             *mpiaij;
+  Mat_MPIAIJCUSPARSE     *mpidev;
+  PetscInt               coo_basic = 1;
+  PetscMemType           mtype = PETSC_MEMTYPE_DEVICE;
+  PetscInt               rstart,rend;
+  cudaError_t            cerr;
+
+  PetscFunctionBegin;
+  if (coo_i) {
+    ierr = PetscLayoutGetRange(mat->rmap,&rstart,&rend);CHKERRQ(ierr);
+    ierr = PetscGetMemType(coo_i,&mtype);CHKERRQ(ierr);
+    if (PetscMemTypeHost(mtype)) {
+      for (PetscCount k=0; k<coo_n; k++) { /* Are there negative indices or remote entries? */
+        if (coo_i[k]<0 || coo_i[k]<rstart || coo_i[k]>=rend || coo_j[k]<0) {coo_basic = 0; break;}
+      }
+    }
+  }
+  /* All ranks must agree on the value of coo_basic */
+  ierr = MPI_Allreduce(MPI_IN_PLACE,&coo_basic,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
+
+  if (coo_basic) {
+    ierr = MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(mat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
+  } else {
+    mpiaij = static_cast<Mat_MPIAIJ*>(mat->data);
+    ierr = MatCreate(PetscObjectComm((PetscObject)mat),&newmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(newmat,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(newmat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatSetOption(newmat,MAT_IGNORE_OFF_PROC_ENTRIES,mpiaij->donotstash);CHKERRQ(ierr); /* Inherit the two options that we respect from mat */
+    ierr = MatSetOption(newmat,MAT_NO_OFF_PROC_ENTRIES,mat->nooffprocentries);CHKERRQ(ierr);
+    ierr = MatSetPreallocationCOO_MPIAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
+    ierr = MatConvert(newmat,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
+    ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
+    mpiaij = static_cast<Mat_MPIAIJ*>(mat->data); /* mat->data was changed in MatHeaderReplace() */
+    mpidev = static_cast<Mat_MPIAIJCUSPARSE*>(mpiaij->spptr);
+    mpidev->use_extended_coo = PETSC_TRUE;
+
+    cerr = cudaMalloc((void**)&mpidev->Aimap1_d,mpiaij->Annz1*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->Ajmap1_d,(mpiaij->Annz1+1)*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->Aperm1_d,mpiaij->Atot1*sizeof(PetscCount));CHKERRCUDA(cerr);
+
+    cerr = cudaMalloc((void**)&mpidev->Bimap1_d,mpiaij->Bnnz1*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->Bjmap1_d,(mpiaij->Bnnz1+1)*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->Bperm1_d,mpiaij->Btot1*sizeof(PetscCount));CHKERRCUDA(cerr);
+
+    cerr = cudaMalloc((void**)&mpidev->Aimap2_d,mpiaij->Annz2*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->Ajmap2_d,(mpiaij->Annz2+1)*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->Aperm2_d,mpiaij->Atot2*sizeof(PetscCount));CHKERRCUDA(cerr);
+
+    cerr = cudaMalloc((void**)&mpidev->Bimap2_d,mpiaij->Bnnz2*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->Bjmap2_d,(mpiaij->Bnnz2+1)*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->Bperm2_d,mpiaij->Btot2*sizeof(PetscCount));CHKERRCUDA(cerr);
+
+    cerr = cudaMalloc((void**)&mpidev->Cperm1_d,mpiaij->sendlen*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->sendbuf_d,mpiaij->sendlen*sizeof(PetscScalar));CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&mpidev->recvbuf_d,mpiaij->recvlen*sizeof(PetscScalar));CHKERRCUDA(cerr);
+
+    cerr = cudaMemcpy(mpidev->Aimap1_d,mpiaij->Aimap1,mpiaij->Annz1*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(mpidev->Ajmap1_d,mpiaij->Ajmap1,(mpiaij->Annz1+1)*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(mpidev->Aperm1_d,mpiaij->Aperm1,mpiaij->Atot1*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+
+    cerr = cudaMemcpy(mpidev->Bimap1_d,mpiaij->Bimap1,mpiaij->Bnnz1*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(mpidev->Bjmap1_d,mpiaij->Bjmap1,(mpiaij->Bnnz1+1)*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(mpidev->Bperm1_d,mpiaij->Bperm1,mpiaij->Btot1*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+
+    cerr = cudaMemcpy(mpidev->Aimap2_d,mpiaij->Aimap2,mpiaij->Annz2*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(mpidev->Ajmap2_d,mpiaij->Ajmap2,(mpiaij->Annz2+1)*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(mpidev->Aperm2_d,mpiaij->Aperm2,mpiaij->Atot2*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+
+    cerr = cudaMemcpy(mpidev->Bimap2_d,mpiaij->Bimap2,mpiaij->Bnnz2*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(mpidev->Bjmap2_d,mpiaij->Bjmap2,(mpiaij->Bnnz2+1)*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(mpidev->Bperm2_d,mpiaij->Bperm2,mpiaij->Btot2*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+
+    cerr = cudaMemcpy(mpidev->Cperm1_d,mpiaij->Cperm1,mpiaij->sendlen*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+  }
+  PetscFunctionReturn(0);
+}
+
+__global__ void MatPackCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount perm[],PetscScalar buf[])
+{
+  PetscCount        i = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscCount  grid_size = gridDim.x * blockDim.x;
+  for (; i<nnz; i+= grid_size) buf[i] = kv[perm[i]];
+}
+
+__global__ void MatAddCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount imap[],const PetscCount jmap[],const PetscCount perm[],PetscScalar a[])
+{
+  PetscCount        i = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscCount  grid_size = gridDim.x * blockDim.x;
+  for (; i<nnz; i+= grid_size) {for (PetscCount k=jmap[i]; k<jmap[i+1]; k++) a[imap[i]] += kv[perm[k]];}
+}
+
+static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat,const PetscScalar v[],InsertMode imode)
+{
+  PetscErrorCode                 ierr;
+  cudaError_t                    cerr;
+  Mat_MPIAIJ                     *mpiaij = static_cast<Mat_MPIAIJ*>(mat->data);
+  Mat_MPIAIJCUSPARSE             *mpidev = static_cast<Mat_MPIAIJCUSPARSE*>(mpiaij->spptr);
+  Mat                            A = mpiaij->A,B = mpiaij->B;
+  PetscCount                     Annz1 = mpiaij->Annz1,Annz2 = mpiaij->Annz2,Bnnz1 = mpiaij->Bnnz1,Bnnz2 = mpiaij->Bnnz2;
+  PetscScalar                    *Aa,*Ba;
+  PetscScalar                    *vsend = mpidev->sendbuf_d,*v2 = mpidev->recvbuf_d;
+  const PetscScalar              *v1 = v;
+  const PetscCount               *Ajmap1 = mpidev->Ajmap1_d,*Ajmap2 = mpidev->Ajmap2_d,*Aimap1 = mpidev->Aimap1_d,*Aimap2 = mpidev->Aimap2_d;
+  const PetscCount               *Bjmap1 = mpidev->Bjmap1_d,*Bjmap2 = mpidev->Bjmap2_d,*Bimap1 = mpidev->Bimap1_d,*Bimap2 = mpidev->Bimap2_d;
+  const PetscCount               *Aperm1 = mpidev->Aperm1_d,*Aperm2 = mpidev->Aperm2_d,*Bperm1 = mpidev->Bperm1_d,*Bperm2 = mpidev->Bperm2_d;
+  const PetscCount               *Cperm1 = mpidev->Cperm1_d;
+  PetscMemType                   memtype;
+
+  PetscFunctionBegin;
+  if (mpidev->use_extended_coo) {
+    ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr);
+    if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we need to copy it to device */
+      cerr = cudaMalloc((void**)&v1,mpiaij->coo_n*sizeof(PetscScalar));CHKERRCUDA(cerr);
+      cerr = cudaMemcpy((void*)v1,v,mpiaij->coo_n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    }
+
+    if (imode == INSERT_VALUES) {
+      ierr = MatSeqAIJCUSPARSEGetArrayWrite(A,&Aa);CHKERRQ(ierr); /* write matrix values */
+      ierr = MatSeqAIJCUSPARSEGetArrayWrite(B,&Ba);CHKERRQ(ierr);
+      cerr = cudaMemset(Aa,0,((Mat_SeqAIJ*)A->data)->nz*sizeof(PetscScalar));CHKERRCUDA(cerr);
+      cerr = cudaMemset(Ba,0,((Mat_SeqAIJ*)B->data)->nz*sizeof(PetscScalar));CHKERRCUDA(cerr);
+    } else {
+      ierr = MatSeqAIJCUSPARSEGetArray(A,&Aa);CHKERRQ(ierr); /* read & write matrix values */
+      ierr = MatSeqAIJCUSPARSEGetArray(B,&Ba);CHKERRQ(ierr);
+    }
+
+    /* Pack entries to be sent to remote */
+    MatPackCOOValues<<<(mpiaij->sendlen+255)/256,256>>>(v1,mpiaij->sendlen,Cperm1,vsend);
+
+    /* Send remote entries to their owner and overlap the communication with local computation */
+    ierr = PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_CUDA,vsend,PETSC_MEMTYPE_CUDA,v2,MPI_REPLACE);CHKERRQ(ierr);
+    /* Add local entries to A and B */
+    MatAddCOOValues<<<(Annz1+255)/256,256>>>(v1,Annz1,Aimap1,Ajmap1,Aperm1,Aa);
+    MatAddCOOValues<<<(Bnnz1+255)/256,256>>>(v1,Bnnz1,Bimap1,Bjmap1,Bperm1,Ba);
+    ierr = PetscSFReduceEnd(mpiaij->coo_sf,MPIU_SCALAR,vsend,v2,MPI_REPLACE);CHKERRQ(ierr);
+
+    /* Add received remote entries to A and B */
+    MatAddCOOValues<<<(Annz2+255)/256,256>>>(v2,Annz2,Aimap2,Ajmap2,Aperm2,Aa);
+    MatAddCOOValues<<<(Bnnz2+255)/256,256>>>(v2,Bnnz2,Bimap2,Bjmap2,Bperm2,Ba);
+
+    if (imode == INSERT_VALUES) {
+      ierr = MatSeqAIJCUSPARSERestoreArrayWrite(A,&Aa);CHKERRQ(ierr);
+      ierr = MatSeqAIJCUSPARSERestoreArrayWrite(B,&Ba);CHKERRQ(ierr);
+    } else {
+      ierr = MatSeqAIJCUSPARSERestoreArray(A,&Aa);CHKERRQ(ierr);
+      ierr = MatSeqAIJCUSPARSERestoreArray(B,&Ba);CHKERRQ(ierr);
+    }
+    if (PetscMemTypeHost(memtype)) {cerr = cudaFree((void*)v1);CHKERRCUDA(cerr);}
+  } else {
+    ierr = MatSetValuesCOO_MPIAIJCUSPARSE_Basic(mat,v,imode);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -437,6 +594,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A,MatAssemblyType mode)
 PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
 {
   PetscErrorCode     ierr;
+  cudaError_t        cerr;
   Mat_MPIAIJ         *aij            = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE*)aij->spptr;
   cusparseStatus_t   stat;
@@ -445,7 +603,6 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   PetscCheckFalse(!cusparseStruct,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing spptr");
   if (cusparseStruct->deviceMat) {
     PetscSplitCSRDataStructure d_mat = cusparseStruct->deviceMat, h_mat;
-    cudaError_t                cerr;
 
     ierr = PetscInfo(A,"Have device matrix\n");CHKERRQ(ierr);
     ierr = PetscNew(&h_mat);CHKERRQ(ierr);
@@ -471,8 +628,27 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
       cudaError_t err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUDA(err);
     }
     */
-    delete cusparseStruct->coo_p;
-    delete cusparseStruct->coo_pw;
+    /* Extended COO */
+    if (cusparseStruct->use_extended_coo) {
+      cerr = cudaFree(cusparseStruct->Aimap1_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Ajmap1_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Aperm1_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Bimap1_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Bjmap1_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Bperm1_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Aimap2_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Ajmap2_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Aperm2_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Bimap2_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Bjmap2_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Bperm2_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->Cperm1_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->sendbuf_d);CHKERRCUDA(cerr);
+      cerr = cudaFree(cusparseStruct->recvbuf_d);CHKERRCUDA(cerr);
+    } else {
+      delete cusparseStruct->coo_p;
+      delete cusparseStruct->coo_pw;
+    }
     delete cusparseStruct;
   } catch(char *ex) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSPARSE error: %s", ex);
@@ -491,11 +667,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
 {
   PetscErrorCode     ierr;
   Mat_MPIAIJ         *a;
-  Mat_MPIAIJCUSPARSE *cusparseStruct;
   cusparseStatus_t   stat;
   Mat                A;
 
   PetscFunctionBegin;
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(B,MAT_COPY_VALUES,newmat);CHKERRQ(ierr);
   } else if (reuse == MAT_REUSE_MATRIX) {
@@ -514,16 +690,9 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat B, MatType mtyp
   }
 
   if (reuse != MAT_REUSE_MATRIX && !a->spptr) {
-    a->spptr = new Mat_MPIAIJCUSPARSE;
-
-    cusparseStruct                      = (Mat_MPIAIJCUSPARSE*)a->spptr;
-    cusparseStruct->diagGPUMatFormat    = MAT_CUSPARSE_CSR;
-    cusparseStruct->offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
-    cusparseStruct->coo_p               = NULL;
-    cusparseStruct->coo_pw              = NULL;
-    cusparseStruct->stream              = 0;
-    cusparseStruct->deviceMat           = NULL;
-    stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUSPARSE(stat);
+    Mat_MPIAIJCUSPARSE *cusp = new Mat_MPIAIJCUSPARSE;
+    stat     = cusparseCreate(&(cusp->handle));CHKERRCUSPARSE(stat);
+    a->spptr = cusp;
   }
 
   A->ops->assemblyend           = MatAssemblyEnd_MPIAIJCUSPARSE;

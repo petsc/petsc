@@ -249,16 +249,25 @@ struct Mat_SeqAIJCUSPARSE {
  #endif
   THRUSTINTARRAY               *csr2csc_i;
   PetscSplitCSRDataStructure   deviceMat;       /* Matrix on device for, eg, assembly */
+
+  /* Stuff for basic COO support */
   THRUSTINTARRAY               *cooPerm;        /* permutation array that sorts the input coo entris by row and col */
   THRUSTINTARRAY               *cooPerm_a;      /* ordered array that indicate i-th nonzero (after sorting) is the j-th unique nonzero */
+
+  /* Stuff for extended COO support */
+  PetscBool                    use_extended_coo; /* Use extended COO format */
+  PetscCount                   *jmap_d; /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
+  PetscCount                   *perm_d;
+
+  Mat_SeqAIJCUSPARSE() : use_extended_coo(PETSC_FALSE), perm_d(NULL), jmap_d(NULL) {}
 };
 
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
 PETSC_INTERN PetscErrorCode MatCUSPARSESetStream(Mat, const cudaStream_t stream);
 PETSC_INTERN PetscErrorCode MatCUSPARSESetHandle(Mat, const cusparseHandle_t handle);
 PETSC_INTERN PetscErrorCode MatCUSPARSEClearHandle(Mat);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscCount,const PetscInt[],const PetscInt[]);
-PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE_Basic(Mat,const PetscScalar[],InsertMode);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);
 

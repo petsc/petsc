@@ -1138,6 +1138,15 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
   ierr = PetscFree2(aij->rowvalues,aij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(aij->ld);CHKERRQ(ierr);
+
+  /* Free COO stuff; must match allocation methods in MatSetPreallocationCOO_MPIAIJ() */
+  ierr = PetscSFDestroy(&aij->coo_sf);CHKERRQ(ierr);
+  ierr = PetscFree4(aij->Aperm1,aij->Bperm1,aij->Ajmap1,aij->Bjmap1);CHKERRQ(ierr);
+  ierr = PetscFree4(aij->Aperm2,aij->Bperm2,aij->Ajmap2,aij->Bjmap2);CHKERRQ(ierr);
+  ierr = PetscFree4(aij->Aimap1,aij->Bimap1,aij->Aimap2,aij->Bimap2);CHKERRQ(ierr);
+  ierr = PetscFree2(aij->sendbuf,aij->recvbuf);CHKERRQ(ierr);
+  ierr = PetscFree(aij->Cperm1);CHKERRQ(ierr);
+
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   /* may be created by MatCreateMPIAIJSumSeqAIJSymbolic */
@@ -1182,6 +1191,8 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpiaijcrl_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_is_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpisell_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSetValuesCOO_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6045,6 +6056,554 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIDense_MPIAIJ(Mat C)
   }
   PetscFunctionReturn(0);
 }
+
+/* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
+   is greater than value, or last if there is no such element.
+*/
+static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array,PetscCount first,PetscCount last,PetscInt value,PetscCount *upper)
+{
+  PetscCount  it,step,count = last - first;
+
+  PetscFunctionBegin;
+  while (count > 0) {
+    it   = first;
+    step = count / 2;
+    it  += step;
+    if (!(value < array[it])) {
+      first  = ++it;
+      count -= step + 1;
+    } else count = step;
+  }
+  *upper = first;
+  PetscFunctionReturn(0);
+}
+
+/* Merge two sets of sorted nonzero entries and return a CSR for the merged (sequential) matrix
+
+  Input Parameters:
+
+    j1,rowBegin1,rowEnd1,perm1,jmap1: describe the first set of nonzeros (Set1)
+    j2,rowBegin2,rowEnd2,perm2,jmap2: describe the second set of nonzeros (Set2)
+
+    mat: both sets' entries are on m rows, where m is the number of local rows of the matrix mat
+
+    For Set1, j1[] contains column indices of the nonzeros.
+    For the k-th row (0<=k<m), [rowBegin1[k],rowEnd1[k]) index into j1[] and point to the begin/end nonzero in row k
+    respectively (note rowEnd1[k] is not necessarily equal to rwoBegin1[k+1]). Indices in this range of j1[] are sorted,
+    but might have repeats. jmap1[t+1] - jmap1[t] is the number of repeats for the t-th unique nonzero in Set1.
+
+    Similar for Set2.
+
+    This routine merges the two sets of nonzeros row by row and removes repeats.
+
+  Output Parameters: (memories are allocated by the caller)
+
+    i[],j[]: the CSR of the merged matrix, which has m rows.
+    imap1[]: the k-th unique nonzero in Set1 (k=0,1,...) corresponds to imap1[k]-th unique nonzero in the merged matrix.
+    imap2[]: similar to imap1[], but for Set2.
+    Note we order nonzeros row-by-row and from left to right.
+*/
+static PetscErrorCode MatMergeEntries_Internal(Mat mat,const PetscInt j1[],const PetscInt j2[],const PetscCount rowBegin1[],const PetscCount rowEnd1[],
+  const PetscCount rowBegin2[],const PetscCount rowEnd2[],const PetscCount jmap1[],const PetscCount jmap2[],
+  PetscCount imap1[],PetscCount imap2[],PetscInt i[],PetscInt j[])
+{
+  PetscErrorCode ierr;
+  PetscInt       r,m; /* Row index of mat */
+  PetscCount     t,t1,t2,b1,e1,b2,e2;
+
+  PetscFunctionBegin;
+  ierr = MatGetLocalSize(mat,&m,NULL);CHKERRQ(ierr);
+  t1   = t2 = t = 0; /* Count unique nonzeros of in Set1, Set1 and the merged respectively */
+  i[0] = 0;
+  for (r=0; r<m; r++) { /* Do row by row merging */
+    b1   = rowBegin1[r];
+    e1   = rowEnd1[r];
+    b2   = rowBegin2[r];
+    e2   = rowEnd2[r];
+    while (b1 < e1 && b2 < e2) {
+      if (j1[b1] == j2[b2]) { /* Same column index and hence same nonzero */
+        j[t]      = j1[b1];
+        imap1[t1] = t;
+        imap2[t2] = t;
+        b1       += jmap1[t1+1] - jmap1[t1]; /* Jump to next unique local nonzero */
+        b2       += jmap2[t2+1] - jmap2[t2]; /* Jump to next unique remote nonzero */
+        t1++; t2++; t++;
+      } else if (j1[b1] < j2[b2]) {
+        j[t]      = j1[b1];
+        imap1[t1] = t;
+        b1       += jmap1[t1+1] - jmap1[t1];
+        t1++; t++;
+      } else {
+        j[t]      = j2[b2];
+        imap2[t2] = t;
+        b2       += jmap2[t2+1] - jmap2[t2];
+        t2++; t++;
+      }
+    }
+    /* Merge the remaining in either j1[] or j2[] */
+    while (b1 < e1) {
+      j[t]      = j1[b1];
+      imap1[t1] = t;
+      b1       += jmap1[t1+1] - jmap1[t1];
+      t1++; t++;
+    }
+    while (b2 < e2) {
+      j[t]      = j2[b2];
+      imap2[t2] = t;
+      b2       += jmap2[t2+1] - jmap2[t2];
+      t2++; t++;
+    }
+    i[r+1] = t;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Split a set/group of local entries into two subsets: those in the diagonal block and those in the off-diagonal block
+
+  Input Parameters:
+    mat: an MPI matrix that provides row and column layout information for splitting. Let's say its number of local rows is m.
+    n,i[],j[],perm[]: there are n input entries, belonging to m rows. Row/col indices of the entries are stored in i[] and j[]
+      respectively, along with a permutation array perm[]. Length of the i[],j[],perm[] arrays is n.
+
+      i[] is already sorted, but within a row, j[] is not sorted and might have repeats.
+      i[] might contain negative indices at the beginning, which means the corresponding entries should be ignored in the splitting.
+
+  Output Parameters:
+    j[],perm[]: the routine needs to sort j[] within each row along with perm[].
+    rowBegin[],rowMid[],rowEnd[]: of length m, and the memory is preallocated and zeroed by the caller.
+      They contain indices pointing to j[]. For 0<=r<m, [rowBegin[r],rowMid[r]) point to begin/end entries of row r of the diagonal block,
+      and [rowMid[r],rowEnd[r]) point to begin/end entries of row r of the off-diagonal block.
+
+    Aperm[],Ajmap[],Atot,Annz: Arrays are allocated by this routine.
+      Aperm[Atot] stores values from perm[] for entries belonging to the diagonal block. Length of Aperm[] is Atot, though it may also count
+        repeats (i.e., same 'i,j' pair).
+      Ajmap[Annz+1] stores the number of repeats of each unique entry belonging to the diagonal block. More precisely, Ajmap[t+1] - Ajmap[t]
+        is the number of repeats for the t-th unique entry in the diagonal block. Ajmap[0] is always 0.
+
+      Atot: number of entries belonging to the diagonal block
+      Annz: number of unique nonzeros belonging to the diagonal block.
+
+    Bperm[], Bjmap[], Btot, Bnnz are similar but for the off-diagonal block.
+
+    Aperm[],Bperm[],Ajmap[],Bjmap[] are allocated by this routine with PetscMalloc4(). One has to free them with PetscFree4() in the exact order.
+*/
+static PetscErrorCode MatSplitEntries_Internal(Mat mat,PetscCount n,const PetscInt i[],PetscInt j[],
+  PetscCount perm[],PetscCount rowBegin[],PetscCount rowMid[],PetscCount rowEnd[],
+  PetscCount *Atot_,PetscCount **Aperm_,PetscCount *Annz_,PetscCount **Ajmap_,
+  PetscCount *Btot_,PetscCount **Bperm_,PetscCount *Bnnz_,PetscCount **Bjmap_)
+{
+  PetscErrorCode    ierr;
+  PetscInt          cstart,cend,rstart,rend,row,col;
+  PetscCount        Atot=0,Btot=0; /* Total number of nonzeros in the diagonal and off-diagonal blocks */
+  PetscCount        Annz=0,Bnnz=0; /* Number of unique nonzeros in the diagonal and off-diagonal blocks */
+  PetscCount        k,m,p,q,r,s,mid;
+  PetscCount        *Aperm,*Bperm,*Ajmap,*Bjmap;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetRange(mat->rmap,&rstart,&rend);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(mat->cmap,&cstart,&cend);CHKERRQ(ierr);
+  m    = rend - rstart;
+
+  for (k=0; k<n; k++) {if (i[k]>=0) break;} /* Skip negative rows */
+
+  /* Process [k,n): sort and partition each local row into diag and offdiag portions,
+     fill rowBegin[], rowMid[], rowEnd[], and count Atot, Btot, Annz, Bnnz.
+  */
+  while (k<n) {
+    row = i[k];
+    /* Entries in [k,s) are in one row. Shift diagonal block col indices so that diag is ahead of offdiag after sorting the row */
+    for (s=k; s<n; s++) if (i[s] != row) break;
+    for (p=k; p<s; p++) {
+      if (j[p] >= cstart && j[p] < cend) j[p] -= PETSC_MAX_INT; /* Shift diag columns to range of [-PETSC_MAX_INT, -1]  */
+     #if defined(PETSC_USE_DEBUG)
+      else if (j[p] < 0 || j[p] > mat->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %" PetscInt_FMT " is out of range",j[p]);
+     #endif
+    }
+    ierr = PetscSortIntWithCountArray(s-k,j+k,perm+k);CHKERRQ(ierr);
+    ierr = PetscSortedIntUpperBound(j,k,s,-1,&mid);CHKERRQ(ierr); /* Seperate [k,s) into [k,mid) for diag and [mid,s) for offdiag */
+    rowBegin[row-rstart] = k;
+    rowMid[row-rstart]   = mid;
+    rowEnd[row-rstart]   = s;
+
+    /* Count nonzeros of this diag/offdiag row, which might have repeats */
+    Atot += mid - k;
+    Btot += s - mid;
+
+    /* Count unique nonzeros of this diag/offdiag row */
+    for (p=k; p<mid;) {
+      col = j[p];
+      do {j[p] += PETSC_MAX_INT; p++;} while (p<mid && j[p] == col); /* Revert the modified diagonal indices */
+      Annz++;
+    }
+
+    for (p=mid; p<s;) {
+      col = j[p];
+      do {p++;} while (p<s && j[p] == col);
+      Bnnz++;
+    }
+    k = s;
+  }
+
+  /* Allocation according to Atot, Btot, Annz, Bnnz */
+  ierr = PetscMalloc4(Atot,&Aperm,Btot,&Bperm,Annz+1,&Ajmap,Bnnz+1,&Bjmap);CHKERRQ(ierr);
+
+  /* Re-scan indices and copy diag/offdiag permuation indices to Aperm, Bperm and also fill Ajmap and Bjmap */
+  Ajmap[0] = Bjmap[0] = Atot = Btot = Annz = Bnnz = 0;
+  for (r=0; r<m; r++) {
+    k     = rowBegin[r];
+    mid   = rowMid[r];
+    s     = rowEnd[r];
+    ierr  = PetscArraycpy(Aperm+Atot,perm+k,  mid-k);CHKERRQ(ierr);
+    ierr  = PetscArraycpy(Bperm+Btot,perm+mid,s-mid);CHKERRQ(ierr);
+    Atot += mid - k;
+    Btot += s - mid;
+
+    /* Scan column indices in this row and find out how many repeats each unique nonzero has */
+    for (p=k; p<mid;) {
+      col = j[p];
+      q   = p;
+      do {p++;} while (p<mid && j[p] == col);
+      Ajmap[Annz+1] = Ajmap[Annz] + (p - q);
+      Annz++;
+    }
+
+    for (p=mid; p<s;) {
+      col = j[p];
+      q   = p;
+      do {p++;} while (p<s && j[p] == col);
+      Bjmap[Bnnz+1] = Bjmap[Bnnz] + (p - q);
+      Bnnz++;
+    }
+  }
+  /* Output */
+  *Aperm_ = Aperm;
+  *Annz_  = Annz;
+  *Atot_  = Atot;
+  *Ajmap_ = Ajmap;
+  *Bperm_ = Bperm;
+  *Bnnz_  = Bnnz;
+  *Btot_  = Btot;
+  *Bjmap_ = Bjmap;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+{
+  PetscErrorCode            ierr;
+  MPI_Comm                  comm;
+  PetscMPIInt               rank,size;
+  PetscInt                  m,n,M,N,rstart,rend,cstart,cend; /* Sizes, indices of row/col, therefore with type PetscInt */
+  PetscCount                k,p,q,rem; /* Loop variables over coo arrays */
+  Mat_MPIAIJ                *mpiaij = (Mat_MPIAIJ*)mat->data;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(mat->rmap,&rstart,&rend);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(mat->cmap,&cstart,&cend);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+
+  /* ---------------------------------------------------------------------------*/
+  /* Sort (i,j) by row along with a permuation array, so that the to-be-ignored */
+  /* entries come first, then local rows, then remote rows.                     */
+  /* ---------------------------------------------------------------------------*/
+  PetscCount n1 = coo_n,*perm1;
+  PetscInt   *i1,*j1; /* Copies of input COOs along with a permutation array */
+  ierr = PetscMalloc3(n1,&i1,n1,&j1,n1,&perm1);CHKERRQ(ierr);
+  ierr = PetscArraycpy(i1,coo_i,n1);CHKERRQ(ierr); /* Make a copy since we'll modify it */
+  ierr = PetscArraycpy(j1,coo_j,n1);CHKERRQ(ierr);
+  for (k=0; k<n1; k++) perm1[k] = k;
+
+  /* Manipulate indices so that entries with negative row or col indices will have smallest
+     row indices, local entries will have greater but negative row indices, and remote entries
+     will have positive row indices.
+  */
+  for (k=0; k<n1; k++) {
+    if (i1[k] < 0 || j1[k] < 0) i1[k] = PETSC_MIN_INT; /* e.g., -2^31, minimal to move them ahead */
+    else if (i1[k] >= rstart && i1[k] < rend) i1[k] -= PETSC_MAX_INT; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_MAX_INT, -1] */
+    else if (mat->nooffprocentries) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"MAT_NO_OFF_PROC_ENTRIES is set but insert to remote rows");
+    else if (mpiaij->donotstash) i1[k] = PETSC_MIN_INT; /* Ignore offproc entries as if they had negative indices */
+  }
+
+  /* Sort by row; after that, [0,k) have ignored entires, [k,rem) have local rows and [rem,n1) have remote rows */
+  ierr = PetscSortIntWithIntCountArrayPair(n1,i1,j1,perm1);CHKERRQ(ierr);
+  for (k=0; k<n1; k++) {if (i1[k] > PETSC_MIN_INT) break;} /* Advance k to the first entry we need to take care of */
+  ierr = PetscSortedIntUpperBound(i1,k,n1,rend-1-PETSC_MAX_INT,&rem);CHKERRQ(ierr); /* rem is upper bound of the last local row */
+  for (; k<rem; k++) i1[k] += PETSC_MAX_INT; /* Revert row indices of local rows*/
+
+  /* ---------------------------------------------------------------------------*/
+  /*           Split local rows into diag/offdiag portions                      */
+  /* ---------------------------------------------------------------------------*/
+  PetscCount   *rowBegin1,*rowMid1,*rowEnd1;
+  PetscCount   *Ajmap1,*Aperm1,*Bjmap1,*Bperm1,*Cperm1;
+  PetscCount   Annz1,Bnnz1,Atot1,Btot1;
+
+  ierr = PetscCalloc3(m,&rowBegin1,m,&rowMid1,m,&rowEnd1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n1-rem,&Cperm1);CHKERRQ(ierr);
+  ierr = MatSplitEntries_Internal(mat,rem,i1,j1,perm1,rowBegin1,rowMid1,rowEnd1,&Atot1,&Aperm1,&Annz1,&Ajmap1,&Btot1,&Bperm1,&Bnnz1,&Bjmap1);CHKERRQ(ierr);
+
+  /* ---------------------------------------------------------------------------*/
+  /*           Send remote rows to their owner                                  */
+  /* ---------------------------------------------------------------------------*/
+  /* Find which rows should be sent to which remote ranks*/
+  PetscInt       nsend = 0; /* Number of MPI ranks to send data to */
+  PetscMPIInt    *sendto; /* [nsend], storing remote ranks */
+  PetscInt       *nentries; /* [nsend], storing number of entries sent to remote ranks; Assume PetscInt is big enough for this count, and error if not */
+  const PetscInt *ranges;
+  PetscInt       maxNsend = size >= 128? 128 : size; /* Assume max 128 neighbors; realloc when needed */
+
+  ierr = PetscLayoutGetRanges(mat->rmap,&ranges);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxNsend,&sendto,maxNsend,&nentries);CHKERRQ(ierr);
+  for (k=rem; k<n1;) {
+    PetscMPIInt  owner;
+    PetscInt     firstRow,lastRow;
+    /* Locate a row range */
+    firstRow = i1[k]; /* first row of this owner */
+    ierr     = PetscLayoutFindOwner(mat->rmap,firstRow,&owner);CHKERRQ(ierr);
+    lastRow  = ranges[owner+1]-1; /* last row of this owner */
+
+    /* Find the first index 'p' in [k,n) with i[p] belonging to next owner */
+    ierr     = PetscSortedIntUpperBound(i1,k,n1,lastRow,&p);CHKERRQ(ierr);
+
+    /* All entries in [k,p) belong to this remote owner */
+    if (nsend >= maxNsend) { /* Double the remote ranks arrays if not long enough */
+      PetscMPIInt *sendto2;
+      PetscInt    *nentries2;
+      PetscInt    maxNsend2 = (maxNsend <= size/2) ? maxNsend*2 : size;
+      ierr = PetscMalloc2(maxNsend2,&sendto2,maxNsend2,&nentries2);CHKERRQ(ierr);
+      ierr = PetscArraycpy(sendto2,sendto,maxNsend);CHKERRQ(ierr);
+      ierr = PetscArraycpy(nentries2,nentries2,maxNsend+1);CHKERRQ(ierr);
+      ierr = PetscFree2(sendto,nentries2);CHKERRQ(ierr);
+      sendto      = sendto2;
+      nentries    = nentries2;
+      maxNsend    = maxNsend2;
+    }
+    sendto[nsend]   = owner;
+    nentries[nsend] = p - k;
+    ierr = PetscCountCast(p-k,&nentries[nsend]);CHKERRQ(ierr);
+    nsend++;
+    k = p;
+  }
+
+  /* Build 1st SF to know offsets on remote to send data */
+  PetscSF     sf1;
+  PetscInt    nroots = 1,nroots2 = 0;
+  PetscInt    nleaves = nsend,nleaves2 = 0;
+  PetscInt    *offsets;
+  PetscSFNode *iremote;
+
+  ierr = PetscSFCreate(comm,&sf1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nsend,&iremote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nsend,&offsets);CHKERRQ(ierr);
+  for (k=0; k<nsend; k++) {
+    iremote[k].rank  = sendto[k];
+    iremote[k].index = 0;
+    nleaves2        += nentries[k];
+    if (PetscUnlikely(nleaves2 < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of SF leaves is too large for PetscInt");
+  }
+  ierr = PetscSFSetGraph(sf1,nroots,nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFFetchAndOpWithMemTypeBegin(sf1,MPIU_INT,PETSC_MEMTYPE_HOST,&nroots2/*rootdata*/,PETSC_MEMTYPE_HOST,nentries/*leafdata*/,PETSC_MEMTYPE_HOST,offsets/*leafupdate*/,MPI_SUM);CHKERRQ(ierr);
+  ierr = PetscSFFetchAndOpEnd(sf1,MPIU_INT,&nroots2,nentries,offsets,MPI_SUM);CHKERRQ(ierr); /* Would nroots2 overflow, we check offsets[] below */
+  ierr = PetscSFDestroy(&sf1);CHKERRQ(ierr);
+  PetscAssert(nleaves2 == n1-rem,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nleaves2 " PetscInt_FMT " != number of remote entries " PetscCount_FMT "",nleaves2,n1-rem);
+
+  /* Build 2nd SF to send remote COOs to their owner */
+  PetscSF sf2;
+  nroots  = nroots2;
+  nleaves = nleaves2;
+  ierr    = PetscSFCreate(comm,&sf2);CHKERRQ(ierr);
+  ierr    = PetscSFSetFromOptions(sf2);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
+  p       = 0;
+  for (k=0; k<nsend; k++) {
+    if (PetscUnlikely(offsets[k] < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of SF roots is too large for PetscInt");
+    for (q=0; q<nentries[k]; q++,p++) {
+      iremote[p].rank  = sendto[k];
+      iremote[p].index = offsets[k] + q;
+    }
+  }
+  ierr = PetscSFSetGraph(sf2,nroots,nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  /* sf2 only sends contiguous leafdata to contiguous rootdata. We record the permuation which will be used to fill leafdata */
+  ierr = PetscArraycpy(Cperm1,perm1+rem,n1-rem);CHKERRQ(ierr);
+
+  /* Send the remote COOs to their owner */
+  PetscInt   n2 = nroots,*i2,*j2; /* Buffers for received COOs from other ranks, along with a permutation array */
+  PetscCount *perm2; /* Though PetscInt is enough for remote entries, we use PetscCount here as we want to reuse MatSplitEntries_Internal() */
+  ierr = PetscMalloc3(n2,&i2,n2,&j2,n2,&perm2);CHKERRQ(ierr);
+  ierr = PetscSFReduceWithMemTypeBegin(sf2,MPIU_INT,PETSC_MEMTYPE_HOST,i1+rem,PETSC_MEMTYPE_HOST,i2,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf2,MPIU_INT,i1+rem,i2,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceWithMemTypeBegin(sf2,MPIU_INT,PETSC_MEMTYPE_HOST,j1+rem,PETSC_MEMTYPE_HOST,j2,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf2,MPIU_INT,j1+rem,j2,MPI_REPLACE);CHKERRQ(ierr);
+
+  ierr = PetscFree(offsets);CHKERRQ(ierr);
+  ierr = PetscFree2(sendto,nentries);CHKERRQ(ierr);
+
+  /* ---------------------------------------------------------------*/
+  /* Sort received COOs by row along with the permutation array     */
+  /* ---------------------------------------------------------------*/
+  for (k=0; k<n2; k++) perm2[k] = k;
+  ierr = PetscSortIntWithIntCountArrayPair(n2,i2,j2,perm2);CHKERRQ(ierr);
+
+  /* ---------------------------------------------------------------*/
+  /* Split received COOs into diag/offdiag portions                 */
+  /* ---------------------------------------------------------------*/
+  PetscCount  *rowBegin2,*rowMid2,*rowEnd2;
+  PetscCount  *Ajmap2,*Aperm2,*Bjmap2,*Bperm2;
+  PetscCount  Annz2,Bnnz2,Atot2,Btot2;
+
+  ierr = PetscCalloc3(m,&rowBegin2,m,&rowMid2,m,&rowEnd2);CHKERRQ(ierr);
+  ierr = MatSplitEntries_Internal(mat,n2,i2,j2,perm2,rowBegin2,rowMid2,rowEnd2,&Atot2,&Aperm2,&Annz2,&Ajmap2,&Btot2,&Bperm2,&Bnnz2,&Bjmap2);CHKERRQ(ierr);
+
+  /* --------------------------------------------------------------------------*/
+  /* Merge local COOs with received COOs: diag with diag, offdiag with offdiag */
+  /* --------------------------------------------------------------------------*/
+  PetscInt   *Ai,*Bi;
+  PetscInt   *Aj,*Bj;
+
+  ierr  = PetscMalloc1(m+1,&Ai);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(m+1,&Bi);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(Annz1+Annz2,&Aj);CHKERRQ(ierr); /* Since local and remote entries might have dups, we might allocate excess memory */
+  ierr  = PetscMalloc1(Bnnz1+Bnnz2,&Bj);CHKERRQ(ierr);
+
+  PetscCount *Aimap1,*Bimap1,*Aimap2,*Bimap2;
+  ierr = PetscMalloc4(Annz1,&Aimap1,Bnnz1,&Bimap1,Annz2,&Aimap2,Bnnz2,&Bimap2);CHKERRQ(ierr);
+
+  ierr = MatMergeEntries_Internal(mat,j1,j2,rowBegin1,rowMid1,rowBegin2,rowMid2,Ajmap1,Ajmap2,Aimap1,Aimap2,Ai,Aj);CHKERRQ(ierr);
+  ierr = MatMergeEntries_Internal(mat,j1,j2,rowMid1,  rowEnd1,rowMid2,  rowEnd2,Bjmap1,Bjmap2,Bimap1,Bimap2,Bi,Bj);CHKERRQ(ierr);
+  ierr = PetscFree3(rowBegin1,rowMid1,rowEnd1);CHKERRQ(ierr);
+  ierr = PetscFree3(rowBegin2,rowMid2,rowEnd2);CHKERRQ(ierr);
+  ierr = PetscFree3(i1,j1,perm1);CHKERRQ(ierr);
+  ierr = PetscFree3(i2,j2,perm2);CHKERRQ(ierr);
+
+  /* Reallocate Aj, Bj once we know actual numbers of unique nonzeros in A and B */
+  PetscInt Annz = Ai[m];
+  PetscInt Bnnz = Bi[m];
+  if (Annz < Annz1 + Annz2) {
+    PetscInt *Aj_new;
+    ierr = PetscMalloc1(Annz,&Aj_new);CHKERRQ(ierr);
+    ierr = PetscArraycpy(Aj_new,Aj,Annz);CHKERRQ(ierr);
+    ierr = PetscFree(Aj);CHKERRQ(ierr);
+    Aj   = Aj_new;
+  }
+
+  if (Bnnz < Bnnz1 + Bnnz2) {
+    PetscInt *Bj_new;
+    ierr = PetscMalloc1(Bnnz,&Bj_new);CHKERRQ(ierr);
+    ierr = PetscArraycpy(Bj_new,Bj,Bnnz);CHKERRQ(ierr);
+    ierr = PetscFree(Bj);CHKERRQ(ierr);
+    Bj   = Bj_new;
+  }
+
+  /* --------------------------------------------------------------------------------*/
+  /* Create a MPIAIJKOKKOS newmat with CSRs of A and B, then replace mat with newmat */
+  /* --------------------------------------------------------------------------------*/
+  Mat           newmat;
+  PetscScalar   *Aa,*Ba;
+  Mat_SeqAIJ    *a,*b;
+
+  ierr   = PetscCalloc1(Annz,&Aa);CHKERRQ(ierr); /* Zero matrix on device */
+  ierr   = PetscCalloc1(Bnnz,&Ba);CHKERRQ(ierr);
+  /* make Aj[] local, i.e, based off the start column of the diagonal portion */
+  if (cstart) {for (k=0; k<Annz; k++) Aj[k] -= cstart;}
+  ierr   = MatCreateMPIAIJWithSplitArrays(comm,m,n,M,N,Ai,Aj,Aa,Bi,Bj,Ba,&newmat);CHKERRQ(ierr); /* FIXME: Can we do it without creating a new mat? */
+  ierr   = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr); /* Unlike MatHeaderReplace(), some info, ex. mat->product is kept */
+  mpiaij = (Mat_MPIAIJ*)mat->data;
+  a      = (Mat_SeqAIJ*)mpiaij->A->data;
+  b      = (Mat_SeqAIJ*)mpiaij->B->data;
+  a->singlemalloc = b->singlemalloc = PETSC_FALSE; /* Let newmat own Ai,Aj,Aa,Bi,Bj,Ba */
+  a->free_a       = b->free_a       = PETSC_TRUE;
+  a->free_ij      = b->free_ij      = PETSC_TRUE;
+
+  mpiaij->coo_n   = coo_n;
+  mpiaij->coo_sf  = sf2;
+  mpiaij->sendlen = nleaves;
+  mpiaij->recvlen = nroots;
+
+  mpiaij->Annz1   = Annz1;
+  mpiaij->Annz2   = Annz2;
+  mpiaij->Bnnz1   = Bnnz1;
+  mpiaij->Bnnz2   = Bnnz2;
+
+  mpiaij->Atot1   = Atot1;
+  mpiaij->Atot2   = Atot2;
+  mpiaij->Btot1   = Btot1;
+  mpiaij->Btot2   = Btot2;
+
+  mpiaij->Aimap1  = Aimap1;
+  mpiaij->Aimap2  = Aimap2;
+  mpiaij->Bimap1  = Bimap1;
+  mpiaij->Bimap2  = Bimap2;
+
+  mpiaij->Ajmap1  = Ajmap1;
+  mpiaij->Ajmap2  = Ajmap2;
+  mpiaij->Bjmap1  = Bjmap1;
+  mpiaij->Bjmap2  = Bjmap2;
+
+  mpiaij->Aperm1  = Aperm1;
+  mpiaij->Aperm2  = Aperm2;
+  mpiaij->Bperm1  = Bperm1;
+  mpiaij->Bperm2  = Bperm2;
+
+  mpiaij->Cperm1  = Cperm1;
+
+  /* Allocate in preallocation. If not used, it has zero cost on host */
+  ierr = PetscMalloc2(mpiaij->sendlen,&mpiaij->sendbuf,mpiaij->recvlen,&mpiaij->recvbuf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSetValuesCOO_MPIAIJ(Mat mat,const PetscScalar v[],InsertMode imode)
+{
+  PetscErrorCode       ierr;
+  Mat_MPIAIJ           *mpiaij = (Mat_MPIAIJ*)mat->data;
+  Mat                  A = mpiaij->A,B = mpiaij->B;
+  PetscCount           Annz1 = mpiaij->Annz1,Annz2 = mpiaij->Annz2,Bnnz1 = mpiaij->Bnnz1,Bnnz2 = mpiaij->Bnnz2;
+  PetscScalar          *Aa,*Ba;
+  PetscScalar          *sendbuf = mpiaij->sendbuf;
+  PetscScalar          *recvbuf = mpiaij->recvbuf;
+  const PetscCount     *Ajmap1 = mpiaij->Ajmap1,*Ajmap2 = mpiaij->Ajmap2,*Aimap1 = mpiaij->Aimap1,*Aimap2 = mpiaij->Aimap2;
+  const PetscCount     *Bjmap1 = mpiaij->Bjmap1,*Bjmap2 = mpiaij->Bjmap2,*Bimap1 = mpiaij->Bimap1,*Bimap2 = mpiaij->Bimap2;
+  const PetscCount     *Aperm1 = mpiaij->Aperm1,*Aperm2 = mpiaij->Aperm2,*Bperm1 = mpiaij->Bperm1,*Bperm2 = mpiaij->Bperm2;
+  const PetscCount     *Cperm1 = mpiaij->Cperm1;
+
+  PetscFunctionBegin;
+  ierr = MatSeqAIJGetArray(A,&Aa);CHKERRQ(ierr); /* Might read and write matrix values */
+  ierr = MatSeqAIJGetArray(B,&Ba);CHKERRQ(ierr);
+  if (imode == INSERT_VALUES) {
+    ierr = PetscMemzero(Aa,((Mat_SeqAIJ*)A->data)->nz*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(Ba,((Mat_SeqAIJ*)B->data)->nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  /* Pack entries to be sent to remote */
+  for (PetscCount i=0; i<mpiaij->sendlen; i++) sendbuf[i] = v[Cperm1[i]];
+
+  /* Send remote entries to their owner and overlap the communication with local computation */
+  ierr = PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_HOST,sendbuf,PETSC_MEMTYPE_HOST,recvbuf,MPI_REPLACE);CHKERRQ(ierr);
+  /* Add local entries to A and B */
+  for (PetscCount i=0; i<Annz1; i++) {
+    for (PetscCount k=Ajmap1[i]; k<Ajmap1[i+1]; k++) Aa[Aimap1[i]] += v[Aperm1[k]];
+  }
+  for (PetscCount i=0; i<Bnnz1; i++) {
+    for (PetscCount k=Bjmap1[i]; k<Bjmap1[i+1]; k++) Ba[Bimap1[i]] += v[Bperm1[k]];
+  }
+  ierr = PetscSFReduceEnd(mpiaij->coo_sf,MPIU_SCALAR,sendbuf,recvbuf,MPI_REPLACE);CHKERRQ(ierr);
+
+  /* Add received remote entries to A and B */
+  for (PetscCount i=0; i<Annz2; i++) {
+    for (PetscCount k=Ajmap2[i]; k<Ajmap2[i+1]; k++) Aa[Aimap2[i]] += recvbuf[Aperm2[k]];
+  }
+  for (PetscCount i=0; i<Bnnz2; i++) {
+    for (PetscCount k=Bjmap2[i]; k<Bjmap2[i+1]; k++) Ba[Bimap2[i]] += recvbuf[Bperm2[k]];
+  }
+  ierr = MatSeqAIJRestoreArray(A,&Aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(B,&Ba);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------------*/
 
 /*MC
@@ -6141,6 +6700,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_is_mpiaij_C",MatProductSetFromOptions_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatProductSetFromOptions_mpiaij_mpiaij_C",MatProductSetFromOptions_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetValuesCOO_C",MatSetValuesCOO_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -89,6 +89,8 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyFromGPU(Mat);
 static PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat,PetscBool);
 
 static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],PetscScalar[]);
+static PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+static PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
 
 PetscErrorCode MatCUSPARSESetStream(Mat A,const cudaStream_t stream)
 {
@@ -3696,6 +3698,7 @@ static PetscErrorCode MatSeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE **cusparsestr
 {
   PetscErrorCode   ierr;
   cusparseStatus_t stat;
+  cudaError_t      cerr;
 
   PetscFunctionBegin;
   if (*cusparsestruct) {
@@ -3707,6 +3710,10 @@ static PetscErrorCode MatSeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE **cusparsestr
     delete (*cusparsestruct)->cooPerm_a;
     delete (*cusparsestruct)->csr2csc_i;
     if ((*cusparsestruct)->handle) {stat = cusparseDestroy((*cusparsestruct)->handle);CHKERRCUSPARSE(stat);}
+    if ((*cusparsestruct)->use_extended_coo) {
+      cerr = cudaFree((*cusparsestruct)->jmap_d);CHKERRCUDA(cerr);
+      cerr = cudaFree((*cusparsestruct)->perm_d);CHKERRCUDA(cerr);
+    }
     ierr = PetscFree(*cusparsestruct);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -3869,7 +3876,8 @@ struct IJSum
 };
 
 #include <thrust/iterator/discard_iterator.h>
-PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], InsertMode imode)
+/* Associated with MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic() */
+PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE_Basic(Mat A, const PetscScalar v[], InsertMode imode)
 {
   Mat_SeqAIJCUSPARSE                    *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJ                            *a = (Mat_SeqAIJ*)A->data;
@@ -3969,7 +3977,8 @@ PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat A, PetscBool destroy)
 }
 
 #include <thrust/binary_search.h>
-PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscCount n, const PetscInt coo_i[], const PetscInt coo_j[])
+/* 'Basic' means it only works when coo_i[] and coo_j[] do not contain negative indices */
+PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJCUSPARSE *cusp = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -4084,6 +4093,93 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat A, PetscCount n, const 
 
   A->assembled = PETSC_FALSE;
   A->was_assembled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+{
+  PetscErrorCode     ierr;
+  cudaError_t        cerr;
+  Mat_SeqAIJ         *seq;
+  Mat_SeqAIJCUSPARSE *dev;
+  Mat                newmat;
+  PetscInt           coo_basic = 1;
+  PetscMemType       mtype = PETSC_MEMTYPE_DEVICE;
+
+  PetscFunctionBegin;
+  if (coo_i) {
+    ierr = PetscGetMemType(coo_i,&mtype);CHKERRQ(ierr);
+    if (PetscMemTypeHost(mtype)) {
+      for (PetscCount k=0; k<coo_n; k++) {
+        if (coo_i[k] < 0 || coo_j[k] < 0) {coo_basic = 0; break;}
+      }
+    }
+  }
+
+  if (coo_basic) { /* i,j are on device or do not contain negative indices */
+    ierr = MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(mat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)mat),&newmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(newmat,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(newmat,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSetPreallocationCOO_SeqAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
+    ierr = MatConvert(newmat,MATSEQAIJCUSPARSE,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
+    ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
+    ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
+
+    seq  = static_cast<Mat_SeqAIJ*>(mat->data);
+    dev  = static_cast<Mat_SeqAIJCUSPARSE*>(mat->spptr);
+    cerr = cudaMalloc((void**)&dev->jmap_d,(seq->nz+1)*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(dev->jmap_d,seq->jmap,(seq->nz+1)*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    cerr = cudaMalloc((void**)&dev->perm_d,seq->Atot*sizeof(PetscCount));CHKERRCUDA(cerr);
+    cerr = cudaMemcpy(dev->perm_d,seq->perm,seq->Atot*sizeof(PetscCount),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    dev->use_extended_coo = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+__global__ void MatAddCOOValues(const PetscScalar kv[],PetscCount nnz,const PetscCount jmap[],const PetscCount perm[],InsertMode imode,PetscScalar a[])
+{
+  PetscCount        i = blockIdx.x*blockDim.x + threadIdx.x;
+  const PetscCount  grid_size = gridDim.x * blockDim.x;
+  for (; i<nnz; i+= grid_size) {
+    PetscScalar sum = 0.0;
+    for (PetscCount k=jmap[i]; k<jmap[i+1]; k++) sum += kv[perm[k]];
+    a[i] = (imode == INSERT_VALUES? 0.0 : a[i]) + sum;
+  }
+}
+
+PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], InsertMode imode)
+{
+  PetscErrorCode      ierr;
+  cudaError_t         cerr;
+  Mat_SeqAIJ          *seq = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJCUSPARSE  *dev = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  PetscCount          Annz = seq->nz;
+  PetscMemType        memtype;
+  const PetscScalar   *v1 = v;
+  PetscScalar         *Aa;
+
+  PetscFunctionBegin;
+  if (dev->use_extended_coo) {
+    ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr);
+    if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
+      cerr = cudaMalloc((void**)&v1,seq->coo_n*sizeof(PetscScalar));CHKERRCUDA(cerr);
+      cerr = cudaMemcpy((void*)v1,v,seq->coo_n*sizeof(PetscScalar),cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
+    }
+
+    if (imode == INSERT_VALUES) {ierr = MatSeqAIJCUSPARSEGetArrayWrite(A,&Aa);CHKERRQ(ierr);}
+    else {ierr = MatSeqAIJCUSPARSEGetArray(A,&Aa);CHKERRQ(ierr);}
+
+    MatAddCOOValues<<<(Annz+255)/256,256>>>(v1,Annz,dev->jmap_d,dev->perm_d,imode,Aa);
+
+    if (imode == INSERT_VALUES) {ierr = MatSeqAIJCUSPARSERestoreArrayWrite(A,&Aa);CHKERRQ(ierr);}
+    else {ierr = MatSeqAIJCUSPARSERestoreArray(A,&Aa);CHKERRQ(ierr);}
+
+    if (PetscMemTypeHost(memtype)) {cerr = cudaFree((void*)v1);CHKERRCUDA(cerr);}
+  } else {
+    ierr = MatSetValuesCOO_SeqAIJCUSPARSE_Basic(A,v,imode);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4284,6 +4380,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar** a)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(a,2);
   PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   *a = NULL;
   PetscFunctionReturn(0);
@@ -4349,6 +4446,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat A, PetscScalar** a)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(a,2);
   PetscCheckTypeName(A,MATSEQAIJCUSPARSE);
+  ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
   *a = NULL;
   PetscFunctionReturn(0);

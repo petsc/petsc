@@ -15,7 +15,6 @@
 #include <KokkosSparse_spgemm.hpp>
 #include <KokkosSparse_spadd.hpp>
 
-#include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
 
 static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat); /* Forward declaration */
@@ -455,7 +454,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype,
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQAIJKOKKOS);CHKERRQ(ierr);
     ierr = MatSetOps_SeqAIJKokkos(A);CHKERRQ(ierr);
     aseq = static_cast<Mat_SeqAIJ*>(A->data);
-    if (A->assembled) { /* Copy i, j to device for an assembled matrix if not yet */
+    if (A->assembled) { /* Copy i, j (but not values) to device for an assembled matrix if not yet */
       PetscCheckFalse(A->spptr,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Expect NULL (Mat_SeqAIJKokkos*)A->spptr");
       A->spptr = new Mat_SeqAIJKokkos(A->rmap->n,A->cmap->n,aseq->nz,aseq->i,aseq->j,aseq->a,A->nonzerostate,PETSC_FALSE);
     }
@@ -1028,110 +1027,24 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar alpha,Mat X,MatStru
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscInt n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   PetscErrorCode            ierr;
-  MPI_Comm                  comm;
-  PetscInt                  *i,*j,*perm,*jmap;
-  PetscInt                  k,M,N,p,q,row,start,end,nnz,nneg;
-  PetscBool                 has_repeats = PETSC_FALSE;
-  PetscInt                  *Ai,*Aj;
-  PetscScalar               *Aa;
+  Mat                       newmat;
   Mat_SeqAIJKokkos          *akok;
   Mat_SeqAIJ                *aseq;
-  MatRowMapKokkosViewHost   perm_h("perm",n),jmap_h;
-  Mat                       newmat;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n,&i,n,&j);CHKERRQ(ierr);
-  ierr = PetscArraycpy(i,coo_i,n);CHKERRQ(ierr); /* Make a copy since we'll modify it */
-  ierr = PetscArraycpy(j,coo_j,n);CHKERRQ(ierr);
-  perm = perm_h.data();
-  for (k=0; k<n; k++) { /* Ignore entries with negative row or col indices */
-    if (j[k] < 0) i[k] = -1;
-    perm[k] = k;
-  }
-
-  /* Sort by row */
-  ierr = PetscSortIntWithArrayPair(n,i,j,perm);CHKERRQ(ierr);
-  for (k=0; k<n; k++) {if (i[k] >= 0) break;} /* Advance k to the first row with a non-negative index */
-  nneg = k;
-  Kokkos::resize(jmap_h,n-nneg+1); /* Allocate an extra to make a CSR-like data structure. jmap[i] is the number of repeats for i-th nonzero */
-  nnz  = 0; /* Total number of unique nonzeros to be counted */
-  jmap = jmap_h.data(); /* In the end, only the first nnz+1 elements in jmap[] are significant. */
-  jmap++; /* Inc jmap by 1 for convinience */
-
-  ierr = PetscCalloc1(M+1,&Ai);CHKERRQ(ierr); /* CSR of A */
-  ierr = PetscMalloc1(n-nneg,&Aj);CHKERRQ(ierr); /* We have at most n-k unique nonzeros */
-
-  /* In each row, sort by column, then unique column indices to get row length */
-  Ai++; /* Inc by 1 for convinience */
-  q = 0; /* q-th unique nonzero, with q starting from 0 */
-  while (k<n) {
-    row   = i[k];
-    start = k; /* [start,end) indices for this row */
-    while (k<n && i[k] == row) k++;
-    end   = k;
-    ierr  = PetscSortIntWithArray(end-start,j+start,perm+start);CHKERRQ(ierr);
-    /* Find number of unique col entries in this row */
-    Aj[q]   = j[start]; /* Log the first nonzero in this row */
-    jmap[q] = 1; /* Number of repeats of this nozero entry */
-    Ai[row] = 1;
-    nnz++;
-
-    for (p=start+1; p<end; p++) { /* Scan remaining nonzero in this row */
-      if (j[p] != j[p-1]) { /* Meet a new nonzero */
-        q++;
-        jmap[q] = 1;
-        Aj[q]   = j[p];
-        Ai[row]++;
-        nnz++;
-      } else {
-        jmap[q]++;
-        has_repeats = PETSC_TRUE;
-      }
-    }
-    q++; /* Move to next row and thus next unique nonzero */
-  }
-  ierr = PetscFree2(i,j);CHKERRQ(ierr);
-
-  Ai--; /* Back to the beginning of Ai[] */
-  for (k=0; k<M; k++) Ai[k+1] += Ai[k];
-  jmap--; /* Back to the beginning of jmap[] */
-  jmap[0] = 0;
-  if (has_repeats) { /* Only transform jmap[] to CSR when having repeats, otherwise jmap[] is not used */
-    for (k=0; k<nnz; k++) jmap[k+1] += jmap[k];
-    Kokkos::resize(jmap_h,nnz+1); /* Resize wrt the actual number of nonzeros */
-  }
-
-  if (nnz < n-nneg) { /* Realloc Aj[] to actual number of nonzeros */
-    PetscInt *Aj_new;
-    ierr = PetscMalloc1(nnz,&Aj_new);CHKERRQ(ierr);
-    ierr = PetscArraycpy(Aj_new,Aj,nnz);CHKERRQ(ierr);
-    ierr = PetscFree(Aj);CHKERRQ(ierr);
-    Aj = Aj_new;
-  }
-
-  ierr = PetscMalloc1(nnz,&Aa);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJWithArrays(comm,M,N,Ai,Aj,Aa,&newmat);CHKERRQ(ierr);
-  aseq = static_cast<Mat_SeqAIJ*>(newmat->data);
-  aseq->singlemalloc = PETSC_FALSE; /* Let newmat own Ai,Aj,Aa */
-  aseq->free_a       = aseq->free_ij = PETSC_TRUE;
-
+  ierr = MatCreate(PetscObjectComm((PetscObject)mat),&newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(newmat,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(newmat,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetPreallocationCOO_SeqAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
   ierr = MatConvert(newmat,MATSEQAIJKOKKOS,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
   ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
   ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
-
-  if (nneg) { /* Discard heading entries with negative indices in perm_h, as we'll access it from index 0 in MatSetValuesCOO */
-    MatRowMapKokkosViewHost   newperm_h("perm",n-nneg);
-    Kokkos::deep_copy(newperm_h,Kokkos::subview(perm_h,Kokkos::make_pair(nneg,n)));
-    perm_h = newperm_h;
-  }
-
+  aseq = static_cast<Mat_SeqAIJ*>(mat->data);
   akok = static_cast<Mat_SeqAIJKokkos*>(mat->spptr);
-  akok->SetUpCOO(n,has_repeats,jmap_h,perm_h);
+  akok->SetUpCOO(aseq);
   PetscFunctionReturn(0);
 }
 
@@ -1140,41 +1053,33 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A,const PetscScalar v[],I
   PetscErrorCode              ierr;
   Mat_SeqAIJ                  *aseq = static_cast<Mat_SeqAIJ*>(A->data);
   Mat_SeqAIJKokkos            *akok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
-  PetscInt                    nz = aseq->nz;
-  const MatRowMapKokkosView&  jmap = akok->jmap_d;
-  const MatRowMapKokkosView&  perm = akok->perm_d;
+  PetscCount                  Annz = aseq->nz;
+  const PetscCountKokkosView& jmap = akok->jmap_d;
+  const PetscCountKokkosView& perm = akok->perm_d;
   MatScalarKokkosView         Aa;
   ConstMatScalarKokkosView    kv;
   PetscMemType                memtype;
 
   PetscFunctionBegin;
-  if (!v) { /* NULL v means an all zero array */
-    ierr = MatZeroEntries(A);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
+  PetscAssert(A->assembled,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected matrix to be already assembled in MatSetPreallocationCOO()");
   ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr);
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
-    kv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),ConstMatScalarKokkosViewHost(v,akok->coo_n));
+    kv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),ConstMatScalarKokkosViewHost(v,aseq->coo_n));
   } else {
-    kv = ConstMatScalarKokkosView(v,akok->coo_n); /* Directly use v[]'s memory */
+    kv = ConstMatScalarKokkosView(v,aseq->coo_n); /* Directly use v[]'s memory */
   }
 
-  ierr = MatSeqAIJGetKokkosView(A,&Aa);CHKERRQ(ierr); /* Might read and write matrix values */
-  if (imode == INSERT_VALUES) {
-    Kokkos::deep_copy(Aa,0.0); /* Zero matrix values since INSERT_VALUES still requires summing replicated values in v[] */
-  }
+  if (imode == INSERT_VALUES) {ierr = MatSeqAIJGetKokkosViewWrite(A,&Aa);CHKERRQ(ierr);} /* write matrix values */
+  else {ierr = MatSeqAIJGetKokkosView(A,&Aa);CHKERRQ(ierr);} /* read & write matrix values */
 
-  if (akok->coo_has_repeats) {
-    Kokkos::parallel_for(nz,KOKKOS_LAMBDA(const PetscInt i) {
-      for (PetscInt k=jmap(i); k<jmap(i+1); k++) Aa(i) += kv(perm(k));
-    });
-  } else {
-    Kokkos::parallel_for(nz,KOKKOS_LAMBDA(const PetscInt i) {Aa(i) += kv(perm(i));});
-  }
-  ierr = MatSeqAIJRestoreKokkosView(A,&Aa);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  Kokkos::parallel_for(Annz,KOKKOS_LAMBDA(const PetscCount i) {
+    PetscScalar sum = 0.0;
+    for (PetscCount k=jmap(i); k<jmap(i+1); k++) sum += kv(perm(k));
+    Aa(i) = (imode == INSERT_VALUES? 0.0 : Aa(i)) + sum;
+  });
+
+  if (imode == INSERT_VALUES) {ierr = MatSeqAIJRestoreKokkosViewWrite(A,&Aa);CHKERRQ(ierr);}
+  else {ierr = MatSeqAIJRestoreKokkosView(A,&Aa);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
