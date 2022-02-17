@@ -238,7 +238,7 @@ PETSC_DEPRECATED_FUNCTION("Use TaoSetObjective() (since version 3.17)") static i
 PETSC_DEPRECATED_FUNCTION("Use TaoGetGradient() (since version 3.17)") static inline PetscErrorCode TaoGetGradientVector(Tao t,Vec *v) { return TaoGetGradient(t,v,NULL,NULL); }
 PETSC_DEPRECATED_FUNCTION("Use TaoSetGradient() (since version 3.17)") static inline PetscErrorCode TaoSetGradientRoutine(Tao t,PetscErrorCode (*f)(Tao,Vec,Vec,void*),void *c) { return TaoSetGradient(t,NULL,f,c); }
 PETSC_DEPRECATED_FUNCTION("Use TaoSetObjectiveAndGradient() (since version 3.17)") static inline PetscErrorCode TaoSetObjectiveAndGradientRoutine(Tao t,PetscErrorCode (*f)(Tao,Vec,PetscReal*,Vec,void*),void *c) { return TaoSetObjectiveAndGradient(t,NULL,f,c); }
-PETSC_DEPRECATED_FUNCTION("Use TaoSetHessian() (since version 3.17)") static inline PetscErrorCode TaoSetHessianRoutine(Tao t,Mat H,Mat P,PetscErrorCode (*f)(Tao,Vec,Mat,Mat,void*),void *c) { return TaoSetHessian(t,NULL,NULL,f,c); }
+PETSC_DEPRECATED_FUNCTION("Use TaoSetHessian() (since version 3.17)") static inline PetscErrorCode TaoSetHessianRoutine(Tao t,Mat H,Mat P,PetscErrorCode (*f)(Tao,Vec,Mat,Mat,void*),void *c) { return TaoSetHessian(t,H,P,f,c); }
 
 PETSC_EXTERN PetscErrorCode TaoSetGradientNorm(Tao,Mat);
 PETSC_EXTERN PetscErrorCode TaoGetGradientNorm(Tao,Mat*);
