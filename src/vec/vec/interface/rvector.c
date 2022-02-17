@@ -2106,17 +2106,19 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 PetscErrorCode VecGetArrayAndMemType(Vec x,PetscScalar **a,PetscMemType *mtype)
 {
   PetscErrorCode ierr;
+  PetscMemType   omtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   ierr = VecSetErrorIfLocked(x,1);CHKERRQ(ierr);
   if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc */
-    ierr = (*x->ops->getarrayandmemtype)(x,a,mtype);CHKERRQ(ierr);
+    ierr = (*x->ops->getarrayandmemtype)(x,a,&omtype);CHKERRQ(ierr);
   } else { /* VECSTANDARD, VECNEST, VECVIENNACL */
     ierr = VecGetArray(x,a);CHKERRQ(ierr);
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    omtype = PETSC_MEMTYPE_HOST;
   }
+  if (mtype) *mtype = omtype;
   PetscFunctionReturn(0);
 }
 
@@ -2173,6 +2175,7 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x,PetscScalar **a)
 PetscErrorCode VecGetArrayReadAndMemType(Vec x,const PetscScalar **a,PetscMemType *mtype)
 {
   PetscErrorCode ierr;
+  PetscMemType   omtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
@@ -2182,14 +2185,15 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x,const PetscScalar **a,PetscMemTyp
  #endif
 
   if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc, though they are also petscnative */
-    ierr = (*x->ops->getarrayandmemtype)(x,(PetscScalar**)a,mtype);CHKERRQ(ierr);
+    ierr = (*x->ops->getarrayandmemtype)(x,(PetscScalar**)a,&omtype);CHKERRQ(ierr);
   } else if (x->ops->getarray) { /* VECNEST, VECVIENNACL */
     ierr = (*x->ops->getarray)(x,(PetscScalar**)a);CHKERRQ(ierr);
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    omtype = PETSC_MEMTYPE_HOST;
   } else if (x->petscnative) { /* VECSTANDARD */
     *a = *((PetscScalar**)x->data);
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    omtype = PETSC_MEMTYPE_HOST;
   } else SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot get array read in place for vector type \"%s\"",((PetscObject)x)->type_name);
+  if (mtype) *mtype = omtype;
   PetscFunctionReturn(0);
 }
 
@@ -2245,19 +2249,21 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x,const PetscScalar **a)
 PetscErrorCode VecGetArrayWriteAndMemType(Vec x,PetscScalar **a,PetscMemType *mtype)
 {
   PetscErrorCode ierr;
+  PetscMemType   omtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->ops->getarraywriteandmemtype) { /* VECCUDA, VECHIP, VECKOKKOS etc, though they are also petscnative */
-    ierr = (*x->ops->getarrayandmemtype)(x,a,mtype);CHKERRQ(ierr);
+    ierr = (*x->ops->getarrayandmemtype)(x,a,&omtype);CHKERRQ(ierr);
   } else if (x->ops->getarraywrite) { /* VECNEST, VECVIENNACL */
     ierr = (*x->ops->getarraywrite)(x,a);CHKERRQ(ierr);
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    omtype = PETSC_MEMTYPE_HOST;
   } else if (x->petscnative) { /* VECSTANDARD */
     *a = *((PetscScalar**)x->data);
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    omtype = PETSC_MEMTYPE_HOST;
   } else SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Cannot get array read in place for vector type \"%s\"",((PetscObject)x)->type_name);
+  if (mtype) *mtype = omtype;
   PetscFunctionReturn(0);
 }
 
