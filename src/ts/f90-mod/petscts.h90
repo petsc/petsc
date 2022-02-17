@@ -1,2 +1,9 @@
 
+      interface
+        subroutine TSDestroy(a,z)
+          import tTS
+          TS a
+          PetscErrorCode z
+        end subroutine
+      end interface
 

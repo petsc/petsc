@@ -161,6 +161,12 @@
        PetscErrorCode ierr
        end subroutine
 
+      subroutine PetscRandomDestroy(a,z)
+       import tPetscRandom
+       PetscRandom a
+       PetscErrorCode z
+      end subroutine
+
       subroutine PetscSubcommView(a,b,z)
        import tPetscSubComm,tPetscViewer
        PetscSubcomm a ! PetscSubcomm

@@ -18,7 +18,7 @@
 /* Logging support */
 PetscClassId PETSC_RANDOM_CLASSID;
 
-/*@
+/*@C
    PetscRandomDestroy - Destroys a context that has been formed by
    PetscRandomCreate().
 
