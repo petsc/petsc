@@ -151,7 +151,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
 
   Level: intermediate
 
-.seealso: PetscDeviceContextGetStreamType(), PetscDeviceContextCreate(), PetscDeviceContextSetUp(), PetscDeviceContextSetFromOptions()
+.seealso: PetscStreamType, PetscDeviceContextGetStreamType(), PetscDeviceContextCreate(), PetscDeviceContextSetUp(), PetscDeviceContextSetFromOptions()
 @*/
 PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStreamType type)
 {
