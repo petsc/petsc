@@ -107,9 +107,10 @@ Changes: Development
 - Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
 - Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
 - Change ``MatStructures`` enumeration to avoid spaces and match capitalization of other enumerations
--  Change size argument of ``MatSetPreallocationCOO()`` to ``PetscCount``
--  Add ``MATORDERINGMETISND`` use METIS for nested dissection ordering of ``MatSeqAIJ``, with options ``nseps``, ``niter``, ``ufactor`` and ``pfactor`` under the common prefix ``-mat_ordering_metisnd_``
--  Change options ``-matproduct_<product_type>_via`` to ``-mat_product_algorithm``
+- Change size argument of ``MatSetPreallocationCOO()`` to ``PetscCount``
+- Add ``MATORDERINGMETISND`` use METIS for nested dissection ordering of ``MatSeqAIJ``, with options ``nseps``, ``niter``, ``ufactor`` and ``pfactor`` under the common prefix ``-mat_ordering_metisnd_``
+- Change options ``-matproduct_<product_type>_via`` to ``-mat_product_algorithm``
+- Add ``-mat_superlu_dist_3d`` and ``-mat_superlu_dist_d <n>`` to support using SuperLU_DIST's version 7.2 3d decomposition algorithms
 
 .. rubric:: PC:
 
