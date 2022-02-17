@@ -443,6 +443,7 @@ int main(int argc, char **argv)
     # Volume: 1.0
     suffix: gmsh_q3
     requires: double
+    nsize: {{1 2}}
     args: -coord_space 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q3.msh -dm_plex_gmsh_project -volume 1.0 -tol 1e-6
 
 TEST*/
