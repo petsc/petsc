@@ -1,6 +1,5 @@
 static char help[]= "Test PetscSFFCompose when the ilocal array is not the identity\n\n";
 
-#include <petsc.h>
 #include <petscsf.h>
 
 int main(int argc, char **argv)
@@ -20,8 +19,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
+  PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
   ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfA);CHKERRQ(ierr);
   ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfB);CHKERRQ(ierr);
@@ -131,7 +129,6 @@ int main(int argc, char **argv)
   ierr = PetscSFDestroy(&sfBA);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-
   return ierr;
 }
 
