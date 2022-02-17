@@ -81,13 +81,13 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 }
 
 /*@
-   KSPSetUseFischerGuess - Use the Paul Fischer algorithm
+   KSPSetUseFischerGuess - Use the Paul Fischer algorithm or its variants
 
    Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov context
-.  model - use model 1, model 2 or any other number to turn it off
+.  model - use model 1, model 2, model 3, or any other number to turn it off
 -  size - size of subspace used to generate initial guess
 
     Options Database:
@@ -453,7 +453,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPGuessSetFromOptions(ksp->guess);CHKERRQ(ierr);
   } else { /* old option for KSP */
     nmax = 2;
-    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm or its variants for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
     if (flag) {
       PetscCheckFalse(nmax != 2,comm,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
       ierr = KSPSetUseFischerGuess(ksp,model[0],model[1]);CHKERRQ(ierr);

@@ -770,6 +770,7 @@ PETSC_EXTERN PetscErrorCode KSPGuessDestroy(KSPGuess*);
 PETSC_EXTERN PetscErrorCode KSPGuessCreate(MPI_Comm,KSPGuess*);
 PETSC_EXTERN PetscErrorCode KSPGuessSetType(KSPGuess,KSPGuessType);
 PETSC_EXTERN PetscErrorCode KSPGuessGetType(KSPGuess,KSPGuessType*);
+PETSC_EXTERN PetscErrorCode KSPGuessSetTolerance(KSPGuess,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPGuessSetUp(KSPGuess);
 PETSC_EXTERN PetscErrorCode KSPGuessUpdate(KSPGuess,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPGuessFormGuess(KSPGuess,Vec,Vec);

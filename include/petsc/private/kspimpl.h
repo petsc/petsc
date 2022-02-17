@@ -42,6 +42,7 @@ struct _KSPGuessOps {
   PetscErrorCode (*formguess)(KSPGuess,Vec,Vec); /* Form initial guess */
   PetscErrorCode (*update)(KSPGuess,Vec,Vec);    /* Update database */
   PetscErrorCode (*setfromoptions)(KSPGuess);
+  PetscErrorCode (*settolerance)(KSPGuess,PetscReal);
   PetscErrorCode (*setup)(KSPGuess);
   PetscErrorCode (*destroy)(KSPGuess);
   PetscErrorCode (*view)(KSPGuess,PetscViewer);

@@ -425,9 +425,18 @@ static PetscErrorCode KSPGuessSetFromOptions_POD(KSPGuess guess)
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)guess),((PetscObject)guess)->prefix,"POD initial guess options","KSPGuess");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_guess_pod_size","Number of snapshots",NULL,pod->maxn,&pod->maxn,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_guess_pod_monitor","Monitor initial guess generator",NULL,pod->monitor,&pod->monitor,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_guess_pod_tol","Tolerance to retain eigenvectors",NULL,pod->tol,&pod->tol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_guess_pod_tol","Tolerance to retain eigenvectors","KSPGuessSetTolerance",pod->tol,&pod->tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_guess_pod_Ainner","Use the operator as inner product (must be SPD)",NULL,pod->Aspd,&pod->Aspd,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPGuessSetTolerance_POD(KSPGuess guess,PetscReal tol)
+{
+  KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
+
+  PetscFunctionBegin;
+  pod->tol = tol;
   PetscFunctionReturn(0);
 }
 
@@ -471,6 +480,7 @@ PetscErrorCode KSPGuessCreate_POD(KSPGuess guess)
 
   guess->ops->setfromoptions = KSPGuessSetFromOptions_POD;
   guess->ops->destroy        = KSPGuessDestroy_POD;
+  guess->ops->settolerance   = KSPGuessSetTolerance_POD;
   guess->ops->setup          = KSPGuessSetUp_POD;
   guess->ops->view           = KSPGuessView_POD;
   guess->ops->reset          = KSPGuessReset_POD;
