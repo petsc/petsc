@@ -410,7 +410,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
 {
   PetscErrorCode  ierr;
   Mat_MPIAIJ      *aij=(Mat_MPIAIJ*)A->data;
-  PetscInt        nz=aij->B->cmap->n,nsends,nrecvs,i,nrows_to,j,blda,clda,m,M,n,N;
+  PetscInt        nz=aij->B->cmap->n,nsends,nrecvs,i,nrows_to,j,blda,m,M,n,N;
   MPIAIJ_MPIDense *contents;
   VecScatter      ctx=aij->Mvctx;
   PetscInt        Am=A->rmap->n,Bm=B->rmap->n,BN=B->cmap->N,Bbn,Bbn1,bs,nrows_from,numBb;
@@ -436,7 +436,6 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   ierr = MatSetBlockSizesFromMats(C,A,B);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(B,&blda);CHKERRQ(ierr);
-  ierr = MatDenseGetLDA(C,&clda);CHKERRQ(ierr);
   ierr = PetscNew(&contents);CHKERRQ(ierr);
 
   ierr = VecScatterGetRemote_Private(ctx,PETSC_TRUE/*send*/,&nsends,&sstarts,&sindices,NULL,NULL);CHKERRQ(ierr);
@@ -489,11 +488,8 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
   ierr = PetscMalloc1(Bm+1,&disp);CHKERRQ(ierr);
   for (i=0; i<nsends; i++) {
     nrows_to = sstarts[i+1]-sstarts[i];
-    for (j=0; j<nrows_to; j++) {
-      disp[j] = sindices[sstarts[i]+j]; /* rowB to be sent */
-    }
-    ierr = MPI_Type_create_indexed_block(nrows_to,1,(const PetscMPIInt *)disp,MPIU_SCALAR,&type1);CHKERRMPI(ierr);
-
+    for (j=0; j<nrows_to; j++) disp[j] = sindices[sstarts[i]+j]; /* rowB to be sent */
+    ierr = MPI_Type_create_indexed_block(nrows_to,1,disp,MPIU_SCALAR,&type1);CHKERRMPI(ierr);
     ierr = MPI_Type_create_resized(type1,0,blda*sizeof(PetscScalar),&stype[i]);CHKERRMPI(ierr);
     ierr = MPI_Type_commit(&stype[i]);CHKERRMPI(ierr);
     ierr = MPI_Type_free(&type1);CHKERRMPI(ierr);
@@ -503,8 +499,8 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal f
     /* received values from a process form a (nrows_from x Bbn) row block in workB (column-wise) */
     nrows_from = rstarts[i+1]-rstarts[i];
     disp[0] = 0;
-    ierr = MPI_Type_create_indexed_block(1, nrows_from, (const PetscMPIInt *)disp, MPIU_SCALAR, &type1);CHKERRMPI(ierr);
-    ierr = MPI_Type_create_resized(type1, 0, nz*sizeof(PetscScalar), &rtype[i]);CHKERRMPI(ierr);
+    ierr = MPI_Type_create_indexed_block(1,nrows_from,disp,MPIU_SCALAR,&type1);CHKERRMPI(ierr);
+    ierr = MPI_Type_create_resized(type1,0,nz*sizeof(PetscScalar),&rtype[i]);CHKERRMPI(ierr);
     ierr = MPI_Type_commit(&rtype[i]);CHKERRMPI(ierr);
     ierr = MPI_Type_free(&type1);CHKERRMPI(ierr);
   }
@@ -557,11 +553,8 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,PetscInt Bbidx,Mat C,Mat *outworkB
   ierr = VecScatterGetRemoteOrdered_Private(ctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,NULL,&rprocs,NULL/*bs*/);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(nsends,&nsends_mpi);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(nrecvs,&nrecvs_mpi);CHKERRQ(ierr);
-  if (Bbidx == 0) {
-    workB = *outworkB = contents->workB;
-  } else {
-    workB = *outworkB = contents->workB1;
-  }
+  if (Bbidx == 0) workB = *outworkB = contents->workB;
+  else workB = *outworkB = contents->workB1;
   PetscCheckFalse(nrows != workB->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of rows of workB %" PetscInt_FMT " not equal to columns of aij->B %d",workB->cmap->n,nrows);
   swaits = contents->swaits;
   rwaits = contents->rwaits;
@@ -583,8 +576,8 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,PetscInt Bbidx,Mat C,Mat *outworkB
     ierr = MPI_Isend(b,ncols,stype[i],sprocs[i],tag,comm,swaits+i);CHKERRMPI(ierr);
   }
 
-  if (nrecvs) {ierr = MPI_Waitall(nrecvs_mpi,rwaits,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);}
-  if (nsends) {ierr = MPI_Waitall(nsends_mpi,swaits,MPI_STATUSES_IGNORE);CHKERRMPI(ierr);}
+  if (nrecvs) { ierr = MPI_Waitall(nrecvs_mpi,rwaits,MPI_STATUSES_IGNORE);CHKERRMPI(ierr); }
+  if (nsends) { ierr = MPI_Waitall(nsends_mpi,swaits,MPI_STATUSES_IGNORE);CHKERRMPI(ierr); }
 
   ierr = VecScatterRestoreRemote_Private(ctx,PETSC_TRUE/*send*/,&nsends,&sstarts,&sindices,&sprocs,NULL);CHKERRQ(ierr);
   ierr = VecScatterRestoreRemoteOrdered_Private(ctx,PETSC_FALSE/*recv*/,&nrecvs,&rstarts,NULL,&rprocs,NULL);CHKERRQ(ierr);
@@ -1949,7 +1942,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
     }
   }
   ierr = PetscTableGetCount(ta,&Armax);CHKERRQ(ierr);
-  /* printf("Armax %d, an %d + Bn %d = %d, aN %d\n",Armax,A->cmap->n,a->B->cmap->N,A->cmap->n+a->B->cmap->N,aN); */
 
   /* send and recv coi */
   /*-------------------*/

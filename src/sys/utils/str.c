@@ -492,18 +492,13 @@ void  PetscStrcmpNoError(const char a[],const char b[],PetscBool  *flg)
     Not for use in Fortran
 
 .seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
-
 @*/
-PetscErrorCode  PetscStrcmp(const char a[],const char b[],PetscBool  *flg)
+PetscErrorCode  PetscStrcmp(const char a[],const char b[],PetscBool *flg)
 {
   PetscFunctionBegin;
   if (!a && !b)      *flg = PETSC_TRUE;
   else if (!a || !b) *flg = PETSC_FALSE;
-  else {
-    int c = strcmp(a,b);
-    if (c) *flg = PETSC_FALSE;
-    else   *flg = PETSC_TRUE;
-  }
+  else               *flg = (PetscBool)!strcmp(a,b);
   PetscFunctionReturn(0);
 }
 
@@ -882,7 +877,7 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
    Level: intermediate
 
 @*/
-PetscErrorCode  PetscStrstr(const char haystack[],const char needle[],char *tmp[])
+PetscErrorCode PetscStrstr(const char haystack[],const char needle[],char *tmp[])
 {
   PetscFunctionBegin;
   *tmp = (char*)strstr(haystack,needle);

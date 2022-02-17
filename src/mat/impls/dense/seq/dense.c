@@ -1256,8 +1256,8 @@ static PetscErrorCode MatRestoreRow_SeqDense(Mat A,PetscInt row,PetscInt *ncols,
 
   PetscFunctionBegin;
   if (ncols) *ncols = 0;
-  if (cols) {ierr = PetscFree(*cols);CHKERRQ(ierr);}
-  if (vals) {ierr = PetscFree(*vals);CHKERRQ(ierr); }
+  if (cols) { ierr = PetscFree(*cols);CHKERRQ(ierr); }
+  if (vals) { ierr = PetscFree(*vals);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
@@ -1677,7 +1677,6 @@ PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-
   if (iascii) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
