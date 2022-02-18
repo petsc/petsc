@@ -585,6 +585,8 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A,PetscCount ncoo,const PetscInt
    are allowed and will be properly added or inserted to the matrix, unless the matrix option MAT_IGNORE_OFF_PROC_ENTRIES
    is set, in which case remote entries are ignored, or MAT_NO_OFF_PROC_ENTRIES is set, in which case an error will be generated.
 
+   The arrays coo_i and coo_j may be freed immediately after calling this function.
+
 .seealso: MatSetValuesCOO(), MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(), MatSetPreallocationCOOLocal()
 @*/
 PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
@@ -628,7 +630,8 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
    called prior to this function.
 
    The indices coo_i and coo_j may be modified within this function. They might be translated to corresponding global
-   indices, but the caller should not rely on them having any specific value after this function returns.
+   indices, but the caller should not rely on them having any specific value after this function returns. The arrays
+   can be freed or reused immediately after this function returns.
 
    Entries can be repeated, see MatSetValuesCOO(). Entries with negative row or column indices are allowed
    but will be ignored. The corresponding entries in MatSetValuesCOO() will be ignored too. Remote entries
@@ -669,8 +672,9 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[
    Level: beginner
 
    Notes: The values must follow the order of the indices prescribed with MatSetPreallocationCOO() or MatSetPreallocationCOOLocal().
-          When repeated entries are specified in the COO indices the coo_v values are first properly summed.
+          When repeated entries are specified in the COO indices the coo_v values are first properly summed, regardless of the value of imode.
           The imode flag indicates if coo_v must be added to the current values of the matrix (ADD_VALUES) or overwritten (INSERT_VALUES).
+          MatAssemblyBegin() and MatAssemblyEnd() do not need to be called after this routine. It automatically handles the assembly process.
 
 .seealso: MatSetPreallocationCOO(), MatSetPreallocationCOOLocal(), InsertMode, INSERT_VALUES, ADD_VALUES
 @*/

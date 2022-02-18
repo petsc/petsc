@@ -283,6 +283,9 @@ getautoconfargs:
 .cu.o:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 
+.kokkos.cxx.o:
+	${PETSC_KOKKOSCOMPILE_SINGLE} `pwd`/$<
+
 .sycl.cxx.o:
 	${PETSC_SYCLCOMPILE_SINGLE} `pwd`/$<
 
