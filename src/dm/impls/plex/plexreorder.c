@@ -68,7 +68,7 @@ $     MATORDERINGQMD - Quotient Minimum Degree
 
   Level: intermediate
 
-.seealso: MatGetOrdering()
+.seealso: DMPlexPermute(), MatGetOrdering()
 @*/
 PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
 {
@@ -134,6 +134,65 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
   /* Invert permutation */
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), pEnd-pStart, invclperm, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexGetOrdering1D - Reorder the vertices so that the mesh is in a line
+
+  Collective on dm
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameter:
+. perm - The point permutation as an IS, perm[old point number] = new point number
+
+  Level: intermediate
+
+.seealso: DMPlexGetOrdering(), DMPlexPermute(), MatGetOrdering()
+@*/
+PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
+{
+  PetscInt       *points;
+  const PetscInt *support, *cone;
+  PetscInt        dim, pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, suppSize, lastCell = 0;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  PetscCheck(dim == 1, PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Input mesh must be one dimensional, not %" PetscInt_FMT, dim);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pEnd-pStart, &points);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) points[c] = c;
+  for (v = vStart; v < vEnd; ++v) points[v] = v;
+  for (v = vStart; v < vEnd; ++v) {
+    ierr = DMPlexGetSupportSize(dm, v, &suppSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
+    if (suppSize == 1) {lastCell = support[0]; break;}
+  }
+  if (v < vEnd) {
+    PetscInt pos = cEnd;
+
+    points[v] = pos++;
+    while (lastCell >= cStart) {
+      ierr = DMPlexGetCone(dm, lastCell, &cone);CHKERRQ(ierr);
+      if (cone[0] == v) v = cone[1];
+      else              v = cone[0];
+      ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
+      ierr = DMPlexGetSupportSize(dm, v, &suppSize);CHKERRQ(ierr);
+      if (suppSize == 1) {lastCell = -1;}
+      else {
+        if (support[0] == lastCell) lastCell = support[1];
+        else                        lastCell = support[0];
+      }
+      points[v] = pos++;
+    }
+    PetscCheck(pos == pEnd, PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Last vertex was %" PetscInt_FMT ", not %" PetscInt_FMT, pos, pEnd);
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), pEnd-pStart, points, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

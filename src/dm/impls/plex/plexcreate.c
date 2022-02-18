@@ -3623,6 +3623,32 @@ static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject
     ierr = DMPlexConstructGhostCells(dm, flg ? lname : NULL, NULL, &gdm);CHKERRQ(ierr);
     ierr = DMPlexReplace_Static(dm, &gdm);CHKERRQ(ierr);
   }
+  /* Handle 1D order */
+  {
+    DM           cdm, rdm;
+    PetscDS      cds;
+    PetscObject  obj;
+    PetscClassId id = PETSC_OBJECT_CLASSID;
+    IS           perm;
+    PetscInt     dim, Nf;
+    PetscBool    distributed;
+
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexIsDistributed(dm, &distributed);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetDS(cdm, &cds);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(cds, &Nf);CHKERRQ(ierr);
+    if (Nf) {
+      ierr = PetscDSGetDiscretization(cds, 0, &obj);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    }
+    if (dim == 1 && !distributed && id != PETSCFE_CLASSID) {
+      ierr = DMPlexGetOrdering1D(dm, &perm);CHKERRQ(ierr);
+      ierr = DMPlexPermute(dm, perm, &rdm);CHKERRQ(ierr);
+      ierr = DMPlexReplace_Static(dm, &rdm);CHKERRQ(ierr);
+      ierr = ISDestroy(&perm);CHKERRQ(ierr);
+    }
+  }
   /* Handle */
   ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject, dm);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);

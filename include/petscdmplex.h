@@ -241,6 +241,7 @@ PETSC_EXTERN PetscErrorCode DMPlexSetMigrationSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexGetMigrationSF(DM, PetscSF *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetOrdering(DM, MatOrderingType, DMLabel, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexGetOrdering1D(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexPermute(DM, IS, DM *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateProcessSF(DM, PetscSF, IS *, PetscSF *);
@@ -512,6 +513,7 @@ PETSC_EXTERN PetscErrorCode DMPlexLabelsView(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexSectionView(DM,PetscViewer,DM);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalVectorView(DM,PetscViewer,DM,Vec);
 PETSC_EXTERN PetscErrorCode DMPlexLocalVectorView(DM,PetscViewer,DM,Vec);
+PETSC_EXTERN PetscErrorCode DMPlexVecView1D(DM, PetscInt, Vec[], PetscViewer);
 
 PETSC_EXTERN PetscErrorCode DMPlexTopologyLoad(DM, PetscViewer, PetscSF*);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesLoad(DM, PetscViewer, PetscSF);
