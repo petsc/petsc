@@ -70,6 +70,12 @@ cdef extern from * nogil:
     int VecRestoreArray(PetscVec,PetscScalar*[])
     int VecPlaceArray(PetscVec,PetscScalar[])
     int VecResetArray(PetscVec)
+    int VecGetArrayWriteAndMemType(PetscVec,PetscScalar*[],PetscMemType*)
+    int VecRestoreArrayWriteAndMemType(PetscVec,PetscScalar*[])
+    int VecGetArrayReadAndMemType(PetscVec,const PetscScalar*[],PetscMemType*)
+    int VecRestoreArrayReadAndMemType(PetscVec,const PetscScalar*[])
+    int VecGetArrayAndMemType(PetscVec,PetscScalar*[],PetscMemType*)
+    int VecRestoreArrayAndMemType(PetscVec,PetscScalar*[])
 
     int VecEqual(PetscVec,PetscVec,PetscBool*)
     int VecLoad(PetscVec,PetscViewer)
@@ -144,7 +150,6 @@ cdef extern from * nogil:
     int VecSqrtAbs(PetscVec)
     int VecAbs(PetscVec)
 
-    int VecStrideSum(PetscVec,PetscInt,PetscScalar*)
     int VecStrideMin(PetscVec,PetscInt,PetscInt*,PetscReal*)
     int VecStrideMax(PetscVec,PetscInt,PetscInt*,PetscReal*)
     int VecStrideScale(PetscVec,PetscInt,PetscScalar)
@@ -182,6 +187,7 @@ cdef extern from * nogil:
     int VecHIPRestoreArray(PetscVec,PetscScalar*[])
 
     int VecBindToCPU(PetscVec,PetscBool)
+    int VecBoundToCPU(PetscVec,PetscBool*)
     int VecGetOffloadMask(PetscVec,PetscOffloadMask*)
 
     int VecViennaCLGetCLContext(PetscVec,Py_uintptr_t*)
@@ -196,6 +202,10 @@ cdef extern from * nogil:
     int VecCreateMPICUDAWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
     int VecCreateSeqHIPWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
     int VecCreateMPIHIPWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar*,PetscVec*)
+
+cdef extern from "custom.h" nogil:
+    int VecStrideSum(PetscVec,PetscInt,PetscScalar*)
+    int VecGetCurrentMemType(PetscVec,PetscMemType*)
 
 # --------------------------------------------------------------------
 
@@ -430,6 +440,34 @@ cdef int vec_setitem(Vec self, object i, object v) except -1:
     vecsetvalues(self.vec, i, v, None, 0, 0)
     return 0
 
+cdef vec_get_dlpack_ctx(Vec self):
+    cdef object ctx0 = self.get_attr('__dltensor_ctx__')
+    cdef PetscInt n = 0
+    cdef int64_t ndim = 1
+    cdef int64_t* shape_arr = NULL
+    cdef int64_t* strides_arr = NULL
+    cdef object s1 = None
+    cdef object s2 = None
+    cdef PetscInt devId = 0
+    cdef PetscMemType mtype = PETSC_MEMTYPE_HOST
+    if ctx0 is None: # First time in, create a linear memory view
+        s1 = oarray_p(empty_p(ndim), NULL, <void**>&shape_arr)
+        s2 = oarray_p(empty_p(ndim), NULL, <void**>&strides_arr)
+        CHKERR( VecGetLocalSize(self.vec, &n) )
+        shape_arr[0] = <int64_t>n
+        strides_arr[0] = 1
+    else:
+        (_, _, ndim, s1, s2) = ctx0
+
+    devType_ = { PETSC_MEMTYPE_HOST : kDLCPU, PETSC_MEMTYPE_CUDA : kDLCUDA, PETSC_MEMTYPE_HIP : kDLROCM }
+    CHKERR( VecGetCurrentMemType(self.vec, &mtype) )
+    dtype = devType_.get(mtype, kDLCPU)
+    if dtype != kDLCPU:
+        CHKERR( PetscObjectGetDeviceId(<PetscObject>self.vec, &devId) )
+    ctx0 = (dtype, devId, ndim, s1, s2)
+    self.set_attr('__dltensor_ctx__', ctx0)
+    return ctx0
+
 # --------------------------------------------------------------------
 
 cdef extern from "pep3118.h":
@@ -591,79 +629,3 @@ cdef class _Vec_LocalForm:
         CHKERR( VecGhostRestoreLocalForm(gvec, &self.lvec.vec) )
         self.lvec.vec = NULL
 
-# --------------------------------------------------------------------
-
-cdef extern from "Python.h":
-    ctypedef void (*PyCapsule_Destructor)(object)
-    bint PyCapsule_IsValid(object, const char*)
-    void* PyCapsule_GetPointer(object, const char*) except? NULL
-    int PyCapsule_SetName(object, const char*) except -1
-    object PyCapsule_New(void*, const char*, PyCapsule_Destructor)
-    int PyCapsule_CheckExact(object)
-
-cdef extern from "stdlib.h" nogil:
-   ctypedef signed long int64_t
-   ctypedef unsigned long long uint64_t
-   ctypedef unsigned char uint8_t
-   ctypedef unsigned short uint16_t
-   void free(void* ptr)
-   void* malloc(size_t size)
-
-cdef struct DLDataType:
-    uint8_t code
-    uint8_t bits
-    uint16_t lanes
-
-cdef enum PetscDLDeviceType:
-    kDLCPU = <unsigned int>1
-    kDLCUDA = <unsigned int>2
-    kDLCUDAHost = <unsigned int>3
-    #kDLOpenCL = <unsigned int>4
-    #kDLVulkan = <unsigned int>7
-    #kDLMetal = <unsigned int>8
-    #kDLVPI = <unsigned int>9
-    kDLROCM = <unsigned int>10
-    kDLROCMHost = <unsigned int>11
-    #kDLExtDev = <unsigned int>12
-    kDLCUDAManaged = <unsigned int>13
-
-ctypedef struct DLContext:
-    PetscDLDeviceType device_type
-    int device_id
-
-cdef enum DLDataTypeCode:
-    kDLInt = <unsigned int>0
-    kDLUInt = <unsigned int>1
-    kDLFloat = <unsigned int>2
-
-cdef struct DLTensor:
-    void* data
-    DLContext ctx
-    int ndim
-    DLDataType dtype
-    int64_t* shape
-    int64_t* strides
-    uint64_t byte_offset
-
-cdef struct DLManagedTensor:
-    DLTensor dl_tensor
-    void* manager_ctx
-    void (*manager_deleter)(DLManagedTensor*) nogil
-
-cdef void pycapsule_deleter(object dltensor):
-    cdef DLManagedTensor* dlm_tensor = NULL
-    try:
-        dlm_tensor = <DLManagedTensor *>PyCapsule_GetPointer(dltensor, 'used_dltensor')
-        return # we do not call a used capsule's deleter
-    except Exception:
-        dlm_tensor = <DLManagedTensor *>PyCapsule_GetPointer(dltensor, 'dltensor')
-    manager_deleter(dlm_tensor)
-
-cdef void manager_deleter(DLManagedTensor* tensor) nogil:
-    if tensor.manager_ctx is NULL:
-        return
-    free(tensor.dl_tensor.shape)
-    CHKERR( PetscDEALLOC(<PetscObject*>&tensor.manager_ctx) )
-    free(tensor)
-
-# --------------------------------------------------------------------

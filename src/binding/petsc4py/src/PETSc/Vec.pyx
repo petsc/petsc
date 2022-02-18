@@ -396,7 +396,7 @@ cdef class Vec(Object):
             else:
                 CHKERR( VecCreateMPIHIPWithArray(ccomm,bs,n,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
         else:
-            raise RuntimeError("Device type %d not supported" % toInt(dltype))
+            raise TypeError("Device type {} not supported".format(dltype))
 
         PetscCLEAR(self.obj); self.vec = newvec
         self.set_attr('__array__', dltensor)
@@ -470,41 +470,57 @@ cdef class Vec(Object):
         self.set_attr('__dltensor_ctx__', None)
         return self
 
-    def toDLPack(self):
-        """
-        Return a DLPack tensor. Error out if the tensor information is missing.
-        attachDLPackInfo() can be used to get tensor information from an input
-        vector that already has tensor information. This input vector is
-        typically created with createWithDlpack().
+    # TODO Stream
+    def __dlpack__(self, stream=-1):
+        return self.toDLPack('rw')
 
-        One can do the following to convert vector X to a DLPack tensor whose
-        anxiliary information inherits from Y.
-          X.attachDLPackInfo(Y)
-          X.toDLPack()
+    def __dlpack_device__(self):
+        (dltype, devId, _, _, _) = vec_get_dlpack_ctx(self)
+        return (dltype, devId)
+
+    def toDLPack(self, mode='rw'):
         """
+        Return a DLPack capsule.
+        """
+        if mode is None: mode = 'rw'
+        if mode not in ['rw', 'r', 'w']:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
+
         cdef int64_t ndim = 0
-        cdef object ctx0 = self.get_attr('__dltensor_ctx__')
-        if ctx0 is None:
-            raise ValueError('Missing tensor information')
-        (device_type, device_id, ndim, shape, strides) = ctx0
+        (device_type, device_id, ndim, shape, strides) = vec_get_dlpack_ctx(self)
+        hostmem = (device_type == kDLCPU)
 
         cdef DLManagedTensor* dlm_tensor = <DLManagedTensor*>malloc(sizeof(DLManagedTensor))
         cdef DLTensor* dl_tensor = &dlm_tensor.dl_tensor
         cdef PetscScalar *a = NULL
         cdef int64_t* shape_strides = NULL
         dl_tensor.byte_offset = 0
-        cval = self.getType()
-        cdef PetscDLDeviceType dltype = device_type
-        if dltype in [kDLCUDA,kDLCUDAManaged] and cval == self.Type.CUDA or cval == self.Type.SEQCUDA or cval == self.Type.MPICUDA:
-            CHKERR( VecCUDAGetArray(self.vec, <PetscScalar**>&a) )
-        elif dltype == kDLROCM and cval == self.Type.HIP or cval == self.Type.SEQHIP or cval == self.Type.MPIHIP:
-            CHKERR( VecHIPGetArray(self.vec, <PetscScalar**>&a) )
-        else:
-            CHKERR( VecGetArray(self.vec, <PetscScalar**>&a) )
-            if device_type != kDLCPU:
-                device_type = kDLCPU
-                device_id = 0 #????
 
+        # DLPack does not currently play well with our get/restore model
+        # Call restore right-away and hope that the consumer will do the right thing
+        # and not modify memory requested with read access
+        # By restoring now, we guarantee the sanity of the ObjectState
+        if mode == 'w':
+            if hostmem:
+                CHKERR( VecGetArrayWrite(self.vec, <PetscScalar**>&a) )
+                CHKERR( VecRestoreArrayWrite(self.vec, NULL) )
+            else:
+                CHKERR( VecGetArrayWriteAndMemType(self.vec, <PetscScalar**>&a, NULL) )
+                CHKERR( VecRestoreArrayWriteAndMemType(self.vec, NULL) )
+        elif mode == 'r':
+            if hostmem:
+                CHKERR( VecGetArrayRead(self.vec, <const PetscScalar**>&a) )
+                CHKERR( VecRestoreArrayRead(self.vec, NULL) )
+            else:
+                CHKERR( VecGetArrayReadAndMemType(self.vec, <const PetscScalar**>&a, NULL) )
+                CHKERR( VecRestoreArrayReadAndMemType(self.vec, NULL) )
+        else:
+            if hostmem:
+                CHKERR( VecGetArray(self.vec, <PetscScalar**>&a) )
+                CHKERR( VecRestoreArray(self.vec, NULL) )
+            else:
+                CHKERR( VecGetArrayAndMemType(self.vec, <PetscScalar**>&a, NULL) )
+                CHKERR( VecRestoreArrayAndMemType(self.vec, NULL) )
         dl_tensor.data = <void *>a
 
         cdef DLContext* ctx = &dl_tensor.ctx
@@ -531,6 +547,7 @@ cdef class Vec(Object):
         dlm_tensor.manager_ctx = <void *>self.vec
         CHKERR( PetscObjectReference(<PetscObject>self.vec) )
         dlm_tensor.manager_deleter = manager_deleter
+        dlm_tensor.del_obj = <dlpack_manager_del_obj>PetscDEALLOC
         return PyCapsule_New(dlm_tensor, 'dltensor', pycapsule_deleter)
 
     def createGhost(self, ghosts, size, bsize=None, comm=None):
@@ -730,6 +747,11 @@ cdef class Vec(Object):
         """
         cdef PetscBool bindFlg = asBool(flg)
         CHKERR( VecBindToCPU(self.vec, bindFlg) )
+
+    def boundToCPU(self):
+        cdef PetscBool flg = PETSC_TRUE
+        CHKERR( VecBoundToCPU(self.vec, &flg) )
+        return toBool(flg)
 
     def getCUDAHandle(self, mode='rw'):
         cdef PetscScalar *hdl = NULL

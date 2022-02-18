@@ -35,9 +35,11 @@ class MatType(object):
     MPIBAIJMKL      = S_(MATMPIBAIJMKL)
     SHELL           = S_(MATSHELL)
     DENSE           = S_(MATDENSE)
+    DENSECUDA       = S_(MATDENSECUDA)
     SEQDENSE        = S_(MATSEQDENSE)
     SEQDENSECUDA    = S_(MATSEQDENSECUDA)
     MPIDENSE        = S_(MATMPIDENSE)
+    MPIDENSECUDA    = S_(MATMPIDENSECUDA)
     ELEMENTAL       = S_(MATELEMENTAL)
     BAIJ            = S_(MATBAIJ)
     SEQBAIJ         = S_(MATSEQBAIJ)
@@ -461,6 +463,16 @@ cdef class Mat(Object):
         if array is not None:
             array = Mat_AllocDense(self.mat, array)
             self.set_attr('__array__', array)
+        return self
+
+    def createDenseCUDA(self, size, bsize=None, array=None, comm=None):
+        # create matrix
+        cdef PetscMat newmat = NULL
+        Mat_Create(MATDENSECUDA, comm, size, bsize, &newmat)
+        PetscCLEAR(self.obj); self.mat = newmat
+        # preallocate matrix
+        if array is not None:
+            raise RuntimeError('passing GPU data not yet supported. Report it if you need this feature')
         return self
 
     def setPreallocationDense(self, array):
@@ -1505,6 +1517,15 @@ cdef class Mat(Object):
         CHKERR( MatSeqAIJKron(self.mat, mat.mat, reuse, &result.mat) )
         return result
 
+    def bindToCPU(self, flg):
+        cdef PetscBool bindFlg = asBool(flg)
+        CHKERR( MatBindToCPU(self.mat, bindFlg) )
+
+    def boundToCPU(self):
+        cdef PetscBool flg = PETSC_TRUE
+        CHKERR( MatBoundToCPU(self.mat, &flg) )
+        return toBool(flg)
+
     # XXX factorization
 
     def getOrdering(self, ord_type):
@@ -1695,13 +1716,25 @@ cdef class Mat(Object):
 
     # dense matrices
 
-    def getDenseArray(self):
+    def setDenseLDA(self, lda):
+        cdef PetscInt _ilda = asInt(lda)
+        CHKERR( MatDenseSetLDA(self.mat, _ilda) )
+
+    def getDenseLDA(self):
+        cdef PetscInt lda=0
+        CHKERR( MatDenseGetLDA(self.mat, &lda) )
+        return toInt(lda)
+
+    def getDenseArray(self,readonly=False):
         cdef PetscInt m=0, N=0, lda=0
         cdef PetscScalar *data = NULL
         CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
         CHKERR( MatGetSize(self.mat, NULL, &N) )
-        lda = m # CHKERR( MatDenseGetLDA(self.mat, &ld) )
-        CHKERR( MatDenseGetArray(self.mat, &data) )
+        CHKERR( MatDenseGetLDA(self.mat, &lda) )
+        if readonly:
+            CHKERR( MatDenseGetArrayRead(self.mat, <const PetscScalar**>&data) )
+        else:
+            CHKERR( MatDenseGetArray(self.mat, &data) )
         cdef int typenum = NPY_PETSC_SCALAR
         cdef int itemsize = <int>sizeof(PetscScalar)
         cdef int flags = NPY_ARRAY_FARRAY
@@ -1710,7 +1743,10 @@ cdef class Mat(Object):
         dims[1] = <npy_intp>N; strides[1] = <npy_intp>(lda*sizeof(PetscScalar));
         array = <object>PyArray_New(<PyTypeObject*>ndarray, 2, dims, typenum,
                                     strides, data, itemsize, flags, NULL)
-        CHKERR( MatDenseRestoreArray(self.mat, &data) )
+        if readonly:
+            CHKERR( MatDenseRestoreArrayRead(self.mat, <const PetscScalar**>&data) )
+        else:
+            CHKERR( MatDenseRestoreArray(self.mat, &data) )
         return array
 
     def getDenseLocalMatrix(self):
@@ -1718,6 +1754,30 @@ cdef class Mat(Object):
         CHKERR( MatDenseGetLocalMatrix(self.mat, &mat.mat) )
         PetscINCREF(mat.obj)
         return mat
+
+    def getDenseColumnVec(self, i, mode='rw'):
+        if mode is None: mode = 'rw'
+        if mode not in ['rw', 'r', 'w']:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
+        cdef Vec v = Vec()
+        cdef PetscInt _i = asInt(i)
+        if mode == 'rw':
+            CHKERR( MatDenseGetColumnVec(self.mat, _i, &v.vec) )
+        elif mode == 'r':
+            CHKERR( MatDenseGetColumnVecRead(self.mat, _i, &v.vec) )
+        else:
+            CHKERR( MatDenseGetColumnVecWrite(self.mat, _i, &v.vec) )
+        PetscINCREF(v.obj)
+        return v
+
+    def restoreDenseColumnVec(self, i, mode='rw'):
+        cdef PetscInt _i = asInt(i)
+        if mode == 'rw':
+            CHKERR( MatDenseRestoreColumnVec(self.mat, _i, NULL) )
+        elif mode == 'r':
+            CHKERR( MatDenseRestoreColumnVecRead(self.mat, _i, NULL) )
+        else:
+            CHKERR( MatDenseRestoreColumnVecWrite(self.mat, _i, NULL) )
 
     # Nest
 
@@ -1829,6 +1889,83 @@ cdef class Mat(Object):
     property structsymm:
         def __get__(self):
             return self.isStructurallySymmetric()
+
+    # TODO Stream
+    def __dlpack__(self, stream=-1):
+        return self.toDLPack('rw')
+
+    def __dlpack_device__(self):
+        (dltype, devId, _, _, _) = mat_get_dlpack_ctx(self)
+        return (dltype, devId)
+
+    def toDLPack(self, mode='rw'):
+        if mode is None: mode = 'rw'
+        if mode not in ['rw', 'r', 'w']:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
+
+        cdef int64_t ndim = 0
+        (device_type, device_id, ndim, shape, strides) = mat_get_dlpack_ctx(self)
+        hostmem = (device_type == kDLCPU)
+
+        cdef DLManagedTensor* dlm_tensor = <DLManagedTensor*>malloc(sizeof(DLManagedTensor))
+        cdef DLTensor* dl_tensor = &dlm_tensor.dl_tensor
+        cdef PetscScalar *a = NULL
+        cdef int64_t* shape_strides = NULL
+        dl_tensor.byte_offset = 0
+
+        # DLPack does not currently play well with our get/restore model
+        # Call restore right-away and hope that the consumer will do the right thing
+        # and not modify memory requested with read access
+        # By restoring now, we guarantee the sanity of the ObjectState
+        if mode == 'w':
+            if hostmem:
+                CHKERR( MatDenseGetArrayWrite(self.mat, <PetscScalar**>&a) )
+                CHKERR( MatDenseRestoreArrayWrite(self.mat, NULL) )
+            else:
+                CHKERR( MatDenseCUDAGetArrayWrite(self.mat, <PetscScalar**>&a) )
+                CHKERR( MatDenseCUDARestoreArrayWrite(self.mat, NULL) )
+        elif mode == 'r':
+            if hostmem:
+                CHKERR( MatDenseGetArrayRead(self.mat, <const PetscScalar**>&a) )
+                CHKERR( MatDenseRestoreArrayRead(self.mat, NULL) )
+            else:
+                CHKERR( MatDenseCUDAGetArrayRead(self.mat, <const PetscScalar**>&a) )
+                CHKERR( MatDenseCUDARestoreArrayRead(self.mat, NULL) )
+        else:
+            if hostmem:
+                CHKERR( MatDenseGetArray(self.mat, <PetscScalar**>&a) )
+                CHKERR( MatDenseRestoreArray(self.mat, NULL) )
+            else:
+                CHKERR( MatDenseCUDAGetArray(self.mat, <PetscScalar**>&a) )
+                CHKERR( MatDenseCUDARestoreArray(self.mat, NULL) )
+        dl_tensor.data = <void *>a
+
+        cdef DLContext* ctx = &dl_tensor.ctx
+        ctx.device_type = device_type
+        ctx.device_id = device_id
+        shape_strides = <int64_t*>malloc(sizeof(int64_t)*2*ndim)
+        for i in range(ndim):
+            shape_strides[i] = shape[i]
+        for i in range(ndim):
+            shape_strides[i+ndim] = strides[i]
+        dl_tensor.ndim = ndim
+        dl_tensor.shape = shape_strides
+        dl_tensor.strides = shape_strides + ndim
+
+        cdef DLDataType* dtype = &dl_tensor.dtype
+        dtype.code = <uint8_t>DLDataTypeCode.kDLFloat
+        if sizeof(PetscScalar) == 8:
+            dtype.bits = <uint8_t>64
+        elif sizeof(PetscScalar) == 4:
+            dtype.bits = <uint8_t>32
+        else:
+            raise ValueError('Unsupported PetscScalar type')
+        dtype.lanes = <uint16_t>1
+        dlm_tensor.manager_ctx = <void *>self.mat
+        CHKERR( PetscObjectReference(<PetscObject>self.mat) )
+        dlm_tensor.manager_deleter = manager_deleter
+        dlm_tensor.del_obj = <dlpack_manager_del_obj>PetscDEALLOC
+        return PyCapsule_New(dlm_tensor, 'dltensor', pycapsule_deleter)
 
 # --------------------------------------------------------------------
 

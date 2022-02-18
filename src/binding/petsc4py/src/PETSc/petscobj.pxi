@@ -35,6 +35,9 @@ cdef extern from * nogil:
     int PetscObjectGetTabLevel(PetscObject,PetscInt*)
     int PetscObjectSetTabLevel(PetscObject,PetscInt)
 
+cdef extern from "custom.h" nogil:
+    int PetscObjectGetDeviceId(PetscObject,PetscInt*)
+
 # --------------------------------------------------------------------
 
 cdef inline int PetscINCREF(PetscObject *obj) nogil:

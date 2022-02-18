@@ -143,7 +143,6 @@ PetscLogEventFindName(PetscLogEvent eventid,
 }
 
 #if !defined(PETSC_USE_LOG)
-#undef PetscLogEventGetPerfInfo
 static PetscErrorCode
 PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 {
@@ -157,6 +156,55 @@ PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 #endif
 
 /* ---------------------------------------------------------------- */
+
+/* The object is not used so far. I expect PETSc will sooner or later support
+   a different device context for each object */
+static PetscErrorCode
+PetscObjectGetDeviceId(PetscObject o, PetscInt *id)
+{
+#if defined(PETSC_HAVE_DEVICE)
+  PetscDeviceContext dctx;
+  PetscDevice device;
+  PetscErrorCode ierr;
+#endif
+  PetscFunctionBegin;
+  PetscValidHeader(o,1);
+#if defined(PETSC_HAVE_DEVICE)
+  ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
+  ierr = PetscDeviceContextGetDevice(dctx,&device);CHKERRQ(ierr);
+  ierr = PetscDeviceGetDeviceId(device,id);CHKERRQ(ierr);
+#else
+  *id = 0;
+#endif
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------- */
+
+static inline PetscErrorCode
+VecGetCurrentMemType(Vec v, PetscMemType *m)
+{
+  PetscErrorCode ierr;
+  PetscBool bound;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidPointer(m,2);
+  *m = PETSC_MEMTYPE_HOST;
+  ierr = VecBoundToCPU(v,&bound);CHKERRQ(ierr);
+  if (!bound) {
+    VecType rtype;
+    char *iscuda, *iship, *iskok;
+
+    ierr = VecGetRootType_Private(v,&rtype);CHKERRQ(ierr);
+    ierr = PetscStrstr(rtype,"cuda",&iscuda);CHKERRQ(ierr);
+    ierr = PetscStrstr(rtype,"hip",&iship);CHKERRQ(ierr);
+    ierr = PetscStrstr(rtype,"kokkos",&iskok);CHKERRQ(ierr);
+    if (iscuda)     *m = PETSC_MEMTYPE_CUDA;
+    else if (iship) *m = PETSC_MEMTYPE_HIP;
+    else if (iskok) *m = PETSC_MEMTYPE_KOKKOS;
+  }
+  PetscFunctionReturn(0);
+}
 
 static inline PetscErrorCode
 VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
@@ -223,6 +271,31 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatISSetPreallocation_C",&f);CHKERRQ(ierr);}
   if (f)  {*is = PETSC_TRUE; goto done;};
  done:
+  PetscFunctionReturn(0);
+}
+
+static inline PetscErrorCode
+MatGetCurrentMemType(Mat A, PetscMemType *m)
+{
+  PetscErrorCode ierr;
+  PetscBool bound;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(m,2);
+  *m = PETSC_MEMTYPE_HOST;
+  ierr = MatBoundToCPU(A,&bound);CHKERRQ(ierr);
+  if (!bound) {
+    VecType rtype;
+    char *iscuda, *iship, *iskok;
+
+    ierr = MatGetRootType_Private(A,&rtype);CHKERRQ(ierr);
+    ierr = PetscStrstr(rtype,"cuda",&iscuda);CHKERRQ(ierr);
+    ierr = PetscStrstr(rtype,"hip",&iship);CHKERRQ(ierr);
+    ierr = PetscStrstr(rtype,"kokkos",&iskok);CHKERRQ(ierr);
+    if (iscuda)     *m = PETSC_MEMTYPE_CUDA;
+    else if (iship) *m = PETSC_MEMTYPE_HIP;
+    else if (iskok) *m = PETSC_MEMTYPE_KOKKOS;
+  }
   PetscFunctionReturn(0);
 }
 
