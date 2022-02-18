@@ -296,7 +296,7 @@ PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type,
   PetscFunctionBegin;
   PetscValidDeviceType(type,1);
   if (PetscLikely(PetscDeviceInitialized(type))) PetscFunctionReturn(0);
-  PetscAssertFalse(defaultDevices[type],PETSC_COMM_SELF,PETSC_ERR_MEM,"Trying to overwrite existing default device of type %s",PetscDeviceTypes[type]);
+  PetscAssert(!defaultDevices[type],PETSC_COMM_SELF,PETSC_ERR_MEM,"Trying to overwrite existing default device of type %s",PetscDeviceTypes[type]);
   ierr = PetscDeviceCreate(type,defaultDeviceId,&defaultDevices[type]);CHKERRQ(ierr);
   ierr = PetscDeviceConfigure(defaultDevices[type]);CHKERRQ(ierr);
   initializedDevice[type] = true;
@@ -353,29 +353,28 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    const auto PetscDeviceCheckAllDestroyedAfterFinalize = [](){
+    const auto PetscDeviceCheckAllDestroyedAfterFinalize = []{
       PetscFunctionBegin;
-      for (auto&& device : defaultDevices) {
-        PetscCheckFalse(device,PETSC_COMM_WORLD,PETSC_ERR_COR,"Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()",PetscDeviceTypes[device->type],device->refcnt);
-      }
+      for (auto&& device : defaultDevices) PetscCheck(!device,PETSC_COMM_WORLD,PETSC_ERR_COR,"Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()",PetscDeviceTypes[device->type],device->refcnt);
       PetscFunctionReturn(0);
     };
-    /* you might be thinking, why on earth are you registered yet another finalizer in a
-     * function already called during PetscRegisterFinalizeAll()? If this seems stupid it's
-     * because it is.
-     *
-     * The crux of the problem is that the initializer (and therefore the ~finalizer~) of
-     * PetscDeviceContext is guaranteed to run after PetscDevice's. So if the global context
-     * had a default PetscDevice attached, that PetscDevice will have a reference count >0 and
-     * hence won't be destroyed yet. So we need to repeat the check that all devices have been
-     * destroyed again ~after~ the global context is destroyed. In summary:
-     *
-     * 1. This finalizer runs and destroys all devices, except it may not because the global
-     *    context may still hold a reference!
-     * 2. The global context finalizer runs and does the final reference count decrement
-     *    required, which actually destroys the held device.
-     * 3. Our newly added finalizer runs and checks that all is well.
-     */
+    /*
+      you might be thinking, why on earth are you registered yet another finalizer in a
+      function already called during PetscRegisterFinalizeAll()? If this seems stupid it's
+      because it is.
+
+      The crux of the problem is that the initializer (and therefore the ~finalizer~) of
+      PetscDeviceContext is guaranteed to run after PetscDevice's. So if the global context had
+      a default PetscDevice attached, that PetscDevice will have a reference count >0 and hence
+      won't be destroyed yet. So we need to repeat the check that all devices have been
+      destroyed again ~after~ the global context is destroyed. In summary:
+
+      1. This finalizer runs and destroys all devices, except it may not because the global
+         context may still hold a reference!
+      2. The global context finalizer runs and does the final reference count decrement
+         required, which actually destroys the held device.
+      3. Our newly added finalizer runs and checks that all is well.
+    */
     ierr = PetscRegisterFinalize(PetscDeviceCheckAllDestroyedAfterFinalize);CHKERRQ(ierr);
   }
   for (auto &&device : defaultDevices) {ierr = PetscDeviceDestroy(&device);CHKERRQ(ierr);}
@@ -440,7 +439,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (initIdx == PETSC_DEVICE_INIT_NONE) {
       /* disabled all device initialization if devices are globally disabled */
-      PetscCheckFalse(defaultDevice != PETSC_DECIDE,comm,PETSC_ERR_USER_INPUT,"You have disabled devices but also specified a particular device to use, these options are mutually exlusive");
+      PetscCheck(defaultDevice == PETSC_DECIDE,comm,PETSC_ERR_USER_INPUT,"You have disabled devices but also specified a particular device to use, these options are mutually exlusive");
       defaultView = PETSC_FALSE;
     } else {
       defaultView = static_cast<decltype(defaultView)>(defaultView && flg);

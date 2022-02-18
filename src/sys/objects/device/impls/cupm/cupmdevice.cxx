@@ -104,7 +104,7 @@ PetscErrorCode Device<T>::DeviceInternal::configure() noexcept
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being configured before it was initialized",id_);
+  PetscAssert(devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being configured before it was initialized",id_);
   // why on EARTH nvidia insists on making otherwise informational states into
   // fully-fledged error codes is beyond me. Why couldn't a pointer to bool argument have
   // sufficed?!?!?!
@@ -122,7 +122,7 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscAssertFalse(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
+  PetscAssert(devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
   ierr = PetscObjectTypeCompare(PetscObjectCast(viewer),PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     MPI_Comm    comm;
@@ -167,7 +167,7 @@ void SilenceVariableIsNotNeededAndWillNotBeEmittedWarning_ThisFunctionShouldNeve
   if (cupmMPIAwareJumpBufferSet) (void)cupmMPIAwareJumpBuffer;
 }
 
-#define CHKCUPMAWARE(expr) if (PetscUnlikely((expr) != cupmSuccess)) return false;
+#define CHKCUPMAWARE(expr) if (PetscUnlikely((expr) != cupmSuccess)) return false
 
 template <DeviceType T>
 PETSC_CXX_COMPAT_DEFN(bool Device<T>::DeviceInternal::CUPMAwareMPI_())
@@ -218,6 +218,8 @@ PETSC_CXX_COMPAT_DEFN(bool Device<T>::DeviceInternal::CUPMAwareMPI_())
   PetscFunctionReturn(awareness);
 }
 
+#undef CHKCUPMAWARE
+
 template <DeviceType T>
 PetscErrorCode Device<T>::DeviceInternal::finalize() noexcept
 {
@@ -251,6 +253,8 @@ PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char* PetscDevice_CUPMTYPE_Option
   case DeviceType::CUDA: return "PetscDevice CUDA Options";
   case DeviceType::HIP:  return "PetscDevice HIP Options";
   }
+  PetscUnreachable();
+  return "PETSC_ERROR_PLIB";
 }
 
 template <DeviceType T>
@@ -260,6 +264,8 @@ PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char* device_enable_cupmtype())
   case DeviceType::CUDA: return "-device_enable_cuda";
   case DeviceType::HIP:  return "-device_enable_hip";
   }
+  PetscUnreachable();
+  return "PETSC_ERROR_PLIB";
 }
 
 template <DeviceType T>
@@ -269,6 +275,8 @@ PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char* device_select_cupmtype())
   case DeviceType::CUDA: return "-device_select_cuda";
   case DeviceType::HIP:  return "-device_select_hip";
   }
+  PetscUnreachable();
+  return "PETSC_ERROR_PLIB";
 }
 
 template <DeviceType T>
@@ -278,6 +286,8 @@ PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char* device_view_cupmtype())
   case DeviceType::CUDA: return "-device_view_cuda";
   case DeviceType::HIP:  return "-device_view_hip";
   }
+  PetscUnreachable();
+  return "PETSC_ERROR_PLIB";
 }
 
 template <DeviceType T>
@@ -358,17 +368,14 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
 template <DeviceType T>
 PetscErrorCode Device<T>::getDevice(PetscDevice device, PetscInt id) const noexcept
 {
+  const auto     cerr = static_cast<cupmError_t>(-defaultDevice_);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscUnlikelyDebug(defaultDevice_ < 0)) {
-    PetscCheckFalse(defaultDevice_ == PETSC_CUPM_DEVICE_NONE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a %s PetscDevice when it has been disabled",cupmName());
-    const auto cerr = static_cast<cupmError_t>(-defaultDevice_);
-
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"Cannot lazily initialize PetscDevice: %s error %d (%s) : %s",cupmName(),static_cast<PetscErrorCode>(cerr),cupmGetErrorName(cerr),cupmGetErrorString(cerr));
-  }
+  PetscCheck(defaultDevice_ != PETSC_CUPM_DEVICE_NONE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a %s PetscDevice when it has been disabled",cupmName());
+  PetscCheck(defaultDevice_ >= 0,PETSC_COMM_SELF,PETSC_ERR_GPU,"Cannot lazily initialize PetscDevice: %s error %d (%s) : %s",cupmName(),static_cast<PetscErrorCode>(cerr),cupmGetErrorName(cerr),cupmGetErrorString(cerr));
   if (id == PETSC_DECIDE) id = defaultDevice_;
-  PetscAssert(static_cast<std::size_t>(id) < devices_.size(),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_.size(),id);
+  PetscAssert(static_cast<decltype(devices_.size())>(id) < devices_.size(),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_.size(),id);
   if (devices_[id]) {
     PetscAssert(id == devices_[id]->id(),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %d",id,devices_[id]->id());
   } else devices_[id] = DeviceInternal::makeDevice(id);

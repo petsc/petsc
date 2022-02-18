@@ -101,10 +101,7 @@ protected:
     : alloc_(std::move(alloc))
   { }
 
-  static_assert(
-    std::is_base_of<AllocatorBase<value_type>,Allocator>::value,
-    "Allocator type must be subclass of Petsc::AllocatorBase"
-  );
+  static_assert(std::is_base_of<AllocatorBase<value_type>,Allocator>::value,"");
 };
 
 } // namespace detail

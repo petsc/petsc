@@ -165,7 +165,6 @@ struct _n_PetscDeviceContext {
   PetscInt                  numChildren;    /* how many children does this context expect to destroy */
   PetscInt                  maxNumChildren; /* how many children can this context have room for without realloc'ing */
   PetscStreamType           streamType;     /* how should this contexts stream behave around other streams? */
-  PetscBool                 idle;           /* does this context think it has work? this value non-binding in debug mode */
   PetscBool                 setup;
 };
 
@@ -229,23 +228,6 @@ static inline PetscErrorCode PetscDeviceDereference_Internal(PetscDevice device)
 /* PetscDeviceContext Internal Functions */
 #if PetscDefined(HAVE_CXX)
 PETSC_INTERN PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDeviceType);
-
-/* Called in debug-mode when a context claims it is idle to check that it isn't lying. A
- * no-op when debugging is disabled */
-static inline PetscErrorCode PetscDeviceContextValidateIdle_Internal(PetscDeviceContext dctx)
-{
-  PetscFunctionBegin;
-  if (PetscDefined(USE_DEBUG)) {
-    const PetscBool idleBefore = dctx->idle;
-    PetscBool       idle;
-    PetscErrorCode  ierr;
-
-    PetscValidDeviceContext(dctx,1);
-    ierr = (*dctx->ops->query)(dctx,&idle);CHKERRQ(ierr);
-    if (idleBefore) PetscCheck(idle,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscDeviceContext cache corrupted, context %" PetscInt_FMT " thought it was idle when it still had work",dctx->id);
-  }
-  PetscFunctionReturn(0);
-}
 
 static inline PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceContext dctx, PetscDeviceType type)
 {
@@ -334,7 +316,6 @@ static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceCont
 }
 #else /* PETSC_HAVE_CXX for PetscDeviceContext Internal Functions */
 #define PetscDeviceContextSetRootDeviceType_Internal(type)                0
-#define PetscDeviceContextValidateIdle_Internal(dctx)                     0
 #define PetscDeviceContextSetDefaultDeviceForType_Internal(dctx,type)     0
 #define PetscDeviceContextSetDefaultDevice_Internal(dctx)                 0
 #define PetscDeviceContextGetCurrentContextAssertType_Internal(dctx,type) 0
