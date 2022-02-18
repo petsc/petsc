@@ -304,9 +304,9 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
     if (ret < 0 && errno == EINTR) continue;
     if (!ret && len > 0) break; /* Proxy for EOF */
     PetscCheckFalse(ret < 0,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
-    m -= ret;
+    m -= (size_t)ret;
     p += ret;
-    n += ret;
+    n += (size_t)ret;
   }
   PetscCheckFalse(m && !count,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
 

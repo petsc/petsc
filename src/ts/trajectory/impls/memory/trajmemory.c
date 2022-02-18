@@ -2277,7 +2277,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
         rctx2->fine           = rfine;
         tjsch->rctx2          = rctx2;
         diskstack->top        = -1;
-        ierr = PetscMalloc1(diskstack->stacksize*sizeof(PetscInt),&diskstack->container);CHKERRQ(ierr);
+        ierr = PetscMalloc1(diskstack->stacksize,&diskstack->container);CHKERRQ(ierr);
         break;
       case REVOLVE_OFFLINE:
         ierr = PetscRevolveIntCast(tjsch->total_steps,&rfine);CHKERRQ(ierr);

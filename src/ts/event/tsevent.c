@@ -409,7 +409,7 @@ static PetscErrorCode TSEventDetection(TS ts)
       }
     }
   }
-  in = event->status;
+  in = (PetscInt)event->status;
   ierr = MPIU_Allreduce(&in,&out,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   event->status = (TSEventStatus)out;
   PetscFunctionReturn(0);
@@ -464,7 +464,7 @@ static PetscErrorCode TSEventLocation(TS ts,PetscReal *dt)
       if (event->status == TSEVENT_PROCESSING) event->side[i] = -1;
     }
   }
-  in[0] = event->status; in[1] = rollback;
+  in[0] = (PetscInt)event->status; in[1] = rollback;
   ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   event->status = (TSEventStatus)out[0]; rollback = out[1];
   /* If rollback is true, the status will be overwritten so that an event at the endtime of current time step will be postponed to guarantee corret order */

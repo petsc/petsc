@@ -131,8 +131,8 @@ struct _p_SNES {
   PetscReal   *conv_hist;         /* If !0, stores function norm (or
                                     gradient norm) at each iteration */
   PetscInt    *conv_hist_its;     /* linear iterations for each Newton step */
-  PetscInt    conv_hist_len;      /* size of convergence history array */
-  PetscInt    conv_hist_max;      /* actual amount of data in conv_history */
+  size_t      conv_hist_len;      /* size of convergence history array */
+  size_t      conv_hist_max;      /* actual amount of data in conv_history */
   PetscBool   conv_hist_reset;    /* reset counter for each new SNES solve */
   PetscBool   conv_hist_alloc;
   PetscBool    counters_reset;    /* reset counter for each new SNES solve */

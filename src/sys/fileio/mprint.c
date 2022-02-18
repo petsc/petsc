@@ -166,9 +166,9 @@ PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fu
 
   PetscFunctionBegin;
   ierr = PetscFormatConvertGetSize(format,&newLength);CHKERRQ(ierr);
-  if (newLength < PETSCDEFAULTBUFFERSIZE) {
+  if (newLength < sizeof(formatbuf)) {
     newformat = formatbuf;
-    newLength = PETSCDEFAULTBUFFERSIZE-1;
+    newLength = sizeof(formatbuf)-1;
   } else {
     ierr      = PetscMalloc1(newLength, &newformat);CHKERRQ(ierr);
   }
@@ -178,7 +178,7 @@ PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fu
 #else
 #error "vsnprintf not found"
 #endif
-  if (newLength > PETSCDEFAULTBUFFERSIZE-1) {
+  if (newLength > sizeof(formatbuf)-1) {
     ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
   {
@@ -424,9 +424,9 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
       petsc_printfqueue->next = NULL;
     } else petsc_printfqueuebase = petsc_printfqueue = next;
     petsc_printfqueuelength++;
-    next->size   = -1;
+    next->size   = 0;
     next->string = NULL;
-    while ((PetscInt)fullLength >= next->size) {
+    while (fullLength >= next->size) {
       next->size = fullLength+1;
       ierr = PetscFree(next->string);CHKERRQ(ierr);
       ierr = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
@@ -492,9 +492,9 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char format
       petsc_printfqueue->next = NULL;
     } else petsc_printfqueuebase = petsc_printfqueue = next;
     petsc_printfqueuelength++;
-    next->size   = -1;
+    next->size   = 0;
     next->string = NULL;
-    while ((PetscInt)fullLength >= next->size) {
+    while (fullLength >= next->size) {
       next->size = fullLength+1;
       ierr = PetscFree(next->string);CHKERRQ(ierr);
       ierr = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);

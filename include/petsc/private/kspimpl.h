@@ -102,13 +102,13 @@ struct _p_KSP {
                                       passed back to the user */
   PetscReal     *res_hist;            /* If !0 stores residual each at iteration */
   PetscReal     *res_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
-  PetscInt      res_hist_len;         /* current size of residual history array */
-  PetscInt      res_hist_max;         /* actual amount of storage in residual history */
+  size_t        res_hist_len;         /* current size of residual history array */
+  size_t        res_hist_max;         /* actual amount of storage in residual history */
   PetscBool     res_hist_reset;       /* reset history to length zero for each new solve */
   PetscReal     *err_hist;            /* If !0 stores error at each iteration */
   PetscReal     *err_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
-  PetscInt      err_hist_len;         /* current size of error history array */
-  PetscInt      err_hist_max;         /* actual amount of storage in error history */
+  size_t        err_hist_len;         /* current size of error history array */
+  size_t        err_hist_max;         /* actual amount of storage in error history */
   PetscBool     err_hist_reset;       /* reset history to length zero for each new solve */
 
   PetscInt      chknorm;             /* only compute/check norm if iterations is great than this */
@@ -248,7 +248,7 @@ static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
 
 static inline PetscScalar KSPNoisyHash_Private(PetscInt xx)
 {
-  unsigned int x = xx;
+  unsigned int x = (unsigned int) xx;
   x = ((x >> 16) ^ x) * 0x45d9f3b;
   x = ((x >> 16) ^ x) * 0x45d9f3b;
   x = ((x >> 16) ^ x);

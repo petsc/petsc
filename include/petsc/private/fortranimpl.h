@@ -200,8 +200,7 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 */
 #define PetscObjectAllocateFortranPointers(obj,N) do {                  \
     if (!((PetscObject)(obj))->fortran_func_pointers) {                 \
-      *ierr = PetscMalloc((N)*sizeof(void(*)(void)),&((PetscObject)(obj))->fortran_func_pointers);if (*ierr) return; \
-      *ierr = PetscMemzero(((PetscObject)(obj))->fortran_func_pointers,(N)*sizeof(void(*)(void)));if (*ierr) return; \
+      *ierr = PetscCalloc((N)*sizeof(void(*)(void)),&((PetscObject)(obj))->fortran_func_pointers);if (*ierr) return; \
       ((PetscObject)obj)->num_fortran_func_pointers = (N);              \
     }                                                                   \
   } while (0)
