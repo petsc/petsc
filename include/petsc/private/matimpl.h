@@ -126,8 +126,8 @@ struct _MatOps {
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,void*);
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,Mat);
-  PetscErrorCode (*multconstrained)(Mat,Vec,Vec);
-  PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
+  PetscErrorCode (*placeholder_77)(void);
+  PetscErrorCode (*placeholder_78)(void);
   /*79*/
   PetscErrorCode (*findzerodiagonals)(Mat,IS*);
   PetscErrorCode (*mults)(Mat,Vecs,Vecs);
@@ -1717,10 +1717,8 @@ PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 PETSC_EXTERN PetscLogEvent MAT_Mult;
 PETSC_EXTERN PetscLogEvent MAT_MultMatrixFree;
 PETSC_EXTERN PetscLogEvent MAT_Mults;
-PETSC_EXTERN PetscLogEvent MAT_MultConstrained;
 PETSC_EXTERN PetscLogEvent MAT_MultAdd;
 PETSC_EXTERN PetscLogEvent MAT_MultTranspose;
-PETSC_EXTERN PetscLogEvent MAT_MultTransposeConstrained;
 PETSC_EXTERN PetscLogEvent MAT_MultTransposeAdd;
 PETSC_EXTERN PetscLogEvent MAT_Solve;
 PETSC_EXTERN PetscLogEvent MAT_Solves;

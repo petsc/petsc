@@ -88,10 +88,8 @@ Sorted = ["PetscBarrier",
 
 
          "MatMults",
-         "MatMultConstr",
          "MatMultAdd",
          "MatMultTranspose",
-         "MatMultTrConstr",
          "MatMultTrAdd",
          "MatSolves",
          "MatSolveAdd",

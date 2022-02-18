@@ -369,8 +369,6 @@ cdef extern from * nogil:
     int MatMultTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     int MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
     int MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
-    int MatMultConstrained(PetscMat,PetscVec,PetscVec)
-    int MatMultTransposeConstrained(PetscMat,PetscVec,PetscVec)
 
     int MatSOR(PetscMat,PetscVec,PetscReal,PetscMatSORType,PetscReal,PetscInt,PetscInt,PetscVec)
 
