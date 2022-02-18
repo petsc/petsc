@@ -33,7 +33,6 @@ struct PetscDeviceContextAllocator : Petsc::AllocatorBase<PetscDeviceContext>
     PetscFunctionBegin;
     ierr           = PetscNew(&dc);CHKERRQ(ierr);
     dc->id         = PetscDeviceContextID++;
-    dc->idle       = PETSC_TRUE;
     dc->streamType = PETSC_STREAM_DEFAULT_BLOCKING;
     *dctx          = dc;
     PetscFunctionReturn(0);
@@ -61,7 +60,6 @@ struct PetscDeviceContextAllocator : Petsc::AllocatorBase<PetscDeviceContext>
     ierr = PetscArrayzero(dctx->childIDs,dctx->maxNumChildren);CHKERRQ(ierr);
     dctx->setup       = PETSC_FALSE;
     dctx->numChildren = 0;
-    dctx->idle        = PETSC_TRUE;
     dctx->streamType  = PETSC_STREAM_DEFAULT_BLOCKING;
     PetscFunctionReturn(0);
   }
@@ -351,12 +349,9 @@ PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceC
 . idle - PETSC_TRUE if PetscDeviceContext has NO work, PETSC_FALSE if it has work
 
   Notes:
-  This routine only refers a singular context and does NOT take any of its children into account. That is, if dctx is
-  idle but has dependents who do have work, this routine still returns PETSC_TRUE.
-
-  Results of PetscDeviceContextQueryIdle() are cached on return, allowing this function to be called repeatedly in an
-  efficient manner. When debug mode is enabled this cache is verified on every call to
-  this routine, but is blindly believed when debugging is disabled.
+  This routine only refers a singular context and does NOT take any of its children into
+  account. That is, if dctx is idle but has dependents who do have work, this routine still
+  returns PETSC_TRUE.
 
   Level: intermediate
 
@@ -369,13 +364,8 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx,1);
   PetscValidBoolPointer(idle,2);
-  if (dctx->idle) {
-    *idle = PETSC_TRUE;
-    ierr = PetscDeviceContextValidateIdle_Internal(dctx);CHKERRQ(ierr);
-  } else {
-    ierr = (*dctx->ops->query)(dctx,idle);CHKERRQ(ierr);
-    dctx->idle = *idle;
-  }
+  ierr = (*dctx->ops->query)(dctx,idle);CHKERRQ(ierr);
+  ierr = PetscInfo(nullptr,"PetscDeviceContext id %" PetscInt_FMT " %s idle\n",dctx->id,*idle ? "was" : "was not");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -403,12 +393,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   PetscFunctionBegin;
   PetscCheckCompatibleDeviceContexts(dctxa,1,dctxb,2);
   if (dctxa == dctxb) PetscFunctionReturn(0);
-  if (dctxb->idle) {
-    /* No need to do the extra function lookup and event record if the stream were waiting on isn't doing anything */
-    ierr = PetscDeviceContextValidateIdle_Internal(dctxb);CHKERRQ(ierr);
-  } else {
-    ierr = (*dctxa->ops->waitforcontext)(dctxa,dctxb);CHKERRQ(ierr);
-  }
+  ierr = (*dctxa->ops->waitforcontext)(dctxa,dctxb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -652,13 +637,10 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
 @*/
 PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext dctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx,1);
   /* if it isn't setup there is nothing to sync on */
-  if (dctx->setup) {ierr = (*dctx->ops->synchronize)(dctx);CHKERRQ(ierr);}
-  dctx->idle = PETSC_TRUE;
+  if (dctx->setup) {auto ierr = (*dctx->ops->synchronize)(dctx);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
