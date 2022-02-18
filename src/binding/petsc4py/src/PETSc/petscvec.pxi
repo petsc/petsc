@@ -665,6 +665,5 @@ cdef void manager_deleter(DLManagedTensor* tensor) nogil:
     free(tensor.dl_tensor.shape)
     CHKERR( PetscDEALLOC(<PetscObject*>&tensor.manager_ctx) )
     free(tensor)
-    tensor.manager_ctx = NULL
 
 # --------------------------------------------------------------------
