@@ -1115,6 +1115,16 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   VECSEQKOKKOS - VECSEQKOKKOS = "seqkokkos" - The basic sequential vector, modified to use Kokkos
+
+   Options Database Keys:
+. -vec_type seqkokkos - sets the vector type to VECSEQKOKKOS during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI()
+M*/
 PetscErrorCode VecCreate_SeqKokkos(Vec v)
 {
   PetscErrorCode ierr;
