@@ -223,7 +223,7 @@ void landau_form_fdf(const PetscInt dim, const PetscInt Nb, const PetscInt num_g
             for (q = 0; q < d_maps[grid]->num_face; q++) {
               PetscInt  id    = d_maps[grid]->c_maps[idx][q].gid;
               PetscReal scale = d_maps[grid]->c_maps[idx][q].scale;
-              coef_buff[f*Nb+b] += scale*d_vertex_f[id+moffset];
+              if (id >= 0) coef_buff[f*Nb+b] += scale*d_vertex_f[id+moffset];
             }
           }
         }
@@ -478,7 +478,8 @@ landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx, PetscInt nip_g
             } else {
               idx = -idx - 1;
               for (q = 0; q < d_maps[grid]->num_face; q++) {
-                s_idx[f][q]   = d_maps[grid]->c_maps[idx][q].gid + moffset;
+                if (d_maps[grid]->c_maps[idx][q].gid >= 0) s_idx[f][q] = d_maps[grid]->c_maps[idx][q].gid + moffset;
+                else s_idx[f][q] = -1;
                 s_scale[f][q] = d_maps[grid]->c_maps[idx][q].scale;
               }
             }
@@ -680,7 +681,8 @@ void __launch_bounds__(256,4) landau_mass(const PetscInt dim, const PetscInt Nb,
             } else {
               idx = -idx - 1;
               for (q = 0; q < d_maps[grid]->num_face; q++) {
-                s_idx[f][q]   = d_maps[grid]->c_maps[idx][q].gid + moffset;
+                if (d_maps[grid]->c_maps[idx][q].gid >= 0) s_idx[f][q] = d_maps[grid]->c_maps[idx][q].gid + moffset;
+                else s_idx[f][q] = -1;
                 s_scale[f][q] = d_maps[grid]->c_maps[idx][q].scale;
               }
             }

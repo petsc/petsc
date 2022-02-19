@@ -305,7 +305,8 @@ PetscErrorCode landau_mat_assemble(PetscSplitCSRDataStructure d_mat, const team_
       } else {
         idx = -idx - 1;
         for (q = 0; q < nfaces; q++) {
-          s_idx(f,q) = d_maps->c_maps[idx][q].gid + moffset;
+          if (d_maps->c_maps[idx][q].gid >= 0) s_idx(f,q) = d_maps->c_maps[idx][q].gid + moffset;
+          else s_idx(f,q) = -1;
           s_scale(f,q) = d_maps->c_maps[idx][q].scale;
         }
       }
@@ -500,7 +501,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
                         for (int q = 0; q < maps[grid]->num_face; q++) {
                           PetscInt    id = maps[grid]->c_maps[idx][q].gid;
                           PetscScalar scale = maps[grid]->c_maps[idx][q].scale;
-                          coef[f*Nb+b] += scale*d_vertex_f[id+moffset];
+                          if (id >= 0) coef[f*Nb+b] += scale*d_vertex_f[id+moffset];
                         }
                       }
                     });
