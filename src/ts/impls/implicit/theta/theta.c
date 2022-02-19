@@ -359,15 +359,15 @@ static PetscErrorCode TSAdjointStepBEuler_Private(TS ts)
     th->shift = 0.0;
     ierr = TSComputeSNESJacobian(ts,ts->vec_sol,J,Jpre);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp,J,Jpre);CHKERRQ(ierr);
-    ierr = MatScale(J,-1.);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numcost; nadj++) {
       /* Add f_U \lambda_s to the original RHS */
+      ierr = VecScale(VecsSensiTemp[nadj],-1.);CHKERRQ(ierr);
       ierr = MatMultTransposeAdd(J,VecsDeltaLam[nadj],VecsSensiTemp[nadj],VecsSensiTemp[nadj]);CHKERRQ(ierr);
-      ierr = VecScale(VecsSensiTemp[nadj],adjoint_time_step);CHKERRQ(ierr);
+      ierr = VecScale(VecsSensiTemp[nadj],-adjoint_time_step);CHKERRQ(ierr);
       ierr = VecCopy(VecsSensiTemp[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);
       if (ts->vecs_sensi2) {
         ierr = MatMultTransposeAdd(J,VecsDeltaLam2[nadj],VecsSensi2Temp[nadj],VecsSensi2Temp[nadj]);CHKERRQ(ierr);
-        ierr = VecScale(VecsSensi2Temp[nadj],adjoint_time_step);CHKERRQ(ierr);
+        ierr = VecScale(VecsSensi2Temp[nadj],-adjoint_time_step);CHKERRQ(ierr);
         ierr = VecCopy(VecsSensi2Temp[nadj],ts->vecs_sensi2[nadj]);CHKERRQ(ierr);
       }
     }
