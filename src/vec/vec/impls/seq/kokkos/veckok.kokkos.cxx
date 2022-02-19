@@ -1073,35 +1073,24 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
   PetscFunctionReturn(0);
 }
 
-/* Assuming the Vec_Seq struct of the vector is ready, build the Vec_Kokkos struct for it.
-   Also assume the vector is to be init'ed, so it is in a host-device sync'ed state after the call.
- */
-static PetscErrorCode BuildVecKokkosFromVecSeq_Private(Vec v)
-{
-  Vec_Seq        *vecseq = static_cast<Vec_Seq*>(v->data);
-  Vec_Kokkos     *veckok = NULL;
-
-  PetscFunctionBegin;
-  PetscCheckFalse(v->spptr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"v->spptr not NULL");
-  veckok = new Vec_Kokkos(v->map->n,vecseq->array);
-  Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
-  v->spptr = static_cast<void*>(veckok);
-  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode VecCreate_SeqKokkos(Vec v)
 {
   PetscErrorCode ierr;
+  Vec_Seq        *vecseq;
+  Vec_Kokkos     *veckok;
 
   PetscFunctionBegin;
   ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   ierr = VecCreate_Seq(v);CHKERRQ(ierr);  /* Build a sequential vector, allocate array */
-  ierr = VecSet_Seq(v,0.0);CHKERRQ(ierr); /* Zero the host array */
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQKOKKOS);CHKERRQ(ierr);
   ierr = VecSetOps_SeqKokkos(v);CHKERRQ(ierr);
-  ierr = BuildVecKokkosFromVecSeq_Private(v);CHKERRQ(ierr);
+
+  PetscCheck(!v->spptr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"v->spptr not NULL");
+  vecseq   = static_cast<Vec_Seq*>(v->data);
+  veckok   = new Vec_Kokkos(v->map->n,vecseq->array,NULL); /* Let host claim it has the latest data (zero) */
+  v->spptr = static_cast<void*>(veckok);
+  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   PetscFunctionReturn(0);
 }
 
