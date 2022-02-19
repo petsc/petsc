@@ -97,9 +97,9 @@ Toolkits/libraries that use PETSc
          Available as an extension for linear solvers for OpenFOAM
       -  `OpenFVM <http://openfvm.sourceforge.net/>`__ finite volume
          based CFD solver
-      -  `PermonSVM <http://permon.it4i.cz/permonsvm.htm>`__ support
+      -  `PermonSVM <http://permon.vsb.cz/permonsvm.htm>`__ support
          vector machines and
-         `PermonQP <http://permon.it4i.cz/permonqp.htm>`__ quadratic
+         `PermonQP <http://permon.vsb.cz/permonqp.htm>`__ quadratic
          programming
       -  `PetIGA <https://bitbucket.org/dalcinl/petiga/>`__ A framework
          for high performance Isogeometric Analysis
