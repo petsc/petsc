@@ -603,8 +603,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                 row_scale[0] = 1.;
               } else {
                 idx = -idx - 1;
-                nr = maps[grid].num_face;
-                for (q = 0; q < maps[grid].num_face; q++) {
+                for (q = 0, nr = 0; q < maps[grid].num_face; q++, nr++) {
+                  if (maps[grid].c_maps[idx][q].gid < 0) break;
                   rows0[q]     = maps[grid].c_maps[idx][q].gid;
                   row_scale[q] = maps[grid].c_maps[idx][q].scale;
                 }
@@ -618,7 +618,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                 } else {
                   idx = -idx - 1;
                   nc = maps[grid].num_face;
-                  for (q = 0; q < maps[grid].num_face; q++) {
+                  for (q = 0, nc = 0; q < maps[grid].num_face; q++, nc++) {
+                    if (maps[grid].c_maps[idx][q].gid < 0) break;
                     cols0[q]     = maps[grid].c_maps[idx][q].gid;
                     col_scale[q] = maps[grid].c_maps[idx][q].scale;
                   }
@@ -1626,7 +1627,8 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
                   PetscReal sum = 0;
                   const PetscInt ff = f;
                   maps[grid].gIdx[eidx][fieldA][q] = -maps[grid].num_reduced - 1; // store (-)index: id = -(idx+1): idx = -id - 1
-                  do {  // constraints are continous in Plex - exploit that here
+
+                  do {  // constraints are continuous in Plex - exploit that here
                     int ii; // get 'scale'
                     for (ii = 0, pointMaps[maps[grid].num_reduced][jj].scale = 0; ii < maps[grid].num_face; ii++) { // sum row of outer product to recover vector value
                       if (ff + ii < numindices) { // 3D has Q and Q^2 interps so might run off end. We could test that elMat[f*numindices + ff + ii] > 0, and break if not
@@ -1644,9 +1646,10 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
                       }
                     }
                   } while (++jj < maps[grid].num_face && ++f < numindices); // jj is incremented if we hit the end
-                  while (jj++ < maps[grid].num_face) {
+                  while (jj < maps[grid].num_face) {
                     pointMaps[maps[grid].num_reduced][jj].scale = 0;
                     pointMaps[maps[grid].num_reduced][jj].gid = -1;
+                    jj++;
                   }
                   if (PetscAbs(sum-1.0) > 10*PETSC_MACHINE_EPSILON) { // debug
                     int       d,f;
@@ -1934,7 +1937,6 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
     ierr = DMSetFromOptions(massDM);CHKERRQ(ierr);
     ierr = DMCreateMatrix(massDM, &gMat);CHKERRQ(ierr);
     ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only false");
-    ierr = MatSetOption(gMat, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(ctx->plex[grid],&tvec);CHKERRQ(ierr);
     ierr = DMPlexSNESComputeJacobianFEM(massDM, tvec, gMat, gMat, ctx);CHKERRQ(ierr);
     ierr = DMDestroy(&massDM);CHKERRQ(ierr);
@@ -2121,7 +2123,6 @@ PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char
   ierr = DMSetFromOptions(*pack);CHKERRQ(ierr);
   ierr = DMCreateMatrix(*pack, &ctx->J);CHKERRQ(ierr);
   ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only false");
-  ierr = MatSetOption(ctx->J, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(ctx->J, MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)ctx->J, "Jac");CHKERRQ(ierr);
   // construct initial conditions in X
@@ -2565,7 +2566,6 @@ PetscErrorCode LandauCreateMassMatrix(DM pack, Mat *Amat)
   ierr = DMSetFromOptions(mass_pack);CHKERRQ(ierr);
   ierr = DMCreateMatrix(mass_pack, &packM);CHKERRQ(ierr);
   ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only false");
-  ierr = MatSetOption(packM, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(packM, MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMDestroy(&mass_pack);CHKERRQ(ierr);
   /* make mass matrix for each block */
