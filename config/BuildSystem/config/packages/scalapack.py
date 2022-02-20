@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'v2.1.0-p2'  # modification to avoid calling zdotc, zladiv on MacOS
+    self.gitcommit        = 'v2.2.0-p1' # modification to avoid calling zdotc, zladiv on macOS
     self.download         = ['git://https://bitbucket.org/petsc/pkg-scalapack','https://bitbucket.org/petsc/pkg-scalapack/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-scalapack','scalapack']
     self.includes         = []
@@ -69,16 +69,16 @@ class Configure(config.package.Package):
       except RuntimeError as e:
         pass
       try:
-        self.logPrintBox('Compiling and installing Scalapack; this may take several minutes')
+        self.logPrintBox('Compiling and installing ScaLAPACK; this may take several minutes')
         libDir = os.path.join(self.installDir, self.libdir)
         output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make_jnp+' -f Makefile.parallel lib && mkdir -p '+libDir+' && cp libscalapack.* '+libDir, timeout=2500, log = self.log)
       except RuntimeError as e:
-        self.logPrint('Error running make on SCALAPACK: '+str(e))
-        raise RuntimeError('Error running make on SCALAPACK')
+        self.logPrint('Error running make on ScaLAPACK: '+str(e))
+        raise RuntimeError('Error running make on ScaLAPACK')
       self.postInstall(output,'SLmake.inc')
     return self.installDir
 
 def getSearchDirectories(self):
-  '''Generate list of possible locations of Scalapack'''
+  '''Generate list of possible locations of ScaLAPACK'''
   yield ''
   if os.getenv('MKLROOT'): yield os.getenv('MKLROOT')
