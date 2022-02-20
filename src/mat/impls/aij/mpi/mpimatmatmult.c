@@ -609,24 +609,30 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
     /* off-diagonal block of A times nonlocal rows of B */
     ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B,workB,cdense->A,PETSC_TRUE);CHKERRQ(ierr);
   } else {
-    Mat      Bb,Cb;
-    PetscInt BN=B->cmap->N,n=contents->workB->cmap->n,i;
-    PetscCheckFalse(n <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %" PetscInt_FMT " must be positive",n);
+    Mat       Bb,Cb;
+    PetscInt  BN=B->cmap->N,n=contents->workB->cmap->n,i;
+    PetscBool ccpu;
 
+    PetscCheckFalse(n <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Column block size %" PetscInt_FMT " must be positive",n);
+    /* Prevent from unneeded copies back and forth from the GPU
+       when getting and restoring the submatrix
+       We need a proper GPU code for AIJ * dense in parallel */
+    ierr = MatBoundToCPU(C,&ccpu);CHKERRQ(ierr);
+    ierr = MatBindToCPU(C,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<BN; i+=n) {
       ierr = MatDenseGetSubMatrix(B,i,PetscMin(i+n,BN),&Bb);CHKERRQ(ierr);
       ierr = MatDenseGetSubMatrix(C,i,PetscMin(i+n,BN),&Cb);CHKERRQ(ierr);
 
       /* get off processor parts of B needed to complete C=A*B */
-      ierr = MatMPIDenseScatter(A,Bb,i+n>BN,C,&workB);CHKERRQ(ierr);
+      ierr = MatMPIDenseScatter(A,Bb,(i+n)>BN,C,&workB);CHKERRQ(ierr);
 
       /* off-diagonal block of A times nonlocal rows of B */
       cdense = (Mat_MPIDense*)Cb->data;
       ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B,workB,cdense->A,PETSC_TRUE);CHKERRQ(ierr);
-
       ierr = MatDenseRestoreSubMatrix(B,&Bb);CHKERRQ(ierr);
       ierr = MatDenseRestoreSubMatrix(C,&Cb);CHKERRQ(ierr);
     }
+    ierr = MatBindToCPU(C,ccpu);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
