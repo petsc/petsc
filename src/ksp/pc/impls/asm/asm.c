@@ -237,7 +237,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,prefix,"-pc_asm_print_subdomains",&flg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,prefix,"-pc_asm_print_subdomains",&flg);CHKERRQ(ierr);
     if (flg) { ierr = PCASMPrintSubdomains(pc);CHKERRQ(ierr); }
 
     if (osm->overlap > 0) {

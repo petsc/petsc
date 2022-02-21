@@ -146,7 +146,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 .  ports - a PetscDrawViewPorts context (C structure)
 
    Options Database:
-.  -draw_ports - display multiple fields in the same window with PetscDrawPorts instead of in separate windows
+.  -draw_ports - display multiple fields in the same window with PetscDrawPorts() instead of in separate windows
 
    Level: advanced
 

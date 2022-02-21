@@ -269,7 +269,7 @@ automatically downloaded and installed by ``configure``.
 
 Note that Sowing and C2html are build tools that do not use the compilers specified to PETSc's ``configure``, as they
 need to work in cross-compilation environments. Thus, they default to using ``gcc``, ``g++``, and ``flex`` from
-the user's environment (or ``configure`` options like ``--download-sowing-cxx``). Windows users should install ``gcc``
+the user's environment (or ``configure`` options like ``--download-sowing-cxx``). Microsoft Windows users should install ``gcc``
 etc. from Cygwin as these tools don't build with MS compilers.
 
 One can run this process in-tree with

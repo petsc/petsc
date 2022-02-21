@@ -125,16 +125,15 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   const char     *prefix;
   char           fname[PETSC_MAX_PATH_LEN+1];
   PetscInt       l, d, count;
-  PetscBool      doprint,found;
+  PetscBool      found;
   PetscViewer    viewer, sviewer = NULL;
   PetscInt       *numbering,*permutation;/* global numbering of locally-supported subdomains and the permutation from the local ordering */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  doprint  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,prefix,"-pc_gasm_print_subdomains",&doprint,NULL);CHKERRQ(ierr);
-  if (!doprint) PetscFunctionReturn(0);
+  ierr = PetscOptionsHasName(NULL,prefix,"-pc_gasm_print_subdomains",&found);CHKERRQ(ierr);
+  if (!found) PetscFunctionReturn(0);
   ierr = PetscOptionsGetString(NULL,prefix,"-pc_gasm_print_subdomains",fname,sizeof(fname),&found);CHKERRQ(ierr);
   if (!found) { ierr = PetscStrcpy(fname,"stdout");CHKERRQ(ierr); };
   ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc),fname,&viewer);CHKERRQ(ierr);

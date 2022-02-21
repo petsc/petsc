@@ -627,6 +627,22 @@ where noted, add a newline after the section headings.
 .. [1]
    Type also refers to the string name of the subclass.
 
+Spelling and Capitalization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. Proper nouns, including Unix, Linux, X Windows, and Microsoft Windows should be capitalized. This includes all operating systems.
+
+#. Company names and product names should be capitalized.
+
+#. Company names and terms that are traditionally all capitalized, for example, NVIDIA and CUDA should be all capitalized.
+
+#. Unix should not be all capitalized.
+
+#. Microsoft Windows should always be written out with two words. That is it should not be shortened to Windows.
+
+#. CMake should be capitalized as shown.
+
+
 References
 ----------
 
