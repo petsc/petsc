@@ -148,7 +148,7 @@ PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], 
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveIntComm(tsh->comm,n,2);
-  if (n < 0) SETERRQ(tsh->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot request a negative size for history storage");
+  PetscCheck(n >= 0,tsh->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot request a negative size for history storage");
   if (n) PetscValidRealPointer(hist,3);
   ierr = PetscFree(tsh->hist);CHKERRQ(ierr);
   ierr = PetscFree(tsh->hist_id);CHKERRQ(ierr);

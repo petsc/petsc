@@ -598,13 +598,13 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over rows */
     row = im[k]; brow = row/bs;
-    if (row < 0) {v += n; continue;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %" PetscInt_FMT,row); */
-    PetscCheckFalse(row >= A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,A->rmap->N-1);
+    if (row < 0) {v += n; continue;} /* negative row */
+    PetscCheck(row < A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,A->rmap->N-1);
     rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
     nrow = ailen[brow];
     for (l=0; l<n; l++) { /* loop over columns */
-      if (in[l] < 0) {v++; continue;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %" PetscInt_FMT,in[l]); */
-      PetscCheckFalse(in[l] >= A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->n-1);
+      if (in[l] < 0) {v++; continue;} /* negative column */
+      PetscCheck(in[l] < A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->n-1);
       col  = in[l];
       bcol = col/bs;
       cidx = col%bs;
@@ -1205,7 +1205,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         if (e) str = SAME_NONZERO_PATTERN;
       }
     }
-    if (!e && str == SAME_NONZERO_PATTERN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatStructure is not SAME_NONZERO_PATTERN");
+    if (!e) PetscCheck(str != SAME_NONZERO_PATTERN,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatStructure is not SAME_NONZERO_PATTERN");
   }
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar  alpha = a;
@@ -1220,7 +1220,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   } else {
     Mat      B;
     PetscInt *nnz;
-    PetscCheckFalse(bs != X->rmap->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices must have same block size");
+    PetscCheck(bs == X->rmap->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices must have same block size");
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
     ierr = MatGetRowUpperTriangular(Y);CHKERRQ(ierr);
     ierr = PetscMalloc1(Y->rmap->N,&nnz);CHKERRQ(ierr);

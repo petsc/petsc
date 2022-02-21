@@ -381,9 +381,11 @@ PetscErrorCode  VecCreateMPIKokkosWithArrays_Private(MPI_Comm comm,PetscInt bs,P
 
   PetscFunctionBegin;
   ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
-  if (n && !harray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"harray cannot be NULL");
-  if (n && !darray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"darray cannot be NULL");
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value && harray != darray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"harray and darray must be the same");
+  if (n) {
+    PetscValidScalarPointer(harray,5);
+    PetscCheck(darray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"darray cannot be NULL");
+  }
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) PetscCheck(harray == darray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"harray and darray must be the same");
   ierr = VecCreateMPIWithArray(comm,bs,n,N,harray,&w);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)w,VECMPIKOKKOS);CHKERRQ(ierr); /* Change it to Kokkos */
   ierr = VecSetOps_MPIKokkos(w);CHKERRQ(ierr);

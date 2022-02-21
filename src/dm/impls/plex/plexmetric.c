@@ -1174,7 +1174,7 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
     ierr = DMPlexMetricGetMaximumMagnitude(dm, &h_max);CHKERRQ(ierr);
     h_min = PetscMax(h_min, 1.0e-30);
     h_max = PetscMin(h_max, 1.0e+30);
-    PetscCheckFalse(h_min >= h_max,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Incompatible min/max metric magnitudes (%.4e not smaller than %.4e)", h_min, h_max);
+    PetscCheck(h_min < h_max,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Incompatible min/max metric magnitudes (%.4e not smaller than %.4e)", h_min, h_max);
   }
   if (restrictAnisotropy) {
     ierr = DMPlexMetricGetMaximumAnisotropy(dm, &a_max);CHKERRQ(ierr);
@@ -1190,7 +1190,7 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
   ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
   ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
   if (uniform) {
-    PetscCheckFalse(!isotropic,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
+    PetscCheck(isotropic,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
 
     /* Uniform case */
     ierr = VecDuplicate(metricIn, determinant);CHKERRQ(ierr);
