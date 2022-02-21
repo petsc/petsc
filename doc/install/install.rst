@@ -712,14 +712,14 @@ Installing PETSc on an iOS or Android platform
 ==============================================
 
 For iOS see ``$PETSC_DIR/systems/Apple/iOS/bin/makeall``. A thorough discussion of the
-installation procedure is given `here
+installation procedure is given in `Comparison of Migration Techniques for High-Performance Code to Android and iOS
 <https://www.researchgate.net/publication/308973080_Comparison_of_Migration_Techniques_for_High-Performance_Code_to_Android_and_iOS>`__.
 
 For Android, you must have your standalone bin folder in the path, so that the compilers
 are visible.
 
-Check ``config/examples/arch-arm64-opt.py`` for iOS and
-``config/examples/arch-armv7-opt.py`` for example usage.
+The installation process has not been tested for iOS or Android in several years.
+
 
 .. _MPICH: https://www.mpich.org/
 .. _BLAS/LAPACK: https://www.netlib.org/lapack/lug/node11.html
