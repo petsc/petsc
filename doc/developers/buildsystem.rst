@@ -92,7 +92,7 @@ for cross-language tests, which are thinly supported in current
 tools. In fact, the design of these tools inhibits this kind of check.
 The ``check_function_exists()`` call in Autoconf and CMake looks only
 for the presence of a particular symbol in a library, and fails in C++
-and on Windows, whereas the equivalent BuildSystem test can also take a
+and on Microsoft Windows, whereas the equivalent BuildSystem test can also take a
 declaration. The ``try_compile()`` test in Autoconf and CMake requires
 the entire list of libraries be present in the ``LIBS`` variable,
 providing no good way to obtain libraries from other tests in a modular

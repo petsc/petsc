@@ -367,7 +367,7 @@ The PETSc distribution is SO Large. How can I reduce my disk space usage?
    contained in the PETSc directories ``$PETSC_DIR/src/*/tutorials/output`` and
    ``$PETSC_DIR/src/*/tests/output``. Once you have run the test examples, you may remove
    all of these directories to save some disk space. You can locate the largest with
-   e.g. ``find . -name output -type d | xargs du -sh | sort -hr`` on a unix-based system.
+   e.g. ``find . -name output -type d | xargs du -sh | sort -hr`` on a Unix-based system.
 
 #. The debugging versions of the libraries are larger than the optimized versions. In a
    pinch you can work with the optimized version, although we bid you good luck in
@@ -378,8 +378,8 @@ I want to use PETSc only for uniprocessor programs. Must I still install and use
 
 No, run ``configure`` with the option ``--with-mpi=0``
 
-Can I install PETSc to not use X windows (either under Unix or Windows with GCC)?
----------------------------------------------------------------------------------
+Can I install PETSc to not use X windows (either under Unix or Microsoft Windows with GCC)?
+-------------------------------------------------------------------------------------------
 
 Yes. Run ``configure`` with the additional flag ``--with-x=0``
 

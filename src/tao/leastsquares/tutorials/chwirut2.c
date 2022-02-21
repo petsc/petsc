@@ -433,7 +433,7 @@ PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user
   PetscReal *t = user->t;
   PetscReal *y = user->y;
 #if defined(PETSC_USE_REAL_SINGLE)
-  *f = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]); /* expf() for single-precision breaks this example on freebsd, valgrind errors on linux */
+  *f = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]); /* expf() for single-precision breaks this example on Freebsd, Valgrind errors on Linux */
 #else
   *f = y[i] - PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
 #endif

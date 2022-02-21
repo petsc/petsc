@@ -7,9 +7,9 @@ Changes: 2.1.3
 This is primarily a bug-fix release and minor internal updates. Some
 of the fixes include
 
--  win32fe updates for better build support on Windows 98 machines,
-   with borland compilers, and with cygwin paths.
+-  win32fe updates for better build support on Microsoft Windows 98 machines,
+   with Borland compilers, and with Cygwin paths.
 -  fixes to SPOOLES interfaces
--  updates to DA - which delays allocation of internal objects untill
+-  updates to DA - which delays allocation of internal objects until
    they are actually needed.
--  configure fixes for linux
+-  configure fixes for Linux

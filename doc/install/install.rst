@@ -573,8 +573,8 @@ PETSc is able to take adavantage of GPU's and certain accelerator libraries, how
 On Linux - make sure you have compatible `NVIDIA driver
 <https://developer.nvidia.com/cuda-downloads>`__ installed.
 
-On Windows - Use either `Cygwin`_ or `WSL`_ the latter of which is entirely untested right
-now. If you have experience with `WSL`_ and/or have successfully built PETSc on windows
+On Microsoft Windows - Use either `Cygwin`_ or `WSL`_ the latter of which is entirely untested right
+now. If you have experience with `WSL`_ and/or have successfully built PETSc on Microsoft Windows
 for use with `CUDA`_ we welcome your input at petsc-maint@mcs.anl.gov. See the
 bug-reporting :ref:`documentation <doc_creepycrawly>` for more details.
 
