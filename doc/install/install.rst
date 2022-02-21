@@ -718,7 +718,7 @@ installation procedure is given in `Comparison of Migration Techniques for High-
 For Android, you must have your standalone bin folder in the path, so that the compilers
 are visible.
 
-The installation process has not been tested for iOS or Android in several years.
+The installation process has not been tested for iOS or Android since 2017.
 
 
 .. _MPICH: https://www.mpich.org/
