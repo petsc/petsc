@@ -28,7 +28,7 @@ Dumping ASCII MATLAB data
 One can dump PETSc matrices and vectors to the screen in an ASCII format
 that MATLAB can read in directly. This is done with the command line
 options ``-vec_view ::ascii_matlab`` or ``-mat_view ::ascii_matlab``. To
-write a a file, use ``-vec_view :filename.m:ascii_matlab`` or
+write a file, use ``-vec_view :filename.m:ascii_matlab`` or
 ``-mat_view :filename.m:ascii_matlab``.
 
 This causes the PETSc program to print the vectors and matrices every
@@ -59,7 +59,7 @@ Dumping Binary Data for MATLAB
 
 One can also read PETSc binary files (see
 :any:`sec_viewers`) directly into MATLAB via the scripts available
-in ``$PETSC_DIR/share/matlab``. This requires less disk space and is
+in ``$PETSC_DIR/share/petsc/matlab``. This requires less disk space and is
 recommended for all but the smallest data sizes. One can also use
 
 .. code-block::
@@ -187,7 +187,7 @@ or
 
 .. code-block::
 
-   PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
+   PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*).
 
 There is a short-cut to starting the MATLAB engine with
 ``PETSC_MATLAB_ENGINE_(MPI_Comm)``.

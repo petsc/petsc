@@ -104,7 +104,7 @@ respectively, below, where ``ierr`` denotes the error variable:
 Fortran programmers can check these error codes with ``CHKERRQ(ierr)``,
 which terminates all processes when an error is encountered. Likewise,
 one can set error codes within Fortran programs by using
-``SETERRQ(comm,p,' ',ierr)``, which again terminates all processes upon
+``SETERRQ(comm,p,' ')``, which again terminates all processes upon
 detection of an error. Note that complete error tracebacks with
 ``CHKERRQ()`` and ``SETERRQ()``, as described in
 :any:`sec_simple` for C routines, are *not* directly supported for
@@ -195,7 +195,7 @@ duplicates ``v_old`` to form two new vectors, ``v_new(1)`` and
    alpha = 6.0
    call VecSet(v_new(2),alpha,ierr)
    ....
-   call VecDestroyVecs(2, &v_new,ierr)
+   call VecDestroyVecs(2,v_new,ierr)
 
 Matrix, Vector and IS Indices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
