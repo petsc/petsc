@@ -43,7 +43,7 @@ Prepared by
 **K. Rupp** :sup:`1`,
 **P. Sanan** :sup:`1,8`,
 **J. Sarich** :sup:`1`,
-**B. F. Smith** :sup:`1`,
+**B. F. Smith** :sup:`17`,
 **S. Zampini** :sup:`4`,
 **H. Zhang** :sup:`1,5`,
 **H. Zhang** :sup:`1`, and
@@ -65,6 +65,7 @@ Prepared by
 | :sup:`14`\ College of Computing, Georgia Tech
 | :sup:`15`\ Tech-X Corporation
 | :sup:`16`\ DSIC, Universitat Politècnica de València
+| :sup:`17`\ Flatiron Institute, Simons Foundation
 
 --------------
 

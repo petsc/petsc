@@ -586,6 +586,8 @@ settings, in which one can even use different number of processes for
 saving and for loading; a more comprehensive example is found in
 `DMPlex Tutorial ex12 <../../src/dm/impls/plex/tutorials/ex12.c.html>`__.
 
+.. _chapter_network:
+
 Networks
 ~~~~~~~~
 
