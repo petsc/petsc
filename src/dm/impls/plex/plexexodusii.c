@@ -600,8 +600,8 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
     ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
     if (numNodes > 0) {
       const char  *coordNames[3] = {"x", "y", "z"};
-      PetscScalar *coords, *closure;
-      PetscReal   *cval;
+      PetscScalar *closure, *cval;
+      PetscReal   *coords;
       PetscInt     hasDof, n = 0;
 
       /* There can't be more than 24 values in the closure of a point for the coord coordSection */
@@ -617,7 +617,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
           for (d = 0; d < dim; ++d) {
             cval[d] = 0.0;
             for (j = 0; j < closureSize/dim; j++) cval[d] += closure[j*dim+d];
-            coords[d*numNodes+n] = cval[d] * dim / closureSize;
+            coords[d*numNodes+n] = PetscRealPart(cval[d]) * dim / closureSize;
           }
           ++n;
         }
