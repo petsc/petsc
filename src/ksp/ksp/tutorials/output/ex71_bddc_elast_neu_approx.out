@@ -102,7 +102,7 @@ PC Object: 8 MPI processes
               Symmetric graph false
               Number of levels to square graph 1
               Number smoothing steps 1
-            Complexity:    grid = 1.02271
+            Complexity:    grid = 1.06452    operator = 1.02271
       Coarse grid solver -- level -------------------------------
         KSP Object: (pc_bddc_neumann_mg_coarse_) 1 MPI processes
           type: preonly
@@ -121,7 +121,7 @@ PC Object: 8 MPI processes
               tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
               using NONE norm type for convergence test
-            PC Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI processes
+            PC Object:   (pc_bddc_neumann_mg_coarse_sub_)   1 MPI processes
               type: lu
                 out-of-place factorization
                 tolerance for zero pivot 2.22045e-14
@@ -129,7 +129,7 @@ PC Object: 8 MPI processes
                 matrix ordering: nd
                 factor fill ratio given 5., needed 1.
                   Factored matrix follows:
-                    Mat Object: 1 MPI processes
+                    Mat Object:   1 MPI processes
                       type: seqaij
                       rows=18, cols=18, bs=6
                       package used to perform factorization: petsc
@@ -152,8 +152,8 @@ PC Object: 8 MPI processes
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
           type: chebyshev
-            eigenvalue estimates used:  min = 0.0999428, max = 1.09937
-            eigenvalues estimate via cg min 0.133777, max 0.999428
+            eigenvalue estimates used:  min = 0.262061, max = 2.88267
+            eigenvalues estimate via cg min 0.100732, max 2.62061
             eigenvalues estimated using cg with translations  [0. 0.1; 0. 1.1]
             KSP Object: (pc_bddc_neumann_mg_levels_1_esteig_) 1 MPI processes
               type: cg
@@ -167,8 +167,8 @@ PC Object: 8 MPI processes
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
-          type: sor
-            type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+          type: jacobi
+            type DIAGONAL
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_neumann_) 1 MPI processes
             type: seqaij

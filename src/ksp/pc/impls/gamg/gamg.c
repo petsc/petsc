@@ -399,8 +399,25 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
     /* 'a_Amat_crs' output */
     {
-      Mat mat;
-      ierr        = MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat);CHKERRQ(ierr);
+      Mat       mat;
+      PetscBool flg;
+      ierr = MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat);CHKERRQ(ierr);
+      ierr = MatGetOption(Cmat, MAT_SPD, &flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MatSetOption(mat, MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+      } else {
+        ierr = MatGetOption(Cmat, MAT_HERMITIAN, &flg);CHKERRQ(ierr);
+        if (flg) {
+          ierr = MatSetOption(mat, MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+        } else {
+#if !defined(PETSC_USE_COMPLEX)
+          ierr = MatGetOption(Cmat, MAT_SYMMETRIC, &flg);CHKERRQ(ierr);
+          if (flg) {
+            ierr = MatSetOption(mat, MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+          }
+#endif
+        }
+      }
       *a_Amat_crs = mat;
     }
     ierr = MatDestroy(&Cmat);CHKERRQ(ierr);
@@ -1572,6 +1589,7 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscReal       gc=0, oc=0;
+
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"    GAMG specific options\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"      Threshold for dropping small values in graph on each level =");CHKERRQ(ierr);
