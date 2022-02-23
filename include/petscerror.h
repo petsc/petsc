@@ -310,12 +310,21 @@ MC*/
 .seealso: SETERRQ(), PetscCheck(), PetscAssert(), PetscTraceBackErrorHandler(),
 PetscPushErrorHandler(), PetscError(), CHKMEMQ, CHKERRA()
 M*/
-#if !defined(PETSC_CLANG_STATIC_ANALYZER)
-#define CHKERRQ(ierr)          do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");} while (0)
-#define CHKERRV(ierr)          do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");return;}} while (0)
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+void CHKERRQ(PetscErrorCode);
+void CHKERRV(PetscErrorCode);
 #else
-#define CHKERRQ(ierr)
-#define CHKERRV(ierr)
+#define CHKERRQ(...) do {                                                                      \
+    PetscErrorCode ierr_q_ = __VA_ARGS__;                                                      \
+    if (PetscUnlikely(ierr_q_)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_q_,PETSC_ERROR_REPEAT," "); \
+  } while (0)
+#define CHKERRV(...) do {                                                                      \
+    PetscErrorCode ierr_void_ = __VA_ARGS__;                                                   \
+    if (PetscUnlikely(ierr_void_)) {                                                           \
+      PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_void_,PETSC_ERROR_REPEAT," "); \
+      return;                                                                                  \
+    }                                                                                          \
+  } while (0)
 #endif
 
 /*MC
@@ -360,11 +369,20 @@ M*/
 .seealso: SETERRABORT(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, CHKERRMPI()
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-#define CHKERRABORT(comm,ierr)
-#define CHKERRCONTINUE(ierr)
+void CHKERRABORT(MPI_Comm,PetscErrorCode);
+void CHKERRCONTINUE(PetscErrorCode);
 #else
-#define CHKERRABORT(comm,ierr) do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
-#define CHKERRCONTINUE(ierr)   do {PetscErrorCode ierr__ = (ierr); if (PetscUnlikely(ierr__)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr__,PETSC_ERROR_REPEAT," ");}} while (0)
+#define CHKERRABORT(comm,...) do {                                                             \
+    PetscErrorCode ierr_abort_ = __VA_ARGS__;                                                  \
+    if (PetscUnlikely(ierr_abort_)) {                                                          \
+      PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_abort_,PETSC_ERROR_REPEAT," "); \
+      MPI_Abort(comm,ierr_abort_);                                                             \
+    }                                                                                          \
+  } while (0)
+#define CHKERRCONTINUE(...)   do {                                                             \
+    PetscErrorCode ierr_continue_ = __VA_ARGS__;                                               \
+    if (PetscUnlikely(ierr_continue_)) PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_continue_,PETSC_ERROR_REPEAT," "); \
+  } while (0)
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
@@ -397,17 +415,17 @@ PETSC_EXTERN PetscBool petscindebugger;
 
    If the option -start_in_debugger was used then this calls abort() to stop the program in the debugger.
 
-M*/
-#define PETSCABORT(comm,ierr)  \
-   do {                                                               \
-      PetscInt       idx = 0;                                         \
-      PetscMPIInt    errcode;                                         \
-      PetscAbortFindSourceFile_Private(__FILE__,&idx);                \
-      errcode = (PetscMPIInt)(0*idx*10000000 + 0*__LINE__*1000 + ierr);   \
-      if (petscwaitonerrorflg) PetscSleep(1000);                      \
-      if (petscindebugger) abort();                                   \
-      else MPI_Abort(comm,errcode);                                   \
-   } while (0)
+ M*/
+#define PETSCABORT(comm,...) do {                                                              \
+    if (petscwaitonerrorflg) PetscSleep(1000);                                                 \
+    if (petscindebugger) abort();                                                              \
+    else {                                                                                     \
+      PetscErrorCode ierr_petsc_abort_ = __VA_ARGS__;                                          \
+      PetscInt       idx = 0;                                                                  \
+      PetscAbortFindSourceFile_Private(__FILE__,&idx);                                         \
+      MPI_Abort(comm,(PetscMPIInt)(0*idx*10000000 + 0*__LINE__*1000 + ierr_petsc_abort_));     \
+    }                                                                                          \
+  } while (0)
 
 /*MC
    CHKERRMPI - Checks error code returned from MPI calls, if non-zero it calls the error handler and then returns
@@ -429,11 +447,11 @@ M*/
 .seealso: SETERRMPI(), CHKERRQ(), SETERRQ(), SETERRABORT(), CHKERRABORT(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
-#define CHKERRMPI(ierr)
+void CHKERRMPI(PetscErrorCode);
 #else
-#define CHKERRMPI(ierr) \
+#define CHKERRMPI(...) \
 do { \
-  PetscErrorCode _7_errorcode = (ierr); \
+  PetscErrorCode _7_errorcode = __VA_ARGS__; \
   if (PetscUnlikely(_7_errorcode)) { \
     char _7_errorstring[MPI_MAX_ERROR_STRING]; \
     PetscMPIInt _7_resultlen; \
@@ -467,7 +485,10 @@ do { \
 
 .seealso: SETERRQ(), CHKERRQ(), SETERRABORT(), CHKERRABORT(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
 M*/
-#define CHKERRXX(ierr)  do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_IN_CXX,0);}} while (0)
+#define CHKERRXX(...)  do {                                                                    \
+    PetscErrorCode ierr_cxx_ = __VA_ARGS__;                                                    \
+    if (PetscUnlikely(ierr_cxx_)) PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_cxx_,PETSC_ERROR_IN_CXX,PETSC_NULLPTR); \
+  } while (0)
 #endif
 
 /*MC
@@ -492,7 +513,13 @@ $     CHKERRCXX(foo(1));
 
 .seealso: CHKERRXX(), SETERRQ(), CHKERRQ(), SETERRABORT(), CHKERRABORT(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
 M*/
-#define CHKERRCXX(func) do {try {func;} catch (const std::exception& e) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"%s", e.what()); }} while (0)
+#define CHKERRCXX(...) do {                                     \
+    try {                                                       \
+      __VA_ARGS__;                                              \
+    } catch (const std::exception& e) {                         \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"%s",e.what());     \
+    }                                                           \
+  } while (0)
 
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
