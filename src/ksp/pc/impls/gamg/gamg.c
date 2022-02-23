@@ -730,7 +730,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ASMLocalIDsArr[level] = NULL;
         nASMBlocksArr[level]  = 0;
       } else {
-        ierr = PCSetType(subpc, PCSOR);CHKERRQ(ierr);
+        ierr = PCSetType(subpc, PCJACOBI);CHKERRQ(ierr);
       }
     }
     {

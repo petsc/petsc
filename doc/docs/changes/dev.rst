@@ -122,6 +122,7 @@ Changes: Development
 .. rubric:: PCMG:
 
 - Add ``PCMGGetGridComplexity()`` to get operator and grid complexity of MG hierarchy
+- Change ``PCGAMG`` default to use ``PCJACOBI`` smoothing instead of `PCSOR`. This also allows the default configuration to use GPUs effectively, and to deliver equivalent convergence. For the old default, use ``-mg_levels_pc_type sor``.
 
 .. rubric:: KSP:
 
