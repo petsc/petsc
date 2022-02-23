@@ -103,7 +103,7 @@ int main(int argc,char *argv[])
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size != 2) SETERRQ(comm,PETSC_ERR_USER,"This example must be run with exactly two processes");
+  PetscCheckFalse(size != 2,comm,PETSC_ERR_USER,"This example must be run with exactly two processes");
   ierr = Assemble(comm,2,MATMPIBAIJ);CHKERRQ(ierr);
   ierr = Assemble(comm,2,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = Assemble(comm,1,MATMPIBAIJ);CHKERRQ(ierr);

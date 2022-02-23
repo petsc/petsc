@@ -42,7 +42,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 
   /* If iflags not provided, compute iflags from ilengths */
   if (!iflags) {
-    if (!ilengths) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
+    PetscCheckFalse(!ilengths,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
     iflags_local = iflags_localm;
     for (i=0; i<size; i++) {
       if (ilengths[i]) iflags_local[i] = 1;
@@ -152,7 +152,7 @@ PetscErrorCode  PetscGatherNumberOfMessages_Private(MPI_Comm comm,const PetscMPI
 
   /* If iflags not provided, compute iflags from ilengths */
   if (!iflags) {
-    if (!ilengths) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
+    PetscCheckFalse(!ilengths,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
     iflags_local = iflags_localm;
     for (i=0; i<size; i++) {
       if (ilengths[i]) iflags_local[i] = 1;
@@ -276,7 +276,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
       j++;
     }
   }
-  if (j != nsends) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d",j,nsends);
+  PetscCheckFalse(j != nsends,PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d",j,nsends);
 
   /* Post waits on sends and receivs */
   if (nrecvs+nsends) {ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRMPI(ierr);}

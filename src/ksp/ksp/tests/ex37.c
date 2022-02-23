@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Load the matrix */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
   /* Load the matrix; then destroy the viewer.*/
@@ -63,7 +63,7 @@ int main(int argc,char **args)
     PetscMPIInt color,subrank,duprank,subsize;
     duprank = size-1 - rank;
     subsize = size/nsubcomm;
-    if (subsize*nsubcomm != size) SETERRQ2(comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
+    PetscCheckFalse(subsize*nsubcomm != size,comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
     ierr    = PetscSubcommSetTypeGeneral(psubcomm,color,subrank);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ int main(int argc,char **args)
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
   } else if (type == PETSC_SUBCOMM_INTERLACED) {
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
-  } else SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
+  } else SETERRQ(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
   ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
   subcomm = PetscSubcommChild(psubcomm);
 

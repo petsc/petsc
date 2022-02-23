@@ -67,6 +67,18 @@ typedef struct {
   /* Used by device classes */
   void * spptr;
 
+  /* MatSetValuesCOO() related stuff */
+  PetscCount   coo_n; /* Number of COOs passed to MatSetPreallocationCOO)() */
+  PetscSF      coo_sf; /* SF to send/recv remote values in MatSetValuesCOO() */
+  PetscCount   Atot1,Annz1,Btot1,Bnnz1; /* Number of local entries (tot1), number of uqique local entries(nnz1) belonging to diag (A) and offdiag (B) */
+  PetscCount   Atot2,Annz2,Btot2,Bnnz2; /* Number of received entries (tot2), number of uqique received entries(nnz2) belonging to diag (A) and offdiag (B) */
+  PetscCount   *Aimap1,*Ajmap1,*Aperm1; /* Lengths: [Annz1], [Annz1+1], [Atot1]. Local entries to diag */
+  PetscCount   *Bimap1,*Bjmap1,*Bperm1; /* Lengths: [Bnnz1], [Bnnz1+1], [Btot1]. Local entries to offdiag */
+  PetscCount   *Aimap2,*Ajmap2,*Aperm2; /* Lengths: [Annz2], [Annz2+1], [Atot2]. Remote entries to diag */
+  PetscCount   *Bimap2,*Bjmap2,*Bperm2; /* Lengths: [Bnnz2], [Bnnz2+1], [Btot2]. Remote entries to offdiag */
+  PetscCount   *Cperm1; /* [sendlen] Permutation to fill MPI send buffer. 'C' for communication */
+  PetscScalar  *sendbuf,*recvbuf; /* Buffers for remote values in MatSetValuesCOO() */
+  PetscInt     sendlen,recvlen; /* Lengths (in unit of PetscScalar) of send/recvbuf */
 } Mat_MPIAIJ;
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
@@ -166,6 +178,8 @@ extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 
 PETSC_INTERN PetscErrorCode MatGetSeqMats_MPIAIJ(Mat,Mat*,Mat*);
 PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,Mat);
+
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat,PetscCount,const PetscInt[],const PetscInt[]);
 
 /* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */
 #define AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa) \

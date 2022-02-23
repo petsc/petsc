@@ -34,7 +34,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   Mat               mat;
 
   PetscFunctionBegin;
-  if (!ksp->vec_rhs->petscnative) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
+  PetscCheckFalse(!ksp->vec_rhs->petscnative,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
 
   X  = ksp->vec_sol;
@@ -51,7 +51,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   S2 = ksp->work[7]; ierr = VecGetArray(S2,(PetscScalar**)&s2);CHKERRQ(ierr); ierr = VecRestoreArray(S2,NULL);CHKERRQ(ierr);
 
   /* Only supports right preconditioning */
-  if (ksp->pc_side != PC_RIGHT) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgsr does not support %s",PCSides[ksp->pc_side]);
+  PetscCheckFalse(ksp->pc_side != PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgsr does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
@@ -155,7 +155,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 
     /* test denominator */
     if ((xi3 == 0.0) || (sigma == 0.0)) {
-      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to zero inner product");
+      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to zero inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
       ierr  = PetscInfo(ksp,"KSPSolve has failed due to zero inner product\n");CHKERRQ(ierr);
       break;

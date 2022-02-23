@@ -297,10 +297,12 @@ cdef extern from * nogil:
                                              PetscReal,
                                              PetscIS,
                                              void*) except PETSC_ERR_PYTHON
-    int PCHPDDMSetAuxiliaryMat(PetscPC, PetscIS, PetscMat, PetscPCHPDDMAuxiliaryMat, void*)
-    int PCHPDDMHasNeumannMat(PetscPC, PetscBool)
-    int PCHPDDMSetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType)
-    int PCHPDDMGetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType*)
+    int PCHPDDMSetAuxiliaryMat(PetscPC,PetscIS,PetscMat,PetscPCHPDDMAuxiliaryMat,void*)
+    int PCHPDDMSetRHSMat(PetscPC,PetscMat)
+    int PCHPDDMHasNeumannMat(PetscPC,PetscBool)
+    int PCHPDDMSetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType)
+    int PCHPDDMGetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType*)
+    int PCHPDDMGetSTShareSubKSP(PetscPC,PetscBool*)
 
 # --------------------------------------------------------------------
 

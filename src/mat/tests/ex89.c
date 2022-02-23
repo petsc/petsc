@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   }
 
   ierr = MatPtAPMultEqual(A,P,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
   ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   /* (2) User API */
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
   ierr = MatProductClear(C);CHKERRQ(ierr);
 
   ierr = MatPtAPMultEqual(A,P,C,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -139,25 +139,25 @@ int main(int argc,char **argv)
    test:
       suffix: allatonce_merged
       nsize: 4
-      args: -M 10 -M 5 -M 10 -matproduct_ptap_via allatonce_merged
+      args: -M 10 -M 5 -M 10 -mat_product_algorithm allatonce_merged
       output_file: output/ex89_3.out
 
    test:
       suffix: nonscalable_3D
       nsize: 4
-      args: -M 10 -M 5 -M 10 -test_3D 1 -matproduct_ptap_via nonscalable
+      args: -M 10 -M 5 -M 10 -test_3D 1 -mat_product_algorithm nonscalable
       output_file: output/ex89_4.out
 
    test:
       suffix: allatonce_merged_3D
       nsize: 4
-      args: -M 10 -M 5 -M 10 -test_3D 1 -matproduct_ptap_via allatonce_merged
+      args: -M 10 -M 5 -M 10 -test_3D 1 -mat_product_algorithm allatonce_merged
       output_file: output/ex89_3.out
 
    test:
       suffix: nonscalable
       nsize: 4
-      args: -M 10 -N 10 -Z 10 -matproduct_ptap_via nonscalable
+      args: -M 10 -N 10 -Z 10 -mat_product_algorithm nonscalable
       output_file: output/ex89_5.out
 
 TEST*/

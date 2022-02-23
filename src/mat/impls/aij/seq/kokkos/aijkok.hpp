@@ -3,6 +3,7 @@
 
 #include <petscaijdevice.h>
 #include <petsc/private/vecimpl_kokkos.hpp>
+#include <../src/mat/impls/aij/seq/aij.h>
 #include <KokkosSparse_CrsMatrix.hpp>
 #include <KokkosSparse_spiluk.hpp>
 
@@ -49,6 +50,9 @@ using KernelHandle                   = KokkosKernels::Experimental::KokkosKernel
 
 using KokkosTeamMemberType           = Kokkos::TeamPolicy<DefaultExecutionSpace>::member_type;
 
+using PetscCountKokkosView           = Kokkos::View<PetscCount*,DefaultMemorySpace>;
+using PetscCountKokkosViewHost       = Kokkos::View<PetscCount*,Kokkos::HostSpace>;
+
 /* For mat->spptr of a factorized matrix */
 struct Mat_SeqAIJKokkosTriFactors {
   MatRowMapKokkosView       iL_d,iU_d,iLt_d,iUt_d; /* rowmap for L, U, L^t, U^t of A=LU */
@@ -86,15 +90,14 @@ struct Mat_SeqAIJKokkos {
   KokkosCsrMatrix            csrmatT,csrmatH; /* Transpose and Hermitian of the matrix (built on demand) */
   PetscBool                  transpose_updated,hermitian_updated; /* Are At, Ah updated wrt the matrix? */
 
-  PetscInt                   coo_n; /* Number of entries in MatSetPreallocationCOO() */
-  PetscBool                  coo_has_repeats; /* Are there replicated (i,j) pairs? (excluding those ignored) */
-  MatRowMapKokkosView        jmap_d; /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
-  MatRowMapKokkosView        perm_d; /* The permutation array in sorting (i,j) by row and then by col */
+  /* COO stuff */
+  PetscCountKokkosView       jmap_d; /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
+  PetscCountKokkosView       perm_d; /* The permutation array in sorting (i,j) by row and then by col */
 
-  Kokkos::View<PetscInt*>         *i_uncompressed_d;
-  Kokkos::View<PetscInt*>         *colmap_d; // ugh, this is a parallel construct
+  Kokkos::View<PetscInt*>         i_uncompressed_d;
+  Kokkos::View<PetscInt*>         colmap_d; // ugh, this is a parallel construct
   Kokkos::View<SplitCSRMat,DefaultMemorySpace> device_mat_d;
-  Kokkos::View<PetscInt*>         *diag_d; // factorizations
+  Kokkos::View<PetscInt*>         diag_d; // factorizations
 
   /* Construct a nrows by ncols matrix with nnz nonzeros from the given (i,j,a) on host. Caller also specifies a nonzero state */
   Mat_SeqAIJKokkos(PetscInt nrows,PetscInt ncols,PetscInt nnz,const MatRowMapType *i,MatColIdxType *j,MatScalarType *a,PetscObjectState nzstate,PetscBool copyValues=PETSC_TRUE)
@@ -117,11 +120,10 @@ struct Mat_SeqAIJKokkos {
     csrmat       = KokkosCsrMatrix("csrmat",ncols,a_d,KokkosCsrGraph(j_d,i_d));
     nonzerostate = nzstate;
     transpose_updated = hermitian_updated = PETSC_FALSE;
-    i_uncompressed_d = colmap_d = diag_d = NULL;
   }
 
   /* Construct with a KokkosCsrMatrix. For performance, only i, j are copied to host, but not the matrix values. */
-  Mat_SeqAIJKokkos(const KokkosCsrMatrix& csr) : csrmat(csr)
+  Mat_SeqAIJKokkos(const KokkosCsrMatrix& csr) : csrmat(csr) /* Shallow-copy csr's views to csrmat */
   {
     auto a_d = csr.values;
     /* Get a non-const version since I don't want to deal with DualView<const T*>, which is not well defined */
@@ -161,22 +163,16 @@ struct Mat_SeqAIJKokkos {
   /* Change the csrmat size to n */
   void SetColSize(MatColIdxType n) {csrmat = KokkosCsrMatrix("csrmat",n,a_dual.view_device(),csrmat.graph);}
 
-  void SetUpCOO(PetscInt n,PetscBool has_repeats,MatRowMapKokkosViewHost& jmap_h,MatRowMapKokkosViewHost& perm_h) {
-    coo_n           = n;
-    coo_has_repeats = has_repeats;
-    if (coo_has_repeats) {jmap_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),jmap_h);}
-    perm_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),perm_h);
+  void SetUpCOO(const Mat_SeqAIJ *aij) {
+    jmap_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(aij->jmap,aij->nz+1));
+    perm_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),PetscCountKokkosViewHost(aij->perm,aij->Atot));
   }
 
   /* Shared init stuff */
   void Init(void)
   {
     transpose_updated = hermitian_updated = PETSC_FALSE;
-    i_uncompressed_d  = colmap_d = diag_d = NULL;
     nonzerostate      = 0;
-
-    coo_n             = 0;
-    coo_has_repeats   = PETSC_FALSE;
   }
 
   PetscErrorCode DestroyMatTranspose(void)
@@ -201,6 +197,9 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat);
 PETSC_INTERN PetscErrorCode PrintCsrMatrix(const KokkosCsrMatrix& csrmat);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat);
-PetscErrorCode MatSeqAIJGetKokkosView(Mat,MatScalarKokkosView*);
-PetscErrorCode MatSeqAIJRestoreKokkosView(Mat,MatScalarKokkosView*);
+
+PETSC_INTERN PetscErrorCode MatSeqAIJGetKokkosView(Mat,MatScalarKokkosView*);
+PETSC_INTERN PetscErrorCode MatSeqAIJRestoreKokkosView(Mat,MatScalarKokkosView*);
+PETSC_INTERN PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat,MatScalarKokkosView*);
+PETSC_INTERN PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat,MatScalarKokkosView*);
 #endif

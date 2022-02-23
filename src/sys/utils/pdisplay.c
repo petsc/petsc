@@ -71,8 +71,8 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
 }
 
 /*
-     PetscSetDisplay - Tries to set the X windows display variable for all processors.
-                       The variable PetscDisplay contains the X windows display variable.
+     PetscSetDisplay - Tries to set the X Windows display variable for all processors.
+                       The variable PetscDisplay contains the X Windows display variable.
 
 */
 static char PetscDisplay[256];

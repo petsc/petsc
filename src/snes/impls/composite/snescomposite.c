@@ -54,7 +54,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
   SNESConvergedReason reason;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
+  PetscCheckFalse(!next,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
   if (snes->normschedule == SNES_NORM_ALWAYS) {
     ierr = SNESSetInitialFunction(next->snes,F);CHKERRQ(ierr);
   }
@@ -125,7 +125,7 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
   if (!jac->Xorig) {ierr = VecDuplicate(X,&jac->Xorig);CHKERRQ(ierr);}
   Xorig = jac->Xorig;
   ierr = VecCopy(X,Xorig);CHKERRQ(ierr);
-  if (!next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
+  PetscCheckFalse(!next,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
   if (snes->normschedule == SNES_NORM_ALWAYS) {
     ierr = SNESSetInitialFunction(next->snes,F);CHKERRQ(ierr);
     while (next->next) {
@@ -199,7 +199,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   SNESConvergedReason reason;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
+  PetscCheckFalse(!next,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
 
   if (snes->normschedule == SNES_NORM_ALWAYS) {
     next = jac->head;
@@ -277,13 +277,13 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&jac->n,&jac->n,&jac->nrhs,jac->h,&jac->lda,jac->beta,&jac->lda,jac->s,&jac->rcond,&jac->rank,jac->work,&jac->lwork,&jac->info));
 #endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  if (jac->info < 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
-  if (jac->info > 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
+  PetscCheckFalse(jac->info < 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
+  PetscCheckFalse(jac->info > 0,PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
   tot = 0.;
   total = 0.;
   for (i=0; i<jac->n; i++) {
-    if (snes->errorifnotconverged && PetscIsInfOrNanScalar(jac->beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
-    ierr = PetscInfo2(snes,"%D: %g\n",i,(double)PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
+    PetscCheckFalse(snes->errorifnotconverged && PetscIsInfOrNanScalar(jac->beta[i]),PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
+    ierr = PetscInfo(snes,"%D: %g\n",i,(double)PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
     tot += jac->beta[i];
     total += PetscAbsScalar(jac->beta[i]);
   }
@@ -562,7 +562,7 @@ static PetscErrorCode  SNESCompositeGetSNES_Composite(SNES snes,PetscInt n,SNES 
   jac  = (SNES_Composite*)snes->data;
   next = jac->head;
   for (i=0; i<n; i++) {
-    if (!next->next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"Not enough SNESes in composite preconditioner");
+    PetscCheckFalse(!next->next,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"Not enough SNESes in composite preconditioner");
     next = next->next;
   }
   *subsnes = next->snes;
@@ -686,7 +686,7 @@ static PetscErrorCode  SNESCompositeSetDamping_Composite(SNES snes,PetscInt n,Pe
   jac  = (SNES_Composite*)snes->data;
   next = jac->head;
   for (i=0; i<n; i++) {
-    if (!next->next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"Not enough SNESes in composite preconditioner");
+    PetscCheckFalse(!next->next,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"Not enough SNESes in composite preconditioner");
     next = next->next;
   }
   next->dmp = dmp;
@@ -828,7 +828,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
   }
   if (normtype == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {
-      ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
+      ierr = PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS;

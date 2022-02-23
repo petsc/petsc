@@ -21,7 +21,6 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
   ierr = LandauCreateVelocitySpace(PETSC_COMM_SELF, dim, "", &X, &J, &dm);CHKERRQ(ierr);
-  ierr = LandauCreateMassMatrix(dm, NULL);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&X_0);CHKERRQ(ierr);
   ierr = VecCopy(X,X_0);CHKERRQ(ierr);

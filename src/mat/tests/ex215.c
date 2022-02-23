@@ -18,7 +18,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
+  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
   /* Determine which type of solver we want to test for */
   herm = PETSC_FALSE;
   symm = PETSC_FALSE;
@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatConvert(A,MATSEQDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
+  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
@@ -129,7 +129,7 @@ int main(int argc,char **args)
     ierr = MatCholeskyFactor(F,NULL,NULL);CHKERRQ(ierr);
   } else if (ftyp == MAT_FACTOR_QR) {
     ierr = MatQRFactor(F,NULL,NULL);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example", MatFactorTypes[ftyp]);
+  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example", MatFactorTypes[ftyp]);
 
   for (nsolve = 0; nsolve < 2; nsolve++) {
     ierr = VecSetRandom(x,rand);CHKERRQ(ierr);

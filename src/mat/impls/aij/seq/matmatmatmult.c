@@ -24,7 +24,7 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
 
   PetscFunctionBegin;
   MatCheckProduct(D,5);
-  if (D->product->data) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheckFalse(D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
   ierr = MatCreate(PETSC_COMM_SELF,&BC);CHKERRQ(ierr);
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(B,C,fill,BC);CHKERRQ(ierr);
 
@@ -35,7 +35,7 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
   ierr = PetscFree(alg);CHKERRQ(ierr);
 
   /* create struct Mat_MatMatMatMult and attached it to D */
-  if (D->product->data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not yet coded");
+  PetscCheckFalse(D->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not yet coded");
   ierr = PetscNew(&matmatmatmult);CHKERRQ(ierr);
   matmatmatmult->BC   = BC;
   D->product->data    = matmatmatmult;
@@ -53,13 +53,13 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D
 
   PetscFunctionBegin;
   MatCheckProduct(D,4);
-  if (!D->product->data) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheckFalse(!D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
   matmatmatmult = (Mat_MatMatMatMult*)D->product->data;
   BC = matmatmatmult->BC;
-  if (!BC) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing BC mat");
-  if (!BC->ops->matmultnumeric) SETERRQ(PetscObjectComm((PetscObject)BC),PETSC_ERR_PLIB,"Missing numeric operation");
+  PetscCheckFalse(!BC,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing BC mat");
+  PetscCheckFalse(!BC->ops->matmultnumeric,PetscObjectComm((PetscObject)BC),PETSC_ERR_PLIB,"Missing numeric operation");
   ierr = (*BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);
-  if (!D->ops->matmultnumeric) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
+  PetscCheckFalse(!D->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
   ierr = (*D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

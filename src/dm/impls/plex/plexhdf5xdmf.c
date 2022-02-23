@@ -79,8 +79,8 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
 
   ierr = SplitPath_Private(topo_path, topo_name);CHKERRQ(ierr);
   ierr = SplitPath_Private(geom_path, geom_name);CHKERRQ(ierr);
-  ierr = PetscInfo2(dm, "Topology group %s, name %s\n", topo_path, topo_name);CHKERRQ(ierr);
-  ierr = PetscInfo2(dm, "Geometry group %s, name %s\n", geom_path, geom_name);CHKERRQ(ierr);
+  ierr = PetscInfo(dm, "Topology group %s, name %s\n", topo_path, topo_name);CHKERRQ(ierr);
+  ierr = PetscInfo(dm, "Geometry group %s, name %s\n", geom_path, geom_name);CHKERRQ(ierr);
 
   /* Read topology */
   ierr = PetscViewerHDF5PushGroup(viewer, topo_path);CHKERRQ(ierr);
@@ -117,7 +117,7 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   numVertices /= spatialDim;
   NVertices /= spatialDim;
 
-  ierr = PetscInfo4(NULL, "Loaded mesh dimensions: numCells %D numCorners %D numVertices %D spatialDim %D\n", numCells, numCorners, numVertices, spatialDim);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL, "Loaded mesh dimensions: numCells %D numCorners %D numVertices %D spatialDim %D\n", numCells, numCorners, numVertices, spatialDim);CHKERRQ(ierr);
   {
     const PetscScalar *coordinates_arr;
     PetscReal         *coordinates_arr_real;

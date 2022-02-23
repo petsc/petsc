@@ -48,7 +48,7 @@ static PetscErrorCode MatCopy_User(Mat A,Mat X,MatStructure str)
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
   ierr = MatShellGetContext(X,&userX);CHKERRQ(ierr);
-  if (user != userX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+  PetscCheckFalse(user != userX,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
   ierr = PetscObjectReference((PetscObject)user->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

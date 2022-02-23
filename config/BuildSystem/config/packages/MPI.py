@@ -440,7 +440,10 @@ Unable to run hostname to check the network')
                        if (MPI_Win_shared_query(win,0,&size,&disp_unit,&baseptr));\n'):
         self.addDefine('HAVE_MPI_PROCESS_SHARED_MEMORY', 1)
         self.support_mpi3_shm = 1
-    if not hasattr(self, 'isIntelMPI') and self.checkLink('#include <mpi.h>\n',
+    if not any([
+        hasattr(self, 'isIntelMPI'),
+        hasattr(self, 'ompi_version') and (4,1,0) <= self.ompi_version < (4,2,0), # dynamic window tests fail unless using --mca btl vader
+        ]) and self.checkLink('#include <mpi.h>\n',
                       'MPI_Aint size=128; int disp_unit=8,*baseptr; MPI_Win win;\n\
                        if (MPI_Win_allocate(size,disp_unit,MPI_INFO_NULL,MPI_COMM_WORLD,&baseptr,&win));\n\
                        if (MPI_Win_attach(win,baseptr,size));\n\

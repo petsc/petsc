@@ -40,7 +40,7 @@ PetscErrorCode  PetscGetWorkingDirectory(char path[],size_t len)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCWD)
-  if (!getcwd(path,len)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"getcwd()");
+  PetscCheckFalse(!getcwd(path,len),PETSC_COMM_SELF,PETSC_ERR_LIB,"getcwd()");
 #elif defined(PETSC_HAVE__GETCWD)
   _getcwd(path,len);
 #elif defined(PETSC_HAVE_GETWD)

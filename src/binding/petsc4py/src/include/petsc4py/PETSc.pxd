@@ -77,6 +77,9 @@ cdef extern from "petsc.h":
     struct _p_TAO "_p_Tao"
     ctypedef _p_TAO* PetscTAO "Tao"
 
+    struct _p_TAOLineSearch "_p_TaoLineSearch"
+    ctypedef _p_TAOLineSearch* PetscTAOLineSearch "TaoLineSearch"
+
     struct _p_AO
     ctypedef _p_AO* PetscAO "AO"
 

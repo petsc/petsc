@@ -12,7 +12,7 @@
 
   Level: beginner
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine(), TaoSetObjectiveAndGradientRoutine(), TaoGetVariableBounds()
+.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoGetVariableBounds()
 @*/
 PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
 {
@@ -52,7 +52,7 @@ $      func (Tao tao, Vec xl, Vec xu);
 
   Level: beginner
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine(), TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
+.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariableBounds()
 
 Note: The func passed in to TaoSetVariableBoundsRoutine() takes
 precedence over any values set in TaoSetVariableBounds().
@@ -82,7 +82,7 @@ PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, 
 
   Level: beginner
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine(), TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
+.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariableBounds()
 @*/
 PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
 {
@@ -114,7 +114,7 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (!tao->XL || !tao->XU) {
-    if (!tao->solution) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetInitialVector must be called before TaoComputeVariableBounds");
+    PetscCheckFalse(!tao->solution,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetSolution must be called before TaoComputeVariableBounds");
     ierr = VecDuplicate(tao->solution, &tao->XL);CHKERRQ(ierr);
     ierr = VecSet(tao->XL, PETSC_NINFINITY);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
@@ -140,7 +140,7 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
 
   Level: beginner
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine(), TaoSetObjectiveAndGradientRoutine(), TaoGetInequalityBounds()
+.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoGetInequalityBounds()
 @*/
 PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
 {
@@ -174,7 +174,7 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
 
   Level: beginner
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine(), TaoSetObjectiveAndGradientRoutine(), TaoSetInequalityBounds()
+.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetInequalityBounds()
 @*/
 PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
 {
@@ -209,7 +209,7 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
   PetscValidHeaderSpecific(C,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,C,3);
-  if (!tao->ops->computeconstraints) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetConstraintsRoutine() has not been called");
+  PetscCheckFalse(!tao->ops->computeconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetConstraintsRoutine() has not been called");
   ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,C,NULL);CHKERRQ(ierr);
   PetscStackPush("Tao constraints evaluation routine");
   ierr = (*tao->ops->computeconstraints)(tao,X,C,tao->user_conP);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ $      func (Tao tao, Vec x, Vec c, void *ctx);
 
   Level: intermediate
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine(), TaoSetObjectiveAndGradientRoutine(), TaoSetVariablevBounds()
+.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariablevBounds()
 
 @*/
 PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
@@ -348,7 +348,7 @@ $      func (Tao tao, Vec x, Vec ce, void *ctx);
 
   Level: intermediate
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine(), TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
+.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariableBounds()
 
 @*/
 PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
@@ -388,7 +388,7 @@ $      func (Tao tao, Vec x, Vec ci, void *ctx);
 
   Level: intermediate
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine(), TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
+.seealso: TaoSetObjective(), TaoSetHessian(), TaoSetObjectiveAndGradient(), TaoSetVariableBounds()
 
 @*/
 PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCode (*func)(Tao, Vec, Vec, void*), void *ctx)
@@ -431,7 +431,7 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
   PetscValidHeaderSpecific(CE,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,CE,3);
-  if (!tao->ops->computeequalityconstraints) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetEqualityConstraintsRoutine() has not been called");
+  PetscCheckFalse(!tao->ops->computeequalityconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetEqualityConstraintsRoutine() has not been called");
   ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CE,NULL);CHKERRQ(ierr);
   PetscStackPush("Tao equality constraints evaluation routine");
   ierr = (*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_con_equalityP);CHKERRQ(ierr);
@@ -465,7 +465,7 @@ PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)
   PetscValidHeaderSpecific(CI,VEC_CLASSID,3);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,CI,3);
-  if (!tao->ops->computeinequalityconstraints) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetInequalityConstraintsRoutine() has not been called");
+  PetscCheckFalse(!tao->ops->computeinequalityconstraints,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"TaoSetInequalityConstraintsRoutine() has not been called");
   ierr = PetscLogEventBegin(TAO_ConstraintsEval,tao,X,CI,NULL);CHKERRQ(ierr);
   PetscStackPush("Tao inequality constraints evaluation routine");
   ierr = (*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_con_inequalityP);CHKERRQ(ierr);

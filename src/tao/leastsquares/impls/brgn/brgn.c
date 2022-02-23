@@ -77,7 +77,7 @@ PetscErrorCode TaoBRGNGetDampingVector(Tao tao,Vec *d)
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;
-  if (gn->reg_type != BRGN_REGULARIZATION_LM) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Damping vector is only available if regularization type is lm.");
+  PetscCheckFalse(gn->reg_type != BRGN_REGULARIZATION_LM,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Damping vector is only available if regularization type is lm.");
   *d = gn->damping;
   PetscFunctionReturn(0);
 }
@@ -328,11 +328,11 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   PetscInt              i,n,N,K; /* dict has size K*N*/
 
   PetscFunctionBegin;
-  if (!tao->ls_res) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualRoutine() must be called before setup!");
+  PetscCheckFalse(!tao->ls_res,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualRoutine() must be called before setup!");
   ierr = PetscObjectTypeCompare((PetscObject)gn->subsolver,TAOBNLS,&is_bnls);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)gn->subsolver,TAOBNTR,&is_bntr);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)gn->subsolver,TAOBNTL,&is_bntl);CHKERRQ(ierr);
-  if ((is_bnls || is_bntr || is_bntl) && !tao->ls_jac) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualJacobianRoutine() must be called before setup!");
+  PetscCheckFalse((is_bnls || is_bntr || is_bntl) && !tao->ls_jac,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualJacobianRoutine() must be called before setup!");
   if (!tao->gradient) {
     ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);
   }
@@ -392,14 +392,14 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     ierr = MatSetUp(gn->H);CHKERRQ(ierr);
     /* Subsolver setup,include initial vector and dictionary D */
     ierr = TaoSetUpdate(gn->subsolver,GNHookFunction,gn);CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(gn->subsolver,tao->solution);CHKERRQ(ierr);
+    ierr = TaoSetSolution(gn->subsolver,tao->solution);CHKERRQ(ierr);
     if (tao->bounded) {
       ierr = TaoSetVariableBounds(gn->subsolver,tao->XL,tao->XU);CHKERRQ(ierr);
     }
     ierr = TaoSetResidualRoutine(gn->subsolver,tao->ls_res,tao->ops->computeresidual,tao->user_lsresP);CHKERRQ(ierr);
     ierr = TaoSetJacobianResidualRoutine(gn->subsolver,tao->ls_jac,tao->ls_jac,tao->ops->computeresidualjacobian,tao->user_lsjacP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(gn->subsolver,GNObjectiveGradientEval,gn);CHKERRQ(ierr);
-    ierr = TaoSetHessianRoutine(gn->subsolver,gn->H,gn->H,GNComputeHessian,gn);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(gn->subsolver,NULL,GNObjectiveGradientEval,gn);CHKERRQ(ierr);
+    ierr = TaoSetHessian(gn->subsolver,gn->H,gn->H,GNComputeHessian,gn);CHKERRQ(ierr);
     /* Propagate some options down */
     ierr = TaoSetTolerances(gn->subsolver,tao->gatol,tao->grtol,tao->gttol);CHKERRQ(ierr);
     ierr = TaoSetMaximumIterations(gn->subsolver,tao->max_it);CHKERRQ(ierr);

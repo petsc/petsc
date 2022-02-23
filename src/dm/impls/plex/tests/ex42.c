@@ -289,7 +289,7 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
   ierr = DMPlexGetCeedRestriction(dm,  NULL, 0, 0, 0, &Erestrictu);CHKERRQ(ierr);
   ierr = CeedBasisGetNumQuadraturePoints(basisu, &nqpts);CHKERRQ(ierr);
   ierr = CeedBasisGetNumQuadraturePoints(basisx, &nqptsx);CHKERRQ(ierr);
-  if (nqptsx != nqpts) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of qpoints for u %D != %D Number of qpoints for x", nqpts, nqptsx);
+  PetscCheckFalse(nqptsx != nqpts,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of qpoints for u %D != %D Number of qpoints for x", nqpts, nqptsx);
   ierr = CeedElemRestrictionCreateStrided(ceed, Ncell, nqpts, Nqdata, Nqdata*Ncell*nqpts, CEED_STRIDES_BACKEND, &Erestrictq);CHKERRQ(ierr);
 
   ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ int main(int argc, char **argv)
     requires: libceed
 
   testset:
-    args: -dm_plex_simplex 0 -dm_distribute -petscspace_degree 3 -dm_view -dm_petscds_view \
+    args: -dm_plex_simplex 0 -petscspace_degree 3 -dm_view -dm_petscds_view \
           -petscfe_default_quadrature_order 4 -coord_dm_default_quadrature_order 4
 
     test:

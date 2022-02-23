@@ -9,7 +9,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg
   PetscReal      r1,r2,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       am,an,bm,bn,k;
   PetscScalar    none = -1.0;
-  const char*    sops[] = {"MatMult","MatMultAdd","MatMultTranspose","MatMultTransposeAdd","MatMultHermitianTranspose","MatMultHermitianTranposeAdd"};
+  const char*    sops[] = {"MatMult","MatMultAdd","MatMultTranspose","MatMultTransposeAdd","MatMultHermitianTranspose","MatMultHermitianTransposeAdd"};
   const char*    sop;
 
   PetscFunctionBegin;
@@ -22,7 +22,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg
   PetscValidLogicalCollectiveBool(A,add,6);
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
-  if (PetscUnlikely(am != bm || an != bn)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,bm,an,bn);
+  PetscCheckFalse(am != bm || an != bn,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,bm,an,bn);
   sop  = sops[(add ? 1 : 0) + 2 * t]; /* t = 0 => no transpose, t = 1 => transpose, t = 2 => Hermitian transpose */
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)A),&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A,Mat B,PetscInt n,PetscBool *flg
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo3(A,"Error: %" PetscInt_FMT "-th %s() %g\n",k,sop,(double)r1);CHKERRQ(ierr);
+      ierr = PetscInfo(A,"Error: %" PetscInt_FMT "-th %s() %g\n",k,sop,(double)r1);CHKERRQ(ierr);
       break;
     }
   }
@@ -103,7 +103,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A,Mat B,Mat C,PetscInt n,Petsc
   PetscReal      r1,r2,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscInt       am,an,bm,bn,cm,cn,k;
   PetscScalar    none = -1.0;
-  const char*    sops[] = {"MatMatMult","MatTransposeMatMult","MatMatTransposeMult","MatTransposeMatTranposeMult"};
+  const char*    sops[] = {"MatMatMult","MatTransposeMatMult","MatMatTransposeMult","MatTransposeMatTransposeMult"};
   const char*    sop;
 
   PetscFunctionBegin;
@@ -121,7 +121,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A,Mat B,Mat C,PetscInt n,Petsc
   ierr = MatGetLocalSize(C,&cm,&cn);CHKERRQ(ierr);
   if (At) { PetscInt tt = an; an = am; am = tt; };
   if (Bt) { PetscInt tt = bn; bn = bm; bm = tt; };
-  if (PetscUnlikely(an != bm || am != cm || bn != cn)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,an,bm,bn,cm,cn);
+  PetscCheckFalse(an != bm || am != cm || bn != cn,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,an,bm,bn,cm,cn);
 
   sop  = sops[(At ? 1 : 0) + 2 * (Bt ? 1 : 0)];
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)C),&rctx);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A,Mat B,Mat C,PetscInt n,Petsc
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo3(A,"Error: %" PetscInt_FMT "-th %s %g\n",k,sop,(double)r1);CHKERRQ(ierr);
+      ierr = PetscInfo(A,"Error: %" PetscInt_FMT "-th %s %g\n",k,sop,(double)r1);CHKERRQ(ierr);
       break;
     }
   }
@@ -421,7 +421,7 @@ static PetscErrorCode MatProjMultEqual_Private(Mat A,Mat B,Mat C,PetscInt n,Pets
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (rart) { PetscInt t = bm; bm = bn; bn = t; }
   ierr = MatGetLocalSize(C,&cm,&cn);CHKERRQ(ierr);
-  if (PetscUnlikely(an != bm || bn != cm || bn != cn)) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,an,bm,bn,cm,cn);
+  PetscCheckFalse(an != bm || bn != cm || bn != cn,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A, B, C local dim %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT,am,an,bm,bn,cm,cn);
 
   /* Create left vector of A: v2 */
   ierr = MatCreateVecs(A,&Bx,&v2);CHKERRQ(ierr);
@@ -463,7 +463,7 @@ static PetscErrorCode MatProjMultEqual_Private(Mat A,Mat B,Mat C,PetscInt n,Pets
     if (norm_abs > tol) norm_rel /= norm_abs;
     if (norm_rel > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo3(A,"Error: %" PetscInt_FMT "-th Mat%sMult() %g\n",i,rart ? "RARt" : "PtAP",(double)norm_rel);CHKERRQ(ierr);
+      ierr = PetscInfo(A,"Error: %" PetscInt_FMT "-th Mat%sMult() %g\n",i,rart ? "RARt" : "PtAP",(double)norm_rel);CHKERRQ(ierr);
       break;
     }
   }
@@ -590,7 +590,7 @@ PetscErrorCode MatIsLinear(Mat A,PetscInt n,PetscBool *flg)
     ierr = VecNorm(s2,NORM_INFINITY,&norm);CHKERRQ(ierr);
     if (norm/normA > 100.*PETSC_MACHINE_EPSILON) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo3(A,"Error: %" PetscInt_FMT "-th |A*(ax+y) - (a*A*x+A*y)|/|A(ax+y)| %g > tol %g\n",k,(double)(norm/normA),(double)(100.*PETSC_MACHINE_EPSILON));CHKERRQ(ierr);
+      ierr = PetscInfo(A,"Error: %" PetscInt_FMT "-th |A*(ax+y) - (a*A*x+A*y)|/|A(ax+y)| %g > tol %g\n",k,(double)(norm/normA),(double)(100.*PETSC_MACHINE_EPSILON));CHKERRQ(ierr);
       break;
     }
   }

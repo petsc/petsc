@@ -480,7 +480,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
   {                             /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
     ierr = MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
-    if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
+    PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
     mat->insertmode = addv; /* in case this processor had no cache */
   }
 
@@ -581,10 +581,10 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
     }
   }
 #if defined(PETSC_USE_INFO)
-  ierr = PetscInfo1(NULL,"No of messages: %" PetscInt_FMT " \n",nsends);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"No of messages: %" PetscInt_FMT " \n",nsends);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (sizes[i]) {
-      ierr = PetscInfo2(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt))));CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"Mesg_to: %" PetscInt_FMT ": size: %zu bytes\n",i,(size_t)(nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt))));CHKERRQ(ierr);
     }
   }
 #endif
@@ -666,7 +666,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPII
     } else {
       ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRMPI(ierr);
     }
-    if (recv_status.MPI_SOURCE < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Negative MPI source!");
+    PetscCheckFalse(recv_status.MPI_SOURCE < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Negative MPI source!");
 
     /* Now pack the received message into a structure which is usable by others */
     if (i % 2) {
@@ -723,7 +723,7 @@ static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode in
       cnt++;
     }
   }
-  if (cnt != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatStash n %" PetscInt_FMT ", but counted %" PetscInt_FMT " entries",n,cnt);
+  PetscCheckFalse(cnt != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatStash n %" PetscInt_FMT ", but counted %" PetscInt_FMT " entries",n,cnt);
   ierr = PetscSortIntWithArrayPair(n,row,col,perm);CHKERRQ(ierr);
   /* Scan through the rows, sorting each one, combining duplicates, and packing send buffers */
   for (rowstart=0,cnt=0,i=1; i<=n; i++) {
@@ -813,7 +813,7 @@ static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm,const PetscMPIInt ta
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (rank != stash->sendranks[rankid]) SETERRQ3(comm,PETSC_ERR_PLIB,"BTS Send rank %d does not match sendranks[%d] %d",rank,rankid,stash->sendranks[rankid]);
+  PetscCheckFalse(rank != stash->sendranks[rankid],comm,PETSC_ERR_PLIB,"BTS Send rank %d does not match sendranks[%d] %d",rank,rankid,stash->sendranks[rankid]);
   ierr = MPI_Isend(stash->sendframes[rankid].buffer,hdr->count,stash->blocktype,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
   stash->sendframes[rankid].count = hdr->count;
   stash->sendframes[rankid].pending = 1;
@@ -852,7 +852,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   if (PetscDefined(USE_DEBUG)) { /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
     ierr = MPIU_Allreduce((PetscEnum*)&mat->insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
-    if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
+    PetscCheckFalse(addv == (ADD_VALUES|INSERT_VALUES),PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Some processors inserted others added");
   }
 
   ierr = MatStashBlockTypeSetUp(stash);CHKERRQ(ierr);
@@ -868,7 +868,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       stash->sendhdr[i].count = 0; /* Might remain empty (in which case we send a zero-sized message) if no values are communicated to that process */
       for (; b<nblocks; b++) {
         MatStashBlock *sendblock_b = (MatStashBlock*)&sendblocks[b*stash->blocktype_size];
-        if (PetscUnlikely(sendblock_b->row < owners[stash->sendranks[i]])) SETERRQ2(stash->comm,PETSC_ERR_ARG_WRONG,"MAT_SUBSET_OFF_PROC_ENTRIES set, but row %" PetscInt_FMT " owned by %d not communicated in initial assembly",sendblock_b->row,stash->sendranks[i]);
+        PetscCheckFalse(sendblock_b->row < owners[stash->sendranks[i]],stash->comm,PETSC_ERR_ARG_WRONG,"MAT_SUBSET_OFF_PROC_ENTRIES set, but row %" PetscInt_FMT " owned by %d not communicated in initial assembly",sendblock_b->row,stash->sendranks[i]);
         if (sendblock_b->row >= owners[stash->sendranks[i]+1]) break;
         stash->sendhdr[i].count++;
       }
@@ -911,7 +911,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       sendno++;
       rowstart = i;
     }
-    if (PetscUnlikely(sendno != stash->nsendranks)) SETERRQ2(stash->comm,PETSC_ERR_PLIB,"BTS counted %d sendranks, but %" PetscInt_FMT " sends",stash->nsendranks,sendno);
+    PetscCheckFalse(sendno != stash->nsendranks,stash->comm,PETSC_ERR_PLIB,"BTS counted %d sendranks, but %" PetscInt_FMT " sends",stash->nsendranks,sendno);
   }
 
   /* Encode insertmode on the outgoing messages. If we want to support more than two options, we would need a new
@@ -974,8 +974,8 @@ static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash *stash,PetscMPIInt *n,
     if (stash->recvframe_count > 0) { /* Check for InsertMode consistency */
       block = (MatStashBlock*)&((char*)stash->recvframe_active->buffer)[0];
       if (PetscUnlikely(*stash->insertmode == NOT_SET_VALUES)) *stash->insertmode = block->row < 0 ? INSERT_VALUES : ADD_VALUES;
-      if (PetscUnlikely(*stash->insertmode == INSERT_VALUES && block->row >= 0)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Assembling INSERT_VALUES, but rank %d requested ADD_VALUES",stash->recvranks[stash->some_indices[stash->some_i]]);
-      if (PetscUnlikely(*stash->insertmode == ADD_VALUES && block->row < 0)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Assembling ADD_VALUES, but rank %d requested INSERT_VALUES",stash->recvranks[stash->some_indices[stash->some_i]]);
+      PetscCheckFalse(*stash->insertmode == INSERT_VALUES && block->row >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Assembling INSERT_VALUES, but rank %d requested ADD_VALUES",stash->recvranks[stash->some_indices[stash->some_i]]);
+      PetscCheckFalse(*stash->insertmode == ADD_VALUES && block->row < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Assembling ADD_VALUES, but rank %d requested INSERT_VALUES",stash->recvranks[stash->some_indices[stash->some_i]]);
     }
     stash->some_i++;
     stash->recvcount++;

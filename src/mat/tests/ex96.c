@@ -93,7 +93,7 @@ int main(int argc,char **argv)
 
   ierr = MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
   ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C");
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A_tmp);CHKERRQ(ierr);
 
@@ -289,43 +289,43 @@ int main(int argc,char **argv)
    test:
      suffix: seq_scalable
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via scalable -inner_offdiag_matproduct_ab_via scalable
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm scalable -inner_offdiag_mat_product_algorithm scalable
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_sorted
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via sorted -inner_offdiag_matproduct_ab_via sorted
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm sorted -inner_offdiag_mat_product_algorithm sorted
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_scalable_fast
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via scalable_fast -inner_offdiag_matproduct_ab_via scalable_fast
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm scalable_fast -inner_offdiag_mat_product_algorithm scalable_fast
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_heap
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via heap -inner_offdiag_matproduct_ab_via heap
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm heap -inner_offdiag_mat_product_algorithm heap
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_btheap
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via btheap -inner_offdiag_matproduct_ab_via btheap
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm btheap -inner_offdiag_mat_product_algorithm btheap
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_llcondensed
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via llcondensed -inner_offdiag_matproduct_ab_via llcondensed
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm llcondensed -inner_offdiag_mat_product_algorithm llcondensed
      output_file: output/ex96_1.out
 
    test:
      suffix: seq_rowmerge
      nsize: 3
-     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_matproduct_ab_via rowmerge -inner_offdiag_matproduct_ab_via rowmerge
+     args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm rowmerge -inner_offdiag_mat_product_algorithm rowmerge
      output_file: output/ex96_1.out
 
    test:

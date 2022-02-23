@@ -3,7 +3,7 @@
 
 PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
 {
-  MPI_Comm           comm, tmpComm;
+  MPI_Comm           comm;
   const char        *bdName = "_boundary_";
   const char        *rgName = "_regions_";
   DM                 udm, cdm;
@@ -35,21 +35,20 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_dup(comm, &tmpComm);CHKERRMPI(ierr);
   if (bdLabel) {
     ierr = PetscObjectGetName((PetscObject) bdLabel, &bdLabelName);CHKERRQ(ierr);
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
-    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+    PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
   }
   if (rgLabel) {
     ierr = PetscObjectGetName((PetscObject) rgLabel, &rgLabelName);CHKERRQ(ierr);
     ierr = PetscStrcmp(rgLabelName, rgName, &flg);CHKERRQ(ierr);
-    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
+    PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
   }
 
   /* Get mesh information */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim != 3) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "ParMmg only works in 3D.");
+  PetscCheckFalse(dim != 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "ParMmg only works in 3D.");
   Neq  = (dim*(dim+1))/2;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
@@ -132,16 +131,13 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
   for (v = 0; v < (vEnd-vStart); ++v) {
     for (i = 0, k = 0; i < dim; ++i) {
-      for (j = i; j < dim; ++j) {
+      for (j = i; j < dim; ++j, ++k) {
         if (isotropic) {
           if (i == j) {
             if (uniform) metric[Neq*v+k] = PetscRealPart(met[0]);
             else metric[Neq*v+k] = PetscRealPart(met[v]);
           } else metric[Neq*v+k] = 0.0;
-        } else {
-          metric[Neq*v+k] = PetscRealPart(met[dim*dim*v+dim*i+j]);
-        }
-        k++;
+        } else metric[Neq*v+k] = PetscRealPart(met[dim*dim*v+dim*i+j]);
       }
     }
   }
@@ -202,10 +198,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
         /* Add the right slice of irootloc at the right place */
         sliceSize = ioffset[i+1]-ioffset[i];
         for (j = 0, count = 0; j < sliceSize; ++j) {
-          if (ioffset[i]+j >= ioffset[niranks]) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Leaf index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", ioffset[i]+j, ioffset[niranks]);
+          PetscCheckFalse(ioffset[i]+j >= ioffset[niranks],comm, PETSC_ERR_ARG_OUTOFRANGE, "Leaf index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", ioffset[i]+j, ioffset[niranks]);
           v = irootloc[ioffset[i]+j];
           if (v >= vStart && v < vEnd) {
-            if (intOffset[p+1]+count >= numVerNgbRanksTotal) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Leaf interface index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", intOffset[p+1]+count, numVerNgbRanksTotal);
+            PetscCheckFalse(intOffset[p+1]+count >= numVerNgbRanksTotal,comm, PETSC_ERR_ARG_OUTOFRANGE, "Leaf interface index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", intOffset[p+1]+count, numVerNgbRanksTotal);
             interfaces_lv[intOffset[p+1]+count] = v-vStart;
             count++;
           }
@@ -220,10 +216,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
         /* Add the right slice of rmine at the right place */
         sliceSize = roffset[r+1]-roffset[r];
         for (j = 0, count = 0; j < sliceSize; ++j) {
-          if (roffset[r]+j >= roffset[nrranks]) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Root index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", roffset[r]+j, roffset[nrranks]);
+          PetscCheckFalse(roffset[r]+j >= roffset[nrranks],comm, PETSC_ERR_ARG_OUTOFRANGE, "Root index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", roffset[r]+j, roffset[nrranks]);
           v = rmine[roffset[r]+j];
           if (v >= vStart && v < vEnd) {
-            if (intOffset[p+1]+count >= numVerNgbRanksTotal) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Root interface index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", intOffset[p+1]+count, numVerNgbRanksTotal);
+            PetscCheckFalse(intOffset[p+1]+count >= numVerNgbRanksTotal,comm, PETSC_ERR_ARG_OUTOFRANGE, "Root interface index %" PetscInt_FMT " out of range (expected < %" PetscInt_FMT ")", intOffset[p+1]+count, numVerNgbRanksTotal);
             interfaces_lv[intOffset[p+1]+count] = v-vStart;
             count++;
           }
@@ -233,7 +229,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
       }
 
       /* Check validity of offsets */
-      if (intOffset[p+1] != intOffset[p]+verNgbRank[p]) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Missing offsets (expected %" PetscInt_FMT ", got %" PetscInt_FMT ")", intOffset[p]+verNgbRank[p], intOffset[p+1]);
+      PetscCheckFalse(intOffset[p+1] != intOffset[p]+verNgbRank[p],comm, PETSC_ERR_ARG_OUTOFRANGE, "Missing offsets (expected %" PetscInt_FMT ", got %" PetscInt_FMT ")", intOffset[p]+verNgbRank[p], intOffset[p+1]);
     }
     ierr = DMPlexGetVertexNumbering(udm, &globalVertexNum);CHKERRQ(ierr);
     ierr = ISGetIndices(globalVertexNum, &gV);CHKERRQ(ierr);
@@ -255,7 +251,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexMetricGetVerbosity(dm, &verbosity);CHKERRQ(ierr);
   ierr = DMPlexMetricGetNumIterations(dm, &numIter);CHKERRQ(ierr);
   ierr = DMPlexMetricGetGradationFactor(dm, &gradationFactor);CHKERRQ(ierr);
-  ierr = PMMG_Init_parMesh(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, tmpComm, PMMG_ARG_end);
+  ierr = PMMG_Init_parMesh(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, comm, PMMG_ARG_end);
   ierr = PMMG_Set_meshSize(parmesh, numVertices, numCells, 0, numFaceTags, 0, 0);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_APImode, PMMG_APIDISTRIB_nodes);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_noinsert, noInsert);
@@ -298,18 +294,15 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_globalNum, 1);
   ierr = PMMG_Get_verticesGloNum(parmesh, gv_new, owners);
   for (i = 0; i < dim*numFacesNew; ++i) facesNew[i] -= 1;
-  for (i = 0; i < (dim+1)*numCellsNew; ++i) {
-    cellsNew[i] = gv_new[cellsNew[i]-1]-1;
-  }
-  numVerticesNewLoc = 0;
-  for (i = 0; i < numVerticesNew; ++i) {
+  for (i = 0; i < (dim+1)*numCellsNew; ++i) cellsNew[i] = gv_new[cellsNew[i]-1]-1;
+  for (i = 0, numVerticesNewLoc = 0; i < numVerticesNew; ++i) {
     if (owners[i] == rank) numVerticesNewLoc++;
   }
   ierr = PetscMalloc2(numVerticesNewLoc*dim, &verticesNewLoc, numVerticesNew, &verticesNewSorted);CHKERRQ(ierr);
   for (i = 0, c = 0; i < numVerticesNew; i++) {
     if (owners[i] == rank) {
       for (j=0; j<dim; ++j) verticesNewLoc[dim*c+j] = verticesNew[dim*i+j];
-        c++;
+      c++;
     }
   }
 
@@ -347,7 +340,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
         f = j;
       }
     }
-    if (numFaces != 1) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "%d vertices cannot define more than 1 facet (%d)", dim, numFaces);
+    PetscCheckFalse(numFaces != 1,comm, PETSC_ERR_ARG_OUTOFRANGE, "%d vertices cannot define more than 1 facet (%d)", dim, numFaces);
     ierr = DMLabelHasStratum(bdLabel, faceTagsNew[i], &hasTag);CHKERRQ(ierr);
     if (hasTag) { ierr = DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]);CHKERRQ(ierr); }
     ierr = DMPlexRestoreJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);

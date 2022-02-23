@@ -32,8 +32,8 @@ PetscErrorCode monitor(Tao tao,AppCtx *ctx)
 
   PetscFunctionBeginUser;
   ierr = TaoGetSolutionStatus(tao,&iterate,&f,&gnorm,&cnorm,&xdiff,&reason);CHKERRQ(ierr);
-  ierr = TaoGetSolutionVector(tao,&X);CHKERRQ(ierr);
-  ierr = TaoGetGradientVector(tao,&G);CHKERRQ(ierr);
+  ierr = TaoGetSolution(tao,&X);CHKERRQ(ierr);
+  ierr = TaoGetGradient(tao,&G,NULL,NULL);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(G,&g);CHKERRQ(ierr);
   fp = fopen("ex3opt_fd_conv.out","a");
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   PetscFunctionBeginUser;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
@@ -111,10 +111,10 @@ int main(int argc,char **argv)
   x_ptr[0]   = ctx.Pm;
   ierr = VecRestoreArray(p,&x_ptr);CHKERRQ(ierr);
 
-  ierr = TaoSetInitialVector(tao,p);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,p);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation */
-  ierr = TaoSetObjectiveRoutine(tao,FormFunction,(void *)&ctx);CHKERRQ(ierr);
-  ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,(void *)&ctx);CHKERRQ(ierr);
+  ierr = TaoSetObjective(tao,FormFunction,(void *)&ctx);CHKERRQ(ierr);
+  ierr = TaoSetGradient(tao,NULL,TaoDefaultComputeGradient,(void *)&ctx);CHKERRQ(ierr);
 
   /* Set bounds for the optimization */
   ierr = VecDuplicate(p,&lowerb);CHKERRQ(ierr);
@@ -156,7 +156,7 @@ int main(int argc,char **argv)
    Input Parameters:
    tao - the Tao context
    X   - the input vector
-   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function

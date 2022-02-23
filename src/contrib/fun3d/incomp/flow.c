@@ -533,7 +533,7 @@ int Update(SNES snes,void *ctx)
 
     ierr       = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
     nfailsCum += nfails; nfails = 0;
-    if (nfailsCum >= 2) SETERRQ(PETSC_COMM_SELF,1,"Unable to find a Newton Step");
+    PetscCheckFalse(nfailsCum >= 2,PETSC_COMM_SELF,1,"Unable to find a Newton Step");
     if (print_flag) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",
                          tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
@@ -746,7 +746,7 @@ int GetLocalOrdering(GRID *grid)
         ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
       }
       fptr = fopen(spart_file,"r");
-      if (!fptr) SETERRQ1(PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
+      PetscCheckFalse(!fptr,PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
       for (inode = 0; inode < nnodes; inode++) {
         fscanf(fptr,"%d\n",&node1);
         v2p[inode] = node1;
@@ -1824,7 +1824,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
+  PetscCheckFalse(n < 0,comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
   if (!n) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   if (rank == 0) {
@@ -1863,7 +1863,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
       count = fwrite(buf,1,ptr-buf,fp);
       if (count < (size_t)(ptr-buf)) {
         perror("");
-        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT " of %" PetscInt_FMT " bytes",(PetscInt)count,(PetscInt)(ptr-buf));
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT " of %" PetscInt_FMT " bytes",(PetscInt)count,(PetscInt)(ptr-buf));
       }
       ierr = PetscFree(buf);CHKERRQ(ierr);
     } else {
@@ -1875,7 +1875,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
       count = fwrite(data,size,(size_t)n,fp);
       if ((int)count != n) {
         perror("");
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT "/%" PetscInt_FMT " array members of size %" PetscInt_FMT,(PetscInt)count,n,(PetscInt)size);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT "/%" PetscInt_FMT " array members of size %" PetscInt_FMT,(PetscInt)count,n,(PetscInt)size);
       }
     }
   }
@@ -1968,23 +1968,23 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
     ierr  = PetscMemcpy(tmp1,&uj[ui[node0]],ntmp1*sizeof(PetscInt));CHKERRQ(ierr);
     for (j=0; j<ntmp1; j++) {
       node1 = tmp1[j];
-      if (node1 < 0 || nnodes <= node1) SETERRQ2(PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node1,nnodes);
-      if (node1 <= node0) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node0,node1);
+      PetscCheckFalse(node1 < 0 || nnodes <= node1,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node1,nnodes);
+      PetscCheckFalse(node1 <= node0,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node0,node1);
       ntmp2 = ui[node1+1] - ui[node1];
       ierr  = PetscMemcpy(tmp2,&uj[ui[node1]],ntmp2*sizeof(PetscInt));CHKERRQ(ierr);
       ierr  = IntersectInt(ntmp1,tmp1,&ntmp2,tmp2);CHKERRQ(ierr);
       for (k=0; k<ntmp2; k++) {
         node2 = tmp2[k];
-        if (node2 < 0 || nnodes <= node2) SETERRQ2(PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node2,nnodes);
-        if (node2 <= node1) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node1,node2);
+        PetscCheckFalse(node2 < 0 || nnodes <= node2,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node2,nnodes);
+        PetscCheckFalse(node2 <= node1,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node1,node2);
         ntmp3 = ui[node2+1] - ui[node2];
         ierr  = PetscMemcpy(tmp3,&uj[ui[node2]],ntmp3*sizeof(PetscInt));CHKERRQ(ierr);
         ierr  = IntersectInt(ntmp2,tmp2,&ntmp3,tmp3);CHKERRQ(ierr);
         for (l=0; l<ntmp3; l++) {
           node3 = tmp3[l];
-          if (node3 < 0 || nnodes <= node3) SETERRQ2(PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node3,nnodes);
-          if (node3 <= node2) SETERRQ2(PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node2,node3);
-          if (ncell > acell) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer exceeded");
+          PetscCheckFalse(node3 < 0 || nnodes <= node3,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node3,nnodes);
+          PetscCheckFalse(node3 <= node2,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node2,node3);
+          PetscCheckFalse(ncell > acell,PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer exceeded");
           if (ntmp3 < 3) continue;
           conn[ncell][0] = node0;
           conn[ncell][1] = node1;
@@ -1998,7 +1998,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
             PetscIntView(ntmp3,tmp3,viewer);
             /* uns3d.msh has a handful of "tetrahedra" that overlap by violating the following condition. As far as I
              * can tell, that means it is an invalid mesh. I don't know what the intent was. */
-            if (ntmp3 > 2) SETERRQ(PETSC_COMM_SELF,1,"More than two ways to complete a tetrahedron using a common triangle");
+            PetscCheckFalse(ntmp3 > 2,PETSC_COMM_SELF,1,"More than two ways to complete a tetrahedron using a common triangle");
           }
           ncell++;
         }
@@ -2236,10 +2236,10 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   ierr = VecScatterBegin(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetBlockSize(Xloc,&bs);CHKERRQ(ierr);
-  if (bs != 4) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected block size 4, got %" PetscInt_FMT,bs);
+  PetscCheckFalse(bs != 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected block size 4, got %" PetscInt_FMT,bs);
   ierr = VecGetSize(Xloc,&nloc);CHKERRQ(ierr);
-  if (nloc/bs != nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%" PetscInt_FMT " to match nvertices=%" PetscInt_FMT,nloc/bs,nvertices);
-  if (nvertices != grid->nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%" PetscInt_FMT " to match grid->nvertices=%" PetscInt_FMT,nvertices,grid->nvertices);
+  PetscCheckFalse(nloc/bs != nvertices,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%" PetscInt_FMT " to match nvertices=%" PetscInt_FMT,nloc/bs,nvertices);
+  PetscCheckFalse(nvertices != grid->nvertices,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%" PetscInt_FMT " to match grid->nvertices=%" PetscInt_FMT,nvertices,grid->nvertices);
   ierr = VecCreateSeq(PETSC_COMM_SELF,nvertices,&Xploc);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_SELF,&Xuloc);CHKERRQ(ierr);
@@ -2476,7 +2476,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
   ierr = PetscFree(val_offd);CHKERRQ(ierr);
 
 #else
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
+  PetscCheckFalse(size > 1,PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
   ICALLOC(nnodes*4,&val_diag);
   ICALLOC(nnodes*4,&val_offd);
   for (j = 0; j < 4; j++)
@@ -2744,7 +2744,7 @@ int write_fine_grid(GRID *grid)
 /* open file for output      */
 /* call the output frame.out */
 
-  if (!(output = fopen("frame.out","a"))) SETERRQ(PETSC_COMM_SELF,1,"can't open frame.out");
+  PetscCheckFalse(!(output = fopen("frame.out","a")),PETSC_COMM_SELF,1,"can't open frame.out");
   fprintf(output,"information for fine grid\n");
   fprintf(output,"\n");
   fprintf(output," address of fine grid = %p\n",(void*)grid);
@@ -2842,7 +2842,7 @@ int EdgeColoring(int nnodes,int nedge,int *e2n,int *eperm,int *ncle,int *counte)
 int EventCountersBegin(int *gen_start,PetscScalar *time_start_counters)
 {
   PetscErrorCode ierr;
-  if ((*gen_start = start_counters(event0,event1)) < 0) SETERRQ(PETSC_COMM_SELF,1,"Error in start_counters");
+  PetscCheckFalse((*gen_start = start_counters(event0,event1)) < 0,PETSC_COMM_SELF,1,"Error in start_counters");
   ierr = PetscTime(&time_start_counters);CHKERRQ(ierr);
   return 0;
 }
@@ -2853,9 +2853,9 @@ int EventCountersEnd(int gen_start,PetscScalar time_start_counters)
   PetscScalar time_read_counters;
   long long   _counter0,_counter1;
 
-  if ((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0) SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter");
+  PetscCheckFalse((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0,PETSC_COMM_SELF,1,"Error in read_counter");
   ierr = PetscTime(&&time_read_counters);CHKERRQ(ierr);
-  if (gen_read != gen_start) SETERRQ(PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
+  PetscCheckFalse(gen_read != gen_start,PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
   counter0      += _counter0;
   counter1      += _counter1;
   time_counters += time_read_counters-time_start_counters;

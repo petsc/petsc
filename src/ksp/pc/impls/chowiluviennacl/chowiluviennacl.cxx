@@ -45,12 +45,12 @@ static PetscErrorCode PCSetUp_CHOWILUVIENNACL(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJVIENNACL,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
   if (pc->setupcalled != 0) {
     try {
       delete ilu->CHOWILUVIENNACL;
     } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
     }
   }
   try {
@@ -66,7 +66,7 @@ static PetscErrorCode PCSetUp_CHOWILUVIENNACL(PC pc)
     ilu->CHOWILUVIENNACL = new viennacl::linalg::chow_patel_ilu_precond<viennacl::compressed_matrix<PetscScalar> >(*mat, ilu_tag);
 #endif
   } catch(char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
   }
   PetscFunctionReturn(0);
 }
@@ -96,7 +96,7 @@ static PetscErrorCode PCApply_CHOWILUVIENNACL(PC pc,Vec x,Vec y)
   /*how to apply a certain fixed number of iterations?*/
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQVIENNACL,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQVIENNACL,&flg2);CHKERRQ(ierr);
-  if (!(flg1 && flg2)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles ViennaCL vectors");
+  PetscCheckFalse(!(flg1 && flg2),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles ViennaCL vectors");
   if (!ilu->CHOWILUVIENNACL) {
     ierr = PCSetUp_CHOWILUVIENNACL(pc);CHKERRQ(ierr);
   }
@@ -111,7 +111,7 @@ static PetscErrorCode PCApply_CHOWILUVIENNACL(PC pc,Vec x,Vec y)
     ilu->CHOWILUVIENNACL->apply(*yarray);
 #endif
   } catch(char * ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
   }
   ierr = VecViennaCLRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecViennaCLRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ static PetscErrorCode PCDestroy_CHOWILUVIENNACL(PC pc)
     try {
       delete ilu->CHOWILUVIENNACL;
     } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
     }
   }
 

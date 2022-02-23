@@ -9,20 +9,21 @@ struct Vec_Kokkos {
   PetscScalarKokkosDualView      v_dual;
 
   /* Construct Vec_Kokkos with the given array(s). n is the length of the array.
-    If n != 0, host array (h_array) must not be NULL.
-    If device array (d_array) is NULL, then a proper device mirror will be allocated.
-    Otherwise, the mirror will be created using the given d_array.
+    If n != 0, host array (array_h) must not be NULL.
+    If device array (array_d) is NULL, then a proper device mirror will be allocated.
+    Otherwise, the mirror will be created using the given array_d.
   */
-  Vec_Kokkos(PetscInt n,PetscScalar *h_array,PetscScalar *d_array = NULL) {
-    PetscScalarKokkosViewHost    v_h(h_array,n);
+  Vec_Kokkos(PetscInt n,PetscScalar *array_h,PetscScalar *array_d = NULL) {
+    PetscScalarKokkosViewHost    v_h(array_h,n);
     PetscScalarKokkosView        v_d;
 
-    if (d_array) {
-      v_d = PetscScalarKokkosView(d_array,n); /* Use the given device array */
+    if (array_d) {
+      v_d = PetscScalarKokkosView(array_d,n); /* Use the given device array */
     } else {
-      v_d = Kokkos::create_mirror_view(DefaultMemorySpace(),v_h); /* Create a mirror in the default memory space */
+      v_d = Kokkos::create_mirror_view(DefaultMemorySpace(),v_h); /* Create a mirror in DefaultMemorySpace but do not copy values */
     }
     v_dual = PetscScalarKokkosDualView(v_d,v_h);
+    if (!array_d) v_dual.modify_host();
   }
 
   /* SFINAE: Update the object with an array in the given memory space,
@@ -102,7 +103,10 @@ PETSC_INTERN PetscErrorCode VecSum_SeqKokkos(Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecShift_SeqKokkos(Vec,PetscScalar);
 PETSC_INTERN PetscErrorCode VecGetArray_SeqKokkos(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecRestoreArray_SeqKokkos(Vec,PetscScalar**);
+
 PETSC_INTERN PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec,PetscScalar**);
-
+PETSC_INTERN PetscErrorCode VecGetArrayWriteAndMemType_SeqKokkos(Vec,PetscScalar**,PetscMemType*);
+PETSC_INTERN PetscErrorCode VecGetSubVector_Kokkos_Private(Vec,PetscBool,IS,Vec*);
+PETSC_INTERN PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec,IS,Vec*);
 #endif

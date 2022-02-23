@@ -58,17 +58,17 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   if (enorm > 1. || enorma > 1. || enormr > 1.) {
     if (!*accept) safety *= adapt->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
-      ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting because step size %g is at minimum\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
+      ierr    = PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting because step size %g is at minimum\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else if (adapt->always_accept) {
-      ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting step of size %g because always_accept is set\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
+      ierr    = PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting step of size %g because always_accept is set\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else {
-      ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], rejecting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
+      ierr    = PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], rejecting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
       *accept = PETSC_FALSE;
     }
   } else {
-    ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative] [%g, %g, %g], accepting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
+    ierr    = PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative] [%g, %g, %g], accepting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
     *accept = PETSC_TRUE;
   }
 

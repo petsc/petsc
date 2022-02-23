@@ -3,14 +3,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = -DTAO_LIB_DIR='"${TAO_LIB_DIR}"'
+CPPFLAGS =
 SOURCEC  = tao_util.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  =
 LIBBASE  = libpetsctao
 MANSEC   = Tao
-DIRS     = 
-EDIRS    = 
+DIRS     =
+EDIRS    =
 LOCDIR   = src/tao/util/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

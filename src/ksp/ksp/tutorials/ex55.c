@@ -59,7 +59,7 @@ int main(int argc,char **args)
 #endif
 
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-  if (m != Iend - Istart) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
+  PetscCheckFalse(m != Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
   /* Generate vectors */
   ierr = MatCreateVecs(Amat,&xx,&bb);CHKERRQ(ierr);
   ierr = VecSet(bb,.0);CHKERRQ(ierr);
@@ -295,6 +295,6 @@ int main(int argc,char **args)
       suffix: hypre_device
       nsize: 4
       requires: hypre !complex
-      args: -mat_type hypre -ksp_view -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi -pc_hypre_boomeramg_interp_type ext+i -pc_hypre_boomeramg_coarsen_type PMIS -pc_hypre_boomeramg_no_CF
+      args: -mat_type hypre -ksp_view -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi -pc_hypre_boomeramg_interp_type ext+i -pc_hypre_boomeramg_coarsen_type PMIS -pc_hypre_boomeramg_no_CF -pc_mg_galerkin_mat_product_algorithm hypre
 
 TEST*/

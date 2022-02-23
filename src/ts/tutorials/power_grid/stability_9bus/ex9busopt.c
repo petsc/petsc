@@ -987,7 +987,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   user.jacp_flg   = PETSC_TRUE;
   user.neqs_gen   = 9*ngen; /* # eqs. for generator subsystem */
@@ -1089,9 +1089,9 @@ int main(int argc,char **argv)
   x_ptr[0] = PG[0]; x_ptr[1] = PG[1]; x_ptr[2] = PG[2];
   ierr = VecRestoreArray(p,&x_ptr);CHKERRQ(ierr);
 
-  ierr = TaoSetInitialVector(tao,p);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,p);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,&user);CHKERRQ(ierr);
 
   /* Set bounds for the optimization */
   ierr = VecDuplicate(p,&lowerb);CHKERRQ(ierr);
@@ -1146,7 +1146,7 @@ int main(int argc,char **argv)
    Input Parameters:
    tao - the Tao context
    X   - the input vector
-   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function

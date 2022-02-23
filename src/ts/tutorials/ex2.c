@@ -344,7 +344,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   PetscDraw      draw;
 
   /*
-     We use the default X windows viewer
+     We use the default X Windows viewer
              PETSC_VIEWER_DRAW_(appctx->comm)
      that is associated with the current communicator. This saves
      the effort of calling PetscViewerDrawOpen() to create the window.

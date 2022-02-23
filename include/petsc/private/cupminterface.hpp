@@ -23,15 +23,6 @@
 #define PETSC_HOSTDEVICE_DECL PETSC_HOST_DECL PETSC_DEVICE_DECL
 
 #if defined(__cplusplus)
-
-#if (__cplusplus < 201103L) || !PetscDefined(HAVE_CXX_DIALECT_CXX11)
-// icc (and for that matter any windows compiler) is only fully compliant to the letter of
-// the standard up to C++03, while supporting the vast majority of later standards
-#  if !PetscDefined(HAVE_WINDOWS_COMPILERS)
-#    error "CUPMInterface requires C++11"
-#  endif
-#endif
-
 #include <array>
 
 namespace Petsc
@@ -69,7 +60,7 @@ namespace Impl
 //
 // or wrap it around the function:
 //
-// CHKERRCUPM(foo());
+// CHKERRCUPOBM(foo());
 //
 // thanks to __VA_ARGS__ templated functions can also be wrapped inline:
 //
@@ -77,9 +68,9 @@ namespace Impl
 #define CHKERRCUPM(...) do {                                            \
     const cupmError_t cerr_p_ = __VA_ARGS__;                            \
     if (PetscUnlikely(cerr_p_ != cupmSuccess)) {                        \
-      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s) : %s",   \
-               cupmName(),static_cast<PetscErrorCode>(cerr_p_),         \
-               cupmGetErrorName(cerr_p_),cupmGetErrorString(cerr_p_));  \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s) : %s",    \
+              cupmName(),static_cast<PetscErrorCode>(cerr_p_),          \
+              cupmGetErrorName(cerr_p_),cupmGetErrorString(cerr_p_));   \
     }                                                                   \
   } while (0)
 

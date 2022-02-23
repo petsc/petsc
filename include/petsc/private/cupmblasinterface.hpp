@@ -7,12 +7,10 @@
 
 #if defined(__cplusplus)
 
-#if (__cplusplus < 201103L) || !PetscDefined(HAVE_CXX_DIALECT_CXX11)
 // icc (and for that matter any windows compiler) is only fully compliant to the letter of
 // the standard up to C++03, while supporting the vast majority of later standards
-#  if !PetscDefined(HAVE_WINDOWS_COMPILERS)
-#    error "CUPMBlasInterface requires C++11"
-#  endif
+#if (__cplusplus < 201103L) && !PetscDefined(HAVE_WINDOWS_COMPILERS)
+#  error "CUPMBlasInterface requires C++11"
 #endif
 
 namespace Petsc
@@ -27,24 +25,23 @@ namespace CUPM
 namespace Impl
 {
 
-#define CHKERRCUPMBLAS(...) do {                                        \
-    const cupmBlasError_t cberr_p_ = __VA_ARGS__;                       \
-    if (PetscUnlikely(cberr_p_ != CUPMBLAS_STATUS_SUCCESS)) {           \
-      if (((cberr_p_ == CUPMBLAS_STATUS_NOT_INITIALIZED) ||             \
-           (cberr_p_ == CUPMBLAS_STATUS_ALLOC_FAILED))   &&             \
-          PetscDeviceInitialized(cupmDeviceTypeToPetscDeviceType())) {  \
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,                \
-                 "%s error %d (%s). "                                   \
-                 "Reports not initialized or alloc failed; "            \
-                 "this indicates the GPU may have run out resources",   \
-                 cupmBlasName(),static_cast<PetscErrorCode>(cberr_p_),  \
-                 cupmBlasGetErrorName(cberr_p_));                       \
-      } else {                                                          \
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s)",      \
-                 cupmBlasName(),static_cast<PetscErrorCode>(cberr_p_),  \
-                 cupmBlasGetErrorName(cberr_p_));                       \
-      }                                                                 \
-    }                                                                   \
+#define CHKERRCUPMBLAS(...) do {                                                \
+    const cupmBlasError_t cberr_p_ = __VA_ARGS__;                               \
+    if (PetscUnlikely(cberr_p_ != CUPMBLAS_STATUS_SUCCESS)) {                   \
+      if (((cberr_p_ == CUPMBLAS_STATUS_NOT_INITIALIZED) ||                     \
+           (cberr_p_ == CUPMBLAS_STATUS_ALLOC_FAILED))   &&                     \
+          PetscDeviceInitialized(cupmDeviceTypeToPetscDeviceType())) {          \
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,                         \
+                "%s error %d (%s). Reports not initialized or alloc failed; "   \
+                "this indicates the GPU may have run out resources",            \
+                cupmBlasName(),static_cast<PetscErrorCode>(cberr_p_),           \
+                cupmBlasGetErrorName(cberr_p_));                                \
+      } else {                                                                  \
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"%s error %d (%s)",               \
+                cupmBlasName(),static_cast<PetscErrorCode>(cberr_p_),           \
+                cupmBlasGetErrorName(cberr_p_));                                \
+      }                                                                         \
+    }                                                                           \
   } while (0)
 
 // given cupmBlas<T>axpy() then
@@ -337,7 +334,7 @@ struct BlasInterface<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
         auto ierr = PetscSleep(3);CHKERRQ(ierr);
         continue;
       }
-      if (PetscUnlikely(cerr != CUSOLVER_STATUS_SUCCESS)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSolverDn");
+      PetscCheck(cerr == CUSOLVER_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSolverDn");
     }
     PetscFunctionReturn(0);
   }

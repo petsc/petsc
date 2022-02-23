@@ -9,7 +9,7 @@
     PetscInt b1[2],b2[2];                                               \
     b1[0] = -b; b1[1] = b;                                              \
     _7_ierr = MPIU_Allreduce(b1,b2,2,MPIU_INT,MPI_MAX,a);CHKERRMPI(_7_ierr); \
-    if (-b2[0] != b2[1]) SETERRQ1(a,PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
+    PetscCheckFalse(-b2[0] != b2[1],a,PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #define PetscValidLogicalCollectiveBoolComm(a,b,c)                      \
@@ -18,7 +18,7 @@
     PetscMPIInt b1[2],b2[2];                                            \
     b1[0] = -(PetscMPIInt)b; b1[1] = (PetscMPIInt)b;                    \
     _7_ierr = MPIU_Allreduce(b1,b2,2,MPI_INT,MPI_MAX,a);CHKERRMPI(_7_ierr); \
-    if (-b2[0] != b2[1]) SETERRQ1(a,PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",c); \
+    PetscCheckFalse(-b2[0] != b2[1],a,PETSC_ERR_ARG_WRONG,"Bool value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #define PetscValidLogicalCollectiveRealComm(a,b,c)                      \
@@ -28,7 +28,7 @@
     if (PetscIsNanReal(b)) {b1[2] = 1;} else {b1[2] = 0;};              \
     b1[0] = -b; b1[1] = b;                                              \
     _7_ierr = MPI_Allreduce(b1,b2,3,MPIU_REAL,MPIU_MAX,a);CHKERRMPI(_7_ierr); \
-    if (!(b2[2] > 0) && !PetscEqualReal(-b2[0],b2[1])) SETERRQ1(a,PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
+    PetscCheckFalse(!(b2[2] > 0) && !PetscEqualReal(-b2[0],b2[1]),a,PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
   } while (0)
 
 #else
@@ -43,10 +43,10 @@ struct _n_TSHistory {
   MPI_Comm  comm;     /* used for runtime collective checks */
   PetscReal *hist;    /* time history */
   PetscInt  *hist_id; /* stores the stepid in time history */
-  PetscInt  n;        /* current number of steps registered */
+  size_t    n;        /* current number of steps registered */
   PetscBool sorted;   /* if the history is sorted in ascending order */
-  PetscInt  c;        /* current capacity of hist */
-  PetscInt  s;        /* reallocation size */
+  size_t    c;        /* current capacity of history */
+  size_t    s;        /* reallocation size */
 };
 
 PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n)
@@ -79,7 +79,7 @@ PetscErrorCode TSHistoryUpdate(TSHistory tsh, PetscInt id, PetscReal time)
     ierr = PetscSortInt(tsh->n,ids);CHKERRQ(ierr);
     ierr = PetscFindInt(id,tsh->n,ids,&loc);CHKERRQ(ierr);
     ierr = PetscFree(ids);CHKERRQ(ierr);
-    if (loc >=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"History id should be unique");
+    PetscCheckFalse(loc >=0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"History id should be unique");
   }
 #endif
   tsh->hist[tsh->n]    = time;
@@ -101,7 +101,7 @@ PetscErrorCode TSHistoryGetTime(TSHistory tsh, PetscBool backward, PetscInt step
     ierr = PetscSortRealWithArrayInt(tsh->n,tsh->hist,tsh->hist_id);CHKERRQ(ierr);
     tsh->sorted = PETSC_TRUE;
   }
-  if (step < 0 || step >= tsh->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,tsh->n);
+  PetscCheck(step >= 0 && step < (PetscInt)tsh->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,(PetscInt)tsh->n);
   if (!backward) *t = tsh->hist[step];
   else           *t = tsh->hist[tsh->n-step-1];
   PetscFunctionReturn(0);
@@ -120,9 +120,9 @@ PetscErrorCode TSHistoryGetTimeStep(TSHistory tsh, PetscBool backward, PetscInt 
     ierr = PetscSortRealWithArrayInt(tsh->n,tsh->hist,tsh->hist_id);CHKERRQ(ierr);
     tsh->sorted = PETSC_TRUE;
   }
-  if (step < 0 || step > tsh->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,tsh->n);
-  if (!backward) *dt = tsh->hist[PetscMin(step+1,tsh->n-1)] - tsh->hist[PetscMin(step,tsh->n-1)];
-  else           *dt = tsh->hist[PetscMax(tsh->n-step-1,0)] - tsh->hist[PetscMax(tsh->n-step-2,0)];
+  PetscCheck(step >= 0 && step <= (PetscInt)tsh->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Given time step %D does not match any in history [0,%D]",step,(PetscInt)tsh->n);
+  if (!backward) *dt = tsh->hist[PetscMin(step+1,(PetscInt)tsh->n-1)] - tsh->hist[PetscMin(step,(PetscInt)tsh->n-1)];
+  else           *dt = tsh->hist[PetscMax((PetscInt)tsh->n-step-1,0)] - tsh->hist[PetscMax((PetscInt)tsh->n-step-2,0)];
   PetscFunctionReturn(0);
 }
 
@@ -148,14 +148,15 @@ PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], 
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveIntComm(tsh->comm,n,2);
+  if (n < 0) SETERRQ(tsh->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot request a negative size for history storage");
   if (n) PetscValidRealPointer(hist,3);
   ierr = PetscFree(tsh->hist);CHKERRQ(ierr);
   ierr = PetscFree(tsh->hist_id);CHKERRQ(ierr);
-  tsh->n = n;
-  tsh->c = n;
+  tsh->n = (size_t) n;
+  tsh->c = (size_t) n;
   ierr = PetscMalloc1(tsh->n,&tsh->hist);CHKERRQ(ierr);
   ierr = PetscMalloc1(tsh->n,&tsh->hist_id);CHKERRQ(ierr);
-  for (i = 0; i < tsh->n; i++) {
+  for (i = 0; i < (PetscInt)tsh->n; i++) {
     tsh->hist[i]    = hist[i];
     tsh->hist_id[i] = hist_id ? hist_id[i] : i;
   }

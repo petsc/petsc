@@ -132,7 +132,7 @@ static PetscErrorCode SetInitialCoordinates(DM dmSw)
   for (p = 0; p < Np; ++p) {
     const PetscInt part = found ? found[p] : p;
 
-    if (cells[p].rank != rank) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in the mesh", part);
+    PetscCheckFalse(cells[p].rank != rank,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in the mesh", part);
     cellid[part] = cells[p].index;
   }
   ierr = DMSwarmRestoreField(dmSw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);

@@ -20,7 +20,7 @@ Changes
 
    -  ``include ${PETSC_DIR}/conf/base``
 
--  The windows build of PETSc with win32_gnu, win32_intel and
+-  The Microsoft Windows build of PETSc with win32_gnu, win32_intel and
    win32_mpich now default to using MPICH-1.2.3The complex version of
    the PETSc libraries can only be installed with C++ compilers that
    provide the std::complex implementation.
@@ -119,7 +119,7 @@ Features
 .. rubric:: General:
 
 -  configure can now be used to build PETSc on some architectures.
-   Currently tested on linux, IRIX, solaris machines.We'd like your
+   Currently tested on Linux, IRIX, Solaris machines.We'd like your
    feedback on this feature; please send ``configure_petsc.log`` and
    ``config.log``\ when reporting problems with configure.
 -  Added support for ESI vectors and matrices. Use BOPT=g_c++ or

@@ -235,12 +235,12 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
   PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,3);
   if (color->setupcalled) PetscFunctionReturn(0);
   ierr = PetscObjectCompareId((PetscObject)mat,color->matid,&eq);CHKERRQ(ierr);
-  if (!eq) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringSetUp() must be that used with MatFDColoringCreate()");
+  PetscCheckFalse(!eq,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringSetUp() must be that used with MatFDColoringCreate()");
 
   ierr = PetscLogEventBegin(MAT_FDColoringSetUp,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->fdcoloringsetup) {
     ierr = (*mat->ops->fdcoloringsetup)(mat,iscoloring,color);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
+  } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   color->setupcalled = PETSC_TRUE;
    ierr   = PetscLogEventEnd(MAT_FDColoringSetUp,mat,0,0,0);CHKERRQ(ierr);
@@ -356,7 +356,7 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   if (flg) {
     if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
     else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";
-    else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
+    else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
   }
   ierr = PetscOptionsInt("-mat_fd_coloring_brows","Number of block rows","MatFDColoringSetBlockSize",matfd->brows,&matfd->brows,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_fd_coloring_bcols","Number of block columns","MatFDColoringSetBlockSize",matfd->bcols,&matfd->bcols,&flg);CHKERRQ(ierr);
@@ -402,7 +402,7 @@ PetscErrorCode  MatFDColoringSetType(MatFDColoring matfd,MatMFFDType type)
   */
   if (type[0] == 'w' && type[1] == 'p') matfd->htype = "wp";
   else if (type[0] == 'd' && type[1] == 's') matfd->htype = "ds";
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",type);
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",type);
   PetscFunctionReturn(0);
 }
 
@@ -456,10 +456,10 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
+  PetscCheckFalse(!mat->assembled,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
   ierr = PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-  if (M != N) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Only for square matrices");
+  PetscCheckFalse(M != N,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Only for square matrices");
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = PetscHeaderCreate(c,MAT_FDCOLORING_CLASSID,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
 
@@ -468,7 +468,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
 
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
+  } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = MatCreateVecs(mat,NULL,&c->w1);CHKERRQ(ierr);
   /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
@@ -612,10 +612,10 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sct
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
   PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
   ierr = PetscObjectCompareId((PetscObject)J,coloring->matid,&eq);CHKERRQ(ierr);
-  if (!eq) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringApply() must be that used with MatFDColoringCreate()");
-  if (!coloring->f) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
-  if (!J->ops->fdcoloringapply) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
-  if (!coloring->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetUp()");
+  PetscCheckFalse(!eq,PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringApply() must be that used with MatFDColoringCreate()");
+  PetscCheckFalse(!coloring->f,PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
+  PetscCheckFalse(!J->ops->fdcoloringapply,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
+  PetscCheckFalse(!coloring->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetUp()");
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);

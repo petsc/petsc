@@ -124,7 +124,7 @@ BLAS_EXTERN void LAPACKgels_(const char*,const PetscBLASInt*,const PetscBLASInt*
 
 /* handle complex dot() with special code */
 #if defined(PETSC_USE_COMPLEX)
-PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
+static inline PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
 {
   PetscScalar sum=0.0;
   PetscInt    i,j,k;
@@ -135,7 +135,7 @@ PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar
   }
   return sum;
 }
-PETSC_STATIC_INLINE PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
+static inline PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy)
 {
   PetscScalar sum=0.0;
   PetscInt    i,j,k;
@@ -160,6 +160,7 @@ BLAS_EXTERN PetscScalar BLASdot_(const PetscBLASInt*,const PetscScalar*,const Pe
 BLAS_EXTERN void LAPACKhetrf_(const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKhetrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKhetri_(const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+BLAS_EXTERN void LAPACKheev_(const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 #endif
 /* Some functions prototypes differ between real and complex */
 #if defined(PETSC_USE_COMPLEX)

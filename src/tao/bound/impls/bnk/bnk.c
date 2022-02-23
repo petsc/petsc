@@ -45,7 +45,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   /* Test the initial point for convergence */
   ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
   ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(resnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheckFalse(PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   ierr = TaoLogConvergenceHistory(tao,bnk->f,resnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
   ierr = TaoMonitor(tao,tao->niter,bnk->f,resnorm,0.0,1.0);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
     ierr = MatSetSizes(bnk->M, n, n, N, N);CHKERRQ(ierr);
     ierr = MatLMVMAllocate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
     ierr = MatIsSymmetricKnown(bnk->M, &sym_set, &is_symmetric);CHKERRQ(ierr);
-    if (!sym_set || !is_symmetric) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
+    PetscCheckFalse(!sym_set || !is_symmetric,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
   } else if (is_jacobi) {
     ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -137,7 +137,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           ierr = VecAXPY(bnk->W, -1.0, bnk->Xold);CHKERRQ(ierr);
           /* Compute the objective at the trial */
           ierr = TaoComputeObjective(tao, tao->solution, &ftrial);CHKERRQ(ierr);
-          if (PetscIsInfOrNanReal(bnk->f)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+          PetscCheckFalse(PetscIsInfOrNanReal(bnk->f),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
           ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(ftrial)) {
             tau = bnk->gamma1_i;
@@ -234,7 +234,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           /* Test the new step for convergence */
           ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
           ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
-          if (PetscIsInfOrNanReal(resnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+          PetscCheckFalse(PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
           ierr = TaoLogConvergenceHistory(tao,bnk->f,resnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
           ierr = TaoMonitor(tao,tao->niter,bnk->f,resnorm,0.0,1.0);CHKERRQ(ierr);
           ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
@@ -506,7 +506,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
         tao->ksp_tot_its += kspits;
         ierr = KSPCGGetNormD(tao->ksp,&bnk->dnorm);CHKERRQ(ierr);
 
-        if (bnk->dnorm == 0.0) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_PLIB, "Initial direction zero");
+        PetscCheckFalse(bnk->dnorm == 0.0,PetscObjectComm((PetscObject)tao),PETSC_ERR_PLIB, "Initial direction zero");
       }
     }
   } else {
@@ -1091,15 +1091,15 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
     ierr = PetscObjectReference((PetscObject)(tao->stepdirection));CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->bncg->stepdirection);CHKERRQ(ierr);
     bnk->bncg->stepdirection = tao->stepdirection;
-    ierr = TaoSetInitialVector(bnk->bncg, tao->solution);CHKERRQ(ierr);
+    ierr = TaoSetSolution(bnk->bncg, tao->solution);CHKERRQ(ierr);
     /* Copy over some settings from BNK into BNCG */
     ierr = TaoSetMaximumIterations(bnk->bncg, bnk->max_cg_its);CHKERRQ(ierr);
     ierr = TaoSetTolerances(bnk->bncg, tao->gatol, tao->grtol, tao->gttol);CHKERRQ(ierr);
     ierr = TaoSetFunctionLowerBound(bnk->bncg, tao->fmin);CHKERRQ(ierr);
     ierr = TaoSetConvergenceTest(bnk->bncg, tao->ops->convergencetest, tao->cnvP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveRoutine(bnk->bncg, tao->ops->computeobjective, tao->user_objP);CHKERRQ(ierr);
-    ierr = TaoSetGradientRoutine(bnk->bncg, tao->ops->computegradient, tao->user_gradP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(bnk->bncg, tao->ops->computeobjectiveandgradient, tao->user_objgradP);CHKERRQ(ierr);
+    ierr = TaoSetObjective(bnk->bncg, tao->ops->computeobjective, tao->user_objP);CHKERRQ(ierr);
+    ierr = TaoSetGradient(bnk->bncg, NULL, tao->ops->computegradient, tao->user_gradP);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(bnk->bncg, NULL, tao->ops->computeobjectiveandgradient, tao->user_objgradP);CHKERRQ(ierr);
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)(bnk->bncg));CHKERRQ(ierr);
     for (i=0; i<tao->numbermonitors; ++i) {
       ierr = TaoSetMonitor(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]);CHKERRQ(ierr);
@@ -1215,7 +1215,7 @@ PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao ta
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   ierr = TaoSetOptionsPrefix(bnk->bncg,((PetscObject)(tao))->prefix);CHKERRQ(ierr);
-  ierr = TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_");CHKERRQ(ierr);
+  ierr = TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_cg_");CHKERRQ(ierr);
   ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
 
   ierr = KSPSetOptionsPrefix(tao->ksp,((PetscObject)(tao))->prefix);CHKERRQ(ierr);

@@ -24,7 +24,7 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 #include <petscdraw.h>
 #include "finitevolume1d.h"
 
-PETSC_STATIC_INLINE PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
+static inline PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin +PetscFmodReal(range+PetscFmodReal(a,range),range); }
 
 /* --------------------------------- Advection ----------------------------------- */
 typedef struct {
@@ -111,7 +111,7 @@ PetscErrorCode FVSample_2WaySplit(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscReal       hs,hf;
 
   PetscFunctionBeginUser;
-  if (!ctx->physics2.sample2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
+  PetscCheckFalse(!ctx->physics2.sample2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
@@ -325,7 +325,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts,PetscReal time,Vec X,Vec F,void *vc
     if (dt > 0.5/ctx->cfl_idt) {
       if (1) {
         ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
-      } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
     }
   }
   PetscFunctionReturn(0);
@@ -770,13 +770,13 @@ int main(int argc,char *argv[])
 
   /* Choose the limiter from the list of registered limiters */
   ierr = PetscFunctionListFind(limiters,lname,&ctx.limit2);CHKERRQ(ierr);
-  if (!ctx.limit2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
+  PetscCheckFalse(!ctx.limit2,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Limiter '%s' not found",lname);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
     ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
-    if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
+    PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);
   }
@@ -808,7 +808,7 @@ int main(int argc,char *argv[])
   /* create index for slow parts and fast parts,
      count_slow + count_fast = Mx, counts_slow*hs = 0.5, counts_fast*hf = 0.5 */
   count_slow = Mx/(1.0+ctx.hratio/3.0);
-  if (count_slow%2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio/3) is even");
+  PetscCheckFalse(count_slow%2,PETSC_COMM_WORLD,PETSC_ERR_USER,"Please adjust grid size Mx (-da_grid_x) and hratio (-hratio) so that Mx/(1+hartio/3) is even");
   count_fast = Mx-count_slow;
   ctx.sf = count_slow/2;
   ctx.fs = ctx.sf+count_fast;
@@ -905,7 +905,7 @@ int main(int argc,char *argv[])
       PetscBool    flg;
       const PetscScalar  *ptr_XR;
       ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+      PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
       ierr = VecDuplicate(X0,&XR);CHKERRQ(ierr);
       ierr = VecLoad(XR,fd);CHKERRQ(ierr);

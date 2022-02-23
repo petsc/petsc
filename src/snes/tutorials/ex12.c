@@ -627,7 +627,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetResidual(ds, 0, f0_cross_u_3d, f1_u);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
     }
     ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
     break;
@@ -635,7 +635,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     ierr = PetscDSSetResidual(ds, 0, f0_checkerboard_0_u, f1_field_u);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_field_uu);CHKERRQ(ierr);
     break;
-  default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
+  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
   }
   switch (dim) {
   case 2:
@@ -683,7 +683,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
   }
   /* Setup constants */
   switch (user->variableCoefficient) {
@@ -996,7 +996,7 @@ int main(int argc, char **argv)
     ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
     ierr = DMPlexComputeBdIntegral(dm, u, label, 1, &id, bd_integral_2d, &bdInt, NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution boundary integral: %.4g\n", (double) PetscAbsScalar(bdInt));CHKERRQ(ierr);
-    if (PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double) PetscAbsScalar(bdInt), (double)exact);
+    PetscCheckFalse(PetscAbsReal(PetscAbsScalar(bdInt) - exact) > PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Invalid boundary integral %g != %g", (double) PetscAbsScalar(bdInt), (double)exact);
   }
 
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
@@ -1231,19 +1231,19 @@ int main(int argc, char **argv)
     suffix: 43
     requires: triangle !single
     nsize: 2
-    args: -run_type full -dm_distribute -dm_refine_volume_limit_pre 0.03125 -variable_coefficient nonlinear -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
+    args: -run_type full -dm_refine_volume_limit_pre 0.03125 -variable_coefficient nonlinear -petscspace_degree 1 -snes_type fas -snes_fas_levels 2 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
 
   test:
     suffix: 44
     requires: triangle !single
     nsize: 2
-    args: -run_type full -dm_distribute -dm_refine_volume_limit_pre 0.0625 -variable_coefficient nonlinear -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short  -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
+    args: -run_type full -dm_refine_volume_limit_pre 0.0625 -variable_coefficient nonlinear -petscspace_degree 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short  -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
 
   # These tests use a loose tolerance just to exercise the PtAP operations for MATIS and multiple PCBDDC setup calls inside PCMG
   testset:
     requires: triangle !single
     nsize: 3
-    args: -run_type full -dm_distribute -petscspace_degree 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -snes_converged_reason -dm_refine_hierarchy 2 -snes_max_it 4
+    args: -run_type full -petscspace_degree 1 -dm_mat_type is -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bddc -pc_mg_galerkin pmat -ksp_rtol 1.0e-2 -snes_converged_reason -dm_refine_hierarchy 2 -snes_max_it 4
     test:
       suffix: gmg_bddc
       filter: sed -e "s/CONVERGED_FNORM_RELATIVE iterations 3/CONVERGED_FNORM_RELATIVE iterations 4/g"
@@ -1370,17 +1370,17 @@ int main(int argc, char **argv)
     suffix: tri_bddc
     requires: triangle !single
     nsize: 5
-    args: -run_type full -dm_distribute -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   # Full solve simplex: PCBDDC
   test:
     suffix: tri_parmetis_bddc
     requires: triangle !single parmetis
     nsize: 4
-    args: -run_type full -dm_distribute -petscpartitioner_type parmetis -dm_refine 2 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -petscpartitioner_type parmetis -dm_refine 2 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
   testset:
-    args: -run_type full -dm_distribute -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -petscspace_degree 2 -dm_mat_type is -pc_type bddc -ksp_type gmres -snes_monitor_short -ksp_monitor_short -snes_view -petscspace_poly_tensor -pc_bddc_corner_selection -ksp_rtol 1.e-9 -pc_bddc_use_edges 0
+    args: -run_type full -dm_plex_simplex 0 -dm_plex_box_faces 3,3 -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -petscspace_degree 2 -dm_mat_type is -pc_type bddc -ksp_type gmres -snes_monitor_short -ksp_monitor_short -snes_view -petscspace_poly_tensor -pc_bddc_corner_selection -ksp_rtol 1.e-9 -pc_bddc_use_edges 0
     nsize: 5
     output_file: output/ex12_quad_bddc.out
     filter: sed -e "s/aijcusparse/aij/g" -e "s/aijviennacl/aij/g" -e "s/factorization: cusparse/factorization: petsc/g"
@@ -1484,13 +1484,13 @@ int main(int argc, char **argv)
     suffix: p4est_test_q2_conformal_parallel
     requires: p4est
     nsize: 7
-    args: -run_type test -dm_distribute -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type simple
+    args: -run_type test -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type simple
 
   test:
     suffix: p4est_test_q2_conformal_parallel_parmetis
     requires: parmetis p4est
     nsize: 4
-    args: -run_type test -dm_distribute -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis
+    args: -run_type test -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis
 
   test:
     suffix: p4est_test_q2_nonconformal_serial
@@ -1503,13 +1503,13 @@ int main(int argc, char **argv)
     requires: p4est
     filter: grep -v "CG or CGNE: variant"
     nsize: 7
-    args: -run_type test -dm_distribute -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
+    args: -run_type test -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
 
   test:
     suffix: p4est_test_q2_nonconformal_parallel_parmetis
     requires: parmetis p4est
     nsize: 4
-    args: -run_type test -dm_distribute -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis
+    args: -run_type test -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis
 
   test:
     suffix: p4est_exact_q2_conformal_serial
@@ -1520,13 +1520,13 @@ int main(int argc, char **argv)
     suffix: p4est_exact_q2_conformal_parallel
     requires: p4est !single !complex !__float128
     nsize: 4
-    args: -run_type exact -dm_distribute -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2
+    args: -run_type exact -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2
 
   test:
     suffix: p4est_exact_q2_conformal_parallel_parmetis
     requires: parmetis p4est !single
     nsize: 4
-    args: -run_type exact -dm_distribute -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis
+    args: -run_type exact -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -petscpartitioner_type parmetis
 
   test:
     suffix: p4est_exact_q2_nonconformal_serial
@@ -1537,13 +1537,13 @@ int main(int argc, char **argv)
     suffix: p4est_exact_q2_nonconformal_parallel
     requires: p4est
     nsize: 7
-    args: -run_type exact -dm_distribute -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
+    args: -run_type exact -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
 
   test:
     suffix: p4est_exact_q2_nonconformal_parallel_parmetis
     requires: parmetis p4est
     nsize: 4
-    args: -run_type exact -dm_distribute -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis
+    args: -run_type exact -petscspace_degree 2 -fas_levels_snes_atol 1.e-10 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type parmetis
 
   test:
     suffix: p4est_full_q2_nonconformal_serial
@@ -1556,21 +1556,21 @@ int main(int argc, char **argv)
     requires: p4est !single
     filter: grep -v "variant HERMITIAN"
     nsize: 7
-    args: -run_type full -dm_distribute -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type jacobi -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
+    args: -run_type full -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -fas_coarse_pc_type jacobi -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
 
   test:
     suffix: p4est_full_q2_nonconformal_parallel_bddcfas
     requires: p4est !single
     filter: grep -v "variant HERMITIAN"
     nsize: 7
-    args: -run_type full -dm_distribute -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -dm_mat_type is -fas_coarse_pc_type bddc -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type bddc -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
+    args: -run_type full -petscspace_degree 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -dm_mat_type is -fas_coarse_pc_type bddc -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type bddc -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
 
   test:
     suffix: p4est_full_q2_nonconformal_parallel_bddc
     requires: p4est !single
     filter: grep -v "variant HERMITIAN"
     nsize: 7
-    args: -run_type full -dm_distribute -petscspace_degree 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
+    args: -run_type full -petscspace_degree 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -dm_plex_simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple
 
   test:
     TODO: broken
@@ -1654,14 +1654,14 @@ int main(int argc, char **argv)
     suffix: tri_p1_adapt_uniform_pragmatic
     requires: pragmatic tetgen
     nsize: 2
-    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
+    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor pragmatic
     timeoutfactor: 2
 
   test:
     suffix: tri_p2_adapt_uniform_pragmatic
     requires: pragmatic tetgen
     nsize: 2
-    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor pragmatic
+    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor pragmatic
     timeoutfactor: 1
 
   test:
@@ -1680,14 +1680,14 @@ int main(int argc, char **argv)
     suffix: tri_p1_adapt_uniform_parmmg
     requires: parmmg tetgen
     nsize: 2
-    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
+    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 1 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 3 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor parmmg
     timeoutfactor: 2
 
   test:
     suffix: tri_p2_adapt_uniform_parmmg
     requires: parmmg tetgen
     nsize: 2
-    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_distribute -dm_adaptor parmmg
+    args: -run_type full -dm_plex_box_faces 8,8,8 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor parmmg
     timeoutfactor: 1
 
   # Full solve tensor AMR
@@ -1700,7 +1700,7 @@ int main(int argc, char **argv)
   test:
     suffix: amr_0
     nsize: 5
-    args: -run_type test -dm_distribute -petscpartitioner_type simple -dm_plex_simplex 0 -bc_type dirichlet -petscspace_degree 1 -dm_refine 1
+    args: -run_type test -petscpartitioner_type simple -dm_plex_simplex 0 -bc_type dirichlet -petscspace_degree 1 -dm_refine 1
 
   test:
     suffix: amr_1
@@ -1710,20 +1710,20 @@ int main(int argc, char **argv)
   test:
     suffix: p4est_solve_bddc
     requires: p4est !complex
-    args: -run_type full -dm_distribute -variable_coefficient nonlinear -nonzero_initial_guess 1 -petscspace_degree 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -ksp_monitor -snes_linesearch_type bt -snes_converged_reason -snes_view -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -pc_bddc_detect_disconnected
+    args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -petscspace_degree 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -ksp_monitor -snes_linesearch_type bt -snes_converged_reason -snes_view -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -pc_bddc_detect_disconnected
     nsize: 4
 
   test:
     suffix: p4est_solve_fas
     requires: p4est
-    args: -run_type full -dm_distribute -variable_coefficient nonlinear -nonzero_initial_guess 1 -petscspace_degree 2 -snes_max_it 10 -snes_type fas -snes_linesearch_type bt -snes_fas_levels 3 -fas_coarse_snes_type newtonls -fas_coarse_snes_linesearch_type basic -fas_coarse_ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_snes_monitor_short -fas_levels_snes_max_it 4 -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type bt -fas_levels_ksp_type cg -fas_levels_pc_type jacobi -fas_levels_snes_monitor_short -fas_levels_cycle_snes_linesearch_type bt -snes_monitor_short -snes_converged_reason -snes_view -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+    args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -petscspace_degree 2 -snes_max_it 10 -snes_type fas -snes_linesearch_type bt -snes_fas_levels 3 -fas_coarse_snes_type newtonls -fas_coarse_snes_linesearch_type basic -fas_coarse_ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_snes_monitor_short -fas_levels_snes_max_it 4 -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type bt -fas_levels_ksp_type cg -fas_levels_pc_type jacobi -fas_levels_snes_monitor_short -fas_levels_cycle_snes_linesearch_type bt -snes_monitor_short -snes_converged_reason -snes_view -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
     nsize: 4
     TODO: identical machine two runs produce slightly different solver trackers
 
   test:
     suffix: p4est_convergence_test_1
     requires: p4est
-    args:  -quiet -run_type test -dm_distribute -petscspace_degree 1 -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+    args:  -quiet -run_type test -petscspace_degree 1 -dm_plex_simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
     nsize: 4
 
   test:
@@ -1770,7 +1770,7 @@ int main(int argc, char **argv)
   testset:
     nsize: 4
     requires: hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-    args: -run_type test -run_test_check_ksp -quiet -petscspace_degree 1 -dm_distribute -petscpartitioner_type simple -bc_type none -dm_plex_simplex 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 2 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type svd -ksp_rtol 1.e-10 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -ksp_converged_reason
+    args: -run_type test -run_test_check_ksp -quiet -petscspace_degree 1 -petscpartitioner_type simple -bc_type none -dm_plex_simplex 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 2 -pc_hpddm_coarse_p 1 -pc_hpddm_coarse_pc_type svd -ksp_rtol 1.e-10 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -ksp_converged_reason
     test:
       suffix: quad_singular_hpddm
       args: -dm_plex_box_faces 6,7
@@ -1785,7 +1785,7 @@ int main(int argc, char **argv)
   testset:
     nsize: 4
     requires: hpddm slepc triangle !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-    args: -run_type full -dm_distribute -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
+    args: -run_type full -petscpartitioner_type simple -dm_refine 2 -bc_type dirichlet -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
       suffix: tri_hpddm_reuse_baij
@@ -1795,7 +1795,7 @@ int main(int argc, char **argv)
   testset:
     nsize: 4
     requires: hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-    args: -run_type full -dm_distribute -petscpartitioner_type simple -dm_plex_box_faces 7,5 -dm_refine 2 -dm_plex_simplex 0 -bc_type dirichlet -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
+    args: -run_type full -petscpartitioner_type simple -dm_plex_box_faces 7,5 -dm_refine 2 -dm_plex_simplex 0 -bc_type dirichlet -petscspace_degree 2 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 4 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
       suffix: quad_hpddm_reuse_baij
@@ -1805,7 +1805,7 @@ int main(int argc, char **argv)
   testset:
     nsize: 4
     requires: hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-    args: -run_type full -dm_distribute -petscpartitioner_type simple -dm_plex_box_faces 7,5 -dm_refine 2 -dm_plex_simplex 0 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
+    args: -run_type full -petscpartitioner_type simple -dm_plex_box_faces 7,5 -dm_refine 2 -dm_plex_simplex 0 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-1
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
       suffix: quad_hpddm_reuse_threshold_baij
@@ -1816,7 +1816,7 @@ int main(int argc, char **argv)
     nsize: 4
     requires: hpddm slepc parmetis !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     filter: sed -e "s/linear solver iterations=17/linear solver iterations=16/g"
-    args: -run_type full -dm_distribute -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient ball -dm_plex_gmsh_periodic 0
+    args: -run_type full -petscpartitioner_type parmetis -dm_refine 3 -bc_type dirichlet -petscspace_degree 1 -ksp_type gmres -ksp_gmres_restart 100 -pc_type hpddm -snes_monitor_short -snes_converged_reason ::ascii_info_detail -snes_view -show_solution 0 -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type icc -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_pc_type redundant -ksp_rtol 1.e-10 -dm_plex_filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_boundary_label marker -pc_hpddm_levels_1_sub_pc_factor_levels 3 -variable_coefficient ball -dm_plex_gmsh_periodic 0
     test:
       args: -pc_hpddm_coarse_mat_type baij -options_left no
       filter: grep -v "      total: nonzeros=" | grep -v "      rows=" | sed -e "s/total number of linear solver iterations=1[5-7]/total number of linear solver iterations=16/g"

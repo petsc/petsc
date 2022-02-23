@@ -136,7 +136,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x) {
     PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-    if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+    PetscCheckFalse(x == y,PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   } else {
     PetscScalar *xx;
     PetscInt    lsize;
@@ -153,9 +153,9 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&p);CHKERRQ(ierr);
-  if ((pf->dimin*(n/pf->dimin)) != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local input vector length %" PetscInt_FMT " not divisible by dimin %" PetscInt_FMT " of function",n,pf->dimin);
-  if ((pf->dimout*(p/pf->dimout)) != p) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local output vector length %" PetscInt_FMT " not divisible by dimout %" PetscInt_FMT " of function",p,pf->dimout);
-  if ((n/pf->dimin) != (p/pf->dimout)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local vector lengths %" PetscInt_FMT " %" PetscInt_FMT " are wrong for dimin and dimout %" PetscInt_FMT " %" PetscInt_FMT " of function",n,p,pf->dimin,pf->dimout);
+  PetscCheckFalse((pf->dimin*(n/pf->dimin)) != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local input vector length %" PetscInt_FMT " not divisible by dimin %" PetscInt_FMT " of function",n,pf->dimin);
+  PetscCheckFalse((pf->dimout*(p/pf->dimout)) != p,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local output vector length %" PetscInt_FMT " not divisible by dimout %" PetscInt_FMT " of function",p,pf->dimout);
+  PetscCheckFalse((n/pf->dimin) != (p/pf->dimout),PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local vector lengths %" PetscInt_FMT " %" PetscInt_FMT " are wrong for dimin and dimout %" PetscInt_FMT " %" PetscInt_FMT " of function",n,p,pf->dimin,pf->dimout);
 
   if (pf->ops->applyvec) {
     ierr = (*pf->ops->applyvec)(pf->data,x,y);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
     n    = n/pf->dimin;
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-    if (!pf->ops->apply) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
+    PetscCheckFalse(!pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
     ierr = (*pf->ops->apply)(pf->data,n,xx,yy);CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
@@ -206,8 +206,8 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
   PetscValidScalarPointer(x,3);
   PetscValidScalarPointer(y,4);
-  if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different arrays");
-  if (!pf->ops->apply) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
+  PetscCheckFalse(x == y,PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different arrays");
+  PetscCheckFalse(!pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
 
   ierr = (*pf->ops->apply)(pf->data,n,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -388,7 +388,7 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
 
   /* Determine the PFCreateXXX routine for a particular function */
   ierr = PetscFunctionListFind(PFList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy  = NULL;
   pf->ops->view     = NULL;
   pf->ops->apply    = NULL;

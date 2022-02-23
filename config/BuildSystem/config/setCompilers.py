@@ -4,6 +4,8 @@ import config
 import os
 import contextlib
 from functools import reduce
+from collections import namedtuple
+from collections import defaultdict
 
 # not sure how to handle this with 'self' so its outside the class
 def noCheck(command, status, output, error):
@@ -25,13 +27,40 @@ def _picTestIncludes(export=''):
                     'void bar(void){foo();}\n'])
 
 
+class CaseInsensitiveDefaultDict(defaultdict):
+  __slots__ = ()
+
+  def update(self,*args):
+    for x in args:
+      for key,val in x.items():
+        self[key] = val
+
+  def __setitem__(self,key,val):
+    if not isinstance(key,str):
+      raise RuntimeError('must use strings as keys for {cls}'.format(cls=self.__class__))
+    # super() without args is python3 only
+    super(defaultdict,self).__setitem__(key.lower(),val)
+
+  def __missing__(self,key):
+    if not isinstance(key,str):
+      raise RuntimeError('must use strings as keys for {cls}'.format(cls=self.__class__))
+    key = key.lower()
+    if key not in self.keys():
+      self[key] = self.default_factory()
+    return self[key]
+
+def default_cxx_dialect_ranges():
+  return ('c++11','c++17')
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
-    self.usedMPICompilers = 0
-    self.mainLanguage = 'C'
+    self.headerPrefix            = ''
+    self.substPrefix             = ''
+    self.usedMPICompilers        = 0
+    self.mainLanguage            = 'C'
+    self.cxxDialectRange         = CaseInsensitiveDefaultDict(default_cxx_dialect_ranges)
+    self.cxxDialectPackageRanges = ({},{})
     return
 
   def __str__(self):
@@ -140,6 +169,10 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-dynamicLibraryFlags=<string>',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
     help.addArgument('Compilers', '-LIBS=<string>',          nargs.Arg(None, None, 'Specify extra libraries for all links'))
     help.addArgument('Compilers', '-with-environment-variables=<bool>',nargs.ArgBool(None, 0, 'Use compiler variables found in environment'))
+    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources. Pass "c++17" to use "-std=c++17", "gnu++17" to use "-std=gnu++17" or pass just the numer (e.g. "17") to have PETSc auto-detect gnu extensions. Pass "auto" to let PETSc auto-detect everything or "0" to use the compiler"s default. Available: (11, 14, 17, auto, 0)'))
+    help.addArgument('Compilers', '-with-hip-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile HIP sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
+    help.addArgument('Compilers', '-with-cuda-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile CUDA sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
+    help.addArgument('Compilers', '-with-sycl-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile SYCL sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
     return
 
   def setupDependencies(self, framework):
@@ -639,44 +672,471 @@ class Configure(config.base.Configure):
       self.LIBS = ''
     return
 
-  def checkCompiler(self, language, linkLanguage=None,includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
-    '''Check that the given compiler is functional, and if not raise an exception'''
-    self.pushLanguage(language)
-    if not self.checkCompile(includes, body, cleanup, codeBegin, codeEnd):
-      msg = 'Cannot compile '+language+' with '+self.getCompiler()+'.'
-      self.popLanguage()
-      raise RuntimeError(msg)
-    if language == 'CUDA' or language == 'HIP' or language == 'SYCL': # do not check CUDA/HIP/SYCL linker since it is never used (assumed for now)
-      self.popLanguage()
-      return
-    if not self.checkLink(linkLanguage=linkLanguage,includes=includes,body=body):
-      msg = 'Cannot compile/link '+language+' with '+self.getCompiler()+'.'
-      self.popLanguage()
-      raise RuntimeError(msg)
-    oldlibs = self.LIBS
-    if linkLanguage: llang = linkLanguage
-    else: llang = language
-    compiler = self.framework.getCompilerObject(llang)
-    if not hasattr(compiler,'linkerrorcodecheck'):
-      self.LIBS += ' -lpetsc-ufod4vtr9mqHvKIQiVAm'
-      if self.checkLink(linkLanguage=linkLanguage):
-        msg = language + ' compiler ' + self.getCompiler()+ ''' is broken! It is returning a zero error when the linking failed! Either
- 1) switch to another compiler suite or
- 2) report this entire error message to your compiler/linker suite vendor and ask for fix for this issue.'''
-        self.popLanguage()
-        self.LIBS = oldlibs
-        raise RuntimeError(msg)
-      self.LIBS = oldlibs
-      compiler.linkerrorcodecheck = 1
-    if not self.argDB['with-batch']:
-      if not self.checkRun(linkLanguage=linkLanguage):
-        msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
-        if self.isIntel(self.getCompiler(), self.log):
-          msg = msg + 'See https://petsc.org/release/faq/#error-libimf'
-        self.popLanguage()
-        raise OSError(msg)
-    self.popLanguage()
+  def checkDeviceHostCompiler(self,language):
+    """Set the host compiler (HC) of the device compiler (DC) to the HC unless the DC already explicitly sets its HC. This may be needed if the default HC used by the DC is ancient and PETSc uses a different HC (e.g., through --with-cxx=...)."""
+    if language.upper() == 'CUDA':
+      setHostFlag = '-ccbin'
+    else:
+      raise NotImplementedError
+    with self.Language(language):
+      if setHostFlag in self.getCompilerFlags():
+        # don't want to override this if it is already set
+        return
+    compilerName = self.getCompiler(lang='Cxx' if hasattr(self,'CXX') else 'C')
+    hostCCFlag   = '{shf} {cc}'.format(shf=setHostFlag,cc=compilerName)
+    with self.Language(language):
+      self.logPrint(' '.join(('checkDeviceHostCompiler: checking',compilerName,'accepts host compiler',compilerName)))
+      try:
+        self.addCompilerFlag(hostCCFlag)
+      except RuntimeError:
+        pass
     return
+
+  def checkCxxDialect(self, language, isGNUish=False):
+    """
+    Determine the CXX dialect supported by the compiler (language) [and correspoding compiler
+    option - if any].
+
+    isGNUish indicates if the compiler is gnu compliant (i.e. clang).
+    -with-<lang>-dialect can take options:
+      auto: use highest supported dialect configure can determine
+      [[c|gnu][xx|++]]20: not yet supported
+      [[c|gnu][xx|++]]17: gnu++17 or c++17
+      [[c|gnu][xx|++]]14: gnu++14 or c++14
+      [[c|gnu][xx|++]]11: gnu++11 or c++11
+      0: disable CxxDialect check and use compiler default
+
+    On return this function sets the following values:
+    - if needed, appends the relevant CXX dialect flag to <lang> compiler flags
+    - self.cxxDialectRange = (minSupportedDialect,maxSupportedDialect) (e.g. ('c++11','c++14'))
+    - self.addDefine('HAVE_{LANG}_DIALECT_CXX{DIALECT_NUM}',1) for every supported dialect
+    - self.lang+'dialect' = 'c++'+maxDialectNumber (e.g. 'c++14') but ONLY if the user
+      specifically requests a dialect version, otherwise this is not set
+
+    Raises a config.base.ConfigureSetupError if:
+    - The user has set both the --with-dialect=[...] configure options and -std=[...] in their
+      compiler flags
+    - The combination of specifically requested packages cannnot all be compiled with the same flag
+    - An unknown C++ dialect is provided
+
+    The config.base.ConfigureSetupErrors are NOT meant to be caught, as they are fatal errors
+    on part of the user
+
+    Raises a RuntimeError (which may be caught) if:
+    - The compiler does not support at minimum -std=c++11
+    """
+    from config.base import ConfigureSetupError
+    import textwrap
+
+    def includes11():
+      return textwrap.dedent(
+        """
+        // c++11 includes
+        #include <memory>
+        #include <random>
+        #include <complex>
+        #include <iostream>
+
+        template<class T> void ignore(const T&) { } // silence unused variable warnings
+        class valClass
+        {
+        public:
+          int i;
+          valClass() { i = 3; }
+          valClass(int x) : i(x) { }
+        };
+
+        class MoveSemantics
+        {
+          std::unique_ptr<valClass> _member;
+
+        public:
+          MoveSemantics(int val = 4) : _member(new valClass(val)) { }
+          MoveSemantics& operator=(MoveSemantics &&other) noexcept = default;
+        };
+
+        template<typename T> constexpr T Cubed( T x ) { return x*x*x; }
+        auto trailing(int x) -> int { return x+2; }
+        enum class Shapes : int {SQUARE,CIRCLE};
+        template<class ... Types> struct Tuple { };
+        using PetscErrorCode = int;
+        """
+      )
+
+    def body11():
+      return textwrap.dedent(
+        """
+        // c++11 body
+        valClass cls = valClass(); // value initialization
+        int i = cls.i;             // i is not declared const
+        const int& rci = i;        // but rci is
+        const_cast<int&>(rci) = 4;
+
+        constexpr int big_value = 1234;
+        decltype(big_value) ierr = big_value;
+        auto ret = trailing(ierr);
+        MoveSemantics bob;
+        MoveSemantics alice;
+        alice = std::move(bob);ignore(alice);
+        Tuple<> t0;ignore(t0);
+        Tuple<long> t1;ignore(t1);
+        Tuple<int,float> t2;ignore(t2);
+        std::random_device rd;
+        std::mt19937 mt(rd());
+        std::normal_distribution<double> dist(0,1);
+        const double x = dist(mt);
+        std::cout << x << ret << std::endl;
+        """
+      )
+
+    def includes14():
+      return '\n'.join((includes11(),textwrap.dedent(
+        """
+        // c++14 includes
+        #include <type_traits>
+
+        template<class T> constexpr T pi = T(3.1415926535897932385L);  // variable template
+        """
+        )))
+
+    def body14():
+      return '\n'.join((body11(),textwrap.dedent(
+        """
+        // c++14 body
+        auto ptr = std::make_unique<int>();
+        *ptr = 1;
+        std::cout << pi<double> << std::endl;
+        constexpr const std::complex<double> const_i(0.0,1.0);
+        auto lambda = [](auto x, auto y) { return x + y; };
+        std::cout << lambda(3,4) << std::real(const_i) << std::endl;
+        """
+      )))
+
+    def includes17():
+      return '\n'.join((includes14(),textwrap.dedent(
+        """
+        // c++17 includes
+        #include <string_view>
+        #include <any>
+        #include <optional>
+        #include <variant>
+
+        [[nodiscard]] int nodiscardFunc() { return 0; }
+        struct S2
+        {
+          // static inline member variables since c++17
+          static inline int var = 8675309;
+          void f(int i);
+        };
+        void S2::f(int i)
+        {
+          // until c++17: Error: invalid syntax
+          // since c++17: OK: captures the enclosing S2 by copy
+          auto lmbd = [=, *this] { std::cout << i << " " << this->var << std::endl; };
+          lmbd();
+        }
+        """
+      )))
+
+    def body17():
+      return '\n'.join((body14(),textwrap.dedent(
+        """
+        // c++17 body
+        std::variant<int,float> v,w;
+        v = 42;               // v contains int
+        int ivar = std::get<int>(v);
+        w = std::get<0>(v);   // same effect as the previous line
+        w = v;                // same effect as the previous line
+        S2 foo;
+        foo.f(ivar);
+        if constexpr (std::is_arithmetic_v<int>) std::cout << "c++17" << std::endl;
+        typedef std::integral_constant<Shapes,Shapes::SQUARE> squareShape;
+        // static_assert with no message since c++17
+        static_assert(std::is_same_v<squareShape,squareShape>);
+        auto val = nodiscardFunc();ignore(val);
+        """
+      )))
+
+    DialectFlags = namedtuple('DialectFlags',['standard','gnu'])
+    BaseFlags    = DialectFlags(standard='-std=c++',gnu='-std=gnu++')
+    isGNUish     = bool(isGNUish)
+    lang,LANG    = language.lower(),language.upper()
+    compiler     = self.getCompiler(lang=language)
+    self.logPrint('checkCxxDialect: checking C++ dialect version for language "{lang}" using compiler "{compiler}"'.format(lang=LANG,compiler=compiler))
+    self.logPrint('checkCxxDialect: PETSc believes compiler ({compiler}) {isgnuish} gnu-ish'.format(compiler=compiler,isgnuish='IS' if isGNUish else 'is NOT'))
+
+    # if we have done this before the flag may have been inserted (by us) into the
+    # compiler flags, so we shouldn't yell at the user for having it in there, nor should
+    # we treat it as explicitly being set. If we have the attribute, it is either True or
+    # False
+    setPreviouslyAttrName   = lang+'dialect_set_explicitly__'
+    previouslySetExplicitly = getattr(self,setPreviouslyAttrName,None)
+    assert previouslySetExplicitly in (True,False,None)
+    processedBefore = previouslySetExplicitly is not None
+    self.logPrint('checkCxxDialect: PETSc believes that we {pbefore} processed {compiler} before'.format(pbefore='HAVE' if processedBefore else 'have NOT',compiler=compiler))
+
+    # configure value
+    useFlag         = True
+    configureArg    = lang.join(['with-','-dialect'])
+    withLangDialect = self.argDB.get(configureArg).upper().replace('X','+')
+    if withLangDialect in ('','0','NONE'):
+      self.logPrint(
+        'checkCxxDialect: user has requested NO cxx dialect, we\'ll check but not add the flag'
+      )
+      withLangDialect = 'NONE'
+      useFlag         = False # we still do the checks, just not add the flag in the end
+    self.logPrint('checkCxxDialect: configure option after sanitization: --{opt}={val}'.format(opt=configureArg,val=withLangDialect))
+
+    # check the configure argument
+    if withLangDialect.startswith('GNU'):
+      allowedBaseFlags = [BaseFlags.gnu]
+    elif withLangDialect.startswith('C++'):
+      allowedBaseFlags = [BaseFlags.standard]
+    elif withLangDialect == 'NONE':
+      allowedBaseFlags = ['(NO FLAG)']
+    else:
+      # if we are here withLangDialect is either AUTO or e.g. 14
+      allowedBaseFlags = [BaseFlags.gnu,BaseFlags.standard] if isGNUish else [BaseFlags.standard]
+
+    Dialect  = namedtuple('Dialect',['num','includes','body'])
+    dialects = (
+      Dialect(num='11',includes=includes11(),body=body11()),
+      Dialect(num='14',includes=includes14(),body=body14()),
+      Dialect(num='17',includes=includes17(),body=body17()),
+      Dialect(num='20',includes=includes17(),body=body17()), # no c++20 checks yet
+    )
+
+    # search compiler flags to see if user has set the c++ standard from there
+    with self.Language(language):
+      allFlags = tuple(self.getCompilerFlags().strip().split())
+    langDialectFromFlags = tuple(f for f in allFlags for flg in BaseFlags if f.startswith(flg))
+    if len(langDialectFromFlags):
+      sanitized = langDialectFromFlags[-1].lower().replace('-std=','')
+      if not processedBefore:
+        # check that we didn't set the compiler flag ourselves before we yell at the user
+        if withLangDialect != 'AUTO':
+          # user has set both flags
+          errorMessage = 'Competing or duplicate C++ dialect flags, have specified {flagdialect} in compiler ({compiler}) flags and used configure option {opt}'.format(flagdialect=langDialectFromFlags,compiler=compiler,opt='--'+configureArg+'='+withLangDialect.lower())
+          raise ConfigureSetupError(errorMessage)
+        self.logPrintBox('\n'.join((
+          ' ***** WARNING: Explicitly setting C++ dialect in compiler flags may not be optimal.',
+          'Use ./configure --{opt}={sanitized} if you really want to use that value,',
+          'otherwise remove {flag} from compiler flags and omit --{opt}=[...]',
+          'from configure to have PETSc automatically detect the most appropriate flag for you'
+        )).format(opt=configureArg,sanitized=sanitized,flag=langDialectFromFlags[-1]))
+
+      # the user has already set the flag in their options, no need to set it a second time
+      useFlag          = False
+      # set the dialect to whatever was in the users compiler flags
+      withLangDialect  = sanitized
+      # if we have processed before, then the flags will be the ones we set, so it's best
+      # to just keep the allowedBaseFlags general
+      if not processedBefore:
+        allowedBaseFlags = [
+          BaseFlags.gnu if withLangDialect.startswith('gnu') else BaseFlags.standard
+        ]
+
+    # delete any previous defines (in case we are doing this again)
+    for dlct in dialects:
+      self.delDefine('HAVE_{lang}_DIALECT_CXX{ver}'.format(lang=LANG,ver=dlct.num))
+
+    if withLangDialect in {'AUTO','NONE'}:
+      # see top of file
+      dialectNumStr = default_cxx_dialect_ranges()[1]
+      explicit      = withLangDialect == 'NONE' # NONE is explicit but AUTO is not
+    else:
+      # we can stop shouting now
+      dialectNumStr = withLangDialect = withLangDialect.lower()
+      # if we have done this before, then previouslySetExplicitly holds the previous
+      # explicit value
+      explicit      = previouslySetExplicitly if processedBefore else True
+      if withLangDialect.endswith('20'):
+        self.logPrintBox('\n'.join((
+          ' ***** WARNING: C++20 is not yet fully supported, PETSc only tests up to C++{maxver}.',
+          'Remove -std=[...] from compiler flags and/or omit --{opt}=[...] from',
+          'configure to have PETSc automatically detect the most appropriate flag for you'
+        )).format(maxver=default_cxx_dialect_ranges()[1],opt=configureArg))
+
+    minDialect,maxDialect = 0,-1
+    for i,dialect in enumerate(dialects):
+      if dialectNumStr.endswith(dialect.num):
+        maxDialect = i
+        break
+
+    if maxDialect == -1:
+      ver    = int(withLangDialect[-2:])
+      minver = int(dialects[0].num)
+      if ver == 89 or ver < minver:
+        mess = 'PETSc requires at least C++{}, how old is your compiler?'.format(minver)
+        # throw RTE (which is meant to be caught) as this indicates compiler is too old
+        raise RuntimeError(mess)
+      mess = 'Unknown C++ dialect: {val}'.format(val=withLangDialect)
+      # throw CSE (which is NOT meant to be caught) as this is an unhandled exception
+      raise ConfigureSetupError(mess)
+    self.logPrint('checkCxxDialect: dialect {dlct} has been {expl} selected for {lang}'.format(dlct=withLangDialect,expl='EXPLICITLY' if explicit else 'NOT explicitly',lang=LANG))
+
+    def checkPackageRange(packageRanges,kind,dialectIdx):
+      if kind == 'upper':
+        boundFunction   = min
+        compareFunction = lambda x,y: x[-2:] > y[-2:]
+      elif kind == 'lower':
+        boundFunction   = max
+        compareFunction = lambda x,y: x == 'NONE' or x[-2:] < y[-2:]
+      else:
+        raise ValueError('unknown bound type',kind)
+
+      # Check that we have a sane upper bound on the dialect
+      if len(packageRanges.keys()):
+        packageBound = boundFunction(packageRanges.keys()).lower()
+        startDialect = withLangDialect if explicit else dialects[dialectIdx].num
+        if compareFunction(startDialect,packageBound):
+          packageBlame = '\n'.join('\t- '+s for s in packageRanges[packageBound])
+          # if using NONE startDialect will be highest possible dialect
+          if explicit and startDialect != 'NONE':
+            # user asked for a dialect, they'll probably want to know why it doesn't work
+            errorMessage = '\n'.join((
+              'Explicitly requested {lang} dialect {dlct} but package(s):',
+              packageBlame.replace('\t',''),
+              'Has {kind} bound of -std={packdlct}'
+            )).format(lang=LANG,dlct=withLangDialect,kind=kind,packdlct=packageBound)
+            raise ConfigureSetupError(errorMessage)
+          # if not explicit, we can just silently log the discrepancy instead
+          self.logPrint('\n'.join((
+            'checkCxxDialect: had {lang} dialect {dlct} as {kind} bound but package(s):',
+            packageBlame,
+            '\tHas {kind} bound of -std={packdlct}, using package requirement -std={packdlct}'
+          )).format(lang=LANG,dlct=startDialect,kind=kind,packdlct=packageBound))
+          try:
+            dialectIdx = [i for i,d in enumerate(dialects) if packageBound.endswith(d.num)][0]
+          except IndexError:
+            mess = 'Could not find a dialect number that matches the package bounds: {}'.format(
+              packageRanges
+            )
+            raise ConfigureSetupError(mess)
+      return dialectIdx
+
+
+    maxDialect = checkPackageRange(self.cxxDialectPackageRanges[1],'upper',maxDialect)
+    minDialect = checkPackageRange(self.cxxDialectPackageRanges[0],'lower',minDialect)
+
+    # if the user asks for a particular version we should pin that version
+    if withLangDialect not in ('NONE','AUTO') and explicit:
+      minDialect = maxDialect
+
+    # compile a list of all the flags we will test in descending order, for example
+    # -std=gnu++17
+    # -std=c++17
+    # -std=gnu++14
+    # ...
+    flagPool = [(''.join((b,d.num)),d) for d in reversed(dialects[minDialect:maxDialect+1]) for b in allowedBaseFlags]
+
+    self.logPrint(
+      '\n'.join(['checkCxxDialect: Have potential flag pool:']+['\t   - '+f for f,_ in flagPool])
+    )
+    assert len(flagPool)
+    with self.Language(language):
+      for index,(flag,dlct) in enumerate(flagPool):
+        self.logPrint(' '.join(('checkCxxDialect: checking CXX',dlct.num,'for',lang,'with',flag)))
+        # test with flag
+        try:
+          if useFlag:
+            # needs compilerOnly = True as we need to keep the flag out of the linker flags
+            self.addCompilerFlag(flag,includes=dlct.includes,body=dlct.body,compilerOnly=True)
+          elif not self.checkCompile(includes=dlct.includes,body=dlct.body):
+            raise RuntimeError # to mimic addCompilerFlag
+        except RuntimeError:
+          # failure, flag is discarded, but first check we haven't run out of flags
+          if index == len(flagPool)-1:
+            # compiler does not support the minimum required c++ dialect
+            mess = '\n'.join((
+              '{lang} compiler ({compiler}) appears non-compliant with C++{ver} or didn\'t accept:',
+              '\n'.join('- '+(flag[:-2] if flag.startswith('(NO FLAG)') else flag) for flg,_ in flagPool[:index+1])+'\n'
+            ))
+            if flag.endswith(dialects[0].num):
+              # it's the compilers fault we can't try the next dialect
+              dialectNum = dialects[0].num
+            elif withLangDialect in ('NONE','AUTO'):
+              # it's a packages fault we can't try the next dialect
+              packDialects   = self.cxxDialectPackageRanges[0]
+              minPackDialect = max(packDialects.keys())
+              mess = '\n'.join((
+                'Using {lang} dialect C++{ver} as lower bound due to package(s):',
+                '\n'.join('- '+s for s in packDialects[minPackDialect]),
+                ' '.join(('But',mess))
+              ))
+              dialectNum = minPackDiaect[-2:]
+            else:
+              # if nothing else then it's because the user requested a particular version
+              dialectNum = dialectNumStr
+            mess = mess.format(lang=language.replace('x','+'),compiler=compiler,ver=dialectNum)
+            raise RuntimeError(mess)
+        else:
+          # success
+          self.cxxDialectRange[language] = ('c++'+dialects[minDialect].num,'c++'+dlct.num)
+          if not useFlag:
+            compilerFlags = self.getCompilerFlags()
+            if compilerFlags.count(flag) > 1:
+              errorMessage = '\n'.join((
+                'We said we wouldn\'t add the flag yet the flag has been mysteriously added!!:',
+                compilerFlags
+              ))
+              raise ConfigureSetupError(errorMessage)
+          self.logPrint('checkCxxDialect: success using {flag} for {lang} dialect C++{ver}, set new cxxDialectRange: {drange}'.format(flag=flag,lang=language,ver=dlct.num,drange=self.cxxDialectRange[language]))
+          break # flagPool loop
+
+    # this loop will also set maxDialect for the setattr below
+    for maxDialect,dlct in enumerate(dialects):
+      if dlct.num > flag[-2:]:
+        break
+      self.addDefine('HAVE_{lang}_DIALECT_CXX{ver}'.format(lang=LANG,ver=dlct.num),1)
+
+    if explicit:
+      # if we don't use the flag we shouldn't set this attr because its existence implies
+      # a particular dialect is *chosen*
+      setattr(self,lang+'dialect','c++'+dialects[maxDialect-1].num)
+    setattr(self,setPreviouslyAttrName,explicit)
+    return
+
+  def checkCompiler(self, language, linkLanguage=None,includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
+    """Check that the given compiler is functional, and if not raise an exception"""
+    with self.Language(language):
+      compiler = self.getCompiler()
+      if not self.checkCompile(includes=includes,body=body,cleanup=cleanup,codeBegin=codeBegin,codeEnd=codeEnd):
+        msg = 'Cannot compile {} with {}.'.format(language,compiler)
+        raise RuntimeError(msg)
+
+      if language.upper() in {'CUDA','HIP','SYCL'}:
+        # do not check CUDA/HIP/SYCL linkers since they are never used (assumed for now)
+        return
+      if not self.checkLink(linkLanguage=linkLanguage,includes=includes,body=body):
+        msg = 'Cannot compile/link {} with {}.'.format(language,compiler)
+        raise RuntimeError(msg)
+      oldlibs     = self.LIBS
+      compilerObj = self.framework.getCompilerObject(linkLanguage if linkLanguage else language)
+      if not hasattr(compilerObj,'linkerrorcodecheck'):
+        self.LIBS += ' -lpetsc-ufod4vtr9mqHvKIQiVAm'
+        if self.checkLink(linkLanguage=linkLanguage):
+          self.LIBS = oldlibs
+          msg = '\n'.join((
+            '{lang} compiler {cmp} is broken! It is returning no errors for a failed link! Either',
+            '1) switch to another compiler suite',
+            '2) report this entire error message to your compiler/linker suite vendor'
+          )).format(lang=language,cmp=compiler)
+          raise RuntimeError(msg)
+        self.LIBS = oldlibs
+        compilerObj.linkerrorcodecheck = 1
+      if not self.argDB['with-batch']:
+        if not self.checkRun(linkLanguage=linkLanguage):
+          msg = '\n'.join((
+            'Cannot run executables created with {language}. If this machine uses a batch system ',
+            'to submit jobs you will need to configure using ./configure with the additional option  --with-batch. ',
+            'Otherwise there is problem with the compilers. Can you compile and run code with your compiler \'{compiler}\'?'
+          )).format(language=language,compiler=compiler)
+          if self.isIntel(compiler,self.log):
+            msg = '\n'.join((msg,'See https://petsc.org/release/faq/#error-libimf'))
+          raise OSError(msg) # why OSError?? it isn't caught anywhere in here?
+    return
+
 
   def crayCrossCompiler(self,compiler):
     import script
@@ -726,6 +1186,7 @@ class Configure(config.base.Configure):
     if cross:
       return ' '.join(newoutput)
     return ''
+
 
   def generateCCompilerGuesses(self):
     '''Determine the C compiler '''
@@ -839,18 +1300,18 @@ class Configure(config.base.Configure):
 
   def checkCPreprocessor(self):
     '''Locate a functional C preprocessor'''
-    for compiler in self.generateCPreprocessorGuesses():
-      try:
-        if self.getExecutable(compiler, resultName = 'CPP'):
-          self.pushLanguage('C')
-          if not self.checkPreprocess('#include <stdlib.h>\n'):
-            raise RuntimeError('Cannot preprocess C with '+self.CPP+'.')
-          self.popLanguage()
-          return
-      except RuntimeError as e:
-        self.popLanguage()
+    with self.Language('C'):
+      for compiler in self.generateCPreprocessorGuesses():
+        try:
+          if self.getExecutable(compiler, resultName = 'CPP'):
+            if not self.checkPreprocess('#include <stdlib.h>\n'):
+              raise RuntimeError('Cannot preprocess C with '+self.CPP+'.')
+            return
+        except RuntimeError as e:
+          self.logPrint(str(e))
     raise RuntimeError('Cannot find a C preprocessor')
     return
+
 
   def generateCUDACompilerGuesses(self):
     '''Determine the CUDA compiler using CUDAC, then --with-cudac
@@ -875,10 +1336,6 @@ class Configure(config.base.Configure):
 
   def checkCUDACompiler(self):
     '''Locate a functional CUDA compiler'''
-    if ('with-cudac' in self.argDB and self.argDB['with-cudac'] == '0'):
-      if 'CUDAC' in self.argDB:
-        del self.argDB['CUDAC']
-      return
     self.mesg = ''
     for compiler in self.generateCUDACompilerGuesses():
       try:
@@ -915,17 +1372,17 @@ class Configure(config.base.Configure):
 
   def checkCUDAPreprocessor(self):
     '''Locate a functional CUDA preprocessor'''
-    for compiler in self.generateCUDAPreprocessorGuesses():
-      try:
-        if self.getExecutable(compiler, resultName = 'CUDAPP'):
-          self.pushLanguage('CUDA')
-          if not self.checkPreprocess('#include <stdlib.h>\n__global__ void testFunction() {return;};'):
-            raise RuntimeError('Cannot preprocess CUDA with '+self.CUDAPP+'.')
-          self.popLanguage()
-          return
-      except RuntimeError as e:
-        self.popLanguage()
+    with self.Language('CUDA'):
+      for compiler in self.generateCUDAPreprocessorGuesses():
+        try:
+          if self.getExecutable(compiler, resultName = 'CUDAPP'):
+            if not self.checkPreprocess('#include <stdlib.h>\n__global__ void testFunction() {return;};'):
+              raise RuntimeError('Cannot preprocess CUDA with '+self.CUDAPP+'.')
+            return
+        except RuntimeError as e:
+          self.logPrint(str(e))
     return
+
 
   def generateHIPCompilerGuesses(self):
     '''Determine the HIP compiler using HIPC, then --with-hipc
@@ -949,10 +1406,6 @@ class Configure(config.base.Configure):
 
   def checkHIPCompiler(self):
     '''Locate a functional HIP compiler'''
-    if ('with-hipc' in self.argDB and self.argDB['with-hipc'] == '0'):
-      if 'HIPC' in self.argDB:
-        del self.argDB['HIPC']
-      return
     self.mesg = 'in generateHIPCompilerGuesses'
     for compiler in self.generateHIPCompilerGuesses():
       try:
@@ -992,17 +1445,17 @@ class Configure(config.base.Configure):
 
   def checkHIPPreprocessor(self):
     '''Locate a functional HIP preprocessor'''
-    for compiler in self.generateHIPPreprocessorGuesses():
-      try:
-        if self.getExecutable(compiler, resultName = 'HIPPP'):
-          self.pushLanguage('HIP')
-          if not self.checkPreprocess('#include <stdlib.h>\n__global__ void testFunction() {return;};'):
-            raise RuntimeError('Cannot preprocess HIP with '+self.HIPPP+'.')
-          self.popLanguage()
-          return
-      except RuntimeError as e:
-        self.popLanguage()
+    with self.Language('HIP'):
+      for compiler in self.generateHIPPreprocessorGuesses():
+        try:
+          if self.getExecutable(compiler, resultName = 'HIPPP'):
+            if not self.checkPreprocess('#include <stdlib.h>\n__global__ void testFunction() {return;};'):
+              raise RuntimeError('Cannot preprocess HIP with '+self.HIPPP+'.')
+            return
+        except RuntimeError as e:
+          self.logPrint(str(e))
     return
+
 
   def generateSYCLCompilerGuesses(self):
     '''Determine the SYCL compiler using SYCLC, then --with-syclc
@@ -1023,10 +1476,6 @@ class Configure(config.base.Configure):
 
   def checkSYCLCompiler(self):
     '''Locate a functional SYCL compiler'''
-    if ('with-syclc' in self.argDB and self.argDB['with-syclc'] == '0'):
-      if 'SYCLC' in self.argDB:
-        del self.argDB['SYCLC']
-      return
     self.mesg = 'in generateSYCLCompilerGuesses'
     for compiler in self.generateSYCLCompilerGuesses():
       try:
@@ -1056,17 +1505,17 @@ class Configure(config.base.Configure):
 
   def checkSYCLPreprocessor(self):
     '''Locate a functional SYCL preprocessor'''
-    for compiler in self.generateSYCLPreprocessorGuesses():
-      try:
-        if self.getExecutable(compiler, resultName = 'SYCLPP'):
-          self.pushLanguage('SYCL')
-          if not self.checkPreprocess('#include <CL/sycl.hpp>\n void testFunction() {return;};'):
-            raise RuntimeError('Cannot preprocess SYCL with '+self.SYCLPP+'.')
-          self.popLanguage()
-          return
-      except RuntimeError as e:
-        self.popLanguage()
+    with self.Language('SYCL'):
+      for compiler in self.generateSYCLPreprocessorGuesses():
+        try:
+          if self.getExecutable(compiler, resultName = 'SYCLPP'):
+            if not self.checkPreprocess('#include <CL/sycl.hpp>\n void testFunction() {return;};'):
+              raise RuntimeError('Cannot preprocess SYCL with '+self.SYCLPP+'.')
+            return
+        except RuntimeError as e:
+          self.logPrint(str(e))
     return
+
 
   def generateCxxCompilerGuesses(self):
     '''Determine the Cxx compiler'''
@@ -1157,10 +1606,6 @@ class Configure(config.base.Configure):
 
   def checkCxxCompiler(self):
     '''Locate a functional Cxx compiler'''
-    if 'with-cxx' in self.argDB and self.argDB['with-cxx'] == '0':
-      if 'CXX' in self.argDB:
-        del self.argDB['CXX']
-      return
     self.mesg = ''
     for compiler in self.generateCxxCompilerGuesses():
       # Determine an acceptable extensions for the C++ compiler
@@ -1198,24 +1643,23 @@ class Configure(config.base.Configure):
 
   def checkCxxPreprocessor(self):
     '''Locate a functional Cxx preprocessor'''
-    if not hasattr(self, 'CXX'):
+    if not hasattr(self,'CXX'): # pointless, it is checked already
       return
-    for compiler in self.generateCxxPreprocessorGuesses():
-      try:
-        if self.getExecutable(compiler, resultName = 'CXXPP'):
-          self.pushLanguage('Cxx')
-          if not self.checkPreprocess('#include <cstdlib>\n'):
-            raise RuntimeError('Cannot preprocess Cxx with '+self.CXXPP+'.')
-          self.popLanguage()
-          break
-      except RuntimeError as e:
-
-        if os.path.basename(self.CXXPP) in ['mpicxx', 'mpiCC']:
-          self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
-        self.popLanguage()
-        self.delMakeMacro('CXXPP')
-        del self.CXXPP
+    with self.Language('Cxx'):
+      for compiler in self.generateCxxPreprocessorGuesses():
+        try:
+          if self.getExecutable(compiler, resultName = 'CXXPP'):
+            if not self.checkPreprocess('#include <cstdlib>\n'):
+              raise RuntimeError('Cannot preprocess Cxx with '+self.CXXPP+'.')
+            break
+        except RuntimeError as e:
+          self.logPrint(str(e))
+          if os.path.basename(self.CXXPP) in ['mpicxx', 'mpiCC']:
+            self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
+          self.delMakeMacro('CXXPP')
+          del self.CXXPP
     return
+
 
   def generateFortranCompilerGuesses(self):
     '''Determine the Fortran compiler'''
@@ -1340,23 +1784,20 @@ class Configure(config.base.Configure):
     '''Locate a functional Fortran preprocessor'''
     if not hasattr(self, 'FC'):
       return
-    for compiler in self.generateFortranPreprocessorGuesses():
-      try:
-        if self.getExecutable(compiler, resultName = 'FPP'):
-          self.pushLanguage('FC')
-          if not self.checkPreprocess('#define foo 10\n'):
-            raise RuntimeError('Cannot preprocess Fortran with '+self.FPP+'.')
-          self.popLanguage()
-          break
-      except RuntimeError as e:
-
-        if os.path.basename(self.FPP) in ['mpif90']:
-          self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
-        self.popLanguage()
-        self.delMakeMacro('FPP')
-        del self.FPP
+    with self.Language('FC'):
+      for compiler in self.generateFortranPreprocessorGuesses():
+        try:
+          if self.getExecutable(compiler, resultName = 'FPP'):
+            if not self.checkPreprocess('#define foo 10\n'):
+              raise RuntimeError('Cannot preprocess Fortran with '+self.FPP+'.')
+            break
+        except RuntimeError as e:
+          self.logPrint(str(e))
+          if os.path.basename(self.FPP) in ['mpif90']:
+            self.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
+          self.delMakeMacro('FPP')
+          del self.FPP
     return
-
 
   def checkFortranComments(self):
     '''Make sure fortran comment "!" works'''
@@ -1366,6 +1807,7 @@ class Configure(config.base.Configure):
     self.logPrint('Fortran comments can use ! in column 1')
     self.popLanguage()
     return
+
 
   def containsInvalidFlag(self, output):
     '''If the output contains evidence that an invalid flag was used, return True'''
@@ -2171,15 +2613,39 @@ if (dlclose(handle)) {
     self.executeTest(self.checkInitialFlags)
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
-    self.executeTest(self.checkCUDACompiler)
-    self.executeTest(self.checkCUDAPreprocessor)
-    self.executeTest(self.checkHIPCompiler)
-    self.executeTest(self.checkHIPPreprocessor)
-    self.executeTest(self.checkSYCLCompiler)
-    self.executeTest(self.checkSYCLPreprocessor)
-    self.executeTest(self.checkCxxCompiler)
-    if hasattr(self, 'CXX'):
-      self.executeTest(self.checkCxxPreprocessor)
+
+    def compilerIsDisabledFromOptions(compiler):
+      """
+      Return True if compiler is disabled via configure options (and delete it from the argdb),
+      False otherwise
+      """
+      disabled = self.argDB.get('with-'+compiler.lower()) == '0'
+      if disabled:
+        COMPILER = compiler.upper()
+        if COMPILER in self.argDB:
+          del self.argDB[COMPILER]
+      return disabled
+
+    for LANG in ['CUDA','HIP','SYCL','Cxx']:
+      compilerName = LANG.upper() if LANG == 'Cxx' else LANG+'C'
+      if not compilerIsDisabledFromOptions(compilerName):
+        self.executeTest(getattr(self,LANG.join(('check','Compiler'))))
+        try:
+          self.executeTest(self.checkDeviceHostCompiler,args=[LANG])
+        except NotImplementedError:
+          pass
+        if hasattr(self,compilerName):
+          compiler = self.getCompiler(lang=LANG)
+          isGNUish = self.isGNU(compiler,self.log) or self.isClang(compiler,self.log)
+          try:
+            self.executeTest(self.checkCxxDialect,args=[LANG],kargs={'isGNUish':isGNUish})
+          except RuntimeError as e:
+            self.mesg = str(e)
+            self.logPrint(' '.join(('Error testing',LANG,'compiler:',self.mesg)))
+            self.delMakeMacro(compilerName)
+            delattr(self,compilerName)
+          else:
+            self.executeTest(getattr(self,LANG.join(('check','Preprocessor'))))
     self.executeTest(self.checkFortranCompiler)
     if hasattr(self, 'FC'):
       self.executeTest(self.checkFortranPreprocessor)

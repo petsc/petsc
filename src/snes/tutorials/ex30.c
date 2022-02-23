@@ -287,28 +287,28 @@ done:
   =====================================================================*/
 
 /*---------------------------------------------------------------------*/
-PETSC_STATIC_INLINE PetscScalar UInterp(Field **x, PetscInt i, PetscInt j)
+static inline PetscScalar UInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
   return 0.25*(x[j][i].u+x[j+1][i].u+x[j][i+1].u+x[j+1][i+1].u);
 }
 
 /*---------------------------------------------------------------------*/
-PETSC_STATIC_INLINE PetscScalar WInterp(Field **x, PetscInt i, PetscInt j)
+static inline PetscScalar WInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
   return 0.25*(x[j][i].w+x[j+1][i].w+x[j][i+1].w+x[j+1][i+1].w);
 }
 
 /*---------------------------------------------------------------------*/
-PETSC_STATIC_INLINE PetscScalar PInterp(Field **x, PetscInt i, PetscInt j)
+static inline PetscScalar PInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
   return 0.25*(x[j][i].p+x[j+1][i].p+x[j][i+1].p+x[j+1][i+1].p);
 }
 
 /*---------------------------------------------------------------------*/
-PETSC_STATIC_INLINE PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
+static inline PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
   return 0.25*(x[j][i].T+x[j+1][i].T+x[j][i+1].T+x[j+1][i+1].T);
@@ -316,7 +316,7 @@ PETSC_STATIC_INLINE PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
 
 /*---------------------------------------------------------------------*/
 /*  isoviscous analytic solution for IC */
-PETSC_STATIC_INLINE PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
+static inline PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param = user->param;
@@ -334,7 +334,7 @@ PETSC_STATIC_INLINE PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *us
 
 /*---------------------------------------------------------------------*/
 /*  isoviscous analytic solution for IC */
-PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user)
+static inline PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param = user->param;
@@ -349,7 +349,7 @@ PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *use
 
 /*---------------------------------------------------------------------*/
 /*  isoviscous analytic solution for IC */
-PETSC_STATIC_INLINE PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
+static inline PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param = user->param;
@@ -362,7 +362,7 @@ PETSC_STATIC_INLINE PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
 }
 
 /*  computes the second invariant of the strain rate tensor */
-PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
+static inline PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param = user->param;
@@ -421,7 +421,7 @@ PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, Pe
 
 /*---------------------------------------------------------------------*/
 /*  computes the shear viscosity */
-PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscScalar z, Parameter *param)
+static inline PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscScalar z, Parameter *param)
 /*---------------------------------------------------------------------*/
 {
   PetscReal   result   =0.0;
@@ -465,7 +465,7 @@ PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscS
 
 /*---------------------------------------------------------------------*/
 /*  computes the residual of the x-component of eqn (1) above */
-PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
+static inline PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param=user->param;
@@ -519,7 +519,7 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
 
 /*---------------------------------------------------------------------*/
 /*  computes the residual of the z-component of eqn (1) above */
-PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
+static inline PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param=user->param;
@@ -576,7 +576,7 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
 
 /*---------------------------------------------------------------------*/
 /*  computes the residual of eqn (2) above */
-PETSC_STATIC_INLINE PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
+static inline PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   GridInfo    *grid =user->grid;
@@ -590,7 +590,7 @@ PETSC_STATIC_INLINE PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscI
 
 /*---------------------------------------------------------------------*/
 /*  computes the residual of eqn (3) above */
-PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
+static inline PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param=user->param;
@@ -650,7 +650,7 @@ PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j
 
 /*---------------------------------------------------------------------*/
 /*  computes the shear stress---used on the boundaries */
-PETSC_STATIC_INLINE PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
+static inline PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param=user->param;
@@ -685,7 +685,7 @@ PETSC_STATIC_INLINE PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, P
 
 /*---------------------------------------------------------------------*/
 /*  computes the normal stress---used on the boundaries */
-PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
+static inline PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param=user->param;
@@ -723,7 +723,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
 
 /*---------------------------------------------------------------------*/
 /*  computes the normal stress---used on the boundaries */
-PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
+static inline PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter   *param=user->param;
@@ -1212,7 +1212,7 @@ PetscErrorCode StressField(DM da)
 /*---------------------------------------------------------------------*/
 /* returns the velocity of the subducting slab and handles fault nodes
    for BC */
-PETSC_STATIC_INLINE PetscScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
+static inline PetscScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter *param = user->param;
@@ -1232,7 +1232,7 @@ PETSC_STATIC_INLINE PetscScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *
 
 /*---------------------------------------------------------------------*/
 /*  solution to diffusive half-space cooling model for BC */
-PETSC_STATIC_INLINE PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
+static inline PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter     *param = user->param;

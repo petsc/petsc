@@ -17,9 +17,9 @@ The command line options are:\n\
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetInitialVector();
-   Routines: TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
+   Routines: TaoSetSolution();
+   Routines: TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
    Routines: TaoDestroy();
    Processors: 1
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv,(char *)0,help);if (ierr) return ierr;
 
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size >1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
+  PetscCheckFalse(size >1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
   /* Specify default dimension of the problem */
   user.mx = 4; user.my = 4;
@@ -87,15 +87,15 @@ int main(int argc, char **argv)
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
   ierr = MSA_InitialPoint(&user,x);CHKERRQ(ierr);                /* Application specific routine */
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);   /* A TAO routine                */
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);   /* A TAO routine                */
 
   /* Provide TAO routines for function, gradient, and Hessian evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
 
   /* Create a matrix data structure to store the Hessian.  This structure will be used by TAO */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,7,NULL,&(user.H));CHKERRQ(ierr);
   ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);

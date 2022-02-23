@@ -59,7 +59,7 @@ static PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if (fcg->nprealloc > fcg->mmax+1) {
-    ierr = PetscInfo2(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",fcg->nprealloc, fcg->mmax+1);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",fcg->nprealloc, fcg->mmax+1);CHKERRQ(ierr);
   }
 
   /* Preallocate additional work vectors */
@@ -131,7 +131,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
     case KSP_NORM_NONE:
       dp = 0.0;
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+    default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
 
   /* Initial Convergence Check */
@@ -233,7 +233,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
       case KSP_NORM_NONE:
         dp = 0.0;
         break;
-      default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+      default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
 
     /* Check for convergence */
@@ -253,7 +253,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 
     if (eigs) {
       if (i > 0) {
-        if (ksp->max_it != stored_max_it) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+        PetscCheckFalse(ksp->max_it != stored_max_it,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
         e[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))/alphaold;
         d[i] = PetscSqrtReal(PetscAbsScalar(beta/betaold))*e[i] + 1.0/alpha;
       } else {
@@ -404,7 +404,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(ksp,nprealloc,2);
-  if (nprealloc > fcg->mmax+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot preallocate more than m_max+1 vectors");
+  PetscCheckFalse(nprealloc > fcg->mmax+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot preallocate more than m_max+1 vectors");
   fcg->nprealloc = nprealloc;
   PetscFunctionReturn(0);
 }

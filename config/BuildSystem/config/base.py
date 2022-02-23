@@ -335,9 +335,10 @@ class Configure(script.Script):
     if lang is None:
       yield
     else:
-      self.pushLanguage(lang)
-      yield
-      self.popLanguage()
+      try:
+        yield self.pushLanguage(lang)
+      finally:
+        self.popLanguage()
 
   def getHeaders(self):
     self.compilerDefines = os.path.join(self.tmpDir, 'confdefs.h')

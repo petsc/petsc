@@ -76,7 +76,7 @@ static PetscErrorCode CreateMat(DM dmSol,Mat *pA)
   A = *pA;
   ierr = DMStagGetCorners(dmSol,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagGetGlobalSizes(dmSol,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
-  if (N[0] < 2 || N[1] < 2 || N[2] < 2) SETERRQ(PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
+  PetscCheckFalse(N[0] < 2 || N[1] < 2 || N[2] < 2,PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
   ierr = DMStagGetIsLastRank(dmSol,&isLastRankx,&isLastRanky,&isLastRankz);CHKERRQ(ierr);
   ierr = DMStagGetIsFirstRank(dmSol,&isFirstRankx,&isFirstRanky,&isFirstRankz);CHKERRQ(ierr);
   hx = 1.0/N[0]; hy = 1.0/N[1]; hz = 1.0/N[2];
@@ -515,7 +515,7 @@ static PetscErrorCode check_vals(PetscInt ex, PetscInt ey, PetscInt ez, PetscInt
 
   PetscFunctionBeginUser;
   for (i=0; i<n; ++i) {
-    if (ref[i] != computed[i]) SETERRQ7(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(%D,%D,%D) Assertion Failure. (ref[%D]) %g != %g (computed)[%D]",ex,ey,ez,i,(double)PetscRealPart(ref[i]),(double)PetscRealPart(computed[i]),i);
+    PetscCheckFalse(ref[i] != computed[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"(%D,%D,%D) Assertion Failure. (ref[%D]) %g != %g (computed)[%D]",ex,ey,ez,i,(double)PetscRealPart(ref[i]),(double)PetscRealPart(computed[i]),i);
   }
   PetscFunctionReturn(0);
 }
@@ -536,7 +536,7 @@ static PetscErrorCode CheckMat(DM dmSol,Mat A)
   PetscFunctionBeginUser;
   ierr = DMStagGetCorners(dmSol,&startx,&starty,&startz,&nx,&ny,&nz,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMStagGetGlobalSizes(dmSol,&N[0],&N[1],&N[2]);CHKERRQ(ierr);
-  if (N[0] < 2 || N[1] < 2 || N[2] < 2) SETERRQ(PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
+  PetscCheckFalse(N[0] < 2 || N[1] < 2 || N[2] < 2,PetscObjectComm((PetscObject)dmSol),PETSC_ERR_ARG_SIZ,"This example requires at least two elements in each dimensions");
   ierr = DMStagGetIsLastRank(dmSol,&isLastRankx,&isLastRanky,&isLastRankz);CHKERRQ(ierr);
   ierr = DMStagGetIsFirstRank(dmSol,&isFirstRankx,&isFirstRanky,&isFirstRankz);CHKERRQ(ierr);
   hx = 1.0/N[0]; hy = 1.0/N[1]; hz = 1.0/N[2];

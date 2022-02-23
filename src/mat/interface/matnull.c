@@ -246,7 +246,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %" PetscInt_FMT ") cannot be negative",n);
+  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %" PetscInt_FMT ") cannot be negative",n);
   if (n) PetscValidPointer(vecs,4);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5);
@@ -261,13 +261,13 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
     for (i=0; i<n; i++) {
       PetscReal norm;
       ierr = VecNorm(vecs[i],NORM_2,&norm);CHKERRQ(ierr);
-      if (PetscAbsReal(norm - 1) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must have 2-norm of 1.0, it is %g",i,(double)norm);
+      PetscCheckFalse(PetscAbsReal(norm - 1) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must have 2-norm of 1.0, it is %g",i,(double)norm);
     }
     if (has_cnst) {
       for (i=0; i<n; i++) {
         PetscScalar sum;
         ierr = VecSum(vecs[i],&sum);CHKERRQ(ierr);
-        if (PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
+        PetscCheckFalse(PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
       }
     }
     ierr = PetscMalloc1(n-1,&dots);CHKERRQ(ierr);
@@ -275,7 +275,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
       PetscInt j;
       ierr = VecMDot(vecs[i],n-i-1,vecs+i+1,dots);CHKERRQ(ierr);
       for (j=0;j<n-i-1;j++) {
-        if (PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to vector %" PetscInt_FMT ", inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
+        PetscCheckFalse(PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to vector %" PetscInt_FMT ", inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
       }
     }
     ierr = PetscFree(dots);CHKERRQ(ierr);
@@ -464,7 +464,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
     if (!consistent && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
   }
 
-  if (sp->remove) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
+  PetscCheckFalse(sp->remove,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
   ierr = VecDestroy(&l);CHKERRQ(ierr);
   if (isNull) *isNull = consistent;
   PetscFunctionReturn(0);

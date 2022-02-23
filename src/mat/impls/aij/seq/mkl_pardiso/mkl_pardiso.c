@@ -109,7 +109,7 @@ PetscErrorCode MatMKLPardiso_Convert_seqsbaij(Mat A,PetscBool sym,MatReuse reuse
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!sym) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+  PetscCheckFalse(!sym,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
   *v      = aa->a;
   if (bs == 1) { /* already in the correct format */
     /* though PetscInt and INT_TYPE are of the same size since they are defined differently the Intel compiler requires a cast */
@@ -242,7 +242,7 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
 
   PetscFunctionBegin;
   ierr = MatFactorGetSchurComplement(F,&S,&schurstatus);CHKERRQ(ierr);
-  if (X == B && schurstatus == MAT_FACTOR_SCHUR_INVERTED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"X and B cannot point to the same address");
+  PetscCheckFalse(X == B && schurstatus == MAT_FACTOR_SCHUR_INVERTED,PETSC_COMM_SELF,PETSC_ERR_SUP,"X and B cannot point to the same address");
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,mpardiso->schur_size,mpardiso->nrhs,B,&Bmat);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,mpardiso->schur_size,mpardiso->nrhs,X,&Xmat);CHKERRQ(ierr);
   ierr = MatSetType(Bmat,((PetscObject)S)->type_name);CHKERRQ(ierr);
@@ -253,7 +253,7 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
 #endif
 
 #if defined(PETSC_USE_COMPLEX)
-  if (mpardiso->iparm[12-1] == 1) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Hermitian solve not implemented yet");
+  PetscCheckFalse(mpardiso->iparm[12-1] == 1,PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Hermitian solve not implemented yet");
 #endif
 
   switch (schurstatus) {
@@ -277,7 +277,7 @@ static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, Pet
     ierr = MatProductClear(Xmat);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %" PetscInt_FMT,F->schur_status);
+    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %" PetscInt_FMT,F->schur_status);
     break;
   }
   ierr = MatFactorRestoreSchurComplement(F,&S,schurstatus);CHKERRQ(ierr);
@@ -298,7 +298,7 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)F),&csize);CHKERRMPI(ierr);
-  if (csize > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MKL_PARDISO parallel Schur complements not yet supported from PETSc");
+  PetscCheckFalse(csize > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"MKL_PARDISO parallel Schur complements not yet supported from PETSc");
   ierr = ISSorted(is,&sorted);CHKERRQ(ierr);
   if (!sorted) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS for MKL_PARDISO Schur complements needs to be sorted");
@@ -464,7 +464,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
   }
   ierr = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
 
-  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
+  PetscCheckFalse(mat_mkl_pardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
   if (mat_mkl_pardiso->schur) { /* solve Schur complement and expand solution */
     if (!mat_mkl_pardiso->solve_interior) {
@@ -505,7 +505,7 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
       (void*)mat_mkl_pardiso->schur_work, /* according to the specs, the solution vector is always used */
       &mat_mkl_pardiso->err);
 
-    if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
+    PetscCheckFalse(mat_mkl_pardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
     mat_mkl_pardiso->iparm[6-1] = 0;
   }
   ierr = VecRestoreArrayWrite(x,&xarray);CHKERRQ(ierr);
@@ -537,10 +537,10 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
 
   PetscFunctionBegin;
   ierr = PetscObjectBaseTypeCompare((PetscObject)B,MATSEQDENSE,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATSEQDENSE matrix");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATSEQDENSE matrix");
   if (X != B) {
     ierr = PetscObjectBaseTypeCompare((PetscObject)X,MATSEQDENSE,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATSEQDENSE matrix");
+    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATSEQDENSE matrix");
   }
 
   ierr = MatGetSize(B,NULL,(PetscInt*)&mat_mkl_pardiso->nrhs);CHKERRQ(ierr);
@@ -549,7 +549,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
     ierr = MatDenseGetArrayRead(B,&barray);CHKERRQ(ierr);
     ierr = MatDenseGetArrayWrite(X,&xarray);CHKERRQ(ierr);
 
-    if (barray == xarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
+    PetscCheckFalse(barray == xarray,PETSC_COMM_SELF,PETSC_ERR_SUP,"B and X cannot share the same memory location");
     if (!mat_mkl_pardiso->schur) mat_mkl_pardiso->phase = JOB_SOLVE_ITERATIVE_REFINEMENT;
     else mat_mkl_pardiso->phase = JOB_SOLVE_FORWARD_SUBSTITUTION;
 
@@ -569,7 +569,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
       (void*)barray,
       (void*)xarray,
       &mat_mkl_pardiso->err);
-    if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
+    PetscCheckFalse(mat_mkl_pardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
     ierr = MatDenseRestoreArrayRead(B,&barray);CHKERRQ(ierr);
     if (mat_mkl_pardiso->schur) { /* solve Schur complement and expand solution */
@@ -627,7 +627,7 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
         ierr = PetscFree(mat_mkl_pardiso->schur_work);CHKERRQ(ierr);
         mat_mkl_pardiso->schur_work = o_schur_work;
       }
-      if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
+      PetscCheckFalse(mat_mkl_pardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
       mat_mkl_pardiso->iparm[6-1] = 0;
     }
     ierr = MatDenseRestoreArrayWrite(X,&xarray);CHKERRQ(ierr);
@@ -662,7 +662,7 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
     NULL,
     (void*)mat_mkl_pardiso->schur,
     &mat_mkl_pardiso->err);
-  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
+  PetscCheckFalse(mat_mkl_pardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
   /* report flops */
   if (mat_mkl_pardiso->iparm[18] > 0) {
@@ -883,7 +883,7 @@ PetscErrorCode MatFactorSymbolic_AIJMKL_PARDISO_Private(Mat F,Mat A,const MatFac
     NULL,
     NULL,
     &mat_mkl_pardiso->err);
-  if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
+  PetscCheckFalse(mat_mkl_pardiso->err < 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual",mat_mkl_pardiso->err);
 
   mat_mkl_pardiso->CleanUp = PETSC_TRUE;
 
@@ -1119,8 +1119,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     mat_mkl_pardiso->needsym = PETSC_FALSE;
     if (isSeqAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqaij;
     else if (isSeqBAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqbaij;
-    else if (isSeqSBAIJ) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU factor with SEQSBAIJ format! Use MAT_FACTOR_CHOLESKY instead");
-    else SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU with %s format",((PetscObject)A)->type_name);
+    else PetscCheckFalse(isSeqSBAIJ,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU factor with SEQSBAIJ format! Use MAT_FACTOR_CHOLESKY instead");
+    else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU with %s format",((PetscObject)A)->type_name);
 #if defined(PETSC_USE_COMPLEX)
     mat_mkl_pardiso->mtype = 13;
 #else
@@ -1132,7 +1132,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     if (isSeqAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqaij;
     else if (isSeqBAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqbaij;
     else if (isSeqSBAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqsbaij;
-    else SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with %s format",((PetscObject)A)->type_name);
+    else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with %s format",((PetscObject)A)->type_name);
 
     mat_mkl_pardiso->needsym = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
@@ -1140,7 +1140,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     else                      mat_mkl_pardiso->mtype = -2;
 #else
     mat_mkl_pardiso->mtype = 6;
-    if (A->hermitian) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with Hermitian matrices! Use MAT_FACTOR_LU instead");
+    PetscCheckFalse(A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with Hermitian matrices! Use MAT_FACTOR_LU instead");
 #endif
   }
   B->ops->destroy = MatDestroy_MKL_PARDISO;

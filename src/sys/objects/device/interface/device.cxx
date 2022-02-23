@@ -133,7 +133,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
   default:
     /* in case the above macros expand to nothing this silences any unused variable warnings */
     (void)(devid);
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[type]);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[type]);
   }
   *device = dev;
   PetscFunctionReturn(0);
@@ -199,7 +199,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
     case PETSC_DEVICE_HIP:  if (PetscDefined(HAVE_HIP))  break;
     case PETSC_DEVICE_SYCL: if (PetscDefined(HAVE_SYCL)) break;
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[device->type]);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[device->type]);
     }
   }
   ierr = (*device->ops->configure)(device);CHKERRQ(ierr);
@@ -296,12 +296,18 @@ PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type,
   PetscFunctionBegin;
   PetscValidDeviceType(type,1);
   if (PetscLikely(PetscDeviceInitialized(type))) PetscFunctionReturn(0);
-  if (PetscUnlikelyDebug(defaultDevices[type])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Trying to overwrite existing default device of type %s",PetscDeviceTypes[type]);
+  PetscAssert(!defaultDevices[type],PETSC_COMM_SELF,PETSC_ERR_MEM,"Trying to overwrite existing default device of type %s",PetscDeviceTypes[type]);
   ierr = PetscDeviceCreate(type,defaultDeviceId,&defaultDevices[type]);CHKERRQ(ierr);
   ierr = PetscDeviceConfigure(defaultDevices[type]);CHKERRQ(ierr);
   initializedDevice[type] = true;
   PetscFunctionReturn(0);
 }
+
+#if PetscDefined(USE_LOG)
+PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
+#else
+#define PetscLogInitialize() 0
+#endif
 
 static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm, PetscDeviceType type, PetscInt defaultDeviceId, PetscBool defaultView, PetscDeviceInitType *defaultInitType)
 {
@@ -309,29 +315,30 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
 
   PetscFunctionBegin;
   if (!PetscDeviceConfiguredFor_Internal(type)) {
-    ierr = PetscInfo1(PETSC_NULLPTR,"PetscDeviceType %s not supported\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
+    ierr = PetscInfo(PETSC_NULLPTR,"PetscDeviceType %s not supported\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
     defaultDevices[type] = PETSC_NULLPTR;
     PetscFunctionReturn(0);
   }
-  ierr = PetscInfo1(PETSC_NULLPTR,"PetscDeviceType %s supported, initializing\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
+  ierr = PetscInfo(PETSC_NULLPTR,"PetscDeviceType %s supported, initializing\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
   /* ugly switch needed to pick the right global variable... could maybe do this as a union? */
   switch (type) {
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA,initialize,comm,&defaultDeviceId,defaultInitType);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(HIP,initialize,comm,&defaultDeviceId,defaultInitType);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(SYCL,initialize,comm,&defaultDeviceId,defaultInitType);
   default:
-    SETERRQ1(comm,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[type]);
+    SETERRQ(comm,PETSC_ERR_PLIB,"PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch",PetscDeviceTypes[type]);
   }
   /*
     defaultInitType and defaultDeviceId now represent what the individual TYPES have decided to
     initialize as
   */
   if (*defaultInitType == PETSC_DEVICE_INIT_EAGER) {
-    ierr = PetscInfo1(PETSC_NULLPTR,"Eagerly initializing %s PetscDevice\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
+    ierr = PetscInfo(PETSC_NULLPTR,"Eagerly initializing %s PetscDevice\n",PetscDeviceTypes[type]);CHKERRQ(ierr);
     ierr = PetscDeviceInitializeDefaultDevice_Internal(type,defaultDeviceId);CHKERRQ(ierr);
     if (defaultView) {
       PetscViewer vwr;
 
+      ierr = PetscLogInitialize();CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(comm,&vwr);CHKERRQ(ierr);
       ierr = PetscDeviceView(defaultDevices[type],vwr);CHKERRQ(ierr);
     }
@@ -346,29 +353,28 @@ static PetscErrorCode PetscDeviceFinalize_Private(void)
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
-    const auto PetscDeviceCheckAllDestroyedAfterFinalize = [](){
+    const auto PetscDeviceCheckAllDestroyedAfterFinalize = []{
       PetscFunctionBegin;
-      for (auto&& device : defaultDevices) {
-        if (PetscUnlikely(device)) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_COR,"Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()",PetscDeviceTypes[device->type],device->refcnt);
-      }
+      for (auto&& device : defaultDevices) PetscCheck(!device,PETSC_COMM_WORLD,PETSC_ERR_COR,"Device of type '%s' had reference count %" PetscInt_FMT " and was not fully destroyed during PetscFinalize()",PetscDeviceTypes[device->type],device->refcnt);
       PetscFunctionReturn(0);
     };
-    /* you might be thinking, why on earth are you registered yet another finalizer in a
-     * function already called during PetscRegisterFinalizeAll()? If this seems stupid it's
-     * because it is.
-     *
-     * The crux of the problem is that the initializer (and therefore the ~finalizer~) of
-     * PetscDeviceContext is guaranteed to run after PetscDevice's. So if the global context
-     * had a default PetscDevice attached, that PetscDevice will have a reference count >0 and
-     * hence won't be destroyed yet. So we need to repeat the check that all devices have been
-     * destroyed again ~after~ the global context is destroyed. In summary:
-     *
-     * 1. This finalizer runs and destroys all devices, except it may not because the global
-     *    context may still hold a reference!
-     * 2. The global context finalizer runs and does the final reference count decrement
-     *    required, which actually destroys the held device.
-     * 3. Our newly added finalizer runs and checks that all is well.
-     */
+    /*
+      you might be thinking, why on earth are you registered yet another finalizer in a
+      function already called during PetscRegisterFinalizeAll()? If this seems stupid it's
+      because it is.
+
+      The crux of the problem is that the initializer (and therefore the ~finalizer~) of
+      PetscDeviceContext is guaranteed to run after PetscDevice's. So if the global context had
+      a default PetscDevice attached, that PetscDevice will have a reference count >0 and hence
+      won't be destroyed yet. So we need to repeat the check that all devices have been
+      destroyed again ~after~ the global context is destroyed. In summary:
+
+      1. This finalizer runs and destroys all devices, except it may not because the global
+         context may still hold a reference!
+      2. The global context finalizer runs and does the final reference count decrement
+         required, which actually destroys the held device.
+      3. Our newly added finalizer runs and checks that all is well.
+    */
     ierr = PetscRegisterFinalize(PetscDeviceCheckAllDestroyedAfterFinalize);CHKERRQ(ierr);
   }
   for (auto &&device : defaultDevices) {ierr = PetscDeviceDestroy(&device);CHKERRQ(ierr);}
@@ -414,7 +420,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
       int  len; /* unused */
 
       ierr = MPI_Comm_get_name(comm,name,&len);CHKERRMPI(ierr);
-      SETERRQ1(comm,PETSC_ERR_MPI,"Default devices being initialized on MPI_Comm '%s' not PETSC_COMM_WORLD",name);
+      SETERRQ(comm,PETSC_ERR_MPI,"Default devices being initialized on MPI_Comm '%s' not PETSC_COMM_WORLD",name);
     }
   }
   comm = PETSC_COMM_WORLD; /* from this point on we assume we're on PETSC_COMM_WORLD */
@@ -433,7 +439,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (initIdx == PETSC_DEVICE_INIT_NONE) {
       /* disabled all device initialization if devices are globally disabled */
-      if (PetscUnlikely(defaultDevice != PETSC_DECIDE)) SETERRQ(comm,PETSC_ERR_USER_INPUT,"You have disabled devices but also specified a particular device to use, these options are mutually exlusive");
+      PetscCheck(defaultDevice == PETSC_DECIDE,comm,PETSC_ERR_USER_INPUT,"You have disabled devices but also specified a particular device to use, these options are mutually exlusive");
       defaultView = PETSC_FALSE;
     } else {
       defaultView = static_cast<decltype(defaultView)>(defaultView && flg);
@@ -459,7 +465,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
       somewhat inefficient here as the device context is potentially fully set up twice (once
       when retrieved then the second time if setfromoptions makes changes)
     */
-    ierr = PetscInfo1(PETSC_NULLPTR,"Eagerly initializing PetscDeviceContext with %s device\n",PetscDeviceTypes[deviceContextInitDevice]);CHKERRQ(ierr);
+    ierr = PetscInfo(PETSC_NULLPTR,"Eagerly initializing PetscDeviceContext with %s device\n",PetscDeviceTypes[deviceContextInitDevice]);CHKERRQ(ierr);
     ierr = PetscDeviceContextSetRootDeviceType_Internal(deviceContextInitDevice);CHKERRQ(ierr);
     ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
     ierr = PetscDeviceContextSetFromOptions(comm,"root_",dctx);CHKERRQ(ierr);

@@ -207,7 +207,7 @@ static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,ISCo
   case IS_COLORING_LOCAL:
     nloc = red->N;
     break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   }
   ierr = PetscMalloc1(nloc,&colors);CHKERRQ(ierr);
   for (i=0; i<nloc; i++) colors[i] = i;
@@ -227,7 +227,7 @@ static PetscErrorCode DMRefine_Redundant(DM dmc,MPI_Comm comm,DM *dmf)
     ierr = PetscObjectGetComm((PetscObject)dmc,&comm);CHKERRQ(ierr);
   }
   ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmc),comm,&flag);CHKERRMPI(ierr);
-  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"cannot change communicators");
+  PetscCheckFalse(flag != MPI_CONGRUENT && flag != MPI_IDENT,PetscObjectComm((PetscObject)dmc),PETSC_ERR_SUP,"cannot change communicators");
   ierr = DMRedundantCreate(comm,redc->rank,redc->N,dmf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -243,7 +243,7 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf,MPI_Comm comm,DM *dmc)
     ierr = PetscObjectGetComm((PetscObject)dmf,&comm);CHKERRQ(ierr);
   }
   ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmf),comm,&flag);CHKERRMPI(ierr);
-  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
+  PetscCheckFalse(flag != MPI_CONGRUENT && flag != MPI_IDENT,PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
   ierr = DMRedundantCreate(comm,redf->rank,redf->N,dmc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -258,9 +258,9 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
 
   PetscFunctionBegin;
   ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)dmc),PetscObjectComm((PetscObject)dmf),&flag);CHKERRMPI(ierr);
-  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) SETERRQ(PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
-  if (redc->rank != redf->rank) SETERRQ(PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Owning rank does not match");
-  if (redc->N != redf->N) SETERRQ(PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Global size does not match");
+  PetscCheckFalse(flag != MPI_CONGRUENT && flag != MPI_IDENT,PetscObjectComm((PetscObject)dmf),PETSC_ERR_SUP,"cannot change communicators");
+  PetscCheckFalse(redc->rank != redf->rank,PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Owning rank does not match");
+  PetscCheckFalse(redc->N != redf->N,PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Global size does not match");
   ierr = MatCreate(PetscObjectComm((PetscObject)dmc),P);CHKERRQ(ierr);
   ierr = MatSetSizes(*P,redc->n,redc->n,redc->N,redc->N);CHKERRQ(ierr);
   ierr = MatSetType(*P,MATAIJ);CHKERRQ(ierr);

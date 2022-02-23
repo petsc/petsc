@@ -27,7 +27,7 @@ PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace sp, const Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(cellSpaces,2);
-  if (sp->setupcalled) SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change cell spaces after setup is called");
+  PetscCheckFalse(sp->setupcalled,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change cell spaces after setup is called");
   ierr = PetscTryMethod(sp, "PetscDualSpaceRefinedSetCellSpaces_C", (PetscDualSpace,const PetscDualSpace []),(sp,cellSpaces));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -41,7 +41,7 @@ static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace 
 
   PetscFunctionBegin;
   dm = sp->dm;
-  if (!dm) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_WRONGSTATE, "PetscDualSpace must have a DM (PetscDualSpaceSetDM()) before calling PetscDualSpaceRefinedSetCellSpaces");
+  PetscCheckFalse(!dm,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_WRONGSTATE, "PetscDualSpace must have a DM (PetscDualSpaceSetDM()) before calling PetscDualSpaceRefinedSetCellSpaces");
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   if (!sp->pointSpaces) {
 
@@ -84,10 +84,10 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
   for (c = cStart; c < cEnd; c++) {
     if (sp->pointSpaces[c-pStart]) {
       PetscInt ccStart, ccEnd;
-      if (sp->pointSpaces[c-pStart]->k != sp->k) SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have the same form degree as the refined dual space");
-      if (sp->pointSpaces[c-pStart]->Nc != sp->Nc) SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have the same number of components as the refined dual space");
+      PetscCheckFalse(sp->pointSpaces[c-pStart]->k != sp->k,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have the same form degree as the refined dual space");
+      PetscCheckFalse(sp->pointSpaces[c-pStart]->Nc != sp->Nc,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have the same number of components as the refined dual space");
       ierr = DMPlexGetHeightStratum(sp->pointSpaces[c-pStart]->dm, 0, &ccStart, &ccEnd);CHKERRQ(ierr);
-      if (ccEnd - ccStart != 1) SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have a single cell themselves");
+      PetscCheckFalse(ccEnd - ccStart != 1,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have a single cell themselves");
     }
   }
   for (c = cStart; c < cEnd; c++) {

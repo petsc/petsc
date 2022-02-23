@@ -61,7 +61,7 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   ierr = MatCreateSubMatrices(G,1,&ris,&ris,MAT_INITIAL_MATRIX,&lGs);CHKERRQ(ierr);
   lG = lGs[0];
   ierr = PetscObjectBaseTypeCompare((PetscObject)lG,MATSEQAIJ,&isSEQAIJ);CHKERRQ(ierr);
-  if (!isSEQAIJ) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_SUP,"Requires an MPI/SEQAIJ Matrix");
+  PetscCheckFalse(!isSEQAIJ,PetscObjectComm((PetscObject)G),PETSC_ERR_SUP,"Requires an MPI/SEQAIJ Matrix");
   ierr = MatGetSize(lG,&ln,&lm);CHKERRQ(ierr);
   aij = (Mat_SeqAIJ*)lG->data;
   Gi = aij->i;
@@ -169,7 +169,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   ierr = MatCreateSubMatrices(G,1,&ris,&ris,MAT_INITIAL_MATRIX,&lGs);CHKERRQ(ierr);
   lG = lGs[0];
   ierr = PetscObjectBaseTypeCompare((PetscObject)lG,MATSEQAIJ,&isSEQAIJ);CHKERRQ(ierr);
-  if (!isSEQAIJ) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"Requires an MPI/SEQAIJ Matrix");
+  PetscCheckFalse(!isSEQAIJ,PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"Requires an MPI/SEQAIJ Matrix");
   ierr = MatGetSize(lG,&ln,&lm);CHKERRQ(ierr);
   aij = (Mat_SeqAIJ*)lG->data;
   Gi = aij->i;

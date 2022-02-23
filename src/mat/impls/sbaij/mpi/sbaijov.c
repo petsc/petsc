@@ -26,7 +26,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
   ierr = PetscMalloc1(is_max,&is_new);CHKERRQ(ierr);
   /* Convert the indices into block format */
   ierr = ISCompressIndicesGeneral(N,C->rmap->n,bs,is_max,is,is_new);CHKERRQ(ierr);
-  if (ov < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  PetscCheckFalse(ov < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
 
   /* ----- previous non-scalable implementation ----- */
   flg  = PETSC_FALSE;
@@ -507,7 +507,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C,PetscInt *data,Pet
     isz0 = 0; col_max = 0;
     for (j=0; j<n; j++) {
       col = idx_i[j];
-      if (col >= Mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index col %" PetscInt_FMT " >= Mbs %" PetscInt_FMT,col,Mbs);
+      PetscCheckFalse(col >= Mbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index col %" PetscInt_FMT " >= Mbs %" PetscInt_FMT,col,Mbs);
       if (!PetscBTLookupSet(table_i,col)) {
         ierr = PetscBTSet(table0,col);CHKERRQ(ierr);
         if (whose == MINE) nidx_i[isz0] = col;

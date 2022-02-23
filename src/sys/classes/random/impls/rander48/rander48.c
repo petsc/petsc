@@ -96,13 +96,12 @@ static PetscErrorCode  PetscRandomDestroy_Rander48(PetscRandom r)
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
-  PetscRandomSeed_Rander48,
-  PetscRandomGetValue_Rander48,
-  PetscRandomGetValueReal_Rander48,
-  NULL,
-  NULL,
-  PetscRandomDestroy_Rander48,
-  NULL
+  PetscDesignatedInitializer(seed,PetscRandomSeed_Rander48),
+  PetscDesignatedInitializer(getvalue,PetscRandomGetValue_Rander48),
+  PetscDesignatedInitializer(getvaluereal,PetscRandomGetValueReal_Rander48),
+  PetscDesignatedInitializer(getvalues,NULL),
+  PetscDesignatedInitializer(getvaluesreal,NULL),
+  PetscDesignatedInitializer(destroy,PetscRandomDestroy_Rander48),
 };
 
 /*MC

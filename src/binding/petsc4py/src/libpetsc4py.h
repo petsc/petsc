@@ -13,4 +13,6 @@ PETSC_EXTERN PetscErrorCode SNESPythonGetContext(SNES,void**);
 PETSC_EXTERN PetscErrorCode SNESPythonSetContext(SNES,void*);
 PETSC_EXTERN PetscErrorCode TSPythonGetContext(TS,void**);
 PETSC_EXTERN PetscErrorCode TSPythonSetContext(TS,void*);
+PETSC_EXTERN PetscErrorCode TaoPythonGetContext(Tao,void**);
+PETSC_EXTERN PetscErrorCode TaoPythonSetContext(Tao,void*);
 PETSC_EXTERN PetscErrorCode PetscPythonRegisterAll(void);

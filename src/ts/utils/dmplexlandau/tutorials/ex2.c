@@ -169,11 +169,11 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   Vec               *XsubArray;
 
   PetscFunctionBeginUser;
-  if (ctx->num_species!=2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "ctx->num_species %D != 2",ctx->num_species);
+  PetscCheckFalse(ctx->num_species!=2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "ctx->num_species %D != 2",ctx->num_species);
   ierr = VecGetDM(X, &pack);CHKERRQ(ierr);
-  if (!pack) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "no DM");
+  PetscCheckFalse(!pack,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no DM");
   ierr = DMCompositeGetNumberDM(pack,&nDMs);CHKERRQ(ierr);
-  if (nDMs != ctx->num_grids*ctx->batch_sz)  SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "nDMs != ctx->num_grids*ctx->batch_sz %D != %D",nDMs,ctx->num_grids*ctx->batch_sz);
+  PetscCheckFalse(nDMs != ctx->num_grids*ctx->batch_sz,PETSC_COMM_SELF, PETSC_ERR_PLIB, "nDMs != ctx->num_grids*ctx->batch_sz %D != %D",nDMs,ctx->num_grids*ctx->batch_sz);
   ierr = PetscMalloc(sizeof(*XsubArray)*nDMs, &XsubArray);CHKERRQ(ierr);
   ierr = DMCompositeGetAccessArray(pack, X, nDMs, NULL, XsubArray);CHKERRQ(ierr); // read only
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
@@ -216,7 +216,6 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   v = ctx->n_0*ctx->v_0*PetscRealPart(tt[0])/n_e;   /* remove number density to get velocity */
   v2 = PetscSqr(v);                                    /* use real space: m^2 / s^2 */
   Te_kev = (v2*ctx->masses[0]*PETSC_PI/8)*kev_joul;    /* temperature in kev */
-  //Te_kev = ctx->thermal_temps[0]/1.1604525e7;
   spit_eta = Spitzer(ctx->masses[0],-ctx->charges[0],Z,ctx->epsilon0,ctx->lnLam,Te_kev/kev_joul); /* kev --> J (kT) */
   if (0) {
     ierr = DMGetDS(plexe, &prob);CHKERRQ(ierr);
@@ -237,8 +236,6 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
 
   ratio = E/J/spit_eta;
   if (stepi>10 && !rectx->use_spitzer_eta && (
-        //(old_ratio-ratio < 1.e-3 && ratio > 0.99 && ratio < 1.01) ||
-        //(old_ratio-ratio < 1.e-4 && ratio > 0.98 && ratio < 1.02) ||
         (old_ratio-ratio < 1.e-6))) {
     rectx->pulse_start = time + 0.98*dt;
     rectx->use_spitzer_eta = PETSC_TRUE;
@@ -247,7 +244,7 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   if ((rectx->plotting) || stepi == 0 || reason || rectx->pulse_start == time + 0.98*dt) {
     ierr = PetscPrintf(ctx->comm, "testSpitzer: %4D) time=%11.4e n_e= %10.3e E= %10.3e J= %10.3e J_re= %10.3e %.3g%% Te_kev= %10.3e Z_eff=%g E/J to eta ratio= %g (diff=%g) %s %s spit_eta=%g\n",stepi,time,n_e/ctx->n_0,ctx->Ez,J,J_re,100*J_re/J, Te_kev,Z,ratio,old_ratio-ratio, rectx->use_spitzer_eta ? "using Spitzer eta*J E" : "constant E",rectx->pulse_start != time + 0.98*dt ? "normal" : "transition",spit_eta);CHKERRQ(ierr);
-    if (rectx->pulse_start == time + 0.98*dt) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Spitzer complete ratio=%g",ratio);
+    PetscCheckFalse(rectx->pulse_start == time + 0.98*dt,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Spitzer complete ratio=%g",ratio);
   }
   old_ratio = ratio;
   PetscFunctionReturn(0);
@@ -352,7 +349,7 @@ static PetscErrorCode EInduction(Vec X, Vec X_t, PetscInt step, PetscReal time, 
   /* get d current / dt */
   ierr = PetscDSSetConstants(prob, ctx->num_species, qv0);CHKERRQ(ierr);
   ierr = PetscDSSetObjective(prob, 0, &f0_jz_sum);CHKERRQ(ierr);
-  if (!X_t) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "X_t");
+  PetscCheckFalse(!X_t,PETSC_COMM_SELF, PETSC_ERR_PLIB, "X_t");
   ierr = DMPlexComputeIntegralFEM(plex,X_t,tt,NULL);CHKERRQ(ierr);
   dJ_dt = -ctx->n_0*PetscRealPart(tt[0])/ctx->t_0;
   /* E induction */
@@ -414,7 +411,7 @@ static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, vo
       dne_dt = new_imp_rate*rectx->Ne_ion /* *ctx->t_0 */;
       tilda_ns[0] = dne_dt;        tilda_ns[rectx->imp_idx] = dni_dt;
       temps[0]    = rectx->T_cold;    temps[rectx->imp_idx] = rectx->T_cold;
-      ierr = PetscInfo4(ctx->plex[0], "\tHave new_imp_rate= %10.3e time= %10.3e de/dt= %10.3e di/dt= %10.3e ***\n",new_imp_rate,ftime,dne_dt,dni_dt);CHKERRQ(ierr);
+      ierr = PetscInfo(ctx->plex[0], "\tHave new_imp_rate= %10.3e time= %10.3e de/dt= %10.3e di/dt= %10.3e ***\n",new_imp_rate,ftime,dne_dt,dni_dt);CHKERRQ(ierr);
       ierr = DMCompositeGetAccessArray(pack, F, ctx->num_grids*ctx->batch_sz, NULL, globFarray);CHKERRQ(ierr);
       for (PetscInt grid=0 ; grid<ctx->num_grids ; grid++) {
         /* add it */
@@ -542,7 +539,7 @@ static PetscErrorCode pulseSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx)
   REctx *rectx = (REctx*)ctx->data;
 
   PetscFunctionBeginUser;
-  if (rectx->pulse_start == PETSC_MAX_REAL) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"'-ex2_pulse_start_time X' must be used with '-ex2_impurity_source_type pulse'");
+  PetscCheckFalse(rectx->pulse_start == PETSC_MAX_REAL,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"'-ex2_pulse_start_time X' must be used with '-ex2_impurity_source_type pulse'");
   if (time < rectx->pulse_start || time > rectx->pulse_start + 3*rectx->pulse_width) *rho = 0;
   /* else if (0) { */
   /*   double t = time - rectx->pulse_start, start = rectx->pulse_width, stop = 2*rectx->pulse_width, cycle = 3*rectx->pulse_width, steep = 5, xi = 0.75 - (stop - start)/(2* cycle); */
@@ -611,11 +608,11 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   if (rectx->plotDt == 0) rectx->plotDt = 1e-30;
   ierr = PetscOptionsInt("-ex2_print_period", "Plotting interval", "ex2.c", rectx->print_period, &rectx->print_period, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ex2_grid_view_idx", "grid_view_idx", "ex2.c", rectx->grid_view_idx, &rectx->grid_view_idx, NULL);CHKERRQ(ierr);
-  if (rectx->grid_view_idx >= ctx->num_grids) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"rectx->grid_view_idx (%D) >= ctx->num_grids (%D)",rectx->imp_idx,ctx->num_grids);
+  PetscCheckFalse(rectx->grid_view_idx >= ctx->num_grids,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"rectx->grid_view_idx (%D) >= ctx->num_grids (%D)",rectx->imp_idx,ctx->num_grids);
   ierr = PetscOptionsFList("-ex2_impurity_source_type","Name of impurity source to run","",plist,pname,pname,sizeof(pname),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-ex2_test_type","Name of test to run","",testlist,testname,testname,sizeof(testname),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ex2_impurity_index", "index of sink for impurities", "none", rectx->imp_idx, &rectx->imp_idx, NULL);CHKERRQ(ierr);
-  if ((rectx->imp_idx >= ctx->num_species || rectx->imp_idx < 1) && ctx->num_species > 1) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"index of sink for impurities ions is out of range (%D), must be > 0 && < NS",rectx->imp_idx);
+  PetscCheckFalse((rectx->imp_idx >= ctx->num_species || rectx->imp_idx < 1) && ctx->num_species > 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"index of sink for impurities ions is out of range (%D), must be > 0 && < NS",rectx->imp_idx);
   ierr = PetscOptionsFList("-ex2_e_field_type","Electric field type","",elist,ename,ename,sizeof(ename),NULL);CHKERRQ(ierr);
   rectx->Ne_ion = -ctx->charges[rectx->imp_idx]/ctx->charges[0];
   ierr = PetscOptionsReal("-ex2_t_cold","Temperature of cold electron and ions after ionization in keV","none",rectx->T_cold,&rectx->T_cold, NULL);CHKERRQ(ierr);
@@ -626,15 +623,15 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   ierr = PetscOptionsReal("-ex2_ion_potential","Potential to ionize impurity (should be array) in ev","none",rectx->ion_potential,&rectx->ion_potential, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ex2_inductance","Inductance E feild","none",rectx->L,&rectx->L, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ex2_connor_e_field_units","Scale Ex but Connor-Hastie E_c","none",Connor_E,&Connor_E, NULL);CHKERRQ(ierr);
-  ierr = PetscInfo5(dm_dummy, "Num electrons from ions=%g, T_cold=%10.3e, ion potential=%10.3e, E_z=%10.3e v_0=%10.3e\n",rectx->Ne_ion,rectx->T_cold,rectx->ion_potential,ctx->Ez,ctx->v_0);CHKERRQ(ierr);
+  ierr = PetscInfo(dm_dummy, "Num electrons from ions=%g, T_cold=%10.3e, ion potential=%10.3e, E_z=%10.3e v_0=%10.3e\n",rectx->Ne_ion,rectx->T_cold,rectx->ion_potential,ctx->Ez,ctx->v_0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* get impurity source rate function */
   ierr = PetscFunctionListFind(plist,pname,&rectx->impuritySrcRate);CHKERRQ(ierr);
-  if (!rectx->impuritySrcRate) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No impurity source function found '%s'",pname);
+  PetscCheckFalse(!rectx->impuritySrcRate,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No impurity source function found '%s'",pname);
   ierr = PetscFunctionListFind(testlist,testname,&rectx->test);CHKERRQ(ierr);
-  if (!rectx->test) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No test found '%s'",testname);
+  PetscCheckFalse(!rectx->test,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No test found '%s'",testname);
   ierr = PetscFunctionListFind(elist,ename,&rectx->E);CHKERRQ(ierr);
-  if (!rectx->E) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No E field function found '%s'",ename);
+  PetscCheckFalse(!rectx->E,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No E field function found '%s'",ename);
   ierr = PetscFunctionListDestroy(&plist);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&testlist);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&elist);CHKERRQ(ierr);
@@ -646,15 +643,6 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
     ((LandauCtx*)ctx)->Ez *= E;
   }
   ierr = DMDestroy(&dm_dummy);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatrixNfDestroy(void *ptr)
-{
-  PetscInt *nf = (PetscInt *)ptr;
-  PetscErrorCode  ierr;
-  PetscFunctionBegin;
-  ierr = PetscFree(nf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -676,7 +664,6 @@ int main(int argc, char **argv)
 #if defined(PETSC_HAVE_THREADSAFETY)
   double         starttime, endtime;
 #endif
-  PetscContainer container;
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   if (rank) { /* turn off output stuff for duplicate runs */
@@ -697,7 +684,6 @@ int main(int argc, char **argv)
   ierr = PetscMalloc(sizeof(*XsubArray)*nDMs, &XsubArray);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)J, "Jacobian");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)X, "f");CHKERRQ(ierr);
-  ierr = LandauCreateMassMatrix(pack, NULL);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(pack, &ctx);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
   /* context */
@@ -725,16 +711,6 @@ int main(int argc, char **argv)
   ierr = TSSetApplicationContext(ts, ctx);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,Monitor,ctx,NULL);CHKERRQ(ierr);
   ierr = TSSetPreStep(ts,PreStep);CHKERRQ(ierr);
-  {
-    PetscInt *pNf;
-    ierr = PetscContainerCreate(PETSC_COMM_SELF, &container);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(*pNf), &pNf);CHKERRQ(ierr);
-    *pNf = ctx->batch_sz + 100000*ctx->numConcurrency;
-    ierr = PetscContainerSetPointer(container, (void *)pNf);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(container, MatrixNfDestroy);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)ctx->J, "batch size", (PetscObject) container);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
-  }
   rectx->Ez_initial = ctx->Ez;       /* cache for induction caclulation - applied E field */
   if (1) { /* warm up an test just LandauIJacobian */
     Vec           vec;
@@ -782,7 +758,6 @@ int main(int argc, char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = PetscFree(rectx);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -804,5 +779,9 @@ int main(int argc, char **argv)
       suffix: cuda
       requires: cuda
       args: -dm_landau_device_type cuda -dm_mat_type aijcusparse -dm_vec_type cuda -mat_cusparse_use_cpu_solve
+    test:
+      suffix: kokkos_batch
+      requires: kokkos_kernels
+      args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -pc_type jacobi -ksp_type gmres -ksp_rtol 1e-12 -dm_landau_jacobian_field_major_order
 
 TEST*/

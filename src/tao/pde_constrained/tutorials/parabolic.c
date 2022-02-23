@@ -4,9 +4,9 @@
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
    Routines: TaoCreate();
    Routines: TaoSetType();
-   Routines: TaoSetInitialVector();
-   Routines: TaoSetObjectiveRoutine();
-   Routines: TaoSetGradientRoutine();
+   Routines: TaoSetSolution();
+   Routines: TaoSetObjective();
+   Routines: TaoSetGradient();
    Routines: TaoSetConstraintsRoutine();
    Routines: TaoSetJacobianStateRoutine();
    Routines: TaoSetJacobianDesignRoutine();
@@ -196,9 +196,9 @@ int main(int argc, char **argv)
   ierr = VecCopy(x,x0);CHKERRQ(ierr);
 
   /* Set solution vector with an initial guess */
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveRoutine(tao, FormFunction, &user);CHKERRQ(ierr);
-  ierr = TaoSetGradientRoutine(tao, FormGradient, &user);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetObjective(tao, FormFunction, &user);CHKERRQ(ierr);
+  ierr = TaoSetGradient(tao, NULL, FormGradient, &user);CHKERRQ(ierr);
   ierr = TaoSetConstraintsRoutine(tao, user.c, FormConstraints, &user);CHKERRQ(ierr);
 
   ierr = TaoSetJacobianStateRoutine(tao, user.Js, user.JsBlockPrec, user.JsInv, FormJacobianState, &user);CHKERRQ(ierr);
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
     ierr = TaoSolve(tao);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"KSP Iterations = %D\n",user.ksp_its-ksp_old);CHKERRQ(ierr);
     ierr = VecCopy(x0,x);CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+    ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)x);CHKERRQ(ierr);
@@ -1317,7 +1317,7 @@ PetscErrorCode ParabolicMonitor(Tao tao, void *ptr)
   AppCtx         *user = (AppCtx*)ptr;
 
   PetscFunctionBegin;
-  ierr = TaoGetSolutionVector(tao,&X);CHKERRQ(ierr);
+  ierr = TaoGetSolution(tao,&X);CHKERRQ(ierr);
   ierr = Scatter(X,user->ywork,user->state_scatter,user->uwork,user->design_scatter);CHKERRQ(ierr);
   ierr = VecAXPY(user->ywork,-1.0,user->ytrue);CHKERRQ(ierr);
   ierr = VecAXPY(user->uwork,-1.0,user->utrue);CHKERRQ(ierr);

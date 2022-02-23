@@ -235,12 +235,13 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot create structured mesh of dimension %d", dim);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot create structured mesh of dimension %d", dim);
     }
     ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
   } else {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
 
     ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
@@ -260,12 +261,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
       }
       ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "tree_");CHKERRQ(ierr);
+      ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
       ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
       ierr = DMViewFromOptions(*dm,NULL,"-dm_view");CHKERRQ(ierr);
     } else {
       ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "dist_");CHKERRQ(ierr);
+    ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
     if (simplex) {ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);}
@@ -333,7 +336,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     MPI_Comm      comm = PetscObjectComm((PetscObject)dm);
 
     ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-    if (size > 1) SETERRQ(comm,PETSC_ERR_SUP,"Local constraint test can only be performed in serial");
+    PetscCheckFalse(size > 1,comm,PETSC_ERR_SUP,"Local constraint test can only be performed in serial");
 
     /* we are going to test constraints by using them to enforce periodicity
      * in one direction, and comparing to the existing method of enforcing
@@ -403,7 +406,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
         ierr = PetscSectionGetDof(aSec,c,&cDof);CHKERRQ(ierr);
         if (cDof) {
           PetscInt cOff, a, aDof, aOff, j;
-          if (cDof != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d anchor points: should be just one",cDof);
+          PetscCheckFalse(cDof != 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d anchor points: should be just one",cDof);
 
           /* find the anchor point */
           ierr = PetscSectionGetOffset(aSec,c,&cOff);CHKERRQ(ierr);
@@ -417,8 +420,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
           ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
           ierr = PetscSectionGetOffset(section,a,&aOff);CHKERRQ(ierr);
 
-          if (cDof != aDof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point and anchor have different number of dofs: %d, %d",cDof,aDof);
-          if (cDof % numComp) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point dofs not divisible by field components: %d, %d",cDof,numComp);
+          PetscCheckFalse(cDof != aDof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point and anchor have different number of dofs: %d, %d",cDof,aDof);
+          PetscCheckFalse(cDof % numComp,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point dofs not divisible by field components: %d, %d",cDof,numComp);
 
           /* put in a simple equality constraint */
           for (j = 0; j < cDof; j++) {
@@ -465,7 +468,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     PetscDS      ds;
 
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    if (user->numComponents != dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, dim);
+    PetscCheckFalse(user->numComponents != dim,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, dim);
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
@@ -704,7 +707,7 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
     exactFuncDers[0] = cubicDer;
     break;
   default:
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for order %d", order);
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for order %d", order);
   }
   ierr = ComputeError(dm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
   /* Report result */
@@ -764,7 +767,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
     exactFuncDers[0] = cubicDer;
     break;
   default:
-    SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %D order %D", dim, order);
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %D order %D", dim, order);
   }
   idm  = checkRestrict ? rdm :  dm;
   fdm  = checkRestrict ?  dm : rdm;

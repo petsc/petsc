@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsInt("-PN","Number of columns of P","",PN,&PN,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mcheck","Number of matmult checks","",mcheck,&mcheck,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-fA","Path for matrix A","",file[0],file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate a file name for matrix A with the -fA option.");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate a file name for matrix A with the -fA option.");
   ierr = PetscOptionsString("-fB","Path for matrix B","",file[1],file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-A_mat_type","Matrix type","MatSetType",MatList,deft,A_mattype,256,&flgA);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-B_mat_type","Matrix type","MatSetType",MatList,deft,B_mattype,256,&flgB);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ int main(int argc,char **args)
     ierr = MatProductCreate(A,B,NULL,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"AB_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_AB);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
     /* we can inquire about MATOP_PRODUCTSYMBOLIC even if the destination matrix type has not been set yet */
@@ -108,7 +108,7 @@ int main(int argc,char **args)
     ierr = MatProductSymbolic(C);CHKERRQ(ierr);
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
     ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
 
     /* Test reuse symbolic C */
     alpha = 0.9;
@@ -116,7 +116,7 @@ int main(int argc,char **args)
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
 
     ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in C=A*B");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     /* (1.2) Test user driver */
@@ -130,7 +130,7 @@ int main(int argc,char **args)
       ierr   = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
     }
     ierr = MatMatMultEqual(A,B,C,mcheck,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
     ierr = MatDestroy(&A);CHKERRQ(ierr);
 
     /* Test MatProductClear() */
@@ -183,7 +183,7 @@ int main(int argc,char **args)
     ierr = MatProductCreate(P,B,NULL,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"AtB_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_AtB);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
     ierr = MatHasOperation(C,MATOP_PRODUCTSYMBOLIC,&flg);CHKERRQ(ierr);
@@ -194,7 +194,7 @@ int main(int argc,char **args)
       ierr = MatProductNumeric(C);CHKERRQ(ierr); /* test reuse symbolic C */
 
       ierr = MatTransposeMatMultEqual(P,B,C,mcheck,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error: developer driver C = P^T*B");
+      PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error: developer driver C = P^T*B");
       ierr = MatDestroy(&C);CHKERRQ(ierr);
 
       /* (2.2) Test user driver C = P^T*B */
@@ -206,7 +206,7 @@ int main(int argc,char **args)
       /* Compare P^T*B and R*B */
       ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);
       ierr = MatNormDifference(C,C1,&norm);CHKERRQ(ierr);
-      if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatTransposeMatMult(): %g",(double)norm);
+      PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatTransposeMatMult(): %g",(double)norm);
       ierr = MatDestroy(&C1);CHKERRQ(ierr);
 
       /* Test MatDuplicate() of C=P^T*B */
@@ -234,7 +234,7 @@ int main(int argc,char **args)
       /* Check */
       ierr = MatMatMult(B,P,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C1);CHKERRQ(ierr);
       ierr = MatNormDifference(C,C1,&norm);CHKERRQ(ierr);
-      if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatTransposeMult() %g",(double)norm);
+      PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatTransposeMult() %g",(double)norm);
       ierr = MatDestroy(&C1);CHKERRQ(ierr);
       ierr = MatDestroy(&C);CHKERRQ(ierr);
     }
@@ -249,17 +249,17 @@ int main(int argc,char **args)
     ierr = MatProductCreate(A,P,NULL,&C);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(C,"PtAP_");CHKERRQ(ierr);
     ierr = MatProductSetType(C,MATPRODUCT_PtAP);CHKERRQ(ierr);
-    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+    ierr = MatProductSetAlgorithm(C,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFill(C,PETSC_DEFAULT);CHKERRQ(ierr);
     ierr = MatProductSetFromOptions(C);CHKERRQ(ierr);
     ierr = MatProductSymbolic(C);CHKERRQ(ierr);
     ierr = MatProductNumeric(C);CHKERRQ(ierr);
     ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
     ierr = MatProductNumeric(C);CHKERRQ(ierr); /* reuse symbolic C */
 
     ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatProduct_PtAP");
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     /* (4.2) Test user driver */
@@ -273,7 +273,7 @@ int main(int argc,char **args)
       ierr   = MatPtAP(A,P,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
     }
     ierr = MatPtAPMultEqual(A,P,C,mcheck,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP");
 
     /* 5) Test MatRARt() */
     /* ----------------- */
@@ -284,7 +284,7 @@ int main(int argc,char **args)
       ierr = MatProductCreate(A,R,NULL,&RARt);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(RARt,"RARt_");CHKERRQ(ierr);
       ierr = MatProductSetType(RARt,MATPRODUCT_RARt);CHKERRQ(ierr);
-      ierr = MatProductSetAlgorithm(RARt,MATPRODUCTALGORITHM_DEFAULT);CHKERRQ(ierr);
+      ierr = MatProductSetAlgorithm(RARt,MATPRODUCTALGORITHMDEFAULT);CHKERRQ(ierr);
       ierr = MatProductSetFill(RARt,PETSC_DEFAULT);CHKERRQ(ierr);
       ierr = MatProductSetFromOptions(RARt);CHKERRQ(ierr);
       ierr = MatHasOperation(RARt,MATOP_PRODUCTSYMBOLIC,&flg);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ int main(int argc,char **args)
         ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&RARt);CHKERRQ(ierr);
 
         ierr = MatNormDifference(C,RARt,&norm);CHKERRQ(ierr);
-        if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
+        PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"|PtAP - RARt| = %g",(double)norm);
       } else {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"MatRARt not supported\n");CHKERRQ(ierr);
       }
@@ -334,43 +334,43 @@ int main(int argc,char **args)
    test:
      suffix: 2_ab_scalable
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via scalable -matmatmult_via scalable -AtB_matproduct_atb_via outerproduct -mattransposematmult_via outerproduct
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm scalable -matmatmult_via scalable -AtB_mat_product_algorithm outerproduct -mattransposematmult_via outerproduct
      output_file: output/ex62_1.out
 
    test:
      suffix: 3_ab_scalable_fast
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via scalable_fast -matmatmult_via scalable_fast -matmattransmult_via color
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm scalable_fast -matmatmult_via scalable_fast -matmattransmult_via color
      output_file: output/ex62_1.out
 
    test:
      suffix: 4_ab_heap
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via heap -matmatmult_via heap -PtAP_matproduct_ptap_via rap -matptap_via rap
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm heap -matmatmult_via heap -PtAP_mat_product_algorithm rap -matptap_via rap
      output_file: output/ex62_1.out
 
    test:
      suffix: 5_ab_btheap
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via btheap -matmatmult_via btheap -matrart_via r*art
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm btheap -matmatmult_via btheap -matrart_via r*art
      output_file: output/ex62_1.out
 
    test:
      suffix: 6_ab_llcondensed
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via llcondensed -matmatmult_via llcondensed -matrart_via coloring_rart
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm llcondensed -matmatmult_via llcondensed -matrart_via coloring_rart
      output_file: output/ex62_1.out
 
    test:
      suffix: 7_ab_rowmerge
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via rowmerge -matmatmult_via rowmerge
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm rowmerge -matmatmult_via rowmerge
      output_file: output/ex62_1.out
 
    test:
      suffix: 8_ab_hypre
      requires: hypre datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via hypre -matmatmult_via hypre -PtAP_matproduct_ptap_via hypre -matptap_via hypre
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm hypre -matmatmult_via hypre -PtAP_mat_product_algorithm hypre -matptap_via hypre
      output_file: output/ex62_1.out
 
    test:
@@ -405,28 +405,28 @@ int main(int argc,char **args)
      suffix: 10_backend
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
-     args: -fA ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via backend -matmatmult_via backend -AtB_matproduct_atb_via backend -mattransposematmult_via backend -PtAP_matproduct_ptap_via backend -matptap_via backend
+     args: -fA ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm backend -matmatmult_via backend -AtB_mat_product_algorithm backend -mattransposematmult_via backend -PtAP_mat_product_algorithm backend -matptap_via backend
      output_file: output/ex62_1.out
 
    test:
      suffix: 11_ab_scalable
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via scalable -matmatmult_via scalable -AtB_matproduct_atb_via scalable -mattransposematmult_via scalable
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm scalable -matmatmult_via scalable -AtB_mat_product_algorithm scalable -mattransposematmult_via scalable
      output_file: output/ex62_1.out
 
    test:
      suffix: 12_ab_seqmpi
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via seqmpi -matmatmult_via seqmpi -AtB_matproduct_atb_via at*b -mattransposematmult_via at*b
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm seqmpi -matmatmult_via seqmpi -AtB_mat_product_algorithm at*b -mattransposematmult_via at*b
      output_file: output/ex62_1.out
 
    test:
      suffix: 13_ab_hypre
      requires: hypre datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
-     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_matproduct_ab_via hypre -matmatmult_via hypre -PtAP_matproduct_ptap_via hypre -matptap_via hypre
+     args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm hypre -matmatmult_via hypre -PtAP_mat_product_algorithm hypre -matptap_via hypre
      output_file: output/ex62_1.out
 
    test:
@@ -444,7 +444,7 @@ int main(int argc,char **args)
    test:
      suffix: 14_seqaijcusparse_cpu
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -A_mat_type aijcusparse -B_mat_type aijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_matproduct_ab_backend_cpu -matmatmult_backend_cpu -PtAP_matproduct_ptap_backend_cpu -matptap_backend_cpu -RARt_matproduct_rart_backend_cpu -matrart_backend_cpu
+     args: -A_mat_type aijcusparse -B_mat_type aijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu -RARt_mat_product_algorithm_backend_cpu -matrart_backend_cpu
      output_file: output/ex62_1.out
 
    test:
@@ -458,7 +458,7 @@ int main(int argc,char **args)
      suffix: 14_mpiaijcusparse_seq_cpu
      nsize: 1
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_matproduct_ab_backend_cpu -matmatmult_backend_cpu -PtAP_matproduct_ptap_backend_cpu -matptap_backend_cpu
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu
      output_file: output/ex62_1.out
 
    test:
@@ -472,7 +472,7 @@ int main(int argc,char **args)
      suffix: 14_mpiaijcusparse_cpu
      nsize: 3
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
-     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_matproduct_ab_backend_cpu -matmatmult_backend_cpu -PtAP_matproduct_ptap_backend_cpu -matptap_backend_cpu
+     args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu
      output_file: output/ex62_1.out
 
    test:

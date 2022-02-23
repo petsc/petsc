@@ -32,10 +32,10 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
   mxArray            *mat;
 
   PetscFunctionBegin;
-  if (!mfile) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
+  PetscCheckFalse(!mfile,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
   ml = (PetscViewer_Matlab*)mfile->data;
   if (!ml->rank) {
-    ierr = PetscInfo1(mfile,"Putting MATLAB array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo(mfile,"Putting MATLAB array %s\n",name);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
@@ -44,7 +44,7 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
     ierr = PetscArraycpy(mxGetPr(mat),array,m*n);CHKERRQ(ierr);
     matPutVariable(ml->ep,name,mat);
 
-    ierr = PetscInfo1(mfile,"Put MATLAB array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo(mfile,"Put MATLAB array %s\n",name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -82,14 +82,14 @@ PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscSca
   mxArray            *mat;
 
   PetscFunctionBegin;
-  if (!mfile) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
+  PetscCheckFalse(!mfile,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
   ml = (PetscViewer_Matlab*)mfile->data;
   if (!ml->rank) {
-    ierr = PetscInfo1(mfile,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo(mfile,"Getting MATLAB array %s\n",name);CHKERRQ(ierr);
     mat  = matGetVariable(ml->ep,name);
-    if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
+    PetscCheckFalse(!mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
     ierr = PetscArraycpy(array,mxGetPr(mat),m*n);CHKERRQ(ierr);
-    ierr = PetscInfo1(mfile,"Got MATLAB array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo(mfile,"Got MATLAB array %s\n",name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -112,15 +112,15 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
   PetscFileMode      type     = vmatlab->btype;
 
   PetscFunctionBegin;
-  if (type == (PetscFileMode) -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+  PetscCheckFalse(type == (PetscFileMode) -1,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   if (vmatlab->ep) matClose(vmatlab->ep);
 
   /* only first processor opens file */
   if (!vmatlab->rank) {
     if (type == FILE_MODE_READ) vmatlab->ep = matOpen(name,"r");
     else if (type == FILE_MODE_WRITE) vmatlab->ep = matOpen(name,"w");
-    else if (type == FILE_MODE_UNDEFINED) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
-    else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[type]);
+    else PetscCheckFalse(type == FILE_MODE_UNDEFINED,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[type]);
   }
   PetscFunctionReturn(0);
 }

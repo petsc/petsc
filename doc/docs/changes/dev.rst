@@ -12,15 +12,20 @@ Changes: Development
 
 .. rubric:: General:
 
+- PETSc now requires a C99 compliant C compiler in all cases. Previously C99 was only required when building PETSc, but this now extends to public interfaces and header-files
+- PETSc now requires a C++11 compliant C++ compiler. Note this requirement is only enforced if C++ is used; it is acceptable to have a compiler that does not support C++11 if you only ever build C source
+- PETSc now requires at least Microsoft Visual Studio 2015 when using the Microsoft Visual C/C++ Compiler
+
 .. rubric:: Configure/Build:
 
+- Change minimum value of ``--with-cxx-dialect`` argument from "03" to "11"
 - C++ dialect will now also be inferred from compiler flags, although users will be warned that they should let PETSc auto-detect the flag when setting the dialect this way
 - Change C++ dialect flag option to be consistent with compiler flags;  ``--with-cxx-dialect=gnu++14`` means you want ``-std=gnu++14``, no more, no less
 - Fix for requesting no C++ dialect flag via ``--with-cxx-dialect=0``. Previously ``configure`` would bail out immediately without running the tests and therefore wouldn't set any of the capability defines. ``configure`` now runs all tests, just doesn't add the flag in the end
 - Fix a number of corner-cases when handling C++ dialect detection
-- Remove deprecated PETSC_VERSION_PATCH so as to not have confusion with patch releases where the subminor version changes
-- Change PETSC_HAVE_MKL to PETSC_HAVE_MKL_LIBS
-- Add PETSC_HAVE_MKL_INCLUDES
+- Remove deprecated ``PETSC_VERSION_PATCH`` so as to not have confusion with patch releases where the subminor version changes
+- Change ``PETSC_HAVE_MKL`` to ``PETSC_HAVE_MKL_LIBS``
+- Add ``PETSC_HAVE_MKL_INCLUDES``
 - Enable HYPRE GPU for 64bit indices build (using HYPRE's mixed-int configuration)
 
 .. rubric:: Sys:
@@ -46,11 +51,22 @@ Changes: Development
 - Add ``PetscHasAttribute()`` macro to query for existence of an ``__attribute__`` specifier
 - Add ``PetscCommGetComm()`` and ``PetscCommRestoreComm()`` to allow reuse of MPI communicator with external packages, as some MPI implementations have  broken ``MPI_Comm_free()``
 - Add ``PetscExpand()``, ``PetscConcat()``, ``PetscCompl()``, and ``PetscExpandToNothing()``
-- Add ``PETSC_CONSTEXPR``, ``PETSC_CONSTEXPR_14``, ``PETSC_NOEXCEPT``, ``PETSC_NULLPTR``, and ``PETSC_NODISCARD``
+- Add ``PETSC_CONSTEXPR_14``, ``PETSC_NULLPTR``, and ``PETSC_NODISCARD``
+- Add ``PetscSizeT`` as a language-agnostic equivalent of ``size_t`` from ``<stddef.h>``
+- Add ``PetscCount`` as a signed datatype for counts, equivalent to ``ptrdiff_t`` from ``<stddef.h>``.
+- Add ``PetscCountCast``, ``PetscSortIntWithCountArray()``, and ``PetscSortIntWithIntCountArrayPair()``
+- Deprecate ``SETERRQ1()`` - ``SETERRQ9()`` in favor of ``SETERRQ()`` which is now variadic
+- Deprecate ``PetscInfo1()`` - ``PetscInfo9()`` in favor of ``PetscInfo()`` which is now variadic
+- Deprecate ``PETSC_INLINE``, ``inline`` is a standard keyword since C99 and C++11
+- Deprecate ``PETSC_STATIC_INLINE``, as both ``static`` and ``inline`` are standard keywords since C99 and C++11
+- Remove ``PETSC_C_RESTRICT``, ``restrict`` is a standard keyword since C99
+- Change ``SETERRMPI()`` to be variadic
+- Change ``SETERRABORT()`` to be variadic
+- Add ``PetscCheck()`` and ``PetscAssert()`` for checking a boolean condition is true. The former is always enabled, while the latter is enabled only in debug builds.
 
 .. rubric:: PetscViewer:
 
-- Add  ``PetscViewerHDF5SetDefaultTimestepping`` and ``PetscViewerHDF5SetDefaultTimestepping`` to deal with HDF5 files missing the timestepping attribute
+- Add  ``PetscViewerHDF5SetDefaultTimestepping()`` and ``PetscViewerHDF5SetDefaultTimestepping()`` to deal with HDF5 files missing the timestepping attribute
 
 .. rubric:: PetscDraw:
 
@@ -58,8 +74,8 @@ Changes: Development
 
 .. rubric:: IS:
 
--  ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
--  Add ``ISGeneralSetIndicesFromMask()``
+- ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
+- Add ``ISGeneralSetIndicesFromMask()``
 
 .. rubric:: VecScatter / PetscSF:
 
@@ -70,39 +86,47 @@ Changes: Development
 
 .. rubric:: Vec:
 
--  Change ``VecTaggerComputeBoxes()`` and ``VecTaggerComputeIS()`` to return a boolean whose value is true if the list was created
--  Add ``-vec_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` operations
--  Add ``VecSetBindingPropagates()``
--  Add ``VecGetBindingPropagates()``
--  For CUDA and ViennaCL and HIP GPU vectors, ``VecCreate()`` no longer allocates the array on CPU eagerly, it is only allocated if it is needed
-
-.. rubric:: PetscSection:
+- Change ``VecTaggerComputeBoxes()`` and ``VecTaggerComputeIS()`` to return a boolean whose value is true if the list was created
+- Add ``-vec_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` operations
+- Add ``VecSetBindingPropagates()``
+- Add ``VecGetBindingPropagates()``
+- For CUDA and ViennaCL and HIP GPU vectors, ``VecCreate()`` no longer allocates the array on CPU eagerly, it is only allocated if it is needed
+- ``VecGetArrayAndMemType()`` and ``VecGetArrayReadAndMemType()`` now always return a device pointer (copying the data to the device if needed) for the standard CUDA, HIP, and CUDA/HIP Kokkos vectors. Previously, they did so only when the device had the latest data
+- Add ``VecGetArrayWriteAndMemType()`` and  ``VecRestoreArrayWriteAndMemType()``, which are similar to the ``VecGetArrayReadAndMemType()`` family, but only write to the vector on device
 
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
 
--  Add ``-mat_bind_below`` option for specifying size threshold below which GPU is not used for ``Mat`` operations
--  Add ``MatSetBindingPropagates()``
--  Add ``MatGetBindingPropagates()``
--  Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
--  Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU
--  Change ``MatCreateIS()`` behavior when NULL is passed for the mappings. Now a NULL map implies matching local and global spaces
--  Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
--  Add support of ``MatSetValuesCOO()`` and ``MatSetPreallocationCOO()`` for matrix type AIJKOKKOS. Additionally, for AIJKOKKOS, they support negative indices and remote entries
--  Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
+- Add ``-mat_bind_below`` option for specifying size threshold below which GPU is not used for ``Mat`` operations
+- Add ``MatSetBindingPropagates()``
+- Add ``MatGetBindingPropagates()``
+- Add ``MatSeqAIJGetArrayWrite()`` and ``MatSeqAIJRestoreArrayWrite()`` to get write-access to the value array of ``MatSeqAIJ`` on CPU
+- Add ``MatCUSPARSESetUseCPUSolve()`` Use CPU solve with cuSparse for LU factorization that are on the CPU.
+- Change ``MatCreateIS()`` behavior when NULL is passed for the mappings. Now a NULL map implies matching local and global spaces
+- Add support of ``MatSetValuesCOO()`` and ``MatSetPreallocationCOO()`` for matrix type AIJKOKKOS. Additionally, for AIJKOKKOS, they support negative indices and remote entries
+- Add ``MatMultHermitianTransposeEqual()`` and ``MatMultHermitianTransposeAddEqual()``
+- Add ``MatSetPreallocationCOOLocal()`` to set preallocation for matrices using a coordinate format of the entries with local indices
 - Change ``MatStructures`` enumeration to avoid spaces and match capitalization of other enumerations
+- Change size argument of ``MatSetPreallocationCOO()`` to ``PetscCount``
+- Add ``MATORDERINGMETISND`` use METIS for nested dissection ordering of ``MatSeqAIJ``, with options ``nseps``, ``niter``, ``ufactor`` and ``pfactor`` under the common prefix ``-mat_ordering_metisnd_``
+- Change options ``-matproduct_<product_type>_via`` to ``-mat_product_algorithm``
+- Add ``-mat_superlu_dist_3d`` and ``-mat_superlu_dist_d <n>`` to support using SuperLU_DIST's version 7.2 3d decomposition algorithms
 
 .. rubric:: PC:
 
+- Add MG option ``-pc_mg_galerkin_mat_product_algorithm [cusparse|hypre]`` and ``PCMGGalerkinSetMatProductAlgorithm()`` to use cuSparse or hypre's SpGEMM for Galerkin products in hypre
+
 .. rubric:: KSP:
 
--  Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
--  Add ``KSPQMRCGS`` to support qmrcgstab with right preconditioning
+- Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used
+- Add ``KSPQMRCGS`` to support qmrcgstab with right preconditioning
+- Add ``KSPGuessSetTolerance()``
+- Add a new model option to ``KSPGuessFischerSetModel()``
 
 .. rubric:: SNES:
 
--  Add ``SNESNewtonTRDCGetRhoFlag()``, ``SNESNewtonTRDCSetPreCheck()``, ``SNESNewtonTRDCGetPreCheck()``, ``SNESNewtonTRDCSetPostCheck()``, ``SNESNewtonTRDCGetPostCheck()``
+- Add ``SNESNewtonTRDCGetRhoFlag()``, ``SNESNewtonTRDCSetPreCheck()``, ``SNESNewtonTRDCGetPreCheck()``, ``SNESNewtonTRDCSetPostCheck()``, ``SNESNewtonTRDCGetPostCheck()``
 
 .. rubric:: SNESLineSearch:
 
@@ -114,16 +138,27 @@ Changes: Development
   - Add ``TSDiscGradUseGonzalez()`` to set discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
 - Add ``TSRemoveTrajectory`` to destroy and remove the internal TSTrajectory object from TS
 
-.. rubric:: TAO:
+.. rubric:: Tao:
+
+- Add ``TaoGetGradient()``, ``TaoGetObjectiveAndGradient()`` and ``TaoGetHessian()``
+- Deprecate ``TaoSetInitialVector()`` in favor of ``TaoSetSolution()``
+- Deprecate ``TaoGetSolutionVector()`` in favor of ``TaoGetSolution()``
+- Deprecate ``TaoGetGradientVector()`` in favor of ``TaoGetGradient()``
+- Deprecate ``TaoSetObjectiveRoutine()`` in favor of ``TaoSetObjective()``
+- Deprecate ``TaoSetGradientRoutine()`` in favor of ``TaoSetGradient()``
+- Deprecate ``TaoSetObjectiveAndGradientRoutine()`` in favor of ``TaoSetObjectiveAndGradient()``
+- Deprecate ``TaoSetHessianRoutine()`` in favor of ``TaoSetHessian()``
+- Change ``TaoGetObjective()``. Use ``TaoGetSolutionStatus(tao,NULL,&fct,NULL,NULL,NULL,NULL)`` instead
 
 .. rubric:: DM/DA:
 
--  Add ``DMLabelGetNonEmptyStratumValuesIS()``, similar to ``DMLabelGetValueIS()`` but counts only nonempty strata
--  Add ``DMLabelCompare()`` for ``DMLabel`` comparison
--  Add ``DMCompareLabels()`` comparing ``DMLabel``\s of two ``DM``\s
--  ``DMCopyLabels()`` now takes DMCopyLabelsMode argument determining duplicity handling
--  Add ``-dm_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` and ``Mat`` objects associated with a DM
--  Add ``DMCreateMassMatrixLumped()`` to support explicit timestepping, also add ``DMTSCreateRHSMassMatrix()``, ``DMTSCreateRHSMassMatrixLumped()``, and ``DMTSDestroyRHSMassMatrix()``
+- Add ``DMLabelGetNonEmptyStratumValuesIS()``, similar to ``DMLabelGetValueIS()`` but counts only nonempty strata
+- Add ``DMLabelCompare()`` for ``DMLabel`` comparison
+- Add ``DMCompareLabels()`` comparing ``DMLabel``\s of two ``DM``\s
+- ``DMCopyLabels()`` now takes DMCopyLabelsMode argument determining duplicity handling
+- Add ``-dm_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` and ``Mat`` objects associated with a DM
+- Add ``DMCreateMassMatrixLumped()`` to support explicit timestepping, also add ``DMTSCreateRHSMassMatrix()``, ``DMTSCreateRHSMassMatrixLumped()``, and ``DMTSDestroyRHSMassMatrix()``
+- Promote ``DMGetFirstLabelEntry()`` to public API and rename
 
 .. rubric:: DMSwarm:
 
@@ -182,6 +217,8 @@ Changes: Development
 - Change ``DMGenerateRegister`` so that it registers routines that take an additional argument for cell tags
 - Change ``DMPlexFindVertices()`` to take ``Vec`` and ``IS`` arguments instead of arrays
 - Add ``DMPlexTSComputeRHSFunctionFEM()`` to support explicit timestepping
+- Newly created ``DMPlex`` will be distributed by default; this previously required ``-dm_distribute`` or explicit calls to ``DMPlexDistribute()``
+- Add ``DMPlexDistributeGetDefault()`` and ``DMPlexDistributeSetDefault()`` to determine and set the default for ``DMPlex`` distribution
 
 .. rubric:: FE/FV:
 
@@ -194,7 +231,7 @@ Changes: Development
 
 .. rubric:: DMNetwork:
 
--  ``DMNetworkAddComponent()`` now requires a valid component key for each call
+- ``DMNetworkAddComponent()`` now requires a valid component key for each call
 
 .. rubric:: DMStag:
 
@@ -204,3 +241,7 @@ Changes: Development
 - Add ``PetscDSGetRHSResidual()`` and ``PetscDSSetRHSResidual()`` to support explicit timestepping
 
 .. rubric:: Fortran:
+
+.. rubric:: Logging:
+
+- Add ``PetscLogIsActive()`` to determine if logging is in progress or not

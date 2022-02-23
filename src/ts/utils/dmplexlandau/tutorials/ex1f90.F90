@@ -37,7 +37,6 @@ program DMPlexTestLandauInterface
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   dim = 2
   call LandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, '', X, J, dm, ierr);CHKERRA(ierr)
-  call LandauCreateMassMatrix(dm, PETSC_NULL_MAT, ierr);CHKERRA(ierr)
   call DMSetUp(dm,ierr);CHKERRA(ierr)
   call VecDuplicate(X,X_0,ierr);CHKERRA(ierr)
   call VecCopy(X,X_0,ierr)

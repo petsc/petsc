@@ -4,10 +4,6 @@
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/cupmblasinterface.hpp>
 
-#if !defined(PETSC_HAVE_CXX_DIALECT_CXX11)
-#  error PetscDeviceContext backends for CUDA and HIP requires C++11
-#endif
-
 #include <array>
 
 namespace Petsc
@@ -89,7 +85,7 @@ private:
         auto ierr = PetscSleep(3);CHKERRQ(ierr);
         continue;
       }
-      if (PetscUnlikely(cberr != CUPMBLAS_STATUS_SUCCESS)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize %s",cupmBlasName());
+      PetscCheckFalse(cberr != CUPMBLAS_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize %s",cupmBlasName());
     }
     PetscFunctionReturn(0);
   }
@@ -230,7 +226,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::setUp(PetscDeviceContext 
     cerr = cupmStreamCreateWithFlags(&dci->stream,cupmStreamNonBlocking);CHKERRCUPM(cerr);
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid PetscStreamType %s",PetscStreamTypes[util::integral_value(dctx->streamType)]);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid PetscStreamType %s",PetscStreamTypes[util::integral_value(dctx->streamType)]);
     break;
   }
   if (!dci->event) {cerr = cupmEventCreate(&dci->event);CHKERRCUPM(cerr);}
@@ -299,7 +295,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::beginTimer(PetscDeviceCon
 
   PetscFunctionBegin;
 #if PetscDefined(USE_DEBUG)
-  if (PetscUnlikely(dci->timerInUse)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeEnd()?");
+  PetscCheckFalse(dci->timerInUse,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeEnd()?");
   dci->timerInUse = PETSC_TRUE;
 #endif
   if (!dci->begin) {
@@ -319,7 +315,7 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode DeviceContext<T>::endTimer(PetscDeviceConte
 
   PetscFunctionBegin;
 #if PetscDefined(USE_DEBUG)
-  if (PetscUnlikely(!dci->timerInUse)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeBegin()?");
+  PetscCheckFalse(!dci->timerInUse,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Forgot to call PetscLogGpuTimeBegin()?");
   dci->timerInUse = PETSC_FALSE;
 #endif
   cerr = cupmEventRecord(dci->end,dci->stream);CHKERRCUPM(cerr);

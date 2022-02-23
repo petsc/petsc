@@ -1534,11 +1534,13 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscStrallocpy(),
           PetscArraymove()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMemmove(void *a,const void *b,size_t n)
+static inline PetscErrorCode PetscMemmove(void *a,const void *b,size_t n)
 {
   PetscFunctionBegin;
-  if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to null pointer");
-  if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+  if (n > 0) {
+    PetscCheck(a,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to null pointer");
+    PetscCheck(b,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+  }
 #if !defined(PETSC_HAVE_MEMMOVE)
   if (a < b) {
     if (a <= b - n) memcpy(a,b,n);
@@ -1593,20 +1595,22 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemmove(void *a,const void *b,size_t n)
 .seealso: PetscMemzero(), PetscMemcmp(), PetscArrayzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy()
 
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
+static inline PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 {
 #if defined(PETSC_USE_DEBUG)
   size_t al = (size_t) a,bl = (size_t) b;
   size_t nl = (size_t) n;
   PetscFunctionBegin;
-  if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
-  if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
+  if (n > 0) {
+    PetscCheck(b,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+    PetscCheck(a,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
+  }
 #else
   PetscFunctionBegin;
 #endif
   if (a != b && n > 0) {
 #if defined(PETSC_USE_DEBUG)
-    if ((al > bl && (al - bl) < nl) || (bl - al) < nl)  SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
+    PetscCheck(!((al > bl && (al - bl) < nl) || (bl - al) < nl),PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
               or make sure your copy regions and lengths are correct. \n\
               Length (bytes) %ld first address %ld second address %ld",nl,al,bl);
 #endif
@@ -1657,11 +1661,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscArraycmp(), PetscArraycpy(), PetscMemmove(), PetscStrallocpy()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMemzero(void *a,size_t n)
+static inline PetscErrorCode PetscMemzero(void *a,size_t n)
 {
   if (n > 0) {
 #if defined(PETSC_USE_DEBUG)
-    if (!a) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer with %zu bytes",n);
+    PetscCheck(a,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer with %zu bytes",n);
 #endif
 #if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
     if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
@@ -1956,15 +1960,47 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File,MPI_Offset,void*,Pets
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscBLASIntCast(), PetscIntMultError(), PetscIntSumError()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
+static inline PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
 {
   PetscFunctionBegin;
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (a > PETSC_MAX_INT) {
     *b = 0;
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt64_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices",a);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt64_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices",a);
   }
 #endif
+  *b = (PetscInt)(a);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    PetscCountCast - casts a PetscCount to a PetscInt (which may be 32 bits in size), generates an
+         error if the PetscInt is not large enough to hold the number.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the PetscCount value
+
+   Output Parameter:
+.     b - the resulting PetscInt value
+
+   Level: advanced
+
+   Notes:
+     If integers needed for the applications are too large to fit in 32 bit ints you can ./configure using --with-64-bit-indices to make PetscInt use 64 bit ints
+
+   Not available from Fortran
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscBLASIntCast(), PetscIntMultError(), PetscIntSumError(), PetscIntCast()
+@*/
+static inline PetscErrorCode PetscCountCast(PetscCount a,PetscInt *b)
+{
+  PetscFunctionBegin;
+  if (sizeof(PetscCount) > sizeof(PetscInt) && a > PETSC_MAX_INT) {
+    *b = 0;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscCount_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices",a);
+  }
   *b = (PetscInt)(a);
   PetscFunctionReturn(0);
 }
@@ -1987,13 +2023,13 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntCast(PetscInt64 a,PetscInt *b)
       Not available from Fortran
       Errors if the integer is negative since PETSc calls to BLAS/LAPACK never need to cast negative integer inputs
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscIntCast()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast(), PetscIntCast(), PetscCountCast()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
+static inline PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_HAVE_64BIT_BLAS_INDICES)
-  if (a > PETSC_BLAS_INT_MAX) { *b = 0; SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " is too big for BLAS/LAPACK, which is restricted to 32 bit integers. Either you have an invalidly large integer error in your code or you must ./configure PETSc with -with-64-bit-blas-indices for the case you are running",a); }
+  if (a > PETSC_BLAS_INT_MAX) { *b = 0; SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " is too big for BLAS/LAPACK, which is restricted to 32 bit integers. Either you have an invalidly large integer error in your code or you must ./configure PETSc with -with-64-bit-blas-indices for the case you are running",a); }
 #endif
   if (a < 0) { *b = 0; SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Passing negative integer to BLAS/LAPACK routine"); }
   *b = (PetscBLASInt)(a);
@@ -2018,11 +2054,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 
 .seealso: PetscCuBLASInt, PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscMPIIntCast(), PetscIntCast()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscCuBLASInt *b)
+static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscCuBLASInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)
-  if (a > PETSC_CUBLAS_INT_MAX) { *b = 0; SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " is too big for cuBLAS, which is restricted to 32 bit integers.",a); }
+  if (a > PETSC_CUBLAS_INT_MAX) { *b = 0; SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " is too big for cuBLAS, which is restricted to 32 bit integers.",a); }
 #endif
   if (a < 0) { *b = 0; SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Passing negative integer to cuBLAS routine"); }
   *b = (PetscCuBLASInt)(a);
@@ -2047,11 +2083,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCuBLASIntCast(PetscInt a,PetscCuBLASInt 
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntCast()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
+static inline PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_64BIT_INDICES)
-  if (a > PETSC_MPI_INT_MAX) { *b = 0; SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " is too big for MPI buffer length. We currently only support 32 bit integers",a); }
+  if (a > PETSC_MPI_INT_MAX) { *b = 0; SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%" PetscInt_FMT " is too big for MPI buffer length. We currently only support 32 bit integers",a); }
 #endif
   *b = (PetscMPIInt)(a);
   PetscFunctionReturn(0);
@@ -2087,7 +2123,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult(), PetscIntMultError(), PetscIntSumError()
 @*/
-PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
+static inline PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 {
   PetscInt64 r;
 
@@ -2123,7 +2159,7 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult(), PetscIntMultError(), PetscIntSumError()
 @*/
-PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
+static inline PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 {
   PetscInt64 r;
 
@@ -2157,7 +2193,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult(), PetscIntMultError()
 @*/
-PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
+static inline PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 {
   PetscInt64 r;
 
@@ -2190,14 +2226,14 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64(), PetscIntSumError()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,PetscInt *result)
+static inline PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,PetscInt *result)
 {
   PetscInt64 r;
 
   PetscFunctionBegin;
   r  =  PetscInt64Mult(a,b);
 #if !defined(PETSC_USE_64BIT_INDICES)
-  if (r > PETSC_MAX_INT) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Product of two integers %d %d overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
+  PetscCheck(r <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Product of two integers %d %d overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
 #endif
   if (result) *result = (PetscInt) r;
   PetscFunctionReturn(0);
@@ -2225,14 +2261,14 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult(), PetscIntMultError()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscInt *result)
+static inline PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscInt *result)
 {
   PetscInt64 r;
 
   PetscFunctionBegin;
   r  =  ((PetscInt64)a) + ((PetscInt64)b);
 #if !defined(PETSC_USE_64BIT_INDICES)
-  if (r > PETSC_MAX_INT) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sum of two integers %d %d overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
+  PetscCheck(r <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Sum of two integers %d %d overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running",a,b);
 #endif
   if (result) *result = (PetscInt) r;
   PetscFunctionReturn(0);
@@ -2309,7 +2345,9 @@ PETSC_EXTERN PetscErrorCode PetscFindMPIInt(PetscMPIInt, PetscInt, const PetscMP
 PETSC_EXTERN PetscErrorCode PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithCountArray(PetscCount,PetscInt[],PetscCount[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithArrayPair(PetscInt,PetscInt[],PetscInt[],PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount,PetscInt[],PetscInt[],PetscCount[]);
 PETSC_EXTERN PetscErrorCode PetscSortMPIInt(PetscInt,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt*,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt,PetscMPIInt[],PetscMPIInt[]);
@@ -2398,7 +2436,7 @@ PETSC_EXTERN PetscErrorCode PetscMkdir(const char[]);
 PETSC_EXTERN PetscErrorCode PetscMkdtemp(char[]);
 PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
 
-PETSC_STATIC_INLINE PetscBool PetscBinaryBigEndian(void) {long _petsc_v = 1; return ((char*)&_petsc_v)[0] ? PETSC_FALSE : PETSC_TRUE;}
+static inline PetscBool PetscBinaryBigEndian(void) {long _petsc_v = 1; return ((char*)&_petsc_v)[0] ? PETSC_FALSE : PETSC_TRUE;}
 
 PETSC_EXTERN PetscErrorCode PetscBinaryRead(int,void*,PetscInt,PetscInt*,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm,int,void*,PetscInt,PetscInt*,PetscDataType);
@@ -2465,9 +2503,9 @@ struct _n_PetscSubcomm {
   char             *subcommprefix;
 };
 
-PETSC_STATIC_INLINE MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
-PETSC_STATIC_INLINE MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
-PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
+static inline MPI_Comm PetscSubcommParent(PetscSubcomm scomm) {return scomm->parent;}
+static inline MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
+static inline MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);
@@ -2515,7 +2553,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
  * possible. */
-PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,size_t count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
+static inline PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,size_t count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
 
 extern PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton;
 PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted*);
@@ -2544,7 +2582,7 @@ PETSC_EXTERN PetscSegBuffer PetscCitationsList;
      Options Database:
 .     -citations [filename]   - print out the bibtex entries for the given computation
 @*/
-PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *set)
+static inline PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *set)
 {
   size_t         len;
   char           *vstring;
@@ -2576,7 +2614,7 @@ PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[],const char[],char[],
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],size_t);
 
 #if defined(PETSC_USE_DEBUG)
-PETSC_STATIC_INLINE unsigned int PetscStrHash(const char *str)
+static inline unsigned int PetscStrHash(const char *str)
 {
   unsigned int c,hash = 5381;
 
@@ -2624,9 +2662,9 @@ M*/
   a_b1[2] = -(PetscMPIInt)PetscStrHash(PETSC_FUNCTION_NAME); a_b1[3] = -a_b1[2];\
   a_b1[4] = -(PetscMPIInt)(c);                               a_b1[5] = -a_b1[4];\
   _4_ierr = MPI_Allreduce(a_b1,a_b2,6,MPI_INT,MPI_MAX,fcomm);CHKERRMPI(_4_ierr);\
-  if (-a_b2[0] != a_b2[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called in different locations (code lines) on different processors");\
-  if (-a_b2[2] != a_b2[3]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called in different locations (functions) on different processors");\
-  if (-a_b2[4] != a_b2[5]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called with different counts %d on different processors",_mpiu_allreduce_c_int); \
+  PetscCheck(-a_b2[0] == a_b2[1],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called in different locations (code lines) on different processors");\
+  PetscCheck(-a_b2[2] == a_b2[3],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called in different locations (functions) on different processors");\
+  PetscCheck(-a_b2[4] == a_b2[5],PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_Allreduce() called with different counts %d on different processors",_mpiu_allreduce_c_int); \
   _4_ierr = MPI_Allreduce((a),(b),(c),d,e,(fcomm));CHKERRMPI(_4_ierr);\
   } while (0)
 #else

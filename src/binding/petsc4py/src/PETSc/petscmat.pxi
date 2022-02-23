@@ -92,6 +92,7 @@ cdef extern from * nogil:
     PetscMatOrderingType MATORDERINGWBM
     PetscMatOrderingType MATORDERINGSPECTRAL
     PetscMatOrderingType MATORDERINGAMD
+    PetscMatOrderingType MATORDERINGMETISND
 
     ctypedef const char* PetscMatSolverType "MatSolverType"
     PetscMatSolverType MATSOLVERSUPERLU
@@ -216,6 +217,7 @@ cdef extern from * nogil:
     int MatSetVecType(PetscMat,PetscVecType)
     int MatGetVecType(PetscMat,PetscVecType*)
     int MatSetOption(PetscMat,PetscMatOption,PetscBool)
+    int MatGetOption(PetscMat,PetscMatOption,PetscBool*)
 
     enum: MAT_SKIP_ALLOCATION
     int MatSeqAIJSetPreallocation  (PetscMat,PetscInt,PetscInt[])
@@ -235,6 +237,7 @@ cdef extern from * nogil:
     int MatISSetPreallocation(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
 
     int MatSetOptionsPrefix(PetscMat,char[])
+    int MatAppendOptionsPrefix(PetscMat,char[])
     int MatGetOptionsPrefix(PetscMat,char*[])
     int MatSetFromOptions(PetscMat)
     int MatSetUp(PetscMat)
@@ -267,7 +270,7 @@ cdef extern from * nogil:
     int MatIsHermitian(PetscMat,PetscReal,PetscBool*)
     int MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
     int MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
-    int MatIsTranspose(PetscMat A,PetscMat B,PetscReal tol,PetscBool *flg)
+    int MatIsTranspose(PetscMat,PetscMat,PetscReal,PetscBool*)
 
     int MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
 
@@ -303,7 +306,7 @@ cdef extern from * nogil:
     int MatAssembled(PetscMat,PetscBool*)
 
     int MatDiagonalSet(PetscMat,PetscVec,PetscInsertMode)
-    int MatDiagonalScale(PetscMat, PetscVec OPTIONAL, PetscVec OPTIONAL)
+    int MatDiagonalScale(PetscMat,PetscVec,PetscVec)
     int MatScale(PetscMat,PetscScalar)
     int MatShift(PetscMat,PetscScalar)
     int MatChop(PetscMat,PetscReal)
@@ -349,7 +352,7 @@ cdef extern from * nogil:
     int MatZeroRowsColumnsLocal(PetscMat,PetscInt,PetscInt[],PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsColumnsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
     int MatZeroRowsColumnsLocalIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
-    int MatZeroRowsColumnsStencil(PetscMat,PetscInt,const PetscMatStencil[], PetscScalar,PetscVec,PetscVec)
+    int MatZeroRowsColumnsStencil(PetscMat,PetscInt,const PetscMatStencil[],PetscScalar,PetscVec,PetscVec)
 
     int MatGetDiagonal(PetscMat,PetscVec)
     int MatGetRowSum(PetscMat,PetscVec)
@@ -378,6 +381,10 @@ cdef extern from * nogil:
     int MatISGetLocalMat(PetscMat,PetscMat*)
     int MatISRestoreLocalMat(PetscMat,PetscMat*)
     int MatISSetLocalMat(PetscMat,PetscMat)
+
+    int MatH2OpusOrthogonalize(PetscMat)
+    int MatH2OpusCompress(PetscMat,PetscReal)
+    int MatH2OpusLowRankUpdate(PetscMat,PetscMat,PetscMat,PetscScalar)
 
     int MatMissingDiagonal(Mat,PetscBool*,PetscInt*)
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":

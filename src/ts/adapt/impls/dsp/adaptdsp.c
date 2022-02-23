@@ -81,13 +81,13 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
 
   if (ts->ops->evaluatewlte) {
     ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
-    if (enorm >= 0 && order < 1) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
+    PetscCheckFalse(enorm >= 0 && order < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
   } else if (ts->ops->evaluatestep) {
     DM  dm;
     Vec Y;
 
-    if (adapt->candidates.n < 1) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
-    if (!adapt->candidates.inuse_set) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
+    PetscCheckFalse(adapt->candidates.n < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
+    PetscCheckFalse(!adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
     order = adapt->candidates.order[0];
     ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm,&Y);CHKERRQ(ierr);
@@ -244,7 +244,7 @@ static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt,const char *name)
     ierr = PetscStrcasecmp(name,filterlist[i].name,&match);CHKERRQ(ierr);
     if (match) { tab = &filterlist[i]; break; }
   }
-  if (!tab) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_UNKNOWN_TYPE,"Filter name %s not found",name);
+  PetscCheckFalse(!tab,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_UNKNOWN_TYPE,"Filter name %s not found",name);
   dsp->kBeta[0] = tab->kBeta[0]/tab->scale;
   dsp->kBeta[1] = tab->kBeta[1]/tab->scale;
   dsp->kBeta[2] = tab->kBeta[2]/tab->scale;
@@ -285,15 +285,15 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
   if (set) { ierr = TSAdaptDSPSetFilter(adapt,names[index]);CHKERRQ(ierr);}
 
   ierr = PetscOptionsRealArray("-ts_adapt_dsp_pid","PID parameters <kkI,kkP,kkD>","TSAdaptDSPSetPID",pid,(n=3,&n),&set);CHKERRQ(ierr);
-  if (set && !n) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for PID parameters");
+  PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for PID parameters");
   if (set) {ierr = TSAdaptDSPSetPID(adapt,pid[0],pid[1],pid[2]);CHKERRQ(ierr);}
 
   ierr = PetscOptionsRealArray("-ts_adapt_dsp_kbeta","Filter parameters","",dsp->kBeta,(n=3,&n),&set);CHKERRQ(ierr);
-  if (set && !n) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter kbeta");
+  PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter kbeta");
   if (set) for (i=n; i<3; i++) dsp->kBeta[i] = 0;
 
   ierr = PetscOptionsRealArray("-ts_adapt_dsp_alpha","Filter parameters","",dsp->Alpha,(n=2,&n),&set);CHKERRQ(ierr);
-  if (set && !n) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter alpha");
+  PetscCheckFalse(set && !n,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONG,"Must provide at least one value for parameter alpha");
   if (set) for (i=n; i<2; i++) dsp->Alpha[i] = 0;
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);

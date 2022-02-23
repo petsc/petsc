@@ -17,6 +17,7 @@ class Configure(config.package.Package):
     self.functions         = ['umfpack_dl_wsolve','cholmod_l_solve','klu_l_solve','SuiteSparseQR_C_solve']
     self.includes          = ['umfpack.h','cholmod.h','klu.h','SuiteSparseQR_C.h']
     self.hastests          = 1
+    self.buildLanguages    = ['Cxx']
     self.hastestsdatafiles = 1
     self.precisions        = ['double']
     return
@@ -65,9 +66,8 @@ class Configure(config.package.Package):
     self.popLanguage()
 
     # CHOLMOD may build the shared library with CXX
-    self.pushLanguage('Cxx')
-    args.append('CXX="'+self.getCompiler()+'"')
-    self.popLanguage()
+    with self.Language('Cxx'):
+      args.append(self.getCompiler().join(('CXX="','"')))
 
     args.append('MAKE="'+self.make.make+'"')
     args.append('RANLIB="'+self.setCompilers.RANLIB+'"')

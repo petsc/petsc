@@ -129,7 +129,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       if (detJ < 0) {
         ierr = DMPlexOrientPoint(*dm, 0, -1);CHKERRQ(ierr);
         ierr = DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
-        if (detJ < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Something is wrong");
+        PetscCheckFalse(detJ < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Something is wrong");
       }
     }
     ierr = DMPlexOrient(*dm);CHKERRQ(ierr);
@@ -369,8 +369,8 @@ int main(int argc, char **argv)
   ierr = VecSet(ub, 0.8);CHKERRQ(ierr); /* a nontrivial upper bound */
 
   ierr = TaoCreate(PETSC_COMM_WORLD, &tao);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao, u);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradientRoutine(tao, ReducedFunctionGradient, &user);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao, u);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL, ReducedFunctionGradient, &user);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao, lb, ub);CHKERRQ(ierr);
   ierr = TaoSetType(tao, TAOBLMVM);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);

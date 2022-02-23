@@ -24,11 +24,11 @@ The command line options are:\n\
 /*T
    Concepts: TAO^Solving a bound constrained minimization problem
    Routines: TaoCreate();
-   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine();
+   Routines: TaoSetType(); TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian();
    Routines: TaoSetVariableBounds();
    Routines: TaoSetMonitor(); TaoSetConvergenceTest();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
    Routines: TaoDestroy();
@@ -134,12 +134,12 @@ int main(int argc, char **argv)
 
   /* Set the initial vector */
   ierr = VecSet(x, zero);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
 
   /* Set the user function, gradient, hessian evaluation routines and data structures */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
 
-  ierr = TaoSetHessianRoutine(tao,user.A,user.A,FormHessian,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetHessian(tao,user.A,user.A,FormHessian,(void*)&user);CHKERRQ(ierr);
 
   /* Set a routine that defines the bounds */
   ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);

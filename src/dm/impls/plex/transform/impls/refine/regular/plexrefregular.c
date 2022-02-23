@@ -88,7 +88,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
   switch (ct) {
     case DM_POLYTOPE_TRIANGLE:      if (Nf) *Nf = 3; if (v0) *v0 = tri_v0;  if (J) *J = tri_J;  if (invJ) *invJ = tri_invJ;  if (detJ) *detJ = tri_detJ;  break;
     case DM_POLYTOPE_QUADRILATERAL: if (Nf) *Nf = 4; if (v0) *v0 = quad_v0; if (J) *J = quad_J; if (invJ) *invJ = quad_invJ; if (detJ) *detJ = quad_detJ; break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported polytope type %s", DMPolytopeTypes[ct]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported polytope type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -266,7 +266,7 @@ PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPoly
     case DM_POLYTOPE_TRIANGLE:      if (Nc) *Nc = 4; if (v0) *v0 = tri_v0;  if (J) *J = tri_J;  if (invJ) *invJ = tri_invJ;  break;
     case DM_POLYTOPE_QUADRILATERAL: if (Nc) *Nc = 4; if (v0) *v0 = quad_v0; if (J) *J = quad_J; if (invJ) *invJ = quad_invJ; break;
     case DM_POLYTOPE_HEXAHEDRON:    if (Nc) *Nc = 8; if (v0) *v0 = hex_v0;  if (J) *J = hex_J;  if (invJ) *invJ = hex_invJ;  break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported polytope type %s", DMPolytopeTypes[ct]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported polytope type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -297,7 +297,7 @@ static PetscErrorCode DMPlexCellRefinerGetCellVertices_Regular(DMPlexCellRefiner
     case DM_POLYTOPE_QUADRILATERAL: *Nv =  9; *subcellV = quad_v; break;
     case DM_POLYTOPE_TETRAHEDRON:   *Nv = 10; *subcellV = tet_v;  break;
     case DM_POLYTOPE_HEXAHEDRON:    *Nv = 27; *subcellV = hex_v;  break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "No subcell vertices for cell type %s", DMPolytopeTypes[ct]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No subcell vertices for cell type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -313,14 +313,14 @@ static PetscErrorCode DMPlexCellRefinerGetSubcellVertices_Regular(DMPlexCellRefi
                               9, 12, 13, 10, 18, 19, 22, 21,  10, 13, 14, 11, 19, 20, 23, 22,  13, 16, 17, 14, 22, 23, 26, 25,  12, 15, 16, 13, 21, 22, 25, 24};
 
   PetscFunctionBegin;
-  if (ct != rct) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cell type %s does not produce %s", DMPolytopeTypes[ct], DMPolytopeTypes[rct]);
+  PetscCheckFalse(ct != rct,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Cell type %s does not produce %s", DMPolytopeTypes[ct], DMPolytopeTypes[rct]);
   switch (ct) {
     case DM_POLYTOPE_SEGMENT:       *Nv = 2; *subcellV = &seg_v[r*(*Nv)];  break;
     case DM_POLYTOPE_TRIANGLE:      *Nv = 3; *subcellV = &tri_v[r*(*Nv)];  break;
     case DM_POLYTOPE_QUADRILATERAL: *Nv = 4; *subcellV = &quad_v[r*(*Nv)]; break;
     case DM_POLYTOPE_TETRAHEDRON:   *Nv = 4; *subcellV = &tet_v[r*(*Nv)];  break;
     case DM_POLYTOPE_HEXAHEDRON:    *Nv = 8; *subcellV = &hex_v[r*(*Nv)];  break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "No subcell vertices for cell type %s", DMPolytopeTypes[ct]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No subcell vertices for cell type %s", DMPolytopeTypes[ct]);
   }
   PetscFunctionReturn(0);
 }
@@ -341,7 +341,7 @@ static PetscErrorCode DMPlexTransformView_Regular(DMPlexTransform tr, PetscViewe
     ierr = PetscObjectGetName((PetscObject) tr, &name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Regular refinement %s\n", name ? name : "");CHKERRQ(ierr);
   } else {
-    SETERRQ1(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
+    SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -754,7 +754,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = seg_seg[(so+1)*4 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, seg_seg[(so+1)*4 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
     case DM_POLYTOPE_TRIANGLE:
@@ -767,7 +767,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = tri_tri[(so+3)*8 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, tri_tri[(so+3)*8 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
     case DM_POLYTOPE_QUADRILATERAL:
@@ -781,7 +781,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = quad_quad[(so+4)*8 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, quad_quad[(so+4)*8 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
     case DM_POLYTOPE_SEG_PRISM_TENSOR:
@@ -794,7 +794,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = tseg_tseg[(so+2)*4 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, tseg_tseg[(so+2)*4 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
     case DM_POLYTOPE_TETRAHEDRON:
@@ -811,7 +811,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = tet_tet[(so+12)*16 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, tet_tet[(so+12)*16 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
     case DM_POLYTOPE_HEXAHEDRON:
@@ -829,7 +829,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = hex_hex[(so+24)*16 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, hex_hex[(so+24)*16 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
     case DM_POLYTOPE_TRI_PRISM:
@@ -850,7 +850,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = trip_trip[(so+6)*16 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, trip_trip[(so+6)*16 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
     case DM_POLYTOPE_TRI_PRISM_TENSOR:
@@ -863,7 +863,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = ttri_ttri[(so+6)*8 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, ttri_ttri[(so+6)*8 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:
@@ -880,10 +880,10 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform tr, 
         *rnew = tquad_tquad[(so+8)*8 + r*2];
         *onew = DMPolytopeTypeComposeOrientation(tct, o, tquad_tquad[(so+8)*8 + r*2 + 1]);
         break;
-      default: SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
     break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
   }
   PetscFunctionReturn(0);
 }
@@ -1314,7 +1314,7 @@ PetscErrorCode DMPlexTransformCellRefine_Regular(DMPlexTransform tr, DMPolytopeT
     case DM_POLYTOPE_TRI_PRISM_TENSOR:   *Nt = 2; *target = ttriT;   *size = ttriS;   *cone = ttriC;   *ornt = ttriO;   break;
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:  *Nt = 3; *target = tquadT;  *size = tquadS;  *cone = tquadC;  *ornt = tquadO;  break;
     case DM_POLYTOPE_PYRAMID:            *Nt = 5; *target = tpyrT;   *size = tpyrS;   *cone = tpyrC;   *ornt = tpyrO;   break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
   PetscFunctionReturn(0);
 }

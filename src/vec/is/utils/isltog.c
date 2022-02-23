@@ -459,7 +459,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
   if (start == PETSC_DECIDE) {
     start = 0;
     ierr = MPI_Exscan(&nroots,&start,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
-  } else if (start < 0) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "start must be nonnegative or PETSC_DECIDE");
+  } else PetscCheckFalse(start < 0,comm, PETSC_ERR_ARG_OUTOFRANGE, "start must be nonnegative or PETSC_DECIDE");
   if (ilocal) {
     for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,ilocal[i]+1);
   }
@@ -497,13 +497,13 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
-  if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid block size %" PetscInt_FMT,bs);
+  PetscCheckFalse(bs < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid block size %" PetscInt_FMT,bs);
   if (bs == mapping->bs) PetscFunctionReturn(0);
   on  = mapping->n;
   obs = mapping->bs;
   oid = mapping->indices;
   nn  = (on*obs)/bs;
-  if ((on*obs)%bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %" PetscInt_FMT " is inconsistent with block size %" PetscInt_FMT " and number of block indices %" PetscInt_FMT,bs,obs,on);
+  PetscCheckFalse((on*obs)%bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %" PetscInt_FMT " is inconsistent with block size %" PetscInt_FMT " and number of block indices %" PetscInt_FMT,bs,obs,on);
 
   ierr = PetscMalloc1(nn,&nid);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetIndices(mapping,&oid);CHKERRQ(ierr);
@@ -511,11 +511,11 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
     PetscInt j;
     for (j=0,cn=0;j<bs-1;j++) {
       if (oid[i*bs+j] < 0) { cn++; continue; }
-      if (oid[i*bs+j] != oid[i*bs+j+1]-1) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %" PetscInt_FMT " and %" PetscInt_FMT " are incompatible with the block indices: non consecutive indices %" PetscInt_FMT " %" PetscInt_FMT,bs,obs,oid[i*bs+j],oid[i*bs+j+1]);
+      PetscCheckFalse(oid[i*bs+j] != oid[i*bs+j+1]-1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %" PetscInt_FMT " and %" PetscInt_FMT " are incompatible with the block indices: non consecutive indices %" PetscInt_FMT " %" PetscInt_FMT,bs,obs,oid[i*bs+j],oid[i*bs+j+1]);
     }
     if (oid[i*bs+j] < 0) cn++;
     if (cn) {
-      if (cn != bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %" PetscInt_FMT " and %" PetscInt_FMT " are incompatible with the block indices: invalid number of negative entries in block %" PetscInt_FMT,bs,obs,cn);
+      PetscCheckFalse(cn != bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %" PetscInt_FMT " and %" PetscInt_FMT " are incompatible with the block indices: invalid number of negative entries in block %" PetscInt_FMT,bs,obs,cn);
       nid[i] = -1;
     } else {
       nid[i] = oid[i*bs]/bs;
@@ -630,7 +630,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   } else if (mode == PETSC_USE_POINTER) {
     (*mapping)->indices = (PetscInt*)indices;
   }
-  else SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid mode %d", mode);
+  else SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid mode %d", mode);
   PetscFunctionReturn(0);
 }
 
@@ -794,7 +794,7 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
         out[i] = in[i];
         continue;
       }
-      if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT,in[i],Nmax-1,i);
+      PetscCheckFalse(in[i] >= Nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT,in[i],Nmax-1,i);
       out[i] = idx[in[i]];
     }
   } else {
@@ -804,7 +804,7 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
         out[i] = in[i];
         continue;
       }
-      if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT,in[i],Nmax-1,i);
+      PetscCheckFalse(in[i] >= Nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT,in[i],Nmax-1,i);
       out[i] = idx[in[i]/bs]*bs + (in[i] % bs);
     }
   }
@@ -852,7 +852,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,P
         out[i] = in[i];
         continue;
       }
-      if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local block index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT,in[i],Nmax-1,i);
+      PetscCheckFalse(in[i] >= Nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local block index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT,in[i],Nmax-1,i);
       out[i] = idx[in[i]];
     }
   }
@@ -1129,11 +1129,11 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
     nprocs[2*proc]++;                     /* count of how many that processor globally owns of ours */
   }
   nsends = 0; for (i=0; i<size; i++) nsends += nprocs[2*i+1];
-  ierr = PetscInfo1(mapping,"Number of global owners for my local data %" PetscInt_FMT "\n",nsends);CHKERRQ(ierr);
+  ierr = PetscInfo(mapping,"Number of global owners for my local data %" PetscInt_FMT "\n",nsends);CHKERRQ(ierr);
 
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
-  ierr = PetscInfo1(mapping,"Number of local owners for my global data %" PetscInt_FMT "\n",nrecvs);CHKERRQ(ierr);
+  ierr = PetscInfo(mapping,"Number of local owners for my global data %" PetscInt_FMT "\n",nrecvs);CHKERRQ(ierr);
 
   /* post receives for owned rows */
   ierr = PetscMalloc1((2*nrecvs+1)*(nmax+1),&recvs);CHKERRQ(ierr);
@@ -1740,7 +1740,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
   PetscValidPointer(array,2);
-  if (ltog->bs == 1 && *array != ltog->indices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
+  PetscCheckFalse(ltog->bs == 1 && *array != ltog->indices,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
 
   if (ltog->bs > 1) {
     PetscErrorCode ierr;
@@ -1791,7 +1791,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
   PetscValidPointer(array,2);
-  if (*array != ltog->indices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
+  PetscCheckFalse(*array != ltog->indices,PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
   *array = NULL;
   PetscFunctionReturn(0);
 }
@@ -1823,7 +1823,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have a non-negative number of mappings, given %" PetscInt_FMT,n);
+  PetscCheckFalse(n < 0,comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have a non-negative number of mappings, given %" PetscInt_FMT,n);
   if (n > 0) PetscValidPointer(ltogs,3);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(ltogs[i],IS_LTOGM_CLASSID,3);
   PetscValidPointer(ltogcat,4);
@@ -1967,7 +1967,7 @@ PetscErrorCode  ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoc
   if (match) PetscFunctionReturn(0);
 
   ierr =  PetscFunctionListFind(ISLocalToGlobalMappingList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject)ltog),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested ISLocalToGlobalMapping type %s",type);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject)ltog),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested ISLocalToGlobalMapping type %s",type);
   /* Destroy the previous private LTOG context */
   if (ltog->ops->destroy) {
     ierr              = (*ltog->ops->destroy)(ltog);CHKERRQ(ierr);

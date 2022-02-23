@@ -372,7 +372,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
       switch (dim) {
         case 2: DMPlex_MultAdd2DReal_Internal(Q, 1, GammaS, &r[p*dim]);break;
         case 3: DMPlex_MultAdd3DReal_Internal(Q, 1, GammaS, &r[p*dim]);break;
-        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %D", dim);
+        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %D", dim);
       }
     }
     if (dbg) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Final %4D %10.8lf %10.8lf\n", p, r[p*dim+0], r[p*dim+1]);CHKERRQ(ierr);}

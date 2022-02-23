@@ -303,10 +303,13 @@ PetscErrorCode MatKAIJSetAIJ(Mat A,Mat B)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
+    ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&flg);CHKERRQ(ierr);
+    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"MatKAIJSetAIJ() with MATSEQKAIJ does not support %s as the AIJ mat",((PetscObject)B)->type_name);
     Mat_SeqKAIJ *a = (Mat_SeqKAIJ*)A->data;
     a->AIJ = B;
   } else {
@@ -343,7 +346,7 @@ PetscErrorCode MatKAIJSetS(Mat A,PetscInt p,PetscInt q,const PetscScalar S[])
   PetscFunctionBegin;
   ierr = PetscFree(a->S);CHKERRQ(ierr);
   if (S) {
-    ierr = PetscMalloc1(p*q*sizeof(PetscScalar),&a->S);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p*q,&a->S);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->S,S,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
   } else  a->S = NULL;
 
@@ -438,7 +441,7 @@ PetscErrorCode MatKAIJSetT(Mat A,PetscInt p,PetscInt q,const PetscScalar T[])
 
   ierr = PetscFree(a->T);CHKERRQ(ierr);
   if (T && (!isTI)) {
-    ierr = PetscMalloc1(p*q*sizeof(PetscScalar),&a->T);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p*q,&a->T);CHKERRQ(ierr);
     ierr = PetscMemcpy(a->T,T,p*q*sizeof(PetscScalar));CHKERRQ(ierr);
   } else a->T = NULL;
 
@@ -458,6 +461,7 @@ PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
   ierr = PetscFree(b->T);CHKERRQ(ierr);
   ierr = PetscFree(b->ibdiag);CHKERRQ(ierr);
   ierr = PetscFree5(b->sor.w,b->sor.y,b->sor.work,b->sor.t,b->sor.arr);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqkaij_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -487,7 +491,7 @@ PETSC_INTERN PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
        * In this case, if we pass a->T directly to the MatCreateKAIJ() calls to create the sequential submatrices, the routine will
        * not be able to tell that transformation matrix should be set to the identity; thus we create a temporary identity matrix
        * to pass in. */
-      ierr = PetscMalloc1(a->p*a->q*sizeof(PetscScalar),&T);CHKERRQ(ierr);
+      ierr = PetscMalloc1(a->p*a->q,&T);CHKERRQ(ierr);
       for (i=0; i<a->p; i++) {
         for (j=0; j<a->q; j++) {
           if (i==j) T[i+j*a->p] = 1.0;
@@ -620,11 +624,7 @@ PetscErrorCode MatView_KAIJ(Mat A,PetscViewer viewer)
 
   } else {
     /* For all other matrix viewer output formats, simply convert to an AIJ matrix and call MatView() on that. */
-    if (ismpikaij) {
-      ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    } else {
-      ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    }
+    ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatView(B,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
@@ -645,6 +645,8 @@ PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   ierr = PetscFree(b->S);CHKERRQ(ierr);
   ierr = PetscFree(b->T);CHKERRQ(ierr);
   ierr = PetscFree(b->ibdiag);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpikaij_mpiaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -751,8 +753,8 @@ PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A,const PetscScalar **values)
   PetscScalar       *diag,aval,*v_work;
 
   PetscFunctionBegin;
-  if (p != q) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATKAIJ: Block size must be square to calculate inverse.");
-  if ((!S) && (!T) && (!b->isTI)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATKAIJ: Cannot invert a zero matrix.");
+  PetscCheckFalse(p != q,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATKAIJ: Block size must be square to calculate inverse.");
+  PetscCheckFalse((!S) && (!T) && (!b->isTI),PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATKAIJ: Cannot invert a zero matrix.");
 
   dof  = p;
   dof2 = dof*dof;
@@ -762,7 +764,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A,const PetscScalar **values)
     PetscFunctionReturn(0);
   }
   if (!b->ibdiag) {
-    ierr = PetscMalloc1(dof2*m*sizeof(PetscScalar),&b->ibdiag);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof2*m,&b->ibdiag);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)A,dof2*m*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   if (values) *values = b->ibdiag;
@@ -802,6 +804,59 @@ static PetscErrorCode MatGetDiagonalBlock_MPIKAIJ(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatConvert_KAIJ_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat_SeqKAIJ    *a = (Mat_SeqKAIJ*)A->data;
+  Mat            AIJ,OAIJ,B;
+  PetscInt       *d_nnz,*o_nnz = NULL,nz,i,j,m,d;
+  const PetscInt p = a->p,q = a->q;
+  PetscBool      ismpikaij,missing;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIKAIJ,&ismpikaij);CHKERRQ(ierr);
+    if (ismpikaij) {
+      Mat_MPIKAIJ *b = (Mat_MPIKAIJ*)A->data;
+      AIJ = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
+      OAIJ = ((Mat_SeqKAIJ*)b->OAIJ->data)->AIJ;
+    } else {
+      AIJ = a->AIJ;
+      OAIJ = NULL;
+    }
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
+    ierr = MatGetSize(AIJ,&m,NULL);CHKERRQ(ierr);
+    ierr = MatMissingDiagonal(AIJ,&missing,&d);CHKERRQ(ierr); /* assumption that all successive rows will have a missing diagonal */
+    if (!missing || !a->S) d = m;
+    ierr = PetscMalloc1(m*p,&d_nnz);CHKERRQ(ierr);
+    for (i = 0; i < m; ++i) {
+      ierr = MatGetRow_SeqAIJ(AIJ,i,&nz,NULL,NULL);CHKERRQ(ierr);
+      for (j = 0; j < p; ++j) d_nnz[i*p + j] = nz*q + (i >= d)*q;
+      ierr = MatRestoreRow_SeqAIJ(AIJ,i,&nz,NULL,NULL);CHKERRQ(ierr);
+    }
+    if (OAIJ) {
+      ierr = PetscMalloc1(m*p,&o_nnz);CHKERRQ(ierr);
+      for (i = 0; i < m; ++i) {
+        ierr = MatGetRow_SeqAIJ(OAIJ,i,&nz,NULL,NULL);CHKERRQ(ierr);
+        for (j = 0; j < p; ++j) o_nnz[i*p + j] = nz*q;
+        ierr = MatRestoreRow_SeqAIJ(OAIJ,i,&nz,NULL,NULL);CHKERRQ(ierr);
+      }
+      ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+    } else {
+      ierr = MatSeqAIJSetPreallocation(B,0,d_nnz);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+    ierr = PetscFree(o_nnz);CHKERRQ(ierr);
+  } else B = *newmat;
+  ierr = MatConvert_Basic(A,newtype,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  } else *newmat = B;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   PetscErrorCode    ierr;
@@ -815,11 +870,11 @@ PetscErrorCode MatSOR_SeqKAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 
   PetscFunctionBegin;
   its = its*lits;
-  if (flag & SOR_EISENSTAT) SETERRQ (PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
-  if (its <= 0)             SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %" PetscInt_FMT " and local its %" PetscInt_FMT " both positive",its,lits);
-  if (fshift)               SETERRQ (PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for diagonal shift");
-  if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for applying upper or lower triangular parts");
-  if (p != q) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatSOR for KAIJ: No support for non-square dense blocks");
+  PetscCheckFalse(flag & SOR_EISENSTAT,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
+  PetscCheckFalse(its <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %" PetscInt_FMT " and local its %" PetscInt_FMT " both positive",its,lits);
+  PetscCheckFalse(fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for diagonal shift");
+  PetscCheckFalse((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER),PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for applying upper or lower triangular parts");
+  PetscCheckFalse(p != q,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatSOR for KAIJ: No support for non-square dense blocks");
   else        {bs = p; bs2 = bs*bs; }
 
   if (!m) PetscFunctionReturn(0);
@@ -1141,9 +1196,9 @@ PetscErrorCode MatGetRow_SeqKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   PetscScalar     *vaij,*v,*S=b->S,*T=b->T;
 
   PetscFunctionBegin;
-  if (b->getrowactive) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
+  PetscCheckFalse(b->getrowactive,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
   b->getrowactive = PETSC_TRUE;
-  if (row < 0 || row >= A->rmap->n) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %" PetscInt_FMT " out of range",row);
+  PetscCheckFalse(row < 0 || row >= A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %" PetscInt_FMT " out of range",row);
 
   if ((!S) && (!T) && (!b->isTI)) {
     if (ncols)    *ncols  = 0;
@@ -1230,9 +1285,9 @@ PetscErrorCode MatGetRow_MPIKAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **c
   ierr = MatKAIJ_build_AIJ_OAIJ(A);CHKERRQ(ierr); /* Ensure b->AIJ and b->OAIJ are up to date. */
   MatAIJ  = ((Mat_SeqKAIJ*)b->AIJ->data)->AIJ;
   MatOAIJ = ((Mat_SeqKAIJ*)b->OAIJ->data)->AIJ;
-  if (b->getrowactive) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
+  PetscCheckFalse(b->getrowactive,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
   b->getrowactive = PETSC_TRUE;
-  if (row < rstart || row >= rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only local rows");
+  PetscCheckFalse(row < rstart || row >= rend,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only local rows");
   lrow = row - rstart;
 
   if ((!S) && (!T) && (!b->isTI)) {
@@ -1377,16 +1432,10 @@ PetscErrorCode  MatCreateSubMatrix_KAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,M
 PetscErrorCode  MatCreateKAIJ(Mat A,PetscInt p,PetscInt q,const PetscScalar S[],const PetscScalar T[],Mat *kaij)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),kaij);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
-  if (size == 1) {
-    ierr = MatSetType(*kaij,MATSEQKAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(*kaij,MATMPIKAIJ);CHKERRQ(ierr);
-  }
+  ierr = MatSetType(*kaij,MATKAIJ);CHKERRQ(ierr);
   ierr = MatKAIJSetAIJ(*kaij,A);CHKERRQ(ierr);
   ierr = MatKAIJSetS(*kaij,p,q,S);CHKERRQ(ierr);
   ierr = MatKAIJSetT(*kaij,p,q,T);CHKERRQ(ierr);
@@ -1427,33 +1476,31 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
 
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  A->ops->setup = MatSetUp_KAIJ;
-
   b->w    = NULL;
   ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQKAIJ);CHKERRQ(ierr);
-    A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_SeqKAIJ;
-    A->ops->view                = MatView_KAIJ;
     A->ops->mult                = MatMult_SeqKAIJ;
     A->ops->multadd             = MatMultAdd_SeqKAIJ;
     A->ops->invertblockdiagonal = MatInvertBlockDiagonal_SeqKAIJ;
     A->ops->getrow              = MatGetRow_SeqKAIJ;
     A->ops->restorerow          = MatRestoreRow_SeqKAIJ;
     A->ops->sor                 = MatSOR_SeqKAIJ;
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqkaij_seqaij_C",MatConvert_KAIJ_AIJ);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIKAIJ);CHKERRQ(ierr);
-    A->ops->setup               = MatSetUp_KAIJ;
     A->ops->destroy             = MatDestroy_MPIKAIJ;
-    A->ops->view                = MatView_KAIJ;
     A->ops->mult                = MatMult_MPIKAIJ;
     A->ops->multadd             = MatMultAdd_MPIKAIJ;
     A->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ;
     A->ops->getrow              = MatGetRow_MPIKAIJ;
     A->ops->restorerow          = MatRestoreRow_MPIKAIJ;
     ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIKAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpikaij_mpiaij_C",MatConvert_KAIJ_AIJ);CHKERRQ(ierr);
   }
+  A->ops->setup           = MatSetUp_KAIJ;
+  A->ops->view            = MatView_KAIJ;
   A->ops->createsubmatrix = MatCreateSubMatrix_KAIJ;
   PetscFunctionReturn(0);
 }

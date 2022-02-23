@@ -66,12 +66,12 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
 
   PetscFunctionBegin;
   if (pt->setupCalled) PetscFunctionReturn(0);
-  if (pt->formDegree < -sp->Nv || pt->formDegree > sp->Nv) SETERRQ3(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Form degree %D not in valid range [%D,%D]", pt->formDegree, sp->Nv, sp->Nv);
+  PetscCheckFalse(pt->formDegree < -sp->Nv || pt->formDegree > sp->Nv,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Form degree %D not in valid range [%D,%D]", pt->formDegree, sp->Nv, sp->Nv);
   ierr = PetscDTBinomialInt(sp->Nv, PetscAbsInt(pt->formDegree), &Nf);CHKERRQ(ierr);
   if (sp->Nc == PETSC_DETERMINE) {
     sp->Nc = Nf;
   }
-  if (sp->Nc % Nf) SETERRQ2(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "Number of components %D is not a multiple of form dimension %D", sp->Nc, Nf);
+  PetscCheckFalse(sp->Nc % Nf,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "Number of components %D is not a multiple of form dimension %D", sp->Nc, Nf);
   if (sp->Nc != Nf) {
     PetscSpace  subsp;
     PetscInt    nCopies = sp->Nc / Nf;
@@ -113,7 +113,7 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
   if (sp->degree == PETSC_DEFAULT) {
     sp->degree = 0;
   } else if (sp->degree < 0) {
-    SETERRQ1(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Invalid negative degree %D", sp->degree);
+    SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Invalid negative degree %D", sp->degree);
   }
   sp->maxDegree = (pt->formDegree == 0 || PetscAbsInt(pt->formDegree) == sp->Nv) ? sp->degree : sp->degree + 1;
   if (pt->formDegree == 0 || PetscAbsInt(pt->formDegree) == sp->Nv) {
@@ -177,7 +177,7 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
   degree = f == 0 ? sp->degree : sp->degree + 1;
   ierr = PetscDTBinomialInt(dim, PetscAbsInt(f), &Nf);CHKERRQ(ierr);
   Ncopies = Nc / Nf;
-  if (Ncopies != 1) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_PLIB, "Multicopy spaces should have been converted to PETSCSPACESUM");
+  PetscCheckFalse(Ncopies != 1,PetscObjectComm((PetscObject) sp), PETSC_ERR_PLIB, "Multicopy spaces should have been converted to PETSCSPACESUM");
   ierr = PetscDTBinomialInt(dim + jet, dim, &Njet);CHKERRQ(ierr);
   ierr = PetscDTPTrimmedSize(dim, degree, f, &Nb);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, Nb * Nf * Njet * npoints, MPIU_REAL, &eval);CHKERRQ(ierr);
@@ -333,7 +333,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscI
 
   PetscFunctionBegin;
   ierr = PetscSpaceGetNumVariables(sp, &dim);CHKERRQ(ierr);
-  if (height > dim || height < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
+  PetscCheckFalse(height > dim || height < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);
   if (!pt->subspaces) {ierr = PetscCalloc1(dim, &(pt->subspaces));CHKERRQ(ierr);}
   if ((dim - height) <= PetscAbsInt(pt->formDegree)) {
     if (!pt->subspaces[height-1]) {

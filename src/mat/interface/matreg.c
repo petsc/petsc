@@ -96,7 +96,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   if (sametype) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(MatList,matype,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
 
   if (mat->assembled && ((PetscObject)mat)->type_name) {
     ierr = PetscStrbeginswith(matype,((PetscObject)mat)->type_name,&subclass);CHKERRQ(ierr);

@@ -18,7 +18,7 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   if (part->n != size) {
     const char *prefix;
     ierr = PetscObjectGetOptionsPrefix((PetscObject)part,&prefix);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -%smat_partitioning_type parmetis or chaco or ptscotch for more than one subdomain per processor",prefix ? prefix : "");
+    SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -%smat_partitioning_type parmetis or chaco or ptscotch for more than one subdomain per processor",prefix ? prefix : "");
   }
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRMPI(ierr);
 
@@ -66,14 +66,14 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRMPI(ierr);
-  if (part->n != size) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Currently only supports one domain per processor");
+  PetscCheckFalse(part->n != size,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Currently only supports one domain per processor");
   p = (PetscInt)PetscSqrtReal((PetscReal)part->n);
-  if (p*p != part->n) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
+  PetscCheckFalse(p*p != part->n,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
 
   ierr = MatGetSize(part->adj,&N,NULL);CHKERRQ(ierr);
   n    = (PetscInt)PetscSqrtReal((PetscReal)N);
-  if (n*n != N) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires square domain");
-  if (n%p != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
+  PetscCheckFalse(n*n != N,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires square domain");
+  PetscCheckFalse(n%p != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
   ierr = PetscMalloc1(rend-rstart,&color);CHKERRQ(ierr);
   /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
@@ -124,7 +124,7 @@ PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscI
 
   PetscFunctionBegin;
   l2p = PetscLog2Real(p);
-  if (l2p - (PetscInt)PetscLog2Real(p)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%" PetscInt_FMT " is not a power of 2",p);
+  PetscCheckFalse(l2p - (PetscInt)PetscLog2Real(p),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%" PetscInt_FMT " is not a power of 2",p);
   if (!p) PetscFunctionReturn(0);
   ierr = PetscArrayzero(seps,2*p-2);CHKERRQ(ierr);
   ierr = PetscArrayzero(level,p-1);CHKERRQ(ierr);
@@ -276,9 +276,9 @@ PetscErrorCode  MatPartitioningApplyND(MatPartitioning matp,IS *partitioning)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  if (!matp->adj->assembled) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (matp->adj->factortype) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!matp->ops->applynd) SETERRQ1(PetscObjectComm((PetscObject)matp),PETSC_ERR_SUP,"Nested dissection not provided by MatPartitioningType %s",((PetscObject)matp)->type_name);
+  PetscCheckFalse(!matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheckFalse(matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheckFalse(!matp->ops->applynd,PetscObjectComm((PetscObject)matp),PETSC_ERR_SUP,"Nested dissection not provided by MatPartitioningType %s",((PetscObject)matp)->type_name);
   ierr = PetscLogEventBegin(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->applynd)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PartitioningND,matp,0,0,0);CHKERRQ(ierr);
@@ -323,9 +323,9 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  if (!matp->adj->assembled) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (matp->adj->factortype) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!matp->ops->apply) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
+  PetscCheckFalse(!matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheckFalse(matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheckFalse(!matp->ops->apply,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
   ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
@@ -381,8 +381,8 @@ PetscErrorCode  MatPartitioningImprove(MatPartitioning matp,IS *partitioning)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  if (!matp->adj->assembled) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (matp->adj->factortype) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheckFalse(!matp->adj->assembled,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheckFalse(matp->adj->factortype,PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   if (matp->ops->improve) {
     ierr = (*matp->ops->improve)(matp,partitioning);CHKERRQ(ierr);
@@ -760,7 +760,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
   ierr = PetscMemzero(part->ops,sizeof(struct _MatPartitioningOps));CHKERRQ(ierr);
 
   ierr = PetscFunctionListFind(MatPartitioningList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
 
   ierr = (*r)(part);CHKERRQ(ierr);
 

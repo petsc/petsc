@@ -2,7 +2,6 @@
 #include <petscsf.h>
 #include <petsc/private/sfimpl.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
 #include <../src/mat/impls/aij/mpi/kokkos/mpiaijkok.hpp>
 #include <KokkosSparse_spadd.hpp>
 
@@ -33,13 +32,13 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat,PetscInt d_nz,cons
   if (d_nnz) {
     PetscInt i;
     for (i=0; i<mat->rmap->n; i++) {
-      if (d_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT,i,d_nnz[i]);
+      PetscCheckFalse(d_nnz[i] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT,i,d_nnz[i]);
     }
   }
   if (o_nnz) {
     PetscInt i;
     for (i=0; i<mat->rmap->n; i++) {
-      if (o_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT,i,o_nnz[i]);
+      PetscCheckFalse(o_nnz[i] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT,i,o_nnz[i]);
     }
   }
 #endif
@@ -82,7 +81,7 @@ PetscErrorCode MatMult_MPIAIJKokkos(Mat mat,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  if (nt != mat->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->cmap->n,nt);
+  PetscCheckFalse(nt != mat->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->cmap->n,nt);
   ierr = VecScatterBegin(mpiaij->Mvctx,xx,mpiaij->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*mpiaij->A->ops->mult)(mpiaij->A,xx,yy);CHKERRQ(ierr);
   ierr = VecScatterEnd(mpiaij->Mvctx,xx,mpiaij->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -98,7 +97,7 @@ PetscErrorCode MatMultAdd_MPIAIJKokkos(Mat mat,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  if (nt != mat->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->cmap->n,nt);
+  PetscCheckFalse(nt != mat->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->cmap->n,nt);
   ierr = VecScatterBegin(mpiaij->Mvctx,xx,mpiaij->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*mpiaij->A->ops->multadd)(mpiaij->A,xx,yy,zz);CHKERRQ(ierr);
   ierr = VecScatterEnd(mpiaij->Mvctx,xx,mpiaij->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -114,7 +113,7 @@ PetscErrorCode MatMultTranspose_MPIAIJKokkos(Mat mat,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  if (nt != mat->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->rmap->n,nt);
+  PetscCheckFalse(nt != mat->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of mat (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",mat->rmap->n,nt);
   ierr = (*mpiaij->B->ops->multtranspose)(mpiaij->B,xx,mpiaij->lvec);CHKERRQ(ierr);
   ierr = (*mpiaij->A->ops->multtranspose)(mpiaij->A,xx,yy);CHKERRQ(ierr);
   ierr = VecScatterBegin(mpiaij->Mvctx,mpiaij->lvec,yy,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -251,10 +250,10 @@ static PetscErrorCode MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices(Mat mat,Ma
   ierr = MatGetLocalSize(A,&Am,&An);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&Bm,&Bn);CHKERRQ(ierr);
 
-  if (m != Am || m != Bm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of rows do not match");
-  if (n != An) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of columns do not match");
-  if (N != Bn) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"global number of columns do not match");
-  if (mpiaij->A || mpiaij->B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A, B of the MPIAIJ matrix are not empty");
+  PetscCheckFalse(m != Am || m != Bm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of rows do not match");
+  PetscCheckFalse(n != An,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local number of columns do not match");
+  PetscCheckFalse(N != Bn,PETSC_COMM_SELF,PETSC_ERR_PLIB,"global number of columns do not match");
+  PetscCheckFalse(mpiaij->A || mpiaij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A, B of the MPIAIJ matrix are not empty");
   mpiaij->A = A;
   mpiaij->B = B;
 
@@ -456,7 +455,7 @@ static PetscErrorCode MatSeqAIJKokkosBcast(Mat B,MatReuse reuse,PetscInt N,const
     ierr = MatCreateSeqAIJKokkosWithCSRMatrix(PETSC_COMM_SELF,ckok,&C);CHKERRQ(ierr);
     ierr = PetscFree3(sdisp,rdisp,reqs);CHKERRQ(ierr);
     ierr = PetscFree(Browlens);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unsupported MatReuse enum %d",reuse);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unsupported MatReuse enum %d",reuse);
   PetscFunctionReturn(0);
 }
 
@@ -533,7 +532,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A,MatReuse reuse,PetscBool local
     ierr = PetscSFGetLeafRanks(ownerSF,&niranks,&iranks,&ioffset,&rows);CHKERRQ(ierr); /* recv info: iranks[] will send rows to me */
     ierr = PetscSFGetRootRanks(ownerSF,&nranks,&ranks,&roffset,NULL/*rmine*/,NULL/*rremote*/);CHKERRQ(ierr); /* send info */
     ierr = PetscSFGetGraph(ownerSF,&nroots,&nleaves,NULL,NULL);CHKERRQ(ierr);
-    if (nleaves != Am) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ownerSF's nleaves(%" PetscInt_FMT ") != row size of A(%" PetscInt_FMT ")",nleaves,Am);
+    PetscCheckFalse(nleaves != Am,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ownerSF's nleaves(%" PetscInt_FMT ") != row size of A(%" PetscInt_FMT ")",nleaves,Am);
     Cm    = nroots;
     nrows = ioffset[niranks]; /* # of rows to be received. Might receive same row (each is partial) from different senders */
 
@@ -558,7 +557,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A,MatReuse reuse,PetscBool local
     for (i=0; i<nrows; i++) {
       r = rows[i]; /* local row id of i-th received row */
      #if defined(PETSC_USE_DEBUG)
-      if (r<0 || r>=Cm) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"local row id (%" PetscInt_FMT ") is out of range [0,%" PetscInt_FMT ")",r,Cm);
+      PetscCheckFalse(r<0 || r>=Cm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"local row id (%" PetscInt_FMT ") is out of range [0,%" PetscInt_FMT ")",r,Cm);
      #endif
       Ci_ptr[r+1] += rrowlens[i]; /* add to length of row r in C */
     }
@@ -645,7 +644,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A,MatReuse reuse,PetscBool local
     /* Build C with Ca, Ci, Cj */
     C    = KokkosCsrMatrix("csrmat",Cm,N,Cnnz,Ca,Ci,Cj);
     ierr = PetscFree2(srowlens,reqs);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unsupported MatReuse enum %d",reuse);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unsupported MatReuse enum %d",reuse);
   PetscFunctionReturn(0);
 }
 
@@ -865,7 +864,7 @@ static PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJKokkos(Mat C,MatColI
   /* Build l2g -- the local to global mapping of C's cols */
   ierr = ISLocalToGlobalMappingGetIndices(l2gmap,&garray);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(l2gmap,&sz);CHKERRQ(ierr);
-  if (C->cmap->n != sz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"matrix column size(%" PetscInt_FMT ") != l2g mapping size(%" PetscInt_FMT ")", C->cmap->n,sz);
+  PetscCheckFalse(C->cmap->n != sz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"matrix column size(%" PetscInt_FMT ") != l2g mapping size(%" PetscInt_FMT ")", C->cmap->n,sz);
 
   ConstMatColIdxKokkosViewHost tmp(garray,sz);
   l2g = MatColIdxKokkosView("l2g",sz);
@@ -906,7 +905,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product,Ma
   ierr = MatProductSetFill(C1,product->fill);CHKERRQ(ierr);
   C1->product->api_user = product->api_user;
   ierr = MatProductSetFromOptions(C1);CHKERRQ(ierr);
-  if (!C1->ops->productsymbolic) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C1->product->type]);
+  PetscCheckFalse(!C1->ops->productsymbolic,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C1->product->type]);
   ierr = (*C1->ops->productsymbolic)(C1);CHKERRQ(ierr);
 
   ierr = ISGetIndices(glob,&garray);CHKERRQ(ierr);
@@ -926,7 +925,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product,Ma
   ierr = MatProductSetFill(C2,product->fill);CHKERRQ(ierr);
   C2->product->api_user = product->api_user;
   ierr = MatProductSetFromOptions(C2);CHKERRQ(ierr);
-  if (!C2->ops->productsymbolic) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C2->product->type]);
+  PetscCheckFalse(!C2->ops->productsymbolic,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C2->product->type]);
   ierr = (*C2->ops->productsymbolic)(C2);CHKERRQ(ierr);
   ierr = MatSeqAIJKokkosGetCSRMatrixWithGlobalColumnIds(C2,N,l2g2,mm->C2_global);
 
@@ -970,7 +969,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product,M
   ierr = MatProductSetFill(C1,product->fill);CHKERRQ(ierr);
   C1->product->api_user = product->api_user;
   ierr = MatProductSetFromOptions(C1);CHKERRQ(ierr);
-  if (!C1->ops->productsymbolic) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C1->product->type]);
+  PetscCheckFalse(!C1->ops->productsymbolic,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C1->product->type]);
   ierr = (*C1->ops->productsymbolic)(C1);CHKERRQ(ierr);
 
   if (localB) {ierr = MatSeqAIJKokkosGetCSRMatrixWithGlobalColumnIds(C1,N,l2g,mm->C1_global);}
@@ -982,7 +981,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product,M
   ierr = MatProductSetFill(C2,product->fill);CHKERRQ(ierr);
   C2->product->api_user = product->api_user;
   ierr = MatProductSetFromOptions(C2);CHKERRQ(ierr);
-  if (!C2->ops->productsymbolic) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C2->product->type]);
+  PetscCheckFalse(!C2->ops->productsymbolic,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing symbolic op for %s",MatProductTypes[C2->product->type]);
   ierr = (*C2->ops->productsymbolic)(C2);CHKERRQ(ierr);
 
   ierr = MatSeqAIJKokkosReduce(C2,MAT_INITIAL_MATRIX,localB,N,l2g,a->Mvctx,mm->sf,mm->abuf,
@@ -1038,15 +1037,15 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
   if (ptype == MATPRODUCT_AB) {
     ab   = mmdata->mmAB;
     /* C1 = Ad * B_local */
-    if (!ab->C1->ops->productnumeric || !ab->C2->ops->productnumeric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing numeric op for MATPRODUCT_AB");
+    PetscCheckFalse(!ab->C1->ops->productnumeric || !ab->C2->ops->productnumeric,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing numeric op for MATPRODUCT_AB");
     ierr = MatMPIAIJGetLocalMatMerge(B,MAT_REUSE_MATRIX,NULL/*glob*/,&ab->B_local);CHKERRQ(ierr);
-    if (ab->C1->product->B != ab->B_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AB, internal mat product matrix C1->B has unexpectedly changed");
+    PetscCheckFalse(ab->C1->product->B != ab->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AB, internal mat product matrix C1->B has unexpectedly changed");
     if (ab->C1->product->A != Ad) {ierr = MatProductReplaceMats(Ad,NULL,NULL,ab->C1);CHKERRQ(ierr);}
     ierr = (*ab->C1->ops->productnumeric)(ab->C1);CHKERRQ(ierr);
     ierr = MatSeqAIJKokkosBcast(ab->B_local,MAT_REUSE_MATRIX,0/*N*/,MatColIdxKokkosView()/*l2g*/,NULL/*ownerSF*/,ab->sf,
                                 ab->abuf,ab->rows,ab->rowoffset,ab->B_other);CHKERRQ(ierr);
     /* C2 = Ao * B_other */
-    if (ab->C2->product->B != ab->B_other) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AB, internal mat product matrix C2->B has unexpectedly changed");
+    PetscCheckFalse(ab->C2->product->B != ab->B_other,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AB, internal mat product matrix C2->B has unexpectedly changed");
     if (ab->C1->product->A != Ao) {ierr = MatProductReplaceMats(Ao,NULL,NULL,ab->C2);CHKERRQ(ierr);}
     ierr = (*ab->C2->ops->productnumeric)(ab->C2);CHKERRQ(ierr);
     /* C = C1_global + C2_global */
@@ -1054,15 +1053,15 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
     mm = static_cast<MatMatStruct*>(ab);
   } else if (ptype == MATPRODUCT_AtB) {
     atb  = mmdata->mmAtB;
-    if (!atb->C1->ops->productnumeric || !atb->C2->ops->productnumeric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing numeric op for MATPRODUCT_AtB");
+    PetscCheckFalse(!atb->C1->ops->productnumeric || !atb->C2->ops->productnumeric,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing numeric op for MATPRODUCT_AtB");
     /* C1 = Ad^t * B_local */
     ierr = MatMPIAIJGetLocalMatMerge(B,MAT_REUSE_MATRIX,NULL/*glob*/,&atb->B_local);CHKERRQ(ierr);
-    if (atb->C1->product->B != atb->B_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AtB, internal mat product matrix C1->B has unexpectedly changed");
+    PetscCheckFalse(atb->C1->product->B != atb->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AtB, internal mat product matrix C1->B has unexpectedly changed");
     if (atb->C1->product->A != Ad) {ierr = MatProductReplaceMats(Ad,NULL,NULL,atb->C1);CHKERRQ(ierr);}
     ierr = (*atb->C1->ops->productnumeric)(atb->C1);CHKERRQ(ierr);
 
     /* C2 = Ao^t * B_local */
-    if (atb->C2->product->B != atb->B_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AtB, internal mat product matrix C2->B has unexpectedly changed");
+    PetscCheckFalse(atb->C2->product->B != atb->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_AtB, internal mat product matrix C2->B has unexpectedly changed");
     if (atb->C2->product->A != Ao) {ierr = MatProductReplaceMats(Ao,NULL,NULL,atb->C2);CHKERRQ(ierr);}
     ierr = (*atb->C2->ops->productnumeric)(atb->C2);CHKERRQ(ierr);
     /* Form C2_global */
@@ -1076,7 +1075,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
     ierr = MatMPIAIJGetLocalMatMerge(B,MAT_REUSE_MATRIX,NULL/*glob*/,&ab->B_local);CHKERRQ(ierr);
 
     /* ab->C1 = Ad * B_local */
-    if (ab->C1->product->B != ab->B_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_PtAP, internal mat product matrix ab->C1->B has unexpectedly changed");
+    PetscCheckFalse(ab->C1->product->B != ab->B_local,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_PtAP, internal mat product matrix ab->C1->B has unexpectedly changed");
     if (ab->C1->product->A != Ad) {ierr = MatProductReplaceMats(Ad,NULL,NULL,ab->C1);CHKERRQ(ierr);}
     ierr = (*ab->C1->ops->productnumeric)(ab->C1);CHKERRQ(ierr);
     ierr = MatSeqAIJKokkosBcast(ab->B_local,MAT_REUSE_MATRIX,0/*N*/,MatColIdxKokkosView()/*l2g*/,NULL/*ownerSF*/,ab->sf,
@@ -1088,7 +1087,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
 
     /* atb->C1 = Bd^t * ab->C_petsc */
     atb  = mmdata->mmAtB;
-    if (atb->C1->product->B != ab->C_petsc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_PtAP, internal mat product matrix atb->C1->B has unexpectedly changed");
+    PetscCheckFalse(atb->C1->product->B != ab->C_petsc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"In MATPRODUCT_PtAP, internal mat product matrix atb->C1->B has unexpectedly changed");
     if (atb->C1->product->A != Bd) {ierr = MatProductReplaceMats(Bd,NULL,NULL,atb->C1);CHKERRQ(ierr);}
     ierr = (*atb->C1->ops->productnumeric)(atb->C1);CHKERRQ(ierr);
     /* atb->C2 = Bo^t * ab->C_petsc */
@@ -1119,7 +1118,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
-  if (product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheckFalse(product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   ptype = product->type;
   A     = product->A;
   B     = product->B;
@@ -1128,7 +1127,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
     case MATPRODUCT_AB:   m = A->rmap->n; n = B->cmap->n; M = A->rmap->N; N = B->cmap->N; break;
     case MATPRODUCT_AtB:  m = A->cmap->n; n = B->cmap->n; M = A->cmap->N; N = B->cmap->N; break;
     case MATPRODUCT_PtAP: m = B->cmap->n; n = B->cmap->n; M = B->cmap->N; N = B->cmap->N; break; /* BtAB */
-    default: SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Not for product type %s",MatProductTypes[ptype]);
+    default: SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Not for product type %s",MatProductTypes[ptype]);
   }
 
   ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
@@ -1194,7 +1193,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
         ierr = PetscOptionsEnd();CHKERRQ(ierr);
       } else {
         ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AB","Mat");CHKERRQ(ierr);
-        ierr = PetscOptionsBool("-matproduct_ab_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-mat_product_algorithm_backend_cpu","Use CPU code","MatMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsEnd();CHKERRQ(ierr);
       }
       break;
@@ -1205,7 +1204,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
         ierr = PetscOptionsEnd();CHKERRQ(ierr);
       } else {
         ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_AtB","Mat");CHKERRQ(ierr);
-        ierr = PetscOptionsBool("-matproduct_atb_backend_cpu","Use CPU code","MatTransposeMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-mat_product_algorithm_backend_cpu","Use CPU code","MatTransposeMatMult",usecpu,&usecpu,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsEnd();CHKERRQ(ierr);
       }
       break;
@@ -1216,7 +1215,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
         ierr = PetscOptionsEnd();CHKERRQ(ierr);
       } else {
         ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"MatProduct_PtAP","Mat");CHKERRQ(ierr);
-        ierr = PetscOptionsBool("-matproduct_ptap_backend_cpu","Use CPU code","MatPtAP",usecpu,&usecpu,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-mat_product_algorithm_backend_cpu","Use CPU code","MatPtAP",usecpu,&usecpu,NULL);CHKERRQ(ierr);
         ierr = PetscOptionsEnd();CHKERRQ(ierr);
       }
       break;
@@ -1243,520 +1242,84 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
   PetscFunctionReturn(0);
 }
 
-/* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
-   is greater than value, or last if there is no such element.
-*/
-PETSC_STATIC_INLINE PetscErrorCode PetscSortedIntUpperBound(PetscInt *array,PetscInt first,PetscInt last,PetscInt value,PetscInt *upper)
-{
-  PetscInt  it,step,count = last - first;
-
-  PetscFunctionBegin;
-  while (count > 0) {
-    it   = first;
-    step = count / 2;
-    it  += step;
-    if (!(value < array[it])) {
-      first  = ++it;
-      count -= step + 1;
-    } else count = step;
-  }
-  *upper = first;
-  PetscFunctionReturn(0);
-}
-
-/* Merge two sets of sorted nonzero entries and return a CSR for the merged (sequential) matrix
-
-  Input Parameters:
-
-    j1,rowBegin1,rowEnd1,perm1,jmap1: describe the first set of nonzeros (Set1)
-    j2,rowBegin2,rowEnd2,perm2,jmap2: describe the second set of nonzeros (Set2)
-
-    mat: both sets' entries are on m rows, where m is the number of local rows of the matrix mat
-
-    For Set1, j1[] contains column indices of the nonzeros.
-    For the k-th row (0<=k<m), [rowBegin1[k],rowEnd1[k]) index into j1[] and point to the begin/end nonzero in row k
-    respectively (note rowEnd1[k] is not necessarily equal to rwoBegin1[k+1]). Indices in this range of j1[] are sorted,
-    but might have repeats. jmap1[t+1] - jmap1[t] is the number of repeats for the t-th unique nonzero in Set1.
-
-    Similar for Set2.
-
-    This routine merges the two sets of nonzeros row by row and removes repeats.
-
-  Output Parameters: (memories are allocated by the caller)
-
-    i[],j[]: the CSR of the merged matrix, which has m rows.
-    imap1[]: the k-th unique nonzero in Set1 (k=0,1,...) corresponds to imap1[k]-th unique nonzero in the merged matrix.
-    imap2[]: similar to imap1[], but for Set2.
-    Note we order nonzeros row-by-row and from left to right.
-*/
-static PetscErrorCode MatMergeEntries_Internal(Mat mat,const PetscInt *j1,const PetscInt *j2,const PetscInt *rowBegin1,const PetscInt *rowEnd1,
-  const PetscInt *rowBegin2,const PetscInt *rowEnd2,const MatRowMapKokkosViewHost& jmap1_h,const MatRowMapKokkosViewHost& jmap2_h,
-  MatRowMapKokkosViewHost& imap1_h,MatRowMapKokkosViewHost& imap2_h,PetscInt *i,PetscInt *j)
-{
-  PetscErrorCode ierr;
-  PetscInt       r,m,t,t1,t2,b1,e1,b2,e2;
-  PetscInt       *jmap1 = jmap1_h.data(),*jmap2 = jmap2_h.data(),*imap1 = imap1_h.data(),*imap2 = imap2_h.data();
-
-  PetscFunctionBegin;
-  ierr = MatGetLocalSize(mat,&m,NULL);CHKERRQ(ierr);
-  t1   = t2 = t = 0; /* Count unique nonzeros of in Set1, Set1 and the merged respectively */
-  i[0] = 0;
-  for (r=0; r<m; r++) { /* Do row by row merging */
-    b1   = rowBegin1[r];
-    e1   = rowEnd1[r];
-    b2   = rowBegin2[r];
-    e2   = rowEnd2[r];
-    while (b1 < e1 && b2 < e2) {
-      if (j1[b1] == j2[b2]) { /* Same column index and hence same nonzero */
-        j[t]      = j1[b1];
-        imap1[t1] = t;
-        imap2[t2] = t;
-        b1       += jmap1[t1+1] - jmap1[t1]; /* Jump to next unique local nonzero */
-        b2       += jmap2[t2+1] - jmap2[t2]; /* Jump to next unique remote nonzero */
-        t1++; t2++; t++;
-      } else if (j1[b1] < j2[b2]) {
-        j[t]      = j1[b1];
-        imap1[t1] = t;
-        b1       += jmap1[t1+1] - jmap1[t1];
-        t1++; t++;
-      } else {
-        j[t]      = j2[b2];
-        imap2[t2] = t;
-        b2       += jmap2[t2+1] - jmap2[t2];
-        t2++; t++;
-      }
-    }
-    /* Merge the remaining in either j1[] or j2[] */
-    while (b1 < e1) {
-      j[t]      = j1[b1];
-      imap1[t1] = t;
-      b1       += jmap1[t1+1] - jmap1[t1];
-      t1++; t++;
-    }
-    while (b2 < e2) {
-      j[t]      = j2[b2];
-      imap2[t2] = t;
-      b2       += jmap2[t2+1] - jmap2[t2];
-      t2++; t++;
-    }
-    i[r+1] = t;
-  }
-  PetscFunctionReturn(0);
-}
-
-/* Split a set/group of local entries into two subsets: those in the diagonal block and those in the off-diagonal block
-
-  Input Parameters:
-    mat: an MPI matrix that provides row and column layout information for splitting. Let's assume its number of local rows is m.
-    n,i[],j[],perm[]: there are n input entries, belonging to m rows. Row/col indices of the entries are stored in i[] and j[]
-      respectively, along with a permutation array perm[]. Length of the i[],j[],perm[] arrays is n.
-
-      i[] is already sorted, but within a row, j[] is not sorted and might have repeats.
-      i[] might contain negative indices at the beginning, which says the corresponding entries should be ignored in the splitting.
-
-  Output Parameters:
-    j[],perm[]: the routine needs to sort j[] within each row along with perm[].
-    rowBegin[],rowMid[],rowEnd[]: of length m, and the memory is preallocated and zeroed by the caller.
-      They contain indices pointing to j[]. For 0<=r<m, [rowBegin[r],rowMid[r]) point to begin/end entries in row r of the diagonal block,
-      and [rowMid[r],rowEnd[r]) point to begin/end entries in row r of the off-diagonal block.
-
-    Aperm_h,Ajmap_h: They are Kokkos views on host. This routine will resize and fill them with proper values. Let's say Aperm = Aperm_h.data(),
-      and Ajmap = Ajmap_h.data(). Aperm[] stores values from perm[] for entries in the diagonal block. Hence length of Aperm[] is the number
-      of entries in the diagonal block, though those entries might have repeats (i.e., same 'i,j' pair).
-      Ajmap[] stores the number of repeats of each unique nonzero in the diagonal block. More precisely, Ajmap[t+1] - Ajmap[t] is the number of
-      repeats for the t-th unique nonzero in the diagonal block. Ajmap[0] is always 0.
-      Length of Aperm_h is the number of nonzeros in the diagonal block.
-      Length of Ajmap_h is the number of unique nonzeros in the diagonal block + 1.
-
-    Bperm_h and Bjmap_h are similar to Aperm_h and Ajmap_h, respectively, but for the off-diagonal block.
-*/
-
-static PetscErrorCode MatSplitEntries_Internal(Mat mat,PetscInt n,const PetscInt i[],
-  PetscInt j[],PetscInt perm[],PetscInt rowBegin[],PetscInt rowMid[],PetscInt rowEnd[],
-  MatRowMapKokkosViewHost& Aperm_h,MatRowMapKokkosViewHost& Ajmap_h,MatRowMapKokkosViewHost& Bperm_h,MatRowMapKokkosViewHost& Bjmap_h)
-{
-  PetscErrorCode    ierr;
-  PetscInt          cstart,cend,rstart,rend,mid;
-  PetscInt          Atot=0,Btot=0; /* Total number of nonzeros in the diagonal and off-diagonal blocks */
-  PetscInt          Annz=0,Bnnz=0; /* Number of unique nonzeros in the diagonal and off-diagonal blocks */
-  PetscInt          k,m,p,q,r,s,row,col;
-  PetscInt          *Aperm,*Bperm,*Ajmap,*Bjmap;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutGetRange(mat->rmap,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(mat->cmap,&cstart,&cend);CHKERRQ(ierr);
-  m    = rend - rstart;
-
-  for (k=0; k<n; k++) {if (i[k]>=0) break;} /* Skip negative rows */
-
-  /* Process [k,n): sort and partition each local row into diag and offdiag portions,
-     fill rowBegin[], rowMid[], rowEnd[], and count Atot, Btot, Annz, Bnnz.
-  */
-  while (k<n) {
-    row = i[k];
-    /* Entries in [k,s) are in one row. Shift diagonal block col indices so that diag is ahead of offdiag after sorting the row */
-    for (s=k; s<n; s++) if (i[s] != row) break;
-    for (p=k; p<s; p++) {
-      if (j[p] >= cstart && j[p] < cend) j[p] -= PETSC_MAX_INT; /* Shift diag columns to range of [-PETSC_MAX_INT, -1]  */
-     #if defined(PETSC_USE_DEBUG)
-      else if (j[p] < 0 || j[p] > mat->cmap->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %" PetscInt_FMT " is out of range",j[p]);
-     #endif
-    }
-    ierr = PetscSortIntWithArray(s-k,j+k,perm+k);CHKERRQ(ierr);
-    ierr = PetscSortedIntUpperBound(j,k,s,-1,&mid);CHKERRQ(ierr); /* Seperate [k,s) into [k,mid) for diag and [mid,s) for offdiag */
-    rowBegin[row-rstart] = k;
-    rowMid[row-rstart]   = mid;
-    rowEnd[row-rstart]   = s;
-
-    /* Count nonzeros of this diag/offdiag row, which might have repeats */
-    Atot += mid - k;
-    Btot += s - mid;
-
-    /* Count unique nonzeros of this diag/offdiag row */
-    for (p=k; p<mid;) {
-      col = j[p];
-      do {j[p] += PETSC_MAX_INT; p++;} while (p<mid && j[p] == col); /* Revert the modified diagonal indices */
-      Annz++;
-    }
-
-    for (p=mid; p<s;) {
-      col = j[p];
-      do {p++;} while (p<s && j[p] == col);
-      Bnnz++;
-    }
-    k = s;
-  }
-
-  /* Resize views according to Atot, Btot, Annz, Bnnz */
-  Kokkos::resize(Aperm_h,Atot);
-  Kokkos::resize(Ajmap_h,Annz+1);
-  Kokkos::resize(Bperm_h,Btot);
-  Kokkos::resize(Bjmap_h,Bnnz+1);
-  Aperm    = Aperm_h.data();
-  Bperm    = Bperm_h.data();
-  Ajmap    = Ajmap_h.data();
-  Bjmap    = Bjmap_h.data();
-  Ajmap[0] = 0;
-  Bjmap[0] = 0;
-
-  /* Re-scan indices and copy diag/offdiag permuation indices to Aperm, Bperm and also fill Ajmap and Bjmap */
-  Atot = Btot = Annz = Bnnz = 0;
-  for (r=0; r<m; r++) {
-    k     = rowBegin[r];
-    mid   = rowMid[r];
-    s     = rowEnd[r];
-    ierr  = PetscArraycpy(Aperm+Atot,perm+k,  mid-k);CHKERRQ(ierr);
-    ierr  = PetscArraycpy(Bperm+Btot,perm+mid,s-mid);CHKERRQ(ierr);
-    Atot += mid - k;
-    Btot += s - mid;
-
-    /* Scan column indices in this row and find out how many repeats each unique nonzero has */
-    for (p=k; p<mid;) {
-      col = j[p];
-      q   = p;
-      do {p++;} while (p<mid && j[p] == col);
-      Ajmap[Annz+1] = Ajmap[Annz] + (p - q);
-      Annz++;
-    }
-
-    for (p=mid; p<s;) {
-      col = j[p];
-      q   = p;
-      do {p++;} while (p<s && j[p] == col);
-      Bjmap[Bnnz+1] = Bjmap[Bnnz] + (p - q);
-      Bnnz++;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscInt coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
+static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   PetscErrorCode            ierr;
-  MPI_Comm                  comm;
-  PetscMPIInt               rank,size;
-  PetscInt                  m,n,M,N,k,p,q,rstart,rend,cstart,cend,rem;
+  Mat                       newmat;
+  Mat_MPIAIJ                *mpiaij = (Mat_MPIAIJ*)mat->data;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-
-  ierr = PetscLayoutGetRange(mat->rmap,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(mat->cmap,&cstart,&cend);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-
-  /* ---------------------------------------------------------------------------*/
-  /* Sort (i,j) by row along with a permuation array, so that the to-be-ignored */
-  /* entries come first, then local rows, then remote rows.                     */
-  /* ---------------------------------------------------------------------------*/
-  PetscInt  n1 = coo_n,*i1,*j1,*perm1; /* Copies of input COOs along with a permutation array */
-  ierr = PetscMalloc3(n1,&i1,n1,&j1,n1,&perm1);CHKERRQ(ierr);
-  ierr = PetscArraycpy(i1,coo_i,n1);CHKERRQ(ierr); /* Make a copy since we'll modify it */
-  ierr = PetscArraycpy(j1,coo_j,n1);CHKERRQ(ierr);
-  for (k=0; k<n1; k++) perm1[k] = k;
-
-  /* Manipulate indices so that entries with negative row or col indices will have smallest
-     row indices, local entries will have greater but negative row indices, and remote entries
-     will have positive row indices.
-  */
-  for (k=0; k<n1; k++) {
-    if (i1[k] < 0 || j1[k] < 0) i1[k] = PETSC_MIN_INT; /* e.g., -2^31, minimal to move them ahead */
-    else if (i1[k] >= rstart && i1[k] < rend) i1[k] -= PETSC_MAX_INT; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_MAX_INT, -1] */
-  }
-
-  /* Sort by row; after that, [0,k) have ignored entires, [k,rem) have local rows and [rem,n1) have remote rows */
-  ierr = PetscSortIntWithArrayPair(n1,i1,j1,perm1);CHKERRQ(ierr);
-  for (k=0; k<n1; k++) {if (i1[k] > PETSC_MIN_INT) break;} /* Advance k to the first entry we need to take care of */
-  ierr = PetscSortedIntUpperBound(i1,k,n1,rend-1-PETSC_MAX_INT,&rem);CHKERRQ(ierr); /* rem is upper bound of the last local row */
-  for (; k<rem; k++) i1[k] += PETSC_MAX_INT; /* Revert row indices of local rows*/
-
-  /* ---------------------------------------------------------------------------*/
-  /*           Split local rows into diag/offdiag portions                      */
-  /* ---------------------------------------------------------------------------*/
-  PetscInt                  *rowBegin1,*rowMid1,*rowEnd1;
-  MatRowMapKokkosViewHost   Ajmap1_h,Aperm1_h,Bjmap1_h,Bperm1_h,Cperm1_h("Cperm1_h",n1-rem);
-
-  ierr = PetscCalloc3(m,&rowBegin1,m,&rowMid1,m,&rowEnd1);CHKERRQ(ierr);
-  ierr = MatSplitEntries_Internal(mat,rem,i1,j1,perm1,rowBegin1,rowMid1,rowEnd1,Aperm1_h,Ajmap1_h,Bperm1_h,Bjmap1_h);CHKERRQ(ierr);
-
-  /* ---------------------------------------------------------------------------*/
-  /*           Send remote rows to their owner                                  */
-  /* ---------------------------------------------------------------------------*/
-  /* Find which rows should be sent to which remote ranks*/
-  PetscInt       nsend = 0;
-  PetscMPIInt    *sendto; /* Of length nsend, storing remote ranks */
-  PetscInt       *nentries; /* Of length nsend, storing number of entries to be sent to each remote rank */
-  const PetscInt *ranges;
-  PetscInt       maxNsend = size >= 128? 128 : size; /* Assume max 128 neighbors; realloc when needed */
-
-  ierr = PetscLayoutGetRanges(mat->rmap,&ranges);CHKERRQ(ierr);
-  ierr = PetscMalloc2(maxNsend,&sendto,maxNsend,&nentries);CHKERRQ(ierr);
-  for (k=rem; k<n1;) {
-    PetscMPIInt  owner;
-    PetscInt     firstRow,lastRow;
-    /* Locate a row range */
-    firstRow = i1[k]; /* first row of this owner */
-    ierr     = PetscLayoutFindOwner(mat->rmap,firstRow,&owner);CHKERRQ(ierr);
-    lastRow  = ranges[owner+1]-1; /* last row of this owner */
-
-    /* Find the first index 'p' in [k,n) with i[p] belonging to next owner */
-    ierr     = PetscSortedIntUpperBound(i1,k,n1,lastRow,&p);CHKERRQ(ierr);
-
-    /* All entries in [k,p) belong to this remote owner */
-    if (nsend >= maxNsend) { /* Double the remote ranks arrays if not long enough */
-      PetscMPIInt *sendto2;
-      PetscInt    *nentries2;
-      PetscInt    maxNsend2 = (maxNsend <= size/2) ? maxNsend*2 : size;
-      ierr = PetscMalloc2(maxNsend2,&sendto2,maxNsend2,&nentries2);CHKERRQ(ierr);
-      ierr = PetscArraycpy(sendto2,sendto,maxNsend);CHKERRQ(ierr);
-      ierr = PetscArraycpy(nentries2,nentries2,maxNsend+1);CHKERRQ(ierr);
-      ierr = PetscFree2(sendto,nentries2);CHKERRQ(ierr);
-      sendto      = sendto2;
-      nentries    = nentries2;
-      maxNsend    = maxNsend2;
-    }
-    sendto[nsend]   = owner;
-    nentries[nsend] = p - k;
-    nsend++;
-    k = p;
-  }
-
-  /* Build 1st SF to know offsets on remote to send data */
-  PetscSF     sf1;
-  PetscInt    nroots = 1,nroots2 = 0;
-  PetscInt    nleaves = nsend,nleaves2 = 0;
-  PetscInt    *offsets;
-  PetscSFNode *iremote;
-
-  ierr = PetscSFCreate(comm,&sf1);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nsend,&iremote);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nsend,&offsets);CHKERRQ(ierr);
-  for (k=0; k<nsend; k++) {
-    iremote[k].rank  = sendto[k];
-    iremote[k].index = 0;
-    nleaves2        += nentries[k];
-  }
-  ierr = PetscSFSetGraph(sf1,nroots,nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFFetchAndOpWithMemTypeBegin(sf1,MPIU_INT,PETSC_MEMTYPE_HOST,&nroots2/*rootdata*/,PETSC_MEMTYPE_HOST,nentries/*leafdata*/,PETSC_MEMTYPE_HOST,offsets/*leafupdate*/,MPI_SUM);CHKERRQ(ierr);
-  ierr = PetscSFFetchAndOpEnd(sf1,MPIU_INT,&nroots2,nentries,offsets,MPI_SUM);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf1);CHKERRQ(ierr);
-
-  /* Build 2nd SF to send remote COOs to their owner */
-  PetscSF sf2;
-  nroots  = nroots2;
-  nleaves = nleaves2;
-  ierr    = PetscSFCreate(comm,&sf2);CHKERRQ(ierr);
-  ierr    = PetscSFSetFromOptions(sf2);CHKERRQ(ierr);
-  ierr    = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
-  p       = 0;
-  for (k=0; k<nsend; k++) {
-    for (q=0; q<nentries[k]; q++,p++) {
-      iremote[p].rank  = sendto[k];
-      iremote[p].index = offsets[k] + q;
-    }
-  }
-  ierr = PetscSFSetGraph(sf2,nroots,nleaves,NULL,PETSC_USE_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-
-  /* sf2 only sends contiguous leafdata to contiguous rootdata. We record the permuation which will be used to fill leafdata */
-  ierr = PetscArraycpy(Cperm1_h.data(),perm1+rem,n1-rem);CHKERRQ(ierr);
-
-  /* Send the remote COOs to their owner */
-  PetscInt n2 = nroots,*i2,*j2,*perm2; /* Buffers for received COOs from other ranks, along with a permutation array */
-  ierr = PetscMalloc3(n2,&i2,n2,&j2,n2,&perm2);CHKERRQ(ierr);
-  ierr = PetscSFReduceWithMemTypeBegin(sf2,MPIU_INT,PETSC_MEMTYPE_HOST,i1+rem,PETSC_MEMTYPE_HOST,i2,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf2,MPIU_INT,i1+rem,i2,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceWithMemTypeBegin(sf2,MPIU_INT,PETSC_MEMTYPE_HOST,j1+rem,PETSC_MEMTYPE_HOST,j2,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf2,MPIU_INT,j1+rem,j2,MPI_REPLACE);CHKERRQ(ierr);
-
-  ierr = PetscFree(offsets);CHKERRQ(ierr);
-  ierr = PetscFree2(sendto,nentries);CHKERRQ(ierr);
-
-  /* ---------------------------------------------------------------*/
-  /* Sort received COOs by row along with the permutation array     */
-  /* ---------------------------------------------------------------*/
-  for (k=0; k<n2; k++) perm2[k] = k;
-  ierr = PetscSortIntWithArrayPair(n2,i2,j2,perm2);CHKERRQ(ierr);
-
-  /* ---------------------------------------------------------------*/
-  /* Split received COOs into diag/offdiag portions                 */
-  /* ---------------------------------------------------------------*/
-  PetscInt                  *rowBegin2,*rowMid2,*rowEnd2;
-  MatRowMapKokkosViewHost   Ajmap2_h,Aperm2_h,Bjmap2_h,Bperm2_h;
-
-  ierr = PetscCalloc3(m,&rowBegin2,m,&rowMid2,m,&rowEnd2);CHKERRQ(ierr);
-  ierr = MatSplitEntries_Internal(mat,n2,i2,j2,perm2,rowBegin2,rowMid2,rowEnd2,Aperm2_h,Ajmap2_h,Bperm2_h,Bjmap2_h);CHKERRQ(ierr);
-
-  /* --------------------------------------------------------------------------*/
-  /* Merge local COOs with received COOs: diag with diag, offdiag with offdiag */
-  /* --------------------------------------------------------------------------*/
-  PetscInt Annz1,Annz2,Bnnz1,Bnnz2;
-  PetscInt *Ai,*Aj,*Bi,*Bj;
-
-  Annz1 = Ajmap1_h.extent(0)-1; /* Number of unique local nonzeros in the diagonal block */
-  Annz2 = Ajmap2_h.extent(0)-1; /* Number of unique received nonzeros in the diagonal block */
-  Bnnz1 = Bjmap1_h.extent(0)-1; /* Similar, but for the off-diagonal block */
-  Bnnz2 = Bjmap2_h.extent(0)-1;
-  ierr  = PetscMalloc1(m+1,&Ai);CHKERRQ(ierr);
-  ierr  = PetscMalloc1(m+1,&Bi);CHKERRQ(ierr);
-  ierr  = PetscMalloc1(Annz1+Annz2,&Aj);CHKERRQ(ierr); /* Since local and remote entries might have dups, we might allocate excess memory */
-  ierr  = PetscMalloc1(Bnnz1+Bnnz2,&Bj);CHKERRQ(ierr);
-
-  MatRowMapKokkosViewHost Aimap1_h("Aimpa1",Annz1),Aimap2_h("Aimpa2",Annz2),Bimap1_h("Bimap1",Bnnz1),Bimap2_h("Bimap2",Bnnz2);
-  ierr = MatMergeEntries_Internal(mat,j1,j2,rowBegin1,rowMid1,rowBegin2,rowMid2,Ajmap1_h,Ajmap2_h,Aimap1_h,Aimap2_h,Ai,Aj);CHKERRQ(ierr);
-  ierr = MatMergeEntries_Internal(mat,j1,j2,rowMid1,  rowEnd1,rowMid2,  rowEnd2,Bjmap1_h,Bjmap2_h,Bimap1_h,Bimap2_h,Bi,Bj);CHKERRQ(ierr);
-  ierr = PetscFree3(rowBegin1,rowMid1,rowEnd1);CHKERRQ(ierr);
-  ierr = PetscFree3(rowBegin2,rowMid2,rowEnd2);CHKERRQ(ierr);
-  ierr = PetscFree3(i1,j1,perm1);CHKERRQ(ierr);
-  ierr = PetscFree3(i2,j2,perm2);CHKERRQ(ierr);
-
-  /* Reallocate Aj, Bj once we know actual numbers of unique nonzeros in A and B */
-  PetscInt Annz = Ai[m];
-  PetscInt Bnnz = Bi[m];
-  if (Annz < Annz1 + Annz2) {
-    PetscInt *Aj_new;
-    ierr = PetscMalloc1(Annz,&Aj_new);CHKERRQ(ierr);
-    ierr = PetscArraycpy(Aj_new,Aj,Annz);CHKERRQ(ierr);
-    ierr = PetscFree(Aj);CHKERRQ(ierr);
-    Aj   = Aj_new;
-  }
-
-  if (Bnnz < Bnnz1 + Bnnz2) {
-    PetscInt *Bj_new;
-    ierr = PetscMalloc1(Bnnz,&Bj_new);CHKERRQ(ierr);
-    ierr = PetscArraycpy(Bj_new,Bj,Bnnz);CHKERRQ(ierr);
-    ierr = PetscFree(Bj);CHKERRQ(ierr);
-    Bj   = Bj_new;
-  }
-
-  /* --------------------------------------------------------------------------------*/
-  /* Create a MPIAIJKOKKOS newmat with CSRs of A and B, then replace mat with newmat */
-  /* --------------------------------------------------------------------------------*/
-  Mat           newmat;
-  PetscScalar   *Aa,*Ba;
-  Mat_MPIAIJ    *mpiaij;
-  Mat_SeqAIJ    *a,*b;
-
-  ierr   = PetscMalloc1(Annz,&Aa);CHKERRQ(ierr);
-  ierr   = PetscMalloc1(Bnnz,&Ba);CHKERRQ(ierr);
-  /* make Aj[] local, i.e, based off the start column of the diagonal portion */
-  if (cstart) {for (k=0; k<Annz; k++) Aj[k] -= cstart;}
-  ierr   = MatCreateMPIAIJWithSplitArrays(comm,m,n,M,N,Ai,Aj,Aa,Bi,Bj,Ba,&newmat);CHKERRQ(ierr);
-  mpiaij = (Mat_MPIAIJ*)newmat->data;
-  a      = (Mat_SeqAIJ*)mpiaij->A->data;
-  b      = (Mat_SeqAIJ*)mpiaij->B->data;
-  a->singlemalloc = b->singlemalloc = PETSC_FALSE; /* Let newmat own Ai,Aj,Aa,Bi,Bj,Ba */
-  a->free_a       = b->free_a       = PETSC_TRUE;
-  a->free_ij      = b->free_ij      = PETSC_TRUE;
-  ierr   = MatConvert(newmat,MATMPIAIJKOKKOS,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
-  ierr   = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
-  ierr   = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
-  mpiaij = (Mat_MPIAIJ*)mat->data;
-  mpiaij->spptr = new Mat_MPIAIJKokkos(n1,sf2,nroots,nleaves,Annz1,Annz2,Bnnz1,Bnnz2,
-                                       Aimap1_h,Aimap2_h,Bimap1_h,Bimap2_h,
-                                       Ajmap1_h,Ajmap2_h,Bjmap1_h,Bjmap2_h,
-                                       Aperm1_h,Aperm2_h,Bperm1_h,Bperm2_h,Cperm1_h);
-  ierr = PetscSFDestroy(&sf2);CHKERRQ(ierr); /* ctor of Mat_MPIAIJKokkos already took a reference of sf3 */
+  ierr = MatCreate(PetscObjectComm((PetscObject)mat),&newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(newmat,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(newmat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(newmat,MAT_IGNORE_OFF_PROC_ENTRIES,mpiaij->donotstash);CHKERRQ(ierr);  /* Inherit the two options that we respect from mat */
+  ierr = MatSetOption(newmat,MAT_NO_OFF_PROC_ENTRIES,mat->nooffprocentries);CHKERRQ(ierr);
+  ierr = MatSetPreallocationCOO_MPIAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
+  ierr = MatConvert(newmat,MATMPIAIJKOKKOS,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
+  ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr); /* Not MatHeaderReplace() since we want to keep some mat's info */
+  ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
+  mpiaij = static_cast<Mat_MPIAIJ*>(mat->data); /* mat->data was changed in MatHeaderReplace() */
+  mpiaij->spptr = new Mat_MPIAIJKokkos(mpiaij);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat,const PetscScalar v[],InsertMode imode)
 {
   PetscErrorCode                 ierr;
-  Mat_MPIAIJ                     *mpiaij = (Mat_MPIAIJ*)mat->data;
+  Mat_MPIAIJ                     *mpiaij = static_cast<Mat_MPIAIJ*>(mat->data);
   Mat_MPIAIJKokkos               *mpikok = static_cast<Mat_MPIAIJKokkos*>(mpiaij->spptr);
   Mat                            A = mpiaij->A,B = mpiaij->B;
-  PetscInt                       Annz1 = mpikok->Annz1,Annz2 = mpikok->Annz2,Bnnz1 = mpikok->Bnnz1,Bnnz2 = mpikok->Bnnz2;
+  PetscCount                     Annz1 = mpiaij->Annz1,Annz2 = mpiaij->Annz2,Bnnz1 = mpiaij->Bnnz1,Bnnz2 = mpiaij->Bnnz2;
   MatScalarKokkosView            Aa,Ba;
-  ConstMatScalarKokkosView       v1;
+  MatScalarKokkosView            v1;
   MatScalarKokkosView&           vsend = mpikok->sendbuf_d;
   const MatScalarKokkosView&     v2 = mpikok->recvbuf_d;
-  const MatRowMapKokkosView&     Ajmap1 = mpikok->Ajmap1_d,Ajmap2 = mpikok->Ajmap2_d,Aimap1 = mpikok->Aimap1_d,Aimap2 = mpikok->Aimap2_d;
-  const MatRowMapKokkosView&     Bjmap1 = mpikok->Bjmap1_d,Bjmap2 = mpikok->Bjmap2_d,Bimap1 = mpikok->Bimap1_d,Bimap2 = mpikok->Bimap2_d;
-  const MatRowMapKokkosView&     Aperm1 = mpikok->Aperm1_d,Aperm2 = mpikok->Aperm2_d,Bperm1 = mpikok->Bperm1_d,Bperm2 = mpikok->Bperm2_d;
-  const MatRowMapKokkosView&     Cperm1 = mpikok->Cperm1_d;
+  const PetscCountKokkosView&    Ajmap1 = mpikok->Ajmap1_d,Ajmap2 = mpikok->Ajmap2_d,Aimap1 = mpikok->Aimap1_d,Aimap2 = mpikok->Aimap2_d;
+  const PetscCountKokkosView&    Bjmap1 = mpikok->Bjmap1_d,Bjmap2 = mpikok->Bjmap2_d,Bimap1 = mpikok->Bimap1_d,Bimap2 = mpikok->Bimap2_d;
+  const PetscCountKokkosView&    Aperm1 = mpikok->Aperm1_d,Aperm2 = mpikok->Aperm2_d,Bperm1 = mpikok->Bperm1_d,Bperm2 = mpikok->Bperm2_d;
+  const PetscCountKokkosView&    Cperm1 = mpikok->Cperm1_d;
   PetscMemType                   memtype;
 
   PetscFunctionBegin;
-  if (!v) { /* NULL v means an all zero array */
-    ierr = MatZeroEntries(mat);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
-  ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr);
+  PetscAssert(mat->assembled,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected matrix to be already assembled in MatSetPreallocationCOO()");
+  ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr); /* Return PETSC_MEMTYPE_HOST when v is NULL */
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we need to copy it to device if any */
-    v1 = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),ConstMatScalarKokkosViewHost(v,mpikok->coo_n));
+    v1 = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),MatScalarKokkosViewHost((PetscScalar*)v,mpiaij->coo_n));
   } else {
-    v1 = ConstMatScalarKokkosView(v,mpikok->coo_n); /* Directly use v[]'s memory */
+    v1 = MatScalarKokkosView((PetscScalar*)v,mpiaij->coo_n); /* Directly use v[]'s memory */
   }
 
-  ierr = MatSeqAIJGetKokkosView(A,&Aa);CHKERRQ(ierr); /* Might read and write matrix values */
-  ierr = MatSeqAIJGetKokkosView(B,&Ba);CHKERRQ(ierr);
   if (imode == INSERT_VALUES) {
+    ierr = MatSeqAIJGetKokkosViewWrite(A,&Aa);CHKERRQ(ierr); /* write matrix values */
+    ierr = MatSeqAIJGetKokkosViewWrite(B,&Ba);CHKERRQ(ierr);
     Kokkos::deep_copy(Aa,0.0); /* Zero matrix values since INSERT_VALUES still requires summing replicated values in v[] */
     Kokkos::deep_copy(Ba,0.0);
+  } else {
+    ierr = MatSeqAIJGetKokkosView(A,&Aa);CHKERRQ(ierr); /* read & write matrix values */
+    ierr = MatSeqAIJGetKokkosView(B,&Ba);CHKERRQ(ierr);
   }
 
   /* Pack entries to be sent to remote */
-  Kokkos::parallel_for(vsend.extent(0),KOKKOS_LAMBDA(const PetscInt i) {vsend(i) = v1(Cperm1(i));});
+  Kokkos::parallel_for(vsend.extent(0),KOKKOS_LAMBDA(const PetscCount i) {vsend(i) = v1(Cperm1(i));});
 
   /* Send remote entries to their owner and overlap the communication with local computation */
-  ierr = PetscSFReduceWithMemTypeBegin(mpikok->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_KOKKOS,vsend.data(),PETSC_MEMTYPE_KOKKOS,v2.data(),MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_KOKKOS,vsend.data(),PETSC_MEMTYPE_KOKKOS,v2.data(),MPI_REPLACE);CHKERRQ(ierr);
   /* Add local entries to A and B */
-  Kokkos::parallel_for(Annz1,KOKKOS_LAMBDA(const PetscInt i) {for (PetscInt k=Ajmap1(i); k<Ajmap1(i+1); k++) Aa(Aimap1(i)) += v1(Aperm1(k));});
-  Kokkos::parallel_for(Bnnz1,KOKKOS_LAMBDA(const PetscInt i) {for (PetscInt k=Bjmap1(i); k<Bjmap1(i+1); k++) Ba(Bimap1(i)) += v1(Bperm1(k));});
-  ierr = PetscSFReduceEnd(mpikok->coo_sf,MPIU_SCALAR,vsend.data(),v2.data(),MPI_REPLACE);CHKERRQ(ierr);
+  Kokkos::parallel_for(Annz1,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=Ajmap1(i); k<Ajmap1(i+1); k++) Aa(Aimap1(i)) += v1(Aperm1(k));});
+  Kokkos::parallel_for(Bnnz1,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=Bjmap1(i); k<Bjmap1(i+1); k++) Ba(Bimap1(i)) += v1(Bperm1(k));});
+  ierr = PetscSFReduceEnd(mpiaij->coo_sf,MPIU_SCALAR,vsend.data(),v2.data(),MPI_REPLACE);CHKERRQ(ierr);
 
   /* Add received remote entries to A and B */
-  Kokkos::parallel_for(Annz2,KOKKOS_LAMBDA(const PetscInt i) {for (PetscInt k=Ajmap2(i); k<Ajmap2(i+1); k++) Aa(Aimap2(i)) += v2(Aperm2(k));});
-  Kokkos::parallel_for(Bnnz2,KOKKOS_LAMBDA(const PetscInt i) {for (PetscInt k=Bjmap2(i); k<Bjmap2(i+1); k++) Ba(Bimap2(i)) += v2(Bperm2(k));});
+  Kokkos::parallel_for(Annz2,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=Ajmap2(i); k<Ajmap2(i+1); k++) Aa(Aimap2(i)) += v2(Aperm2(k));});
+  Kokkos::parallel_for(Bnnz2,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=Bjmap2(i); k<Bjmap2(i+1); k++) Ba(Bimap2(i)) += v2(Bperm2(k));});
 
-  ierr = MatSeqAIJRestoreKokkosView(A,&Aa);CHKERRQ(ierr);
-  ierr = MatSeqAIJRestoreKokkosView(B,&Ba);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (imode == INSERT_VALUES) {
+    ierr = MatSeqAIJRestoreKokkosViewWrite(A,&Aa);CHKERRQ(ierr); /* Increase A & B's state etc. */
+    ierr = MatSeqAIJRestoreKokkosViewWrite(B,&Ba);CHKERRQ(ierr);
+  } else {
+    ierr = MatSeqAIJRestoreKokkosView(A,&Aa);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreKokkosView(B,&Ba);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1910,6 +1473,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     ierr   = MatSeqAIJKokkosGetDeviceMat(aij->A,&d_mat);CHKERRQ(ierr);
     ierr   = MatSeqAIJKokkosModifyDevice(aij->A);CHKERRQ(ierr);
     ierr   = MatSeqAIJKokkosModifyDevice(aij->B);CHKERRQ(ierr);
+    PetscCheck(A->nooffprocentries || aij->donotstash,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support offproc values insertion. Use MatSetOption(A,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) or MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE)");
   }
   // act like MatSetValues because not called on host
   if (A->assembled) {
@@ -1918,8 +1482,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     }
     A->was_assembled = PETSC_TRUE; // this is done (lazy) in MatAssemble but we are not calling it anymore - done in AIJ AssemblyEnd, need here?
   } else {
-    ierr = PetscInfo1(A,"Warning !assemble ??? assembled=%" PetscInt_FMT "\n",A->assembled);CHKERRQ(ierr);
-    // SETERRQ(comm,PETSC_ERR_SUP,"Need assemble matrix");
+    ierr = PetscInfo(A,"Warning !assemble ??? assembled=%" PetscInt_FMT "\n",A->assembled);CHKERRQ(ierr);
   }
   if (!d_mat) {
     struct _n_SplitCSRMat h_mat; /* host container */
@@ -1940,8 +1503,6 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       h_mat.offdiag.i = h_mat.offdiag.j = NULL;
       h_mat.offdiag.a = NULL;
       aijkokA = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
-      aijkokA->i_uncompressed_d = NULL;
-      aijkokA->colmap_d = NULL;
     } else {
       Mat_MPIAIJ       *aij = (Mat_MPIAIJ*)A->data;
       Mat_SeqAIJ       *jacb = (Mat_SeqAIJ*)aij->B->data;
@@ -1951,11 +1512,9 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       Amat = aij->A;
       aijkokA = static_cast<Mat_SeqAIJKokkos*>(aij->A->spptr);
       aijkokB = static_cast<Mat_SeqAIJKokkos*>(aij->B->spptr);
-      aijkokA->i_uncompressed_d = NULL;
-      aijkokA->colmap_d = NULL;
       jaca = (Mat_SeqAIJ*)aij->A->data;
-      if (aij->B->cmap->n && !aij->garray) SETERRQ(comm,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
-      if (aij->B->rmap->n != aij->A->rmap->n) SETERRQ(comm,PETSC_ERR_SUP,"Only support aij->B->rmap->n == aij->A->rmap->n");
+      PetscCheckFalse(aij->B->cmap->n && !aij->garray,comm,PETSC_ERR_PLIB,"MPIAIJ Matrix was assembled but is missing garray");
+      PetscCheckFalse(aij->B->rmap->n != aij->A->rmap->n,comm,PETSC_ERR_SUP,"Only support aij->B->rmap->n == aij->A->rmap->n");
       aij->donotstash = PETSC_TRUE;
       aij->A->nooffprocentries = aij->B->nooffprocentries = A->nooffprocentries = PETSC_TRUE;
       jaca->nonew = jacb->nonew = PETSC_TRUE; // no more disassembly
@@ -1968,9 +1527,9 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       nnz = jacb->i[n];
       if (jacb->compressedrow.use) {
         const Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_i_k (jacb->i,n+1);
-        aijkokB->i_uncompressed_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_i_k));
-        Kokkos::deep_copy (*aijkokB->i_uncompressed_d, h_i_k);
-        h_mat.offdiag.i = aijkokB->i_uncompressed_d->data();
+        aijkokB->i_uncompressed_d = Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_i_k));
+        Kokkos::deep_copy (aijkokB->i_uncompressed_d, h_i_k);
+        h_mat.offdiag.i = aijkokB->i_uncompressed_d.data();
       } else {
          h_mat.offdiag.i = aijkokB->i_device_data();
       }
@@ -1978,9 +1537,9 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
       h_mat.offdiag.a = aijkokB->a_device_data();
       {
         Kokkos::View<PetscInt*, Kokkos::HostSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged> > h_colmap_k (colmap,A->cmap->N);
-        aijkokB->colmap_d = new Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_colmap_k));
-        Kokkos::deep_copy (*aijkokB->colmap_d, h_colmap_k);
-        h_mat.colmap = aijkokB->colmap_d->data();
+        aijkokB->colmap_d = Kokkos::View<PetscInt*>(Kokkos::create_mirror(DefaultMemorySpace(),h_colmap_k));
+        Kokkos::deep_copy (aijkokB->colmap_d, h_colmap_k);
+        h_mat.colmap = aijkokB->colmap_d.data();
         ierr = PetscFree(colmap);CHKERRQ(ierr);
       }
       h_mat.offdiag.ignorezeroentries = jacb->ignorezeroentries;
@@ -1991,7 +1550,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     h_mat.diag.n = n;
     h_mat.diag.ignorezeroentries = jaca->ignorezeroentries;
     ierr = MPI_Comm_rank(comm,&h_mat.rank);CHKERRMPI(ierr);
-    if (jaca->compressedrow.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A does not suppport compressed row (todo)");
+    PetscCheckFalse(jaca->compressedrow.use,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A does not suppport compressed row (todo)");
     else {
       h_mat.diag.i = aijkokA->i_device_data();
     }
@@ -2000,7 +1559,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
     // copy pointers and metdata to device
     ierr = MatSeqAIJKokkosSetDeviceMat(Amat,&h_mat);CHKERRQ(ierr);
     ierr = MatSeqAIJKokkosGetDeviceMat(Amat,&d_mat);CHKERRQ(ierr);
-    ierr = PetscInfo2(A,"Create device Mat n=%" PetscInt_FMT " nnz=%" PetscInt_FMT "\n",h_mat.diag.n, nnz);CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Create device Mat n=%" PetscInt_FMT " nnz=%" PetscInt_FMT "\n",h_mat.diag.n, nnz);CHKERRQ(ierr);
   }
   *B = d_mat; // return it, set it in Mat, and set it up
   A->assembled = PETSC_FALSE; // ready to write with matsetvalues - this done (lazy) in normal MatSetValues

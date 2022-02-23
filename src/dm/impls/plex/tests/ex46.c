@@ -82,7 +82,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   case 1: user->funcs[0] = linear;break;
   case 2: user->funcs[0] = quadratic;break;
   case 3: user->funcs[0] = cubic;break;
-  default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine function to test for degree %D", deg);
+  default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine function to test for degree %D", deg);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   PetscFunctionReturn(0);

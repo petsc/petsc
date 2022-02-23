@@ -31,7 +31,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Transpose_AIJ_AIJ(Mat RAP)
   /* local sizes of matrices will be checked by the calling subroutines */
   ierr = MatTransposeGetMat(R,&Rt);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)Rt,&flg,MATSEQAIJ,MATSEQAIJMKL,MATMPIAIJ,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)Rt)->type_name);
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)Rt)->type_name);
   ierr = MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,product->fill,RAP);CHKERRQ(ierr);
   RAP->ops->productnumeric = MatProductNumeric_ABC_Transpose_AIJ_AIJ;
   PetscFunctionReturn(0);
@@ -44,7 +44,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat C)
   PetscFunctionBegin;
   if (product->type == MATPRODUCT_ABC) {
     C->ops->productsymbolic = MatProductSymbolic_ABC_Transpose_AIJ_AIJ;
-  } else SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Transpose, AIJ and AIJ matrices",MatProductTypes[product->type]);
+  } else SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"MatProduct type %s is not supported for Transpose, AIJ and AIJ matrices",MatProductTypes[product->type]);
   PetscFunctionReturn(0);
 }
 #endif
@@ -58,7 +58,7 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
 
   PetscFunctionBegin;
   MatCheckProduct(D,4);
-  if (D->product->data) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheckFalse(D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
   product = D->product;
   ierr = MatProductCreate(B,C,NULL,&BC);CHKERRQ(ierr);
   ierr = MatProductSetType(BC,MATPRODUCT_AB);CHKERRQ(ierr);
@@ -87,12 +87,12 @@ PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D
 
   PetscFunctionBegin;
   MatCheckProduct(D,4);
-  if (!D->product->data) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheckFalse(!D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
   product = D->product;
   BC = product->Dwork;
-  if (!BC->ops->matmultnumeric) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
+  PetscCheckFalse(!BC->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
   ierr = (*BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);
-  if (!D->ops->matmultnumeric) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
+  PetscCheckFalse(!D->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
   ierr = (*D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -120,7 +120,7 @@ PetscErrorCode MatProductNumeric_RARt_MPIAIJ_MPIAIJ(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
-  if (!C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheckFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   rart = (Mat_RARt*)C->product->data;
   A    = C->product->A;
   R    = C->product->B;
@@ -140,7 +140,7 @@ PetscErrorCode MatProductSymbolic_RARt_MPIAIJ_MPIAIJ(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
-  if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheckFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   A    = C->product->A;
   R    = C->product->B;
   ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);

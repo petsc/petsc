@@ -15,7 +15,6 @@ class Configure(config.package.GNUPackage):
     self.includes         = ['thrust/version.h']
     self.precisions       = ['single','double']
     self.buildLanguages   = ['Cxx']
-    self.minCxxVersion    = 'c++11'
     return
 
   def versionToStandardForm(self,ver):

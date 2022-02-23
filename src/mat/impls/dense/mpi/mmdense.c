@@ -89,9 +89,9 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(isrow[i],&sorted);CHKERRQ(ierr);
-    if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
+    PetscCheckFalse(!sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
     ierr = ISSorted(iscol[i],&sorted);CHKERRQ(ierr);
-    if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
+    PetscCheckFalse(!sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
   }
 
   ierr = PetscMalloc5(ismax,(PetscInt***)&irow,ismax,(PetscInt***)&icol,ismax,&nrow,ismax,&ncol,m,&rtable);CHKERRQ(ierr);
@@ -271,7 +271,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   if (scall == MAT_REUSE_MATRIX) {
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqDense*)(submats[i]->data);
-      if ((submats[i]->rmap->n != nrow[i]) || (submats[i]->cmap->n != ncol[i])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
+      PetscCheckFalse((submats[i]->rmap->n != nrow[i]) || (submats[i]->cmap->n != ncol[i]),PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       ierr = PetscArrayzero(mat->v,submats[i]->rmap->n*submats[i]->cmap->n);CHKERRQ(ierr);
 
       submats[i]->factortype = C->factortype;

@@ -236,7 +236,7 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->originaldm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMSNES has a NULL originaldm");
+  PetscCheckFalse(!sdm->originaldm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMSNES has a NULL originaldm");
   if (sdm->originaldm != dm) {  /* Copy on write */
     DMSNES oldsdm = sdm;
     ierr       = PetscInfo(dm,"Copying DMSNES due to write\n");CHKERRQ(ierr);

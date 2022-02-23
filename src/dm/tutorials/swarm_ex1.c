@@ -19,7 +19,7 @@ PetscErrorCode ex1_1(void)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if ((size > 1) && (size != 4)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must be run wuth 4 MPI ranks");
+  PetscCheckFalse((size > 1) && (size != 4),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must be run wuth 4 MPI ranks");
 
   ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
   ierr = DMSetType(dms,DMSWARM);CHKERRQ(ierr);
@@ -277,7 +277,7 @@ PetscErrorCode ex1_3(void)
 
     ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"c-rank%d.gp",rank);CHKERRQ(ierr);
     fp = fopen(name,"w");
-    if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
+    PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
     ierr = DMSwarmGetLocalSize(dms,&npoints);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dms,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dms,"coory",NULL,NULL,(void**)&array_y);CHKERRQ(ierr);
@@ -472,7 +472,7 @@ PetscErrorCode ex1_4(void)
 
     ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"c-rank%d.gp",rank);CHKERRQ(ierr);
     fp = fopen(name,"w");
-    if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
+    PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
     ierr = DMSwarmGetLocalSize(dms,&npoints);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dms,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dms,"coory",NULL,NULL,(void**)&array_y);CHKERRQ(ierr);

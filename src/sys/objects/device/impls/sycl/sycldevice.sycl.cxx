@@ -64,20 +64,21 @@ public:
     PetscBool      iascii;
 
     PetscFunctionBegin;
-    if (PetscUnlikely(!devInitialized_)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
+    PetscCheckFalse(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
     ierr = PetscObjectTypeCompare(reinterpret_cast<PetscObject>(viewer),PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
     ierr = PetscObjectGetComm(reinterpret_cast<PetscObject>(viewer),&comm);CHKERRQ(ierr);
     if (iascii) {
+      PetscViewer sviewer;
+
       ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-      ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] device: %s\n",rank,syclDevice_.get_info<sycl::info::device::name>().c_str());CHKERRQ(ierr);
-      // flush the assignment information
+      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(sviewer,"[%d] device: %s\n",rank,syclDevice_.get_info<sycl::info::device::name>().c_str());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(sviewer,"-> Device vendor: %s\n",syclDevice_.get_info<sycl::info::device::vendor>().c_str());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"-> Device vendor: %s\n",syclDevice_.get_info<sycl::info::device::vendor>().c_str());CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
@@ -144,8 +145,8 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   // post-process the options and lay the groundwork for initialization if needs be
   std::vector<sycl::device> gpu_devices = sycl::device::get_devices(sycl::info::device_type::gpu);
   ngpus = static_cast<PetscInt>(gpu_devices.size());
-  if (PetscUnlikely(ngpus == 0 && id >= 0)) SETERRQ1(comm,PETSC_ERR_USER_INPUT,"You specified a sycl gpu device with -device_select_sycl %d but there is no GPU", (int)id);
-  if (PetscUnlikely(ngpus > 0 && id >= ngpus)) SETERRQ2(comm,PETSC_ERR_USER_INPUT,"You specified a sycl gpu device with -device_select_sycl %d but there are only %d GPU", (int)id, (int)ngpus);
+  PetscCheckFalse(ngpus == 0 && id >= 0,comm,PETSC_ERR_USER_INPUT,"You specified a sycl gpu device with -device_select_sycl %d but there is no GPU", (int)id);
+  PetscCheckFalse(ngpus > 0 && id >= ngpus,comm,PETSC_ERR_USER_INPUT,"You specified a sycl gpu device with -device_select_sycl %d but there are only %d GPU", (int)id, (int)ngpus);
 
   if (initType == PETSC_DEVICE_INIT_NONE) id = PETSC_SYCL_DEVICE_NONE; /* user wants to disable all sycl devices */
   else {
@@ -164,7 +165,7 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   if (id == -2) id = PETSC_SYCL_DEVICE_HOST; // user passed in '-device_select_sycl -2'. We transform it into canonical form
 
   defaultDevice_ = static_cast<decltype(defaultDevice_)>(id);
-  if (PetscUnlikely(initType == PETSC_DEVICE_INIT_EAGER && id == PETSC_SYCL_DEVICE_NONE)) SETERRQ(comm,PETSC_ERR_USER_INPUT,"Cannot eagerly initialize sycl devices as you disabled them by -device_enable_sycl none");
+  PetscCheckFalse(initType == PETSC_DEVICE_INIT_EAGER && id == PETSC_SYCL_DEVICE_NONE,comm,PETSC_ERR_USER_INPUT,"Cannot eagerly initialize sycl devices as you disabled them by -device_enable_sycl none");
 
   if (initType == PETSC_DEVICE_INIT_EAGER) {
     devices_[defaultDevice_] = new DeviceInternal(defaultDevice_);
@@ -198,11 +199,11 @@ PetscErrorCode Device::getDevice(PetscDevice device, PetscInt id) const noexcept
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscUnlikely(defaultDevice_ == PETSC_SYCL_DEVICE_NONE)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a SYCL PetscDevice when it has been disabled");
+  PetscCheckFalse(defaultDevice_ == PETSC_SYCL_DEVICE_NONE,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to retrieve a SYCL PetscDevice when it has been disabled");
   if (id == PETSC_DECIDE) id = defaultDevice_;
-  if ((id < PETSC_SYCL_DEVICE_HOST) || (id-PETSC_SYCL_DEVICE_HOST >= PETSC_DEVICE_MAX_DEVICES)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_array_.size(),id);
+  PetscCheckFalse((id < PETSC_SYCL_DEVICE_HOST) || (id-PETSC_SYCL_DEVICE_HOST >= PETSC_DEVICE_MAX_DEVICES),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only supports %zu number of devices but trying to get device with id %" PetscInt_FMT,devices_array_.size(),id);
   if (devices_[id]) {
-    if (id != devices_[id]->id()) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %" PetscInt_FMT,id,devices_[id]->id());
+    PetscCheckFalse(id != devices_[id]->id(),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %" PetscInt_FMT,id,devices_[id]->id());
   } else devices_[id] = new DeviceInternal(id);
   ierr = devices_[id]->initialize();CHKERRQ(ierr);
   device->deviceId           = devices_[id]->id(); // technically id = devices_[id]->id_ here

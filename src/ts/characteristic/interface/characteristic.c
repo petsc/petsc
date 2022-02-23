@@ -173,7 +173,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
   }
 
   ierr =  PetscFunctionListFind(CharacteristicList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;
   ierr = (*r)(c);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) c, type);CHKERRQ(ierr);
@@ -286,7 +286,7 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec 
 {
   PetscFunctionBegin;
 #if 0
-  if (numComponents > 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
+  PetscCheckFalse(numComponents > 2,PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
 #endif
   c->fieldDA      = da;
   c->field        = v;
@@ -301,7 +301,7 @@ PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da,
 {
   PetscFunctionBegin;
 #if 0
-  if (numComponents > 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
+  PetscCheckFalse(numComponents > 2,PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
 #endif
   c->fieldDA          = da;
   c->field            = v;
@@ -419,7 +419,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
   /* Calculate velocity at t_n+1/2 (fill remote requests) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeRemote,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL, "Calculating %d remote velocities at t_{n - 1/2}\n", c->queueRemoteSize);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL, "Calculating %d remote velocities at t_{n - 1/2}\n", c->queueRemoteSize);CHKERRQ(ierr);
   for (n = 0; n < c->queueRemoteSize; n++) {
     Qi = c->queueRemote[n];
     interpIndices[0] = Qi.x;
@@ -499,7 +499,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
   /* GET VALUE AT FULL TIME IN THE PAST (REMOTE REQUESTS) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeRemote,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL, "Calculating %d remote field points at t_{n}\n", c->queueRemoteSize);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL, "Calculating %d remote field points at t_{n}\n", c->queueRemoteSize);CHKERRQ(ierr);
   for (n = 0; n < c->queueRemoteSize; n++) {
     interpIndices[0] = c->queueRemote[n].x;
     interpIndices[1] = c->queueRemote[n].y;
@@ -508,7 +508,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     if (1) { /* hacked bounds test...let's do better */
       PetscScalar im = interpIndices[0]; PetscScalar jm = interpIndices[1];
 
-      if ((im < (PetscScalar) is - 1.) || (im > (PetscScalar) ie) || (jm < (PetscScalar)  js - 1.) || (jm > (PetscScalar) je)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "Nonlocal point: (%g,%g)", im, jm);
+      PetscCheckFalse((im < (PetscScalar) is - 1.) || (im > (PetscScalar) ie) || (jm < (PetscScalar)  js - 1.) || (jm > (PetscScalar) je),PETSC_COMM_SELF,PETSC_ERR_LIB, "Nonlocal point: (%g,%g)", im, jm);
     }
 
     if (c->fieldInterpLocal) {ierr = c->fieldInterpLocal(fieldArray, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);CHKERRQ(ierr);}
@@ -561,7 +561,7 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
 PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D *point)
 {
   PetscFunctionBegin;
-  if (c->queueSize >= c->queueMax) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Exceeded maximum queue size %d", c->queueMax);
+  PetscCheckFalse(c->queueSize >= c->queueMax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Exceeded maximum queue size %d", c->queueMax);
   c->queue[c->queueSize++] = *point;
   PetscFunctionReturn(0);
 }
@@ -605,11 +605,11 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
 
   /* Send and Receive requests for values at t_n+1/2, giving the coordinates for interpolation */
   for (n = 1; n < c->numNeighbors; n++) {
-    ierr = PetscInfo2(NULL, "Receiving %d requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL, "Receiving %d requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]);CHKERRQ(ierr);
     ierr = MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n-1]));CHKERRMPI(ierr);
   }
   for (n = 1; n < c->numNeighbors; n++) {
-    ierr = PetscInfo2(NULL, "Sending %d requests for values from proc %d\n", c->needCount[n], c->neighbors[n]);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL, "Sending %d requests for values from proc %d\n", c->needCount[n], c->neighbors[n]);CHKERRQ(ierr);
     ierr = MPI_Send(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c));CHKERRMPI(ierr);
   }
   PetscFunctionReturn(0);
@@ -628,7 +628,7 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
 #if 0
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank);CHKERRMPI(ierr);
   for (n = 0; n < c->queueRemoteSize; n++) {
-    if (c->neighbors[c->queueRemote[n].proc] == rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is messed up, n = %d proc = %d", n, c->queueRemote[n].proc);
+    PetscCheckFalse(c->neighbors[c->queueRemote[n].proc] == rank,PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is messed up, n = %d proc = %d", n, c->queueRemote[n].proc);
   }
 #endif
   PetscFunctionReturn(0);
@@ -677,7 +677,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
   if (0) { /* Check the order of the queue before sorting */
     ierr = PetscInfo(NULL, "Before Heap sort\n");CHKERRQ(ierr);
     for (n=0; n<size; n++) {
-      ierr = PetscInfo2(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
     }
   }
 
@@ -694,7 +694,7 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
   if (0) { /* Check the order of the queue after sorting */
     ierr = PetscInfo(NULL, "Avter  Heap sort\n");CHKERRQ(ierr);
     for (n=0; n<size; n++) {
-      ierr = PetscInfo2(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"%d %d\n",n,queue[n].proc);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

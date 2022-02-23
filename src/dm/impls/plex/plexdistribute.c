@@ -119,7 +119,7 @@ static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscI
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = support[s]),0); ++q) {
         if (support[s] == adj[q]) break;
       }
-      if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheckFalse(numAdj > maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
     }
   }
   *adjSize = numAdj;
@@ -146,7 +146,7 @@ static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, Pet
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = cone[c]),0); ++q) {
         if (cone[c] == adj[q]) break;
       }
-      if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheckFalse(numAdj > maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
     }
   }
   *adjSize = numAdj;
@@ -170,7 +170,7 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
       for (q = 0; q < numAdj || ((void)(adj[numAdj++] = closure[c]),0); ++q) {
         if (closure[c] == adj[q]) break;
       }
-      if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+      PetscCheckFalse(numAdj > maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt**) &closure);CHKERRQ(ierr);
   }
@@ -253,7 +253,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
           for (q = 0; q < numAdj || ((void)(orig[numAdj++] = anchors[aOff+s]),0); ++q) {
             if (anchors[aOff+s] == orig[q]) break;
           }
-          if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+          PetscCheckFalse(numAdj > maxAdjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
         }
       }
       else {
@@ -720,7 +720,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   ierr = DMPlexGetDepth(dm, &ldepth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
-  if ((ldepth >= 0) && (depth != ldepth)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
+  PetscCheckFalse((ldepth >= 0) && (depth != ldepth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", ldepth, depth);
   ierr = PetscLogEventBegin(DMPLEX_PartStratSF,dm,0,0,0);CHKERRQ(ierr);
 
   /* Before building the migration SF we need to know the new stratum offsets */
@@ -993,7 +993,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
     for (p = 0; p < newConesSize; ++p) {
       if (newCones[p] < 0) {valid = PETSC_FALSE; ierr = PetscPrintf(PETSC_COMM_SELF, "[%d] Point %D not in overlap SF\n", PetscGlobalRank,p);CHKERRQ(ierr);}
     }
-    if (!valid) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
+    PetscCheckFalse(!valid,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
   }
   ierr = PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-cones_view", &flg);CHKERRQ(ierr);
   if (flg) {
@@ -1122,7 +1122,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
       PetscInt gdepth;
 
       ierr = MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
-      if ((depth >= 0) && (gdepth != depth)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", depth, gdepth);
+      PetscCheckFalse((depth >= 0) && (gdepth != depth),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %d != %d", depth, gdepth);
       for (d = 0; d <= gdepth; ++d) {
         PetscBool has;
 
@@ -1200,7 +1200,7 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
       for (p = 0; p < newParentSize; ++p) {
         if (newParents[p] < 0) {valid = PETSC_FALSE; ierr = PetscPrintf(PETSC_COMM_SELF, "Point %d not in overlap SF\n", p);CHKERRQ(ierr);}
       }
-      if (!valid) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
+      PetscCheckFalse(!valid,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
     }
     ierr = PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-parents_view", &flg);CHKERRQ(ierr);
     if (flg) {
@@ -1267,7 +1267,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
     ierr = PetscSFBcastBegin(migrationSF, MPIU_2INT, rowners, lowners,MPI_REPLACE);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(migrationSF, MPIU_2INT, rowners, lowners,MPI_REPLACE);CHKERRQ(ierr);
     for (p = 0; p < numLeaves; ++p) {
-      if (lowners[p].rank < 0 || lowners[p].index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
+      PetscCheckFalse(lowners[p].rank < 0 || lowners[p].index < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
       if (lowners[p].rank != rank) ++numGhostPoints;
     }
     ierr = PetscMalloc1(numGhostPoints, &ghostPoints);CHKERRQ(ierr);
@@ -1747,6 +1747,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     ierr = DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural);CHKERRQ(ierr);
     ierr = DMSetUseNatural(*dmParallel, PETSC_TRUE);CHKERRQ(ierr);
   }
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, *dmParallel);CHKERRQ(ierr);
   /* Cleanup */
   if (sf) {*sf = sfMigration;}
   else    {ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);}
@@ -1877,6 +1878,74 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  mesh->distDefault = dist;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexDistributeSetDefault - Set flag indicating whether the DM should be distributed by default
+
+  Logically collective
+
+  Input Parameters:
++ dm   - The DM
+- dist - Flag for distribution
+
+  Level: intermediate
+
+.seealso: DMDistributeGetDefault(), DMPlexDistribute()
+@*/
+PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(dm, dist, 2);
+  ierr = PetscTryMethod(dm,"DMPlexDistributeSetDefault_C",(DM,PetscBool),(dm,dist));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  *dist = mesh->distDefault;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexDistributeGetDefault - Get flag indicating whether the DM should be distributed by default
+
+  Not collective
+
+  Input Parameter:
+. dm   - The DM
+
+  Output Parameter:
+. dist - Flag for distribution
+
+  Level: intermediate
+
+.seealso: DMDistributeSetDefault(), DMPlexDistribute()
+@*/
+PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidBoolPointer(dist, 2);
+  ierr = PetscUseMethod(dm,"DMPlexDistributeGetDefault_C",(DM,PetscBool*),(dm,dist));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMPlexGetGatherDM - Get a copy of the DMPlex that gathers all points on the
   root process of the original's communicator.
@@ -1992,6 +2061,8 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&gatherSF);CHKERRQ(ierr);
   ierr = DMDestroy(&gatherDM);CHKERRQ(ierr);
+  ierr = DMCopyDisc(dm, *redundantMesh);CHKERRQ(ierr);
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, *redundantMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

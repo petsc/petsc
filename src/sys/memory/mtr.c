@@ -237,13 +237,13 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,PetscBool clear,int lineno,const c
   if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax && a >= PetscLogMallocThreshold) {
     if (!PetscLogMalloc) {
       PetscLogMallocLength = (size_t*)malloc(PetscLogMallocMax*sizeof(size_t));
-      if (!PetscLogMallocLength) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+      PetscCheckFalse(!PetscLogMallocLength,PETSC_COMM_SELF,PETSC_ERR_MEM," ");
 
       PetscLogMallocFile = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
-      if (!PetscLogMallocFile) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+      PetscCheckFalse(!PetscLogMallocFile,PETSC_COMM_SELF,PETSC_ERR_MEM," ");
 
       PetscLogMallocFunction = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
-      if (!PetscLogMallocFunction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+      PetscCheckFalse(!PetscLogMallocFunction,PETSC_COMM_SELF,PETSC_ERR_MEM," ");
     }
     PetscLogMallocLength[PetscLogMalloc]     = nsize;
     PetscLogMallocFile[PetscLogMalloc]       = filename;
@@ -321,7 +321,7 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int lineno,const char function[],con
     head->lineno = -head->lineno;
   }
   asize = TRrequestedSize ? head->rsize : head->size;
-  if (TRallocated < asize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"TRallocate is smaller than memory just freed");
+  PetscCheckFalse(TRallocated < asize,PETSC_COMM_SELF,PETSC_ERR_MEMC,"TRallocate is smaller than memory just freed");
   TRallocated -= asize;
   TRfrags--;
   if (head->prev) head->prev->next = head->next;
@@ -452,13 +452,13 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
   if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax && len >= PetscLogMallocThreshold) {
     if (!PetscLogMalloc) {
       PetscLogMallocLength = (size_t*)malloc(PetscLogMallocMax*sizeof(size_t));
-      if (!PetscLogMallocLength) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+      PetscCheckFalse(!PetscLogMallocLength,PETSC_COMM_SELF,PETSC_ERR_MEM," ");
 
       PetscLogMallocFile = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
-      if (!PetscLogMallocFile) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+      PetscCheckFalse(!PetscLogMallocFile,PETSC_COMM_SELF,PETSC_ERR_MEM," ");
 
       PetscLogMallocFunction = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
-      if (!PetscLogMallocFunction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
+      PetscCheckFalse(!PetscLogMallocFunction,PETSC_COMM_SELF,PETSC_ERR_MEM," ");
     }
     PetscLogMallocLength[PetscLogMalloc]     = nsize;
     PetscLogMallocFile[PetscLogMalloc]       = filename;
@@ -635,7 +635,7 @@ PetscErrorCode  PetscMallocPopMaximumUsage(int event,PetscLogDouble *mu)
   PetscFunctionBegin;
   *mu = 0;
   if (NumTRMaxMems-- > MAXTRMAXMEMS) PetscFunctionReturn(0);
-  if (TRMaxMemsEvents[NumTRMaxMems] != event) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"PetscMallocPush/PopMaximumUsage() are not nested");
+  PetscCheckFalse(TRMaxMemsEvents[NumTRMaxMems] != event,PETSC_COMM_SELF,PETSC_ERR_MEMC,"PetscMallocPush/PopMaximumUsage() are not nested");
   *mu = TRMaxMems[NumTRMaxMems];
   PetscFunctionReturn(0);
 }
@@ -884,9 +884,9 @@ PetscErrorCode  PetscMallocView(FILE *fp)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRMPI(ierr);
   err = fflush(fp);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
 
-  if (PetscLogMalloc < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
+  PetscCheckFalse(PetscLogMalloc < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscMallocView() called without call to PetscMallocViewSet() this is often due to\n                      setting the option -malloc_view AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
 
   if (!fp) fp = PETSC_STDOUT;
   ierr = PetscMemoryGetMaximumUsage(&rss);CHKERRQ(ierr);
@@ -895,9 +895,9 @@ PetscErrorCode  PetscMallocView(FILE *fp)
   } else {
     (void) fprintf(fp,"[%d] Maximum memory PetscMalloc()ed %.0f OS cannot compute size of entire process\n",rank,(PetscLogDouble)TRMaxMem);
   }
-  shortcount    = (int*)malloc(PetscLogMalloc*sizeof(int));if (!shortcount) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
-  shortlength   = (size_t*)malloc(PetscLogMalloc*sizeof(size_t));if (!shortlength) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
-  shortfunction = (const char**)malloc(PetscLogMalloc*sizeof(char*));if (!shortfunction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
+  shortcount    = (int*)malloc(PetscLogMalloc*sizeof(int));PetscCheckFalse(!shortcount,PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
+  shortlength   = (size_t*)malloc(PetscLogMalloc*sizeof(size_t));PetscCheckFalse(!shortlength,PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
+  shortfunction = (const char**)malloc(PetscLogMalloc*sizeof(char*));PetscCheckFalse(!shortfunction,PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
   for (i=0,n=0; i<PetscLogMalloc; i++) {
     for (j=0; j<n; j++) {
       ierr = PetscStrcmp(shortfunction[j],PetscLogMallocFunction[i],&match);CHKERRQ(ierr);
@@ -914,7 +914,7 @@ PetscErrorCode  PetscMallocView(FILE *fp)
 foundit:;
   }
 
-  perm = (PetscInt*)malloc(n*sizeof(PetscInt));if (!perm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
+  perm = (PetscInt*)malloc(n*sizeof(PetscInt));PetscCheckFalse(!perm,PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
   for (i=0; i<n; i++) perm[i] = i;
   ierr = PetscSortStrWithPermutation(n,(const char**)shortfunction,perm);CHKERRQ(ierr);
 
@@ -927,7 +927,7 @@ foundit:;
   free(shortcount);
   free((char**)shortfunction);
   err = fflush(fp);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   PetscFunctionReturn(0);
 }
 
@@ -961,7 +961,7 @@ PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscTrMalloc == PetscTrMallocDefault) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot call this routine more than once, it can only be called in PetscInitialize()");
+  PetscCheckFalse(PetscTrMalloc == PetscTrMallocDefault,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot call this routine more than once, it can only be called in PetscInitialize()");
   ierr = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault,PetscTrReallocDefault);CHKERRQ(ierr);
 
   TRallocated         = 0;

@@ -67,15 +67,15 @@ PetscErrorCode main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size>2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"More than 2 processors detected. Example written to use max of 2 processors.");
+  PetscCheckFalse(size>2,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"More than 2 processors detected. Example written to use max of 2 processors.");
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"---- Constrained Problem -----\n");CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr); /* sets up problem, function below */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOPDIPM);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,user.x);CHKERRQ(ierr); /* gets solution vector from problem */
+  ierr = TaoSetSolution(tao,user.x);CHKERRQ(ierr); /* gets solution vector from problem */
   ierr = TaoSetVariableBounds(tao,user.xl,user.xu);CHKERRQ(ierr); /* sets lower upper bounds from given solution */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
 
   if (!user.noeqflag) {
     ierr = TaoSetEqualityConstraintsRoutine(tao,user.ce,FormEqualityConstraints,(void*)&user);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ PetscErrorCode main(int argc,char **argv)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);CHKERRQ(ierr);  /* requires mumps to solve pdipm */
 #else
-  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Requires an external package that supports parallel PCCHOLESKY, e.g., MUMPS.");
+  PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Requires an external package that supports parallel PCCHOLESKY, e.g., MUMPS.");
 #endif
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -107,7 +107,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoGetType(tao,&type);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)tao,TAOPDIPM,&pdipm);CHKERRQ(ierr);
   if (pdipm) {
-    ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
+    ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
     if (user.initview) {
       ierr = TaoSetUp(tao);CHKERRQ(ierr);
       ierr = VecDuplicate(user.x, &G);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ PetscErrorCode main(int argc,char **argv)
   }
 
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-  ierr = TaoGetSolutionVector(tao,&x);CHKERRQ(ierr);
+  ierr = TaoGetSolution(tao,&x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free objects */

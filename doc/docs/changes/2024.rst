@@ -8,7 +8,7 @@ Changes
 
 .. rubric:: General:
 
--  Changed PETSC_ARCH on Windows platforms from nt to win32, and from
+-  Changed PETSC_ARCH on Microsoft Windows platforms from nt to win32, and from
    nt_gnu to win32_gnu.
 -  Moved all the compiler/optimization information for each
    PETSC_ARCH from the various ``base.g``, ``base.O_c++`` etc. files

@@ -58,9 +58,9 @@ PetscMatrixSampler::PetscMatrixSampler(Mat A)
 void PetscMatrixSampler::SetSamplingMat(Mat A)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
+  PetscMPIInt    size = 1;
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRV(ierr);
+  if (A) { ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRV(ierr); }
   if (size > 1) CHKERRV(PETSC_ERR_SUP);
   ierr = PetscObjectReference((PetscObject)A);CHKERRV(ierr);
   ierr = MatDestroy(&this->A);CHKERRV(ierr);

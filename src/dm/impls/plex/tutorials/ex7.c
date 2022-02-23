@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 
   testset:
     requires: !__float128
-    args: -dm_plex_shape sphere -dm_distribute -petscpartitioner_type simple -dm_view
+    args: -dm_plex_shape sphere -petscpartitioner_type simple -dm_view
 
     test:
       suffix: 2d_quad_parallel

@@ -112,7 +112,7 @@ static PetscErrorCode PetscSFCreateEmbeddedRootSF_Alltoall(PetscSF sf,PetscInt n
   ierr = PetscMalloc1(nselected,&tmproots);CHKERRQ(ierr);
   ierr = PetscArraycpy(tmproots,selected,nselected);CHKERRQ(ierr);
   ierr = PetscSortRemoveDupsInt(&nselected,tmproots);CHKERRQ(ierr); /* nselected might be changed */
-  if (tmproots[0] < 0 || tmproots[nselected-1] >= sf->nroots) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max root indices %" PetscInt_FMT "/%" PetscInt_FMT " are not in [0,%" PetscInt_FMT ")",tmproots[0],tmproots[nselected-1],sf->nroots);
+  PetscCheckFalse(tmproots[0] < 0 || tmproots[nselected-1] >= sf->nroots,comm,PETSC_ERR_ARG_OUTOFRANGE,"Min/Max root indices %" PetscInt_FMT "/%" PetscInt_FMT " are not in [0,%" PetscInt_FMT ")",tmproots[0],tmproots[nselected-1],sf->nroots);
   nroots = nselected;   /* For Alltoall, we know root indices will not overflow MPI_INT */
   ierr   = PetscMalloc1(nselected,&roots);CHKERRQ(ierr);
   for (i=0; i<nselected; i++) roots[i] = tmproots[i];

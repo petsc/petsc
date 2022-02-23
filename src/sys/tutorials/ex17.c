@@ -26,9 +26,9 @@ int main(int argc,char **argv)
   ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
 
   ierr = PetscGetVersionNumber(&major,&minor,&subminor,NULL);CHKERRQ(ierr);
-  if (major != PETSC_VERSION_MAJOR) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library major %d does not equal include %d",(int)major,PETSC_VERSION_MAJOR);
-  if (minor != PETSC_VERSION_MINOR) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library minor %d does not equal include %d",(int)minor,PETSC_VERSION_MINOR);
-  if (subminor != PETSC_VERSION_SUBMINOR) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library subminor %d does not equal include %d",(int)subminor,PETSC_VERSION_SUBMINOR);
+  PetscCheckFalse(major != PETSC_VERSION_MAJOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library major %d does not equal include %d",(int)major,PETSC_VERSION_MAJOR);
+  PetscCheckFalse(minor != PETSC_VERSION_MINOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library minor %d does not equal include %d",(int)minor,PETSC_VERSION_MINOR);
+  PetscCheckFalse(subminor != PETSC_VERSION_SUBMINOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library subminor %d does not equal include %d",(int)subminor,PETSC_VERSION_SUBMINOR);
 
   ierr = PetscFinalize();
   return ierr;

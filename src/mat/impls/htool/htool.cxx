@@ -26,7 +26,7 @@ static PetscErrorCode MatGetDiagonal_Htool(Mat A,Vec v)
 
   PetscFunctionBegin;
   ierr = MatHasCongruentLayouts(A,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only congruent layouts supported");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only congruent layouts supported");
   ierr = VecGetArrayWrite(v,&x);CHKERRQ(ierr);
   a->hmatrix->copy_local_diagonal(x);
   ierr = VecRestoreArrayWrite(v,&x);CHKERRQ(ierr);
@@ -44,7 +44,7 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A,Mat *b)
 
   PetscFunctionBegin;
   ierr = MatHasCongruentLayouts(A,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only congruent layouts supported");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only congruent layouts supported");
   ierr = PetscObjectQuery((PetscObject)A,"DiagonalBlock",(PetscObject*)&B);CHKERRQ(ierr); /* same logic as in MatGetDiagonalBlock_MPIDense() */
   if (!B) {
     ierr = MatCreateDense(PETSC_COMM_SELF,A->rmap->n,A->rmap->n,A->rmap->n,A->rmap->n,NULL,&B);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ static PetscErrorCode MatIncreaseOverlap_Htool(Mat A,PetscInt is_max,IS is[],Pet
     /* basic implementation that adds indices by shifting an IS by -ov, -ov+1..., -1, 1..., ov-1, ov */
     /* needed to avoid subdomain matrices to replicate A since it is dense                           */
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is[i]),&csize);CHKERRMPI(ierr);
-    if (csize != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported parallel IS");
+    PetscCheckFalse(csize != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported parallel IS");
     ierr = ISGetSize(is[i],&size);CHKERRQ(ierr);
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
     for (PetscInt j=0; j<size; ++j) {
@@ -512,7 +512,7 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
   MatCheckProduct(C,1);
   ierr = MatGetSize(C,NULL,&N);CHKERRQ(ierr);
   ierr = MatDenseGetLDA(C,&lda);CHKERRQ(ierr);
-  if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
+  PetscCheckFalse(lda != C->rmap->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
   ierr = MatDenseGetArrayRead(product->B,&in);CHKERRQ(ierr);
   ierr = MatDenseGetArrayWrite(C,&out);CHKERRQ(ierr);
   switch (product->type) {
@@ -523,7 +523,7 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
     a->hmatrix->mvprod_transp_local_to_local(in,out,N);
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProductType %s is not supported",MatProductTypes[product->type]);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatProductType %s is not supported",MatProductTypes[product->type]);
   }
   ierr = MatDenseRestoreArrayWrite(C,&out);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(product->B,&in);CHKERRQ(ierr);
@@ -543,7 +543,7 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
   A = product->A;
   B = product->B;
   ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
-  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"MatProduct_AB not supported for %s",((PetscObject)product->B)->type_name);
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"MatProduct_AB not supported for %s",((PetscObject)product->B)->type_name);
   switch (product->type) {
   case MATPRODUCT_AB:
     if (C->rmap->n == PETSC_DECIDE || C->cmap->n == PETSC_DECIDE || C->rmap->N == PETSC_DECIDE || C->cmap->N == PETSC_DECIDE) {
@@ -556,7 +556,7 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
     }
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[product->type]);
+    SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[product->type]);
   }
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
@@ -761,9 +761,9 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A,MatType newtype,MatReuse reus
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     C = *B;
-    if (C->rmap->n != A->rmap->n || C->cmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible dimensions");
+    PetscCheckFalse(C->rmap->n != A->rmap->n || C->cmap->N != A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible dimensions");
     ierr = MatDenseGetLDA(C,&lda);CHKERRQ(ierr);
-    if (lda != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
+    PetscCheckFalse(lda != C->rmap->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported leading dimension (%" PetscInt_FMT " != %" PetscInt_FMT ")",lda,C->rmap->n);
   } else {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
@@ -811,7 +811,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A,MatReuse reuse,Mat *B)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatTranspose() with MAT_INPLACE_MATRIX not supported");
+  PetscCheckFalse(reuse == MAT_INPLACE_MATRIX,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatTranspose() with MAT_INPLACE_MATRIX not supported");
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,n,m,N,M);CHKERRQ(ierr);
@@ -824,7 +824,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A,MatReuse reuse,Mat *B)
   } else {
     C = *B;
     ierr = PetscObjectQuery((PetscObject)C,"KernelTranspose",(PetscObject*)&container);CHKERRQ(ierr);
-    if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatTranspose() with MAT_INITIAL_MATRIX first");
+    PetscCheckFalse(!container,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatTranspose() with MAT_INITIAL_MATRIX first");
     ierr = PetscContainerGetPointer(container,(void**)&kernelt);CHKERRQ(ierr);
   }
   c                  = (Mat_Htool*)C->data;

@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     suffix: 0
     requires: exodusii
     nsize: {{1 2}}
-    args: -dm_distribute -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report
+    args: -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -report
 
   test:
     suffix: 1
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
     test:
       suffix: box_2
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -orth_qual_atol 1.0
+      args: -petscpartitioner_type simple -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -orth_qual_atol 1.0
 
     test:
       suffix: mesh_1
@@ -90,5 +90,5 @@ int main(int argc, char **argv)
       suffix: mesh_2
       nsize: 2
       requires: exodusii
-      args: -dm_distribute -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
+      args: -petscpartitioner_type simple -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -orth_qual_atol 0.95
 TEST*/

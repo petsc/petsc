@@ -31,6 +31,7 @@ int main(int argc, char **argv)
 
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);

@@ -27,7 +27,7 @@ static PetscErrorCode PointQueueCreate(PetscInt size, PointQueue *queue)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (size < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
+  PetscCheckFalse(size < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Queue size %D must be non-negative", size);
   ierr = PetscCalloc1(1, &q);CHKERRQ(ierr);
   q->size = size;
   ierr = PetscMalloc1(q->size, &q->points);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ static PetscErrorCode PointQueueEnqueue(PointQueue queue, PetscInt p)
 static PetscErrorCode PointQueueDequeue(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  if (!queue->num) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot dequeue from an empty queue");
+  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot dequeue from an empty queue");
   *p = queue->points[queue->front];
   queue->front = (queue->front + 1) % queue->size;
   --queue->num;
@@ -87,7 +87,7 @@ static PetscErrorCode PointQueueDequeue(PointQueue queue, PetscInt *p)
 static PetscErrorCode PointQueueFront(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  if (!queue->num) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
+  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
   *p = queue->points[queue->front];
   PetscFunctionReturn(0);
 }
@@ -95,13 +95,13 @@ static PetscErrorCode PointQueueFront(PointQueue queue, PetscInt *p)
 static PetscErrorCode PointQueueBack(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  if (!queue->num) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
+  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
   *p = queue->points[queue->back];
   PetscFunctionReturn(0);
 }
 #endif
 
-PETSC_STATIC_INLINE PetscBool PointQueueEmpty(PointQueue queue)
+static inline PetscBool PointQueueEmpty(PointQueue queue)
 {
   if (!queue->num) return PETSC_TRUE;
   return PETSC_FALSE;
@@ -128,7 +128,7 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, edge, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, edge, &coneSize);CHKERRQ(ierr);
-    if (coneSize != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
+    PetscCheckFalse(coneSize != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %D cone size must be 2, not %D", edge, coneSize);
     ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coordsLocal, &coords);CHKERRQ(ierr);
@@ -316,7 +316,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   ierr = PetscCalloc1(edgeLenSize, &sbr->edgeLen);CHKERRQ(ierr);
   /* Add edges of cells that are marked for refinement to edge queue */
   ierr = DMPlexTransformGetActive(tr, &active);CHKERRQ(ierr);
-  if (!active) SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
+  PetscCheckFalse(!active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
   ierr = PointQueueCreate(1024, &queue);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(active, DM_ADAPT_REFINE, &refineIS);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(active, DM_ADAPT_REFINE, &Nc);CHKERRQ(ierr);
@@ -423,10 +423,10 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
           else if (vals[0])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_0);CHKERRQ(ierr);}
           else if (vals[1])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_1);CHKERRQ(ierr);}
           else if (vals[2])                  {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE_SPLIT_2);CHKERRQ(ierr);}
-          else SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D does not fit any refinement type (%D, %D, %D)", p, vals[0], vals[1], vals[2]);
+          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D does not fit any refinement type (%D, %D, %D)", p, vals[0], vals[1], vals[2]);
         } else {ierr = DMLabelSetValue(trType, p, RT_TRIANGLE);CHKERRQ(ierr);}
         break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
     }
     ierr = DMLabelGetValue(sbr->splitPoints, p, &val);CHKERRQ(ierr);
   }
@@ -656,7 +656,7 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  if (p < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
+  PetscCheckFalse(p < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
   ierr = DMLabelGetValue(trType, p, &val);CHKERRQ(ierr);
   if (rt) *rt = val;
   switch (source) {
@@ -691,7 +691,7 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
         default: ierr = DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt);CHKERRQ(ierr);
       }
       break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
   PetscFunctionReturn(0);
 }
@@ -738,7 +738,7 @@ static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer vi
       ierr = DMLabelView(tr->trType, viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
+    SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

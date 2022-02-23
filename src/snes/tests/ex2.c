@@ -15,7 +15,7 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
 {
   PetscInt d, c;
 
-  if (Nc != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %D", Nc);
+  PetscCheckFalse(Nc != 3,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %D", Nc);
   for (c = 0; c < Nc; ++c) {
     u[c] = 0.0;
     for (d = 0; d < dim; ++d) u[c] += x[d];
@@ -190,7 +190,7 @@ static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, Pet
   case CENTROID:        ierr = CreatePoints_Centroid(dm, Np, pcoords, pointsAllProcs, ctx);CHKERRQ(ierr);break;
   case GRID:            ierr = CreatePoints_Grid(dm, Np, pcoords, pointsAllProcs, ctx);CHKERRQ(ierr);break;
   case GRID_REPLICATED: ierr = CreatePoints_GridReplicated(dm, Np, pcoords, pointsAllProcs, ctx);CHKERRQ(ierr);break;
-  default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid point generation type %d", (int) ctx->pointType);
+  default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid point generation type %d", (int) ctx->pointType);
   }
   PetscFunctionReturn(0);
 }
@@ -276,7 +276,7 @@ int main(int argc, char **argv)
 #endif
       (*funcs[c])(dim, 0.0, vcoordsReal, Nc, vals, NULL);
       if (PetscAbsScalar(ivals[p*Nc+c] - vals[c]) > PETSC_SQRT_MACHINE_EPSILON)
-        SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%D, %D)", (double) PetscRealPart(ivals[p*Nc+c]), (double) PetscRealPart(vals[c]), p, c);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%D, %D)", (double) PetscRealPart(ivals[p*Nc+c]), (double) PetscRealPart(vals[c]), p, c);
     }
   }
   ierr = VecRestoreArrayRead(interpolator->coords, &vcoords);CHKERRQ(ierr);
@@ -306,19 +306,19 @@ int main(int argc, char **argv)
     test:
       suffix: 2
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple
+      args: -petscpartitioner_type simple
     test:
       suffix: 3
       nsize: 2
-      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple
+      args: -dm_refine 2 -petscpartitioner_type simple
     test:
       suffix: 4
       nsize: 5
-      args: -dm_distribute -petscpartitioner_type simple
+      args: -petscpartitioner_type simple
     test:
       suffix: 5
       nsize: 5
-      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple
+      args: -dm_refine 2 -petscpartitioner_type simple
     test:
       suffix: 6
       args: -point_type grid
@@ -328,17 +328,17 @@ int main(int argc, char **argv)
     test:
       suffix: 8
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -point_type grid
+      args: -petscpartitioner_type simple -point_type grid
     test:
       suffix: 9
       args: -point_type grid_replicated
     test:
       suffix: 10
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -point_type grid_replicated
+      args: -petscpartitioner_type simple -point_type grid_replicated
     test:
       suffix: 11
       nsize: 2
-      args: -dm_refine 2 -dm_distribute -petscpartitioner_type simple -point_type grid_replicated
+      args: -dm_refine 2 -petscpartitioner_type simple -point_type grid_replicated
 
 TEST*/

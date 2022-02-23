@@ -33,9 +33,11 @@
 #if (PETSC_SIZEOF_VOID_P == 8)
 #define PetscOffset integer8
 #define PetscFortranAddr integer8
+#define PetscCount integer8
 #else
 #define PetscOffset integer4
 #define PetscFortranAddr integer4
+#define PetscCount integer4
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -53,6 +55,9 @@
 #define PetscFortranInt integer8
 #endif
 !
+! Fortran does not support unsigned, though ISO_C_BINDING
+! supports INTEGER(KIND=C_SIZE_T). We don't use that here
+! only to avoid importing the module.
 #if (PETSC_SIZEOF_SIZE_T == 8)
 #define PetscSizeT integer8
 #else
@@ -164,8 +169,10 @@
 !
 #define SETERRQ(c,ierr,s)  call PetscError(c,ierr,0,s); return
 #define SETERRA(c,ierr,s)  call PetscError(c,ierr,0,s); call MPIU_Abort(c,ierr)
+#define SETERRABORT(c,ierr,s)  call PetscError(c,ierr,0,s); call MPI_Abort(c,ierr)
 #define CHKERRQ(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);return;endif
 #define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPIU_Abort(PETSC_COMM_SELF,ierr);endif
+#define CHKERRABORT(c,ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPI_Abort(c,ierr);endif
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
 
 #define PetscMatlabEngine PetscFortranAddr

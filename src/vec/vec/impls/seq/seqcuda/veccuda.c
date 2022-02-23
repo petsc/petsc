@@ -354,11 +354,7 @@ PetscErrorCode VecGetArray_SeqCUDA(Vec v,PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->offloadmask == PETSC_OFFLOAD_GPU) {
-    ierr = VecCUDACopyFromGPU(v);CHKERRQ(ierr);
-  } else {
-    ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
-  }
+  ierr = VecCUDACopyFromGPU(v);CHKERRQ(ierr);
   *a = *((PetscScalar**)v->data);
   PetscFunctionReturn(0);
 }
@@ -385,36 +381,38 @@ PetscErrorCode VecGetArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMemType 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->offloadmask & PETSC_OFFLOAD_GPU) { /* Return device pointer when device has up-to-date data, such as when offloadmask is PETSC_OFFLOAD_BOTH */
-    *a = ((Vec_CUDA*)v->spptr)->GPUarray;
-    v->offloadmask    = PETSC_OFFLOAD_GPU; /* Change the mask once GPU gets write access, don't wait until restore array */
-    if (mtype) *mtype = ((Vec_CUDA*)v->spptr)->nvshmem ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUDA;
-  } else {
-    ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
-    *a = *((PetscScalar**)v->data);
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
-  }
+  ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
+  if (mtype) *mtype = ((Vec_CUDA*)v->spptr)->nvshmem ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUDA;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecRestoreArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a)
 {
   PetscFunctionBegin;
-  if (v->offloadmask & PETSC_OFFLOAD_GPU) {
-    v->offloadmask = PETSC_OFFLOAD_GPU;
-  } else {
-    v->offloadmask = PETSC_OFFLOAD_CPU;
-  }
+  v->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
+PetscErrorCode VecGetArrayWriteAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMemType *mtype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  V->boundtocpu = pin;
-  if (pin) {
+  /* Allocate memory (not zeroed) on device if not yet, but no need to sync data from host to device */
+  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
+  if (mtype) *mtype = ((Vec_CUDA*)v->spptr)->nvshmem ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUDA;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  V->boundtocpu = bind;
+  if (bind) {
     ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
     V->offloadmask                 = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dot                    = VecDot_Seq;
@@ -451,6 +449,9 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = NULL;
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
+    V->ops->getarrayandmemtype     = NULL;
+    V->ops->getarraywriteandmemtype= NULL;
+    V->ops->restorearrayandmemtype = NULL;
     V->ops->max                    = VecMax_Seq;
     V->ops->min                    = VecMin_Seq;
     V->ops->reciprocal             = VecReciprocal_Default;
@@ -496,6 +497,7 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool pin)
     V->ops->getarray               = VecGetArray_SeqCUDA;
     V->ops->restorearray           = VecRestoreArray_SeqCUDA;
     V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqCUDA;
+    V->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqCUDA;
     V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqCUDA;
     V->ops->max                    = VecMax_SeqCUDA;
     V->ops->min                    = VecMin_SeqCUDA;
@@ -519,7 +521,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
+  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);
   ierr = VecBindToCPU_SeqCUDA(V,PETSC_FALSE);CHKERRQ(ierr);

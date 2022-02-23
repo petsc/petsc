@@ -82,7 +82,7 @@ static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp)
 
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if (pipefcg->nprealloc > pipefcg->mmax+1) {
-    ierr = PetscInfo2(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",pipefcg->nprealloc, pipefcg->mmax+1);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",pipefcg->nprealloc, pipefcg->mmax+1);CHKERRQ(ierr);
   }
 
   /* Preallocate additional work vectors */
@@ -106,7 +106,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
   PetscFunctionBegin;
   /* We have not checked these routines for use with complex numbers. The inner products
      are likely not defined correctly for that case */
-  if (PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
+  PetscCheckFalse(PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX),PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
 
 #define VecXDot(x,y,a)         (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDot       (x,y,a)   : VecTDot       (x,y,a))
 #define VecXDotBegin(x,y,a)    (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDotBegin  (x,y,a)   : VecTDotBegin  (x,y,a))
@@ -183,7 +183,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
       case KSP_NORM_NONE:
         dp = 0.0;
         break;
-      default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+      default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
 
     /* Check for convergence */
@@ -252,7 +252,7 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
     *eta += delta;                                          /* etai    = delta -betaik^2 * etak */
     if (*eta < 0.) {
       pipefcg->norm_breakdown = PETSC_TRUE;
-      ierr = PetscInfo1(ksp,"Restart due to square root breakdown at it = \n",ksp->its);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp,"Restart due to square root breakdown at it = \n",ksp->its);CHKERRQ(ierr);
       break;
     } else {
       alpha= gamma/(*eta);                                  /* alpha = gamma/etai */
@@ -319,7 +319,7 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
     case KSP_NORM_NONE:
       dp = 0.0;
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+    default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
 
   /* Initial Convergence Check */

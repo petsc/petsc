@@ -20,13 +20,13 @@ static PetscErrorCode SNESTR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal r
   PetscFunctionBegin;
   ierr = (*ctx->convtest)(ksp,n,rnorm,reason,ctx->convctx);CHKERRQ(ierr);
   if (*reason) {
-    ierr = PetscInfo2(snes,"Default or user provided convergence test KSP iterations=%D, rnorm=%g\n",n,(double)rnorm);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Default or user provided convergence test KSP iterations=%D, rnorm=%g\n",n,(double)rnorm);CHKERRQ(ierr);
   }
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm >= neP->delta) {
-    ierr    = PetscInfo2(snes,"Ending linear iteration early, delta=%g, length=%g\n",(double)neP->delta,(double)nrm);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Ending linear iteration early, delta=%g, length=%g\n",(double)neP->delta,(double)nrm);CHKERRQ(ierr);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
   PetscFunctionReturn(0);
@@ -57,10 +57,10 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes,PetscInt it,PetscReal x
   PetscFunctionBegin;
   *reason = SNES_CONVERGED_ITERATING;
   if (neP->delta < xnorm * snes->deltatol) {
-    ierr    = PetscInfo3(snes,"Converged due to trust region param %g<%g*%g\n",(double)neP->delta,(double)xnorm,(double)snes->deltatol);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Converged due to trust region param %g<%g*%g\n",(double)neP->delta,(double)xnorm,(double)snes->deltatol);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_TR_DELTA;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-    ierr    = PetscInfo1(snes,"Exceeded maximum number of function evaluations: %D\n",snes->max_funcs);CHKERRQ(ierr);
+    ierr    = PetscInfo(snes,"Exceeded maximum number of function evaluations: %D\n",snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
   PetscFunctionReturn(0);
@@ -267,7 +267,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   void                     *convctx;
 
   PetscFunctionBegin;
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   maxits = snes->max_its;               /* maximum number of iterations */
   X      = snes->vec_sol;               /* solution vector */
@@ -326,7 +326,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
 
-    ierr  = PetscInfo2(snes,"iter=%" PetscInt_FMT ", linear solve iterations=%" PetscInt_FMT "\n",snes->iter,lits);CHKERRQ(ierr);
+    ierr  = PetscInfo(snes,"iter=%" PetscInt_FMT ", linear solve iterations=%" PetscInt_FMT "\n",snes->iter,lits);CHKERRQ(ierr);
     ierr  = VecNorm(Ytmp,NORM_2,&nrm);CHKERRQ(ierr);
     norm1 = nrm;
 
@@ -341,7 +341,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
         nrm    = delta/nrm;
         gpnorm = (1.0 - nrm)*fnorm;
         cnorm  = nrm;
-        ierr   = PetscInfo1(snes,"Scaling direction by %g\n",(double)nrm);CHKERRQ(ierr);
+        ierr   = PetscInfo(snes,"Scaling direction by %g\n",(double)nrm);CHKERRQ(ierr);
         ierr   = VecScale(Y,cnorm);CHKERRQ(ierr);
         nrm    = gpnorm;
         ynorm  = delta;
@@ -366,8 +366,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       if      (rho < neP->mu)  delta *= neP->delta1;
       else if (rho < neP->eta) delta *= neP->delta2;
       else                     delta *= neP->delta3;
-      ierr = PetscInfo3(snes,"fnorm=%g, gnorm=%g, ynorm=%g\n",(double)fnorm,(double)gnorm,(double)ynorm);CHKERRQ(ierr);
-      ierr = PetscInfo3(snes,"gpred=%g, rho=%g, delta=%g\n",(double)gpnorm,(double)rho,(double)delta);CHKERRQ(ierr);
+      ierr = PetscInfo(snes,"fnorm=%g, gnorm=%g, ynorm=%g\n",(double)fnorm,(double)gnorm,(double)ynorm);CHKERRQ(ierr);
+      ierr = PetscInfo(snes,"gpred=%g, rho=%g, delta=%g\n",(double)gpnorm,(double)rho,(double)delta);CHKERRQ(ierr);
 
       neP->delta = delta;
       if (rho > neP->sigma) break;
@@ -409,7 +409,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   }
 
   if (i == maxits) {
-    ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",maxits);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",maxits);CHKERRQ(ierr);
     if (!reason) reason = SNES_DIVERGED_MAX_IT;
   }
   ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);

@@ -80,7 +80,7 @@ static PetscErrorCode MatGetDiagonal_CF(Mat A,Vec X)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,&B);CHKERRQ(ierr);
-  if (!B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
+  PetscCheckFalse(!B,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
   ierr = MatGetDiagonal(B,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -92,7 +92,7 @@ static PetscErrorCode MatMult_CF(Mat A,Vec X,Vec Y)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,&B);CHKERRQ(ierr);
-  if (!B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
+  PetscCheckFalse(!B,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
   ierr = MatMult(B,X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -104,7 +104,7 @@ static PetscErrorCode MatMultTranspose_CF(Mat A,Vec X,Vec Y)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,&B);CHKERRQ(ierr);
-  if (!B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
+  PetscCheckFalse(!B,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
   ierr = MatMultTranspose(B,X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -116,7 +116,7 @@ static PetscErrorCode MatDestroy_CF(Mat A)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,&B);CHKERRQ(ierr);
-  if (!B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
+  PetscCheckFalse(!B,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing user matrix");
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_anytype_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -150,8 +150,8 @@ static PetscErrorCode MatProductNumericPhase_CF(Mat A, Mat B, Mat C, void *data)
   MatMatCF       *mmcfdata = (MatMatCF*)data;
 
   PetscFunctionBegin;
-  if (!mmcfdata) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing data");
-  if (!mmcfdata->numeric) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing numeric operation");
+  PetscCheckFalse(!mmcfdata,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing data");
+  PetscCheckFalse(!mmcfdata->numeric,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Missing numeric operation");
   /* the MATSHELL interface allows us to play with the product data */
   ierr = PetscNew(&C->product);CHKERRQ(ierr);
   C->product->type  = mmcfdata->ptype;
@@ -228,7 +228,7 @@ PetscErrorCode MatConvertFrom_Shell(Mat A,MatType newtype,MatReuse reuse,Mat *B)
 
   PetscFunctionBegin;
   ierr = PetscStrcmp(newtype,MATSHELL,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only conversion to MATSHELL");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only conversion to MATSHELL");
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     ierr = MatCreateShell(PetscObjectComm((PetscObject)A),A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,A,&M);CHKERRQ(ierr);

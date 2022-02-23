@@ -408,6 +408,7 @@ class BaseTestPlexHDF5(object):
                 vwr.pushFormat(format=informt)
                 plex.load(viewer=vwr)
                 plex.setOptionsPrefix("loaded_")
+                plex.distributeSetDefault(False)
                 plex.setFromOptions()
                 vwr.popFormat()
                 vwr.destroy()

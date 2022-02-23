@@ -229,6 +229,25 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
 }
 
 /*@C
+  PetscLogIsActive - Check if logging is currently in progress.
+
+  Not Collective
+
+  Output Parameter:
+. isActive - PETSC_TRUE if logging is in progress, PETSC_FALSE otherwise
+
+  Level: beginner
+
+.seealso: PetscLogDefaultBegin(), PetscLogAllBegin(), PetscLogSet()
+@*/
+PetscErrorCode PetscLogIsActive(PetscBool *isActive)
+{
+  PetscFunctionBegin;
+  *isActive = (PetscLogPLB && PetscLogPLE) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscLogDefaultBegin - Turns on logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
   This routine may be called more than once.
@@ -724,7 +743,7 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event,PetscBool collecti
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventRegLog(stageLog,&eventRegLog);CHKERRQ(ierr);
-  if (event < 0 || event > eventRegLog->numEvents) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid event id");
+  PetscCheckFalse(event < 0 || event > eventRegLog->numEvents,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid event id");
   eventRegLog->eventInfo[event].collective = collective;
   PetscFunctionReturn(0);
 }
@@ -1194,7 +1213,7 @@ PetscErrorCode  PetscLogDump(const char sname[])
   else sprintf(file, "Log.%d", rank);
   ierr = PetscFixFilename(file, fname);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd);CHKERRQ(ierr);
-  if ((rank == 0) && (!fd)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
+  PetscCheckFalse((rank == 0) && (!fd),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
   /* Output totals */
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flop %14e %16.8e\n", petsc_TotalFlops, _TotalTime);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0);CHKERRQ(ierr);
@@ -1420,21 +1439,25 @@ static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 
 static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm,FILE *fd)
 {
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
+#if defined(PETSC_HAVE_DEVICE)
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  if (use_gpu_aware_mpi) PetscFunctionReturn(0);
+  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  if (use_gpu_aware_mpi || size == 1) PetscFunctionReturn(0);
   ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                       WARNING!!!                       #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      # This code was compiled with GPU support and you've     #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      # created PETSc/GPU objects, but you intentionally used  #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      # -use_gpu_aware_mpi 0, such that PETSc had to copy data #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      # from GPU to CPU for communication. To get meaningfull  #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      # timing results, please use GPU-aware MPI instead.      #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   This code was compiled with GPU support and you've   #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   created PETSc/GPU objects, but you intentionally     #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   used -use_gpu_aware_mpi 0, requiring PETSc to copy   #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   additional data between the GPU and CPU. To obtain   #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   meaningful timing results on multi-rank runs, use    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #   GPU-aware MPI instead.                               #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else
@@ -1799,7 +1822,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         ierr = PetscFPrintf(comm, fd, "WARNING!!! Minimum time %g over all processors for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n",mint,name);
         mint = 0;
       }
-      if (minf < 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Minimum flop %g over all processors for %s is negative! Not possible!",minf,name);
+      PetscCheckFalse(minf < 0.0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Minimum flop %g over all processors for %s is negative! Not possible!",minf,name);
       totm *= 0.5; totml *= 0.5; totr /= size;
 
       if (maxC != 0) {
@@ -2007,7 +2030,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscStageLog     stageLog;
 
   PetscFunctionBegin;
-  if (!PetscLogPLB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
+  PetscCheckFalse(!PetscLogPLB,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use -log_view or PetscLogDefaultBegin() before calling this routine");
   /* Pop off any stages the user forgot to remove */
   lastStage = 0;
   ierr      = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -2018,7 +2041,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
     ierr      = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   }
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Currently can only view logging to ASCII");
+  PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Currently can only view logging to ASCII");
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO) {
     ierr = PetscLogView_Default(viewer);CHKERRQ(ierr);

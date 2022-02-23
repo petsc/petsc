@@ -166,7 +166,7 @@ static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1)
   PetscFunctionBeginUser;
   if (options->compare) {
     ierr = DMPlexEqual(dm0, dm1, &flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(options->comm, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
+    PetscCheckFalse(!flg,options->comm, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
     ierr = PetscPrintf(options->comm,"DMs equal\n");CHKERRQ(ierr);
   }
   if (options->compare_labels) {
@@ -274,7 +274,7 @@ static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(App
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = DMGetLabel(dm, LABEL_NAME, &label);CHKERRQ(ierr);
-  if (!label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label \"%s\" was not loaded", LABEL_NAME);
+  PetscCheckFalse(!label,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label \"%s\" was not loaded", LABEL_NAME);
   {
     PetscInt pStart, pEnd;
 
@@ -310,7 +310,7 @@ static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(App
   ierr = ISRestoreIndices(pointsIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&pointsIS);CHKERRQ(ierr);
   ierr = MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRMPI(ierr);
-  if (fail) SETERRQ1(comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly - see details above", LABEL_NAME);
+  PetscCheckFalse(fail,comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly - see details above", LABEL_NAME);
   PetscFunctionReturn(0);
 }
 
@@ -351,9 +351,9 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_check_all -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_distribute -dm_plex_interpolate
+    args: -dm_plex_interpolate
     args: -load_dm_plex_check_all
-    args: -use_low_level_functions {{0 1}} -load_dm_distribute -compare_boundary
+    args: -use_low_level_functions {{0 1}} -compare_boundary
     args: -outfile ex56_1.h5
     nsize: {{1 3}}
     test:
@@ -382,9 +382,9 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_check_all -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_distribute -dm_plex_interpolate
+    args: -dm_plex_interpolate
     args: -load_dm_plex_check_all
-    args: -use_low_level_functions -distribute_after_topo_load -compare_boundary
+    args: -use_low_level_functions -load_dm_distribute 0 -distribute_after_topo_load -compare_boundary
     args: -outfile ex56_2.h5
     nsize: 3
     test:
@@ -413,7 +413,7 @@ int main(int argc, char **argv)
     requires: !complex datafilespath
     args: -dm_plex_name plex
     args: -dm_plex_view_hdf5_storage_version 2.0.0
-    args: -dm_distribute -dm_plex_interpolate
+    args: -dm_plex_interpolate -load_dm_distribute 0
     args: -use_low_level_functions -compare_pre_post
     args: -outfile ex56_3.h5
     nsize: 3

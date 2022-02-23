@@ -276,7 +276,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex18.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-interpolate", "Type of mesh interpolation (none, create, after_create, after_distribute)", "ex18.c", interpTypes, 4, interpTypes[options->interpolate], &interp, NULL);CHKERRQ(ierr);
   options->interpolate = (InterpType) interp;
-  if (!options->distribute && options->interpolate == AFTER_DISTRIBUTE) SETERRQ(comm, PETSC_ERR_SUP, "-interpolate after_distribute  needs  -distribute 1");
+  PetscCheckFalse(!options->distribute && options->interpolate == AFTER_DISTRIBUTE,comm, PETSC_ERR_SUP, "-interpolate after_distribute  needs  -distribute 1");
   ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex18.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
   options->ncoords = 128;
   ierr = PetscOptionsScalarArray("-view_vertices_from_coords", "Print DAG points corresponding to vertices with given coordinates", "ex18.c", options->coords, &options->ncoords, NULL);CHKERRQ(ierr);
@@ -292,13 +292,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   dim = 3;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", "ex18.c", options->faces, &dim, &flg2);CHKERRQ(ierr);
   if (flg2) {
-    if (flg1 && dim != options->dim) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "specified -dim %D is not equal to length %D of -faces (note that -dim can be omitted)", options->dim, dim);
+    PetscCheckFalse(flg1 && dim != options->dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "specified -dim %D is not equal to length %D of -faces (note that -dim can be omitted)", options->dim, dim);
     options->dim = dim;
   }
   ierr = PetscOptionsString("-filename", "The mesh file", "ex18.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-rotate_interface_0", "Rotation (relative orientation) of interface on rank 0; implies -interpolate create -distribute 0", "ex18.c", options->ornt[0], &options->ornt[0], &options->testOrientIF,0);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-rotate_interface_1", "Rotation (relative orientation) of interface on rank 1; implies -interpolate create -distribute 0", "ex18.c", options->ornt[1], &options->ornt[1], &flg2,0);CHKERRQ(ierr);
-  if (flg2 != options->testOrientIF) SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
+  PetscCheckFalse(flg2 != options->testOrientIF,comm, PETSC_ERR_ARG_OUTOFRANGE, "neither or both -rotate_interface_0 -rotate_interface_1 must be set");
   if (options->testOrientIF) {
     PetscInt i;
     for (i=0; i<2; i++) {
@@ -328,11 +328,11 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  if (size > 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for <=2 processes",testNum);
+  PetscCheckFalse(size > 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for <=2 processes",testNum);
 
   numCells = 3;
   ierr = PetscOptionsGetInt(NULL, NULL, "-ncells", &numCells, NULL);CHKERRQ(ierr);
-  if (numCells < 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
+  PetscCheckFalse(numCells < 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test ncells must >=3",numCells);
 
   if (size == 1) {
     numVertices = numCells + 1;
@@ -373,7 +373,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
       }
     }
     break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
   } else { /* network_case = 1 */
     /* ----------------------- */
@@ -395,7 +395,7 @@ static PetscErrorCode CreateMesh_1D(MPI_Comm comm, PetscBool interpolate, AppCtx
       cells[0] = 3; cells[1] = 2;
     }
     break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
   }
   ierr = DMPlexCreateFromCellListParallelPetsc(comm, user->dim, numCells, numVertices, PETSC_DECIDE, numCorners, PETSC_FALSE, cells, user->dim, coords, NULL, NULL, dm);CHKERRQ(ierr);
@@ -414,7 +414,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   switch (testNum) {
   case 0:
-    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -438,11 +438,11 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
         for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
   case 1:
-    if (size != 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
+    PetscCheckFalse(size != 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -477,11 +477,11 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
         for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
   case 2:
-    if (size != 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
+    PetscCheckFalse(size != 3,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 3 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -516,10 +516,10 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscBool interpolate, App
         for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
   PetscFunctionReturn(0);
 }
@@ -535,7 +535,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   switch (testNum) {
   case 0:
-    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -559,10 +559,10 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscBool interpolate, App
         for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
   if (user->testOrientIF) {
     PetscInt ifp[] = {8, 6};
@@ -590,7 +590,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscBool interpolate, AppCtx
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   switch (testNum) {
   case 0:
-    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
       case 0:
       {
@@ -614,10 +614,10 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscBool interpolate, AppCtx
         for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
       break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
   PetscFunctionReturn(0);
 }
@@ -633,7 +633,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx 
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   switch (testNum) {
   case 0:
-    if (size != 2) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
+    PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Test mesh %d only for 2 processes", testNum);
     switch (rank) {
     case 0:
     {
@@ -657,10 +657,10 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscBool interpolate, AppCtx 
       for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
     }
     break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
   break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
   }
   PetscFunctionReturn(0);
 }
@@ -700,7 +700,7 @@ static PetscErrorCode CreateMeshFromFile(MPI_Comm comm, AppCtx *user, DM *dm, DM
     ierr = PetscOptionsSetValue(NULL, "-dm_plex_hdf5_force_sequential", NULL);CHKERRQ(ierr);
     ierr = DMPlexCreateFromFile(comm, filename, "ex18_plex", interpCreate, serialDM);CHKERRQ(ierr);
     ierr = DMPlexIsDistributed(*serialDM, &distributed);CHKERRQ(ierr);
-    if (distributed) SETERRQ(comm, PETSC_ERR_PLIB, "unable to create a serial DM from file");
+    PetscCheckFalse(distributed,comm, PETSC_ERR_PLIB, "unable to create a serial DM from file");
   }
   ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -749,11 +749,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
       break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", user->dim);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %D", user->dim);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
-  if (user->ncoords % user->dim) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %D must be divisable by spatial dimension %D", user->ncoords, user->dim);
+  PetscCheckFalse(user->ncoords % user->dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "length of coordinates array %D must be divisable by spatial dimension %D", user->ncoords, user->dim);
   ierr = PetscObjectSetName((PetscObject) *dm, "Original Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
 
@@ -834,6 +834,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
 
   ierr = PetscObjectSetName((PetscObject) *dm, "Parallel Mesh");CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
 
@@ -844,12 +845,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #define ps2d(number) ((double) PetscRealPart(number))
-PETSC_STATIC_INLINE PetscErrorCode coord2str(char buf[], size_t len, PetscInt dim, const PetscScalar coords[], PetscReal tol)
+static inline PetscErrorCode coord2str(char buf[], size_t len, PetscInt dim, const PetscScalar coords[], PetscReal tol)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dim > 3) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "dim must be less than or equal 3");
+  PetscCheckFalse(dim > 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "dim must be less than or equal 3");
   if (tol >= 1e-3) {
     switch (dim) {
       case 1: ierr = PetscSNPrintf(buf,len,"(%12.3f)",ps2d(coords[0]));CHKERRQ(ierr);
@@ -930,7 +931,7 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
     if (d < depth-1) {
       ierr = DMPlexExpandedConesToFaces_Private(dm, iss[d], sects[d], &checkIS);CHKERRQ(ierr);
       ierr = ISEqualUnsorted(checkIS, iss[d+1], &flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PetscObjectComm((PetscObject) checkIS), PETSC_ERR_PLIB, "DMPlexExpandedConesToFaces_Private produced wrong IS");
+      PetscCheckFalse(!flg,PetscObjectComm((PetscObject) checkIS), PETSC_ERR_PLIB, "DMPlexExpandedConesToFaces_Private produced wrong IS");
       ierr = ISDestroy(&checkIS);CHKERRQ(ierr);
     }
   }
@@ -953,7 +954,7 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
   ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &n1);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &start, &end);CHKERRQ(ierr);
-  if (n != n1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "IS size = %D != %D = section storage size", n, n1);
+  PetscCheckFalse(n != n1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "IS size = %D != %D = section storage size", n, n1);
   ierr = ISGetIndices(is, &arr);CHKERRQ(ierr);
   ierr = PetscMalloc1(end-start, &newarr);CHKERRQ(ierr);
   for (q=start; q<end; q++) {
@@ -969,7 +970,7 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
       for (i=0; i<ncone; i++) if (cone[i] < 0) {p = -1; break;}
       if (p >= 0) {
         ierr = DMPlexGetJoin(dm, ncone, cone, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);
-        if (numCoveredPoints > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "more than one covered points for section point %D",q);
+        PetscCheckFalse(numCoveredPoints > 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "more than one covered points for section point %D",q);
         if (numCoveredPoints) p = coveredPoints[0];
         else                  p = -2;
         ierr = DMPlexRestoreJoin(dm, ncone, cone, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);
@@ -1025,7 +1026,7 @@ static PetscErrorCode DMLabelViewFromOptionsOnComm_Private(DMLabel label, const 
 }
 
 /* TODO: this is hotfixing DMLabelGetStratumIS() - it should be fixed systematically instead */
-PETSC_STATIC_INLINE PetscErrorCode DMLabelGetStratumISOnComm_Private(DMLabel label, PetscInt value, MPI_Comm comm, IS *is)
+static inline PetscErrorCode DMLabelGetStratumISOnComm_Private(DMLabel label, PetscInt value, MPI_Comm comm, IS *is)
 {
   IS                tmpis;
   PetscErrorCode    ierr;
@@ -1117,7 +1118,7 @@ static PetscErrorCode DMPlexSetOrientInterface_Private(DM dm, PetscBool enable)
   }
   if (PetscDefined(USE_DEBUG)) {
     ierr = PetscOptionsGetBool(options, prefix, opt, &flg, &set);CHKERRQ(ierr);
-    if (PetscUnlikely(set && flg != enable)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "PetscOptionsSetValue did not have the desired effect");
+    PetscCheckFalse(set && flg != enable,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "PetscOptionsSetValue did not have the desired effect");
   }
   PetscFunctionReturn(0);
 }
@@ -1146,7 +1147,7 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = DMPlexIsDistributed(dm, &flg);CHKERRQ(ierr);
-  if (flg) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "serial DM (all points on one rank) needed");
+  PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "serial DM (all points on one rank) needed");
 
   /* interpolate serial DM if not yet interpolated */
   ierr = DMPlexIsInterpolatedCollective(dm, &intp);CHKERRQ(ierr);
@@ -1176,7 +1177,7 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
       IS is0;
       ierr = DMPlexExpandedVerticesCoordinatesToFaces_Private(idm, bnd0, &is0);CHKERRQ(ierr);
       ierr = ISEqual(is0, boundary_is, &flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMPlexExpandedVerticesCoordinatesToFaces_Private produced a wrong IS");
+      PetscCheckFalse(!flg,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMPlexExpandedVerticesCoordinatesToFaces_Private produced a wrong IS");
       ierr = ISDestroy(&is0);CHKERRQ(ierr);
     }
   } else {
@@ -1243,7 +1244,7 @@ static PetscErrorCode DMPlexGetInterfaceFaces_Private(DM ipdm, IS boundary_faces
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ipdm, &comm);CHKERRQ(ierr);
   ierr = DMPlexIsInterpolatedCollective(ipdm, &intp);CHKERRQ(ierr);
-  if (intp != DMPLEX_INTERPOLATED_FULL) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
+  PetscCheckFalse(intp != DMPLEX_INTERPOLATED_FULL,comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
 
   /* get ipdm partition boundary (partBoundary) */
   ierr = DMLabelCreate(PETSC_COMM_SELF, partBoundaryName, &label);CHKERRQ(ierr);
@@ -1273,7 +1274,7 @@ static PetscErrorCode DMPlexComputeCompleteInterface_Private(DM ipdm, IS interfa
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ipdm, &comm);CHKERRQ(ierr);
   ierr = DMPlexIsInterpolatedCollective(ipdm, &intp);CHKERRQ(ierr);
-  if (intp != DMPLEX_INTERPOLATED_FULL) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
+  PetscCheckFalse(intp != DMPLEX_INTERPOLATED_FULL,comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
 
   ierr = DMLabelCreate(PETSC_COMM_SELF, interfaceName, &label);CHKERRQ(ierr);
   ierr = DMAddLabel(ipdm, label);CHKERRQ(ierr);
@@ -1331,7 +1332,7 @@ static PetscErrorCode PointSFGetInterfacePoints_Private(PetscSF pointSF, IS *is)
   PetscFunctionReturn(0);
 }
 
-#define CHKERRMY(ierr) do {if (PetscUnlikely(ierr)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PointSF is wrong. Unable to show details!");} while (0)
+#define CHKERRMY(ierr) do {PetscCheckFalse(ierr,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PointSF is wrong. Unable to show details!");} while (0)
 
 static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewer v)
 {
@@ -1403,7 +1404,7 @@ static PetscErrorCode ViewPointsWithType(DM dm, IS points, PetscViewer v)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for ASCII viewer");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for ASCII viewer");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v), &rank);CHKERRMPI(ierr);
   ierr = PetscViewerASCIIPushSynchronized(v);CHKERRQ(ierr);
   ierr = ISGetLocalSize(points, &npoints);CHKERRQ(ierr);
@@ -1437,7 +1438,7 @@ static PetscErrorCode DMPlexComparePointSFWithInterface_Private(DM ipdm, IS inte
   if (!pointsf) {
     PetscInt N=0;
     if (interface_is) {ierr = ISGetSize(interface_is, &N);CHKERRQ(ierr);}
-    if (N) SETERRQ(comm, PETSC_ERR_PLIB, "interface_is should be NULL or empty for PointSF being NULL");
+    PetscCheckFalse(N,comm, PETSC_ERR_PLIB, "interface_is should be NULL or empty for PointSF being NULL");
     PetscFunctionReturn(0);
   }
 

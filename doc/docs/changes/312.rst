@@ -8,7 +8,7 @@ Changes: 3.12
 -  PetscRoundReal() has been removed, since the math routine round()
    is not supported on all systems: perhaps use PetscCeilReal() or
    PetscFloorReal()<\li>
--  The legacy and cmake compile systems (make all-legacy and
+-  The legacy and CMake compile systems (make all-legacy and
    all-cmake) are removed
 -  make gnumake is now make libs
 -  PetscArraycmp() should be used instead of PetscMemcmp(), it takes
@@ -122,7 +122,7 @@ Changes: 3.12
    missing diagonal entries. (Previously it would put 0 into any
    diagonal entry that was missing)
 -  Renamed MatComputeExplicitOperator() into MatComputeOperator() and
-   MatComputeExplicitOperatorTranpose() into
+   MatComputeExplicitOperatorTranspose() into
    MatComputeOperatorTranspose(). Added extra argument to select the
    desired matrix type
 -  MatLoad() now supports loading dense matrices from HDF5/MAT files.

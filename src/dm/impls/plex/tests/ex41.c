@@ -22,7 +22,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Parallel Mesh Adaptation Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-metric", "Flag for metric refinement", "ex41.c", options->metric, &options->metric, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-refcell", "The cell to be refined", "ex41.c", options->refcell, &n, NULL);CHKERRQ(ierr);
-  if (n && n != size) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Only gave %D cells to refine, must give one for all %D processes", n, size);
+  PetscCheckFalse(n && n != size,comm, PETSC_ERR_ARG_SIZ, "Only gave %D cells to refine, must give one for all %D processes", n, size);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -92,6 +92,6 @@ int main(int argc, char **argv)
       suffix: 2
       requires: triangle
       nsize: 2
-      args: -refcell 2,-1 -dm_distribute -petscpartitioner_type simple -dm_view -adapt_dm_view
+      args: -refcell 2,-1 -petscpartitioner_type simple -dm_view -adapt_dm_view
 
 TEST*/

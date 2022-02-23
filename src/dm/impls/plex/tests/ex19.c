@@ -155,7 +155,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
         h = user->hmax*PetscAbsReal(((PetscReal) 1.0)-PetscExpReal(-PetscAbsScalar(vcoords[0]-(PetscReal)0.5))) + user->hmin;
         break;
       default:
-        SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1, 2 or 3, cannot be %d", user->metOpt);
+        SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1, 2 or 3, cannot be %d", user->metOpt);
       }
       ierr = DMPlexPointLocalRef(dm, v, met, &pmet);CHKERRQ(ierr);
       for (i = 0; i < dim; ++i) {
@@ -324,7 +324,7 @@ int main (int argc, char * argv[]) {
   # Pragmatic hangs for simple partitioner
   testset:
     requires: parmetis
-    args: -dm_plex_box_faces 2,2 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
+    args: -dm_plex_box_faces 2,2 -dm_adaptor pragmatic -petscpartitioner_type parmetis -met 2 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
 
     test:
       suffix: 4
@@ -337,13 +337,13 @@ int main (int argc, char * argv[]) {
     requires: parmetis
     suffix: 6
     nsize: 2
-    args: -dm_plex_dim 3 -dm_plex_box_faces 9,9,9 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis \
+    args: -dm_plex_dim 3 -dm_plex_box_faces 9,9,9 -dm_adaptor pragmatic -petscpartitioner_type parmetis \
           -met 0 -hmin 0.01 -hmax 0.03 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
   test:
     requires: parmetis
     suffix: 7
     nsize: 2
-    args: -dm_plex_box_faces 19,19 -dm_adaptor pragmatic -dm_distribute -petscpartitioner_type parmetis \
+    args: -dm_plex_box_faces 19,19 -dm_adaptor pragmatic -petscpartitioner_type parmetis \
           -met 2 -hmax 0.5 -hmin 0.001 -init_dm_view -adapt_dm_view -dm_adaptor pragmatic
   test:
     suffix: proj_0

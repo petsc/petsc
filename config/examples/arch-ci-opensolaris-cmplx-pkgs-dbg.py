@@ -23,7 +23,8 @@ configure_options = [
   '--download-scalapack',
   '--download-mumps',
   '--download-hdf5',
-  '--download-suitesparse',
+  # requires C++ compiler
+  #'--download-suitesparse',
   '--download-chaco',
   # opensolaris throws warning
   # CC: Warning: Option -std=c++03 passed to ld, if ld is invoked, ignored otherwise

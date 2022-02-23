@@ -163,7 +163,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
       case IS_COLORING_GLOBAL:
         ierr = MatFDColoringSetFunction(fdcoloring, (PetscErrorCode (*)(void)) TSComputeIFunction_DMLocal, dmlocalts);CHKERRQ(ierr);
         break;
-      default: SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
+      default: SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
       }
       ierr = PetscObjectSetOptionsPrefix((PetscObject) fdcoloring, ((PetscObject) dm)->prefix);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);

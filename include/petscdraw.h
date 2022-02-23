@@ -92,7 +92,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw,PetscObject,const
 .seealso: PetscDrawPointPixel(), PetscDrawPoint(), PetscDrawLine(), PetscDrawTriangle(), PetscDrawRectangle()
 
 M*/
-PETSC_STATIC_INLINE int PetscDrawRealToColor(PetscReal value,PetscReal min,PetscReal max)
+static inline int PetscDrawRealToColor(PetscReal value,PetscReal min,PetscReal max)
 {
   value = PetscClipInterval(value,min,max);
   return PETSC_DRAW_BASIC_COLORS + (int)((255-PETSC_DRAW_BASIC_COLORS)*(value-min)/(max-min));

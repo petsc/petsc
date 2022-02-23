@@ -12,7 +12,6 @@ class Configure(config.package.CMakePackage):
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
     self.liblist          = [['libstrumpack.a']]
-    self.minCxxVersion    = 'c++11'
     self.buildLanguages   = ['Cxx','FC']
     self.hastests         = 1
     return

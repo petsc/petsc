@@ -6,10 +6,10 @@
 
 typedef struct _TaoLineSearchOps *TaoLineSearchOps;
 struct _TaoLineSearchOps {
-    PetscErrorCode (*computeobjective)(TaoLineSearch, Vec, PetscReal*, void*);
-    PetscErrorCode (*computegradient)(TaoLineSearch, Vec, Vec, void*);
-    PetscErrorCode (*computeobjectiveandgradient)(TaoLineSearch, Vec, PetscReal *, Vec, void*);
-    PetscErrorCode (*computeobjectiveandgts)(TaoLineSearch, Vec, Vec, PetscReal*, PetscReal*,void*);
+    PetscErrorCode (*computeobjective)(TaoLineSearch,Vec,PetscReal*,void*);
+    PetscErrorCode (*computegradient)(TaoLineSearch,Vec,Vec,void*);
+    PetscErrorCode (*computeobjectiveandgradient)(TaoLineSearch,Vec,PetscReal*,Vec,void*);
+    PetscErrorCode (*computeobjectiveandgts)(TaoLineSearch,Vec,Vec,PetscReal*,PetscReal*,void*);
     PetscErrorCode (*setup)(TaoLineSearch);
     PetscErrorCode (*apply)(TaoLineSearch,Vec,PetscReal*,Vec,Vec);
     PetscErrorCode (*view)(TaoLineSearch,PetscViewer);

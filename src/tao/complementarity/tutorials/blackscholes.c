@@ -231,7 +231,7 @@ int main(int argc, char **argv)
     x_array[i] = user.Vt1[i-gxs+xs];
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
   /* Set data structure */
-  ierr = TaoSetInitialVector(tao, x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao, x);CHKERRQ(ierr);
 
   /* Set routines for function and Jacobian evaluation */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);

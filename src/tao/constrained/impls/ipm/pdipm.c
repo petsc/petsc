@@ -665,7 +665,7 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
 
   if (npos < pdipm->Nx+pdipm->Nci) {
     pdipm->deltaw = PetscMax(pdipm->lastdeltaw/3, 1.e-4*PETSC_MACHINE_EPSILON);
-    ierr = PetscInfo5(tao,"Test reduced deltaw=%g; previous MatInertia: nneg %D, nzero %D, npos %D(<%D)\n",(double)pdipm->deltaw,nneg,nzero,npos,pdipm->Nx+pdipm->Nci);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Test reduced deltaw=%g; previous MatInertia: nneg %D, nzero %D, npos %D(<%D)\n",(double)pdipm->deltaw,nneg,nzero,npos,pdipm->Nx+pdipm->Nci);CHKERRQ(ierr);
     ierr = TaoSNESJacobian_PDIPM(snes,X, pdipm->K, pdipm->K, tao);CHKERRQ(ierr);
     ierr = PCSetUp(pc);CHKERRQ(ierr);
     ierr = MatGetInertia(Factor,&nneg,&nzero,&npos);CHKERRQ(ierr);
@@ -673,16 +673,16 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
     if (npos < pdipm->Nx+pdipm->Nci) {
       pdipm->deltaw = pdipm->lastdeltaw; /* in case reduction update does not help, this prevents that step from impacting increasing update */
       while (npos < pdipm->Nx+pdipm->Nci && pdipm->deltaw <= 1./PETSC_SMALL) { /* increase deltaw */
-        ierr = PetscInfo5(tao,"  deltaw=%g fails, MatInertia: nneg %D, nzero %D, npos %D(<%D)\n",(double)pdipm->deltaw,nneg,nzero,npos,pdipm->Nx+pdipm->Nci);CHKERRQ(ierr);
+        ierr = PetscInfo(tao,"  deltaw=%g fails, MatInertia: nneg %D, nzero %D, npos %D(<%D)\n",(double)pdipm->deltaw,nneg,nzero,npos,pdipm->Nx+pdipm->Nci);CHKERRQ(ierr);
         pdipm->deltaw = PetscMin(8*pdipm->deltaw,PetscPowReal(10,20));
         ierr = TaoSNESJacobian_PDIPM(snes,X, pdipm->K, pdipm->K, tao);CHKERRQ(ierr);
         ierr = PCSetUp(pc);CHKERRQ(ierr);
         ierr = MatGetInertia(Factor,&nneg,&nzero,&npos);CHKERRQ(ierr);CHKERRQ(ierr);
       }
 
-      if (pdipm->deltaw >= 1./PETSC_SMALL) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_CONV_FAILED,"Reached maximum delta w will not converge, try different initial x0");
+      PetscCheckFalse(pdipm->deltaw >= 1./PETSC_SMALL,PetscObjectComm((PetscObject)tao),PETSC_ERR_CONV_FAILED,"Reached maximum delta w will not converge, try different initial x0");
 
-      ierr = PetscInfo1(tao,"Updated deltaw %g\n",(double)pdipm->deltaw);CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Updated deltaw %g\n",(double)pdipm->deltaw);CHKERRQ(ierr);
       pdipm->lastdeltaw = pdipm->deltaw;
       pdipm->deltaw     = 0.0;
     }
@@ -694,7 +694,7 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
     } else {
       pdipm->deltac = pdipm->deltac*PetscPowReal(pdipm->mu,.25);
     }
-    ierr = PetscInfo4(tao,"Updated deltac=%g, MatInertia: nneg %D, nzero %D(!=0), npos %D\n",(double)pdipm->deltac,nneg,nzero,npos);CHKERRQ(ierr);
+    ierr = PetscInfo(tao,"Updated deltac=%g, MatInertia: nneg %D, nzero %D(!=0), npos %D\n",(double)pdipm->deltac,nneg,nzero,npos);CHKERRQ(ierr);
     ierr = TaoSNESJacobian_PDIPM(snes,X, pdipm->K, pdipm->K, tao);CHKERRQ(ierr);
     ierr = PCSetUp(pc);CHKERRQ(ierr);
     ierr = MatGetInertia(Factor,&nneg,&nzero,&npos);CHKERRQ(ierr);
@@ -833,7 +833,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
   Vec                dummy;
 
   PetscFunctionBegin;
-  if (!tao->constraints_equality && !tao->constraints_inequality) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_NULL,"Equality and inequality constraints are not set. Either set them or switch to a different algorithm");
+  PetscCheckFalse(!tao->constraints_equality && !tao->constraints_inequality,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_NULL,"Equality and inequality constraints are not set. Either set them or switch to a different algorithm");
 
   /* Initialize all variables */
   ierr = TaoPDIPMInitializeSolution(tao);CHKERRQ(ierr);
@@ -869,7 +869,7 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao)
     }
 
     /* Check TAO convergence */
-    if (PetscIsInfOrNanReal(pdipm->obj)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"User-provided compute function generated Inf or NaN");
+    PetscCheckFalse(PetscIsInfOrNanReal(pdipm->obj),PETSC_COMM_SELF,PETSC_ERR_SUP,"User-provided compute function generated Inf or NaN");
   }
   PetscFunctionReturn(0);
 }
@@ -935,7 +935,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
   }
 
   /* (2) Get sizes */
-  /* Size of vector x - This is set by TaoSetInitialVector */
+  /* Size of vector x - This is set by TaoSetSolution */
   ierr = VecGetSize(tao->solution,&pdipm->Nx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(tao->solution,&pdipm->nx);CHKERRQ(ierr);
 
@@ -1244,7 +1244,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
       row = rstart + pdipm->off_lambdae + pdipm->ng + i;
 
       ierr = MatGetRow(pdipm->Jce_xfixed,i+Jcrstart,&nc,&cols,NULL);CHKERRQ(ierr);
-      if (nc != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nc != 1");
+      PetscCheckFalse(nc != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"nc != 1");
 
       proc = 0;
       j    = 0;
@@ -1284,7 +1284,7 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao)
     row = rstart + pdipm->off_lambdai + pdipm->nh + i;
 
     ierr = MatGetRow(pdipm->Jci_xb,i+Jcrstart,&nc,&cols,NULL);CHKERRQ(ierr);
-    if (nc != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nc != 1");
+    PetscCheckFalse(nc != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"nc != 1");
     proc = 0;
     for (j=0; j < nc; j++) {
       while (cols[j] >= cranges[proc+1]) proc++;

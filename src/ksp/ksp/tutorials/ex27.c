@@ -142,7 +142,7 @@ int main(int argc,char **args)
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m1,&n1);CHKERRQ(ierr);
-    if (m1 != m || n1 != n) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"resulting sizes differ from demanded ones: %D %D != %D %D",m1,n1,m,n);
+    PetscCheckFalse(m1 != m || n1 != n,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"resulting sizes differ from demanded ones: %D %D != %D %D",m1,n1,m,n);
   }
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
 

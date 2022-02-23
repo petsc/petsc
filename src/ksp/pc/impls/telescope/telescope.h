@@ -35,13 +35,13 @@ typedef struct {
   PetscInt        *start_i_re,*start_j_re,*start_k_re;
 } PC_Telescope_DMDACtx;
 
-PETSC_STATIC_INLINE PetscBool PetscSubcomm_isActiveRank(PetscSubcomm scomm)
+static inline PetscBool PetscSubcomm_isActiveRank(PetscSubcomm scomm)
 {
   if (scomm->color == 0) return(PETSC_TRUE);
   else return(PETSC_FALSE);
 }
 
-PETSC_STATIC_INLINE PetscBool PCTelescope_isActiveRank(PC_Telescope sred)
+static inline PetscBool PCTelescope_isActiveRank(PC_Telescope sred)
 {
   if (sred->psubcomm) return(PetscSubcomm_isActiveRank(sred->psubcomm));
   else {

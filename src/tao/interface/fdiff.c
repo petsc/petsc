@@ -43,9 +43,9 @@ static PetscErrorCode Fsnes(SNES snes,Vec X,Vec G,void* ctx)
   in large-scale applications, It can be useful in checking the
   correctness of a user-provided gradient.  Use the tao method TAOTEST
   to get an indication of whether your gradient is correct.
-  This finite difference gradient evaluation can be set using the routine TaoSetGradientRoutine() or by using the command line option -tao_fd_gradient
+  This finite difference gradient evaluation can be set using the routine TaoSetGradient() or by using the command line option -tao_fd_gradient
 
-.seealso: TaoSetGradientRoutine()
+.seealso: TaoSetGradient()
 @*/
 PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
 {
@@ -112,7 +112,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec Xin,Vec G,void *dummy)
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Hessian.
 
-.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESComputeJacobianDefault(), TaoSetGradientRoutine(), TaoDefaultComputeGradient()
+.seealso: TaoSetHessian(), TaoDefaultComputeHessianColor(), SNESComputeJacobianDefault(), TaoSetGradient(), TaoDefaultComputeGradient()
 @*/
 PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 {
@@ -164,7 +164,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 
    Level: advanced
 
-.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor(), TaoSetGradientRoutine()
+.seealso: TaoSetHessian(), TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor(), TaoSetGradient()
 @*/
 PetscErrorCode TaoDefaultComputeHessianColor(Tao tao,Vec V,Mat H,Mat B,void *ctx)
 {
@@ -189,7 +189,7 @@ PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao,Vec X,Mat H,Mat B,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (B && B != H) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Preconditioning Hessian matrix");
+  PetscCheckFalse(B && B != H,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Preconditioning Hessian matrix");
   ierr = MatAssembled(H, &assembled);CHKERRQ(ierr);
   if (!assembled) {
     ierr = VecGetSize(X,&N);CHKERRQ(ierr);

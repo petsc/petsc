@@ -2,15 +2,15 @@ About This Manual
 -----------------
 
 This manual describes the use of the Portable, Extensible Toolkit for Scientific Computation
-(PETSc) for the numerical solution of
+(PETSc) and the Toolkit for Advanced Optimization (TAO) for the numerical solution of
 partial differential equations and related problems on high-performance
-computers. PETSc is a suite of data structures and routines that provide the
+computers. PETSc/TAO is a suite of data structures and routines that provide the
 building blocks for the implementation of large-scale application codes
 on parallel (and serial) computers. PETSc uses the MPI standard for all
 distributed memory communication.
 
-PETSc includes a large suite of parallel linear solvers, nonlinear
-solvers, and time integrators that may be used in application codes
+PETSc/TAO includes a large suite of parallel linear solvers, nonlinear
+solvers, time integrators, and optimization that may be used in application codes
 written in Fortran, C, C++, and Python (via petsc4py; see :any:`sec-getting-started` ). PETSc
 provides many of the mechanisms needed within parallel application
 codes, such as parallel matrix and vector assembly routines. The library
@@ -48,5 +48,5 @@ of many application codes simpler than “rolling them” yourself.
 
 Since PETSc is under continued development, small changes in usage and
 calling sequences of routines will occur. PETSc has been supported for twenty-five years; see
-:doc:`/community/mailing` for
+:doc:`mailing list information on our website </community/mailing>` for
 information on contacting support.

@@ -378,7 +378,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
@@ -446,7 +446,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
@@ -521,7 +521,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
@@ -632,7 +632,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       ierr = DMSetLabelValue(*dm, "material", 3, 2);CHKERRQ(ierr);
     }
     break;
-    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
@@ -733,9 +733,10 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     break;
   default:
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
   }
   ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMGetLabel(*dm, "material", &matLabel);CHKERRQ(ierr);
   if (matLabel) {
@@ -766,6 +767,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "faulted_");CHKERRQ(ierr);
     ierr = DMViewFromOptions(*dm, NULL, "-dm_view_pre");CHKERRQ(ierr);
+    ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "fault2", &faultLabel);CHKERRQ(ierr);
@@ -792,7 +794,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           ierr = PetscArraycpy(sizes,  triSizes_p2, 2);CHKERRQ(ierr);
           ierr = PetscArraycpy(points, triPoints_p2, 3);CHKERRQ(ierr);break;}
         default:
-          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
       } else if (dim == 2 && !cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -811,7 +813,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           ierr = PetscArraycpy(sizes,  quadSizes_p2, 2);CHKERRQ(ierr);
           ierr = PetscArraycpy(points, quadPoints_p2, 2);CHKERRQ(ierr);break;}
         default:
-          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -823,7 +825,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           ierr = PetscArraycpy(sizes,  tetSizes_p2, 2);CHKERRQ(ierr);
           ierr = PetscArraycpy(points, tetPoints_p2, 3);CHKERRQ(ierr);break;}
         default:
-          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && !cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -835,7 +837,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           ierr = PetscArraycpy(sizes,  hexSizes_p2, 2);CHKERRQ(ierr);
           ierr = PetscArraycpy(points, hexPoints_p2, 3);CHKERRQ(ierr);break;}
         default:
-          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition");
     }
@@ -872,6 +874,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = CreateFaultLabel(*dm);CHKERRQ(ierr);
   ierr = CreateDiscretization(*dm, user);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view_pre");CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);

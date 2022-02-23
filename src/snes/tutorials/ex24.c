@@ -299,7 +299,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetExactSolution(ds, 1, quartic_u, user);CHKERRQ(ierr);
       ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "Flux condition", label, 1, &id, 0, 0, NULL, (void (*)(void)) quartic_q, NULL, user, NULL);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid exact solution type %s", SolTypeNames[PetscMin(user->solType, SOL_UNKNOWN)]);
+    default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid exact solution type %s", SolTypeNames[PetscMin(user->solType, SOL_UNKNOWN)]);
   }
   PetscFunctionReturn(0);
 }

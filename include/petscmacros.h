@@ -24,16 +24,11 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #if defined(__cplusplus)
 #  define PETSC_RESTRICT PETSC_CXX_RESTRICT
 #else
-#  define PETSC_RESTRICT PETSC_C_RESTRICT
+#  define PETSC_RESTRICT restrict
 #endif
 
-#if defined(__cplusplus)
-#  define PETSC_INLINE PETSC_CXX_INLINE
-#else
-#  define PETSC_INLINE PETSC_C_INLINE
-#endif
-
-#define PETSC_STATIC_INLINE static PETSC_INLINE
+#define PETSC_INLINE PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_INLINE is deprecated (since version 3.17)\"") inline
+#define PETSC_STATIC_INLINE PETSC_DEPRECATED_MACRO("GCC warning \"PETSC_STATIC_INLINE is deprecated (since version 3.17)\"") static inline
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
@@ -181,34 +176,7 @@ M*/
 
   Level: beginner
 
-.seealso: PETSC_CONSTEXPR, PETSC_CONSTEXPR_14, PETSC_NOEXCEPT, PETSC_NODISCARD
-MC*/
-
-/*MC
-  PETSC_CONSTEXPR - C++ constexpr
-
-  Notes:
-  Equivalent to constexpr when using a C++ compiler that supports C++11. Expands to nothing
-  if the C++ compiler does not suppport C++11 or when not compiling with a C++ compiler. Note
-  that this cannot be used in cases where an empty expansion would result in invalid code. It
-  is safe to use this in C source files.
-
-  Fortran Notes:
-  Not available in Fortran
-
-  Example Usage:
-.vb
-  PETSC_CONSTEXPR int factorial(int n)
-  {
-    return n <= 1 ? 1 : (n * factorial(n - 1));
-  }
-
-  PETSC_CONSTEXPR auto foo = factorial(5); // foo = 125, deduced type of int
-.ve
-
-  Level: beginner
-
-.seealso: PETSC_CONSTEXPR_14, PETSC_NOEXCEPT, PETSC_NULLPTR, PETSC_NODISCARD
+.seealso: PETSC_CONSTEXPR_14, PETSC_NODISCARD
 MC*/
 
 /*MC
@@ -238,30 +206,7 @@ MC*/
 
   Level: beginner
 
-.seealso: PETSC_CONSTEXPR, PETSC_NULLPTR, PETSC_NOEXCEPT, PETSC_NODISCARD
-MC*/
-
-/*MC
-  PETSC_NOEXCEPT - C++ noexcept
-
-  Notes:
-  Equivalent to noexcept when using a C++ compiler, and nothing otherwise. It is safe to use
-  this in C source files.
-
-  Fortran Notes:
-  Not available in Fortran
-
-  Example Usage:
-.vb
-  int factorial(int n) PETSC_NOEXCEPT
-  {
-    return n <= 1 ? 1 : (n * factorial(n - 1));
-  }
-.ve
-
-  Level: beginner
-
-.seealso: PETSC_NULLPTR, PETSC_CONSTEXPR, PETSC_CONSTEXPR_14, PETSC_NODISCARD
+.seealso: PETSC_NULLPTR, PETSC_NODISCARD
 MC*/
 
 /*MC
@@ -304,25 +249,19 @@ MC*/
 
   Level: beginner
 
-.seealso: PETSC_NULLPTR, PETSC_CONSTEXPR, PETSC_CONSTEXPR_14, PETSC_NOEXCEPT
+.seealso: PETSC_NULLPTR, PETSC_CONSTEXPR_14
 MC*/
 
 /* C++11 features */
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX11)
-#  define PETSC_NULLPTR             nullptr
-#  define PETSC_CONSTEXPR           constexpr
-#  define PETSC_NOEXCEPT            noexcept
-#  define PETSC_NOEXCEPT_ARG(cond_) noexcept(cond_)
+#if defined(__cplusplus)
+#  define PETSC_NULLPTR nullptr
 #else
-#  define PETSC_NULLPTR             NULL
-#  define PETSC_CONSTEXPR
-#  define PETSC_NOEXCEPT
-#  define PETSC_NOEXCEPT_ARG(cond_)
+#  define PETSC_NULLPTR NULL
 #endif
 
 /* C++14 features */
-#if defined(PETSC_HAVE_CXX_DIALECT_CXX14)
-#  define PETSC_CONSTEXPR_14 PETSC_CONSTEXPR
+#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX14)
+#  define PETSC_CONSTEXPR_14 constexpr
 #else
 #  define PETSC_CONSTEXPR_14
 #endif
@@ -331,7 +270,7 @@ MC*/
 /* We met cases that the host CXX compiler (say mpicxx) supports C++17, but nvcc does not
  * agree, even with -ccbin mpicxx! */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX17) && (!defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_CUDA_DIALECT_CXX17))
-#  define PETSC_NODISCARD    [[nodiscard]]
+#  define PETSC_NODISCARD [[nodiscard]]
 #else
 #  if PetscHasAttribute(warn_unused_result)
 #    define PETSC_NODISCARD __attribute__((warn_unused_result))
@@ -342,6 +281,13 @@ MC*/
 
 #include <petscversion.h>
 #define PETSC_AUTHOR_INFO  "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n https://petsc.org/\n"
+
+/* designated initializers since C99 and C++20, MSVC never supports them though */
+#if defined(_MSC_VER) || (defined(__cplusplus) && (__cplusplus < 202002L))
+#  define PetscDesignatedInitializer(name,...) __VA_ARGS__
+#else
+#  define PetscDesignatedInitializer(name,...) .name = __VA_ARGS__
+#endif
 
 /*MC
   PetscUnlikely - Hints the compiler that the given condition is usually FALSE
@@ -414,15 +360,6 @@ M*/
 #  define PetscLikely(cond)   (cond)
 #endif
 
-#if defined(__GNUC__)
-/* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
-#  define PetscUnreachable_() __builtin_unreachable()
-#elif defined(_MSC_VER) /* MSVC */
-#  define PetscUnreachable_() __assume(0)
-#else /* ??? */
-#  define PetscUnreachable_() SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Code path explicitly marked as unreachable executed")
-#endif
-
 /*MC
   PetscUnreachable() - Indicate to the compiler that a code-path is logically unreachable
 
@@ -461,7 +398,14 @@ M*/
 
 .seealso: SETERRABORT(), PETSCABORT()
 MC*/
-#define PetscUnreachable() PetscUnreachable_()
+#if defined(__GNUC__)
+/* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
+#  define PetscUnreachable() __builtin_unreachable()
+#elif defined(_MSC_VER) /* MSVC */
+#  define PetscUnreachable() __assume(0)
+#else /* ??? */
+#  define PetscUnreachable() SETERRABORT(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Code path explicitly marked as unreachable executed")
+#endif
 
 /*MC
   PetscExpand - Expand macro argument
@@ -475,7 +419,8 @@ MC*/
 
 .seealso: PetscStringize(), PetscConcat()
 MC*/
-#define PetscExpand(x) x
+#define PetscExpand_(...) __VA_ARGS__
+#define PetscExpand(...)  PetscExpand_(__VA_ARGS__)
 
 /*MC
   PetscStringize - Stringize a token

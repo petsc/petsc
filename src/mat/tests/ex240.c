@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   for (i=0; i<nrow; i++) {
     ierr = MatGetRow(A,rstart+i,&ncols,&cols,&vals);CHKERRQ(ierr);
     for (j=0; j<ncols; j++) {
-      if (colors[cols[j]] < 0) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global column %" PetscInt_FMT " had no color",cols[j]);
+      PetscCheckFalse(colors[cols[j]] < 0,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global column %" PetscInt_FMT " had no color",cols[j]);
       cm[i + nrow*colors[cols[j]]] = vals[j];
     }
     ierr = MatRestoreRow(A,rstart+i,&ncols,&cols,&vals);CHKERRQ(ierr);

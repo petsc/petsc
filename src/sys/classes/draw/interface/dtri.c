@@ -24,7 +24,7 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (!draw->ops->triangle) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing triangles",((PetscObject)draw)->type_name);
+  PetscCheckFalse(!draw->ops->triangle,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing triangles",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -151,8 +151,8 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"May only be used with single processor PetscDraw");
-  if (N <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n %d and m %d must be positive",m,n);
+  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"May only be used with single processor PetscDraw");
+  PetscCheckFalse(N <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n %d and m %d must be positive",m,n);
 
   ctx.v   = v;
   ctx.m   = m;

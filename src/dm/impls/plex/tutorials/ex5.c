@@ -29,9 +29,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->ntimes        = 2;
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsString("-infile", "The input mesh file", EX, options->infile, options->infile, sizeof(options->infile), &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(comm, PETSC_ERR_USER_INPUT, "-infile needs to be specified");
+  PetscCheckFalse(!flg,comm, PETSC_ERR_USER_INPUT, "-infile needs to be specified");
   ierr = PetscOptionsString("-outfile", "The output mesh file (by default it's the same as infile)", EX, options->outfile, options->outfile, sizeof(options->outfile), &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(comm, PETSC_ERR_USER_INPUT, "-outfile needs to be specified");
+  PetscCheckFalse(!flg,comm, PETSC_ERR_USER_INPUT, "-outfile needs to be specified");
   ierr = PetscOptionsEnum("-informat", "Input mesh format", EX, PetscViewerFormats, (PetscEnum)options->informat, (PetscEnum*)&options->informat, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-outformat", "Dump/reload mesh format", EX, PetscViewerFormats, (PetscEnum)options->outformat, (PetscEnum*)&options->outformat, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-redistribute", "Redistribute the mesh", EX, options->redistribute, &options->redistribute, NULL);CHKERRQ(ierr);
@@ -98,6 +98,7 @@ int main(int argc, char **argv)
       ierr = PetscObjectSetName((PetscObject) dm, exampleDMPlexName);CHKERRQ(ierr);
       ierr = DMSetOptionsPrefix(dm,"loaded_");CHKERRQ(ierr);
       ierr = DMLoad(dm, v);CHKERRQ(ierr);
+      ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
       ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);

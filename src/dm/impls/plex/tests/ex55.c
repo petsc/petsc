@@ -115,6 +115,7 @@ int main(int argc, char **argv)
   }
 
   ierr = DMSetOptionsPrefix(dm,NULL);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
@@ -133,7 +134,7 @@ int main(int argc, char **argv)
   /* This currently makes sense only for sequential meshes. */
   if (user.compare) {
     ierr = DMPlexEqual(dmnew, dm, &flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
     ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n");CHKERRQ(ierr);
   }
   if (user.compare_labels) {

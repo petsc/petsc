@@ -52,9 +52,9 @@ Windows compilers; nor can you use MS-MPI, Intel-MPI or MPICH2).
 Installation With Microsoft/Intel Windows Compilers
 ===================================================
 
-Microsoft Windows does not provide the same unix shell enviornment as the other OSes. Also
-the default Microsoft/Intel compilers behave differently than other unix compilers. So to
-install PETSc on Microsoft Windows - one has to install Cygwin (for the unix enviornment)
+Microsoft Windows does not provide the same Unix shell environment as the other OSes. Also
+the default Microsoft/Intel compilers behave differently than other Unix compilers. So to
+install PETSc on Microsoft Windows - one has to install Cygwin (for the Unix environment)
 and use ``win32fe`` [#win32]_ (located at ``$PETSC_DIR/lib/petsc/bin/win32fe``, to
 interface to Microsoft/Intel compilers).
 
@@ -71,7 +71,7 @@ interface to Microsoft/Intel compilers).
       - make
       - (default selection should already have diff and other tools)
 
-      Additional cygwin components like git cmake can be useful for installing
+      Additional Cygwin components like git and CMake can be useful for installing
       :ref:`external packages <doc_externalsoftware>`.
 
 #. Remove Cygwin link.exe:
@@ -86,11 +86,11 @@ interface to Microsoft/Intel compilers).
 #. Setup Cygwin terminal/bash-shell with Working Compilers:
 
    We require the compilers to be setup properly in a Cygwin bash command shell, so that
-   ``cl foo.c or ``ifort foo.f`` works from this shell. For example - if using VS2005 C
+   ``cl foo.c`` or ``ifort foo.f`` works from this shell. For example - if using VS2005 C
    and Intel 10 Fortran one can do:
 
    #. Start > Programs > Intel Software Development Tools > Intel Fortran
-      Compiler 10 > Visual Fortran Build Enviornment (32bit or 64bit depending on
+      Compiler 10 > Visual Fortran Build Environment (32bit or 64bit depending on
       your usage). This should start a "dos cmd" shell.
 
    #. Within this shell - run Cygwin terminal/bash-shell ``mintty.exe`` as:
@@ -142,7 +142,7 @@ do not use it). For example usages, check ``$PETSC_DIR/config/examples/arch-mswi
       $ cygpath -u `cygpath -ms '/cygdrive/c/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64'`
       /cygdrive/c/PROGRA~2/INTELS~1/COMPIL~2/windows/mkl/lib/intel64
 
-   The use in ``configure`` as follows:
+   Then use in ``configure`` as follows:
 
    .. code-block:: console
 
@@ -216,7 +216,7 @@ Using MinGW With Microsoft/Intel Windows Compilers
 
 Users report that it is possible to build to build PETSc using MinGW and link against them
 using the Microsoft/Intel Windows Compilers. We have no experience with this, nor
-knowledge on how it can be accomplished. If you have experience using MinGW and windows
+knowledge on how it can be accomplished. If you have experience using MinGW and Microsoft Windows
 and/or have successfully built PETSc using this configuration let us know your experience
 by providing feedback at petsc-maint@mcs.anl.gov.
 
@@ -226,7 +226,7 @@ Notes On Using Other Systems Besides Cygwin To Compile With Microsoft/Intel Comp
 For any alternate system, we would have to redo ``win32fe`` [#win32]_ functionality for
 that system. This includes:
 
-- Marshal unix type compiler options to Cl (Microsoft compiler).
+- Marshal Unix type compiler options to Cl (Microsoft compiler).
 - Convert paths in some of these options from this system (for example Cygwin paths) to
   Microsoft Windows paths.
 - Have python that works with system path notation.
@@ -237,5 +237,5 @@ that system. This includes:
 
 .. [#win32] PETSc win32 front end ("``win32fe``"): This tool is used as a wrapper to Microsoft
        and Intel compilers and associated tools - to enable building PETSc libraries using
-       Cygwin make and other UNIX tools. For additional info, run
+       Cygwin make and other Unix tools. For additional info, run
        ``${PETSC_DIR}/lib/petsc/bin/win32/win32fe`` without any options.

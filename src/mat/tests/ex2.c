@@ -226,7 +226,7 @@ int main(int argc,char **argv)
    test:
       requires: kokkos_kernels
       suffix: 12_A_kokkos
-      args: -mat_type seqaijkokkos -rectA
+      args: -mat_type aijkokkos -rectA
       output_file: output/ex2_12_A.out
       filter: grep -v type | grep -v "Mat Object"
 
@@ -250,7 +250,7 @@ int main(int argc,char **argv)
    test:
       requires: kokkos_kernels
       suffix: 12_B_kokkos
-      args: -mat_type seqaijkokkos -rectB
+      args: -mat_type aijkokkos -rectB
       output_file: output/ex2_12_B.out
       filter: grep -v type | grep -v "Mat Object"
 
@@ -275,7 +275,7 @@ int main(int argc,char **argv)
       requires: kokkos_kernels
       suffix: 22_kokkos
       output_file: output/ex2_22.out
-      args: -mat_type mpiaijkokkos
+      args: -mat_type aijkokkos
       filter: grep -v type | grep -v "Mat Object"
 
    test:
@@ -307,7 +307,7 @@ int main(int argc,char **argv)
 
    test:
       suffix: 2_aijkokkos_1
-      args: -mat_type mpiaijkokkos
+      args: -mat_type aijkokkos
       output_file: output/ex2_21.out
       requires: kokkos_kernels
       filter: grep -v type | grep -v "MPI processes"
@@ -323,9 +323,10 @@ int main(int argc,char **argv)
    test:
       suffix: 2_aijkokkos_2
       nsize: 3
-      args: -mat_type mpiaijkokkos
+      args: -mat_type aijkokkos
       output_file: output/ex2_23.out
-      requires: !sycl kokkos_kernels
+      # Turn off hip due to intermittent CI failures on hip.txcorp.com. Should re-enable this test when the machine is upgraded.
+      requires: !sycl !hip kokkos_kernels
       filter: grep -v type | grep -v "MPI processes"
 
    test:

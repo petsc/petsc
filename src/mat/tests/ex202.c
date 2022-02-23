@@ -72,7 +72,7 @@ PetscErrorCode TestInitialMatrix(void)
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatMatMultEqual(A,B,C,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != A*B");
+  PetscCheckFalse(!equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != A*B");
 
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode TestInitialMatrix(void)
     ierr = MatDenseRestoreColumn(B,&valsB);CHKERRQ(ierr);
   }
   ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatMult(): %g",(double)norm);
+  PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatMatMult(): %g",(double)norm);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 

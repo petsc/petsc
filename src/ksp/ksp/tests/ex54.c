@@ -133,10 +133,10 @@ int main(int argc, char** argv)
     ierr = KSPView(QRsolver, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecAXPY(a, -1.0, b);CHKERRQ(ierr);
     ierr = VecNorm(a, NORM_2, &norm);CHKERRQ(ierr);
-    if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||a-b|| > PETSC_SMALL (%g)", (double)norm);
+    PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||a-b|| > PETSC_SMALL (%g)", (double)norm);
     ierr = MatAXPY(A, -1.0, B, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(A, NORM_FROBENIUS, &norm);CHKERRQ(ierr);
-    if (norm > PETSC_SMALL) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||A-B|| > PETSC_SMALL (%g)", (double)norm);
+    PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||A-B|| > PETSC_SMALL (%g)", (double)norm);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     ierr = MatDestroy(&V);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);

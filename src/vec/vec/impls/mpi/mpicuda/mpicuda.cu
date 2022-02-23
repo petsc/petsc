@@ -291,7 +291,7 @@ PetscErrorCode  VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
+  PetscCheckFalse(n == PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
   ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
@@ -409,13 +409,13 @@ PetscErrorCode VecMin_MPICUDA(Vec xin,PetscInt *idx,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
+PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool bind)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  V->boundtocpu = pin;
-  if (pin) {
+  V->boundtocpu = bind;
+  if (bind) {
     ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
     V->offloadmask = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dotnorm2               = NULL;
@@ -448,6 +448,9 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = NULL;
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
+    V->ops->getarrayandmemtype     = NULL;
+    V->ops->restorearrayandmemtype = NULL;
+    V->ops->getarraywriteandmemtype= NULL;
     V->ops->max                    = VecMax_MPI;
     V->ops->min                    = VecMin_MPI;
     V->ops->reciprocal             = VecReciprocal_Default;
@@ -493,6 +496,7 @@ PetscErrorCode VecBindToCPU_MPICUDA(Vec V,PetscBool pin)
     V->ops->restorearray           = VecRestoreArray_SeqCUDA;
     V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqCUDA;
     V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqCUDA;
+    V->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqCUDA;
     V->ops->max                    = VecMax_MPICUDA;
     V->ops->min                    = VecMin_MPICUDA;
     V->ops->reciprocal             = VecReciprocal_SeqCUDA;

@@ -69,9 +69,9 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
   ierr = PetscStrallocpy(imageext,&draw->saveimageext);CHKERRQ(ierr);
 
   if (draw->savesinglefile) {
-    ierr = PetscInfo2(NULL,"Will save image to file %s%s\n",draw->savefilename,draw->saveimageext);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Will save image to file %s%s\n",draw->savefilename,draw->saveimageext);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo3(NULL,"Will save images to file %s/%s_%%d%s\n",draw->savefilename,draw->savefilename,draw->saveimageext);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Will save images to file %s/%s_%%d%s\n",draw->savefilename,draw->savefilename,draw->saveimageext);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -110,7 +110,7 @@ PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
   ierr = PetscStrallocpy(movieext,&draw->savemovieext);CHKERRQ(ierr);
   draw->savesinglefile = PETSC_FALSE; /* otherwise we cannot generage movies */
 
-  ierr = PetscInfo2(NULL,"Will save movie to file %s%s\n",draw->savefilename,draw->savemovieext);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"Will save movie to file %s%s\n",draw->savefilename,draw->savemovieext);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

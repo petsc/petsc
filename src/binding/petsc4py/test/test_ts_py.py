@@ -34,6 +34,7 @@ class MyODE:
 class MyTS:
     def __init__(self):
         self.log = {}
+
     def _log(self, method, *args):
         self.log.setdefault(method, 0)
         self.log[method] += 1

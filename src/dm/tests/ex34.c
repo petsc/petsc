@@ -21,7 +21,7 @@ int main(int argc,char *argv[])
   case 3:
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, 3,5,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
     break;
-  default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for %D dimensions",dim);
+  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for %D dimensions",dim);
   }
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);

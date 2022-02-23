@@ -22,7 +22,7 @@ int main(int argc,char **argv)
                  supplied to PETSc and options supplied to MPI.
     help       - When PETSc executable is invoked with the option -help,
                  it prints the various options that can be applied at
-                 runtime.  The user can use the "help" variable place
+                 runtime.  The user can use the "help" variable to place
                  additional help messages in this printout.
   */
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;

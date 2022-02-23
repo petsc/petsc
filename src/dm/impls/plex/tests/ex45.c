@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     test:
       suffix: 1
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple
+      args: -petscpartitioner_type simple
 
   testset:
     args: -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -dm_plex_reorder rcm -dm_view ::ascii_info_detail
@@ -40,6 +40,6 @@ int main(int argc, char **argv)
     test:
       suffix: 3
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple
+      args: -petscpartitioner_type simple
 
 TEST*/

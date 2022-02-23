@@ -16,7 +16,7 @@ static char help[] = "Mini-app to benchmark matrix--matrix multiplication\n\n";
     PetscStackPush(#func);                                     \
     __ierr = func args;                                        \
     PetscStackPop;                                             \
-    if (__ierr != SPARSE_STATUS_SUCCESS) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", #func, (int)__ierr); \
+    PetscCheckFalse(__ierr != SPARSE_STATUS_SUCCESS,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", #func, (int)__ierr); \
   } while (0)
 #else
 #define PetscStackCallMKLSparse(func, args) do {               \
@@ -39,9 +39,9 @@ int main(int argc, char** argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
   ierr = PetscOptionsGetString(NULL, NULL, "-f", file, PETSC_MAX_PATH_LEN, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate binary file with the -f option");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate binary file with the -f option");
   ierr = PetscOptionsGetInt(NULL, NULL, "-trial", &trial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray(NULL, NULL, "-bs", bs, &nbs, &flg);CHKERRQ(ierr);
   if (!flg) {
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     ierr = MatLoad(A, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJ, MATMPIAIJ, "");CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a MatAIJ input matrix");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a MatAIJ input matrix");
     ierr = MatGetSize(A, &m, &M);CHKERRQ(ierr);
     if (m == M) {
       Mat oA;
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
       ierr = MatDestroy(&Tt);CHKERRQ(ierr);
       ierr = MatDenseGetArrayRead(T, &ptr);CHKERRQ(ierr);
       ierr = MatGetRowIJ(A, 0, PETSC_FALSE, PETSC_FALSE, &An, &Ai, &Aj, &done);CHKERRQ(ierr);
-      if (!done || An != m) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
+      PetscCheckFalse(!done || An != m,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
       ierr = MatSeqAIJGetArray(A, &Aa);CHKERRQ(ierr);
       ierr = MatCreate(PETSC_COMM_WORLD, &B);CHKERRQ(ierr);
       ierr = MatSetType(B, MATSEQBAIJ);CHKERRQ(ierr);
@@ -157,10 +157,10 @@ int main(int argc, char** argv)
         PetscBool      done;
 
         ierr = PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJ, MATSEQBAIJ, MATSEQSBAIJ, "");CHKERRQ(ierr);
-        if (!flg) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Not implemented");
+        PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Not implemented");
         ierr = PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &flg);CHKERRQ(ierr);
         ierr = MatGetRowIJ(A, 0, PETSC_FALSE, flg ? PETSC_FALSE : PETSC_TRUE, &An, &Ai, &Aj, &done);CHKERRQ(ierr);
-        if (!done) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
+        PetscCheckFalse(!done,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
         ierr = PetscMalloc1(An + 1, &ia_ptr);CHKERRQ(ierr);
         ierr = PetscMalloc1(Ai[An], &ja_ptr);CHKERRQ(ierr);
         if (flg) { /* SeqAIJ */

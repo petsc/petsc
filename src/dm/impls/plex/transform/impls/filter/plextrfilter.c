@@ -15,7 +15,7 @@ static PetscErrorCode DMPlexTransformView_Filter(DMPlexTransform tr, PetscViewer
     ierr = PetscObjectGetName((PetscObject) tr, &name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Filter transformation %s\n", name ? name : "");CHKERRQ(ierr);
   } else {
-    SETERRQ1(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
+    SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

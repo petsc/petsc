@@ -1,0 +1,61 @@
+lid velocity = 0.0025, prandtl # = 1., grashof # = 1.
+  0 SNES Function norm 5.097713965974e-02 
+    0 KSP Residual norm 4.478159123566e-01 
+    1 KSP Residual norm 4.332482767356e-16 
+  1 SNES Function norm 4.201124545582e-06 
+    0 KSP Residual norm 1.665838611378e-05 
+    1 KSP Residual norm 9.875827661505e-21 
+  2 SNES Function norm 1.711759823120e-14 
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=2
+  total number of function evaluations=3
+  norm schedule ALWAYS
+  Jacobian is built using colored finite differences on a DMDA
+  SNESLineSearch Object: 4 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 4 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 4 MPI processes
+    type: lu
+      out-of-place factorization
+      tolerance for zero pivot 2.22045e-14
+      matrix ordering: external
+      factor fill ratio given 0., needed 0.
+        Factored matrix follows:
+          Mat Object: 4 MPI processes
+            type: superlu_dist
+            rows=1600, cols=1600
+            package used to perform factorization: superlu_dist
+            total: nonzeros=0, allocated nonzeros=0
+              SuperLU_DIST run parameters:
+                Process grid nprow 1 x npcol 2 
+                Using 3d decomposition with npdep 2 
+                Equilibrate matrix TRUE 
+                Replace tiny pivots FALSE 
+                Use iterative refinement FALSE 
+                Processors in row 1 col partition 2 
+                Row permutation LargeDiag_MC64
+                Column permutation METIS_AT_PLUS_A
+                Parallel symbolic factorization FALSE 
+                Repeated factorization SamePattern
+    linear system matrix = precond matrix:
+    Mat Object: 4 MPI processes
+      type: mpiaij
+      rows=1600, cols=1600, bs=4
+      total: nonzeros=30720, allocated nonzeros=30720
+      total number of mallocs used during MatSetValues calls=0
+Number of SNES iterations = 2

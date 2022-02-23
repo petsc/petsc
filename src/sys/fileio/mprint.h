@@ -9,7 +9,7 @@
 typedef struct _PrintfQueue *PrintfQueue;
 struct _PrintfQueue {
   char        *string;
-  int         size;
+  size_t      size;
   PrintfQueue next;
 };
 

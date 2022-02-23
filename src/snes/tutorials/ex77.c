@@ -50,13 +50,13 @@ typedef struct {
 } AppCtx;
 
 #if 0
-PETSC_STATIC_INLINE void Det2D(PetscReal *detJ, const PetscReal J[])
+static inline void Det2D(PetscReal *detJ, const PetscReal J[])
 {
   *detJ = J[0]*J[3] - J[1]*J[2];
 }
 #endif
 
-PETSC_STATIC_INLINE void Det3D(PetscReal *detJ, const PetscScalar J[])
+static inline void Det3D(PetscReal *detJ, const PetscScalar J[])
 {
   *detJ = PetscRealPart(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                         J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
@@ -64,7 +64,7 @@ PETSC_STATIC_INLINE void Det3D(PetscReal *detJ, const PetscScalar J[])
 }
 
 #if 0
-PETSC_STATIC_INLINE void Cof2D(PetscReal C[], const PetscReal A[])
+static inline void Cof2D(PetscReal C[], const PetscReal A[])
 {
   C[0] =  A[3];
   C[1] = -A[2];
@@ -73,7 +73,7 @@ PETSC_STATIC_INLINE void Cof2D(PetscReal C[], const PetscReal A[])
 }
 #endif
 
-PETSC_STATIC_INLINE void Cof3D(PetscReal C[], const PetscScalar A[])
+static inline void Cof3D(PetscReal C[], const PetscScalar A[])
 {
   C[0*3+0] = PetscRealPart(A[1*3+1]*A[2*3+2] - A[1*3+2]*A[2*3+1]);
   C[0*3+1] = PetscRealPart(A[1*3+2]*A[2*3+0] - A[1*3+0]*A[2*3+2]);
@@ -580,7 +580,7 @@ int main(int argc, char **argv)
       suffix: 1
       requires: superlu_dist
       nsize: 2
-      args: -dm_distribute -dm_refine 0 -petscpartitioner_type simple \
+      args: -dm_refine 0 -petscpartitioner_type simple \
             -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4
       timeoutfactor: 2
 
@@ -588,7 +588,7 @@ int main(int argc, char **argv)
       suffix: 4
       requires: superlu_dist
       nsize: 2
-      args: -dm_distribute -dm_refine 0 -petscpartitioner_type simple \
+      args: -dm_refine 0 -petscpartitioner_type simple \
             -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4
       output_file: output/ex77_1.out
 
@@ -602,7 +602,7 @@ int main(int argc, char **argv)
       suffix: 2_par
       requires: superlu_dist !single
       nsize: 4
-      args: -dm_distribute -dm_refine 2 -petscpartitioner_type simple \
+      args: -dm_refine 2 -petscpartitioner_type simple \
             -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0
       output_file: output/ex77_2.out
 

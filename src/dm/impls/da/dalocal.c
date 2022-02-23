@@ -26,7 +26,7 @@ static PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 
   PetscFunctionBegin;
   ierr = VecGetDM(vec, &da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PetscObjectComm((PetscObject)vec),PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DMDA");
+  PetscCheckFalse(!da,PetscObjectComm((PetscObject)vec),PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DMDA");
   ierr = DMDAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
 
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
@@ -137,9 +137,9 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   PetscValidIntPointer(point,5);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
-  if (dim > 0) {if ((i < info.gxs) || (i >= info.gxs+info.gxm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);}
-  if (dim > 1) {if ((j < info.gys) || (j >= info.gys+info.gym)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", j, info.gys, info.gys+info.gym);}
-  if (dim > 2) {if ((k < info.gzs) || (k >= info.gzs+info.gzm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", k, info.gzs, info.gzs+info.gzm);}
+  if (dim > 0) PetscCheckFalse((i < info.gxs) || (i >= info.gxs+info.gxm),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);
+  if (dim > 1) PetscCheckFalse((j < info.gys) || (j >= info.gys+info.gym),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", j, info.gys, info.gys+info.gym);
+  if (dim > 2) PetscCheckFalse((k < info.gzs) || (k >= info.gzs+info.gzm),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", k, info.gzs, info.gzs+info.gzm);
   *point = i + (dim > 1 ? (j + (dim > 2 ? k*info.gym : 0))*info.gxm : 0);
   PetscFunctionReturn(0);
 }
@@ -242,7 +242,7 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
     /* All points */
     if (pStart) *pStart = 0;
     if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of height %d in the DA", height);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of height %d in the DA", height);
   PetscFunctionReturn(0);
 }
 
@@ -274,7 +274,7 @@ PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, Pets
     /* All points */
     if (pStart) *pStart = 0;
     if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of depth %d in the DA", depth);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of depth %d in the DA", depth);
   PetscFunctionReturn(0);
 }
 
@@ -298,8 +298,8 @@ PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
         *coneSize = 0;
       } else if (p < nC+nV+nXF+nYF+nZF) {
         *coneSize = 2;
-      } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d should be in [0, %d)", p, nC+nV+nXF+nYF+nZF);
-    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %d is invalid", p);
+      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d should be in [0, %d)", p, nC+nV+nXF+nYF+nZF);
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %d is invalid", p);
     break;
   case 3:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
@@ -343,8 +343,8 @@ PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
 
         (*cone)[0] = fy*nVx + fx + nC;
         (*cone)[1] = fy*nVx + fx + nVx + nC;
-      } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d should be in [0, %d)", p, nC+nV+nXF+nYF+nZF);
-    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %d is invalid", p);
+      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d should be in [0, %d)", p, nC+nV+nXF+nYF+nZF);
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %d is invalid", p);
     break;
   case 3:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
@@ -374,7 +374,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1,DMDA);
   ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (dim > 3) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"The following code only works for dim <= 3");
+  PetscCheckFalse(dim > 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"The following code only works for dim <= 3");
   h[0] = (xu - xl)/M;
   h[1] = (yu - yl)/N;
   h[2] = (zu - zl)/P;
@@ -522,7 +522,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
     break;
   }
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
 done:

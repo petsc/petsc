@@ -23,7 +23,7 @@ PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM,Vec xx,Vec yy)
 
   PetscFunctionBeginUser;
   ierr = MatShellGetContext(MtM,&matshellctx);CHKERRQ(ierr);
-  if (!matshellctx) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
+  PetscCheckFalse(!matshellctx,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
   ierr = MatMult(matshellctx->Mp, xx, matshellctx->ff);CHKERRQ(ierr);
   ierr = MatMult(matshellctx->MpTrans, matshellctx->ff, yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -36,7 +36,7 @@ PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM,Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBeginUser;
   ierr = MatShellGetContext(MtM,&matshellctx);CHKERRQ(ierr);
-  if (!matshellctx) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
+  PetscCheckFalse(!matshellctx,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
   ierr = MatMult(matshellctx->Mp, xx, matshellctx->ff);CHKERRQ(ierr);
   ierr = MatMultAdd(matshellctx->MpTrans, matshellctx->ff, yy, zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -80,7 +80,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
     ierr = MatGetLocalSize(M_p, &M, &N);CHKERRQ(ierr);
     if (N>M) {
       PC        pc;
-      ierr = PetscInfo2(ksp, " M (%D) < M (%D) -- skip revert to lsqr\n",M,N);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp, " M (%D) < M (%D) -- skip revert to lsqr\n",M,N);CHKERRQ(ierr);
       is_lsqr = PETSC_TRUE;
       ierr = KSPSetType(ksp,KSPLSQR);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -100,12 +100,12 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
         PetscScalar dot = 0;
         ierr = MatGetRow(matshellctx->MpTrans,i,&nzl,&cols,&vals);CHKERRQ(ierr);
         for (int ii=0 ; ii<nzl ; ii++) dot += PetscSqr(vals[ii]);
-        if (dot==0.0) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %D is empty", i);
+        PetscCheckFalse(dot==0.0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Row %D is empty", i);
         ierr = MatSetValue(D,i,i,dot,INSERT_VALUES);
       }
       ierr = MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(D, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      PetscInfo2(M_p,"createMtMKSP Have %D eqs, nzl = %D\n",N,nzl);
+      PetscInfo(M_p,"createMtMKSP Have %D eqs, nzl = %D\n",N,nzl);
       ierr = KSPSetOperators(ksp, MtM, D);CHKERRQ(ierr);
       ierr = MatViewFromOptions(D,NULL,"-ftop2_D_mat_view");CHKERRQ(ierr);
       ierr = MatViewFromOptions(M_p,NULL,"-ftop2_Mp_mat_view");CHKERRQ(ierr);
@@ -245,8 +245,8 @@ PetscErrorCode go()
 
   PetscFunctionBeginUser;
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
-  if (numthreads>MAX_NUM_THRDS) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %D > %D", numthreads, MAX_NUM_THRDS);
-  if (numthreads<=0) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No threads %D > %D ", numthreads,  MAX_NUM_THRDS);
+  PetscCheckFalse(numthreads>MAX_NUM_THRDS,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Too many threads %D > %D", numthreads, MAX_NUM_THRDS);
+  PetscCheckFalse(numthreads<=0,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No threads %D > %D ", numthreads,  MAX_NUM_THRDS);
 #endif
   if (target >= numthreads) target = numthreads-1;
   ierr = PetscLogEventRegister("Create Swarm", DM_CLASSID, &swarm_create_ev);CHKERRQ(ierr);
@@ -281,7 +281,7 @@ PetscErrorCode go()
         h[i] = (hi[i] - lo[i])/faces[i];
         hp[i] = (hi[i] - lo[i])/Np[i];
         vol *= (hi[i] - lo[i]);
-        ierr = PetscInfo5(dm_t[tid]," lo = %g hi = %g n = %D h = %g hp = %g\n",lo[i],hi[i],faces[i],h[i],hp[i]);CHKERRQ(ierr);
+        ierr = PetscInfo(dm_t[tid]," lo = %g hi = %g n = %D h = %g hp = %g\n",lo[i],hi[i],faces[i],h[i],hp[i]);CHKERRQ(ierr);
       }
     }
   }

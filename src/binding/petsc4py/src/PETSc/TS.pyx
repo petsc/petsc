@@ -203,6 +203,11 @@ cdef class TS(Object):
         CHKERR( TSGetOptionsPrefix(self.ts, &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( TSAppendOptionsPrefix(self.ts, cval) )
+
     def setFromOptions(self):
         CHKERR( TSSetFromOptions(self.ts) )
 

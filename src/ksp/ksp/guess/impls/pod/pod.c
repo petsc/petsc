@@ -101,7 +101,7 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
     PetscStackCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","L",&bN,pod->corr,&bN,&rdummy,&rdummy,&idummy,&idummy,
                                                   &rdummy,&idummy,pod->eigs,pod->eigv,&bN,&sdummy,&pod->lwork,pod->rwork,pod->iwork,pod->iwork+5*bN,&lierr));
 #endif
-    if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEV Lapack routine %d",(int)lierr);
+    PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEV Lapack routine %d",(int)lierr);
     ierr = PetscBLASIntCast((PetscInt)PetscRealPart(sdummy),&pod->lwork);CHKERRQ(ierr);
     ierr = PetscMalloc1(pod->lwork+PetscMax(bN*bN,6*bN),&pod->swork);CHKERRQ(ierr);
   }
@@ -212,9 +212,9 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
     ierr   = MatGetOption(guess->A,MAT_SYMMETRIC,&symm);CHKERRQ(ierr);
     tsolve = symm ? PETSC_FALSE : pksp->transpose_solve;
     PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&bNen,&bNen,pod->low,&bNen,pod->iwork,&lierr));
-    if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)lierr);
+    PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)lierr);
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_(tsolve ? "T" : "N",&bNen,&ione,pod->low,&bNen,pod->iwork,pod->swork,&bNen,&lierr));
-    if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRS Lapack routine %d",(int)lierr);
+    PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRS Lapack routine %d",(int)lierr);
   }
   /* x = X * V * S * x_low */
   PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork,&ione,&zero,pod->swork+pod->n,&ione));
@@ -317,7 +317,7 @@ complete_request:
       for (i=0;i<pod->n;i++) pod->swork[3*pod->n + i] = pod->dots_iallreduce[i];
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)guess),PETSC_ERR_PLIB,"Invalid number of outstanding dots operations: %D",pod->ndots_iallreduce);
+      SETERRQ(PetscObjectComm((PetscObject)guess),PETSC_ERR_PLIB,"Invalid number of outstanding dots operations: %D",pod->ndots_iallreduce);
     }
   }
   pod->ndots_iallreduce = 0;
@@ -348,8 +348,8 @@ complete_request:
                                                 &reps,&idummy,pod->eigs,pod->eigv,&bN,
                                                 pod->swork+bN*bN,&pod->lwork,pod->rwork,pod->iwork,pod->iwork+5*bN,&lierr));
 #endif
-  if (lierr<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: illegal argument %d",-(int)lierr);
-  else if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: %d eigenvectors failed to converge",(int)lierr);
+  PetscCheckFalse(lierr<0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: illegal argument %d",-(int)lierr);
+  else PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: %d eigenvectors failed to converge",(int)lierr);
 
   /* dimension of lower dimensional system */
   pod->st = -1;
@@ -425,9 +425,18 @@ static PetscErrorCode KSPGuessSetFromOptions_POD(KSPGuess guess)
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)guess),((PetscObject)guess)->prefix,"POD initial guess options","KSPGuess");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_guess_pod_size","Number of snapshots",NULL,pod->maxn,&pod->maxn,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_guess_pod_monitor","Monitor initial guess generator",NULL,pod->monitor,&pod->monitor,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_guess_pod_tol","Tolerance to retain eigenvectors",NULL,pod->tol,&pod->tol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_guess_pod_tol","Tolerance to retain eigenvectors","KSPGuessSetTolerance",pod->tol,&pod->tol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_guess_pod_Ainner","Use the operator as inner product (must be SPD)",NULL,pod->Aspd,&pod->Aspd,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode KSPGuessSetTolerance_POD(KSPGuess guess,PetscReal tol)
+{
+  KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
+
+  PetscFunctionBegin;
+  pod->tol = tol;
   PetscFunctionReturn(0);
 }
 
@@ -471,6 +480,7 @@ PetscErrorCode KSPGuessCreate_POD(KSPGuess guess)
 
   guess->ops->setfromoptions = KSPGuessSetFromOptions_POD;
   guess->ops->destroy        = KSPGuessDestroy_POD;
+  guess->ops->settolerance   = KSPGuessSetTolerance_POD;
   guess->ops->setup          = KSPGuessSetUp_POD;
   guess->ops->view           = KSPGuessView_POD;
   guess->ops->reset          = KSPGuessReset_POD;

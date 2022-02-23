@@ -1,4 +1,4 @@
-static char help[] = "Test MatSetValuesCOO for MPIAIJKOKKOS mat \n\n";
+static char help[] = "Test MatSetValuesCOO for MPIAIJ and its subclasses \n\n";
 
 #include <petscmat.h>
 int main(int argc,char **args)
@@ -10,6 +10,7 @@ int main(int argc,char **args)
   PetscMPIInt     rank,size;
   PetscBool       equal;
   PetscScalar     *vals;
+  PetscBool       flg = PETSC_FALSE;
 
   /* Construct 18 x 18 matrices, which are big enough to have complex communication patterns but still small enough for debugging */
   PetscInt i0[] = {7, 7, 8, 8,  9, 16, 17,  9, 10, 1, 1, -2, 2, 3, 3, 14, 4, 5, 10, 13,  9,  9, 10, 1, 0, 0, 5,   5, 6, 6, 13, 13, 14, -14, 4, 4, 5, 11, 11, 12, 15, 15, 16};
@@ -26,10 +27,11 @@ int main(int argc,char **args)
   } coo[3] = {{i0,j0,sizeof(i0)/sizeof(PetscInt)}, {i1,j1,sizeof(i1)/sizeof(PetscInt)}, {i2,j2,sizeof(i2)/sizeof(PetscInt)}};
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-ignore_remote",&flg,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
-  if (size > 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"This test requires at most 3 processes");
+  PetscCheckFalse(size > 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"This test requires at most 3 processes");
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);
@@ -37,6 +39,7 @@ int main(int argc,char **args)
   ierr = MatSeqAIJSetPreallocation(A,2,NULL);
   ierr = MatMPIAIJSetPreallocation(A,2,NULL,2,NULL);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,flg);CHKERRQ(ierr);
 
   for (k=0; k<coo[rank].n; k++) {
     PetscScalar val = coo[rank].j[k];
@@ -48,6 +51,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_IGNORE_OFF_PROC_ENTRIES,flg);CHKERRQ(ierr);
   ierr = MatSetPreallocationCOO(B,coo[rank].n,coo[rank].i,coo[rank].j);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(coo[rank].n,&vals);CHKERRQ(ierr);
@@ -72,11 +76,24 @@ int main(int argc,char **args)
 
 /*TEST
 
-  test:
-    nsize: {{1 2 3}}
-    requires: kokkos_kernels
-    args: -mat_type aijkokkos
+  testset:
     output_file: output/ex254_1.out
+    nsize: {{1 2 3}}
+    args: -ignore_remote {{0 1}}
+
+    test:
+      suffix: kokkos
+      requires: kokkos_kernels
+      args: -mat_type aijkokkos
+
+    test:
+      suffix: cuda
+      requires: cuda
+      args: -mat_type aijcusparse
+
+    test:
+      suffix: aij
+      args: -mat_type aij
 
 TEST*/
 

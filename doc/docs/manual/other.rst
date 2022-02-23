@@ -432,7 +432,7 @@ it cannot set up the MPI communication and remote processes).
 
 By default the GNU debugger ``gdb`` is used when ``-start_in_debugger``
 or ``-on_error_attach_debugger`` is specified. To employ either
-``xxgdb`` or the common UNIX debugger ``dbx``, one uses command line
+``xxgdb`` or the common Unix debugger ``dbx``, one uses command line
 options as indicated above. On HP-UX machines the debugger ``xdb``
 should be used instead of ``dbx``; on RS/6000 machines the ``xldb``
 debugger is supported as well. On OS X systems with XCode tools,
@@ -864,7 +864,10 @@ Disabling Graphics at Compile Time
 To disable all X-window-based graphics, run ``configure`` with the
 additional option ``--with-x=0``
 
-.. _sec-emacs:
+.. _sec-developer-environments:
+
+Developer Environments
+~~~~~~~~~~~~~~~~~~~~~~
 
 Emacs Users
 ~~~~~~~~~~~
@@ -926,10 +929,10 @@ file and line number where a desired PETSc function is defined. Any
 string in any of the PETSc files can be found with the command ``M-x tags-search``.
 To find repeated occurrences, one can simply use ``M-,`` to find the next occurrence.
 
-VS Code Users
-~~~~~~~~~~~~~
+Visual Studio Code Users
+~~~~~~~~~~~~~~~~~~~~~~~~
 `VS Code <https://code.visualstudio.com/>`_ (unlike :ref:`sec-visual-studio`, described below) is an open source editor with a rich extension ecosystem.
-It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json`` as produced by a command such as ``bear make -B`` (see :ref:`sec-emacs`).
+It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json`` as produced by a command such as ``bear make -B`` (see :ref:`sec-developer-environments`).
 If you have no prior attachment to a specific code editor, we recommend trying VS Code.
 
 Vi and Vim Users
@@ -942,7 +945,7 @@ Vim has configurable keymaps: all of the "command mode" commands given that star
 a colon (such as ``:help``) can be assigned to short sequences in "normal mode," which
 is how most Vim users use their most frequently used commands.
 
-See the :ref:`sec-emacs` discussion above for configuration of clangd, which
+See the :ref:`sec-developer-environments` discussion above for configuration of clangd, which
 provides integrated development environment.
 
 Tags
@@ -1150,10 +1153,10 @@ using C++. It is available under GPL v3, LGPL v2 and a commercial
 license and may be obtained, either as part of the Qt SDK or as
 stand-alone software. It supports
 automatic makefile generation using cross-platform ``qmake`` and
-``cmake`` build systems as well as allowing one to import projects based
+CMake build systems as well as allowing one to import projects based
 on existing, possibly hand-written, makefiles. Qt Creator has a visual
 debugger using GDB and LLDB (on Linux and OS X) or Microsoft’s CDB (on
-Windows) as backends. It also has an interface to Valgrind’s “memcheck”
+Microsoft Windows) as backends. It also has an interface to Valgrind’s “memcheck”
 and “callgrind” tools to detect memory leaks and profile code. It has
 built-in support for a variety of version control systems including git,
 mercurial, and subversion. Finally, Qt Creator comes fully equipped with

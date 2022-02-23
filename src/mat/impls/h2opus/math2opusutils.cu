@@ -35,8 +35,8 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
   maxl += 1;
   if (ldl == PETSC_DECIDE) ldl = maxl;
   if (ldr == PETSC_DECIDE) ldr = nr;
-  if (ldr < nr) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldr,nr);
-  if (ldl < maxl) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldl,maxl);
+  PetscCheckFalse(ldr < nr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldr,nr);
+  PetscCheckFalse(ldl < maxl,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid leading dimension %" PetscInt_FMT " < %" PetscInt_FMT,ldl,maxl);
   vnr  = nr*nv;
   vnl  = nl*nv;
   ierr = PetscMalloc1(vnl,&viremote);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
     if (j < 0 || sranks[j] != r) {
       ierr = PetscFindMPIInt(r,nranks,sranks,&j);CHKERRQ(ierr);
     }
-    if (j < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to locate neighbor rank %" PetscInt_FMT,r);
+    PetscCheckFalse(j < 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to locate neighbor rank %" PetscInt_FMT,r);
     for (v=0;v<nv;v++) {
       viremote[v*nl + i].rank  = r;
       viremote[v*nl + i].index = v*ldrs[j] + ii;
@@ -81,6 +81,28 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
   ierr = PetscFree(ldrs);CHKERRQ(ierr);
   ierr = PetscSFCreate(comm,vsf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*vsf,vnr,vnl,vilocal,PETSC_OWN_POINTER,viremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat A, PetscSF h2sf, PetscSF *osf)
+{
+  PetscSF        asf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(h2sf,PETSCSF_CLASSID,2);
+  PetscValidPointer(osf,3);
+  ierr = PetscObjectQuery((PetscObject)A,"_math2opus_vectorsf",(PetscObject*)&asf);CHKERRQ(ierr);
+  if (!asf) {
+    PetscInt lda;
+
+    ierr = MatDenseGetLDA(A,&lda);CHKERRQ(ierr);
+    ierr = PetscSFGetVectorSF(h2sf,A->cmap->N,lda,PETSC_DECIDE,&asf);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)A,"_math2opus_vectorsf",(PetscObject)asf);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)asf);CHKERRQ(ierr);
+  }
+  *osf = asf;
   PetscFunctionReturn(0);
 }
 
@@ -113,7 +135,7 @@ PETSC_INTERN PetscErrorCode VecSign(Vec v, Vec s)
   PetscValidHeaderSpecific(s,VEC_CLASSID,2);
   ierr = VecGetLocalSize(s,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&i);CHKERRQ(ierr);
-  if (i != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Invalid local sizes %" PetscInt_FMT " != %" PetscInt_FMT,i,n);
+  PetscCheckFalse(i != n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Invalid local sizes %" PetscInt_FMT " != %" PetscInt_FMT,i,n);
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscObjectTypeCompareAny((PetscObject)v,&viscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)s,&siscuda,VECSEQCUDA,VECMPICUDA,"");CHKERRQ(ierr);
@@ -229,7 +251,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
       ierr = VecNorm(z,NORM_INFINITY,&normz);CHKERRQ(ierr);
       ierr = VecDot(x,z,&dot);CHKERRQ(ierr);
       adot = PetscAbsScalar(dot);
-      ierr = PetscInfo4(A,"%s norm it %" PetscInt_FMT " -> (%g %g)\n",NormTypes[normtype],i,(double)normz,(double)adot);CHKERRQ(ierr);
+      ierr = PetscInfo(A,"%s norm it %" PetscInt_FMT " -> (%g %g)\n",NormTypes[normtype],i,(double)normz,(double)adot);CHKERRQ(ierr);
       if (normz <= adot && i > 0) {
         ierr = VecNorm(y,NORM_1,n);CHKERRQ(ierr);
         break;
@@ -237,7 +259,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
       ierr = VecMax(z,&j,&normz);CHKERRQ(ierr);
       if (j == jold) {
         ierr = VecNorm(y,NORM_1,n);CHKERRQ(ierr);
-        ierr = PetscInfo2(A,"%s norm it %" PetscInt_FMT " -> breakdown (j==jold)\n",NormTypes[normtype],i);CHKERRQ(ierr);
+        ierr = PetscInfo(A,"%s norm it %" PetscInt_FMT " -> breakdown (j==jold)\n",NormTypes[normtype],i);CHKERRQ(ierr);
         break;
       }
       jold = j;
@@ -266,7 +288,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
       ierr = VecNorm(z,NORM_2,&normz);CHKERRQ(ierr);
       ierr = VecDot(x,z,&dot);CHKERRQ(ierr);
       adot = PetscAbsScalar(dot);
-      ierr = PetscInfo5(A,"%s norm it %" PetscInt_FMT " -> %g (%g %g)\n",NormTypes[normtype],i,(double)*n,(double)normz,(double)adot);CHKERRQ(ierr);
+      ierr = PetscInfo(A,"%s norm it %" PetscInt_FMT " -> %g (%g %g)\n",NormTypes[normtype],i,(double)*n,(double)normz,(double)adot);CHKERRQ(ierr);
       if (normz <= adot) break;
       if (i < normsamples - 1) {
         Vec t;
@@ -282,9 +304,9 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
     ierr = VecDestroy(&z);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"%s norm not supported",NormTypes[normtype]);
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"%s norm not supported",NormTypes[normtype]);
   }
-  ierr = PetscInfo3(A,"%s norm %g computed in %" PetscInt_FMT " iterations\n",NormTypes[normtype],(double)*n,i);CHKERRQ(ierr);
+  ierr = PetscInfo(A,"%s norm %g computed in %" PetscInt_FMT " iterations\n",NormTypes[normtype],(double)*n,i);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

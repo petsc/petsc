@@ -74,7 +74,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     ierr = VecGetLocalSize(mt->x, &n2);CHKERRQ(ierr);
     ierr = VecGetSize(ls->upper,&nn1);CHKERRQ(ierr);
     ierr = VecGetSize(mt->x,&nn2);CHKERRQ(ierr);
-    if (n1 != n2 || nn1 != nn2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Variable vector not compatible with bounds vector");
+    PetscCheckFalse(n1 != n2 || nn1 != nn2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Variable vector not compatible with bounds vector");
     ierr = VecScale(s,-1.0);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(s,x,ls->lower,ls->upper,s);CHKERRQ(ierr);
     ierr = VecScale(s,-1.0);CHKERRQ(ierr);
@@ -84,12 +84,12 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
   ierr = VecDot(g,s,&dginit);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(dginit)) {
-    ierr = PetscInfo1(ls,"Initial Line Search step * g is Inf or Nan (%g)\n",(double)dginit);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Initial Line Search step * g is Inf or Nan (%g)\n",(double)dginit);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_INFORNAN;
     PetscFunctionReturn(0);
   }
   if (dginit >= 0.0) {
-    ierr = PetscInfo1(ls,"Initial Line Search step * g is not descent direction (%g)\n",(double)dginit);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Initial Line Search step * g is not descent direction (%g)\n",(double)dginit);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_ASCENT;
     PetscFunctionReturn(0);
   }
@@ -202,17 +202,17 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       break;
     }
     if ((ls->step == ls->stepmax) && (*f <= ftest1) && (dg <= dgtest)) {
-      ierr = PetscInfo1(ls,"Step is at the upper bound, stepmax (%g)\n",(double)ls->stepmax);CHKERRQ(ierr);
+      ierr = PetscInfo(ls,"Step is at the upper bound, stepmax (%g)\n",(double)ls->stepmax);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_UPPERBOUND;
       break;
     }
     if ((ls->step == ls->stepmin) && (*f >= ftest1) && (dg >= dgtest)) {
-      ierr = PetscInfo1(ls,"Step is at the lower bound, stepmin (%g)\n",(double)ls->stepmin);CHKERRQ(ierr);
+      ierr = PetscInfo(ls,"Step is at the lower bound, stepmin (%g)\n",(double)ls->stepmin);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_LOWERBOUND;
       break;
     }
     if ((mt->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)) {
-      ierr = PetscInfo1(ls,"Relative width of interval of uncertainty is at most rtol (%g)\n",(double)ls->rtol);CHKERRQ(ierr);
+      ierr = PetscInfo(ls,"Relative width of interval of uncertainty is at most rtol (%g)\n",(double)ls->rtol);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_RTOL;
       break;
     }
@@ -256,12 +256,12 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     }
   }
   if ((ls->nfeval+ls->nfgeval) > ls->max_funcs) {
-    ierr = PetscInfo2(ls,"Number of line search function evals (%D) > maximum (%D)\n",(ls->nfeval+ls->nfgeval),ls->max_funcs);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Number of line search function evals (%D) > maximum (%D)\n",(ls->nfeval+ls->nfgeval),ls->max_funcs);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
   }
 
   /* Finish computations */
-  ierr = PetscInfo2(ls,"%D function evals in line search, step = %g\n",(ls->nfeval+ls->nfgeval),(double)ls->step);CHKERRQ(ierr);
+  ierr = PetscInfo(ls,"%D function evals in line search, step = %g\n",(ls->nfeval+ls->nfgeval),(double)ls->step);CHKERRQ(ierr);
 
   /* Set new solution vector and compute gradient if needed */
   ierr = VecCopy(mt->work,x);CHKERRQ(ierr);
@@ -379,9 +379,9 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,P
   PetscFunctionBegin;
   /* Check the input parameters for errors */
   mtP->infoc = 0;
-  if (mtP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty)))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad stp in bracket");
-  if (*dx * (*stp-*stx) >= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"dx * (stp-stx) >= 0.0");
-  if (ls->stepmax < ls->stepmin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"stepmax > stepmin");
+  PetscCheckFalse(mtP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty))),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad stp in bracket");
+  PetscCheckFalse(*dx * (*stp-*stx) >= 0.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"dx * (stp-stx) >= 0.0");
+  PetscCheckFalse(ls->stepmax < ls->stepmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"stepmax > stepmin");
 
   /* Determine if the derivatives have opposite sign */
   sgnd = *dp * (*dx / PetscAbsReal(*dx));
