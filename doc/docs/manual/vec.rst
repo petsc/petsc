@@ -476,20 +476,20 @@ routines
    ... depending on the dimension of the DMDA ...
    DMDAVecRestoreArrayRead(DM da,Vec l,void *array);
 
-and
+where ``array`` is a multidimensional C array with the same dimension as ``da``, and
 
 .. code-block::
 
    DMDAVecGetArrayDOF(DM da,Vec l,void *array);
-   ... use the array indexing it with 1 or 2 or 3 dimensions ...
+   ... use the array indexing it with 2 or 3 or 4 dimensions ...
    ... depending on the dimension of the DMDA ...
    DMDAVecRestoreArrayDOF(DM da,Vec l,void *array);
    DMDAVecGetArrayDOFRead(DM da,Vec l,void *array);
-   ... use the array indexing it with 1 or 2 or 3 dimensions ...
+   ... use the array indexing it with 2 or 3 or 4 dimensions ...
    ... depending on the dimension of the DMDA ...
    DMDAVecRestoreArrayDOFRead(DM da,Vec l,void *array);
 
-where ``array`` is a multidimensional C array with the same dimension as
+where ``array`` is a multidimensional C array with one more dimension than
 ``da``. The vector ``l`` can be either a global vector or a local
 vector. The ``array`` is accessed using the usual *global* indexing on
 the entire grid, but the user may *only* refer to the local and ghost
