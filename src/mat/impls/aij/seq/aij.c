@@ -625,7 +625,7 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A,PetscInt m,const PetscInt im
   ierr = MatSeqAIJGetArray(A,&aa);CHKERRQ(ierr);
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k];
-    PetscAssertFalse(n > a->imax[row],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Preallocation for row %" PetscInt_FMT " does not match number of columns provided",n);
+    PetscAssert(n <= a->imax[row],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Preallocation for row %" PetscInt_FMT " does not match number of columns provided",n);
     rp   = aj + ai[row];
     ap   = aa + ai[row];
     if (!A->was_assembled) {
@@ -658,13 +658,13 @@ PetscErrorCode MatGetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   ierr = MatSeqAIJGetArray(A,&aa);CHKERRQ(ierr);
   for (k=0; k<m; k++) { /* loop over rows */
     row = im[k];
-    if (row < 0) {v += n; continue;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %" PetscInt_FMT,row); */
-    PetscCheckFalse(row >= A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,A->rmap->n-1);
+    if (row < 0) {v += n; continue;} /* negative row */
+    PetscCheck(row < A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,A->rmap->n-1);
     rp   = aj + ai[row]; ap = aa + ai[row];
     nrow = ailen[row];
     for (l=0; l<n; l++) { /* loop over columns */
-      if (in[l] < 0) {v++; continue;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %" PetscInt_FMT,in[l]); */
-      PetscCheckFalse(in[l] >= A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->n-1);
+      if (in[l] < 0) {v++; continue;} /* negative column */
+      PetscCheck(in[l] < A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->n-1);
       col  = in[l];
       high = nrow; low = 0; /* assume unsorted */
       while (high-low > 5) {
@@ -3146,7 +3146,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         if (e) str = SAME_NONZERO_PATTERN;
       }
     }
-    if (!e && str == SAME_NONZERO_PATTERN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatStructure is not SAME_NONZERO_PATTERN");
+    if (!e) PetscCheck(str != SAME_NONZERO_PATTERN,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatStructure is not SAME_NONZERO_PATTERN");
   }
   if (str == SAME_NONZERO_PATTERN) {
     const PetscScalar *xa;

@@ -630,13 +630,13 @@ PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pets
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
-    if (idxm[i] < 0) continue; /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %" PetscInt_FMT,idxm[i]);*/
-    PetscCheckFalse(idxm[i] >= mat->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,idxm[i],mat->rmap->N-1);
+    if (idxm[i] < 0) continue; /* negative row */
+    PetscCheck(idxm[i] < mat->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,idxm[i],mat->rmap->N-1);
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
-        if (idxn[j] < 0) continue; /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %" PetscInt_FMT,idxn[j]); */
-        PetscCheckFalse(idxn[j] >= mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,idxn[j],mat->cmap->N-1);
+        if (idxn[j] < 0) continue; /* negative column */
+        PetscCheck(idxn[j] < mat->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,idxn[j],mat->cmap->N-1);
         if (idxn[j] >= cstart && idxn[j] < cend) {
           col  = idxn[j] - cstart;
           ierr = MatGetValues(aij->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
@@ -6215,9 +6215,7 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat,PetscCount n,const PetscI
     for (s=k; s<n; s++) if (i[s] != row) break;
     for (p=k; p<s; p++) {
       if (j[p] >= cstart && j[p] < cend) j[p] -= PETSC_MAX_INT; /* Shift diag columns to range of [-PETSC_MAX_INT, -1]  */
-     #if defined(PETSC_USE_DEBUG)
-      else if (j[p] < 0 || j[p] > mat->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %" PetscInt_FMT " is out of range",j[p]);
-     #endif
+      else PetscAssert((j[p] >= 0) && (j[p] <= mat->cmap->N),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %" PetscInt_FMT " is out of range",j[p]);
     }
     ierr = PetscSortIntWithCountArray(s-k,j+k,perm+k);CHKERRQ(ierr);
     ierr = PetscSortedIntUpperBound(j,k,s,-1,&mid);CHKERRQ(ierr); /* Seperate [k,s) into [k,mid) for diag and [mid,s) for offdiag */
@@ -6325,7 +6323,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const Pe
   for (k=0; k<n1; k++) {
     if (i1[k] < 0 || j1[k] < 0) i1[k] = PETSC_MIN_INT; /* e.g., -2^31, minimal to move them ahead */
     else if (i1[k] >= rstart && i1[k] < rend) i1[k] -= PETSC_MAX_INT; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_MAX_INT, -1] */
-    else if (mat->nooffprocentries) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"MAT_NO_OFF_PROC_ENTRIES is set but insert to remote rows");
+    else PetscCheck(!mat->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_USER_INPUT,"MAT_NO_OFF_PROC_ENTRIES is set but insert to remote rows");
     else if (mpiaij->donotstash) i1[k] = PETSC_MIN_INT; /* Ignore offproc entries as if they had negative indices */
   }
 
@@ -6403,7 +6401,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const Pe
     iremote[k].rank  = sendto[k];
     iremote[k].index = 0;
     nleaves2        += nentries[k];
-    if (PetscUnlikely(nleaves2 < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of SF leaves is too large for PetscInt");
+    PetscCheck(nleaves2 >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of SF leaves is too large for PetscInt");
   }
   ierr = PetscSFSetGraph(sf1,nroots,nleaves,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFFetchAndOpWithMemTypeBegin(sf1,MPIU_INT,PETSC_MEMTYPE_HOST,&nroots2/*rootdata*/,PETSC_MEMTYPE_HOST,nentries/*leafdata*/,PETSC_MEMTYPE_HOST,offsets/*leafupdate*/,MPI_SUM);CHKERRQ(ierr);
@@ -6420,7 +6418,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, const Pe
   ierr    = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
   p       = 0;
   for (k=0; k<nsend; k++) {
-    if (PetscUnlikely(offsets[k] < 0)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of SF roots is too large for PetscInt");
+    PetscCheck(offsets[k] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of SF roots is too large for PetscInt");
     for (q=0; q<nentries[k]; q++,p++) {
       iremote[p].rank  = sendto[k];
       iremote[p].index = offsets[k] + q;

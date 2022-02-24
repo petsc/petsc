@@ -1795,13 +1795,13 @@ PetscErrorCode MatGetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over rows */
     row = im[k]; brow = row/bs;
-    if (row < 0) {v += n; continue;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row"); */
-    PetscCheckFalse(row >= A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %" PetscInt_FMT " too large", row);
+    if (row < 0) {v += n; continue;} /* negative row */
+    PetscCheck(row < A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %" PetscInt_FMT " too large", row);
     rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
     nrow = ailen[brow];
     for (l=0; l<n; l++) { /* loop over columns */
-      if (in[l] < 0) {v++; continue;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column"); */
-      PetscCheckFalse(in[l] >= A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column %" PetscInt_FMT " too large", in[l]);
+      if (in[l] < 0) {v++; continue;} /* negative column */
+      PetscCheck(in[l] < A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column %" PetscInt_FMT " too large", in[l]);
       col  = in[l];
       bcol = col/bs;
       cidx = col%bs;
@@ -2484,7 +2484,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         if (e) str = SAME_NONZERO_PATTERN;
       }
     }
-    if (!e && str == SAME_NONZERO_PATTERN) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatStructure is not SAME_NONZERO_PATTERN");
+    if (!e) PetscCheck(str != SAME_NONZERO_PATTERN,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatStructure is not SAME_NONZERO_PATTERN");
   }
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar  alpha = a;
@@ -2497,7 +2497,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   } else {
     Mat      B;
     PetscInt *nnz;
-    PetscCheckFalse(bs != X->rmap->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices must have same block size");
+    PetscCheck(bs == X->rmap->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices must have same block size");
     ierr = PetscMalloc1(Y->rmap->N,&nnz);CHKERRQ(ierr);
     ierr = MatCreate(PetscObjectComm((PetscObject)Y),&B);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);

@@ -5796,7 +5796,7 @@ PetscErrorCode  SNESSetNPCSide(SNES snes,PCSide side)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidLogicalCollectiveEnum(snes,side,2);
   if (side == PC_SIDE_DEFAULT) side = PC_RIGHT;
-  if (side != PC_LEFT && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONG,"Only PC_LEFT and PC_RIGHT are supported");
+  PetscCheck((side == PC_LEFT) || (side == PC_RIGHT),PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONG,"Only PC_LEFT and PC_RIGHT are supported");
   snes->npcside = side;
   PetscFunctionReturn(0);
 }

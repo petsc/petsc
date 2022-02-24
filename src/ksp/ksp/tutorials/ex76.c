@@ -95,7 +95,7 @@ int main(int argc,char **args)
     ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,rend-rstart,m,1,NULL,&P);CHKERRQ(ierr);
     for (m = rstart; m < rend; ++m) {
       ierr = ISLocate(is,m,&location);CHKERRQ(ierr);
-      if (location < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
+      PetscCheck(location >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
       ierr = MatSetValue(P,m-rstart,location,1.0,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

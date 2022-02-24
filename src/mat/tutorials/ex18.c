@@ -161,7 +161,7 @@ int main(int argc, char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Demonstration is only for sequential runs");
+  PetscCheck(size <= 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Demonstration is only for sequential runs");
 
   ierr = CreateFEStruct(&fe);CHKERRQ(ierr);
   ierr = CreateMatrix(&fe,&A);CHKERRQ(ierr);

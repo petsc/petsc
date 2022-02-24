@@ -1000,7 +1000,7 @@ PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec x,IS is,Vec *y)
     PetscInt   state;
 
     ierr = VecLockGet(x,&state);CHKERRQ(ierr);
-    if (state) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONGSTATE,"Vec x is locked for read-only or read/write access");
+    PetscCheck(!state,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONGSTATE,"Vec x is locked for read-only or read/write access");
 
     /* The tricky part: one has to carefully sync the arrays */
     if (xkok->v_dual.need_sync_device()) { /* x's host has newer data */
@@ -1200,10 +1200,12 @@ PetscErrorCode  VecCreateSeqKokkosWithArrays_Private(MPI_Comm comm,PetscInt bs,P
   PetscFunctionBegin;
   ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQKOKKOS on more than one process");
-  if (n && !harray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"harray cannot be NULL");
-  if (n && !darray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"darray cannot be NULL");
-  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value && harray != darray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"harray and darray must be the same");
+  PetscCheck(size <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQKOKKOS on more than one process");
+  if (n) {
+    PetscValidScalarPointer(harray,4);
+    PetscCheck(darray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"darray cannot be NULL");
+  }
+  if (std::is_same<DefaultMemorySpace,Kokkos::HostSpace>::value) PetscCheck(harray == darray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"harray and darray must be the same");
 
   ierr = VecCreateSeqWithArray(comm,bs,n,harray,&w);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)w,VECSEQKOKKOS);CHKERRQ(ierr); /* Change it to Kokkos */

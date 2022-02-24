@@ -140,7 +140,7 @@ PetscErrorCode TaoCheckReals(Tao tao, PetscReal f, PetscReal g)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(g)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER,"User provided compute function generated Inf or NaN");
+  PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(g),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER,"User provided compute function generated Inf or NaN");
   PetscFunctionReturn(0);
 }
 
@@ -240,7 +240,7 @@ PetscErrorCode TaoApplyLineSearch(Tao tao, PetscReal* f, PetscReal *s)
   PetscValidRealPointer(f,2);
   PetscValidRealPointer(s,3);
   ierr = TaoLineSearchApply(tao->linesearch,tao->solution,f,tao->gradient,tao->stepdirection,s,&ls_reason);CHKERRQ(ierr);
-  if (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Linesearch failed");
+  PetscCheck((ls_reason == TAOLINESEARCH_SUCCESS) || (ls_reason == TAOLINESEARCH_SUCCESS_USER),PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Linesearch failed");
   ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

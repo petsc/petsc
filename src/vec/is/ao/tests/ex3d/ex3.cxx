@@ -29,12 +29,12 @@ int main(int argc, char** argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
 
   ierr = PetscOptionsGetString(NULL,NULL,"-datafiles",datafiles,sizeof(datafiles),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -datafiles ${DATAFILESPATH}/ao");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -datafiles ${DATAFILESPATH}/ao");
 
   // read in application indices
   ierr = PetscSNPrintf(infile,sizeof(infile),"%s/AO%dCPUs/ao_p%d_appindices.txt",datafiles,size,rank);CHKERRQ(ierr);
   ifstream fin(infile);
-  if (!fin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
+  PetscCheck(fin,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
   vector<PetscInt>  myapp;
   int tmp=-1;
   while (!fin.eof()) {
