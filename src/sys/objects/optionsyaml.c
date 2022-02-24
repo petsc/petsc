@@ -61,7 +61,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
     /* "$$*" are treated as dummy keys, we use them for !include tags and to define anchors */
     ierr = PetscStrbeginswith(STR(keynode), "$$", &isDummyKey);CHKERRQ(ierr);
     if (isDummyKey) {
-      ierr = PetscStrendswith(TAG(valnode), "!include", &isIncludeTag);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = PetscStrendswith(TAG(valnode), "!include", &isIncludeTag);CHKERRQ(ierr);
       if (isIncludeTag) { /* TODO: add proper support relative paths */
         ierr = PetscOptionsInsertFileYAML(comm, options, STR(valnode), PETSC_TRUE);CHKERRQ(ierr);
       }

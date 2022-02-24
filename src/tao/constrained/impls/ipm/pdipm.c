@@ -677,7 +677,7 @@ static PetscErrorCode KKTAddShifts(Tao tao,SNES snes,Vec X)
         pdipm->deltaw = PetscMin(8*pdipm->deltaw,PetscPowReal(10,20));
         ierr = TaoSNESJacobian_PDIPM(snes,X, pdipm->K, pdipm->K, tao);CHKERRQ(ierr);
         ierr = PCSetUp(pc);CHKERRQ(ierr);
-        ierr = MatGetInertia(Factor,&nneg,&nzero,&npos);CHKERRQ(ierr);CHKERRQ(ierr);
+        ierr = MatGetInertia(Factor,&nneg,&nzero,&npos);CHKERRQ(ierr);
       }
 
       PetscCheck(pdipm->deltaw < 1./PETSC_SMALL,PetscObjectComm((PetscObject)tao),PETSC_ERR_CONV_FAILED,"Reached maximum delta w will not converge, try different initial x0");

@@ -1870,7 +1870,7 @@ int main(int argc, char **argv)
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
   ierr = DMSetOutputSequenceNumber(dm, 0, t);CHKERRQ(ierr);
   ierr = DMTSCheckFromOptions(ts, u);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts, MonitorError, &user, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts, MonitorError, &user, NULL);CHKERRQ(ierr);
 
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
   ierr = DMTSCheckFromOptions(ts, u);CHKERRQ(ierr);

@@ -23,8 +23,8 @@ int main(int argc,char **argv)
     ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,2,2,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Supply -dim option with value 1, 2, or 3");
 
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMStagSetUniformCoordinatesExplicit(dm,1.0,3.0,1.0,3.0,1.0,3.0);CHKERRQ(ierr);
   ierr = DMGetCoordinates(dm,&coord);CHKERRQ(ierr);

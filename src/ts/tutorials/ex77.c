@@ -960,7 +960,7 @@ int main(int argc, char **argv)
   ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &user);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetPreStep(ts, RemoveDiscretePressureNullspace);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts, MonitorError, &user, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts, MonitorError, &user, NULL);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = TSSetComputeInitialCondition(ts, SetInitialConditions);CHKERRQ(ierr); /* Must come after SetFromOptions() */
@@ -976,7 +976,7 @@ int main(int argc, char **argv)
   ierr = TSSetDM(sts, sdm);CHKERRQ(ierr);
   ierr = TSSetProblemType(sts, TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(sts, TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSMonitorSet(sts, MonitorParticleError, &adv, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = TSMonitorSet(sts, MonitorParticleError, &adv, NULL);CHKERRQ(ierr);
   ierr = TSSetFromOptions(sts);CHKERRQ(ierr);
   ierr = TSSetApplicationContext(sts, &adv);CHKERRQ(ierr);
   ierr = TSSetComputeExactError(sts, ComputeParticleError);CHKERRQ(ierr);

@@ -2803,7 +2803,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
     ierr = PetscInfo(ts, "Skip forming Jacobian, has not changed (should check norm)\n");CHKERRQ(ierr);
   }
   /* mat vec for op */
-  ierr = MatMult(ctx->J,X,F);CHKERRQ(ierr);CHKERRQ(ierr); /* C*f */
+  ierr = MatMult(ctx->J,X,F);CHKERRQ(ierr); /* C*f */
   /* add time term */
   if (X_t) {
     ierr = MatMultAdd(ctx->M,X_t,F,F);CHKERRQ(ierr);

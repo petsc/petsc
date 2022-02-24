@@ -2674,7 +2674,7 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
               }
             }
           }
-          ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);CHKERRQ(ierr);
+          ierr = PetscTabulationDestroy(&T);CHKERRQ(ierr);
         }
       } else if (id == PETSCFV_CLASSID) {
         PetscFV        fv = (PetscFV) obj;

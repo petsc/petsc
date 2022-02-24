@@ -349,7 +349,7 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
 
   PetscFunctionBeginUser;
   ierr = VecZeroEntries(R);CHKERRQ(ierr);
-  ierr = TSGetDM(ts, &sw);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = TSGetDM(ts, &sw);CHKERRQ(ierr);
   ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
   ierr = TSGetSolution(ts, &sol);CHKERRQ(ierr);

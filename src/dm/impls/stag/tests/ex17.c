@@ -27,8 +27,8 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Supply -dim option with value 1, 2, or 3\n");CHKERRQ(ierr);
     return 1;
   }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMStagGetDOF(dm,&dof0,&dof1,&dof2,&dof3);CHKERRQ(ierr);
 

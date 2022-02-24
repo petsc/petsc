@@ -51,8 +51,8 @@ int main(int argc,char **argv)
       return 1;
     }
   }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Create a cloned DMStag object */

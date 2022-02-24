@@ -148,19 +148,19 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len,char 
 
     cnt = 0;
     if (dof0 != 0) {
-      ierr = DMStagCreateISFromStencils(dm,f0*dof0,stencil0,&(*islist)[cnt]);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = DMStagCreateISFromStencils(dm,f0*dof0,stencil0,&(*islist)[cnt]);CHKERRQ(ierr);
       ++cnt;
     }
     if (dof1 != 0) {
-      ierr = DMStagCreateISFromStencils(dm,f1*dof1,stencil1,&(*islist)[cnt]);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = DMStagCreateISFromStencils(dm,f1*dof1,stencil1,&(*islist)[cnt]);CHKERRQ(ierr);
       ++cnt;
     }
     if (dim >= 2 && dof2 != 0) {
-      ierr = DMStagCreateISFromStencils(dm,f2*dof2,stencil2,&(*islist)[cnt]);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = DMStagCreateISFromStencils(dm,f2*dof2,stencil2,&(*islist)[cnt]);CHKERRQ(ierr);
       ++cnt;
     }
     if (dim >= 3 && dof3 != 0) {
-      ierr = DMStagCreateISFromStencils(dm,f3*dof3,stencil3,&(*islist)[cnt]);CHKERRQ(ierr);CHKERRQ(ierr);
+      ierr = DMStagCreateISFromStencils(dm,f3*dof3,stencil3,&(*islist)[cnt]);CHKERRQ(ierr);
       ++cnt;
     }
   }
