@@ -15,6 +15,7 @@ configure_options = [
   'FFLAGS=-ftrap=%none',
   '--with-c2html=0',
   '--download-mpich',
+  '--download-mpich-configure-arguments=--disable-f08 --disable-collalgo-tests',
   '--download-metis',
   '--download-parmetis',
   '--download-triangle',

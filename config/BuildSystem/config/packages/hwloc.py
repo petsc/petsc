@@ -4,8 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version           = '2.5.0'
-    self.download          = ['http://www.open-mpi.org/software/hwloc/v2.5/downloads/hwloc-'+self.version+'.tar.gz',
+    self.version           = '2.7.0'
+    self.download          = ['http://www.open-mpi.org/software/hwloc/v2.7/downloads/hwloc-'+self.version+'.tar.gz',
                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hwloc-'+self.version+'.tar.gz']
     self.functions         = ['hwloc_topology_init']
     self.includes          = ['hwloc.h']
