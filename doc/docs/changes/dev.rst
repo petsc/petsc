@@ -76,6 +76,7 @@ Changes: Development
 
 - ``ISLocalToGlobalMappingCreateSF()``: allow passing ``start = PETSC_DECIDE``
 - Add ``ISGeneralSetIndicesFromMask()``
+- Add ``ISSetLayout()``
 
 .. rubric:: VecScatter / PetscSF:
 

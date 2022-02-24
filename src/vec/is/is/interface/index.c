@@ -1132,7 +1132,7 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 
    Level: developer
 
-.seealso: ISGetSize(), ISGetLocalSize()
+.seealso: ISSetLayout(), ISGetSize(), ISGetLocalSize()
 @*/
 PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
 {
@@ -1141,6 +1141,36 @@ PetscErrorCode ISGetLayout(IS is,PetscLayout *map)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(map,2);
   *map = is->map;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   ISSetLayout - set PetscLayout describing index set layout
+
+   Collective
+
+   Input Arguments:
++  is - the index set
+-  map - the layout
+
+   Level: developer
+
+   Notes:
+   Users should typically use higher level functions such as ISCreateGeneral().
+
+   This function can be useful in some special cases of constructing a new IS, e.g. after ISCreate() and before ISLoad().
+   Otherwise, it is only valid to replace the layout with a layout known to be equivalent.
+
+.seealso: ISCreate(), ISGetLayout(), ISGetSize(), ISGetLocalSize()
+@*/
+PetscErrorCode ISSetLayout(IS is,PetscLayout map)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidPointer(map,2);
+  ierr = PetscLayoutReference(map,&is->map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

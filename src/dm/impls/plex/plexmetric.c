@@ -1191,7 +1191,7 @@ PetscErrorCode DMPlexMetricEnforceSPD(DM dm, Vec metricIn, PetscBool restrictSiz
   ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
   if (uniform) {
     PetscCheckFalse(!isotropic,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
-    
+
     /* Uniform case */
     ierr = VecDuplicate(metricIn, determinant);CHKERRQ(ierr);
     ierr = VecGetArray(*determinant, &det);CHKERRQ(ierr);
