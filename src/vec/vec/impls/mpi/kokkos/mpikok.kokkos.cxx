@@ -267,14 +267,12 @@ PetscErrorCode VecCreate_MPIKokkos(Vec v)
   PetscFunctionBegin;
   ierr = PetscKokkosInitializeCheck();CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
-  ierr = VecCreate_MPI(v);CHKERRQ(ierr);  /* Build a sequential vector, allocate array */
-  ierr = VecSet_Seq(v,0.0);CHKERRQ(ierr); /* Zero the host array */
+  ierr = VecCreate_MPI(v);CHKERRQ(ierr);  /* Calloc host array */
 
   vecmpi = static_cast<Vec_MPI*>(v->data);
   ierr   = PetscObjectChangeTypeName((PetscObject)v,VECMPIKOKKOS);CHKERRQ(ierr);
   ierr   = VecSetOps_MPIKokkos(v);CHKERRQ(ierr);
-  veckok = new Vec_Kokkos(v->map->n,vecmpi->array);
-  Kokkos::deep_copy(veckok->v_dual.view_device(),0.0);
+  veckok = new Vec_Kokkos(v->map->n,vecmpi->array,NULL); /* Alloc device array but do not init it */
   v->spptr = static_cast<void*>(veckok);
   v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   PetscFunctionReturn(0);
