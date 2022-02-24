@@ -416,14 +416,15 @@ during setup in debug mode)
    Level: intermediate
 
    Notes:
-    In Fortran you must use PETSC_COPY_VALUES for localmode and remotemode
+   In Fortran you must use PETSC_COPY_VALUES for localmode and remotemode
 
-   Developers Note: Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
-   encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
-   needed
-
-   Developers Note: This object does not necessarily encode a true star forest in the graph theoretic sense, since leaf
+   This object does not necessarily encode a true star forest in the graph theoretic sense, since leaf
    indices are not required to be unique. Some functions, however, rely on unique leaf indices (checked in debug mode).
+
+   Developer Notes:
+   Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
+   encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
+   needed.
 
 .seealso: PetscSFCreate(), PetscSFView(), PetscSFGetGraph()
 @*/
