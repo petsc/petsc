@@ -793,7 +793,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   }
   ierr = PetscSFCreate(comm, migrationSF);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *migrationSF, "Migration SF");CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*migrationSF, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_COPY_VALUES);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*migrationSF, nroots, nleaves, ilocal, PETSC_OWN_POINTER, (PetscSFNode*)iremote, PETSC_COPY_VALUES);CHKERRQ(ierr);
   ierr = PetscFree2(pointDepths,remoteDepths);CHKERRQ(ierr);
   ierr = PetscFree6(depthRecv, depthShift, depthIdx, ctRecv, ctShift, ctIdx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_PartStratSF,dm,0,0,0);CHKERRQ(ierr);

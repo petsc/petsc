@@ -110,6 +110,7 @@ struct _p_PetscSF {
   PetscBool       use_gpu_aware_mpi;   /* If true, SF assumes it can pass GPU pointers to MPI */
   PetscBool       use_stream_aware_mpi;/* If true, SF assumes the underlying MPI is cuda-stream aware and we won't sync streams for send/recv buffers passed to MPI */
   PetscInt        maxResidentThreadsPerGPU;
+  PetscBool       allow_multi_leaves;
   PetscSFBackend  backend;         /* The device backend (if any) SF will use */
   void *data;                      /* Pointer to implementation */
 

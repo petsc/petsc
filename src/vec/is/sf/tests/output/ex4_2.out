@@ -23,14 +23,14 @@ Vec Object: 1 MPI processes
 0.
 PetscSF Object: sfA 1 MPI processes
   [0] Number of roots=3, leaves=3, remote ranks=1
+  [0] 0 <- (0,2)
   [0] 1 <- (0,0)
   [0] 2 <- (0,1)
-  [0] 0 <- (0,2)
 PetscSF Object: sfB 1 MPI processes
   [0] Number of roots=3, leaves=2, remote ranks=1
-  [0] 2 <- (0,1)
   [0] 1 <- (0,0)
+  [0] 2 <- (0,1)
 PetscSF Object: (sfB o sfA) 1 MPI processes
   [0] Number of roots=3, leaves=2, remote ranks=1
-  [0] 2 <- (0,0)
   [0] 1 <- (0,2)
+  [0] 2 <- (0,0)

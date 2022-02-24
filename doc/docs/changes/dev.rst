@@ -87,6 +87,7 @@ Changes: Development
 
 - Add MPI-4.0 large count support. With an MPI-4.0 compliant MPI implementation and 64-bit indices, one can now pass over 2 billion elements in a single message in either VecScatter or PetscSF
 - Add ``PetscSFFetchAndOpWithMemTypeBegin()``, which is similar to ``PetscSFFetchAndOpBegin()``, but with explicit memory types
+- Change ``PetscSFSetGraph()`` and ``PetscSFSetGraphLayout()`` to sort leaves, remove ``const`` from ``ilocal`` and ``iremote`` arguments
 
 .. rubric:: PF:
 

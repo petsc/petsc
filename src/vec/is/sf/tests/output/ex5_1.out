@@ -9,8 +9,8 @@ PetscSF Object: sfA 1 MPI processes
 PetscSF Object: sfB 1 MPI processes
   type: basic
   [0] Number of roots=8, leaves=2, remote ranks=1
-  [0] 3 <- (0,2)
   [0] 2 <- (0,3)
+  [0] 3 <- (0,2)
   MultiSF sort=rank-order
 BcastB(BcastA)
 A: root data
@@ -22,8 +22,8 @@ B: leaf data (all)
 PetscSF Object: sfBA 1 MPI processes
   type: basic
   [0] Number of roots=4, leaves=2, remote ranks=1
-  [0] 3 <- (0,0)
   [0] 2 <- (0,1)
+  [0] 3 <- (0,0)
   MultiSF sort=rank-order
 BcastBA
 BA: root data
