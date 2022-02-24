@@ -218,7 +218,7 @@ PetscErrorCode TSRKRegisterAll(void)
     const PetscReal
       A[2][2]   = {{0,0},
                    {RC(0.5),0}},
-      b[2]      =  {0,RC(1.0)},
+      b[2]      =  {0,RC(1.0)};
     ierr = TSRKRegister(TSRK2B,2,2,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
   }
   {
